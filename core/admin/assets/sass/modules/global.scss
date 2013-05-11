@@ -1,0 +1,1137 @@
+/*
+ * Global styles for Ghost which are used throughout the admin interface
+ * Utility classes defined here to keep other libraries (Normalize) from
+ * being modified, preventing upgrade later.
+ *
+ * Table of Contents
+ *
+ * Utility Classes
+ * Global Styles
+ * Global Navigation
+ * Mobile Navigation
+ * Drop-down / Pop-up Menu
+ * Main Elements
+ * Floating Headers
+ * Image Uploader
+ * Misc
+ */
+
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.hidden         { @include hidden; } // TODO: Merge this with .visuallyhidden
+.invisible      { visibility: hidden; }
+.right          { float: right; }
+.left           { float: left; }
+
+.markdown, pre, code { font-family: $font-family-mono; }
+
+.visuallyhidden,
+.screen-reader-text {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+.clearfix:after { clear: both; }
+.clearfix { *zoom: 1; }
+
+/* ==========================================================================
+   Global Styles
+   ========================================================================== */
+
+body {
+    width:100%;
+    color: $darkgrey;
+    font-weight: 300;
+    background: $lightbrown;
+    @include breakpoint($mobile) { background: #fff; }
+}
+
+::-moz-selection {
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
+}
+
+::selection {
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
+}
+
+article aside {
+    width: 30%;
+    padding: 0 2.2em;
+    margin: 0 2.2em 1.6em 2.2em;
+    float: right;
+    background: $lightbrown;
+    @include border-radius(3px);
+}
+
+// Headings
+
+h1, h2, h3,
+h4, h5, h6 {
+    color: $darkgrey;
+}
+
+h2 {
+    padding-top: 0.8em;
+    margin-top: 0.8em;
+    border-top: $lightbrown 1px solid;
+}
+
+h1 a:hover {
+    text-decoration: none;
+    @include box-shadow($blue 0 -5px 0 inset);
+}
+
+h2 a:hover {
+    text-decoration: none;
+    @include box-shadow($blue 0 -4px 0 inset);
+}
+
+h3 a:hover {
+    text-decoration: none;
+    @include box-shadow($blue 0 -3px 0 inset);
+}
+
+h4 a:hover,
+h5 a:hover,
+h6 a:hover {
+    text-decoration: none;
+    @include box-shadow($blue 0 -1px 0 inset);
+}
+
+hgroup {
+    @include baseline;
+
+    h1, h2, h3,
+    h4, h5, h6 {
+        padding:0;
+        margin:0;
+        border:none;
+        margin-bottom: 5px;
+
+        a {
+            color: $darkgrey;
+
+            &:hover {
+                @include box-shadow($darkgrey 0 -1px 0 inset);
+            }
+
+        }
+
+        /*
+         * Make everything except the first
+         * heading appear smaller/thinner.
+         */
+        &:nth-child(n+2) {
+            font-size: 1.8em;
+            font-weight: 300;
+            color: $brown;
+        }
+
+    }
+
+}
+
+// Text elements
+
+p, ul, ol { @include baseline; }
+
+ol ol, ul ul,
+ul ol, ol ul {
+    margin: 0.4em 0;
+}
+
+p + p,
+aside + p {
+    text-indent: 1.5em;
+}
+
+a {
+    color:$blue;
+    text-decoration:none;
+    @include transition;
+
+    &:hover {
+        text-decoration:underline;
+    }
+
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid $lightbrown;
+    margin: 3.2em 0;
+    padding: 0;
+}
+
+blockquote {
+    @include baseline;
+    @include box-sizing(border-box);
+    padding: 0 1.6em 0 1.6em;
+    border-left: $lightbrown 0.6em solid;
+
+    p {
+        margin:0.8em 0;
+        font-size:1.2em;
+        font-weight: 300;
+    }
+
+    small {
+        display: inline-block;
+        margin: 0.8em 0 0.8em 1.5em;;
+        font-size:0.9em;
+        color: $brown;
+
+        &:before { content: '\2014 \00A0'; }
+    }
+
+    cite {
+        font-weight:bold;
+        a { font-weight: normal; }
+    }
+}
+
+dl {
+    @include baseline;
+
+    dt {
+        float: left;
+        width: 180px;
+        overflow: hidden;
+        clear: left;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: bold;
+        margin-bottom: 1em
+    }
+
+    dd {
+        margin-left: 200px;
+        margin-bottom: 1em
+    }
+}
+
+mark {
+    background-color: #ffc336;
+}
+
+code, tt {
+    font-family: $font-family-mono;
+    font-size: 0.85em;
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    border-radius: 2px;
+    padding: 1px 3px;
+}
+
+pre {
+    @include baseline;
+    @include box-sizing(border-box);
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    width: 100%;
+    padding: 10px;
+    font-family: $font-family-mono;
+    font-size: 0.9em;
+    overflow: auto;
+    @include border-radius(3px);
+
+    code, tt {
+        font-size: inherit;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+}
+
+kbd {
+    display: inline-block;
+    margin-bottom: 0.4em;
+    padding: 1px 8px;
+    border: #ccc 1px solid;
+    color: $darkgrey;
+    text-shadow: #fff 0 1px 0;
+    font-size: 0.9em;
+    font-weight: bold;
+    background: #f4f4f4;
+    @include border-radius(4px);
+    @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.2),0 1px 0 0 #fff inset);
+}
+
+// Tabular Data
+
+table {
+    @include baseline;
+    @include box-sizing(border-box);
+    width:100%;
+    max-width: 100%;
+    background-color: transparent;
+
+    th,
+    td {
+      padding: 8px;
+      line-height: 20px;
+      text-align: left;
+      vertical-align: top;
+      border-top: 1px solid $lightbrown;
+    }
+
+    th { color: $brown; }
+
+    caption + thead tr:first-child th,
+    caption + thead tr:first-child td,
+    colgroup + thead tr:first-child th,
+    colgroup + thead tr:first-child td,
+    thead:first-child tr:first-child th,
+    thead:first-child tr:first-child td {
+      border-top: 0;
+    }
+
+    tbody + tbody { border-top: 2px solid $lightbrown; }
+
+    table table { background-color: #fff; }
+
+    tbody > tr:nth-child(odd) > td,
+    tbody > tr:nth-child(odd) > th {
+        background-color: lighten($lightbrown, 5%);
+    }
+
+    &.plain {
+        tbody > tr:nth-child(odd) > td,
+        tbody > tr:nth-child(odd) > th {
+            background: transparent;
+        }
+    }
+
+}
+
+// General Navigation
+
+nav {
+    ul {
+        list-style: none;
+        margin:0;
+        padding:0;
+        border-top:$lightbrown 1px solid;
+    }
+
+    li { font-size:1.1em;
+
+        a {
+            display:block;
+            padding:10px 15px;
+            color:$brown;
+            border-bottom:$lightbrown 1px solid;
+
+            &:hover {
+                color:$darkgrey;
+                background: $lightbrown;
+                text-decoration: none;
+            }
+
+            &:before { margin-right:1em; } // Make space for icons
+
+        }
+    }
+}
+
+/* ==========================================================================
+   Main Navigation
+   ========================================================================== */
+#global-header { /* Added because the code editor was breaking for the title "Ghost" - this also happens on TryGhost */
+    #ghost {
+        @include icon($i-ghost);
+        display: block;
+        float:left;
+        height:40px;
+        padding:12px 15px;
+        color: lighten($grey, 10%);
+        @include box-sizing(border-box);
+        &:hover {text-decoration:none;}
+    }
+
+    #ghost:hover {
+        color: $lightgrey;
+        background:darken($darkgrey, 2%);
+    }
+}
+
+
+.navbar {
+	height: 40px;
+    font-size: 0.85em;
+    background: $darkgrey;
+    @include breakpoint($netbook) {font-weight:normal}
+
+    // The main navbar styles, apply to to everything.
+    nav {
+
+        ul {
+            float:left;
+            border-left:$grey 1px solid;
+            border-top:none;
+        }
+
+        li {
+            float:left;
+            font-size: 1em;
+            position:relative;
+            border-right:$grey 1px solid;
+
+            a {
+                display: block;
+                height:40px;
+                padding:11px 15px;
+                border-bottom:none;
+                color: $midgrey;
+                text-transform: uppercase;
+                @include box-sizing(border-box);
+            }
+
+            a:hover,
+            &.active a {
+                color: $lightgrey;
+                text-decoration: none;
+                position:relative;
+                background:darken($grey, 2%);
+                @include box-shadow(0 -2px 2px rgba(0,0,0,0.2) inset);
+            }
+
+            // Make a little arrow pointing up at the currently active menu item
+            &.active a:after {
+                content:"";
+                position:absolute;
+                bottom:0;
+                left:50%;
+                margin-left:-5px;
+                border-width:0 5px 5px 5px;
+                border-style:solid;
+                border-color:$lightbrown transparent;
+                display:block;
+                width:0;
+
+                @include breakpoint($mobile) {
+                    border-color: #fff transparent;
+                }
+
+            }
+
+            ul {
+                position: absolute;
+                top:40px;
+                right:0;
+                min-width:200px;
+                background: $darkgrey;
+            }
+
+            li {
+                width: 100%;
+                border-right: none;
+            }
+
+        }
+
+        // Add some icons to specific nav items
+        a:before {margin-right: 5px;}
+        .dashboard a {  @include icon($i-stats) {vertical-align: -10%} }
+        .content a {    @include icon($i-content) }
+        .editor a {     @include icon($i-add) }
+        .settings a {   @include icon($i-settings2) }
+
+    }//nav ul
+
+    // Style any nav items which have dropdowns
+    .subnav {
+        position: relative;
+
+        // The anchor which toggles the menu open/closed
+        > a {
+            @include icon-after($i-chevron-down, 8px) {margin-left: 8px};
+
+            &.active {
+                color: $lightgrey;
+                background: darken($grey, 3%);
+                @include transition(none);
+                @include box-shadow(none);
+            }
+        }
+
+        // The dropdown menu
+        ul {
+            display: none;
+            padding: 7px 0;
+            border-left: none;
+            position: absolute;
+            top:40px;
+            left:-1px;
+            z-index: 800;
+            background:darken($grey, 3%);
+            @include box-shadow(rgba(0,0,0,0.2) 0 4px 6px);
+        }
+
+        li {
+            a {
+                color: $lightgrey;
+
+                &:hover {
+                    background: darken($darkgrey, 10%);
+                    @include transition(none);
+                    @include box-shadow(none);
+                }
+
+                &:before { margin-right: 1em; } // space for icons
+            }
+        }
+
+        .divider {
+            height: 1px;
+            margin: 7px 0;
+            overflow: hidden;
+            background: $grey;
+        }
+
+    }//.subnav
+
+}//.navbar
+
+// The user menu in the top right corner of the screen
+#usermenu {
+    position:absolute;
+    top:0;
+    right:0;
+    border-right:none;
+    border-left:$grey 1px solid;
+
+    > a {
+        padding-left:43px; //15px + 18px avatar + 10px
+    }
+
+    .avatar {
+        height:18px;
+        width:18px;
+        @include border-radius(50px);
+        position:absolute;
+        top:11px;
+        left:15px;
+    }
+
+    > ul {
+        right: 0;
+        left: auto;
+    }
+
+    //Add some icons to specific items
+    .usermenu-profile a { @include icon($i-user) }
+    .usermenu-help a { @include icon($i-support, 1.1em) }
+    .usermenu-shortcuts a { @include icon($i-pc)  }
+    .usermenu-signout a { @include icon($i-power) }
+}
+
+
+/* ==========================================================================
+   Mobile Navigation
+   ========================================================================== */
+
+// Yo dawg, I heard you like nav menus so I put nav menus in your nav menus
+#global-header {
+    @include breakpoint(650px) {
+
+        #ghost {
+            @include icon($i-menu, 14px);
+            height:40px;
+            width: 40px;
+            text-align: center;
+            padding:12px 0;
+            @include transition(margin-left 0.3s ease 0s);
+            .off-canvas & {
+                margin-left: 280px;
+                @include transition(margin-left 0.3s ease 0.1s);
+            }
+        }
+
+        ul {
+            position: fixed;
+            overflow: auto;
+            top: 0;
+            right: auto;
+            bottom: 0;
+            left: -280px;
+            z-index: 980;
+            width: 280px;
+            padding-top: 40px;
+            font-weight:normal;
+            background: $darkgrey;
+            border-left:none;
+            @include transition(left 0.3s ease 0.2s);
+            .off-canvas & {
+                left: 0;
+                @include transition(left 0.3s ease 0s);
+            }
+        }
+
+        li {
+            float:none;
+            border-right:none;
+            border-bottom:$grey 1px solid;
+
+            a:hover,
+            &.active a {@include box-shadow(none)}
+
+            &.active a:after {display:none;}
+
+            a:before {margin-right: 1em;}
+
+            ul {
+                position: static;
+                min-width:0;
+                background: $darkgrey;
+            }
+
+            li {width: auto;}
+
+        }
+
+        #usermenu {
+            position:fixed;
+            top:0;
+            right:auto;
+            bottom: auto;
+            left:-280px;
+            height:40px;
+            z-index: 990;
+            width:279px;
+            border-left:none;
+            border-right: darken($grey, 7%) 1px solid;
+            border-bottom: darken($grey, 5%) 1px solid;
+            @include gradient(darken($darkgrey, 8%), darken($darkgrey, 3%));
+            @include transition(left 0.3s ease 0.2s);
+            .off-canvas & {
+                left: 0;
+                @include transition(left 0.3s ease 0s);
+            }
+            > a {
+                @include icon-after($i-chevron-down, 12px) {
+                    position:absolute;
+                    right: 20px;
+                    top: 15px;
+                }
+
+                &:hover { background: inherit; }
+                &.active { background: darken($grey, 3%); }
+            }
+
+            > ul {
+                padding: 0;
+                @include box-shadow(none);
+                width: 100%;
+                font-weight: 300;
+            }
+
+            .open {
+                @include box-shadow(rgba(0,0,0,0.4) 0 10px 20px);
+            }
+
+            li {
+                border-bottom: darken($grey, 3%) 1px solid;
+
+                a {
+                    background: darken($grey, 3%);
+
+                    &:hover {background: darken($grey, 8%)}
+                    &:before { margin-right: 1em; } // space for icons
+                }
+
+            }
+
+            .divider {display: none}
+
+        }
+    }
+}
+
+
+/* ==========================================================================
+   Drop-down / Pop-up Menu
+   ========================================================================== */
+
+.dropdown {
+    @include icon-after($i-chevron-down, 8px) {
+        padding-left: 6px;
+        vertical-align: 0;
+    };
+
+    &.active {
+        @include icon-after($i-chevron-down, 8px, $darkgrey);
+    }
+}
+
+
+// This is the base menu extend used for styles on interaction menus
+%menu {
+    display: inline-block;
+    position:absolute;
+    z-index: 960;
+    padding:6px 0;
+    border:none;
+    list-style: none;
+    color: $lightgrey;
+    background: $darkgrey;
+    @include border-radius(3px);
+    @include box-shadow(rgba(0,0,0,0.5) 0 1px 15px);
+
+    // The triangle chiclet that points to where the menu came from
+    // By default, this is bottom center.
+    &:before {
+        content:"";
+        position:absolute;
+        bottom:-10px;
+        left:50%;
+        margin-left:-10px;
+        border-width:10px 10px 0 10px;
+        border-style:solid;
+        border-color:$darkgrey transparent;
+        display:block;
+        width:0;
+    }
+
+    li {overflow:hidden;} // Stop :hover shadow from overflowing
+
+    a, p {
+        @include box-sizing(border-box);
+        display: block;
+        position: relative;
+        padding:10px 25px 10px 35px;
+        border: none;
+        @include box-sizing(border-box);
+        color: $lightgrey !important; // It's dirty, but it's needed.
+        text-transform: none;
+        text-decoration: none;
+
+        &:hover {
+            background: $blue;
+            @include box-shadow(
+                rgba(255,255,255,0.2) 0 1px 0 inset,
+                rgba(0,0,0,0.5) 0 1px 5px
+            );
+        }
+
+    }
+
+    // Add a check mark to the currently active menu item
+    .active a {
+        @include icon($i-check) {
+            position: absolute;
+            top: 14px;
+            left: 11px;
+        }
+    }
+
+}
+
+// This extend moves the chiclet to the top, for menus which drop down.
+%menu-drop {
+    &:before {
+        top: -10px;
+        bottom: auto;
+        border-width:0 10px 10px 10px;
+    }
+}
+
+// Chiclet to the left, for menus appearing close to left edge of the screen.
+%menu-left {
+    &:before {
+        left:10px;
+        margin-left:0;
+    }
+}
+
+// Chiclet to the right, for menus appearing close to right edge of the screen.
+%menu-right {
+    &:before {
+        left: auto;
+        right:10px;
+        margin-left:0;
+    }
+}
+
+// Pop menu, chiclet bottom center.
+.menu {
+    @extend %menu;
+}
+
+// Pop left, chiclet bottom left.
+.menu-left {
+    @extend %menu;
+    @extend %menu-left;
+}
+
+// Pop right, chiclet bottom right.
+.menu-right {
+    @extend %menu;
+    @extend %menu-right;
+}
+
+// Drop menu, chiclet top center.
+.menu-drop {
+    @extend %menu;
+    @extend %menu-drop;
+}
+
+// Drop left, chiclet top left.
+.menu-drop-left {
+    @extend %menu;
+    @extend %menu-drop;
+    @extend %menu-left;
+}
+
+// Drop right, chiclet top right.
+.menu-drop-right {
+    @extend %menu;
+    @extend %menu-drop;
+    @extend %menu-right;
+}
+
+
+/* ==========================================================================
+   Notifications
+   ========================================================================== */
+
+%notification, .notification {
+    @include box-sizing(border-box);
+    width: 100%;
+    min-height: 40px;
+    padding: 10px 43px 10px 57px;
+    margin: 0 0 15px 0;
+    color: rgba(255,255,255,0.9);
+    background: $orange;
+    position:relative;
+    @include box-shadow;
+
+    @include icon($i-notification) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        @include box-sizing(border-box);
+        height: 100%;
+        width: 44px;
+        padding: 14px 15px;
+        text-align: center;
+        color: rgba(255,255,255,0.8);
+        background: rgba(0,0,0,0.1);
+    };
+
+    .close {
+        @include icon-after($i-close) {
+            padding:6px;
+            position:absolute;
+            top:8px;
+            right:9px;
+        };
+        display: inline-block;
+        color: rgba(255,255,255,0.6);
+
+        &:hover { color: #fff; }
+
+    }
+}
+
+.notification-success {
+    @extend %notification;
+    @include icon($i-success);
+    background: $green;
+}
+
+.notification-error {
+    @extend %notification;
+    @include icon($i-error);
+    background: $red;
+}
+
+.notification-alert {
+    @extend %notification;
+    @include icon($i-info);
+    background: $blue;
+}
+
+/* ==========================================================================
+   Main Elements
+   ========================================================================== */
+
+main {
+    position: absolute;
+    bottom: 0;
+    top: 55px;
+    left: 15px;
+    right: 15px;
+    padding: 0;
+
+    @include breakpoint($mobile) {
+        left:0;
+        right:0;
+    }
+
+}
+
+
+/* ==========================================================================
+   Floating Headers
+   ========================================================================== */
+
+// Semi-opaque fixed-position headers - used on content/editor
+.floatingheader {
+    @include box-sizing(border-box);
+    position: absolute;
+    top:0;
+    left:0;
+    right:0;
+    z-index: 400;
+    height: 40px;
+    padding: 12px 15px;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    color: $brown;
+    //Transparent gradient to make bg fade out as it goes out the top.
+    background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+    background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+    background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+    background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f2ffffff',GradientType=0 );
+
+    button, .button {
+        display:inline-block;
+        font-size: 10px;
+        min-height: 20px;
+        height: 20px;
+        padding: 3px 4px;
+        vertical-align: top;
+    }
+
+    a {
+        color: $brown;
+        &:hover { color: $darkgrey; }
+    }
+
+}//.floatingheader
+
+// Special case, when scrolling, add shadows to content headers.
+.scrolling {
+
+    .floatingheader {
+        @include box-shadow(
+            rgba(0,0,0,0.02) 0 1px 2px,
+            rgba(255, 255, 255, 0.5) 0 -1px 0 inset
+        );
+
+        &::before {
+            content: "";
+            height:40px;
+            width: 80%;
+            position:absolute;
+            bottom:0;
+            left:50%;
+            margin-left: -40%;
+            @include box-shadow(rgba(0,0,0,0.02) 0 2px 2px);
+        }
+        &::after {
+            content: "";
+            height:40px;
+            width: 30%;
+            position:absolute;
+            bottom:0;
+            left:50%;
+            margin-left: -15%;
+            @include box-shadow(rgba(0,0,0,0.02) 0 3px 3px);
+        }
+    }
+
+}
+
+
+/* ==========================================================================
+   Image Uploader
+   ========================================================================== */
+
+.image-uploader {
+    @include box-sizing(border-box);
+    @include baseline;
+    position: relative;
+    padding: 55px 60px 65px 60px;
+    border: $lightbrown 3px dashed;
+    width: 100%;
+    height: auto;
+    text-align: center;
+    color: $brown;
+    background: #F9F8F5;
+
+    &:hover { //HAHA THIS IS A HACK
+        //TODO: REMOVE THIS FUCKING HACK
+        cursor: pointer;
+    }
+
+    a {
+        color: $brown;
+        text-decoration: none;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+
+    .media {
+        @include icon($i-image, 60px, darken($lightbrown, 3%)) {
+            display:inline-block;
+            @include transition(transform 1s ease);
+        }
+    }
+
+    .image-url {
+        @include icon($i-link, 12px);
+        line-height: 12px;
+        padding: 10px;
+        display: block;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        color: $brown;
+        text-decoration: none;
+    }
+
+    .image-webcam {
+        @include icon($i-camera, 12px);
+        line-height: 12px;
+        padding: 10px;
+        display: block;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        color: $brown;
+        text-decoration: none;
+    }
+}
+
+
+/* ==========================================================================
+   Misc
+   ========================================================================== */
+
+//Simple
+.wrapper {
+	position:relative;
+}
+
+.palette {
+    margin-bottom: 15px;
+
+    section {
+        padding:5px 10px;
+        width: 90px;
+        height:90px;
+        float:left;
+        color:rgba(0,0,0,0.5);
+        position:relative;
+        font-size:12px;
+        font-weight: bold;
+        font-family: $font-family-mono;
+        overflow: hidden;
+        @include transition;
+
+        &:hover {
+            @include box-shadow(
+                rgba(0,0,0,0.05) 5px 0 0 inset,
+                rgba(0,0,0,0.05) -5px 0 0 inset,
+                rgba(0,0,0,0.05) 0 5px 0 inset,
+                rgba(0,0,0,0.05) 0 -5px 0 inset
+            );
+            @include transition;
+        }
+
+        small {
+            position:absolute;
+            top:20px;
+            left:10px;
+            font-size:11px;
+            font-weight: normal;
+            font-family: $font-family;
+            display: block;
+            width:100px;
+            @include opacity(0.6);
+            @include transition;
+        }
+
+        &:hover small {
+            @include opacity(1);
+            @include transition;
+        }
+    }
+
+    .brown {
+        background:$brown;
+    }
+    .midbrown {
+        background:$midbrown;
+    }
+    .lightbrown {
+        background:$lightbrown;
+    }
+
+    .darkgrey {
+        color:rgba(255,255,255,0.5);
+        background:$darkgrey;
+    }
+    .grey {
+        color:rgba(255,255,255,0.5);
+        background:$grey;
+    }
+    .midgrey {
+        background:$midgrey;
+    }
+    .lightgrey {
+        background:$lightgrey;
+    }
+
+    .blue {
+        color:#fff;
+        background:$blue;
+    }
+    .red {
+        color:#fff;
+        background:$red;
+    }
+    .orange {
+        color:#fff;
+        background:$orange;
+    }
+
+}

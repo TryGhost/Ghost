@@ -1,0 +1,15 @@
+[
+    {
+        "id":               "1",
+        "username":         "johnonolan",
+        "firstName":        "John",
+        "lastName":         "O'Nolan",
+        "emailAddress":     "john@onolan.org",
+        "profilePicture":   "logo.png",
+        "coverPicture":     "",
+        "bio":              "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
+        "url":              "john.onolan.org",
+        "createdBy":        1,
+        "updatedBy":        1
+    }
+]

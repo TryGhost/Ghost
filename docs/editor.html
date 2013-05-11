@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="en"><head><title>editor</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="editor"><meta name="groc-project-path" content="core/admin/assets/js/editor.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">core/admin/assets/js/editor.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="article-editor">Article Editor</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="cm">/**</span>
+<span class="cm"> *  global window,</span>
+<span class="cm"> *         document,</span>
+<span class="cm"> *         history,</span>
+<span class="cm"> *         jQuery,</span>
+<span class="cm"> *         Showdown,</span>
+<span class="cm"> *         CodeMirror</span>
+<span class="cm"> **/</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">ShowDown</span><span class="p">,</span> <span class="nx">CodeMirror</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="converter-initialisation">Converter Initialisation</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="cm">/**</span>
+<span class="cm">     * @property converter</span>
+<span class="cm">     * @type {ShowDown.converter}</span>
+<span class="cm">     */</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Initialise the Showdown converter for Markdown.
+var delay;</p></div></div><div class="code"><div class="wrapper">    <span class="kd">var</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ShowDown</span><span class="p">.</span><span class="nx">converter</span><span class="p">({</span><span class="nx">extensions</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;ghostdown&#39;</span><span class="p">]}),</span>
+        <span class="nx">editor</span> <span class="o">=</span> <span class="nx">CodeMirror</span><span class="p">.</span><span class="nx">fromTextArea</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;entry-markdown&#39;</span><span class="p">),</span> <span class="p">{</span>
+            <span class="nx">mode</span><span class="o">:</span> <span class="s1">&#39;markdown&#39;</span><span class="p">,</span>
+            <span class="nx">tabMode</span><span class="o">:</span> <span class="s1">&#39;indent&#39;</span><span class="p">,</span>
+            <span class="nx">lineWrapping</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="functions">Functions</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="cm">/**</span>
+<span class="cm">     * @method Update word count</span>
+<span class="cm">     * @todo Really not the best way to do things as it includes Markdown formatting along with words</span>
+<span class="cm">     * @constructor</span>
+<span class="cm">     */</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>This updates the word count on the editor preview panel.</p></div></div><div class="code"><div class="wrapper">    <span class="kd">function</span> <span class="nx">updateWordCount</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">wordCount</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByClassName</span><span class="p">(</span><span class="s1">&#39;entry-word-count&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="nx">editorValue</span> <span class="o">=</span> <span class="nx">editor</span><span class="p">.</span><span class="nx">getValue</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">editorValue</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">wordCount</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">editorValue</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/\S+/g</span><span class="p">).</span><span class="nx">length</span> <span class="o">+</span> <span class="s1">&#39; words&#39;</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @method updatePreview</span>
+<span class="cm">     * @constructor</span>
+<span class="cm">     */</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>This updates the editor preview panel.
+Currently gets called on every key press.
+Also trigger word count update</p></div></div><div class="code"><div class="wrapper">    <span class="kd">function</span> <span class="nx">updatePreview</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">preview</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByClassName</span><span class="p">(</span><span class="s1">&#39;rendered-markdown&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="nx">preview</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">converter</span><span class="p">.</span><span class="nx">makeHtml</span><span class="p">(</span><span class="nx">editor</span><span class="p">.</span><span class="nx">getValue</span><span class="p">());</span>
+
+        <span class="nx">updateWordCount</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @method Save</span>
+<span class="cm">     * @constructor</span>
+<span class="cm">     */</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>This method saves an article.</p></div></div><div class="code"><div class="wrapper">    <span class="kd">function</span> <span class="nx">save</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">entry</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">title</span><span class="o">:</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;entry-title&#39;</span><span class="p">).</span><span class="nx">value</span><span class="p">,</span>
+            <span class="nx">markdown</span><span class="o">:</span> <span class="nx">editor</span><span class="p">.</span><span class="nx">getValue</span><span class="p">()</span>
+        <span class="p">},</span>
+            <span class="nx">urlSegments</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">pathname</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">urlSegments</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;editor&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">urlSegments</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="sr">/^[a-zA-Z0-9]+$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">urlSegments</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="p">{</span>
+            <span class="nx">entry</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">urlSegments</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+            <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+                <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/ghost/articles/edit&#39;</span><span class="p">,</span>
+                <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+                <span class="nx">data</span><span class="o">:</span> <span class="nx">entry</span><span class="p">,</span>
+                <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;response&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+                <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/ghost/articles/create&#39;</span><span class="p">,</span>
+                <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+                <span class="nx">data</span><span class="o">:</span> <span class="nx">entry</span><span class="p">,</span>
+                <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;response&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+                    <span class="nx">history</span><span class="p">.</span><span class="nx">pushState</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;/ghost/editor/&#39;</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="kd">var</span> <span class="nx">errors</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">);</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;FAILED&#39;</span><span class="p">,</span> <span class="nx">errors</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-main-initialisation"> Main Initialisation</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-markdown header, .entry-preview header&#39;</span><span class="p">).</span><span class="nx">click</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-markdown, .entry-preview&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span>
+            <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s1">&#39;section&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span>
+        <span class="p">});</span>
+
+        <span class="nx">editor</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;change&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="c1">//clearTimeout(delay);</span>
+            <span class="c1">//delay = setTimeout(updatePreview, 50);</span>
+            <span class="nx">updatePreview</span><span class="p">();</span>
+        <span class="p">});</span>
+
+        <span class="nx">updatePreview</span><span class="p">();</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.button-save&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">save</span><span class="p">();</span>
+        <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Sync scrolling</p></div></div><div class="code"><div class="wrapper">        <span class="kd">function</span> <span class="nx">syncScroll</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>vars</p></div></div><div class="code"><div class="wrapper">            <span class="kd">var</span> <span class="nx">$codeViewport</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">),</span>
+                <span class="nx">$previewViewport</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-preview-content&#39;</span><span class="p">),</span>
+                <span class="nx">$codeContent</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.CodeMirror-sizer&#39;</span><span class="p">),</span>
+                <span class="nx">$previewContent</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.rendered-markdown&#39;</span><span class="p">),</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>calc position</p></div></div><div class="code"><div class="wrapper">                <span class="nx">codeHeight</span> <span class="o">=</span> <span class="nx">$codeContent</span><span class="p">.</span><span class="nx">height</span><span class="p">()</span> <span class="o">-</span> <span class="nx">$codeViewport</span><span class="p">.</span><span class="nx">height</span><span class="p">(),</span>
+                <span class="nx">previewHeight</span> <span class="o">=</span> <span class="nx">$previewContent</span><span class="p">.</span><span class="nx">height</span><span class="p">()</span> <span class="o">-</span> <span class="nx">$previewViewport</span><span class="p">.</span><span class="nx">height</span><span class="p">(),</span>
+                <span class="nx">ratio</span> <span class="o">=</span> <span class="nx">previewHeight</span> <span class="o">/</span> <span class="nx">codeHeight</span><span class="p">,</span>
+                <span class="nx">previewPostition</span> <span class="o">=</span> <span class="nx">$codeViewport</span><span class="p">.</span><span class="nx">scrollTop</span><span class="p">()</span> <span class="o">*</span> <span class="nx">ratio</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>apply new scroll</p></div></div><div class="code"><div class="wrapper">            <span class="nx">$previewViewport</span><span class="p">.</span><span class="nx">scrollTop</span><span class="p">(</span><span class="nx">previewPostition</span><span class="p">);</span>
+
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: Debounce</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.CodeMirror-scroll&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;scroll&#39;</span><span class="p">,</span> <span class="nx">syncScroll</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Shadow on Markdown if scrolled</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.CodeMirror-scroll&#39;</span><span class="p">).</span><span class="nx">scroll</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.CodeMirror-scroll&#39;</span><span class="p">).</span><span class="nx">scrollTop</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-markdown&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-markdown&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Shadow on Preview if scrolled</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-preview-content&#39;</span><span class="p">).</span><span class="nx">scroll</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-preview-content&#39;</span><span class="p">).</span><span class="nx">scrollTop</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-preview&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-preview&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Zen writing mode</p></div></div><div class="code"><div class="wrapper">        <span class="nx">shortcut</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s2">&quot;Alt+Shift+Z&quot;</span><span class="p">,</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">toggleClass</span><span class="p">(</span><span class="s1">&#39;zen&#39;</span><span class="p">);</span>
+        <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>FAKE IMAGE UPLOADER</p></div></div><div class="code"><div class="wrapper">        <span class="kd">var</span> <span class="nx">$markdown</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.CodeMirror-lines&#39;</span><span class="p">),</span> <span class="c1">// fix me</span>
+            <span class="nx">fakeImagePath</span> <span class="o">=</span> <span class="s1">&#39;/content/images/ghost-dashboard.jpg&#39;</span><span class="p">,</span> <span class="c1">// create me</span>
+            <span class="nx">doFakeUpload</span><span class="p">;</span>
+
+        <span class="nx">doFakeUpload</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">content</span><span class="p">,</span>
+                <span class="nx">imageBlock</span><span class="p">;</span>
+
+            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>replace uploader with image</p></div></div><div class="code"><div class="wrapper">            <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">replaceWith</span><span class="p">(</span><span class="s1">&#39;&lt;img src=&quot;&#39;</span> <span class="o">+</span> <span class="nx">fakeImagePath</span> <span class="o">+</span> <span class="s1">&#39;&quot; /&gt;&#39;</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>insert path into markdown</p></div></div><div class="code"><div class="wrapper">            <span class="nx">content</span> <span class="o">=</span> <span class="nx">$markdown</span><span class="p">.</span><span class="nx">html</span><span class="p">();</span>
+            <span class="nx">imageBlock</span> <span class="o">=</span> <span class="sr">/!image\[[\d\w\s]*\]/</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">content</span><span class="p">);</span>
+            <span class="nx">$markdown</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="nx">content</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">imageBlock</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="nx">imageBlock</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="nx">fakeImagePath</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">));</span>
+        <span class="p">};</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;mouseup&quot;</span><span class="p">,</span> <span class="s2">&quot;.image-uploader&quot;</span><span class="p">,</span> <span class="nx">doFakeUpload</span><span class="p">);</span>
+
+    <span class="p">});</span>
+<span class="p">}(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nx">Showdown</span><span class="p">,</span> <span class="nx">CodeMirror</span><span class="p">));</span></div></div></div></div></body></html>

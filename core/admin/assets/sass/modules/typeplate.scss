@@ -1,0 +1,678 @@
+/*!
++---------------------------------------------------------------------+
+|        _                               _         _                  |
+|       | |_  _   _  _ __    ___  _ __  | |  __ _ | |_  ___           |
+|       | __|| | | || '_ \  / _ \| '_ \ | | / _` || __|/ _ \          |
+|       | |_ | |_| || |_) ||  __/| |_) || || (_| || |_|  __/          |
+|        \__| \__, || .__/  \___|| .__/ |_| \__,_| \__|\___|          |
+|             |___/ |_|          |_|                                  |
+|                                                                     |
+|                                                                     |
+| URL: http://typeplate.com                                           |
+| VERSION: 1.0.0                                                      |
+| Github: https://github.com/typePlate/typeplate.github.com           |
+| AUTHORS: Zachary Kain (@zakkain) & Dennis Gaebel (@gryghostvisuals) |
+| LICENSE: Creative Commmons                                          |
+| http://creativecommons.org/licenses/by/3.0                          |
+|                                                                     |
++---------------------------------------------------------------------+
+*/
+
+
+// ==========================================================================
+//
+// $V a r i a b l e s
+//
+// ==========================================================================
+
+
+// $B a s e  T y p e
+// --------------------------------------------------------------------------
+
+$weight: normal;
+$line-height: 1.65;
+$font-size: 81.2; // percentage value (16 * 112.5% = 18px)
+$font-base: 16 * ($font-size/100); // converts our percentage to a pixel value
+$measure: $font-base * $line-height;
+$font-family: Lato, sans-serif;
+$font-family-serif: serif;
+$font-family-mono: Inconsolata, monospace;
+$font-properties: $weight, $line-height, $font-size, $font-family;
+
+//the serif boolean var can be redeclared from another stylesheet. However
+//the var must be placed after your @import "typeplate.scss";
+$sans-serif-boolean: true !default;
+
+
+// $C o l o r
+// --------------------------------------------------------------------------
+
+$body-copy-color: #444;
+$heading-color: #222;
+
+
+// $A M P E R S A N D  @font-face
+// --------------------------------------------------------------------------
+
+$amp-fontface-name: Ampersand;
+$amp-fontface-source: local('Georgia'), local('Garamond'), local('Palatino'), local('Book Antiqua');
+$amp-fontface-fallback: local('Georgia');
+
+
+// $A M P E R S A N D  e l e m e n t
+// --------------------------------------------------------------------------
+
+// Allows for our ampersand element to have differing
+// font-family from the ampersand unicode font-family.
+$amp-font-family: Verdana, sans-serif;
+
+
+// $T y p e  S c a l e
+// --------------------------------------------------------------------------
+
+$tera: 117;     //  117 = 18 × 6.5
+$giga: 90;      //  90  = 18 × 5
+$mega: 72;      //  72  = 18 × 4
+$alpha: 60;     //  60  = 18 × 3.3333
+$beta: 48;      //  48  = 18 × 2.6667
+$gamma: 36;     //  36  = 18 × 2
+$delta: 24;     //  24  = 18 × 1.3333
+$epsilon: 21;   //  21  = 18 × 1.1667
+$zeta: 18;      //  18  = 18 × 1
+
+
+// $T y p e  S c a l e  U n i t
+// --------------------------------------------------------------------------
+
+$type-scale-unit-value: rem;
+
+
+// $T e x t  I n d e n t a t i o n
+// --------------------------------------------------------------------------
+
+$indent-val: 1.5em;
+
+
+// $S t a t s  T a b
+// --------------------------------------------------------------------------
+
+$stats-font-size: 1.5rem;
+$stats-list-margin: 0 0.625rem 0 0;
+$stats-list-padding: 0 0.625rem 0 0;
+$stats-item-font-size: 0.875rem;
+$stats-item-margin: 0.125rem 0 0 0;
+$stats-border-style: 0.125rem solid #ccc;
+
+
+
+// ==========================================================================
+//
+// $F o n t f a c e s
+//
+// ==========================================================================
+
+
+// $U N I C O D E - R A N G E    A m p e r s a n d
+// --------------------------------------------------------------------------
+
+@font-face {
+    font-family: '#{$amp-fontface-name}';
+    src: $amp-fontface-source;
+    unicode-range: U+0026;
+}
+
+// Ampersand fallback font for unicode range
+@font-face {
+    font-family: '#{$amp-fontface-name}';
+    src: $amp-fontface-fallback;
+    unicode-range: U+270C;
+}
+
+
+
+// ==========================================================================
+//
+// $F u n c t i o n s
+//
+// ==========================================================================
+
+
+// $C o n t e x t    C a l c u l a t o r
+// --------------------------------------------------------------------------
+
+@function ems($target, $context) {
+    @return ($target/$context)#{em};
+}
+
+
+// $M o d u l a r    S c a l e
+// --------------------------------------------------------------------------
+// http://thesassway.com/projects/modular-scale
+
+@function modular-scale($scale, $base, $value) {
+    // divide a given font-size by base font-size & return a relative em value
+    @return ($scale/$base)#{$value};
+}
+
+@function measure-margin($scale, $measure, $value) {
+    // divide 1 unit of measure by given font-size & return a relative em value
+    @return ($measure/$scale)#{$value};
+}
+
+
+
+// ==========================================================================
+//
+// $M i x i n s
+//
+// ==========================================================================
+
+
+// $M o d u l a r    S c a l e
+// --------------------------------------------------------------------------
+
+// $Typographic scale
+@mixin modular-scale($scale, $base, $value, $measure:"") {
+    font-size: $scale#{px};
+    font-size: modular-scale($scale, $base, $value);
+    @if $measure != "" {
+        margin-bottom: measure-margin($scale, $measure, $value);
+    }
+}
+
+
+// $B o d y    C o p y
+// --------------------------------------------------------------------------
+
+@mixin base-type($weight, $line-height, $font-size, $font-family...) {
+    @if $sans-serif-boolean {
+        font: $weight #{$font-size}%/#{$line-height} $font-family;
+    }@else {
+        font: $weight #{$font-size}%/#{$line-height} $font-family-serif;
+    }
+}
+
+
+// $H y p h e n
+// --------------------------------------------------------------------------
+//http://trentwalton.com/2011/09/07/css-hyphenation
+
+@mixin css-hyphens($val) {
+    // Accepted values: [ none | manual | auto ]
+    -webkit-hyphens: $val;  // Safari 5.1 thru 6, iOS 4.2 thru 6
+    -moz-hyphens: $val;     // Firefox 16 thru 20
+    -ms-hyphens: $val;      // IE10
+    hyphens: $val;          // W3C standard
+};
+
+
+// $S m a l l c a p s
+// --------------------------------------------------------------------------
+// http://blog.hypsometry.com/articles/true-small-capitals-with-font-face
+// ISSUE#1 : https://github.com/zakkain/web-thang/issues/1
+
+@mixin smallcaps($color, $font-weight) {
+    // depends on the font family.
+    // some font-families don't support small caps
+    // or don't provide them with their web font.
+    font-variant: small-caps;
+    font-weight: $font-weight;
+    text-transform: lowercase;
+    color: $color;
+}
+
+
+// $F o n t - S i z e  - A d j u s t
+// --------------------------------------------------------------------------
+// correct x-height for fallback fonts: requires secret formula
+// yet to be discovered. This is still wacky for support. Use
+// wisely grasshopper.
+
+@mixin font-size-adjust($adjust-value) {
+    // firefox 17+ only (as of Feb. 2013)
+    font-size-adjust: $adjust-value;
+}
+
+
+// $A m p e r s a n d
+// --------------------------------------------------------------------------
+
+@mixin ampersand($amp-font-family...) {
+    font-family: $amp-font-family;
+}
+
+%ampersand-placeholder {
+    @include ampersand($amp-fontface-name, $amp-font-family);
+}
+
+// Call your ampersand on any element you wish from another stylesheet
+// using this Sass extend we've provided...
+// @extend %ampersand-placeholder;
+
+
+
+// $W o r d    W r a p
+// --------------------------------------------------------------------------
+// Silent Sass Classes - A.K.A Placeholders
+//
+// normal: Indicates that lines may only break at normal word break points.
+// break-word : Indicates that normally unbreakable words may be broken at
+// arbitrary points if there are no otherwise acceptable break points in the line.
+
+%breakword {
+    word-wrap: breakword;
+}
+
+%normal-wrap {
+    word-wrap: normal;
+}
+
+%inherit-wrap {
+    word-wrap: auto;
+}
+
+
+// $D r o p c a p s
+// --------------------------------------------------------------------------
+/**
+ * Dropcap Sass @include
+ * Use the following Sass @include with any selector you feel necessary.
+ *
+    @include dropcap($float: left, $font-size: 4em, $font-family: inherit, $text-indent: 0, $margin: inherit, $padding: inherit, $color: inherit, $lineHeight: 1, $bg: transparent);
+ *
+ * Extend this object into your custom stylesheet.
+ *
+ */
+
+// Include your '@include dropcap()' mixin and pass the following
+// arguments below. Feel free to pass in arguments we've provided.
+// At this time you cannot pass in font-family arguments but you're gonna
+// change that anyway so why not just make that separately in your declaration.
+@mixin dropcap($float: left, $font-size: 4em, $font-family: inherit, $text-indent: 0, $margin: inherit, $padding: inherit, $color: inherit, $lineHeight: 1, $bg: transparent) {
+    &:first-letter {
+        float: $float;
+        margin: $margin;
+        padding: $padding;
+        font-size: $font-size;
+        font-family: $font-family;
+        line-height: $lineHeight;
+        text-indent: $text-indent;
+        background: $bg;
+        color: $color;
+    }
+}
+
+
+// $D e f i n i t i o n    L i s t
+// --------------------------------------------------------------------------
+// lining
+// http://lea.verou.me/2012/02/flexible-multiline-definition-lists-with-2-lines-of-css
+//
+// dictionary-style
+// http://lea.verou.me/2012/02/flexible-multiline-definition-lists-with-2-lines-of-css
+
+@mixin definition-list-style($style) {
+    // lining style
+    @if $style == lining {
+        dt,
+        dd {
+            display: inline;
+            margin: 0;
+        }
+        dt,
+        dd {
+            & + dt {
+                &:before {
+                    content: "\A";
+                    white-space: pre;
+                }
+            }
+        }
+        dd {
+            & + dd {
+                &:before {
+                    content: ", ";
+                }
+            }
+            &:before {
+                    content: ": ";
+                    margin-left: -0.2rem; //removes extra space between the dt and the colon
+            }
+        }
+    }
+    // dictionary-style
+    @if $style == dictionary-style {
+        dt {
+            display: inline;
+            counter-reset: definitions;
+            & + dt {
+                &:before {
+                    content: ", ";
+                    margin-left: -0.2rem; // removes extra space between the dt and the comma
+                }
+            }
+        }
+        dd {
+            display: block;
+            counter-increment: definitions;
+            &:before {
+                content: counter(definitions, decimal) ". ";
+            }
+        }
+    }
+}
+
+
+
+// ==========================================================================
+//
+// $T y p e l a t e  S t y l i n g
+//
+// ==========================================================================
+
+
+// $G l o b a l s
+// --------------------------------------------------------------------------
+
+html {
+    @include base-type($font-properties...);
+}
+
+body {
+    // Ala Trent Walton
+    @include css-hyphens(auto);
+
+    // normal: Indicates that lines may only break at normal word break points.
+    // break-word : Indicates that normally unbreakable words may be broken at ...
+    // arbitrary points if there are no otherwise acceptable break points in the line.
+    @extend %breakword;
+    color: $body-copy-color;
+}
+
+
+// $H e a d i n g s
+// --------------------------------------------------------------------------
+
+// styles for all headings, in the style of @csswizardry
+%hN {
+    // voodoo to enable ligatures and kerning
+    text-rendering: optimizeLegibility;
+    // this fixes huge spaces when a heading wraps onto two lines
+    line-height: 1;
+    margin-top: 0;
+}
+
+// make a multi-dimensional array, where:
+// the first value is the name of the class
+// and the second value is the variable for the size
+$sizes: tera $tera, giga $giga, mega $mega, alpha $alpha, beta $beta, gamma $gamma, delta $delta, epsilon $epsilon, zeta $zeta;
+
+// for each size in the scale, create a class
+@each $size in $sizes {
+    .#{nth($size, 1)} {
+        @include modular-scale(nth($size, 2), $font-base, '#{$type-scale-unit-value}', $measure);
+    }
+}
+
+// associate h1-h6 tags with their appropriate greek heading
+h1 { @extend .alpha; @extend %hN; }
+h2 { @extend .beta; @extend %hN; }
+h3 { @extend .gamma; @extend %hN; }
+h4 { @extend .delta; @extend %hN; }
+h5 { @extend .epsilon; @extend %hN; }
+h6 { @extend .zeta; @extend %hN; }
+
+
+// $ P a r a g r a p h s
+// --------------------------------------------------------------------------
+
+p {
+    & + p {
+        //siblings indentation
+        text-indent: $indent-val;
+    }
+}
+
+
+// $C o d e b l o c k s
+// --------------------------------------------------------------------------
+
+@mixin white-space($wrap-space) {
+    @if $wrap-space == 'pre-wrap' {
+        white-space: #{-moz-}$wrap-space;   // Firefox 1.0-2.0
+        white-space: $wrap-space;           // current browsers
+    } @else {
+        white-space: $wrap-space;
+    }
+}
+
+pre code {
+    @extend %normal-wrap;
+    @include white-space(pre-wrap);
+}
+
+pre {
+    @include white-space(pre);
+}
+
+code {
+    @include white-space(pre);
+    font-family: monospace;
+}
+
+
+// $ S m a l l c a p s
+// --------------------------------------------------------------------------
+
+/**
+ * Abbreviations Markup
+ *
+    <abbr title="hyper text markup language">HMTL</abbr>
+ *
+ * Extend this object into your markup.
+ *
+ */
+abbr {
+    @include smallcaps(gray, 600);
+    &:hover {
+        cursor: help;
+    }
+}
+
+
+// $ H e a d i n g s    C o l o r
+// --------------------------------------------------------------------------
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: $heading-color;
+}
+
+
+// $ D e f i n i t i o n    L i s t s
+// --------------------------------------------------------------------------
+
+/**
+ * Lining Definition Style Markup
+ *
+    <dl class="lining">
+        <dt><b></b></dt>
+        <dd></dd>
+    </dl>
+ *
+ * Extend this object into your markup.
+ *
+ */
+.lining {
+    @include definition-list-style(lining);
+}
+
+/**
+ * Dictionary Definition Style Markup
+ *
+    <dl class="dictionary-style">
+        <dt><b></b></dt>
+            <dd></dd>
+    </dl>
+ *
+ * Extend this object into your markup.
+ *
+ */
+.dictionary-style {
+    @include definition-list-style(dictionary-style);
+}
+
+
+// $S t a t s    T a b
+// --------------------------------------------------------------------------
+
+/**
+ * Stats Tab Markup
+ *
+    <ul class="stats-tabs">
+        <li><a href="#">[value]<b>[name]</b></a></li>
+    </ul>
+ *
+ * Extend this object into your markup.
+ *
+ */
+.stats-tabs {
+    padding: 0;
+    li {
+        display: inline-block;
+        margin: $stats-list-margin;
+        padding: $stats-list-padding;
+        border-right: $stats-border-style;
+        &:last-child {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+        a {
+            display: inline-block;
+            font-size: $stats-font-size;
+            font-weight: bold;
+            b {
+                display: block;
+                margin: $stats-item-margin;
+                font-size: $stats-item-font-size;
+                font-weight: normal;
+            }
+        }
+    }
+}
+
+
+// $Blockquote Cites
+// --------------------------------------------------------------------------
+/**
+ * Blockquote Markup
+ *
+    <blockquote cite="">
+        <p>&Prime;&Prime;</p>
+        <cite>
+            <small><a href=""></a></small>
+        </cite>
+    </blockquote>
+ *
+ * Extend this object into your markup.
+ *
+ */
+
+@mixin cite-style($display:block, $text-align:right, $font-size: .875em) {
+    display: $display;
+    font-size: $font-size;
+    text-align: $text-align;
+}
+
+%cite {
+    @include cite-style;
+}
+
+
+// $Pull Quotes
+// --------------------------------------------------------------------------
+// http://24ways.org/2005/swooshy-curly-quotes-without-images
+//
+// http://todomvc.com - Thanks sindresorhus!
+// https://github.com/typeplate/typeplate.github.com/issues/49
+
+/**
+ * Pull Quotes Markup
+ *
+    <aside class="pull-quote">
+        <blockquote>
+            <p></p>
+        </blockquote>
+    </aside>
+ *
+ * Extend this object into your custom stylesheet.
+ *
+ */
+
+@mixin pull-quotes($font-size, $opacity) {
+    position: relative;
+    padding: ems($font-size, $font-size);
+    &:before,
+    &:after {
+        height: ems($font-size, $font-size);
+        opacity: $opacity;
+        position: absolute;
+        font-size: $font-size;
+    }
+    &:before {
+        content: '“';
+        top:  0em;
+        left: 0em;
+    }
+    &:after {
+        content: '”';
+        bottom: 0em;
+        right: 0em;
+    }
+}
+
+.pull-quote {
+    @include pull-quotes(4em, .15);
+}
+
+
+// $Figures
+// --------------------------------------------------------------------------
+
+/**
+ * Figures Markup
+ *
+    <figure>
+        <figcaption>
+            <strong>Fig. 4.2 | </strong>Type Anatomy, an excerpt from Mark Boulton's book<cite title="http://designingfortheweb.co.uk/book/part3/part3_chapter11.php">"Designing for the Web"</cite>
+        </figcaption>
+    </figure>
+ *
+ * Extend this object into your markup.
+ *
+ */
+
+
+ // $Footnotes
+// --------------------------------------------------------------------------
+
+/**
+ * Footnote Markup : Replace 'X' with your unique number for each footnote
+ *
+    <article>
+        <p><sup><a href="#fn-itemX" id="fn-returnX"></a></sup></p>
+        <footer>
+            <ol class="foot-notes">
+                <li id="fn-itemX"><a href="#fn-returnX">↩</a></li>
+            </ol>
+        </footer>
+    </article>
+ *
+ * Extend this object into your markup.
+ *
+ */

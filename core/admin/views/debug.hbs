@@ -1,0 +1,41 @@
+{{!< default}}
+<main role="main">
+
+  <div class="wrapper">
+    <aside class="settings-sidebar" role="complementary">
+      <header>
+        <h1 class="title">Ugly Debug Tools</h1>
+      </header>
+      <nav class="settings-menu">
+        <ul>
+          <li class="Data management"><a href="#">General</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <section class="settings-content">
+      <header>
+        <h2 class="title">General</h2>
+        <button class="button-save">Save</button>
+      </header>
+      <section class="content">
+        {{> flashes}}
+        <form id="settings-general">
+          <fieldset>
+            <label>
+              <b>Delete Database</b>
+                <a href="/ghost/debug/db/delete/" class="button-delete">Delete</a>
+              <p>Delete the entire database so you can start again with empty tables</p>
+            </label>
+            <label>
+              <b>Populate Database</b>
+              <a href="/ghost/debug/db/populate/" class="button-add">Populate</a>
+              <p>Populate the database with the default fixtures (<strong>Warning: </strong>only works on empty DB)</p>
+            </label>
+          </fieldset>
+
+        </form>
+      </section>
+    </section>
+  </div>
+
+</main>

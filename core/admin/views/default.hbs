@@ -1,0 +1,37 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+    <head>
+        <meta charset="utf-8">
+
+        <title>Ghost</title>
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+
+        <!-- For all browsers -->
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Lato:300,400,700">
+        <link rel="stylesheet" href="/core/admin/assets/css/screen.css">
+
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="logo" type="image/svg" href="/core/admin/assets/images/logo.svg"/>
+        <meta http-equiv="cleartype" content="on">
+
+        <!-- need per file scripts and styles :/ -->
+        <link rel="stylesheet" type="text/css" href="/core/admin/assets/lib/codemirror/codemirror.css"> <!-- TODO: Kill this - #29 -->
+
+        <!-- jQuery is for all so here for now -->
+        <script type="text/javascript" src="/core/admin/assets/lib/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="/core/admin/assets/js/toggle.js"></script>
+        <script type="text/javascript" src="/core/admin/assets/js/admin-ui-temp.js"></script>
+    </head>
+    <body class="{{bodyClass}}">
+        {{> navbar}}
+        {{{body}}}
+    </body>
+</html>

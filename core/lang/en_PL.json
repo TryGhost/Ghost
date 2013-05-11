@@ -1,0 +1,26 @@
+{
+    "__SECTION__": "admin core",
+    "admin.navbar.dashboard": "Ashboarday",
+    "admin.navbar.blog": "Logbay",
+    "admin.navbar.settings": "Ettingsay",
+
+    "__SECTION__": "icons",
+    "icon.category.label": "Ategorycay",
+    "icon.faq.label": "?",
+    "icon.faq.markdown.title": "Atwhay isway Arkdownmay",
+    "icon.full_screen.label": "Ullfay Eenscray",
+    "icon.full_screen.title": "Enterway ullfay eenscrayodemay",
+    "icon.settings.label": "Ettingssay",
+
+    "__SECTION__": "editor",
+    "editor.entry_title.placeholder": "Ethay Ostpay Itletay Etsgay Insertedway Upway Erehay",
+    "editor.entry_permalink.label": "Ermalinkpay:",
+    "editor.entry_permalink.example_url": "http://oursiteyay.omcay/",
+    "editor.entry_permalink.example_slug": "ethay-ostpay-itletay-oesgay-erehay",
+    "editor.headers.markdown.label": "Arkdownmay",
+    "editor.headers.preview.label": "Eviewpray",
+    "editor.word_count": "%{count} ordsway",
+    "editor.actions.save_draft": "Avesay Aftdray",
+    "editor.actions.publish": "Ublishpay"
+
+}

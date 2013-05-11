@@ -1,0 +1,523 @@
+/*
+ * These styles control elements specific to the post editor screen
+ * used for publishing content with Ghost.
+ *
+ * Table of Contents:
+ * 
+ * Editor / Preview
+ * Post Preview Content
+ * Full Screen Mode
+ * Publish Bar
+ */
+
+
+/* =============================================================================
+   Editor / Preview
+   ============================================================================= */
+
+.editor {
+	
+	// The main post title
+	.entry-title {
+		@extend %box;
+		height: 35px;
+		padding: 10px 15px;
+		margin-bottom: 15px;
+		position:relative;
+
+		@include breakpoint($mobile) {
+			@include box-shadow(none);
+		}
+
+		input {
+			border: 0;
+			margin: 0;
+			padding:0;
+			font-size: 2em;
+			font-weight: 300;
+			width: 100%;
+			&:focus {
+				outline: 0;
+			}
+		}
+
+	}
+	
+	// The two content panel wrappers, positioned left/right
+	.entry-markdown { left:0; border-right:$lightbrown 2px solid; }
+	.entry-preview { right:0; border-left:$lightbrown 2px solid; }
+	
+	// The visual styles for both panels
+	.entry-markdown, .entry-preview {
+		@include box-sizing(border-box);
+		width: 50%;
+		padding: 15px;
+		position: absolute;
+		bottom:40px; // height of the publish bar
+		top:69px; // height of the post title + margin
+		background: #fff;
+		@include box-shadow;
+
+		@include breakpoint($mobile) {
+			@include box-shadow(none);
+		}
+		
+		// Convert all content areas to small boxes
+		@include breakpoint($netbook) {
+			top:109px;
+			left:0;
+			right:0;
+			width:100%;
+			border:none;
+			z-index:100;
+			min-height:380px;
+			.markdown, .entry-preview-content {
+				height:50px;
+				overflow: hidden;
+			}
+		}
+		
+		.floatingheader {
+
+			// Turn headers into tabs which act as links
+			// both headers set to grey/inactive colour
+			@include breakpoint($netbook) {
+			    cursor:pointer;
+			    width:50%;
+			    border-right:$lightbrown 2px solid;
+			    color:#fff;
+			    font-weight: normal;
+			    background:$brown;
+			    position:absolute;
+			    top:-40px;
+			    left:0;
+			    @include box-shadow(rgba(0,0,0,0.1) 0 -2px 3px inset);
+
+			    a {
+			        color:#fff;
+			    }
+			}
+
+			a {
+			    color: $brown;
+			}
+
+			.markdown-help {
+			    @include icon($i-question, '', lighten($brown, 15%));
+			    float:right;
+
+			    &:hover {
+			        @include icon($i-question, '', $brown)
+			    }
+			}
+
+			.entry-word-count {
+			    float:right;
+			}
+
+		}
+		
+		// Give the tab with the .active class the highest z-index
+		&.active {
+			z-index: 200;
+		}
+		
+		// Restore the normal height of the .active tab (inactive tab stays small, hidden behind)
+		&.active .markdown,
+		&.active .entry-preview-content {
+			height:auto;
+			overflow: auto;
+		}
+		
+		// Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
+		&.active header {
+			@include breakpoint($netbook) {
+				cursor:auto;
+				color: $brown;
+				background:#fff;
+				@include box-shadow(none);
+				a {
+					color: $brown;
+				}
+			}
+		}
+		
+		// Hide markdown icon + wordcount when we hit mobile
+		@include breakpoint($mobile) {
+			.markdown-help,
+			.entry-word-count {
+				display: none;
+			}
+		}
+
+	}
+
+	.entry-markdown-content {
+
+		textarea {
+			border: 0;
+			width: 100%;
+			height: 100%;
+			max-width: 100%;
+			margin: 0;
+			padding: 0;
+			position:absolute;
+			top: 0;
+			right:0;
+			bottom:0;
+			left:0;
+			
+			&:focus {
+				outline: 0;
+			}
+		}
+
+		.CodeMirror {
+			height: auto;
+			position:absolute;
+			top:0;
+			left:0;
+			right:0;
+			bottom:0;
+			font-family: $font-family-mono;
+			font-size:1.1em;
+			line-height:1.2em;
+			color: lighten($darkgrey, 30%);
+			
+			.CodeMirror-focused,
+			.CodeMirror-selected {
+			    color: $darkgrey;
+			    background: lighten($blue, 20%);
+			    text-shadow: none;
+			}
+
+			::selection {
+			    color: $darkgrey;
+			    background: lighten($blue, 20%);
+			    text-shadow: none;
+			}
+		}
+
+		.CodeMirror-lines {
+			padding: 65px 0 40px 0; /* Vertical padding around content */
+			@include breakpoint($netbook) {padding-top: 25px;}
+			@include breakpoint($mobile) {padding: 15px 0;}
+		}
+		.CodeMirror pre {
+		 	padding: 0 40px; /* Horizontal padding of content */
+		 	@include breakpoint($mobile) {padding: 0 15px;}
+		}
+
+		.cm-header {
+			color:#000;
+			font-size: 1.4em;
+			line-height: 1.4em;
+		}
+
+		.cm-string,
+		.cm-link,
+		.cm-comment,
+		.cm-quote {color:#000;}
+
+	}
+	
+	.entry-preview {
+		// Align the tab of entry-preview on the right
+		.floatingheader {
+			@include breakpoint($netbook) {
+				right:0;
+				left:auto;
+				border-right:none;
+				border-left:$lightbrown 2px solid;
+			}
+		}
+
+		.entry-preview-content {
+			position:absolute;
+			top:0;
+			right:0;
+			bottom:0;
+			left:0;
+			padding: 60px 40px 40px 40px;
+			overflow: auto;
+			
+			// Tweak padding for smaller screens
+			@include breakpoint($netbook) {padding-top: 20px;}
+			@include breakpoint($mobile) {padding: 15px;}
+		}
+
+	}
+
+	// Special case, when scrolling, add shadows to content headers.
+	.scrolling {
+
+		.floatingheader {
+			@include breakpoint($netbook) {
+	            @include box-shadow(none);
+	        }
+
+	        &::before,
+	        &::after {
+	        	@include breakpoint($netbook) {display:none;}
+	        }
+		}
+		.CodeMirror-scroll,
+		.entry-preview-content {
+			@include breakpoint($netbook) {
+				@include box-shadow(0 5px 5px rgba(0,0,0,0.05) inset);
+			}
+		}
+	}
+	
+}//.editor
+
+
+/* =============================================================================
+   Post Preview Content
+   ============================================================================= */
+
+// The styles for the actual content inside the preview
+// TODO: These should just be defaults, overridden by editor.hbs in theme dir
+.entry-preview-content,
+.content-preview-content {
+	font-size:1.15em;
+	line-height: 1.5em;
+
+	a {
+		color: $blue;
+		text-decoration: underline;
+	}
+	p {
+		text-indent: 0;
+		margin: 1.2em 0 1.6em;
+		&:first-child {
+			margin-top:0;
+		}
+	}
+	h1 {
+		font-size: 3em;
+	}
+	h2 {
+		font-size: 2.2em;
+	}
+	h3 {
+		font-size: 1.8em;
+	}
+	.btn {
+		text-decoration: none;
+		color: $grey;
+	}
+	.img-placeholder {
+		border: 5px dashed $grey;
+		height: 100px;
+		position: relative;
+		span {
+			display: block;
+			height: 30px;
+			position: absolute;
+			margin-top: -15px;
+			top: 50%;
+			width: 100%;
+			text-align: center;
+		}
+	}
+
+	img {
+		width: 100%; 
+		height: auto;
+	}
+}
+
+
+/* =============================================================================
+   Full Screen Mode
+   ============================================================================= */
+
+body.zen {
+	background: lighten($lightbrown, 3%);
+	#usermenu {display:none;}
+	#global-header, #publish-bar {
+		@include opacity(0);
+		height:0;
+		overflow: hidden;
+		@include transition(all 0.5s ease-out);
+	}
+	
+	main {top: 15px;@include transition(all 0.5s ease-out);}
+	.entry-markdown, .entry-preview {bottom:0;@include transition(all 0.5s ease-out);}
+
+}
+
+
+/* =============================================================================
+   Publish Bar
+   ============================================================================= */
+
+#publish-bar {
+	@include box-sizing(border-box);
+	height:40px;
+	padding: 0;
+	color: $midgrey;
+	background: darken($darkgrey, 4%);
+	position: fixed;
+	bottom: 0;
+	left:0;
+	right:0;
+	z-index:900;
+	@include box-shadow(0 -2px 8px rgba(0,0,0,0.2));
+
+	@include breakpoint($netbook) {font-weight:normal;}
+
+	button {
+		min-height: 30px;
+		height: 30px;
+		line-height: 12px;
+		padding: 0 10px;
+		margin-top: 5px;
+		border-top:rgba(255,255,255,0.4) 1px solid;
+	}
+
+	.button-link { border-top: none; }
+
+	.options {
+		width:30px;
+		min-height: 30px;
+		height: 30px;
+		margin-top:5px;
+		@include box-shadow(rgba(255,255,255,0.4) 0 1px 0 inset);
+
+		&.up:hover {
+            @include icon($i-chevron-down) {
+                margin-top:-5px;
+                @include transform(rotate(540deg));
+                @include transition(transform 0.6s ease);
+            };
+        }
+	}
+	
+	.splitbutton-save{
+		.button-save{
+			@include transition(width 0.25s ease);
+		}
+
+		.editor-options{
+			@extend %menu;
+	    	@extend %menu-right;
+	    	bottom: 140%;
+	    	right: -3%;
+
+	    	a{
+	    		font-size: 14px;
+	    	}
+		}
+	}
+}
+
+#entry-categories {
+	position: absolute;
+	top:0;
+	left:0;
+	right: 165px;
+	bottom:0;
+	text-transform: none;
+	padding: 10px 0 0 0;
+}
+
+.category-label {
+	display: block;
+	float:left;
+	@include icon($i-tag);
+	padding:1px 8px 0 8px;
+	@include transition;
+
+	&:hover {
+		cursor:pointer;
+		color: $lightgrey;
+	}
+}
+
+.category-input {
+	display: inline-block;
+	color: $lightgrey;
+	font-weight: 300;
+	background: transparent;
+	border: none;
+
+	&:focus {outline:none;}
+}
+
+.category {
+	@include icon-after($i-x, 8px, $darkgrey) {
+		margin-left:4px;
+		vertical-align:5%;
+		text-shadow: rgba(255,255,255,0.15) 0 1px 0;
+		@include transition;
+	}
+	display: block;
+	float: left;
+	margin-right: 5px;
+	padding: 0 5px;
+	color: $lightgrey; 
+	background: lighten($grey, 15%);
+	@include border-radius;
+	@include box-shadow(
+		rgba(255,255,255,0.2) 0 1px 0 inset,
+		#000 0 1px 3px
+	);
+
+	&:hover {
+		cursor: pointer;
+		@include icon-after($i-x, 8px, $lightgrey) {text-shadow: none;}
+
+	}
+}
+
+.suggestions {
+  @extend %menu;
+  bottom: 100%;
+
+  li.selected{
+    background: $blue;
+    @include box-shadow(
+        rgba(255,255,255,0.2) 0 1px 0 inset,
+        rgba(0,0,0,0.5) 0 1px 5px
+    );
+  }
+
+  mark{
+    background: none;
+    color: white;
+    font-weight: bold;
+  }
+}
+
+#entry-settings {
+	@include icon($i-settings, 1.1em){vertical-align:0;};
+	@include box-sizing(border-box);
+	display:inline-block;
+	padding: 0 10px;	
+	line-height: 1.8em;
+	color: $midgrey;
+	@include transition;
+
+	&:hover {
+		color: $lightgrey;
+	}
+}
+
+#entry-settings-menu {
+	position: absolute;
+    bottom:50px;
+    right:-5px;
+}
+
+#entry-actions {
+	margin-right:6px;
+	position: relative;
+}
+
+#entry-actions-menu {
+    position: absolute;
+    bottom:50px;
+    right:-5px;
+}

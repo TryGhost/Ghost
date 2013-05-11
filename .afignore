@@ -1,0 +1,24 @@
+#ignore database
+b-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids
+logs
+results
+
+npm-debug.log
+
+.idea/*
+*.iml
+projectFilesBackup
+
+.DS_Store
+
+# Ghost DB file
+ghost/data/*.db

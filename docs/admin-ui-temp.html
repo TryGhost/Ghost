@@ -1,0 +1,195 @@
+<!DOCTYPE html><html lang="en"><head><title>admin-ui-temp</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="admin-ui-temp"><meta name="groc-project-path" content="core/admin/assets/js/admin-ui-temp.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">core/admin/assets/js/admin-ui-temp.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="temporary-admin-ui">Temporary Admin UI</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="cm">/**</span>
+<span class="cm"> * globals document,</span>
+<span class="cm"> *         jQuery</span>
+<span class="cm"> **/</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="cm">/**</span>
+<span class="cm">         * Allows to check contents of each element exactly</span>
+<span class="cm">         * @param obj</span>
+<span class="cm">         * @param index</span>
+<span class="cm">         * @param meta</span>
+<span class="cm">         * @param stack</span>
+<span class="cm">         * @returns {boolean}</span>
+<span class="cm">         */</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nx">expr</span><span class="p">[</span><span class="s2">&quot;:&quot;</span><span class="p">].</span><span class="nx">containsExact</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">meta</span><span class="p">,</span> <span class="nx">stack</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">||</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">||</span> <span class="nx">$</span><span class="p">(</span><span class="nx">obj</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span> <span class="o">||</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="nx">meta</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+        <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>EDITOR / NOTIFICATIONS</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-content header, .entry-preview header&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-content, .entry-preview&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span>
+            <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s1">&#39;section&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.entry-title .icon-fullscreen&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">toggleClass</span><span class="p">(</span><span class="s1">&#39;fullscreen&#39;</span><span class="p">);</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list-content li&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">);</span>
+            <span class="kd">var</span> <span class="nx">$target</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">),</span>
+                <span class="nx">$preview</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-preview&#39;</span><span class="p">);</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list-content li&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span>
+            <span class="nx">$target</span><span class="p">.</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><hr />
+
+<p>this means a <em>lot</em> of extra gumpf is in the DOM and should really be done with AJAX when we have proper
+data API endpoints
+ideally, we need a way to bind data to views properly... backbone marionette, angular, etc</p>
+
+<hr /></div></div><div class="code"><div class="wrapper">            <span class="c1">//</span>
+            <span class="cm">/**</span>
+<span class="cm">             * @todo Remove gumpf</span>
+<span class="cm">             */</span>
+            <span class="nx">$preview</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.content-preview-content .wrapper&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;content&#39;</span><span class="p">));</span>
+            <span class="nx">$preview</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.post-controls .post-edit&#39;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">,</span> <span class="s1">&#39;/ghost/editor/&#39;</span> <span class="o">+</span> <span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">));</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.options.up&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">next</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">).</span><span class="nx">fadeToggle</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.editor-options&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;li&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.button-save&#39;</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;data-state&#39;</span><span class="p">,</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)).</span><span class="nx">text</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">text</span><span class="p">());</span>
+        <span class="p">});</span>
+        <span class="cm">/** Tag Selector UI **/</span>
+        <span class="kd">var</span> <span class="nx">existingTags</span> <span class="o">=</span>  <span class="p">[</span>
+                                <span class="s1">&#39;quim&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;quimtastic&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;quimmy&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;quimlord&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;joaquim pheonix&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;quimcy jones&#39;</span>
+                            <span class="p">];</span>
+        <span class="kd">var</span> <span class="nx">suggestions</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;ul.suggestions&quot;</span><span class="p">).</span><span class="nx">hide</span><span class="p">();</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-input&#39;</span><span class="p">).</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">categoryOffset</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-input&#39;</span><span class="p">).</span><span class="nx">offset</span><span class="p">().</span><span class="nx">left</span><span class="p">;</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-blocks&#39;</span><span class="p">).</span><span class="nx">css</span><span class="p">({</span><span class="s1">&#39;left&#39;</span><span class="o">:</span><span class="nx">categoryOffset</span> <span class="o">+</span> <span class="s1">&#39;px&#39;</span><span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="kd">function</span> <span class="nx">findTerms</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">,</span> <span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">searchTerm</span> <span class="o">=</span> <span class="nx">searchTerm</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+            <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">){</span>
+                <span class="kd">var</span> <span class="nx">match</span> <span class="o">=</span> <span class="nx">item</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+                <span class="k">return</span> <span class="nx">match</span> <span class="o">?</span> <span class="nx">item</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-input-behaviour=&quot;tag&quot;]&#39;</span><span class="p">).</span><span class="nx">keyup</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+            <span class="kd">var</span> <span class="nx">searchTerm</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">trim</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">val</span><span class="p">()).</span><span class="nx">toLowerCase</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span> <span class="mi">38</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">)){</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+                        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s2">&quot;li:last-child&quot;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="k">else</span><span class="p">{</span>
+                        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">).</span><span class="nx">prev</span><span class="p">().</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+            <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span> <span class="mi">40</span><span class="p">){</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">)){</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+                        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s2">&quot;li:first-child&quot;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="k">else</span><span class="p">{</span>
+                        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">).</span><span class="nx">next</span><span class="p">().</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+            <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span>  <span class="mi">27</span><span class="p">){</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+            <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">((</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span> <span class="mi">13</span> <span class="o">||</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span> <span class="mi">188</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">searchTerm</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//enter or comma key</span>
+                <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+
+                    <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category:containsExact(&quot;&#39;</span><span class="o">+</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;&quot;)&#39;</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+
+                        <span class="kd">var</span> <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span><span class="o">+</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">);</span>
+                        <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">)){</span>
+
+                            <span class="kd">var</span> <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                            <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+                <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category:containsExact(&quot;&#39;</span><span class="o">+</span><span class="nx">searchTerm</span><span class="o">+</span><span class="s1">&#39;&quot;)&#39;</span><span class="p">).</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+                        <span class="kd">var</span> <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span><span class="o">+</span><span class="nx">searchTerm</span><span class="o">+</span><span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">);</span>
+                        <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">)){</span>
+                            <span class="kd">var</span> <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                            <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">focus</span><span class="p">();</span>
+            <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">!=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//not deleting</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">){</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">show</span><span class="p">();</span>
+                <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="nx">findTerms</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">,</span> <span class="nx">existingTags</span><span class="p">);</span>
+
+                <span class="kd">var</span> <span class="nx">pos</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">position</span><span class="p">();</span>
+                <span class="kd">var</span> <span class="nx">styles</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="nx">left</span> <span class="o">:</span> <span class="nx">pos</span><span class="p">.</span><span class="nx">left</span>
+                <span class="p">};</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="nx">styles</span><span class="p">);</span>
+
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">);</span>
+                <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">results</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;&lt;li&gt;&lt;a href=&#39;#&#39;&gt;&quot;</span><span class="o">+</span><span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;&lt;/a&gt;&lt;/li&gt;&quot;</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="kd">var</span> <span class="nx">suggest</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;ul.suggestions li a:contains(&quot;&#39;</span> <span class="o">+</span> <span class="nx">searchTerm</span><span class="o">+</span> <span class="s1">&#39;&quot;)&#39;</span><span class="p">);</span>
+
+                <span class="nx">suggest</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+                    <span class="kd">var</span> <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">html</span><span class="p">();</span>
+
+                    <span class="kd">var</span> <span class="nx">term</span> <span class="o">=</span> <span class="nx">searchTerm</span><span class="p">;</span>
+
+                    <span class="nx">term</span> <span class="o">=</span> <span class="nx">term</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/(\s+)/</span><span class="p">,</span><span class="s2">&quot;(&lt;[^&gt;]+&gt;)*$1(&lt;[^&gt;]+&gt;)*&quot;</span><span class="p">);</span>
+                    <span class="kd">var</span> <span class="nx">pattern</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="o">+</span><span class="nx">term</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">);</span>
+
+                    <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">src_str</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">pattern</span><span class="p">,</span> <span class="s2">&quot;&lt;mark&gt;$1&lt;/mark&gt;&quot;</span><span class="p">);</span>
+                    <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">src_str</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/(&lt;mark&gt;[^&lt;&gt;]*)((&lt;[^&gt;]+&gt;)+)([^&lt;&gt;]*&lt;\/mark&gt;)/</span><span class="p">,</span><span class="s2">&quot;$1&lt;/mark&gt;$2&lt;mark&gt;$4&quot;</span><span class="p">);</span>
+
+                    <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">src_str</span><span class="p">);</span>
+                <span class="p">});</span>
+            <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+            <span class="p">}</span>
+
+        <span class="p">}).</span><span class="nx">keydown</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Delete character tiggers on Keydown, so needed to check on that event rather than Keyup.</p></div></div><div class="code"><div class="wrapper">            <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">==</span> <span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">val</span><span class="p">())</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                <span class="kd">var</span> <span class="nx">lastBlock</span> <span class="o">=</span> <span class="nx">populator</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.category&#39;</span><span class="p">).</span><span class="nx">last</span><span class="p">();</span>
+                <span class="nx">lastBlock</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;ul.suggestions&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s2">&quot;li&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+            <span class="kd">var</span> <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span><span class="o">+</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">parent</span><span class="p">().</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">)){</span>
+                <span class="kd">var</span> <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">parent</span><span class="p">().</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-input-behaviour=&quot;tag&quot;]&#39;</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">focus</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.categories&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s2">&quot;.category&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
+        <span class="p">});</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-off-canvas]&#39;</span><span class="p">).</span><span class="nx">click</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">matchMedia</span><span class="p">(</span><span class="s1">&#39;max-width: 650px&#39;</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">toggleClass</span><span class="p">(</span><span class="s1">&#39;off-canvas&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+
+    <span class="p">});</span>
+<span class="p">}(</span><span class="nx">jQuery</span><span class="p">));</span></div></div></div></div></body></html>

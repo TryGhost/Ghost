@@ -1,0 +1,171 @@
+{{!< default}}
+<main role="main">
+
+  <div class="wrapper">
+    <aside class="settings-sidebar" role="complementary">
+      <header>
+        <h1 class="title">Settings</h1>
+      </header>
+      <nav class="settings-menu">
+        <ul>
+          <li class="general active"><a href="#general">General</a></li>
+          <li class="publishing"><a href="#content">Content</a></li>
+          <li class="users"><a href="#users">Users</a></li>
+          <li class="appearance"><a href="#">Appearance</a></li>
+          <li class="services"><a href="#">Connected Services</a></li>
+          <li class="plugins"><a href="#">Plugins</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <section id="general" class="settings-content active">
+      <header>
+        <h2 class="title">General</h2>
+        <section class="page-actions">
+          <button class="button-save">Save</button>
+        </section>
+      </header>
+      <section class="content">
+        <form id="settings-general">
+          <fieldset>
+            <label>
+              <b>Blog Title</b>
+              <input id="blog-title" type="text" value="John O'Nolan" />
+              <p>How your blog name appears on the site</p>
+            </label>
+
+            <label>
+              <b>Blog Logo</b>
+              <img src="/core/admin/assets/img/logo.png" alt="logo" height"38" width="381"/>
+              <p>Display a logo on your site in place of blog title</p>
+            </label>
+
+            <label>
+              <b>Blog Icon</b>
+              <img src="/core/admin/assets/img/test-icon.png" alt="logo" height"38" width="38"/>
+              <p>The icon for your blog, used in your browser tab and elsewhere</p>
+            </label>
+
+            <label>
+              <b>Email Address</b>
+              <input id="email-address" type="text" value="john@tryghost.org" />
+              <p>Address to use for <a href="#">admin notifications</a></p>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Show my email address on my public profile
+              </label>
+            </label>
+
+            <label>
+              <b>URL Structure</b>
+              <select id="url-structure" name="general[urlstructure]">
+                <option value="post-name">Simple Post Name</option>
+                <option value="date-based">Date Based</option>
+                <option value="number based">Number Based</option>
+                <option value="custom">Custom...</option>
+              </select>
+            </label>
+
+          </fieldset>
+
+          <hr />
+
+          <fieldset>
+
+            <label>
+              <b>Time Zone</b>
+              <select id="url-structure" name="general[timezone]">
+                <option value="1">Vienna (UTC+1)</option>
+              </select>
+            </label>
+
+          </fieldset>
+
+
+        </form>
+      </section>
+    </section>
+    <section id="content" class="settings-content">
+      <header>
+        <h2 class="title">Content</h2>
+        <section class="page-actions">
+          <button class="button-save">Save</button>
+        </section>
+      </header>
+      <section class="content">
+        <form id="settings-general">
+          <fieldset>
+            <label>
+              <b>Typography</b>
+              <select id="url-structure" name="general[urlstructure]">
+                <option value="post-name">Lato (Light)</option>
+              </select>
+              <p>Sexy sans-serif font that will make your toes tickle.</p>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Load fonts directly from Google
+              </label>
+            </label>
+
+            <label>
+              <b>Post Options</b>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Display Post Meta
+                <p>Post Author / Date / Views</p>
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Show Author Box After Post
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Enable Comments
+              </label>
+            </label>
+
+          </fieldset>
+
+          <hr />
+
+          <fieldset>
+
+            <label>
+              <b>SEO Title Pattern</b>
+              <input id="blog-title" type="text" value="[Post Name] - [Site Title]" />
+              <p>The pattern used to display your title tags</p>
+            </label>
+
+            <label>
+              <b>SEO Description Pattern</b>
+              <input id="blog-title" type="text" value="Auto" />
+              <p>The pattern used to display your meta descriptions</p>
+            </label>
+
+            <label>
+              <b>Google+</b>
+              <label class="checkbox">
+                <input type="checkbox" value="1" /> Connect to author profile on Google
+              </label>
+            </label>
+
+            <label>
+              <b>Home Page Description</b>
+              <textarea></textarea>
+              <p>Display a logo on your site in place of blog title</p>
+            </label>
+
+          </fieldset>
+
+        </form>
+      </section>
+    </section>
+    <section id="users" class="settings-content">
+      <header>
+        <h2 class="title">Users</h2>
+        <section class="page-actions">
+          <button class="button-add">Add User</button>
+        </section>
+      </header>
+      <section class="content">
+        <img src="/core/admin/assets/img/users.png" alt="users" style="width:900px;height:auto" />
+      </section>
+    </section>
+  </div>
+
+</main>
+<script src="/core/admin/assets/js/settings.js"></script>

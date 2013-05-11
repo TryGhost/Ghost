@@ -1,0 +1,138 @@
+/*
+ * These styles control elements specific to the Ghost admin login screen.
+ *
+ * Table of Contents:
+ * 
+ *
+ */
+
+/* =============================================================================
+   Login
+   ============================================================================= */
+
+.ghost-login {
+    color: $midgrey;
+
+    @include breakpoint($mobile) {
+        background: $lightbrown;
+    }
+
+    main {
+        max-width: 530px;
+        margin: 240px auto;
+        padding: 0;
+        text-align: center;
+        background: #fff;
+        @include border-radius(4px);
+        border-top: $darkgrey 15px solid;
+        @include box-shadow;
+
+        @include breakpoint(630px) {
+            max-width: 264px;
+        }
+    }
+
+    .login-logo {
+        width: 100%;
+        max-width: 400px;
+        margin: 80px 0 70px 0;
+
+        @include breakpoint(630px) {
+            max-width: 235px;
+            margin: 40px 0;
+        }
+    }
+
+    #login {
+        @include box-sizing(border-box);
+        max-width: 530px;
+        padding: 15px;
+        background: $darkgrey;
+        @include border-radius(0 0 4px 4px);
+
+        @include breakpoint(630px) {
+            max-width: 264px;
+            padding: 15px;
+        }
+
+        div {
+            position:relative;
+            margin:0 0 5px 0;
+            background: lighten($darkgrey, 15%);
+            float: left;
+        }
+
+        input {
+            display:inline-block;
+            clear:both;
+            margin:0;
+            padding-left: 8px;
+            width: 168px;
+            position: relative;
+            border: none;
+            color: #fff;
+            font-size: 1.1em;
+            background: transparent;
+            @include transition(none);
+
+            &:focus {
+                background: lighten($darkgrey, 22%);
+                border-color: #000;
+            }
+
+            @include breakpoint(630px) {
+                width:201px;
+                @include transition(none);
+            }
+
+        }
+
+        .email-wrap {
+            position:relative;
+            @include icon($i-mail, 12px) {position:absolute;bottom:8px;left:8px;z-index:100;};
+            margin-right: 2px;
+            @include border-radius(2px 0 0 2px);
+
+            @include breakpoint(630px) {
+                margin-right:0;
+                @include border-radius(2px);
+            }
+
+            .email {
+                padding-left: 28px;
+            }
+        }
+
+        .password-wrap {
+            position:relative;
+            @include icon($i-lock, 10px) {position:absolute;bottom:9px;left:11px;z-index:100;};
+            @include border-radius(0 2px 2px 0);
+
+            @include breakpoint(630px) {
+                @include border-radius(2px);
+            }
+
+            .password {
+                padding-left: 28px;
+            }
+
+        }
+    
+        button {
+            width: 80px;
+            height: 30px;
+            margin:0 0 0 15px;
+            padding: 9px;
+            min-height: 30px;
+            min-width: 80px;
+            @include box-shadow(rgba(255,255,255,0.15) 0 1px 0 inset);
+
+            @include breakpoint(630px) {
+                margin:0;
+                width: 100%;
+            }
+        }
+
+    }
+}//.ghost-login
+

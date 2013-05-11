@@ -1,0 +1,27 @@
+<div id="flashed"></div>
+{{#if messages}}
+    {{#each messages.error}}
+        <section class="notification-error">
+          {{.}}
+          <a class="close" href="#"><span class="hidden">Close</span></a>
+        </section>
+    {{/each}}
+    {{#each messages.success}}
+        <section class="notification-success">
+            {{.}}
+            <a class="close" href="#"><span class="hidden">Close</span></a>
+        </section>
+    {{/each}}
+    {{#each messages.warn}}
+        <section class="notification-alert">
+            {{.}}
+            <a class="close" href="#"><span class="hidden">Close</span></a>
+        </section>
+    {{/each}}
+    {{#each messages.info}}
+        <section class="notification">
+            {{.}}
+            <a class="close" href="#"><span class="hidden">Close</span></a>
+        </section>
+    {{/each}}
+{{/if}}
