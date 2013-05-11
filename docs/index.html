@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">README.md</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="ghost-prototype-project">Ghost Prototype Project</h1>
+
+<p>An attempt at piecing together components for building dynamic, customisable features into the platform. This project should result in enough work to get us to the video. At which point it is envisaged that we would move to the proper Ghost repo, with some restructure/refactoring such as -  better file and folder naming, moving Casper into a separate, but linked repo, fixing architectural errors etc.</p>
+
+<h3 id="to-install">To Install:</h3>
+
+<ol>
+<li>Clone the git repo</li>
+<li>cd into the project folder and run "npm install".
+<ul><li>If the install fails with errors to do with "node-gyp rebuild", follow the Sqlite3 install instructions</li></ul></li>
+<li>That is all.</li>
+</ol>
+
+<p>Frontend can be located at <a href="localhost:3333">localhost:3333</a>, Admin is at <a href="localhost:3333/ghost">localhost:3333/ghost</a></p>
+
+<h4 id="sqlite3-install-instructions">Sqlite3 Install Instructions</h4>
+
+<p>Ghost depends upon sqlite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.</p>
+
+<p>However, if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled sqlite3 package for your OS.</p>
+
+<p>I have created some of these, and they can be obtained from <a href="https://github.com/developmentseed/node-sqlite3/issues/106">github</a>.</p>
+
+<p>The pre-compiled package should be downloaded, extracted and placed in the node_modules folder, such that it lives in node_modules/sqlite3, if you have a partial install of the sqlite3 package, replace it with the files you downloaded from github. Be sure that all the sqlite3 files and folders live directly in node_modules/sqlite3 - there should note be a node_modules/sqlite3/sqlite3 folder.</p>
+
+<h3 id="dependencies">Dependencies:</h3>
+
+<ul>
+<li>express.js framework</li>
+<li>handlebars for templating</li>
+<li>standard css for frontend</li>
+<li>sass for admin (pre-compiled)</li>
+<li>moment.js for time / date manipulation</li>
+<li>underscore for object &amp; array utils</li>
+<li>showdown for converting markdown to HTML</li>
+<li>nodeunit for unit testing</li>
+<li>sqlite3 for a database</li>
+<li>jugglingdb ORM for interacting with the database</li>
+</ul>
+
+<h4 id="frontend-libraries">Frontend libraries:</h4>
+
+<ul>
+<li>jQuery 1.9.1</li>
+<li>showdown for converting markdown to HTML</li>
+<li>codemirror editor</li>
+</ul>
+
+<h3 id="working-features">Working features:</h3>
+
+<ul>
+<li>Dashboard
+<ul><li>new post link</li></ul></li>
+<li>Admin menu
+<ul><li>G, dashboard, content, new post &amp; settings menu items go to correct pages</li></ul></li>
+<li>Content screen
+<ul><li>Lists all posts with correct titles (incorrect time etc)</li>
+<li>Select post in list highlights that post and opens it in the preview pane</li></ul></li>
+<li>Write screen
+<ul><li>Live preview works for all standard markdown</li>
+<li>Save draft button saves entered title &amp; content. Everything is published by default.</li>
+<li>Editing/opening existing post puts correct info in title and content panels &amp; save updates content.</li></ul></li>
+<li>Database
+<ul><li>The database is created and populated with basic data on first run of the server</li>
+<li>New posts and edits save and last forever</li>
+<li>The data can be reset by opening data/datastore.db and emptying the file. The next restart of the server will cause the database to be recreated and repopulated.</li></ul></li>
+</ul>
+
+<h3 id="front-end-work">Front End Work</h3>
+
+<p>A SASS compiler is required to work with the CSS in this project. We suggest <a href="http://incident57.com/codekit/">CodeKit</a> (Paid/Mac) and <a href="http://mhs.github.io/scout-app/">Scout</a> (Free/Mac/PC).</p></div></div></div></div></body></html>

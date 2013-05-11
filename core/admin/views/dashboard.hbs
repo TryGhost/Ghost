@@ -1,0 +1,254 @@
+{{!< default}}
+<main role="main">
+
+<div class="time widget"></div>
+<div class="image widget"></div>
+<div class="posts widget none">
+  <div class="chart">
+    <canvas id="poststats" width="250" height="250"></canvas>
+    <ul class="data">
+      <li><span class="ready">9</span> Ready</li>
+      <li><span class="pending">4</span> Pending</li>
+      <li><span class="draft">1</span> Draft</li>
+    </ul>
+  </div>
+</div>
+<div class="stats widget"></div>
+<div class="facebook widget"></div>
+<div class="gplus widget none"></div>
+<div class="twitter widget"></div>
+<div class="campaignmonitor widget none"></div>
+
+{{!
+  <section class="dashboard-controls">
+    <div class="text left"><strong>Welcome back</strong>, John.</div>
+    <nav class="controls-nav">
+      <ul class="nav inline">
+        <li><a href="/ghost/editor"><span class="icon-new"></span> New Post</a></li>
+        <li><a href="#"><span class="icon-users"></span> Authors</a></li>
+        <li><a href="#"><span class="icon-analytics"></span> Analytics</a></li>
+      </ul>
+    </nav>
+    <div class="text right"><a href="#"><span class="icon-settings"></span><span class="hidden">Settings</span></a></div>
+    <div class="clearfix"></div><!--TODO: replace this later with something less shit-->
+  </section>
+
+  <section class="widget time-date">
+    <header>
+      London, United Kingdom
+    </header>
+    <section class="content">
+      <div class="time">
+        8:55<span>am</span>
+      </div>
+      <div class="date"><!--TODO: convert to html5 <date>-->
+        <span>Wednesday</span>
+        13 June 2012
+      </div>
+    </section>
+    <footer>
+      Timezone: UTC +1
+    </footer>
+  </section>
+
+  <section class="widget">
+    <header>
+      Top Authors This Month
+    </header>
+    <section class="content">
+      <table class="table">
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Posts</td>
+            <td>Comments</td>
+            <td>tweets</td>
+            <td>Likes</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong class="text-uppercase"><img class="user-img" src="/ghost/assets/img/user.jpg" width="34px" height="34px" alt=""> John</strong></td>
+            <td><strong class="callout">32</strong> <span>Posts</span></td>
+            <td><strong>231</strong> <span>Comments</span></td>
+            <td><strong>103</strong> <span>tweets</span></td>
+          </tr>
+          <tr>
+            <td><strong class="text-uppercase"><img class="user-img" src="/ghost/assets/img/user.jpg" width="34px" height="34px" alt=""> James</strong></td>
+            <td><strong>32</strong> <span>Posts</span></td>
+            <td><strong class="callout">231</strong> <span>Comments</span></td>
+            <td><strong>103</strong> <span>tweets</span></td>
+          </tr>
+          <tr>
+            <td><strong class="text-uppercase"><img class="user-img" src="/ghost/assets/img/user.jpg" width="34px" height="34px" alt=""> Jerry</strong></td>
+            <td><strong>32</strong> <span>Posts</span></td>
+            <td><strong>231</strong> <span>Comments</span></td>
+            <td><strong class="callout">103</strong> <span>tweets</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <footer>
+      Ghost Stats
+    </footer>
+  </section>
+
+  <section class="widget post-statuses">
+    <header>
+      Post Statuses
+    </header>
+    <section class="content">
+      <div class="status-levels left">
+        <div class="scheduled" style="height: 30px;">Scheduled</div>
+        <div class="pending" style="height: 50px;">Pending</div>
+        <div class="draft" style="height: 60px;">Draft</div>
+      </div>
+      <div class="status-text left">
+        <div class="scheduled"><strong>5</strong> Scheduled</div>
+        <div class="pending"><strong>12</strong> Pending</div>
+        <div class="draft"><strong>32</strong> Draft</div>
+      </div>
+    </section>
+    <footer>
+      Ghost Stats
+    </footer>
+  </section>
+
+  <section class="widget total-views">
+    <header>
+      Total Page Views (Last 30 Days)
+    </header>
+    <section class="content">
+      <div class="widget-stats">
+        <span>37,921</span>
+        <span>
+          Previous <strong>32,419</strong> / <strong class="positive-text">+15.4%</strong>
+        </span>
+      </div>
+    </section>
+    <footer>
+      Google Analytics
+    </footer>
+  </section>
+
+  <section class="widget live-visitors">
+    <header>
+      Live Visitors
+    </header>
+    <section class="content">
+      <div class="widget-stats">
+        <span>124</span>
+        <span>
+          <strong>391</strong> max this month
+        </span>
+      </div>
+    </section>
+    <footer>
+      Woopra
+    </footer>
+  </section>
+
+  <section class="widget">
+    <header>
+      Twitter Followers
+    </header>
+    <section class="content">
+      <div class="widget-stats">
+        <span>12,304</span>
+        <span>
+          <strong class="positive-text">+123</strong> this month
+        </span>
+      </div>
+    </section>
+    <footer>
+      @ghost
+    </footer>
+  </section>
+
+  <section class="widget todays-traffic">
+    <header>
+      Today’s Traffic (Actions)
+    </header>
+    <section class="content">
+      <ul class="nav">
+        <li>
+          <div>Post Title Excerpt Which is Li... <strong class="right">327</strong></div>
+        </li>
+        <li>
+          <div>My homepage <strong class="right">327</strong></div>
+        </li>
+        <li>
+          <div>Another long ass post about som... <strong class="right">327</strong></div>
+        </li>
+        <li>
+          <div>Boracay time! <strong class="right">327</strong></div>
+        </li>
+      </ul>
+    </section>
+    <footer>
+      Woopra
+    </footer>
+  </section>
+
+  <section class="widget">
+    <header>
+      Total Likes
+    </header>
+    <section class="content">
+      <div class="widget-stats">
+        <span>6,931</span>
+        <span>
+          <strong class="negative-text">-23</strong> this month
+        </span>
+      </div>
+    </section>
+    <footer>
+      Facebook
+    </footer>
+  </section>
+  }}
+
+</main>
+
+<script src="/core/admin/assets/lib/chart.min.js"></script>
+<script>
+$(document).ready(function(){
+
+  //$('body').click(function(){
+    $('.time').fadeIn(1000);
+    $('.image').delay(300).fadeIn(1000);
+    $('.posts').delay(600).fadeIn(900, function(){
+
+      var ctx = $("#poststats").get(0).getContext("2d");
+      var data = [
+        {
+          value: 9,
+          color:"#9ec14a"
+        },
+        {
+          value : 4,
+          color : "#f9e15d"
+        },
+        {
+          value : 2,
+          color : "#EB5700"
+        }
+      ]
+      var options = {
+        animationEasing: 'easeOutQuart',
+        percentageInnerCutout: 60,
+        segmentStrokeColor : "#efefef"
+      }
+      var poststats = new Chart(ctx).Doughnut(data, options);
+
+    });
+
+    $('.stats').delay(800).fadeIn(1000);
+    $('.facebook').delay(1000).fadeIn(1000);
+    $('.gplus').delay(1200).fadeIn(1000);
+    $('.twitter').delay(1300).fadeIn(1000);
+    $('.campaignmonitor').delay(1400).fadeIn(1000);
+  //});
+
+});
+</script>

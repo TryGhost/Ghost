@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="en"><head><title>blog</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="blog"><meta name="groc-project-path" content="core/admin/assets/js/blog.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">core/admin/assets/js/blog.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="cm">/**</span>
+<span class="cm"> * global window, </span>
+<span class="cm"> *        history,</span>
+<span class="cm"> *        jQuery,</span>
+<span class="cm"> *        Showdown,</span>
+<span class="cm"> *        CodeMirror</span>
+<span class="cm"> **/</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Shadow on Markdown if scrolled</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list-content&#39;</span><span class="p">).</span><span class="nx">scroll</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list-content&#39;</span><span class="p">).</span><span class="nx">scrollTop</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-list&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+        </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Shadow on Preview if scrolled</p></div></div><div class="code"><div class="wrapper">        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-preview-content&#39;</span><span class="p">).</span><span class="nx">scroll</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-preview-content&#39;</span><span class="p">).</span><span class="nx">scrollTop</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-preview&#39;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.content-preview&#39;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;scrolling&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+
+    <span class="p">});</span>
+
+<span class="p">}(</span><span class="nx">jQuery</span><span class="p">));</span></div></div></div></div></body></html>

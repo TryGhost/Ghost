@@ -1,0 +1,128 @@
+.container {
+  margin: auto;
+	padding: 0 15px;
+  position: relative;
+  width: 100%;
+}
+ 
+
+/* 18 Column Grid 
+----------------------------------------------------------------------------- 
+
+Span 1:    3.66666666667%
+Span 2:    9.33333333333%
+Span 3:    15.0%
+Span 4:    20.6666666667%
+Span 5:    26.3333333333%
+Span 6:    32.0%
+Span 7:    37.6666666667%
+Span 8:    43.3333333333%
+Span 9:    49.0%
+Span 10:    54.6666666667%
+Span 11:    60.3333333333%
+Span 12:    66.0%
+Span 13:    71.6666666667%
+Span 14:    77.3333333333%
+Span 15:    83.0%
+Span 16:    88.6666666667%
+Span 17:    94.3333333333%
+Span 18:    100%
+
+----------------------------------------------------------------------------- */	
+
+
+/* --- Grid variables ---*/ 
+$max_columns: 8;
+$gutter: 2%;
+
+.row {
+  width: 100%;
+  *zoom: 1;
+  position: relative;
+}
+.row [class*="span"] {
+  margin-bottom: 15px;
+}
+
+@media only screen and (min-width: 768px) {
+  .row {
+    margin-left: -15px;
+  }
+  .span1, .span2, .span3, .span4 {
+    width: 50%;
+    float: left;
+    padding-left: 15px;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+
+  @mixin span($num, $gutter, $max_columns) {
+      $one_col: (100% - ($gutter * ($max_columns - 1))) / $max_columns;
+      width:($one_col * $num) + ($gutter * ($num - 1));
+      margin-left:$gutter;
+      float: left;
+      position: relative;
+  }
+
+  @mixin span_first {
+      margin-left:0;
+  }
+  .row {
+    margin-left: 0;
+  }
+  .row:before,
+  .row:after {
+    display: table;
+    line-height: 0;
+    content: "";
+  }
+  .row:after {
+    clear: both;
+  }
+
+  .row [class*="span"] {
+    margin-bottom: 0;
+    padding-left: 0;
+  }
+  .row [class*="span"].bottom-margin {
+    margin-bottom: 20px;
+  }
+  .row [class*="span"]:first-child {
+    @include span_first;
+  }
+
+  .span1 {
+      @include span(1, $gutter, $max_columns);
+  }
+  .span2 {
+      @include span(2, $gutter, $max_columns);
+  }
+  .span3 {
+      @include span(3, $gutter, $max_columns);
+  }
+  .span4 {
+      @include span(4, $gutter, $max_columns);
+  }
+  .span5 {
+      @include span(5, $gutter, $max_columns);
+  }
+  .span6 {
+      @include span(6, $gutter, $max_columns);
+  }
+  .span7 {
+      @include span(7, $gutter, $max_columns);
+  }
+  .span8 {
+      @include span_first;
+      width:100%;
+  }
+      
+  .offset1 {
+  	margin-left: 5.66666666667%;
+  }
+  .offset2 {
+  	margin-left: 11.33333333333%;
+  }
+
+}

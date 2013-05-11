@@ -1,0 +1,20 @@
+[
+    {
+        "key":          "url",
+        "value":        "http://localhost:3333",
+        "createdBy":    1,
+        "updatedBy":    1
+    },
+    {
+        "key":          "title",
+        "value":        "John O'Nolan",
+        "createdBy":    1,
+        "updatedBy":    1
+    },
+    {
+        "key":          "description",
+        "value":        "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
+        "createdBy":    1,
+        "updatedBy":    1
+    }
+]

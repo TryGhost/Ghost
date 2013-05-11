@@ -1,0 +1,223 @@
+<!DOCTYPE html><html lang="en"><head><title>shortcuts</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="shortcuts"><meta name="groc-project-path" content="core/admin/assets/js/shortcuts.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">core/admin/assets/js/shortcuts.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="cm">/**</span>
+<span class="cm"> * http://www.openjs.com/scripts/events/keyboard_shortcuts/</span>
+<span class="cm"> * Version : 2.01.B</span>
+<span class="cm"> * By Binny V A</span>
+<span class="cm"> * License : BSD</span>
+<span class="cm"> */</span>
+<span class="nx">shortcut</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;all_shortcuts&#39;</span><span class="o">:</span><span class="p">{},</span><span class="c1">//All the shortcuts are stored in this array</span>
+    <span class="s1">&#39;add&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">shortcut_combination</span><span class="p">,</span><span class="nx">callback</span><span class="p">,</span><span class="nx">opt</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//Provide a set of default options</span>
+        <span class="kd">var</span> <span class="nx">default_options</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="o">:</span><span class="s1">&#39;keydown&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;propagate&#39;</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span>
+            <span class="s1">&#39;disable_in_input&#39;</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span>
+            <span class="s1">&#39;target&#39;</span><span class="o">:</span><span class="nb">document</span><span class="p">,</span>
+            <span class="s1">&#39;keycode&#39;</span><span class="o">:</span><span class="kc">false</span>
+        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">opt</span><span class="p">)</span> <span class="nx">opt</span> <span class="o">=</span> <span class="nx">default_options</span><span class="p">;</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">dfo</span> <span class="k">in</span> <span class="nx">default_options</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">opt</span><span class="p">[</span><span class="nx">dfo</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="nx">opt</span><span class="p">[</span><span class="nx">dfo</span><span class="p">]</span> <span class="o">=</span> <span class="nx">default_options</span><span class="p">[</span><span class="nx">dfo</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="kd">var</span> <span class="nx">ele</span> <span class="o">=</span> <span class="nx">opt</span><span class="p">.</span><span class="nx">target</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">opt</span><span class="p">.</span><span class="nx">target</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="nx">ele</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">opt</span><span class="p">.</span><span class="nx">target</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">ths</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="nx">shortcut_combination</span> <span class="o">=</span> <span class="nx">shortcut_combination</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">();</span>
+
+        <span class="c1">//The function to be called at keypress</span>
+        <span class="kd">var</span> <span class="nx">func</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">e</span> <span class="o">=</span> <span class="nx">e</span> <span class="o">||</span> <span class="nb">window</span><span class="p">.</span><span class="nx">event</span><span class="p">;</span>
+            
+            <span class="k">if</span><span class="p">(</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;disable_in_input&#39;</span><span class="p">])</span> <span class="p">{</span> <span class="c1">//Don&#39;t enable shortcut keys in Input, Textarea fields</span>
+                <span class="kd">var</span> <span class="nx">element</span><span class="p">;</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">)</span> <span class="nx">element</span><span class="o">=</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">;</span>
+                <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">srcElement</span><span class="p">)</span> <span class="nx">element</span><span class="o">=</span><span class="nx">e</span><span class="p">.</span><span class="nx">srcElement</span><span class="p">;</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">element</span><span class="p">.</span><span class="nx">nodeType</span><span class="o">==</span><span class="mi">3</span><span class="p">)</span> <span class="nx">element</span><span class="o">=</span><span class="nx">element</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">;</span>
+
+                <span class="k">if</span><span class="p">(</span><span class="nx">element</span><span class="p">.</span><span class="nx">tagName</span> <span class="o">==</span> <span class="s1">&#39;INPUT&#39;</span> <span class="o">||</span> <span class="nx">element</span><span class="p">.</span><span class="nx">tagName</span> <span class="o">==</span> <span class="s1">&#39;TEXTAREA&#39;</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+    
+            <span class="c1">//Find Which key is pressed</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span><span class="p">)</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span><span class="p">;</span>
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">which</span><span class="p">)</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">which</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">character</span> <span class="o">=</span> <span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(</span><span class="nx">code</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">();</span>
+            
+            <span class="k">if</span><span class="p">(</span><span class="nx">code</span> <span class="o">==</span> <span class="mi">188</span><span class="p">)</span> <span class="nx">character</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">;</span> <span class="c1">//If the user presses , when the type is onkeydown</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">code</span> <span class="o">==</span> <span class="mi">190</span><span class="p">)</span> <span class="nx">character</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">;</span> <span class="c1">//If the user presses , when the type is onkeydown</span>
+
+            <span class="kd">var</span> <span class="nx">keys</span> <span class="o">=</span> <span class="nx">shortcut_combination</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">);</span>
+            <span class="c1">//Key Pressed - counts the number of valid keypresses - if it is same as the number of keys, the shortcut function is invoked</span>
+            <span class="kd">var</span> <span class="nx">kp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            
+            <span class="c1">//Work around for stupid Shift key bug created by using lowercase - as a result the shift+num combination was broken</span>
+            <span class="kd">var</span> <span class="nx">shift_nums</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;`&quot;</span><span class="o">:</span><span class="s2">&quot;~&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;1&quot;</span><span class="o">:</span><span class="s2">&quot;!&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2&quot;</span><span class="o">:</span><span class="s2">&quot;@&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;3&quot;</span><span class="o">:</span><span class="s2">&quot;#&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;4&quot;</span><span class="o">:</span><span class="s2">&quot;$&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;5&quot;</span><span class="o">:</span><span class="s2">&quot;%&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;6&quot;</span><span class="o">:</span><span class="s2">&quot;^&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;7&quot;</span><span class="o">:</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;8&quot;</span><span class="o">:</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;9&quot;</span><span class="o">:</span><span class="s2">&quot;(&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;0&quot;</span><span class="o">:</span><span class="s2">&quot;)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-&quot;</span><span class="o">:</span><span class="s2">&quot;_&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;=&quot;</span><span class="o">:</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;;&quot;</span><span class="o">:</span><span class="s2">&quot;:&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&#39;&quot;</span><span class="o">:</span><span class="s2">&quot;\&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;,&quot;</span><span class="o">:</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;.&quot;</span><span class="o">:</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;/&quot;</span><span class="o">:</span><span class="s2">&quot;?&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;\\&quot;</span><span class="o">:</span><span class="s2">&quot;|&quot;</span>
+            <span class="p">}</span>
+            <span class="c1">//Special Keys - and their codes</span>
+            <span class="kd">var</span> <span class="nx">special_keys</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;esc&#39;</span><span class="o">:</span><span class="mi">27</span><span class="p">,</span>
+                <span class="s1">&#39;escape&#39;</span><span class="o">:</span><span class="mi">27</span><span class="p">,</span>
+                <span class="s1">&#39;tab&#39;</span><span class="o">:</span><span class="mi">9</span><span class="p">,</span>
+                <span class="s1">&#39;space&#39;</span><span class="o">:</span><span class="mi">32</span><span class="p">,</span>
+                <span class="s1">&#39;return&#39;</span><span class="o">:</span><span class="mi">13</span><span class="p">,</span>
+                <span class="s1">&#39;enter&#39;</span><span class="o">:</span><span class="mi">13</span><span class="p">,</span>
+                <span class="s1">&#39;backspace&#39;</span><span class="o">:</span><span class="mi">8</span><span class="p">,</span>
+    
+                <span class="s1">&#39;scrolllock&#39;</span><span class="o">:</span><span class="mi">145</span><span class="p">,</span>
+                <span class="s1">&#39;scroll_lock&#39;</span><span class="o">:</span><span class="mi">145</span><span class="p">,</span>
+                <span class="s1">&#39;scroll&#39;</span><span class="o">:</span><span class="mi">145</span><span class="p">,</span>
+                <span class="s1">&#39;capslock&#39;</span><span class="o">:</span><span class="mi">20</span><span class="p">,</span>
+                <span class="s1">&#39;caps_lock&#39;</span><span class="o">:</span><span class="mi">20</span><span class="p">,</span>
+                <span class="s1">&#39;caps&#39;</span><span class="o">:</span><span class="mi">20</span><span class="p">,</span>
+                <span class="s1">&#39;numlock&#39;</span><span class="o">:</span><span class="mi">144</span><span class="p">,</span>
+                <span class="s1">&#39;num_lock&#39;</span><span class="o">:</span><span class="mi">144</span><span class="p">,</span>
+                <span class="s1">&#39;num&#39;</span><span class="o">:</span><span class="mi">144</span><span class="p">,</span>
+                
+                <span class="s1">&#39;pause&#39;</span><span class="o">:</span><span class="mi">19</span><span class="p">,</span>
+                <span class="s1">&#39;break&#39;</span><span class="o">:</span><span class="mi">19</span><span class="p">,</span>
+                
+                <span class="s1">&#39;insert&#39;</span><span class="o">:</span><span class="mi">45</span><span class="p">,</span>
+                <span class="s1">&#39;home&#39;</span><span class="o">:</span><span class="mi">36</span><span class="p">,</span>
+                <span class="s1">&#39;delete&#39;</span><span class="o">:</span><span class="mi">46</span><span class="p">,</span>
+                <span class="s1">&#39;end&#39;</span><span class="o">:</span><span class="mi">35</span><span class="p">,</span>
+                
+                <span class="s1">&#39;pageup&#39;</span><span class="o">:</span><span class="mi">33</span><span class="p">,</span>
+                <span class="s1">&#39;page_up&#39;</span><span class="o">:</span><span class="mi">33</span><span class="p">,</span>
+                <span class="s1">&#39;pu&#39;</span><span class="o">:</span><span class="mi">33</span><span class="p">,</span>
+    
+                <span class="s1">&#39;pagedown&#39;</span><span class="o">:</span><span class="mi">34</span><span class="p">,</span>
+                <span class="s1">&#39;page_down&#39;</span><span class="o">:</span><span class="mi">34</span><span class="p">,</span>
+                <span class="s1">&#39;pd&#39;</span><span class="o">:</span><span class="mi">34</span><span class="p">,</span>
+    
+                <span class="s1">&#39;left&#39;</span><span class="o">:</span><span class="mi">37</span><span class="p">,</span>
+                <span class="s1">&#39;up&#39;</span><span class="o">:</span><span class="mi">38</span><span class="p">,</span>
+                <span class="s1">&#39;right&#39;</span><span class="o">:</span><span class="mi">39</span><span class="p">,</span>
+                <span class="s1">&#39;down&#39;</span><span class="o">:</span><span class="mi">40</span><span class="p">,</span>
+    
+                <span class="s1">&#39;f1&#39;</span><span class="o">:</span><span class="mi">112</span><span class="p">,</span>
+                <span class="s1">&#39;f2&#39;</span><span class="o">:</span><span class="mi">113</span><span class="p">,</span>
+                <span class="s1">&#39;f3&#39;</span><span class="o">:</span><span class="mi">114</span><span class="p">,</span>
+                <span class="s1">&#39;f4&#39;</span><span class="o">:</span><span class="mi">115</span><span class="p">,</span>
+                <span class="s1">&#39;f5&#39;</span><span class="o">:</span><span class="mi">116</span><span class="p">,</span>
+                <span class="s1">&#39;f6&#39;</span><span class="o">:</span><span class="mi">117</span><span class="p">,</span>
+                <span class="s1">&#39;f7&#39;</span><span class="o">:</span><span class="mi">118</span><span class="p">,</span>
+                <span class="s1">&#39;f8&#39;</span><span class="o">:</span><span class="mi">119</span><span class="p">,</span>
+                <span class="s1">&#39;f9&#39;</span><span class="o">:</span><span class="mi">120</span><span class="p">,</span>
+                <span class="s1">&#39;f10&#39;</span><span class="o">:</span><span class="mi">121</span><span class="p">,</span>
+                <span class="s1">&#39;f11&#39;</span><span class="o">:</span><span class="mi">122</span><span class="p">,</span>
+                <span class="s1">&#39;f12&#39;</span><span class="o">:</span><span class="mi">123</span>
+            <span class="p">}</span>
+    
+            <span class="kd">var</span> <span class="nx">modifiers</span> <span class="o">=</span> <span class="p">{</span> 
+                <span class="nx">shift</span><span class="o">:</span> <span class="p">{</span> <span class="nx">wanted</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">pressed</span><span class="o">:</span><span class="kc">false</span><span class="p">},</span>
+                <span class="nx">ctrl</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">wanted</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">pressed</span><span class="o">:</span><span class="kc">false</span><span class="p">},</span>
+                <span class="nx">alt</span>  <span class="o">:</span> <span class="p">{</span> <span class="nx">wanted</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">pressed</span><span class="o">:</span><span class="kc">false</span><span class="p">},</span>
+                <span class="nx">meta</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">wanted</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">pressed</span><span class="o">:</span><span class="kc">false</span><span class="p">}</span>   <span class="c1">//Meta is Mac specific</span>
+            <span class="p">};</span>
+                        
+            <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">ctrlKey</span><span class="p">)</span>   <span class="nx">modifiers</span><span class="p">.</span><span class="nx">ctrl</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">shiftKey</span><span class="p">)</span>  <span class="nx">modifiers</span><span class="p">.</span><span class="nx">shift</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">altKey</span><span class="p">)</span>    <span class="nx">modifiers</span><span class="p">.</span><span class="nx">alt</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">metaKey</span><span class="p">)</span>   <span class="nx">modifiers</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                        
+            <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">k</span><span class="o">=</span><span class="nx">keys</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">keys</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">//Modifiers</span>
+                <span class="k">if</span><span class="p">(</span><span class="nx">k</span> <span class="o">==</span> <span class="s1">&#39;ctrl&#39;</span> <span class="o">||</span> <span class="nx">k</span> <span class="o">==</span> <span class="s1">&#39;control&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    <span class="nx">modifiers</span><span class="p">.</span><span class="nx">ctrl</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">k</span> <span class="o">==</span> <span class="s1">&#39;shift&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    <span class="nx">modifiers</span><span class="p">.</span><span class="nx">shift</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">k</span> <span class="o">==</span> <span class="s1">&#39;alt&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    <span class="nx">modifiers</span><span class="p">.</span><span class="nx">alt</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">k</span> <span class="o">==</span> <span class="s1">&#39;meta&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    <span class="nx">modifiers</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">k</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//If it is a special key</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">special_keys</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">==</span> <span class="nx">code</span><span class="p">)</span> <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;keycode&#39;</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;keycode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nx">code</span><span class="p">)</span> <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="c1">//The special keys did not match</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">character</span> <span class="o">==</span> <span class="nx">k</span><span class="p">)</span> <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                    <span class="k">else</span> <span class="p">{</span>
+                        <span class="k">if</span><span class="p">(</span><span class="nx">shift_nums</span><span class="p">[</span><span class="nx">character</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">shiftKey</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//Stupid Shift key bug created by using lowercase</span>
+                            <span class="nx">character</span> <span class="o">=</span> <span class="nx">shift_nums</span><span class="p">[</span><span class="nx">character</span><span class="p">];</span> 
+                            <span class="k">if</span><span class="p">(</span><span class="nx">character</span> <span class="o">==</span> <span class="nx">k</span><span class="p">)</span> <span class="nx">kp</span><span class="o">++</span><span class="p">;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            
+            <span class="k">if</span><span class="p">(</span><span class="nx">kp</span> <span class="o">==</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">length</span> <span class="o">&amp;&amp;</span> 
+                        <span class="nx">modifiers</span><span class="p">.</span><span class="nx">ctrl</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">==</span> <span class="nx">modifiers</span><span class="p">.</span><span class="nx">ctrl</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">&amp;&amp;</span>
+                        <span class="nx">modifiers</span><span class="p">.</span><span class="nx">shift</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">==</span> <span class="nx">modifiers</span><span class="p">.</span><span class="nx">shift</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">&amp;&amp;</span>
+                        <span class="nx">modifiers</span><span class="p">.</span><span class="nx">alt</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">==</span> <span class="nx">modifiers</span><span class="p">.</span><span class="nx">alt</span><span class="p">.</span><span class="nx">wanted</span> <span class="o">&amp;&amp;</span>
+                        <span class="nx">modifiers</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">pressed</span> <span class="o">==</span> <span class="nx">modifiers</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">wanted</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">callback</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+    
+                <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;propagate&#39;</span><span class="p">])</span> <span class="p">{</span> <span class="c1">//Stop the event</span>
+                    <span class="c1">//e.cancelBubble is supported by IE - this will kill the bubbling process.</span>
+                    <span class="nx">e</span><span class="p">.</span><span class="nx">cancelBubble</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                    <span class="nx">e</span><span class="p">.</span><span class="nx">returnValue</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+    
+                    <span class="c1">//e.stopPropagation works in Firefox.</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">e</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">();</span>
+                        <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+                    <span class="p">}</span>
+                    <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">all_shortcuts</span><span class="p">[</span><span class="nx">shortcut_combination</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;callback&#39;</span><span class="o">:</span><span class="nx">func</span><span class="p">,</span> 
+            <span class="s1">&#39;target&#39;</span><span class="o">:</span><span class="nx">ele</span><span class="p">,</span> 
+            <span class="s1">&#39;event&#39;</span><span class="o">:</span> <span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="p">};</span>
+        <span class="c1">//Attach the function with the event</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">ele</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">)</span> <span class="nx">ele</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="nx">func</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">ele</span><span class="p">.</span><span class="nx">attachEvent</span><span class="p">)</span> <span class="nx">ele</span><span class="p">.</span><span class="nx">attachEvent</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="o">+</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="nx">func</span><span class="p">);</span>
+        <span class="k">else</span> <span class="nx">ele</span><span class="p">[</span><span class="s1">&#39;on&#39;</span><span class="o">+</span><span class="nx">opt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="nx">func</span><span class="p">;</span>
+    <span class="p">},</span>
+
+    <span class="c1">//Remove the shortcut - just specify the shortcut and I will remove the binding</span>
+    <span class="s1">&#39;remove&#39;</span><span class="o">:</span><span class="kd">function</span><span class="p">(</span><span class="nx">shortcut_combination</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">shortcut_combination</span> <span class="o">=</span> <span class="nx">shortcut_combination</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">();</span>
+        <span class="kd">var</span> <span class="nx">binding</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">all_shortcuts</span><span class="p">[</span><span class="nx">shortcut_combination</span><span class="p">];</span>
+        <span class="k">delete</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">all_shortcuts</span><span class="p">[</span><span class="nx">shortcut_combination</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">binding</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">type</span> <span class="o">=</span> <span class="nx">binding</span><span class="p">[</span><span class="s1">&#39;event&#39;</span><span class="p">];</span>
+        <span class="kd">var</span> <span class="nx">ele</span> <span class="o">=</span> <span class="nx">binding</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">];</span>
+        <span class="kd">var</span> <span class="nx">callback</span> <span class="o">=</span> <span class="nx">binding</span><span class="p">[</span><span class="s1">&#39;callback&#39;</span><span class="p">];</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nx">ele</span><span class="p">.</span><span class="nx">detachEvent</span><span class="p">)</span> <span class="nx">ele</span><span class="p">.</span><span class="nx">detachEvent</span><span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="o">+</span><span class="nx">type</span><span class="p">,</span> <span class="nx">callback</span><span class="p">);</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">ele</span><span class="p">.</span><span class="nx">removeEventListener</span><span class="p">)</span> <span class="nx">ele</span><span class="p">.</span><span class="nx">removeEventListener</span><span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">callback</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+        <span class="k">else</span> <span class="nx">ele</span><span class="p">[</span><span class="s1">&#39;on&#39;</span><span class="o">+</span><span class="nx">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span></div></div></div></div></body></html>

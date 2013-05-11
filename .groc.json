@@ -1,0 +1,5 @@
+{
+  "glob": ["README.md", "config.js", "app.js", "core/ghost.js", "core/admin/assets/js/*.js", "core/frontend/helpers/index.js", "core/lang/i18n.js"],
+  "except": ["core/admin/assets/lib/chart.min.js"],
+  "out": "./docs"
+}

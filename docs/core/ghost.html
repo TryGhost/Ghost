@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="en"><head><title>core/ghost</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="core/ghost"><meta name="groc-project-path" content="core/ghost.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">core/ghost.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="ghost-module">Ghost Module</h1>
+
+<p>Defines core methods required to build the frontend</p></div></div><div class="code"><div class="wrapper"><span class="cm">/**</span>
+<span class="cm"> * global module,</span>
+<span class="cm"> *        require,</span>
+<span class="cm"> *        __dirname</span>
+<span class="cm"> **/</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-setup-prerequisites"> Setup Prerequisites</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="kd">var</span> <span class="nx">config</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./../config&#39;</span><span class="p">),</span>
+        <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">),</span>
+        <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">),</span>
+        <span class="nx">hbs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-hbs&#39;</span><span class="p">),</span>
+        <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;underscore&#39;</span><span class="p">),</span>
+        <span class="nx">Polyglot</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;node-polyglot&#39;</span><span class="p">),</span>
+        <span class="nx">DataProvider</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./shared/models/dataProvider&#39;</span><span class="p">),</span>
+        <span class="nx">dataProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DataProvider</span><span class="p">(),</span>
+        <span class="nx">Ghost</span><span class="p">,</span>
+        <span class="nx">instance</span><span class="p">,</span>
+        <span class="nx">filterCallbacks</span> <span class="o">=</span> <span class="p">{},</span>
+
+        <span class="nx">statuses</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-article-statuses"> Article Statuses</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="cm">/**</span>
+<span class="cm">     * A list of atricle status types</span>
+<span class="cm">     * @type {Object}</span>
+<span class="cm">     */</span>
+    <span class="nx">statuses</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;draft&#39;</span><span class="o">:</span> <span class="s1">&#39;draft&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;complete&#39;</span><span class="o">:</span> <span class="s1">&#39;complete&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;approved&#39;</span><span class="o">:</span> <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;scheduled&#39;</span><span class="o">:</span> <span class="s1">&#39;scheduled&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;published&#39;</span><span class="o">:</span> <span class="s1">&#39;published&#39;</span>
+    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="module-methods">Module Methods</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">    <span class="cm">/**</span>
+<span class="cm">     * @method Ghost</span>
+<span class="cm">     * @returns {*}</span>
+<span class="cm">     * @constructor</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">app</span><span class="p">,</span>
+            <span class="nx">globals</span><span class="p">,</span>
+            <span class="nx">polyglot</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">instance</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">instance</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+            <span class="nx">dataProvider</span><span class="p">.</span><span class="nx">globals</span><span class="p">.</span><span class="nx">findAll</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">globals</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+            <span class="p">});</span>
+
+            <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+            <span class="nx">polyglot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Polyglot</span><span class="p">();</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>functionality
+load Plugins...
+var f = new FancyFirstChar(ghost).init();</p></div></div><div class="code"><div class="wrapper">            <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">app</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">config</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">config</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">globals</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">globals</span><span class="p">;</span> <span class="p">},</span> <span class="c1">// there&#39;s no management here to be sure this has loaded</span>
+                <span class="nx">statuses</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">statuses</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">polyglot</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">polyglot</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">paths</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;activeTheme&#39;</span><span class="o">:</span>  <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/../content/&#39;</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">themeDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">activeTheme</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;adminViews&#39;</span><span class="o">:</span>   <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/admin/views/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;lang&#39;</span><span class="o">:</span>         <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/lang/&#39;</span>
+                    <span class="p">};</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nx">instance</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {method}  hbs.registerHelper</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerThemeHelper</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">hbs</span><span class="p">.</span><span class="nx">registerHelper</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {*}</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerTheme</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {*}</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerPlugin</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerFilter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">filterCallbacks</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="p">}</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;registering filter for &#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">);</span>
+        <span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name     [description]</span>
+<span class="cm">     * @param  {*}   args</span>
+<span class="cm">     * @param  {Function} callback</span>
+<span class="cm">     * @return {method} callback</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">doFilter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">fn</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">filterCallbacks</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">fn</span> <span class="k">in</span> <span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">fn</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;doing filter for &#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">);</span>
+                    <span class="nx">args</span> <span class="o">=</span> <span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">][</span><span class="nx">fn</span><span class="p">](</span><span class="nx">args</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nx">callback</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Initialise Theme</span>
+<span class="cm">     *</span>
+<span class="cm">     * @todo  Tod (?) Old comment</span>
+<span class="cm">     * @param  {Object} app</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">initTheme</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="k">return</span> <span class="kd">function</span> <span class="nx">initTheme</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;hbs&#39;</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="sr">/(^\/ghost$|^\/ghost\/)/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">url</span><span class="p">)</span> <span class="o">===</span> <span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s1">&#39;hbs&#39;</span><span class="p">,</span> <span class="nx">hbs</span><span class="p">.</span><span class="nx">express3</span><span class="p">(</span>
+                    <span class="p">{</span><span class="nx">partialsDir</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span> <span class="o">+</span> <span class="s1">&#39;partials&#39;</span><span class="p">}</span>
+                <span class="p">));</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s1">&#39;hbs&#39;</span><span class="p">,</span> <span class="nx">hbs</span><span class="p">.</span><span class="nx">express3</span><span class="p">({</span><span class="nx">partialsDir</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">adminViews</span> <span class="o">+</span> <span class="s1">&#39;/partials&#39;</span><span class="p">}));</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">adminViews</span><span class="p">);</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;/core/admin/assets&#39;</span><span class="p">,</span> <span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/admin/assets&#39;</span><span class="p">)));</span>
+            <span class="p">}</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span><span class="p">));</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;/content/images&#39;</span><span class="p">,</span> <span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/../content/images&#39;</span><span class="p">)));</span>
+
+            <span class="nx">next</span><span class="p">();</span>
+        <span class="p">};</span>
+    <span class="p">};</span>
+
+    <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Ghost</span><span class="p">;</span>
+<span class="p">}());</span></div></div></div></div></body></html>

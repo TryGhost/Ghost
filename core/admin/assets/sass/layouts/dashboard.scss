@@ -1,0 +1,366 @@
+/*
+ * These are the styles used to control the look and feel of the widgetised
+ * dashboard of the Ghost admin system. The first screen you see on login.
+ *
+ */
+
+.widget {
+	width:341px;
+	height:300px;
+	background:#fff;
+	@include box-shadow;
+	float:left;
+	margin:0 15px 15px 0;
+	display:none;
+}
+
+.none {
+	margin-right:0;
+}
+
+.time {
+	background-image: url(../img/dash/Time@2x.png);
+	background-size: 341px 300px;
+}
+
+.image {
+	max-width: 100%;
+	width: 682px + 15px;
+	background-image: url(../img/dash/Image@2x.png);
+	background-size: 697px 300px;
+}
+
+.stats {
+	max-width: 100%;
+	width: 682px + 15px;
+	height: 615px;
+	background-image: url(../img/dash/Stats@2x.png);
+	background-size: 697px 615px;
+}
+
+.facebook {
+	background-image: url(../img/dash/Facebook@2x.png);
+	background-size: 341px 300px;
+}
+
+.gplus {
+	background-image: url(../img/dash/GooglePlus@2x.png);
+	background-size: 341px 300px;
+}
+
+.twitter {
+	background-image: url(../img/dash/Twitter@2x.png);
+	background-size: 341px 300px;
+}
+
+.campaignmonitor {
+	background-image: url(../img/dash/CampaignMonitor@2x.png);
+	background-size: 341px 300px;
+}
+
+.posts {
+	background-image: url(../img/dash/PostsStats@2x.png);
+	background-size: 341px 300px;
+	position: relative;
+}
+
+.chart {
+  box-sizing: border-box;
+  width: 250px;
+  height: 250px;
+  margin: 25px auto 0 auto;
+  background: #242628;
+  border: #efefef 54px solid;
+  border-radius: 500px;
+}
+
+#poststats {
+  position: relative;
+  top:-54px;
+  left: -54px;
+}
+
+.data {
+	position: absolute;
+	top: 87px;
+	color: $midgrey;
+	font-size: 13px;
+	list-style: none;
+}
+
+.ready {
+	font-size: 18px;
+	vertical-align: -5%;
+	margin-right: 5px;
+	color: $green;
+}
+
+.pending {
+	font-size: 18px;
+	vertical-align: -5%;
+	margin-right: 5px;
+	color: #f9e15d;
+}
+
+.draft {
+	font-size: 18px;
+	vertical-align: -5%;
+	margin-right: 5px;
+	color: $red;
+}
+
+/*
+
+.dashboard-controls {
+	@extend %box;
+	padding:0 15px;
+
+	.text {
+		padding:12px 0;
+	}
+}
+
+.controls-nav {
+	float:left;
+	margin-left:20px;
+	ul {
+		border-left: $lightgrey 1px solid;
+
+		li {
+			margin: 0;
+			border-right: 1px solid $lightgrey;
+
+			a {
+				padding: 12px 15px;
+				color: $grey;
+
+				span {
+					color: $darkgrey;
+				}
+
+				&:hover {
+					color: $darkgrey;
+					text-decoration: none;
+				}
+			}
+		}
+	}
+}
+
+.widget-stats {
+	span {
+		display: block;
+		font-size: 1.6em;
+		line-height: 1.2em;
+		color: $grey;
+		margin-bottom: 15px;
+		strong {
+			font-size: 1.2em;
+		}
+	}
+	span:first-child {
+		font-size: 5.4em;
+		line-height: 1.4em;
+		color: #000;
+		margin-bottom: 0;
+	}
+}
+
+@media only screen and (min-width: 1200px) {
+	.span4 .vert2 {
+		.widget-stats {
+			span {
+				font-size: 2.6em;
+				strong {
+					font-size: 1.2em;
+				}
+			}
+			span:first-child {
+				font-size: 12.4em;
+			}
+		}
+	}
+}
+
+// Time & Date Box
+.time-date {
+	.time {
+		font-size: 7.4em;
+		line-height: 0.7em;
+		border-bottom: 1px solid $lightgrey;
+		span {
+			font-size: 0.2em;
+			color: $grey;
+			text-transform: uppercase;
+			font-style: normal;
+		}
+		@media only screen and (min-width: 1400px) {
+			span {
+				font-size: 0.3em;
+			}
+		}
+	}
+	.date {
+		font-size: 2.2em;
+		line-height: 1em;
+		font-weight: bold;
+		color: #000;
+		padding: 15px 0;
+		span {
+			font-size: 0.7em;
+			font-weight: normal;
+			display: block;
+			line-height: 1em;
+			color: $grey;
+		}
+	}
+}
+
+// Post Statuses Box
+.post-statuses {
+	.status-levels {
+		width: 30%;
+		div {
+			text-indent: -9999px;
+		}
+	}
+	.status-text {
+		width: 70%;
+		text-transform: uppercase;
+		font-size: 1.2em;
+		color: $grey;
+		div {
+			background: none;
+			padding: 15px 0;
+		}
+		strong {
+			font-size: 1.6em;
+			width: 60px;
+			padding-right: 5px;
+			text-align: right;
+			display: inline-block;
+		}
+	}
+	.scheduled {
+		background: $green;
+		strong {
+			color: $green;
+		}
+	}
+	.pending {
+		background: #fcd039;
+		strong {
+			color: #fcd039;
+		}
+	}
+	.draft {
+		background: $red;
+		strong {
+			color: $red;
+		}
+	}
+}
+
+.todays-traffic {
+	ul {
+		li {
+			position: relative;
+			padding: 10px;
+			margin-bottom: 1px;
+			div {
+				position: relative;
+				z-index: 99;
+			}
+		}
+		li:before {
+			content: '';
+			position: absolute;
+			height: 34px;
+			top: 0;
+			left: 0;
+			z-index: 20;
+		}
+		li:nth-child(1):before {
+			background: $blue;
+			width: 80%;
+		}
+		li:nth-child(2):before {
+			background: lighten($blue, 3%);
+			width: 60%;
+		}
+		li:nth-child(3):before {
+			background: lighten($blue, 6%);
+			width: 40%;
+		}
+		li:nth-child(4):before {
+			background: lighten($blue, 10%);
+			width: 20%;
+		}
+	}
+}
+
+.table {
+	width: 100%;
+	display: block;
+	margin-bottom: 10px;
+	thead, tbody, tr {
+		display: block;
+	}
+	@media only screen and (min-width: 400px) {
+		thead {
+			display: none;
+		}
+	}
+	tbody {
+		tr {
+			background: $lightbrown;
+			margin-top: 5px;
+			display: block;
+			position: relative;
+			&:first-child {
+				margin-top: 0;
+			}
+		}
+		@media only screen and (min-width: 1200px) {
+			tr {
+				padding: 0 10px 0 40px;
+				margin-top: 15px;
+			}
+		}
+		td {
+			padding: 10px;
+			text-align: right;
+			color: $grey;
+			strong {
+				color: #000;
+			}
+			span {
+				display: none;
+			}
+			@media only screen and (min-width: 500px) {
+				span {
+					display: inline;
+				}
+			}
+			.callout {
+				color: $green;
+			}
+			&:first-child {
+				text-align: left;
+			}
+		}
+	}
+	.user-img {
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: none;
+	}
+	@media only screen and (min-width: 1200px) {
+		.user-img {
+			display: block;
+		}
+	}
+
+}
+*/

@@ -1,0 +1,354 @@
+/*
+ * These are the global generic form styles used throughout the Ghost admin,
+ * but mainly in the settings pages. Don't fuck with them.
+ *
+ * Table of Contents:
+ * 
+ * General
+ * Buttons
+ * Split Buttons
+ *
+ */
+
+
+/* =============================================================================
+   General
+   ============================================================================= */
+
+form {
+
+    fieldset {
+        border: none;
+        margin:0 0 3em 0;
+        padding:0;
+    }
+
+    legend {
+        display: block;
+        width: 100%;
+        margin: 2em 0;
+        border-bottom:$lightbrown 1px solid;
+        font-size: 1.2em;
+        line-height: 2.0em;
+        color: $brown;
+    }
+
+    label {
+        display:block;
+        margin:1.5em 0;
+        padding-left:140px;
+        position:relative;
+
+        b {
+            display:inline-block;
+            position: absolute;
+            top:0.5em;
+            left:0;
+            width:120px;
+            font-weight:normal;
+            color:$darkgrey;
+            text-align: right;
+        }
+    }
+
+    p {
+        color: darken($brown, 5%);
+        font-size: 1em;
+        margin:0;
+    }
+
+    input, textarea, select {
+        width: 260px;
+        padding: 5px 7px;
+        margin: 0;
+        outline: 0;
+        font-size: 1.1em;
+        line-height: 1.4em;
+        background: #fff;
+        border: darken($lightbrown, 5%) 1px solid;
+        @include border-radius;
+        @include transition;
+    }
+
+    textarea {
+        width:100%;
+        max-width:340px;
+        min-width:250px;
+        height:auto;
+        min-height: 80px;
+    }
+
+    input, select, textarea {
+        margin-bottom:5px;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="search"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    input[type="month"]:focus,
+    input[type="week"]:focus,
+    input[type="time"]:focus,
+    input[type="datetime"]:focus,
+    input[type="datetime-local"]:focus,
+    textarea:focus {
+        border:$grey 1px solid;
+        background:#fff;
+        outline:none;
+        outline-width:0;
+        @include transition;
+    }
+
+    select {
+        width:270px;
+        height:30px;
+        line-height:30px;
+    }
+
+    .radio input[type="radio"], 
+    .checkbox input[type="checkbox"] {
+        float: left;
+        width:auto;
+        margin-right:6px;
+        margin-top:4px;
+        font-size:1em;
+    }
+
+    .radio, .checkbox {
+        width:auto;
+        margin: 5px 0;
+        font-weight: normal;
+        padding:0.55em 0;
+    }
+
+}//form
+
+
+/* =============================================================================
+   Buttons
+   ============================================================================= */
+
+/* 
+ * Buttons are used for primary calls to action on a page.
+ * 
+ * Usage:
+ * <button type="button" class="button">Default</button>
+ */
+
+// This base style is used on all buttons
+%button {
+    @include box-sizing(border-box);
+    min-height: 35px;
+    width:auto;
+    display: inline-block;
+    padding: 0.9em 1.37em;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+    font-size: 11px; // Hack because Firefox sucks ass.
+    line-height: 13px; // Hack because Firefox sucks ass.
+    font-weight: 300;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: none;
+    @include border-radius(0.2em);
+    border: rgba(0,0,0,0.05) 0.1em solid;
+    @include transition(background 0.3s ease, border-color 0.3s ease);
+
+    &:hover {
+        border-color: transparent;
+        background: #f8f8f8;
+        text-decoration: none;
+    }
+}
+
+// This is the default button style
+.button,
+button,
+input[type="button"] {
+    @extend %button;
+    color:#777;
+    font-weight: normal;
+    background: #eee;
+    @include box-shadow(none);
+    &:hover {
+        border-color: rgba(0,0,0,0.1);
+    }
+}
+
+// Button for save/next/continue/confirm actions
+.button-save,
+button[type="submit"],
+input[type="submit"] {
+    @extend %button;
+    background: $blue;
+    @include box-shadow(none);
+    &:hover {background: darken($blue, 10%);}
+}
+
+// Button for actions which add stuff
+.button-add {
+    @extend %button;
+    background: $green;
+    &:hover {background: darken($green, 8%);}
+}
+
+// Button for deleting/removing stuff
+.button-delete,
+button[type="reset"],
+input[type="reset"] {
+    @extend %button;
+    background: $red;
+    @include box-shadow(none);
+    &:hover {background: darken($red, 10%);}
+}
+
+// Alternative button with more visual attention, but no extra semantic meaning
+.button-alt {
+    @extend %button;
+    background: lighten($darkgrey, 10%);
+    &:hover {background: $darkgrey;}
+}
+
+// This applies normal link styles to de-emphasise a button
+.button-link {
+    @extend %button;
+    color: $blue;
+    background: transparent;
+    border: none;
+    &:hover {
+        background: transparent;
+        text-decoration: underline;
+    }
+}
+
+
+/* =============================================================================
+   Split Buttons
+   ============================================================================= */
+
+/* 
+ * The splitbutton adds addition values to a button, via a dropdown (or drop-up).
+ * 
+ * Usage:
+ * <section class="splitbutton">
+ *     <button type="button" class="button">Split Up</button>
+ *     <a class="options" href="#"><span class="hidden">Options</span></a>
+ * </section>
+ */
+
+// These are the base styles applied to all splitbuttons
+%splitbutton {
+    display: inline-block;
+    position: relative;
+    font-size: 0; // hack to stop space after button
+    white-space: nowrap;
+    
+    button {
+        font-size: 11px; // hack to restore font size
+        @include border-top-right-radius(0);
+        @include border-bottom-right-radius(0);
+    }
+    
+    // This is the additional dropdown arrow, to the right of the button.
+    .options {
+        display: inline-block;
+        position:relative;
+        width: 35px;
+        height: 35px;
+        margin-left: -1px;
+        vertical-align: top;
+        text-align: center;
+        color: #fff;
+        background: #e5e5e5;
+        @include border-radius(0 2px 2px 0);
+        @include box-shadow(
+            rgba(0,0,0,0.02) 0 1px 0 inset,
+            rgba(0,0,0,0.02) -1px 0 0 inset,
+            rgba(0,0,0,0.02) 0 -1px 0 inset
+        );
+        @include icon($i-chevron-down, 9px) {
+            position: absolute;
+            top: 50%;
+            right: 50%;
+            margin-top: -3px;
+            margin-right: -5px;
+            @include transition(transform 0.3s ease, margin-top 0.3s ease);
+        };
+        
+        // Spin the arrow on hover
+        &:hover {
+            @include box-shadow(none);
+            background: #f8f8f8;
+            @include icon($i-chevron-down) {
+                @include transform(rotate(360deg));
+            };
+        }
+        
+        // If it has a class of "up" spin it an extra 180degress to point up
+        &.up:hover {
+            @include icon($i-chevron-down) {
+                margin-top:-4px;
+                @include transform(rotate(540deg));
+                @include transition(transform 0.6s ease);
+            };
+        }
+    }
+}
+
+// The default splitbutton
+.splitbutton {
+    @extend %splitbutton;
+    .options {
+        color:#777;
+        &:hover {
+            @include box-shadow(
+                rgba(0,0,0,0.07) 0 1px 0 inset,
+                rgba(0,0,0,0.07) -1px 0 0 inset,
+                rgba(0,0,0,0.07) 0 -1px 0 inset
+            );
+        }
+    }
+}
+
+// For save/next/continue/confirm actions
+.splitbutton-save {
+    @extend %splitbutton;
+    .options {
+        background: darken($blue, 5%);
+        &:hover {background: darken($blue, 10%);}
+    }
+}
+
+// For actions which add something
+.splitbutton-add {
+    @extend %splitbutton;
+    .options {
+        background: darken($green, 6%);
+        &:hover {background: darken($green, 8%);}
+    }
+}
+
+// For actions which delete something
+.splitbutton-delete {
+    @extend %splitbutton;
+    .options {
+        background: darken($red, 6%);
+        &:hover {background: darken($red, 10%);}
+    }
+}
+
+// Alternative style with more visual attention, but no extra semantic meaning
+.splitbutton-alt {
+    @extend %splitbutton;
+    .options {
+        background: lighten($darkgrey, 4%);
+        &:hover {background: $darkgrey;}
+    }
+}
+

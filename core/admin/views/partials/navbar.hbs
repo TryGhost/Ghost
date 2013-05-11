@@ -1,0 +1,25 @@
+<header id="global-header" class="navbar">
+    <a id="ghost" href="#" data-off-canvas="left"><span class="hidden">Ghost</span></a>
+    <nav id="global-nav" role="navigation">
+        <ul id="main-menu" >
+            {{#each adminNav}}
+            <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="/ghost{{path}}">{{name}}</a></li>
+            {{/each}}
+
+            <li id="usermenu" class="subnav">
+                <a href="#" data-toggle="ul">
+                    <img class="avatar" src="/core/admin/assets/img/user.jpg" alt="Avatar" />
+                    <span class="name">John O'Nolan</span>
+                </a>
+                <ul>
+                    <li class="usermenu-profile"><a href="#">Your Profile</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-help"><a href="#">Help / Support</a></li>
+                    <li class="usermenu-shortcuts"><a href="#">Keyboard Shortcuts</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-signout"><a href="#">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
