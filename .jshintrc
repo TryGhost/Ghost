@@ -1,0 +1,5 @@
+{
+	"node": true,
+	"browser": true,
+	"undef": true
+}

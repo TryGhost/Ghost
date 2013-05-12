@@ -75,7 +75,7 @@
                 polyglot: function () { return polyglot; },
                 paths: function () {
                     return {
-                        'activeTheme':  __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
+                        'activeTheme':  path.resolve(__dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/'),
                         'adminViews':   __dirname + '/admin/views/',
                         'lang':         __dirname + '/lang/'
                     };
@@ -158,7 +158,7 @@
                 ));
                 app.set('views', self.paths().activeTheme);
             } else {
-                app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + '/partials'}));
+                app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
                 app.set('views', self.paths().adminViews);
                 app.use('/core/admin/assets', express['static'](path.join(__dirname, '/admin/assets')));
             }
