@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "test": "nodeunit core/test/ghost"
   },
   "dependencies": {
     "express": "3.1.0",
