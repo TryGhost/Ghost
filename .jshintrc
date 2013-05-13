@@ -1,5 +1,10 @@
 {
-	"node": true,
-	"browser": true,
-	"undef": true
+    "node": true,
+    "browser": true,
+    "indent": 4,
+    "trailing": true,
+    "eqeqeq": true,
+    "undef": true,
+    "nomen": true,
+    "white": true
 }

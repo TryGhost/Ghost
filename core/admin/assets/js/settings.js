@@ -14,7 +14,7 @@
 
     };
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.settings-menu li').on('click', changePage);
     });
 

@@ -99,7 +99,7 @@
             }
         } else if (e.keyCode === keys.ESC) {
             suggestions.hide();
-        } else if ((e.keyCode === keys.ENTER || e.keyCode === keys.COMMA)&& searchTerm) { 
+        } else if ((e.keyCode === keys.ENTER || e.keyCode === keys.COMMA) && searchTerm) {
             // Submit tag using enter or comma key
             e.preventDefault();
             if (suggestions.is(":visible") && suggestions.children(".selected").length !== 0) {
