@@ -219,6 +219,89 @@
             padding:40px;
             @include breakpoint($netbook) { padding-left:15px; }
             @include breakpoint($letterbox) { top: 0; }
+
+            .sub{
+              color: rgb(158, 157, 149);
+              padding-bottom: 20px;
+              -moz-border-bottom-colors: none;
+              -moz-border-left-colors: none;
+              -moz-border-right-colors: none;
+              -moz-border-top-colors: none;
+              border-color: -moz-use-text-color -moz-use-text-color #EDECE4;
+              border-image: none;
+              border-right: 0 none;
+              border-style: none none solid;
+              border-width: 0 0 1px;
+              margin-bottom: 0px;
+            }
+            ul.users{
+              list-style: none;
+              padding: 0px;
+              margin-top: 0px;
+              width: 75%;
+              clear: both;
+              li{
+                display: block;
+                width: 100%;
+                padding: 20px;
+                @include box-sizing(border-box);
+                -moz-border-bottom-colors: none;
+                -moz-border-left-colors: none;
+                -moz-border-right-colors: none;
+                -moz-border-top-colors: none;
+                border-color: -moz-use-text-color -moz-use-text-color #EDECE4;
+                border-image: none;
+                border-right: 0 none;
+                border-style: none none solid;
+                border-width: 0 0 1px;
+
+                &:last-child{
+                  border: none;
+                }
+                .user_image{
+                  float: left;
+                  width: 40px;
+                  height: 40px;
+                  margin-right: 17px;
+                  background-color: #ccc;
+                  @include border-radius(20px);
+
+                  img{
+                    width: 40px;
+                    height: 40px;
+                    @include border-radius(20px);
+                  }
+                }
+
+                .user_info{
+                  float: left;
+                  span{
+                    display: block;
+                    line-height: 1em;
+                    &.name{
+                      margin-top: 0.4em;
+                      font-weight: bold;
+                      font-size: 1.2em;
+                    }
+                  }
+                }
+
+                label{
+                  float: right;
+                  color: #fff;
+                  padding: 4px 8px;
+                  margin-right: 20px;
+                  &.admin{
+                    background-color: #DE523A;
+                  }
+
+                  &.editor{
+                    background-color: #4A8CBD;
+                  }
+                }
+              }
+
+            }
         }
 
     }//.settings-content
