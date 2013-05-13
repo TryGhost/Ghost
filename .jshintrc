@@ -5,6 +5,6 @@
     "trailing": true,
     "eqeqeq": true,
     "undef": true,
-    "nomen": true,
+    "nomen": false,
     "white": true
 }

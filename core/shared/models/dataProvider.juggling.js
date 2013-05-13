@@ -40,8 +40,8 @@
                         var posts = JSON.parse(data),
                             post;
 
-                        _.each(posts, function (postData) {
-                            post = new schema.models.Post(postData);
+                        _.each(posts, function (_post) {
+                            post = new schema.models.Post(_post);
 
                             post.preCreate(function () {
                                 post.save(function (error, data) {
@@ -112,8 +112,8 @@
      * @param post
      * @param callback
      */
-    DataProvider.prototype.posts.add = function (postData, callback) {
-        var post = new schema.models.Post(postData);
+    DataProvider.prototype.posts.add = function (_post, callback) {
+        var post = new schema.models.Post(_post);
 
         post.preCreate(function () {
             post.save(callback);
@@ -125,9 +125,9 @@
      * @param post
      * @param callback
      */
-    DataProvider.prototype.posts.edit = function (postData, callback) {
-        schema.models.Post.findOne({where: {id: postData.id}}, function (error, post) {
-            post = _.extend(post, postData);
+    DataProvider.prototype.posts.edit = function (_post, callback) {
+        schema.models.Post.findOne({where: {id: _post.id}}, function (error, post) {
+            post = _.extend(post, _post);
 
             schema.models.Post.updateOrCreate(post, callback);
         });
