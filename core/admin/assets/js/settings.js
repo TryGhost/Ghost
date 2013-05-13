@@ -16,6 +16,10 @@
 
     $(document).ready(function() {
         $('.settings-menu li').on('click', changePage);
+
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-grey'
+        });
     });
 
 }(jQuery));
