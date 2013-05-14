@@ -158,7 +158,7 @@
                 ));
                 app.set('views', self.paths().activeTheme);
             } else {
-                app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + '/partials'}));
+                app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
                 app.set('views', self.paths().adminViews);
                 app.use('/core/admin/assets', express['static'](path.join(__dirname, '/admin/assets')));
             }

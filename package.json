@@ -20,6 +20,10 @@
     "jugglingdb-sqlite3": "git+https://github.com/jugglingdb/sqlite3-adapter.git#master"
   },
   "devDependencies": {
-      "nodeunit": "*"
+    "grunt": "~0.4.1",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-compass": "~0.2.0",
+    "nodeunit": "*",
+    "grunt-jslint": "~0.2.5a"
   }
 }
