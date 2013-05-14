@@ -22,8 +22,8 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-jshint2": "~0.1.1",
     "grunt-contrib-compass": "~0.2.0",
-    "nodeunit": "*"
+    "nodeunit": "*",
+    "grunt-jslint": "~0.2.5a"
   }
 }

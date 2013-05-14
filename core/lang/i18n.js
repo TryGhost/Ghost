@@ -19,6 +19,9 @@
 
             if (lang === 'en') {
                 // TODO: do stuff here to optimise for en
+
+                // Make jslint empty block error go away
+                lang = 'en';
             }
 
             /** TODO potentially use req.acceptedLanguages rather than the default

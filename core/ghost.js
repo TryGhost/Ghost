@@ -75,7 +75,7 @@
                 polyglot: function () { return polyglot; },
                 paths: function () {
                     return {
-                        'activeTheme':  path.resolve(__dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/'),
+                        'activeTheme':  __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
                         'adminViews':   __dirname + '/admin/views/',
                         'lang':         __dirname + '/lang/'
                     };
