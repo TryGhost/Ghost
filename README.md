@@ -1,3 +1,5 @@
+[![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
+
 # Ghost
 
 Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change.

@@ -3,20 +3,27 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "test": "nodeunit core/test/ghost"
   },
   "dependencies": {
     "express": "3.1.0",
     "express-hbs": "*",
     "connect-flash": "*",
+    "node-polyglot": "0.2.1",
     "css": "*",
     "moment": "*",
     "underscore": "*",
-    "nodeunit": "*",
     "showdown": "*",
-    "node-polyglot": "*",
     "sqlite3": "2.1.7",
     "jugglingdb": "0.2.x",
     "jugglingdb-sqlite3": "git+https://github.com/jugglingdb/sqlite3-adapter.git#master"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-compass": "~0.2.0",
+    "nodeunit": "*",
+    "grunt-jslint": "~0.2.5a"
   }
 }
