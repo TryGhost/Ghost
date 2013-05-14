@@ -7,9 +7,10 @@
             // JSLint all the things!
             jslint: {
                 directives: {
+                    node: true,
+                    browser: true,
                     nomen: true,
-                    todo: true,
-                    predef: ["__dirname", "module", "exports", "require", "process", "document", "console"]
+                    todo: true
                 },
                 files: [
                     // Lint files in the root, including Gruntfile.js
