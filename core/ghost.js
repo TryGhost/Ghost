@@ -165,6 +165,9 @@
             app.use(express['static'](self.paths().activeTheme));
             app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
 
+            // Super hack for getting rid of express-hbs content helper; use contentFor instead
+            delete hbs.handlebars.helpers.content;
+
             next();
         };
     };
