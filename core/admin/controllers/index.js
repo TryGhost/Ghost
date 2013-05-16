@@ -1,11 +1,12 @@
+/*global require, module */
 (function () {
     "use strict";
 
     var Ghost = require('../../ghost'),
         _ = require('underscore'),
         fs = require('fs'),
-        Showdown = require('showdown'),
-        converter = new Showdown.converter(),
+        when = require('when/node/function'),
+        api = require('../../shared/api'),
 
         ghost = new Ghost(),
         adminNavbar,
@@ -60,14 +61,15 @@
         },
         'editor': function (req, res) {
             if (req.params.id !== undefined) {
-                ghost.dataProvider().posts.findOne({'id': parseInt(req.params.id, 10)}, function (error, post) {
-                    res.render('editor', {
-                        bodyClass: 'editor',
-                        adminNav: setSelected(adminNavbar, 'blog'),
-                        title: post.title,
-                        content: post.content
+                api.posts.read({id: parseInt(req.params.id, 10)})
+                    .then(function (post) {
+                        res.render('editor', {
+                            bodyClass: 'editor',
+                            adminNav: setSelected(adminNavbar, 'blog'),
+                            title: post.get('title'),
+                            content: post.get('content')
+                        });
                     });
-                });
             } else {
                 res.render('editor', {
                     bodyClass: 'editor',
@@ -76,13 +78,14 @@
             }
         },
         'blog': function (req, res) {
-            ghost.dataProvider().posts.findAll(function (error, posts) {
-                res.render('blog', {
-                    bodyClass: 'manage',
-                    adminNav: setSelected(adminNavbar, 'blog'),
-                    posts: posts
+            api.posts.browse()
+                .then(function (posts) {
+                    res.render('blog', {
+                        bodyClass: 'manage',
+                        adminNav: setSelected(adminNavbar, 'blog'),
+                        posts: posts.toJSON()
+                    });
                 });
-            });
         },
         'settings': function (req, res) {
             res.render('settings', {
@@ -117,47 +120,6 @@
                         req.flash('success', 'Data populated');
                     }
                     res.redirect('/ghost/debug');
-                });
-            }
-        },
-        'posts': {
-            'index': function (req, res) {
-
-            },
-            'create': function (req, res) {
-                var entry = {
-                    title: req.body.title,
-                    content: req.body.markdown,
-                    contentHtml: '',
-                    language: ghost.config().defaultLang,
-                    status: ghost.statuses().draft,
-                    featured: false
-                };
-
-                entry.contentHtml = converter.makeHtml(entry.content);
-
-                ghost.dataProvider().posts.add(entry, function (error, post) {
-                    if (!error) {
-                        console.log('added', post);
-                        res.json({id: post.id});
-                    } else {
-                        res.json(400, {error: post.errors});
-                    }
-                });
-            },
-            'edit': function (req, res) {
-                var entry = {
-                    id: parseInt(req.body.id, 10),
-                    title: req.body.title,
-                    content: req.body.markdown,
-                    contentHtml: ''
-                };
-
-                entry.contentHtml = converter.makeHtml(entry.content);
-
-                ghost.dataProvider().posts.edit(entry, function (error, post) {
-                    console.log('edited', post);
-                    res.json({id: parseInt(post.id, 10)});
                 });
             }
         }

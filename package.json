@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "express": "3.1.0",
-    "express-hbs": "*",
+    "express-hbs": "0.1.3-pre",
     "connect-flash": "*",
     "node-polyglot": "0.2.1",
     "css": "*",
@@ -16,7 +16,10 @@
     "underscore": "*",
     "showdown": "*",
     "sqlite3": "2.1.7",
-    "jugglingdb": "0.2.x",
+    "bookshelf": "0.1.x",
+    "knex": "0.1.x",
+    "when": "~2.1.0",
+    "jugglingdb": "0.2.0-29",
     "jugglingdb-sqlite3": "git+https://github.com/jugglingdb/sqlite3-adapter.git#master"
   },
   "devDependencies": {
