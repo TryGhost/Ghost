@@ -33,13 +33,11 @@
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response
         edit: function (postData) {
-            console.log('edit data', postData);
             return when.call(ghost.dataProvider().posts.edit, postData);
         },
         // takes a json object representing a post,
         // returns the resulting post in a json response
         add: function (postData) {
-            console.log('data', postData);
             return when.call(ghost.dataProvider().posts.add, postData);
         },
         // takes an identifier (id or slug?)

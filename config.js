@@ -55,6 +55,19 @@
      */
     config.homepage.posts = 4;
 
+    config.database = {
+        development: {
+            client: 'sqlite3',
+            connection: {
+                filename: './core/shared/data/testdb.db'
+            }
+        },
+
+        staging: {},
+
+        production: {}
+    };
+
     /**
      * @property {Object} exports
      */

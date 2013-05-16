@@ -12,10 +12,13 @@
         hbs = require('express-hbs'),
         _ = require('underscore'),
         Polyglot = require('node-polyglot'),
+
         JsonDataProvider = require('./shared/models/dataProvider.json'),
         jsonDataProvider = new JsonDataProvider(),
-        JugglingDataProvider = require('./shared/models/dataProvider.juggling'),
-        jugglingDataProvider = new JugglingDataProvider(),
+//        JugglingDataProvider = require('./shared/models/dataProvider.juggling'),
+//        jugglingDataProvider = new JugglingDataProvider(),
+        BookshelfDataProvider = require('./shared/models/dataProvider.bookshelf'),
+        bookshelfDataProvider = new BookshelfDataProvider(),
         Ghost,
         instance,
         filterCallbacks = {},
@@ -66,7 +69,7 @@
                 app: function () { return app; },
                 config: function () { return config; },
                 globals: function () { return globals; }, // there's no management here to be sure this has loaded
-                dataProvider: function () { return jugglingDataProvider; },
+                dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
                 paths: function () {

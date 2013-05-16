@@ -1,6 +1,6 @@
 // # Ghost main app file
 
-/*global require */
+/*global require, __dirname */
 (function () {
     "use strict";
 
@@ -12,14 +12,17 @@
         flash = require('connect-flash'),
         Ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
-        helpers = require('./core/frontend/helpers'),
-        auth,
+        helpers = require('./core/frontend/helpers');
+
+
+
+    var auth,
 
     // ## Variables
-    /**
-     * Create new Ghost object
-     * @type {Ghost}
-     */
+        /**
+         * Create new Ghost object
+         * @type {Ghost}
+         */
         ghost = new Ghost();
 
     ghost.app().configure('development', function () {
@@ -78,4 +81,9 @@
     ghost.app().listen(3333, function () {
         console.log("Express server listening on port " + 3333);
     });
+//    }, function (e) {
+//        console.log(e.toString());
+//    }).then(null, function (e) {
+//        console.log(e.stack);
+//    });
 }());
