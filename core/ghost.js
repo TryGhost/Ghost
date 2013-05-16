@@ -1,11 +1,7 @@
 // # Ghost Module
 // Defines core methods required to build the frontend
 
-/**
- * global module,
- *        require,
- *        __dirname
- **/
+/*global module, require, __dirname */
 (function () {
     "use strict";
 
