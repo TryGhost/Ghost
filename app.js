@@ -1,25 +1,28 @@
 // # Ghost main app file
 
-/*global require */
+/*global require, __dirname */
 (function () {
     "use strict";
 
     // Module dependencies.
     var express = require('express'),
-        fs = require('fs'),
         admin = require('./core/admin/controllers'),
         frontend = require('./core/frontend/controllers'),
+        api = require('./core/shared/api'),
         flash = require('connect-flash'),
         Ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
-        helpers = require('./core/frontend/helpers'),
-        auth,
+        helpers = require('./core/frontend/helpers');
+
+
+
+    var auth,
 
     // ## Variables
-    /**
-     * Create new Ghost object
-     * @type {Ghost}
-     */
+        /**
+         * Create new Ghost object
+         * @type {Ghost}
+         */
         ghost = new Ghost();
 
     ghost.app().configure('development', function () {
@@ -46,11 +49,13 @@
 
     /**
      * API routes..
-     * @todo convert these into a RESTful, public, authenticated API!
+     * @todo auth should be public auth not user auth
      */
-    ghost.app().post('/api/v0.1/posts/create', auth, admin.posts.create);
-    ghost.app().post('/api/v0.1/posts/edit', auth, admin.posts.edit);
-    ghost.app().get('/api/v0.1/posts', auth, admin.posts.index);
+    ghost.app().get('/api/v0.1/posts', auth, api.requestHandler(api.posts.browse));
+    ghost.app().get('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.read));
+    ghost.app().post('/api/v0.1/posts/create', auth, api.requestHandler(api.posts.add));
+    ghost.app().put('/api/v0.1/posts/edit', auth, api.requestHandler(api.posts.edit));
+    ghost.app()['delete']('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.destroy));
 
     /**
      * Admin routes..
@@ -75,6 +80,10 @@
 
     ghost.app().listen(3333, function () {
         console.log("Express server listening on port " + 3333);
-        console.log('process: ', process.env);
     });
+//    }, function (e) {
+//        console.log(e.toString());
+//    }).then(null, function (e) {
+//        console.log(e.stack);
+//    });
 }());

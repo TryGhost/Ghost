@@ -56,7 +56,7 @@
     function save() {
         var entry = {
                 title: document.getElementById('entry-title').value,
-                markdown: editor.getValue()
+                content: editor.getValue()
             },
             urlSegments = window.location.pathname.split('/');
 
@@ -64,7 +64,7 @@
             entry.id = urlSegments[3];
             $.ajax({
                 url: '/api/v0.1/posts/edit',
-                method: 'POST',
+                method: 'PUT',
                 data: entry,
                 success: function (data) {
                     console.log('response', data);
