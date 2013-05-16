@@ -23,12 +23,12 @@
         // takes filter / pagination parameters
         // returns a list of posts in a json response
         browse: function (options) {
-            return when.call(ghost.dataProvider().posts.findAll);
+            return when.call(ghost.dataProvider().posts.findAll, options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response
-        read: function (id) {
-            return when.call(ghost.dataProvider().posts.findOne, {id: id});
+        read: function (args) {
+            return when.call(ghost.dataProvider().posts.findOne, args);
         },
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response

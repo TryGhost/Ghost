@@ -61,13 +61,13 @@
         },
         'editor': function (req, res) {
             if (req.params.id !== undefined) {
-                api.posts.read(parseInt(req.params.id, 10))
+                api.posts.read({id: parseInt(req.params.id, 10)})
                     .then(function (post) {
                         res.render('editor', {
                             bodyClass: 'editor',
                             adminNav: setSelected(adminNavbar, 'blog'),
-                            title: post.title,
-                            content: post.content
+                            title: post.get('title'),
+                            content: post.get('content')
                         });
                     });
             } else {
@@ -83,7 +83,7 @@
                     res.render('blog', {
                         bodyClass: 'manage',
                         adminNav: setSelected(adminNavbar, 'blog'),
-                        posts: posts
+                        posts: posts.toJSON()
                     });
                 });
         },
