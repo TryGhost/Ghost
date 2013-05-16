@@ -4,7 +4,7 @@
  * Vastly incomplete!
  */
 
-/*globals module, require */
+/*global module, require */
 (function () {
     "use strict";
 
@@ -12,6 +12,8 @@
         schema = new Schema('sqlite3', {
             database: __dirname + '/../data/datastore.db'
         }),
+        Showdown = require('showdown'),
+        converter = new Showdown.converter(),
         Post,
         User,
         Setting;
@@ -39,16 +41,15 @@
     };
 
     Post.prototype.preCreate = function (next) {
-        console.log('pre create 1', this);
+        //console.log('pre create 1', this);
 
-        if (this.createdAt === undefined) {
-            this.createdAt = new Date();
-        }
-        if (this.slug === undefined) {
-            this.slug = this.generateSlug();
-        }
+        this.createdAt = this.createdAt || new Date();
+        this.slug = this.slug || this.generateSlug();
+//        this.language = this.language || ghost.config().defaultLang;
+//        this.status = this.status || ghost.statuses().draft
+        this.featured = false;
 
-        console.log('pre create 2', this);
+       // console.log('pre create 2', this);
         next();
     };
 
@@ -59,11 +60,12 @@
     //Post.validatesUniquenessOf('slug');
     //Post.validatesLengthOf('language', {min: 2, max: 5}, "The language code should be between 2 and 5 chars long, E.g. 'en' or 'en_GB' ");
 
-
-    Post.beforeSave = function (next, data) {
+    // doesn't get run on update
+    Post.beforeSave = Post.beforeUpdate = function (next, data) {
         console.log('before s1', data);
         // set updated
         data.updatedAt = new Date();
+        data.contentHtml = converter.makeHtml(data.content);
         next();
     };
 

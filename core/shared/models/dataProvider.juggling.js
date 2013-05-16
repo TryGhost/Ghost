@@ -101,6 +101,7 @@
 
     /**
      * Naive find one where args match
+     * @param args
      * @param callback
      */
     DataProvider.prototype.posts.findOne = function (args, callback) {
@@ -109,7 +110,7 @@
 
     /**
      * Naive add
-     * @param post
+     * @param _post
      * @param callback
      */
     DataProvider.prototype.posts.add = function (_post, callback) {
@@ -122,7 +123,7 @@
 
     /**
      * Naive edit
-     * @param post
+     * @param _post
      * @param callback
      */
     DataProvider.prototype.posts.edit = function (_post, callback) {
@@ -130,6 +131,13 @@
             post = _.extend(post, _post);
 
             schema.models.Post.updateOrCreate(post, callback);
+        });
+    };
+
+
+    DataProvider.prototype.posts.destroy = function (_identifier, callback) {
+        schema.models.Post.findOne({where: {id: _identifier}}, function (error, post) {
+            schema.models.Post.destroy(post.id, callback);
         });
     };
 

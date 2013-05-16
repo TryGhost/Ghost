@@ -15,8 +15,9 @@
     "moment": "*",
     "underscore": "*",
     "showdown": "*",
+    "when": "*",
     "sqlite3": "2.1.7",
-    "jugglingdb": "0.2.x",
+    "jugglingdb": "0.2.0-29",
     "jugglingdb-sqlite3": "git+https://github.com/jugglingdb/sqlite3-adapter.git#master"
   },
   "devDependencies": {
