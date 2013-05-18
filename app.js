@@ -12,13 +12,11 @@
         flash = require('connect-flash'),
         Ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
-        helpers = require('./core/frontend/helpers');
-
-
-
-    var auth,
+        helpers = require('./core/frontend/helpers'),
 
     // ## Variables
+        auth,
+
         /**
          * Create new Ghost object
          * @type {Ghost}
@@ -68,7 +66,10 @@
     ghost.app().get('/ghost/debug', auth, admin.debug.index);
     ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
     ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
-    ghost.app().get('/ghost', auth, admin.index);
+    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+        res.redirect('/ghost/');
+    });
+    ghost.app().get('/ghost/', auth, admin.index);
 
     /**
      * Frontend routes..
