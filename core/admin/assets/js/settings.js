@@ -30,6 +30,23 @@
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-grey'
         });
+
+        $('.button-save').click(function(e){
+            e.preventDefault();
+            console.log(getSettings());
+        })
     });
+
+    var defaultSettings = {
+        title: 'My Blog',
+        description: ''
+    };
+
+    function getSettings () {
+        return $.extend(defaultSettings, {
+            title       : $('#blog-title').val(),
+            description : $('#blog-description').val()
+        });
+    }
 
 }(jQuery));
