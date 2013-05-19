@@ -25,7 +25,8 @@
 
     ghost.app().configure('development', function () {
         ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-        ghost.app().use(express.errorHandler());
+        ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        ghost.app().use(express.logger('dev'));
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser());
         ghost.app().use(express.cookieParser('try-ghost'));
