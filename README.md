@@ -6,7 +6,7 @@ Visit the project's home page at [http://tryghost.org](http://tryghost.org)!
 
 ## Early-Access Developer Introduction
 
-Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change. A fully list for the currently-working features can be found [here](https://github.com/TryGhost/Ghost/wiki/Working-Features).
+Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change. A full list of the currently-working features can be found [here](https://github.com/TryGhost/Ghost/wiki/Working-Features).
 
 The top priorities right now are:
 
@@ -38,17 +38,17 @@ The pre-compiled package should be downloaded, extracted and placed in the node\
 
 ## Versioning
 
-For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Bootstrap will be maintained under the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
+For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
 
 Releases will be numbered with the following format:
 
 `<major>.<minor>.<patch>`
 
-And constructed with the following guidelines:
+Constructed with the following guidelines:
 
-* A new major release indicates a large change where backwards compatibility is broken.
-* A new minor release indicates a normal change that maintains backwards compatibility
-* A new patch release indicates a bugfix or small change which does not affect compatibility.
+* A new *major* release indicates a large change where backwards compatibility is broken.
+* A new *minor* release indicates a normal change that maintains backwards compatibility.
+* A new *patch* release indicates a bugfix or small change which does not affect compatibility.
 
 ## Bugs
 
@@ -70,30 +70,13 @@ Keep track of Ghost development and Ghost community activity.
 * Read and subscribe to the [The Official Ghost Blog](http://blog.tryghost.org).
 * Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel.
 
-## Dependencies:
-
-* [Express](http://expressjs.com/) framework
-* [Handlebars](http://handlebarsjs.com/) for templating
-* [Moment](http://momentjs.com/) for time / date manipulation
-* [Underscore](http://underscorejs.org/) for object & array utils
-* [NodeUnit](https://github.com/caolan/nodeunit) for unit testing
-* [SQLite3](http://www.sqlite.org/) for data storage
-* [JugglingDB](http://jugglingdb.co/) ORM for interacting with the database
-* [Polyglot](http://airbnb.github.io/polyglot.js/) for i18n
-
-### Front-End Libraries:
-
-* [jQuery](http://jquery.com/) 1.9.1
-* [Showdown](https://github.com/coreyti/showdown) for converting markdown to HTML
-* [CodeMirror](http://codemirror.net/) editor
-
 ## Compiling CSS & JavaScript
 
 A SASS compiler is required to work with the CSS in this project.
 
 Run `compass compile --css-dir=css` from /core/admin/assets.
 
-We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) and [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
 
 ## Copyright & License
 
