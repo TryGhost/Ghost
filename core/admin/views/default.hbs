@@ -16,7 +16,6 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
 
         <link rel="shortcut icon" href="/favicon.ico">
-        <link rel="logo" type="image/svg" href="/core/admin/assets/img/logo.svg"/>
         <meta http-equiv="cleartype" content="on">
 
         <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Lato:300,400,700">
@@ -32,7 +31,9 @@
         {{{block "headScripts"}}}
     </head>
     <body class="{{bodyClass}}">
-        {{> navbar}}
+        {{#unless hideNavbar}}
+            {{> navbar}}
+        {{/unless}}
 
         <main role="main">
             {{> flashes}}
