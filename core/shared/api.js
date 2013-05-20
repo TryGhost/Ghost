@@ -16,6 +16,7 @@
         ghost = new Ghost(),
         posts,
         users,
+        settings,
         requestHandler;
 
     // # Posts
@@ -56,9 +57,22 @@
             return when.call(ghost.dataProvider().users.check, postData);
         }
     };
-//        settings: {},
-//        categories: {},
-//        post_categories: {}
+
+    // # Settings
+    settings = {
+        browse: function (options) {
+            return when.call(ghost.dataProvider().settings.browse, options);
+        },
+        read: function (key) {
+            return when.call(ghost.dataProvider().settings.read, key);
+        },
+        edit: function (key, value) {
+            return when.call(ghost.dataProvider().settings.edit, key, value);
+        }
+    };
+
+    // categories: {};
+    // post_categories: {};
 
 
     // requestHandler
@@ -78,5 +92,6 @@
 
     module.exports.posts = posts;
     module.exports.users = users;
+    module.exports.settings = settings;
     module.exports.requestHandler = requestHandler;
 }());
