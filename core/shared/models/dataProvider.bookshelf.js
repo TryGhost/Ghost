@@ -6,12 +6,10 @@
 (function () {
     "use strict";
 
-    var knex  = require('knex'),
+    var knex = require('./knex_init'),
         models = require('./models'),
         DataProvider,
         instance;
-
-    knex.Initialize(require('../../../config').database[process.env.NODE_ENV || 'development']);
 
     DataProvider = function () {
         if (!instance) {

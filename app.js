@@ -12,13 +12,11 @@
         flash = require('connect-flash'),
         Ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
-        helpers = require('./core/frontend/helpers');
-
-
-
-    var auth,
+        helpers = require('./core/frontend/helpers'),
 
     // ## Variables
+        auth,
+
         /**
          * Create new Ghost object
          * @type {Ghost}
@@ -31,9 +29,14 @@
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser());
         ghost.app().use(express.cookieParser('try-ghost'));
-        ghost.app().use(express.session({ cookie: { maxAge: 60000 }}));
-        ghost.app().use(flash());
+        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000 }}));
         ghost.app().use(ghost.initTheme(ghost.app()));
+        ghost.app().use(flash());
+        // bind locals - options which appear in every view - perhaps this should be admin only
+        ghost.app().use(function (req, res, next) {
+            res.locals.messages = req.flash();
+            next();
+        });
     });
 
     /**
@@ -42,7 +45,14 @@
      *
      * @type {*}
      */
-    auth = express.basicAuth('ghostadmin', 'Wh0YouGonnaCall?');
+    auth = function (req, res, next) {
+        if (!req.session.user) {
+            req.flash('warn', "Please login");
+            res.redirect('/ghost/login/?redirect=' + encodeURIComponent(req.path));
+        } else {
+            next();
+        }
+    };
 
     helpers.loadCoreHelpers(ghost);
 
@@ -61,6 +71,10 @@
      * Admin routes..
      * @todo put these somewhere in admin
      */
+
+    ghost.app().get(/^\/logout\/?$/, admin.logout);
+    ghost.app().get('/ghost/login/', admin.login);
+    ghost.app().post('/ghost/login/', admin.auth);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
     ghost.app().get('/ghost/editor', auth, admin.editor);
     ghost.app().get('/ghost/blog', auth, admin.blog);
@@ -68,7 +82,10 @@
     ghost.app().get('/ghost/debug', auth, admin.debug.index);
     ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
     ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
-    ghost.app().get('/ghost', auth, admin.index);
+    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+        res.redirect('/ghost/');
+    });
+    ghost.app().get('/ghost/', auth, admin.index);
 
     /**
      * Frontend routes..
@@ -81,9 +98,4 @@
     ghost.app().listen(3333, function () {
         console.log("Express server listening on port " + 3333);
     });
-//    }, function (e) {
-//        console.log(e.toString());
-//    }).then(null, function (e) {
-//        console.log(e.stack);
-//    });
 }());

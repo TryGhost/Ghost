@@ -5,7 +5,7 @@
 
 
     var when    = require('when'),
-        knex    = require('./knex_init'),
+        knex    = require('../../models/knex_init'),
         fixtures = require('../fixtures/001'),
         up,
         down;

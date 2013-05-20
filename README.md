@@ -1,8 +1,12 @@
-[![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
+# [Ghost v0.1](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
 
-# Ghost
+Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/pulse).
 
-Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change.
+Visit the project's home page at [http://tryghost.org](http://tryghost.org)!
+
+## Early-Access Developer Introduction
+
+Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change. A full list of the currently-working features can be found [here](https://github.com/TryGhost/Ghost/wiki/Working-Features).
 
 The top priorities right now are:
 
@@ -12,76 +16,75 @@ The top priorities right now are:
 * Improving core architecture & design - modular structure, better dependency injection, testable code with tests
 
 
-
-###To Install:
+## Getting Started:
 
 **Note:** It is highly recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for developing Ghost.
 
 1. Clone the git repo
-1. cd into the project folder and run ```npm install```.
+1. cd into the project folder and run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild", follow the Sqlite3 install instructions
-1. cd into /core/admin/assets and run ```compass compile --css-dir=css```
-
+1. cd into /core/admin/assets and run `compass compile --css-dir=css`
 
 Frontend can be located at [localhost:3333](localhost:3333), Admin is at [localhost:3333/ghost](localhost:3333/ghost)
 
+### SQLite3 Install Instructions
+Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
 
-#### Sqlite3 Install Instructions
-Ghost depends upon sqlite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
+**For Mac users:** The easiest way to do this is to download/install XCode from the App Store (free). This will automatically install all the tools you need - you don't need to open the app.
 
-However, if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled sqlite3 package for your OS.
+**For Everyone else:** if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled SQLite3 package for your OS. We have created some of these [here](https://github.com/developmentseed/node-sqlite3/issues/106).
 
-I have created some of these, and they can be obtained from [this GitHub issue](https://github.com/developmentseed/node-sqlite3/issues/106).
+The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the SQLite3 package, replace it with the files you downloaded from github. Be sure that all the SQLite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
 
-The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the sqlite3 package, replace it with the files you downloaded from github. Be sure that all the sqlite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
+## Versioning
 
+For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
 
-###Dependencies:
+Releases will be numbered with the following format:
 
-* express.js framework
-* handlebars for templating
-* standard css for frontend
-* sass for admin (pre-compiled)
-* moment.js for time / date manipulation
-* underscore for object & array utils
-* showdown for converting markdown to HTML
-* nodeunit for unit testing
-* sqlite3 for data storage
-* jugglingdb ORM for interacting with the database
-* Polyglot.js for i18n
+`<major>.<minor>.<patch>`
 
-#### Frontend libraries:
+Constructed with the following guidelines:
 
-* jQuery 1.9.1
-* showdown for converting markdown to HTML
-* codemirror editor
+* A new *major* release indicates a large change where backwards compatibility is broken.
+* A new *minor* release indicates a normal change that maintains backwards compatibility.
+* A new *patch* release indicates a bugfix or small change which does not affect compatibility.
 
-### Working features:
+## Bugs
 
-* Dashboard
-	* new post link
-* Admin menu
-	* G, dashboard, content, new post & settings menu items go to correct pages
-* Content screen
-	* Lists all posts with correct titles (incorrect time etc)
-    * Select post in list highlights that post and opens it in the preview pane
-* Write screen
-	* Live preview works for all standard markdown
-    * Save draft button saves entered title & content. Everything is published by default.
-    * Editing/opening existing post puts correct info in title and content panels & save updates content.
-* Database
-	* The database is created and populated with basic data on first run of the server
-    * New posts and edits save and last forever
-    * The data can be reset by opening data/datastore.db and emptying the file. The next restart of the server will cause the database to be recreated and repopulated.
-* Frontend
-	* Homepage lists a number of posts as configured in config.js
-    * Clicking on an individual post loads an individual post page
-    * Date formatting helper uses moment
+If you have a bug or feature request, please [open a new issue](https://github.com/TryGhost/Ghost/issues). Before opening any issue, please search for existing issues and read the [Issue Guidelines](https://github.com/necolas/issue-guidelines), written by [Nicolas Gallagher](https://github.com/necolas/).
 
-### Front End Work
+## Contributions
+
+Pleas submit pull requests in order to contribute back to Ghost - referencing any relevant or open issues in the bug tracker. 
+
+All code should conform, strictly, to the Ghost project [Code Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
+
+All HTML and CSS should conform to the [Code Guide](http://github.com/mdo/code-guide), maintained by [Mark Otto](http://github.com/mdo).
+
+## Community
+
+Keep track of Ghost development and Ghost community activity.
+
+* Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](http://facebook.com/tryghostapp) and [Google+](https://plus.google.com/114465948129362706086).
+* Read and subscribe to the [The Official Ghost Blog](http://blog.tryghost.org).
+* Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel.
+
+## Compiling CSS & JavaScript
 
 A SASS compiler is required to work with the CSS in this project.
 
-Run ```compass compile --css-dir=css``` from /core/admin/assets.
+Run `compass compile --css-dir=css` from /core/admin/assets.
 
-We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) and [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+
+## Copyright & License
+
+Copyright (C) 2013 Ghost
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

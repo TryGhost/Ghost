@@ -53,6 +53,26 @@
     }
 
     adminControllers = {
+        'login': function (req, res) {
+            res.render('login', {
+                bodyClass: 'ghost-login',
+                hideNavbar: true,
+                adminNav: setSelected(adminNavbar, 'login')
+            });
+        },
+        'auth': function (req, res) {
+            if (req.body.email === 'ghostadmin' && req.body.password === 'Wh0YouGonnaCall?') {
+                req.session.user = "ghostadmin";
+                res.redirect(req.query.redirect || '/ghost/');
+            } else {
+                res.redirect('/ghost/login/');
+            }
+        },
+        'logout': function (req, res) {
+            delete req.session.user;
+            req.flash('success', "You were successfully logged out");
+            res.redirect('/ghost/login/');
+        },
         'index': function (req, res) {
             res.render('dashboard', {
                 bodyClass: 'dashboard',
@@ -97,9 +117,7 @@
             index: function (req, res) {
                 res.render('debug', {
                     bodyClass: 'settings',
-                    adminNav: setSelected(adminNavbar, 'settings'),
-                    messages: req.flash(),
-                    test: 'Hello world'
+                    adminNav: setSelected(adminNavbar, 'settings')
                 });
             },
             'dbdelete': function (req, res) {

@@ -1,61 +1,59 @@
-{{!< default}}
-<main role="main">
+{{#contentFor 'bodyScripts'}}
+    <script src="/core/admin/assets/js/blog.js"></script>
+{{/contentFor}}
 
-  <section class="content-list">
-    <header class="floatingheader">
+{{!< default}}
+<section class="content-list">
+  <header class="floatingheader">
       <section class="content-filter">
-        <a class="dropdown" href="#" data-toggle=".menu-drop">All Posts</a>
-        <ul class="menu-drop">
-          <li class="active"><a href="#">All Posts</a></li>
-          <li><a href="#">Recently Edited</a></li>
-          <li><a href="#">By Author...</a></li>
-          <li><a href="#">Search</a></li>
-        </ul>
+          <a class="dropdown" href="#" data-toggle=".menu-drop">All Posts</a>
+          <ul class="menu-drop">
+              <li class="active"><a href="#">All Posts</a></li>
+              <li><a href="#">Recently Edited</a></li>
+              <li><a href="#">By Author...</a></li>
+              <li><a href="#">Search</a></li>
+          </ul>
       </section>
       <a href="/ghost/editor" class="button button-add"><span class="hidden">New Post</span></a>
-    </header>
-    <section class="content-list-content">
+  </header>
+  <section class="content-list-content">
       <ol>
-        {{#each posts}}
-            {{! #if featured class="featured"{{/if}}
-        <li data-id="{{id}}" data-content="{{content_html}}">
-          <a class="permalink" href="#">
-            <h3 class="entry-title">{{title}}</h3>
-            <section class="entry-meta">
-              <time datetime="2013-01-04" class="date">5 minutes ago</time>
-              {{!<span class="views">1,934</span>}}
-            </section>
-          </a>
-        </li>
-        {{/each}}
+          {{#each posts}}
+          {{! #if featured class="featured"{{/if}}
+              <li data-id="{{id}}" data-content="{{content_html}}">
+                  <a class="permalink" href="#">
+                      <h3 class="entry-title">{{title}}</h3>
+                      <section class="entry-meta">
+                          <time datetime="2013-01-04" class="date">5 minutes ago</time>
+                          {{!<span class="views">1,934</span>}}
+                      </section>
+                  </a>
+              </li>
+          {{/each}}
       </ol>
-    </section>
   </section>
+</section>
 
-  <section class="content-preview">
-    <header class="floatingheader">
+<section class="content-preview">
+<header class="floatingheader">
 
-      <a class="unfeatured" href="#"><span class="hidden">Star</span></a>
-      {{! TODO: JavaScript toggle featured/unfeatured}}
+    <a class="unfeatured" href="#"><span class="hidden">Star</span></a>
+    {{! TODO: JavaScript toggle featured/unfeatured}}
 
-      <span class="status">Published</span>
-      <span class="normal">by</span>
-      <span class="author">John O'Nolan</span>
-      <section class="post-controls">
+    <span class="status">Published</span>
+    <span class="normal">by</span>
+    <span class="author">John O'Nolan</span>
+    <section class="post-controls">
         <a class="post-edit" href="#"><span class="hidden">Edit Post</span></a>
         <a class="post-settings" href="#" data-toggle=".menu-drop-right"><span class="hidden">Post Settings</span></a>
         <ul class="menu-drop-right">
-          <li><a href="#">URL</a></li>
-          <li><a href="#">Something</a></li>
-          <li><a href="#">Delete</a></li>
+            <li><a href="#">URL</a></li>
+            <li><a href="#">Something</a></li>
+            <li><a href="#">Delete</a></li>
         </ul>
-      </section>
-    </header>
-    <section class="content-preview-content">
-      <div class="wrapper"></div>
     </section>
-  </section>
-
-</main>
-
-<script src="/core/admin/assets/js/blog.js"></script>
+</header>
+<section class="content-preview-content">
+    <div class="wrapper"></div>
+</section>
+</section>

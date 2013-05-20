@@ -1,32 +1,30 @@
 {
-  "name": "tryghost",
-  "version": "0.0.1",
+  "name": "Ghost",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "node app",
     "test": "nodeunit core/test/ghost"
   },
   "dependencies": {
-    "express": "3.1.0",
-    "express-hbs": "0.1.3-pre",
-    "connect-flash": "*",
-    "node-polyglot": "0.2.1",
-    "css": "*",
-    "moment": "*",
-    "underscore": "*",
-    "showdown": "*",
-    "sqlite3": "2.1.7",
+    "express": "3.1.x",
+    "express-hbs": "0.2.x",
+    "connect-flash": "0.1.x",
+    "node-polyglot": "0.2.x",
+    "css": "1.1.x",
+    "moment": "2.0.x",
+    "underscore": "1.4.x",
+    "showdown": "0.3.x",
+    "sqlite3": "2.1.x",
     "bookshelf": "0.1.x",
     "knex": "0.1.x",
-    "when": "~2.1.0",
-    "jugglingdb": "0.2.0-29",
-    "jugglingdb-sqlite3": "git+https://github.com/jugglingdb/sqlite3-adapter.git#master"
+    "when": "2.1.x"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-contrib-compass": "~0.2.0",
-    "nodeunit": "*",
-    "grunt-jslint": "~0.2.5a"
+    "grunt": "0.4.x",
+    "grunt-contrib-nodeunit": "0.1.x",
+    "grunt-contrib-compass": "0.2.x",
+    "nodeunit": "0.8.x",
+    "grunt-jslint": "0.2.x"
   }
 }
