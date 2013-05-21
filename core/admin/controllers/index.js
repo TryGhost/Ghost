@@ -61,11 +61,34 @@
             });
         },
         'auth': function (req, res) {
-            if (req.body.email === 'ghostadmin' && req.body.password === 'Wh0YouGonnaCall?') {
-                req.session.user = "ghostadmin";
-                res.redirect(req.query.redirect || '/ghost/');
-            } else {
-                res.redirect('/ghost/login/');
+            console.log(req.body);
+            api.users.find({email: req.body.email, pw: req.body.password}).then(function (user) {
+                if (user) {
+                    console.log('user found: ', user);
+                    req.session.user = "ghostadmin";
+                    res.redirect(req.query.redirect || '/ghost/');
+                } else {
+                    res.redirect('/ghost/login/');
+                }
+
+            });
+        },
+        'register': function (req, res) {
+            res.render('register', {
+                bodyClass: 'ghost-login',
+                hideNavbar: true,
+                adminNav: setSelected(adminNavbar, 'login')
+            });
+        },
+        'doRegister': function (req, res) {
+            // console.log(req.body);
+            if (req.body.email !== '' && req.body.password.length > 5) {
+                // console.log('okay, this is happening');
+                api.users.add({email: req.body.email, password: req.body.password}).then(function (user) {
+                    console.log('user added', user);
+                    res.redirect('/ghost/login/');
+
+                });
             }
         },
         'logout': function (req, res) {
@@ -138,6 +161,16 @@
                         req.flash('success', 'Data populated');
                     }
                     res.redirect('/ghost/debug');
+                });
+            },
+            'newUser': function (req, res) {
+                ghost.dataProvider().addNewUser(req, function (error) {
+                    if (error) {
+                        req.flash('error', error);
+                    } else {
+                        req.flash('success', 'User Added');
+                    }
+
                 });
             }
         }

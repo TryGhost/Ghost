@@ -60,15 +60,11 @@
     });
 
     User = Bookshelf.Model.extend({
-
         tableName: 'users',
-
         hasTimestamps: true,
-
         posts: function () {
             return this.hasMany(Posts, 'created_by');
         }
-
     });
 
     Setting = Bookshelf.Model.extend({
