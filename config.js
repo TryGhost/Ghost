@@ -60,7 +60,8 @@
             client: 'sqlite3',
             connection: {
                 filename: './core/shared/data/testdb.db'
-            }
+            },
+            debug: true
         },
 
         staging: {},

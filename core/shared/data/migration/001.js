@@ -35,6 +35,7 @@
                 t.string('username');
                 t.string('first_name');
                 t.string('last_name');
+                t.string('password');
                 t.string('email_address');
                 t.string('profile_picture');
                 t.string('cover_picture');

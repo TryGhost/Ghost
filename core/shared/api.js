@@ -48,7 +48,14 @@
     };
 
     // # Users
-    users = {};
+    users = {
+        add: function (postData) {
+            return when.call(ghost.dataProvider().users.add, postData);
+        },
+        find: function (postData) {
+            return when.call(ghost.dataProvider().users.check, postData);
+        }
+    };
 //        settings: {},
 //        categories: {},
 //        post_categories: {}
