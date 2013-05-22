@@ -18,7 +18,8 @@
     "sqlite3": "2.1.x",
     "bookshelf": "0.1.x",
     "knex": "0.1.x",
-    "when": "2.1.x"
+    "when": "2.1.x",
+    "bcrypt": "~0.7.5"
   },
   "devDependencies": {
     "grunt": "0.4.x",
