@@ -30,10 +30,10 @@
         ghost.registerThemeHelper('e', function (key, defaultString, options) {
             var output;
 
-            if (ghost.config().defaultLang === 'en' && _.isEmpty(options.hash) && !ghost.config().forceI18n) {
+            if (ghost.config.defaultLang === 'en' && _.isEmpty(options.hash) && !ghost.config.forceI18n) {
                 output = defaultString;
             } else {
-                output = ghost.polyglot().t(key, options.hash);
+                output = ghost.polyglot.t(key, options.hash);
             }
 
             return output;
