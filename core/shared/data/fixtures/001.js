@@ -63,5 +63,4 @@ module.exports = {
             "updated_by":        1
         }
     ]
-
 };
