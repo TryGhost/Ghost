@@ -1,61 +1,28 @@
 // # Ghost Configuration
 
-/**
- * global module
- **/
-(function () {
-    "use strict";
+module.exports = {
 
-    /**
-     * @module config
-     * @type {Object}
-     */
-    var config = {};
+    defaultLang: 'en',
 
-    // ## Admin settings
-
-    /**
-     * @property {string} defaultLang
-     */
-    config.defaultLang = 'en';
-
-    /**
-     * @property {boolean} forceI18n
-     */
-    config.forceI18n = true;
+    forceI18n: true,
 
     // ## Themes
 
-    /**
-     * @property {string} themeDir
-     */
+    themeDir: 'themes',
 
-    // Themes
-    config.themeDir = 'themes';
-
-    /**
-     * @property {string} activeTheme
-     */
-    config.activeTheme = 'casper';
+    activeTheme: 'casper',
 
     // ## Homepage settings
-    /**
-     * @module homepage
-     * @type {Object}
-     */
-    config.homepage = {};
 
-    /**
-     * @property {number} features
-     */
-    config.homepage.features = 1;
+    homepage: {
 
-    /**
-     * @property {number} posts
-     */
-    config.homepage.posts = 4;
+        features: 1,
 
-    config.database = {
+        posts: 4
+
+    },
+
+    database: {
         development: {
             client: 'sqlite3',
             connection: {
@@ -66,10 +33,6 @@
         staging: {},
 
         production: {}
-    };
+    }
 
-    /**
-     * @property {Object} exports
-     */
-    module.exports = config;
-}());
+};
