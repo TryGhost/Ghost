@@ -11,8 +11,8 @@
     I18n = function (ghost) {
 
         // TODO: validate
-        var lang = ghost.config().defaultLang,
-            path = ghost.paths().lang,
+        var lang = ghost.config.defaultLang,
+            path = ghost.paths.lang,
             langFilePath = path + lang + '.json';
 
         return function (req, res, next) {
@@ -44,7 +44,7 @@
                         throw e; // TODO - do something better with the error here
                     }
 
-                    ghost.polyglot().extend(data);
+                    ghost.polyglot.extend(data);
 
                     next();
                 });

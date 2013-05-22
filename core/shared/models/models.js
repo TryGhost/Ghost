@@ -32,8 +32,8 @@
             this.set('content_html', converter.makeHtml(this.get('content')));
 
             // refactoring of ghost required in order to make these details available here
-            // this.set('language', this.get('language') || ghost.config().defaultLang);
-            // this.set('status', this.get('status') || ghost.statuses().draft);
+            // this.set('language', this.get('language') || ghost.config.defaultLang);
+            // this.set('status', this.get('status') || ghost.statuses.draft);
 
         },
 
