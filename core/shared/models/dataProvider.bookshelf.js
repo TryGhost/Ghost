@@ -122,6 +122,7 @@
                 callback(null, _user);
             });
         });
+    };
 
     // ## Settings
     DataProvider.prototype.settings = function () { };
