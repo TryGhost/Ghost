@@ -15,17 +15,17 @@
 
     },
 
-    defaultSettings = {
-        title: 'My Blog',
-        description: ''
-    },
+        defaultSettings = {
+            title: 'My Blog',
+            description: ''
+        },
 
-    getSettings = function () {
-        return $.extend(defaultSettings, {
-            title       : $('#blog-title').val(),
-            description : $('#blog-description').val()
-        });
-    };
+        getSettings = function () {
+            return $.extend(defaultSettings, {
+                title       : $('#blog-title').val(),
+                description : $('#blog-description').val()
+            });
+        };
 
     $(document).ready(function () {
         if (location.hash) {
