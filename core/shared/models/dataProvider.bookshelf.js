@@ -10,6 +10,7 @@
         models = require('./models'),
         bcrypt = require('bcrypt'),
         when = require("when"),
+        _ = require("underscore"),
         DataProvider,
         instance;
 
@@ -128,27 +129,23 @@
     DataProvider.prototype.settings = function () { };
 
     DataProvider.prototype.settings.browse = function (_args, callback) {
-        models.Settings.forge(_args).fetch().then(function(settings){
+        models.Settings.forge(_args).fetch().then(function (settings) {
             callback(null, settings);
         }, callback);
     };
 
     DataProvider.prototype.settings.read = function (_key, callback) {
-        models.Settings.forge({ key: _key }).fetch().then(function(setting){
+        models.Setting.forge({ key: _key }).fetch().then(function (setting) {
             callback(null, setting);
         }, callback);
     };
 
-    DataProvider.prototype.settings.edit = function (_key, _value, callback) {
-        var promise;
-        if (typeof _key === 'object') {
-            promise = when.all(_.map(settings, function (value, key) {
-                models.Setting.forge({ key: _key }).set('value', _value).save();
-            }));
-        } else {
-            promise = models.Setting.forge({ key: _key }).set('value', _value).save();
-        }
-        promise.then(function (settings) {
+    DataProvider.prototype.settings.edit = function (_data, callback) {
+        when.all(_.map(_data, function (value, key) {
+            return models.Setting.forge({ key: key }).fetch().then(function (setting) {
+                return setting.set('value', value).save();
+            });
+        })).then(function (settings) {
             callback(null, settings);
         }, callback);
     };

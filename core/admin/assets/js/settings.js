@@ -13,6 +13,18 @@
         $('.settings-content').fadeOut().delay(250);
         $(newPage).fadeIn();
 
+    },
+
+    defaultSettings = {
+        title: 'My Blog',
+        description: ''
+    },
+
+    getSettings = function () {
+        return $.extend(defaultSettings, {
+            title       : $('#blog-title').val(),
+            description : $('#blog-description').val()
+        });
     };
 
     $(document).ready(function () {
@@ -31,22 +43,18 @@
             checkboxClass: 'icheckbox_square-grey'
         });
 
-        $('.button-save').click(function(e){
+        $('.button-save').click(function (e) {
             e.preventDefault();
-            console.log(getSettings());
-        })
-    });
-
-    var defaultSettings = {
-        title: 'My Blog',
-        description: ''
-    };
-
-    function getSettings () {
-        return $.extend(defaultSettings, {
-            title       : $('#blog-title').val(),
-            description : $('#blog-description').val()
+            var data = getSettings();
+            $.ajax({
+                method: 'PUT',
+                url: '/api/v0.1/settings/edit',
+                data: data,
+                success: function (res, xhr, c) {
+                    console.log(xhr, c);
+                }
+            });
         });
-    }
+    });
 
 }(jQuery));

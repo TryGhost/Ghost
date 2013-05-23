@@ -63,11 +63,11 @@
         browse: function (options) {
             return when.call(ghost.dataProvider().settings.browse, options);
         },
-        read: function (key) {
-            return when.call(ghost.dataProvider().settings.read, key);
+        read: function (options) {
+            return when.call(ghost.dataProvider().settings.read, options.key);
         },
-        edit: function (key, value) {
-            return when.call(ghost.dataProvider().settings.edit, key, value);
+        edit: function (options) {
+            return when.call(ghost.dataProvider().settings.edit, options);
         }
     };
 

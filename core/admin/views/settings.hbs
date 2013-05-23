@@ -27,11 +27,12 @@
             </section>
         </header>
         <section class="content">
+            {{#with settings}}
             <form id="settings-general">
                 <fieldset>
                     <label>
                         <b>Blog Title</b>
-                        <input id="blog-title" type="text" value="John O'Nolan" />
+                        <input id="blog-title" type="text" value="{{title}}" />
                         <p>How your blog name appears on the site</p>
                     </label>
 
@@ -81,7 +82,7 @@
 
                 </fieldset>
 
-
+            {{/with}}
             </form>
         </section>
     </section>
