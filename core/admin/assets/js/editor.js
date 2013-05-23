@@ -90,6 +90,22 @@
         }
     }
 
+    function getSelectedText()  {
+        if (window.getSelection) {
+            var sel = window.getSelection();
+            if (sel.rangeCount) {
+                var range = sel.getRangeAt(0).cloneRange();
+                range.surroundContents(span);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+        if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
     // ## Main Initialisation
     $(document).ready(function () {
 
@@ -148,10 +164,96 @@
             }
         });
 
+        // ## Shortcuts
         // Zen writing mode
         shortcut.add("Alt+Shift+Z", function () {
             $('body').toggleClass('zen');
         });
 
+        var CMTextarea = $(".CodeMirror textarea");
+        // Bold text
+        shortcut.add("Ctrl+B", function () {
+            return CMTextarea.addMarkdown({style: "bold", target: editor});
+        });
+
+        // Bold text
+        shortcut.add("Meta+B", function () {
+            return CMTextarea.addMarkdown({style: "bold", target: editor});
+        });
+
+        // Italic text
+        shortcut.add("Ctrl+I", function () {
+            return CMTextarea.addMarkdown({style: "italic", target: editor});
+        });
+
+        // Italic text
+        shortcut.add("Meta+I", function () {
+            return CMTextarea.addMarkdown({style: "italic", target: editor});
+        });
+
+        // Strike through text
+        shortcut.add("Ctrl+Alt+U", function () {
+            return CMTextarea.addMarkdown({style: "strike", target: editor});
+        });
+
+        // Inline Code
+        shortcut.add("Ctrl+Shift+K", function () {
+            return CMTextarea.addMarkdown({style: "code", target: editor});
+        });
+
+        // Inline Code
+        shortcut.add("Meta+K", function () {
+            return CMTextarea.addMarkdown({style: "code", target: editor});
+        });
+
+        // H1
+        shortcut.add("Alt+1", function () {
+            return CMTextarea.addMarkdown({style: "h1", target: editor});
+        });
+
+        // H2
+        shortcut.add("Alt+2", function () {
+            return CMTextarea.addMarkdown({style: "h2", target: editor});
+        });
+
+        // H3
+        shortcut.add("Alt+3", function () {
+            return CMTextarea.addMarkdown({style: "h3", target: editor});
+        });
+
+        // H4
+        shortcut.add("Alt+4", function () {
+            return CMTextarea.addMarkdown({style: "h4", target: editor});
+        });
+
+        // H5
+        shortcut.add("Alt+5", function () {
+            return CMTextarea.addMarkdown({style: "h5", target: editor});
+        });
+
+        // H6
+        shortcut.add("Alt+6", function () {
+            return CMTextarea.addMarkdown({style: "h6", target: editor});
+        });
+
+        // Link
+        shortcut.add("Ctrl+Shift+L", function () {
+            return CMTextarea.addMarkdown({style: "link", target: editor});
+        });
+
+        // Image
+        shortcut.add("Ctrl+Shift+I", function () {
+            return CMTextarea.addMarkdown({style: "image", target: editor});
+        });
+
+        // Blockquote
+        shortcut.add("Ctrl+Q", function () {
+            return CMTextarea.addMarkdown({style: "blockquote", target: editor});
+        });
+
+        // Current Date
+        shortcut.add("Ctrl+Shift+1", function () {
+            return CMTextarea.addMarkdown({style: "currentDate", target: editor});
+        });
     });
 }(jQuery, Showdown, CodeMirror, shortcut));
