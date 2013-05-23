@@ -131,10 +131,16 @@
                 });
         },
         'settings': function (req, res) {
-            res.render('settings', {
-                bodyClass: 'settings',
-                adminNav: setSelected(adminNavbar, 'settings')
-            });
+            api.settings.browse()
+                .then(function (settings) {
+                    settings = settings.toJSON();
+                    settings = _.object(_.pluck(settings, 'key'), _.pluck(settings, 'value'));
+                    res.render('settings', {
+                        bodyClass: 'settings',
+                        adminNav: setSelected(adminNavbar, 'settings'),
+                        settings: settings
+                    });
+                });
         },
         'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
             index: function (req, res) {

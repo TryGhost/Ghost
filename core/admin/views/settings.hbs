@@ -27,11 +27,12 @@
             </section>
         </header>
         <section class="content">
+            {{#with settings}}
             <form id="settings-general">
                 <fieldset>
                     <label>
                         <b>Blog Title</b>
-                        <input id="blog-title" type="text" value="John O'Nolan" />
+                        <input id="blog-title" type="text" value="{{title}}" />
                         <p>How your blog name appears on the site</p>
                     </label>
 
@@ -81,7 +82,7 @@
 
                 </fieldset>
 
-
+            {{/with}}
             </form>
         </section>
     </section>
@@ -128,13 +129,13 @@
 
                     <label>
                         <b>SEO Title Pattern</b>
-                        <input id="blog-title" type="text" value="[Post Name] - [Site Title]" />
+                        <input id="seo-title" type="text" value="[Post Name] - [Site Title]" />
                         <p>The pattern used to display your title tags</p>
                     </label>
 
                     <label>
                         <b>SEO Description Pattern</b>
-                        <input id="blog-title" type="text" value="Auto" />
+                        <input id="seo-description" type="text" value="Auto" />
                         <p>The pattern used to display your meta descriptions</p>
                     </label>
 
