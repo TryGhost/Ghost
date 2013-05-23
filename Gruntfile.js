@@ -22,7 +22,8 @@
 
             // Unit test all the things!
             nodeunit: {
-                all: ['core/test/ghost/**/test-*.js']
+                all: ['core/test/ghost/**/test-*.js'],
+                api: ['core/test/ghost/test-api.js']
             },
 
             // Compile all the SASS!
@@ -44,6 +45,9 @@
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask("init", ["compass:admin"]);
+
+        // Run API tests only
+        grunt.registerTask("test-api", ["nodeunit:api"]);
 
         // Run tests and lint code
         grunt.registerTask("validate", ["jslint", "nodeunit:all"]);

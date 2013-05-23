@@ -25,7 +25,8 @@
 
     ghost.app().configure('development', function () {
         ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-        ghost.app().use(express.errorHandler());
+        ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        ghost.app().use(express.logger('dev'));
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser());
         ghost.app().use(express.cookieParser('try-ghost'));
@@ -66,6 +67,9 @@
     ghost.app().post('/api/v0.1/posts/create', auth, api.requestHandler(api.posts.add));
     ghost.app().put('/api/v0.1/posts/edit', auth, api.requestHandler(api.posts.edit));
     ghost.app()['delete']('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.destroy));
+    ghost.app().get('/api/v0.1/settings', auth, api.requestHandler(api.settings.browse));
+    ghost.app().get('/api/v0.1/settings/:key', auth, api.requestHandler(api.settings.read));
+    ghost.app().put('/api/v0.1/settings/edit', auth, api.requestHandler(api.settings.edit));
 
     /**
      * Admin routes..
