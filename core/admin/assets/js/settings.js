@@ -48,7 +48,7 @@
             var data = getSettings();
             $.ajax({
                 method: 'PUT',
-                url: '/api/v0.1/settings/edit',
+                url: '/api/v0.1/settings',
                 data: data,
                 success: function (res, xhr, c) {
                     console.log(xhr, c);
