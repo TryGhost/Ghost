@@ -61,9 +61,9 @@
             urlSegments = window.location.pathname.split('/');
 
         if (urlSegments[2] === 'editor' && urlSegments[3] && /^[a-zA-Z0-9]+$/.test(urlSegments[2])) {
-            entry.id = urlSegments[3];
+            var id = urlSegments[3];
             $.ajax({
-                url: '/api/v0.1/posts/edit',
+                url: '/api/v0.1/posts/' + id,
                 method: 'PUT',
                 data: entry,
                 success: function (data) {
@@ -75,7 +75,7 @@
             });
         } else {
             $.ajax({
-                url: '/api/v0.1/posts/create',
+                url: '/api/v0.1/posts',
                 method: 'POST',
                 data: entry,
                 success: function (data) {
