@@ -89,6 +89,9 @@
                     res.redirect('/ghost/login/');
 
                 });
+            } else {
+                req.flash('error', "The password is too short. Have at least 6 characters in there");
+                res.redirect('/ghost/register/');
             }
         },
         'logout': function (req, res) {

@@ -30,7 +30,7 @@
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser());
         ghost.app().use(express.cookieParser('try-ghost'));
-        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000 }}));
+        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
         ghost.app().use(ghost.initTheme(ghost.app()));
         ghost.app().use(flash());
         // bind locals - options which appear in every view - perhaps this should be admin only
@@ -63,13 +63,13 @@
      * @todo auth should be public auth not user auth
      */
     ghost.app().get('/api/v0.1/posts', auth, api.requestHandler(api.posts.browse));
+    ghost.app().post('/api/v0.1/posts', auth, api.requestHandler(api.posts.add));
     ghost.app().get('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.read));
-    ghost.app().post('/api/v0.1/posts/create', auth, api.requestHandler(api.posts.add));
-    ghost.app().put('/api/v0.1/posts/edit', auth, api.requestHandler(api.posts.edit));
-    ghost.app()['delete']('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.destroy));
+    ghost.app().put('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.edit));
+    ghost.app().del('/api/v0.1/posts/:id', auth, api.requestHandler(api.posts.destroy));
     ghost.app().get('/api/v0.1/settings', auth, api.requestHandler(api.settings.browse));
     ghost.app().get('/api/v0.1/settings/:key', auth, api.requestHandler(api.settings.read));
-    ghost.app().put('/api/v0.1/settings/edit', auth, api.requestHandler(api.settings.edit));
+    ghost.app().put('/api/v0.1/settings', auth, api.requestHandler(api.settings.edit));
 
     /**
      * Admin routes..

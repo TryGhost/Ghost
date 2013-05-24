@@ -66,7 +66,7 @@ form {
         line-height: 1.4em;
         background: #fff;
         border: darken($lightbrown, 5%) 1px solid;
-        @include border-radius;
+        box-shadow: $shadow;
         @include transition;
     }
 
@@ -156,7 +156,7 @@ form {
     letter-spacing: 1px;
     text-transform: uppercase;
     text-shadow: none;
-    @include border-radius(0.2em);
+    border-radius: 0.2em;
     border: rgba(0,0,0,0.05) 0.1em solid;
     @include transition(background 0.3s ease, border-color 0.3s ease);
 
@@ -251,8 +251,7 @@ input[type="reset"] {
     
     button {
         font-size: 11px; // hack to restore font size
-        @include border-top-right-radius(0);
-        @include border-bottom-right-radius(0);
+        @include border-right-radius(0);
     }
     
     // This is the additional dropdown arrow, to the right of the button.
@@ -266,7 +265,7 @@ input[type="reset"] {
         text-align: center;
         color: #fff;
         background: #e5e5e5;
-        @include border-radius(0 2px 2px 0);
+        border-radius: 0 2px 2px 0;
         @include box-shadow(
             rgba(0,0,0,0.02) 0 1px 0 inset,
             rgba(0,0,0,0.02) -1px 0 0 inset,

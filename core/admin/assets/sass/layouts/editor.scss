@@ -56,7 +56,7 @@
 		bottom:40px; // height of the publish bar
 		top:69px; // height of the post title + margin
 		background: #fff;
-		@include box-shadow;
+		box-shadow: $shadow;
 
 		@include breakpoint($mobile) {
 			@include box-shadow(none);
@@ -337,7 +337,7 @@ body.zen {
 	background: lighten($lightbrown, 3%);
 	#usermenu {display:none;}
 	#global-header, #publish-bar {
-		@include opacity(0);
+		opacity: 0;
 		height:0;
 		overflow: hidden;
 		@include transition(all 0.5s ease-out);
@@ -459,7 +459,7 @@ body.zen {
 	padding: 0 5px;
 	color: $lightgrey; 
 	background: lighten($grey, 15%);
-	@include border-radius;
+	border-radius: $rounded;
 	@include box-shadow(
 		rgba(255,255,255,0.2) 0 1px 0 inset,
 		#000 0 1px 3px
