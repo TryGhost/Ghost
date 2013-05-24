@@ -22,6 +22,21 @@
             }
         });
 
+        $('.post-controls .delete').on('click', function (e) {
+            e.preventDefault();
+            var postID = $('.content-list-content').find('li.active').data('id');
+            $.ajax({
+                method: 'DELETE',
+                url: '/api/v0.1/posts/' + postID,
+                success: function (res) {
+                    window.location.reload();
+                },
+                error: function () {
+                    window.alert('Delete failed.');
+                }
+            });
+        });
+
     });
 
 }(jQuery));

@@ -43,8 +43,8 @@
         },
         // takes an identifier (id or slug?)
         // returns a json response with the id of the deleted post
-        destroy: function (id) {
-            return when.call(ghost.dataProvider().posts.destroy, id);
+        destroy: function (args) {
+            return when.call(ghost.dataProvider().posts.destroy, args.id);
         }
     };
 
