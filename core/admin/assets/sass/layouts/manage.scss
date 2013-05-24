@@ -26,7 +26,7 @@
         left:0; 
         border-right:$lightbrown 2px solid;
         background: #fff;
-        @include box-shadow;
+        box-shadow: $shadow;
 
         @include breakpoint(900px) {
             width:300px;
@@ -174,7 +174,7 @@
         right:0; 
         border-left:$lightbrown 2px solid;
         background: #fff;
-        @include box-shadow;
+        box-shadow: $shadow;
         @include breakpoint(900px) {
             width: auto;
             left: 300px;
