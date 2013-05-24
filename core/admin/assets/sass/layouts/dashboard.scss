@@ -8,7 +8,7 @@
 	width:341px;
 	height:300px;
 	background:#fff;
-	@include box-shadow;
+	box-shadow: $shadow;
 	float:left;
 	margin:0 15px 15px 0;
 	display:none;

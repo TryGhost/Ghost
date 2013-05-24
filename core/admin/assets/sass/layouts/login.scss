@@ -23,9 +23,9 @@
         padding: 0;
         text-align: center;
         background: #fff;
-        @include border-radius(4px);
+        border-radius: 4px;
         border-top: $darkgrey 15px solid;
-        @include box-shadow;
+        box-shadow: $shadow;
 
         @include breakpoint(630px) {
             max-width: 264px;
@@ -48,7 +48,7 @@
         max-width: 530px;
         padding: 15px;
         background: $darkgrey;
-        @include border-radius(0 0 4px 4px);
+        border-radius: 0 0 4px 4px;
 
         @include breakpoint(630px) {
             max-width: 264px;
@@ -91,11 +91,11 @@
             position:relative;
             @include icon($i-mail, 12px) {position:absolute;bottom:8px;left:8px;z-index:100;};
             margin-right: 2px;
-            @include border-radius(2px 0 0 2px);
+            border-radius: 2px 0 0 2px;
 
             @include breakpoint(630px) {
                 margin-right:0;
-                @include border-radius(2px);
+                border-radius: 2px;
             }
 
             .email {
@@ -106,10 +106,10 @@
         .password-wrap {
             position:relative;
             @include icon($i-lock, 10px) {position:absolute;bottom:9px;left:11px;z-index:100;};
-            @include border-radius(0 2px 2px 0);
+            border-radius: 0 2px 2px 0;
 
             @include breakpoint(630px) {
-                @include border-radius(2px);
+                border-radius: 2px;
             }
 
             .password {

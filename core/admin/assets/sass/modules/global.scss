@@ -88,7 +88,7 @@ article aside {
     margin: 0 2.2em 1.6em 2.2em;
     float: right;
     background: $lightbrown;
-    @include border-radius(3px);
+    border-radius: 3px;
 }
 
 // Headings
@@ -264,7 +264,7 @@ pre {
     font-family: $font-family-mono;
     font-size: 0.9em;
     overflow: auto;
-    @include border-radius(3px);
+    border-radius: 3px;
 
     code, tt {
         font-size: inherit;
@@ -284,7 +284,7 @@ kbd {
     font-size: 0.9em;
     font-weight: bold;
     background: #f4f4f4;
-    @include border-radius(4px);
+    border-radius: 4px;
     @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.2),0 1px 0 0 #fff inset);
 }
 
@@ -539,7 +539,7 @@ nav {
     .avatar {
         height:18px;
         width:18px;
-        @include border-radius(50px);
+        border-radius: 50px;
         position:absolute;
         top:11px;
         left:15px;
@@ -706,7 +706,7 @@ nav {
     list-style: none;
     color: $lightgrey;
     background: $darkgrey;
-    @include border-radius(3px);
+    border-radius: 3px;
     @include box-shadow(rgba(0,0,0,0.5) 0 1px 15px);
 
     // The triangle chiclet that points to where the menu came from
@@ -835,7 +835,7 @@ nav {
     color: rgba(255,255,255,0.9);
     background: $orange;
     position:relative;
-    @include box-shadow;
+    box-shadow: $shadow;
 
     @include icon($i-notification) {
         position: absolute;
@@ -1086,12 +1086,12 @@ main {
             font-family: $font-family;
             display: block;
             width:100px;
-            @include opacity(0.6);
+            opacity: 0.6;
             @include transition;
         }
 
         &:hover small {
-            @include opacity(1);
+            opacity: 1;
             @include transition;
         }
     }
