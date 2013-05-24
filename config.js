@@ -56,12 +56,19 @@
     config.homepage.posts = 4;
 
     config.database = {
+        testing: {
+            client: 'sqlite3',
+            connection: {
+                filename: './core/shared/data/tests.db'
+            }
+        },
+
         development: {
             client: 'sqlite3',
             connection: {
                 filename: './core/shared/data/testdb.db'
             },
-            debug: false
+            debug: true
         },
 
         staging: {},
