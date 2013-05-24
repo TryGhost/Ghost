@@ -15,19 +15,18 @@
 
 
 /* =============================================================================
-   Compass Imports
+   Bourbon Imports
    ============================================================================= */
 
-// Compass - http://compass-style.org/
-@import "compass";
-$default-border-radius: 2px;
-$default-box-shadow-color: rgba(0,0,0,0.05);
-$default-box-shadow-v-offset: 1px;
+// Bourbon - http://bourbon.io/
+@import "bourbon";
+$rounded: 2px;
+$shadow: rgba(0,0,0,0.05) 0 1px 5px;
 $default-transition-duration: 0.3s;
 
 
 /* =============================================================================
-   Compass Plugins
+   Plugins
    ============================================================================= */
 
 // Breakpoint - http://breakpoint-sass.com/
@@ -152,7 +151,7 @@ $green: #9FBB58;
   margin-bottom: 15px;
   background: #fff;
   position: relative;
-  @include box-shadow;
+  box-shadow: $shadow;
 
   header {
     height:14px;

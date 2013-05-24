@@ -18,7 +18,7 @@
     // The main white bg for the page
     .wrapper {
         background: #fff;
-        @include box-shadow;
+        box-shadow: $shadow;
         position:absolute;
         top:0;
         bottom:0;
@@ -264,12 +264,12 @@
                   height: 40px;
                   margin-right: 17px;
                   background-color: #ccc;
-                  @include border-radius(20px);
+                  border-radius: 20px;
 
                   img{
                     width: 40px;
                     height: 40px;
-                    @include border-radius(20px);
+                    border-radius: 20px;
                   }
                 }
 
