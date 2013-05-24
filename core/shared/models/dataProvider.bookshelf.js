@@ -81,8 +81,8 @@
 
     DataProvider.prototype.posts.destroy = function (_identifier, callback) {
         models.Post.forge({id: _identifier}).destroy().then(function () {
-            callback(null);
-        });
+            callback(null, 'ok');
+        }, callback);
     };
 
     /**
