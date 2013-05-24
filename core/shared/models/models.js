@@ -12,6 +12,7 @@
         Post,
         Posts,
         User,
+        Users,
         Setting;
 
     Post = Bookshelf.Model.extend({
@@ -67,6 +68,12 @@
         }
     });
 
+    Users = Bookshelf.Collection.extend({
+
+        model: User
+
+    });
+
     Setting = Bookshelf.Model.extend({
 
         tableName: 'settings'
@@ -77,6 +84,7 @@
         Post: Post,
         Posts: Posts,
         User: User,
+        Users: Users,
         Setting: Setting
     };
 }());

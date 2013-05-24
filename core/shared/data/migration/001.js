@@ -69,7 +69,14 @@
         });
     };
 
-    down = function () {};
+    down = function () {
+
+        return when.all([
+            knex.Schema.dropTableIfExists("posts"),
+            knex.Schema.dropTableIfExists("users"),
+            knex.Schema.dropTableIfExists("settings")
+        ]);
+    };
 
     exports.up = up;
     exports.down = down;

@@ -27,7 +27,7 @@
             /** TODO potentially use req.acceptedLanguages rather than the default
             *   TODO handle loading language file for frontend on frontend request etc
             *   TODO switch this mess to be promise driven */
-            fs.stat(langFilePath, function (error, stat) {
+            fs.stat(langFilePath, function (error) {
                 if (error) {
                     console.log('No language file found for language ' + lang + '. Defaulting to en');
                     lang = 'en';
