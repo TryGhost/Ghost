@@ -30,7 +30,7 @@
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser());
         ghost.app().use(express.cookieParser('try-ghost'));
-        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000 }}));
+        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
         ghost.app().use(ghost.initTheme(ghost.app()));
         ghost.app().use(flash());
         // bind locals - options which appear in every view - perhaps this should be admin only
