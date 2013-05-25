@@ -23,7 +23,8 @@ The top priorities right now are:
 1. Clone the git repo
 1. cd into the project folder and run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild", follow the Sqlite3 install instructions
-1. cd into /core/admin/assets and run `compass compile --css-dir=css`
+    * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
+1. run `grunt init` from the root. (make sure you have Casper 1.1 installed though, or have installed `bourbon` on your vagrant. See Ghost-Vagrant for that)
 
 Frontend can be located at [localhost:3333](localhost:3333), Admin is at [localhost:3333/ghost](localhost:3333/ghost)
 
@@ -56,7 +57,7 @@ If you have a bug or feature request, please [open a new issue](https://github.c
 
 ## Contributions
 
-Pleas submit pull requests in order to contribute back to Ghost - referencing any relevant or open issues in the bug tracker. 
+Pleas submit pull requests in order to contribute back to Ghost - referencing any relevant or open issues in the bug tracker.
 
 All code should conform, strictly, to the Ghost project [Code Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
 
@@ -74,9 +75,18 @@ Keep track of Ghost development and Ghost community activity.
 
 A SASS compiler is required to work with the CSS in this project.
 
-Run `compass compile --css-dir=css` from /core/admin/assets.
+With bourbon, all you have to do is run `grunt init` from the root of Ghost, which will compile the admin section. For everything else, use `sass <sourcefile> <targetfile>`.
 
 We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+
+
+## Changelog
+
+### 0.1.1
+
+* Added bourbon awesomeness, and various fixes as per commit history.
+* Started writing changelogs
+* Removed compass dependencies, and made grunt work again. See Installation section.
 
 ## Copyright & License
 
