@@ -81,7 +81,7 @@
     DataProvider.prototype.users.add = function (_user) {
         console.log('outside of forge', _user);
 
-        return nodefn.call(bcrypt.hash(_user.password, 10)).then(function(hashed) {
+        return nodefn.call(bcrypt.hash, _user.password, 10).then(function(hashed) {
             return new models.User({
                 password: hashed,
                 email_address: _user.email
