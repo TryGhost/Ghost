@@ -74,7 +74,7 @@
      * @param _identifier
      * @param callback
      */
-    BookshelfBase.prototype.destroy = BookshelfBase.prototype.delete = function (_identifier, callback) {
+    BookshelfBase.prototype.destroy = BookshelfBase.prototype['delete'] = function (_identifier, callback) {
         this.model.forge({id: _identifier}).destroy().then(function () {
             callback(null);
         });

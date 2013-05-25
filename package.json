@@ -22,12 +22,13 @@
     "bcrypt": "~0.7.5"
   },
   "devDependencies": {
-    "grunt": "0.4.x",
+    "grunt": "~0.4.1",
     "grunt-contrib-nodeunit": "0.1.x",
-    "grunt-contrib-compass": "0.2.x",
     "nodeunit": "0.8.x",
     "grunt-jslint": "0.2.x",
     "should": "~1.2.2",
-    "grunt-mocha-test": "~0.4.0"
+    "grunt-mocha-test": "~0.4.0",
+    "grunt-shell": "~0.2.2",
+    "grunt-contrib-sass": "~0.3.0"
   }
 }
