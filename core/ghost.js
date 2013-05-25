@@ -99,14 +99,18 @@
      * @param  {Function} fn
      * @return {*}
      */
-    Ghost.prototype.registerTheme = function (name, fn) {};
+    Ghost.prototype.registerTheme = function (name, fn) {
+        return this;
+    };
 
     /**
      * @param  {string}   name
      * @param  {Function} fn
      * @return {*}
      */
-    Ghost.prototype.registerPlugin = function (name, fn) {};
+    Ghost.prototype.registerPlugin = function (name, fn) {
+        return this;
+    };
 
     /**
      * @param  {string}   name

@@ -58,10 +58,11 @@
                 title: document.getElementById('entry-title').value,
                 content: editor.getValue()
             },
-            urlSegments = window.location.pathname.split('/');
+            urlSegments = window.location.pathname.split('/'),
+            id;
 
         if (urlSegments[2] === 'editor' && urlSegments[3] && /^[a-zA-Z0-9]+$/.test(urlSegments[2])) {
-            var id = urlSegments[3];
+            id = urlSegments[3];
             $.ajax({
                 url: '/api/v0.1/posts/' + id,
                 method: 'PUT',

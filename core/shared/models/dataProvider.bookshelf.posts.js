@@ -2,7 +2,6 @@
     "use strict";
 
     var util = require('util'),
-
         models = require('./models'),
         BaseProvider = require('./dataProvider.bookshelf.base'),
         PostsProvider;
