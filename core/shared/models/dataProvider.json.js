@@ -7,6 +7,7 @@
     "use strict";
 
     var _ = require('underscore'),
+        when = require('when'),
 
         DataProvider,
         blogData,
@@ -23,7 +24,6 @@
         if (!instance) {
             instance = this;
         }
-
         return instance;
     };
     DataProvider.prototype.globals = {};
@@ -31,17 +31,14 @@
 
 
     DataProvider.prototype.globals.findAll = function (callback) {
-        callback(null, this.data);
+        return when(this.data);
     };
 
     DataProvider.prototype.globals.save = function (globals, callback) {
-        var self = this;
-
         _.each(globals, function (global, key) {
-            self.data[key] = global;
-        });
-
-        callback(null, globals);
+            this.data[key] = global;
+        }, this);
+        return when(globals);
     };
 
     /* Lets bootstrap with dummy data */

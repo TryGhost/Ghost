@@ -61,16 +61,12 @@
             });
         },
         'auth': function (req, res) {
-            console.log(req.body);
             api.users.find({email: req.body.email, pw: req.body.password}).then(function (user) {
-                if (user) {
-                    console.log('user found: ', user);
-                    req.session.user = "ghostadmin";
-                    res.redirect(req.query.redirect || '/ghost/');
-                } else {
-                    res.redirect('/ghost/login/');
-                }
-
+                console.log('user found: ', user);
+                req.session.user = "ghostadmin";
+                res.redirect(req.query.redirect || '/ghost/');
+            }, function() {
+                res.redirect('/ghost/login/');
             });
         },
         'register': function (req, res) {
