@@ -27,12 +27,17 @@
             },
 
             // Compile all the SASS!
-            compass: {
-                options: {
-                    config: "config.rb"
-                },
-                // No need for config, but separated for future options
-                admin: {}
+            sass: {
+                admin: {
+                    files: {
+                        'core/admin/assets/css/screen.css': 'core/admin/assets/sass/screen.scss'
+                    }
+                }
+            },
+            shell: {
+                bourbon: {
+                    command: 'bourbon install --path core/admin/assets/sass/modules/'
+                }
             }
         };
 
@@ -40,11 +45,13 @@
 
         grunt.loadNpmTasks("grunt-jslint");
         grunt.loadNpmTasks("grunt-contrib-nodeunit");
-        grunt.loadNpmTasks("grunt-contrib-compass");
+        grunt.loadNpmTasks("grunt-contrib-sass");
+        grunt.loadNpmTasks("grunt-shell");
+
 
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask("init", ["compass:admin"]);
+        grunt.registerTask("init", ["shell:bourbon", "sass:admin"]);
 
         // Run API tests only
         grunt.registerTask("test-api", ["nodeunit:api"]);
