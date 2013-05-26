@@ -24,6 +24,7 @@ projectFilesBackup
 *.db
 
 /core/admin/assets/css
+/core/admin/assets/sass/modules/bourbon
 .sass-cache/
 /core/admin/assets/sass/config.rb
 /core/admin/assets/sass/layouts/config.rb

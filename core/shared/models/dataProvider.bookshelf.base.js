@@ -20,64 +20,44 @@
     /**
      * Naive find all
      * @param args (optional)
-     * @param callback
      */
-    BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (args, callback) {
-        if (_.isFunction(args)) {
-            // Curry the optional args parameter
-            callback = args;
-            args = {};
-        }
-
-        this.collection.forge(args).fetch().then(function (results) {
-            callback(null, results);
-        }, callback);
+    BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (args) {
+        args || (args = {});
+        return this.collection.forge(args).fetch();
     };
 
     /**
      * Naive find one where args match
      * @param args
-     * @param callback
      */
-    BookshelfBase.prototype.findOne = BookshelfBase.prototype.read = function (args, callback) {
-        this.model.forge(args).fetch().then(function (result) {
-            callback(null, result);
-        }, callback);
+    BookshelfBase.prototype.findOne = BookshelfBase.prototype.read = function (args) {
+        return this.model.forge(args).fetch();
     };
 
     /**
      * Naive edit
      * @param editedObj
-     * @param callback
      */
-    BookshelfBase.prototype.edit = BookshelfBase.prototype.update = function (editedObj, callback) {
-        this.model.forge({id: editedObj.id}).fetch().then(function (foundObj) {
-            foundObj.set(editedObj).save().then(function (updatedObj) {
-                callback(null, updatedObj);
-            }, callback);
+    BookshelfBase.prototype.edit = BookshelfBase.prototype.update = function (editedObj) {
+        return this.model.forge({id: editedObj.id}).fetch().then(function (foundObj) {
+            return foundObj.set(editedObj).save();
         });
     };
 
     /**
      * Naive add
      * @param newObj
-     * @param callback
      */
-    BookshelfBase.prototype.add = BookshelfBase.prototype.create = function (newObj, callback) {
-        this.model.forge(newObj).save().then(function (createdObj) {
-            callback(null, createdObj);
-        }, callback);
+    BookshelfBase.prototype.add = BookshelfBase.prototype.create = function (newObj) {
+        return this.model.forge(newObj).save();
     };
 
     /**
      * Naive destroy
      * @param _identifier
-     * @param callback
      */
-    BookshelfBase.prototype.destroy = BookshelfBase.prototype['delete'] = function (_identifier, callback) {
-        this.model.forge({id: _identifier}).destroy().then(function () {
-            callback(null);
-        });
+    BookshelfBase.prototype.destroy = BookshelfBase.prototype['delete'] = function (_identifier) {
+        return this.model.forge({id: _identifier}).destroy();
     };
 
     module.exports = BookshelfBase;

@@ -10,7 +10,6 @@
     "use strict";
 
     var Ghost = require('../ghost'),
-        when = require('when/node/function'),
         _ = require('underscore'),
 
         ghost = new Ghost(),
@@ -24,50 +23,50 @@
         // takes filter / pagination parameters
         // returns a list of posts in a json response
         browse: function (options) {
-            return when.call(ghost.dataProvider().posts.findAll, options);
+            return ghost.dataProvider().posts.findAll(options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response
         read: function (args) {
-            return when.call(ghost.dataProvider().posts.findOne, args);
+            return ghost.dataProvider().posts.findOne(args);
         },
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response
         edit: function (postData) {
-            return when.call(ghost.dataProvider().posts.edit, postData);
+            return ghost.dataProvider().posts.edit(postData);
         },
         // takes a json object representing a post,
         // returns the resulting post in a json response
         add: function (postData) {
-            return when.call(ghost.dataProvider().posts.add, postData);
+            return ghost.dataProvider().posts.add(postData);
         },
         // takes an identifier (id or slug?)
         // returns a json response with the id of the deleted post
         destroy: function (args) {
-            return when.call(ghost.dataProvider().posts.destroy, args.id);
+            return ghost.dataProvider().posts.destroy(args.id);
         }
     };
 
     // # Users
     users = {
         add: function (postData) {
-            return when.call(ghost.dataProvider().users.add, postData);
+            return ghost.dataProvider().users.add(postData);
         },
-        find: function (postData) {
-            return when.call(ghost.dataProvider().users.check, postData);
+        check: function (postData) {
+            return ghost.dataProvider().users.check(postData);
         }
     };
 
     // # Settings
     settings = {
         browse: function (options) {
-            return when.call(ghost.dataProvider().settings.browse, options);
+            return ghost.dataProvider().settings.browse(options);
         },
         read: function (options) {
-            return when.call(ghost.dataProvider().settings.read, options.key);
+            return ghost.dataProvider().settings.read(options.key);
         },
         edit: function (options) {
-            return when.call(ghost.dataProvider().settings.edit, options);
+            return ghost.dataProvider().settings.edit(options);
         }
     };
 
