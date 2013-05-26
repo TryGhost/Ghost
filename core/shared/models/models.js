@@ -12,6 +12,7 @@
         Post,
         Posts,
         User,
+        Users,
         Setting,
         Settings;
 
@@ -68,6 +69,12 @@
         }
     });
 
+    Users = Bookshelf.Collection.extend({
+
+        model: User
+
+    });
+
     Setting = Bookshelf.Model.extend({
         tableName: 'settings',
         hasTimestamps: true
@@ -81,6 +88,7 @@
         Post: Post,
         Posts: Posts,
         User: User,
+        Users: Users,
         Setting: Setting,
         Settings: Settings
     };

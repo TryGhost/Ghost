@@ -5,7 +5,6 @@
     var Ghost = require('../../ghost'),
         _ = require('underscore'),
         fs = require('fs'),
-        when = require('when/node/function'),
         api = require('../../shared/api'),
 
         ghost = new Ghost(),

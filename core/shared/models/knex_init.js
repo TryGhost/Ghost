@@ -2,9 +2,10 @@
 (function () {
     "use strict";
 
-    var knex = require('knex');
+    var knex = require('knex'),
+        config = require('../../../config');
 
-    knex.Initialize(require('../../../config').database[process.env.NODE_ENV || 'development']);
+    knex.Initialize(config.database[process.env.NODE_ENV || 'development']);
 
     module.exports = knex;
 }());

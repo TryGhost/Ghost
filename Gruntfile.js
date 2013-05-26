@@ -10,7 +10,8 @@
                     node: true,
                     browser: true,
                     nomen: true,
-                    todo: true
+                    todo: true,
+                    unparam: true
                 },
                 files: [
                     // Lint files in the root, including Gruntfile.js
@@ -26,6 +27,17 @@
                 api: ['core/test/ghost/test-api.js']
             },
 
+            mochaTest: {
+                options: {
+                    ui: "bdd",
+                    reporter: "spec"
+                },
+
+                all: {
+                    src: ['core/test/**/*_spec.js']
+                }
+            },
+
             // Compile all the SASS!
             sass: {
                 admin: {
@@ -34,6 +46,7 @@
                     }
                 }
             },
+
             shell: {
                 bourbon: {
                     command: 'bourbon install --path core/admin/assets/sass/modules/'
@@ -45,19 +58,19 @@
 
         grunt.loadNpmTasks("grunt-jslint");
         grunt.loadNpmTasks("grunt-contrib-nodeunit");
+        grunt.loadNpmTasks("grunt-mocha-test");
         grunt.loadNpmTasks("grunt-contrib-sass");
         grunt.loadNpmTasks("grunt-shell");
-
 
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask("init", ["shell:bourbon", "sass:admin"]);
 
         // Run API tests only
-        grunt.registerTask("test-api", ["nodeunit:api"]);
+        grunt.registerTask("test-api", ["nodeunit:api", "mochaTest:all"]);
 
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "nodeunit:all"]);
+        grunt.registerTask("validate", ["jslint", "mochaTest:all"]);
     };
 
     module.exports = configureGrunt;
