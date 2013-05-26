@@ -28,4 +28,5 @@ projectFilesBackup
 /core/admin/assets/sass/config.rb
 /core/admin/assets/sass/layouts/config.rb
 /core/admin/assets/sass/modules/config.rb
+/core/admin/assets/sass/modules/bourbon
 /ghost/.idea/

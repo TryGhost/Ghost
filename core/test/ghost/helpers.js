@@ -11,9 +11,10 @@
 
     helpers = {
         resetData: function () {
-
             return migrations.one.down().then(function () {
                 return migrations.one.up();
+            }, function() {
+                throw new Error("Failed to reset data");
             });
         }
     };
