@@ -8,7 +8,7 @@
 
     describe("Ghost API", function () {
 
-        it("is a singleton", function() {
+        it("is a singleton", function () {
             var ghost1 = new Ghost(),
                 ghost2 = new Ghost();
 
