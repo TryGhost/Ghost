@@ -80,17 +80,19 @@
             });
         },
         'doRegister': function (req, res) {
-            // console.log(req.body);
-            if (req.body.email !== '' && req.body.password.length > 5) {
+             // console.log(req.body);
+            if (req.body.email_address !== '' && req.body.password.length > 5) {
                 // console.log('okay, this is happening');
-                api.users.add({email: req.body.email, password: req.body.password}).then(function (user) {
+                api.users.add({email_address: req.body.email_address, password: req.body.password}).then(function (user) {
                     console.log('user added', user);
                     res.redirect('/ghost/login/');
-
+                },
+                function(error) {
+                    console.log('there was an error', error);
                 });
             } else {
                 req.flash('error', "The password is too short. Have at least 6 characters in there");
-                res.redirect('/ghost/register/');
+                res.redirect('back');
             }
         },
         'logout': function (req, res) {

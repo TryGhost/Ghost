@@ -91,7 +91,7 @@
     ghost.app().get('/ghost/login/', admin.login);
     ghost.app().get('/ghost/register/', admin.register);
     ghost.app().post('/ghost/login/', admin.auth);
-    ghost.app().post('/ghost/register', admin.doRegister);
+    ghost.app().post('/ghost/register/', admin.doRegister);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
     ghost.app().get('/ghost/editor', auth, admin.editor);
     ghost.app().get('/ghost/blog', auth, admin.blog);
