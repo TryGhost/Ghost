@@ -5,6 +5,8 @@
         _ = require('underscore'),
         bcrypt = require('bcrypt'),
         models = require('./models.js'),
+        when = require('when'),
+        nodefn = require('when/node/function'),
         BaseProvider = require('./dataProvider.bookshelf.base.js'),
         UsersProvider;
 
@@ -20,64 +22,33 @@
     /**
      * Naive user add
      * @param  _user
-     * @param  callback
      *
      * Hashes the password provided before saving to the database.
      */
-    UsersProvider.prototype.add = function (_user, callback) {
+    UsersProvider.prototype.add = function (_user) {
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
 
-        this._hashPassword(userData.password, function (err, hash) {
-            if (err) {
-                return callback(err);
-            }
-
+        return nodefn.call(bcrypt.hash, _user.password, 10).then(function(hash) {
             userData.password = hash;
-
-            BaseProvider.prototype.add.call(self, userData, function (err, createdUser) {
-                if (err) {
-                    return callback(err);
-                }
-
-                callback(null, createdUser);
-            });
+            return BaseProvider.prototype.add.call(self, userData);
         });
     };
 
-    UsersProvider.prototype._hashPassword = function (password, callback) {
-        bcrypt.genSalt(10, function (err, salt) {
-            if (err) {
-                return callback(err);
-            }
-
-            bcrypt.hash(password, salt, function (err, hash) {
-                if (err) {
-                    return callback(err);
-                }
-
-                callback(null, hash);
-            });
-        });
-    };
-
-    UsersProvider.prototype.check = function (_userdata, callback) {
-        var test = {
+    /**
+     * User check
+     * @param  _userdata
+     *
+     * Finds the user by email, and check's the password
+     */
+    UsersProvider.prototype.check = function (_userdata) {
+        return models.User.forge({
             email_address: _userdata.email
-        };
-        models.User.forge(test).fetch().then(function (user) {
-            var _user;
-            bcrypt.compare(_userdata.pw, user.attributes.password, function (err, res) {
-                if (err) {
-                    return callback(err);
-                }
-                if (res) {
-                    _user = user;
-                } else {
-                    _user = false;
-                }
-                callback(null, _user);
+        }).fetch().then(function (user) {
+            return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function(matched) {
+                if (!matched) return when.reject(new Error('Password does not match'));
+                return user;
             });
         });
     };
