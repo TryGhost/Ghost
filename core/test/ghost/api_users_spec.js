@@ -20,22 +20,22 @@
         });
 
         it('can browse', function (done) {
-            users.browse(function (err, results) {
-                if (err) { throw err; }
+            users.browse().then(function (results) {
 
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
         it('can read', function (done) {
             var firstUser;
 
-            users.browse(function (err, results) {
-                if (err) { throw err; }
+            users.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -43,14 +43,15 @@
 
                 firstUser = results.models[0];
 
-                users.read({email_address: firstUser.attributes.email_address}, function (err, found) {
-                    if (err) { throw err; }
+                users.read({email_address: firstUser.attributes.email_address}).then(function (found) {
 
                     should.exist(found);
 
                     found.attributes.username.should.equal(firstUser.attributes.username);
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
 
             });
@@ -59,8 +60,7 @@
         it('can edit', function (done) {
             var firstUser;
 
-            users.browse(function (err, results) {
-                if (err) { throw err; }
+            users.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -68,16 +68,18 @@
 
                 firstUser = results.models[0];
 
-                users.edit({id: firstUser.id, url: "some.newurl.com"}, function (err, edited) {
-                    if (err) { throw err; }
+                users.edit({id: firstUser.id, url: "some.newurl.com"}).then(function (edited) {
 
                     should.exist(edited);
 
                     edited.attributes.url.should.equal('some.newurl.com');
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
-
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -87,10 +89,7 @@
                 email_address: "test@test1.com"
             };
 
-            users.add(userData, function (err, createdUser) {
-                if (err) {
-                    throw err;
-                }
+            users.add(userData).then(function (createdUser) {
 
                 should.exist(createdUser);
 
@@ -98,6 +97,8 @@
                 createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -106,8 +107,7 @@
                 ids,
                 hasDeletedId;
 
-            users.browse(function (err, results) {
-                if (err) { throw err; }
+            users.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -115,11 +115,9 @@
 
                 firstUserId = results.models[0].id;
 
-                users.destroy(firstUserId, function (err) {
-                    if (err) { throw err; }
+                users.destroy(firstUserId).then(function () {
 
-                    users.browse(function (err, newResults) {
-                        if (err) { throw err; }
+                    users.browse().then(function (newResults) {
 
                         if (newResults.length < 1) {
                             // Bug out if we only had one user and deleted it.
@@ -135,8 +133,14 @@
                         hasDeletedId.should.equal(false);
 
                         done();
+                    }, function (error) {
+                        throw error;
                     });
+                }, function (error) {
+                    throw error;
                 });
+            }, function (error) {
+                throw error;
             });
         });
     });

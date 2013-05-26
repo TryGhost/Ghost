@@ -20,64 +20,64 @@
         });
 
         it('can browse', function (done) {
-            posts.browse(function (err, results) {
-                if (err) { throw err; }
-
+            posts.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.equal(2);
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
         it('can read', function (done) {
             var firstPost;
 
-            posts.browse(function (err, results) {
-                if (err) { throw err; }
-
+            posts.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPost = results.models[0];
 
-                posts.read({slug: firstPost.attributes.slug}, function (err, found) {
-                    if (err) { throw err; }
-
+                posts.read({slug: firstPost.attributes.slug}).then(function (found) {
                     should.exist(found);
 
                     found.attributes.title.should.equal(firstPost.attributes.title);
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
 
+            }, function (error) {
+                throw error;
             });
         });
 
         it('can edit', function (done) {
             var firstPost;
 
-            posts.browse(function (err, results) {
-                if (err) { throw err; }
-
+            posts.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPost = results.models[0];
 
-                posts.edit({id: firstPost.id, title: "new title"}, function (err, edited) {
-                    if (err) { throw err; }
-
+                posts.edit({id: firstPost.id, title: "new title"}).then(function (edited) {
                     should.exist(edited);
 
                     edited.attributes.title.should.equal('new title');
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
 
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -87,9 +87,7 @@
                 content: 'Test Content 1'
             };
 
-            posts.add(newPost, function (err, createdPost) {
-                if (err) { throw err; }
-
+            posts.add(newPost).then(function (createdPost) {
                 should.exist(createdPost);
 
                 createdPost.attributes.title.should.equal(newPost.title, "title is correct");
@@ -97,6 +95,8 @@
                 createdPost.attributes.slug.should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -105,20 +105,16 @@
                 ids,
                 hasDeletedId;
 
-            posts.browse(function (err, results) {
-                if (err) { throw err; }
-
+            posts.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPostId = results.models[0].id;
 
-                posts.destroy(firstPostId, function (err) {
-                    if (err) { throw err; }
+                posts.destroy(firstPostId).then(function () {
 
-                    posts.browse(function (err, newResults) {
-                        if (err) { throw err; }
+                    posts.browse().then(function (newResults) {
 
                         ids = _.pluck(newResults.models, "id");
 
@@ -129,8 +125,14 @@
                         hasDeletedId.should.equal(false);
 
                         done();
+                    }, function (error) {
+                        throw error;
                     });
+                }, function (error) {
+                    throw error;
                 });
+            }, function (error) {
+                throw error;
             });
         });
     });

@@ -20,22 +20,22 @@
         });
 
         it('can browse', function (done) {
-            settings.browse(function (err, results) {
-                if (err) { throw err; }
+            settings.browse().then(function (results) {
 
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
         it('can read', function (done) {
             var firstSetting;
 
-            settings.browse(function (err, results) {
-                if (err) { throw err; }
+            settings.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -43,16 +43,19 @@
 
                 firstSetting = results.models[0];
 
-                settings.read(firstSetting.attributes.key, function (err, found) {
-                    if (err) { throw err; }
+                settings.read(firstSetting.attributes.key).then(function (found) {
 
                     should.exist(found);
 
                     found.attributes.value.should.equal(firstSetting.attributes.value);
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
 
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -60,8 +63,7 @@
             var firstPost,
                 toEdit = {};
 
-            settings.browse(function (err, results) {
-                if (err) { throw err; }
+            settings.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -73,8 +75,7 @@
                 // key/value pairs
                 toEdit[firstPost.attributes.key] = "new value";
 
-                settings.edit(toEdit, function (err, edited) {
-                    if (err) { throw err; }
+                settings.edit(toEdit).then(function (edited) {
 
                     should.exist(edited);
 
@@ -86,8 +87,12 @@
                     edited.attributes.value.should.equal('new value');
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
 
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -97,8 +102,7 @@
                 editedPost,
                 toEdit = {};
 
-            settings.browse(function (err, results) {
-                if (err) { throw err; }
+            settings.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -112,8 +116,7 @@
                 toEdit[firstPost.attributes.key] = "new value1";
                 toEdit[secondPost.attributes.key] = "new value2";
 
-                settings.edit(toEdit, function (err, edited) {
-                    if (err) { throw err; }
+                settings.edit(toEdit).then(function (edited) {
 
                     should.exist(edited);
 
@@ -130,8 +133,11 @@
                     editedPost.attributes.value.should.equal('new value2');
 
                     done();
+                }, function (error) {
+                    throw error;
                 });
-
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -141,8 +147,7 @@
                 value: 'Test Content 1'
             };
 
-            settings.add(newSetting, function (err, createdSetting) {
-                if (err) { throw err; }
+            settings.add(newSetting).then(function (createdSetting) {
 
                 should.exist(createdSetting);
 
@@ -150,6 +155,8 @@
                 createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
 
                 done();
+            }, function (error) {
+                throw error;
             });
         });
 
@@ -158,8 +165,7 @@
                 ids,
                 hasDeletedId;
 
-            settings.browse(function (err, results) {
-                if (err) { throw err; }
+            settings.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -167,11 +173,9 @@
 
                 firstSettingId = results.models[0].id;
 
-                settings.destroy(firstSettingId, function (err) {
-                    if (err) { throw err; }
+                settings.destroy(firstSettingId).then(function () {
 
-                    settings.browse(function (err, newResults) {
-                        if (err) { throw err; }
+                    settings.browse().then(function (newResults) {
 
                         ids = _.pluck(newResults.models, "id");
 
@@ -182,8 +186,14 @@
                         hasDeletedId.should.equal(false);
 
                         done();
+                    }, function (error) {
+                        throw error;
                     });
+                }, function (error) {
+                    throw error;
                 });
+            }, function (error) {
+                throw error;
             });
         });
     });

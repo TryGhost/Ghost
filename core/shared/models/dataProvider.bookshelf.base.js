@@ -1,3 +1,4 @@
+/*global require, module */
 (function () {
     "use strict";
 
@@ -22,7 +23,7 @@
      * @param args (optional)
      */
     BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (args) {
-        args || (args = {});
+        args = args || {};
         return this.collection.forge(args).fetch();
     };
 

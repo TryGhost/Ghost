@@ -43,12 +43,13 @@
      * Finds the user by email, and check's the password
      */
     UsersProvider.prototype.check = function (_userdata) {
-        console.log('just checking', _userdata);
         return this.model.forge({
             email_address: _userdata.email
         }).fetch().then(function (user) {
             return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function(matched) {
-                if (!matched) return when.reject(new Error('Password does not match'));
+                if (!matched) {
+                    return when.reject(new Error('Password does not match'));
+                }
                 return user;
             });
         });
