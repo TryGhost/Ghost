@@ -21,12 +21,6 @@
                 ]
             },
 
-            // Unit test all the things!
-            nodeunit: {
-                all: ['core/test/ghost/**/test-*.js'],
-                api: ['core/test/ghost/test-api.js']
-            },
-
             mochaTest: {
                 options: {
                     ui: "bdd",
@@ -35,6 +29,10 @@
 
                 all: {
                     src: ['core/test/**/*_spec.js']
+                },
+
+                api: {
+                    src: ['core/test/**/api*_spec.js']
                 }
             },
 
@@ -57,7 +55,6 @@
         grunt.initConfig(cfg);
 
         grunt.loadNpmTasks("grunt-jslint");
-        grunt.loadNpmTasks("grunt-contrib-nodeunit");
         grunt.loadNpmTasks("grunt-mocha-test");
         grunt.loadNpmTasks("grunt-contrib-sass");
         grunt.loadNpmTasks("grunt-shell");
@@ -67,7 +64,7 @@
         grunt.registerTask("init", ["shell:bourbon", "sass:admin"]);
 
         // Run API tests only
-        grunt.registerTask("test-api", ["nodeunit:api", "mochaTest:all"]);
+        grunt.registerTask("test-api", ["mochaTest:api"]);
 
         // Run tests and lint code
         grunt.registerTask("validate", ["jslint", "mochaTest:all"]);

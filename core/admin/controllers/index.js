@@ -86,8 +86,7 @@
                 api.users.add({email_address: req.body.email_address, password: req.body.password}).then(function (user) {
                     console.log('user added', user);
                     res.redirect('/ghost/login/');
-                },
-                function(error) {
+                }, function (error) {
                     console.log('there was an error', error);
                 });
             } else {
