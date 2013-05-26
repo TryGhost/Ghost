@@ -15,8 +15,6 @@
 
         JsonDataProvider = require('./shared/models/dataProvider.json'),
         jsonDataProvider = new JsonDataProvider(),
-//        JugglingDataProvider = require('./shared/models/dataProvider.juggling'),
-//        jugglingDataProvider = new JugglingDataProvider(),
         BookshelfDataProvider = require('./shared/models/dataProvider.bookshelf'),
         bookshelfDataProvider = new BookshelfDataProvider(),
         Ghost,

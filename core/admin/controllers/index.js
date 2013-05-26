@@ -60,16 +60,14 @@
             });
         },
         'auth': function (req, res) {
-            console.log(req.body);
-            api.users.find({email: req.body.email, pw: req.body.password}).then(function (user) {
-                if (user) {
-                    console.log('user found: ', user);
-                    req.session.user = "ghostadmin";
-                    res.redirect(req.query.redirect || '/ghost/');
-                } else {
-                    res.redirect('/ghost/login/');
-                }
-
+            api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
+                console.log('user found: ', user);
+                req.session.user = "ghostadmin";
+                res.redirect(req.query.redirect || '/ghost/');
+            }, function(err) {
+                // Do something here to signal the reason for an error
+                console.log(err.stack);
+                res.redirect('/ghost/login/');
             });
         },
         'register': function (req, res) {
@@ -82,8 +80,10 @@
         'doRegister': function (req, res) {
              // console.log(req.body);
             if (req.body.email_address !== '' && req.body.password.length > 5) {
-                // console.log('okay, this is happening');
-                api.users.add({email_address: req.body.email_address, password: req.body.password}).then(function (user) {
+                api.users.add({
+                    email_address: req.body.email_address,
+                    password: req.body.password
+                }).then(function (user) {
                     console.log('user added', user);
                     res.redirect('/ghost/login/');
                 },
