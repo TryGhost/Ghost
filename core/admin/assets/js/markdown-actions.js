@@ -1,16 +1,17 @@
-/*global window, document, jQuery*/
+/*global window, document, console, jQuery*/
 
 // Polyfill for Object.create
-if ( typeof Object.create !== 'function' ) {
-    Object.create = function( obj ) {
-        function F() {};
+if (typeof Object.create !== 'function') {
+    Object.create = function (obj) {
+        "use strict";
+        function F() {}
         F.prototype = obj;
         return new F();
     };
 }
 
 // # Surrounds given text with Markdown syntax
-(function ($, window, document, undefined) {
+(function ($, window, document) {
     "use strict";
     var Markdown = {
         init : function (options, elem) {
@@ -30,7 +31,7 @@ if ( typeof Object.create !== 'function' ) {
                 md = this.options.syntax[this.style].replace('$1', text);
                 this.options.target.replaceSelection(md);
             } else {
-                console.log("invalid style");
+                console.log("Invalid style.");
             }
 
         }
@@ -64,4 +65,4 @@ if ( typeof Object.create !== 'function' ) {
             currentDate: new Date().toLocaleString()
         }
     };
-})(jQuery, window, document);
+}(jQuery, window, document));
