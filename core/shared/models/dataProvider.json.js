@@ -46,7 +46,9 @@
 
     /* Lets bootstrap with dummy data */
     d = new DataProvider();
-    d.globals.save(blogData, function (error, globals) {});
+    d.globals.save(blogData, function (error) {
+        if (error) { throw error; }
+    });
 
     module.exports = DataProvider;
 }());

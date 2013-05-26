@@ -5,14 +5,11 @@
     // Use 'testing' Ghost config
     process.env.NODE_ENV = 'testing';
 
-    var fs       = require('fs'),
-        path     = require('path'),
-        _        = require('underscore'),
+    var _        = require('underscore'),
         assert   = require('assert'),
-        delay    = require('when/delay'),
-        config   = require('../../../config'),
+        helpers  = require('./helpers'),
         fixtures = require('../../shared/data/fixtures/001'),
-        api;
+        api = require('../../shared/data/api');
 
     function fail(err) {
         process.nextTick(function () {
@@ -23,14 +20,9 @@
     module.exports = {
         setUp: function (done) {
             // Clear database
-            var dbpath = path.resolve(__dirname, '../../../', config.database.testing.connection.filename);
-            fs.unlink(dbpath, function () {
-                // There is currently no way to tell when Ghost is loaded. api instantiates it's own `Ghost`
-                // which will run migrations without making the promise externally accessible
-                api = require('../../shared/api');
-                // So we just sit for a while :/
-                setTimeout(done, 3000);
-            });
+            helpers.resetData().then(function () {
+                done();
+            }, fail);
         },
 
         'settings:browse': function (test) {
