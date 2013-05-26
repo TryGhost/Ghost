@@ -66,7 +66,8 @@
         var test = {
             email_address: _userdata.email
         };
-        models.User.forge(test).fetch().then(function (user) {
+
+        this.model.forge(test).fetch().then(function (user) {
             var _user;
             bcrypt.compare(_userdata.pw, user.attributes.password, function (err, res) {
                 if (err) {
