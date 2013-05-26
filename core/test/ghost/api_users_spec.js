@@ -103,9 +103,7 @@
         });
 
         it('can delete', function (done) {
-            var firstUserId,
-                ids,
-                hasDeletedId;
+            var firstUserId;
 
             users.browse().then(function (results) {
 
@@ -115,33 +113,30 @@
 
                 firstUserId = results.models[0].id;
 
-                users.destroy(firstUserId).then(function () {
+                return users.destroy(firstUserId);
 
-                    users.browse().then(function (newResults) {
+            }).then(function () {
 
-                        if (newResults.length < 1) {
-                            // Bug out if we only had one user and deleted it.
-                            return done();
-                        }
+                return users.browse();
 
-                        ids = _.pluck(newResults.models, "id");
+            }).then(function (newResults) {
+                var ids, hasDeletedId;
 
-                        hasDeletedId = _.any(ids, function (id) {
-                            return id === firstUserId;
-                        });
+                if (newResults.length < 1) {
+                    // Bug out if we only had one user and deleted it.
+                    return done();
+                }
 
-                        hasDeletedId.should.equal(false);
+                ids = _.pluck(newResults.models, "id");
 
-                        done();
-                    }, function (error) {
-                        throw error;
-                    });
-                }, function (error) {
-                    throw error;
+                hasDeletedId = _.any(ids, function (id) {
+                    return id === firstUserId;
                 });
-            }, function (error) {
-                throw error;
-            });
+
+                hasDeletedId.should.equal(false);
+
+                done();
+            }, done);
         });
     });
 

@@ -26,9 +26,7 @@
                 results.length.should.equal(2);
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+            }, done);
         });
 
         it('can read', function (done) {
@@ -41,18 +39,13 @@
 
                 firstPost = results.models[0];
 
-                posts.read({slug: firstPost.attributes.slug}).then(function (found) {
-                    should.exist(found);
+                return posts.read({slug: firstPost.attributes.slug});
+            }).then(function (found) {
+                should.exist(found);
 
-                    found.attributes.title.should.equal(firstPost.attributes.title);
+                found.attributes.title.should.equal(firstPost.attributes.title);
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
-
-            }, function (error) {
-                throw error;
+                done();
             });
         });
 
@@ -60,25 +53,24 @@
             var firstPost;
 
             posts.browse().then(function (results) {
+
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPost = results.models[0];
 
-                posts.edit({id: firstPost.id, title: "new title"}).then(function (edited) {
-                    should.exist(edited);
+                return posts.edit({id: firstPost.id, title: "new title"});
 
-                    edited.attributes.title.should.equal('new title');
+            }).then(function (edited) {
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
+                should.exist(edited);
 
-            }, function (error) {
-                throw error;
-            });
+                edited.attributes.title.should.equal('new title');
+
+                done();
+
+            }, done);
         });
 
         it('can add', function (done) {
@@ -101,39 +93,35 @@
         });
 
         it('can delete', function (done) {
-            var firstPostId,
-                ids,
-                hasDeletedId;
-
+            var firstPostId;
             posts.browse().then(function (results) {
+
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPostId = results.models[0].id;
 
-                posts.destroy(firstPostId).then(function () {
+                return posts.destroy(firstPostId);
 
-                    posts.browse().then(function (newResults) {
+            }).then(function () {
 
-                        ids = _.pluck(newResults.models, "id");
+                return posts.browse();
 
-                        hasDeletedId = _.any(ids, function (id) {
-                            return id === firstPostId;
-                        });
+            }).then(function (newResults) {
+                var ids, hasDeletedId;
 
-                        hasDeletedId.should.equal(false);
+                ids = _.pluck(newResults.models, "id");
 
-                        done();
-                    }, function (error) {
-                        throw error;
-                    });
-                }, function (error) {
-                    throw error;
+                hasDeletedId = _.any(ids, function (id) {
+                    return id === firstPostId;
                 });
-            }, function (error) {
-                throw error;
-            });
+
+                hasDeletedId.should.equal(false);
+
+                done();
+
+            }, done);
         });
     });
 }());
