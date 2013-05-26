@@ -27,6 +27,7 @@
     "should": "~1.2.2",
     "grunt-mocha-test": "~0.4.0",
     "grunt-shell": "~0.2.2",
-    "grunt-contrib-sass": "~0.3.0"
+    "grunt-contrib-sass": "~0.3.0",
+    "sinon": "~1.7.2"
   }
 }
