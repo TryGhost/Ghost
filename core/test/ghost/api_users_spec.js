@@ -20,6 +20,7 @@
         });
 
         it('can browse', function (done) {
+
             users.browse().then(function (results) {
 
                 should.exist(results);
@@ -27,9 +28,8 @@
                 results.length.should.be.above(0);
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+
+            }).then(null, done);
         });
 
         it('can read', function (done) {
@@ -43,18 +43,18 @@
 
                 firstUser = results.models[0];
 
-                users.read({email_address: firstUser.attributes.email_address}).then(function (found) {
+                return users.read({email_address: firstUser.attributes.email_address});
 
-                    should.exist(found);
+            }).then(function (found) {
 
-                    found.attributes.username.should.equal(firstUser.attributes.username);
+                should.exist(found);
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
+                found.attributes.username.should.equal(firstUser.attributes.username);
 
-            });
+                done();
+
+            }).then(null, done);
+
         });
 
         it('can edit', function (done) {
@@ -68,19 +68,17 @@
 
                 firstUser = results.models[0];
 
-                users.edit({id: firstUser.id, url: "some.newurl.com"}).then(function (edited) {
+                return users.edit({id: firstUser.id, url: "some.newurl.com"});
 
-                    should.exist(edited);
+            }).then(function (edited) {
 
-                    edited.attributes.url.should.equal('some.newurl.com');
+                should.exist(edited);
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
-            }, function (error) {
-                throw error;
-            });
+                edited.attributes.url.should.equal('some.newurl.com');
+
+                done();
+
+            }).then(null, done);
         });
 
         it('can add', function (done) {
@@ -97,15 +95,11 @@
                 createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+            }).then(null, done);
         });
 
         it('can delete', function (done) {
-            var firstUserId,
-                ids,
-                hasDeletedId;
+            var firstUserId;
 
             users.browse().then(function (results) {
 
@@ -115,33 +109,31 @@
 
                 firstUserId = results.models[0].id;
 
-                users.destroy(firstUserId).then(function () {
+                return users.destroy(firstUserId);
 
-                    users.browse().then(function (newResults) {
+            }).then(function () {
 
-                        if (newResults.length < 1) {
-                            // Bug out if we only had one user and deleted it.
-                            return done();
-                        }
+                return users.browse();
 
-                        ids = _.pluck(newResults.models, "id");
+            }).then(function (newResults) {
+                var ids, hasDeletedId;
 
-                        hasDeletedId = _.any(ids, function (id) {
-                            return id === firstUserId;
-                        });
+                if (newResults.length < 1) {
+                    // Bug out if we only had one user and deleted it.
+                    return done();
+                }
 
-                        hasDeletedId.should.equal(false);
+                ids = _.pluck(newResults.models, "id");
 
-                        done();
-                    }, function (error) {
-                        throw error;
-                    });
-                }, function (error) {
-                    throw error;
+                hasDeletedId = _.any(ids, function (id) {
+                    return id === firstUserId;
                 });
-            }, function (error) {
-                throw error;
-            });
+
+                hasDeletedId.should.equal(false);
+
+                done();
+
+            }).then(null, done);
         });
     });
 

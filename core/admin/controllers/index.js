@@ -64,7 +64,7 @@
                 console.log('user found: ', user);
                 req.session.user = "ghostadmin";
                 res.redirect(req.query.redirect || '/ghost/');
-            }, function(err) {
+            }, function (err) {
                 // Do something here to signal the reason for an error
                 console.log(err.stack);
                 res.redirect('/ghost/login/');
