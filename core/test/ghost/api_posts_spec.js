@@ -26,7 +26,7 @@
                 results.length.should.equal(2);
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can read', function (done) {
@@ -46,7 +46,7 @@
                 found.attributes.title.should.equal(firstPost.attributes.title);
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can edit', function (done) {
@@ -70,7 +70,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
 
         it('can add', function (done) {
@@ -87,7 +87,7 @@
                 createdPost.attributes.slug.should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can delete', function (done) {
@@ -119,7 +119,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
     });
 }());

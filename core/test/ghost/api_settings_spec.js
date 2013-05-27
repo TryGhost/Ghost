@@ -27,7 +27,7 @@
                 results.length.should.be.above(0);
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can read', function (done) {
@@ -51,7 +51,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
 
         it('can edit single', function (done) {
@@ -85,7 +85,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
 
         it('can edit multiple', function (done) {
@@ -128,7 +128,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
 
         it('can add', function (done) {
@@ -145,7 +145,7 @@
                 createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can delete', function (done) {
@@ -179,7 +179,7 @@
 
                 done();
 
-            }, done);
+            }).then(null, done);
         });
     });
 }());
