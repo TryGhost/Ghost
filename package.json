@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app",
-    "test": "nodeunit core/test/ghost"
+    "test": "grunt validate"
   },
   "dependencies": {
     "express": "3.1.x",
@@ -28,6 +28,7 @@
     "grunt-mocha-test": "~0.4.0",
     "grunt-shell": "~0.2.2",
     "grunt-contrib-sass": "~0.3.0",
-    "sinon": "~1.7.2"
+    "sinon": "~1.7.2",
+    "mocha": "~1.10.0"
   }
 }
