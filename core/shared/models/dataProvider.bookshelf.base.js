@@ -24,6 +24,7 @@
      * @param opts (optional)
      */
     BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (opts) {
+        opts = opts || {};
         return this.collection.forge().fetch(opts);
     };
 
