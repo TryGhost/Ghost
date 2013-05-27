@@ -6,7 +6,8 @@
     var _ = require("underscore"),
         should = require('should'),
         helpers = require('./helpers'),
-        PostProvider = require('../../shared/models/dataProvider.bookshelf.posts');
+        PostProvider = require('../../shared/models/dataProvider.bookshelf.posts'),
+        Bookshelf = require('bookshelf');
 
     describe('Bookshelf PostsProvider', function () {
 
@@ -16,7 +17,7 @@
             helpers.resetData().then(function () {
                 posts = new PostProvider();
                 done();
-            });
+            }, done);
         });
 
         it('can browse', function (done) {
@@ -121,5 +122,64 @@
 
             }).then(null, done);
         });
+
+        it('can fetch a paginated set, with various options', function (done) {
+
+            helpers.insertMorePosts().then(function () {
+
+                return posts.findPage({page: 2});
+
+            }).then(function (paginationResult) {
+
+                paginationResult.page.should.equal(2);
+
+                paginationResult.limit.should.equal(15);
+
+                paginationResult.posts.length.should.equal(15);
+
+                paginationResult.pages.should.equal(4);
+
+                return posts.findPage({page: 5});
+
+            }).then(function (paginationResult) {
+
+                paginationResult.page.should.equal(5);
+
+                paginationResult.limit.should.equal(15);
+
+                paginationResult.posts.length.should.equal(0);
+
+                paginationResult.pages.should.equal(4);
+
+                return posts.findPage({limit: 30});
+
+            }).then(function (paginationResult) {
+
+                paginationResult.page.should.equal(1);
+
+                paginationResult.limit.should.equal(30);
+
+                paginationResult.posts.length.should.equal(30);
+
+                paginationResult.pages.should.equal(2);
+
+                return posts.findPage({limit: 10, page: 2, where: {language: 'fr'}});
+
+            }).then(function (paginationResult) {
+
+                paginationResult.page.should.equal(2);
+
+                paginationResult.limit.should.equal(10);
+
+                paginationResult.posts.length.should.equal(10);
+
+                paginationResult.pages.should.equal(3);
+
+                done();
+
+            }).then(null, done);
+
+        });
+
     });
 }());

@@ -4,7 +4,7 @@
     var _ = require('underscore'),
         util = require('util'),
         models = require('./models'),
-        Bookshelf = require('./bookshelf'),
+        Bookshelf = require('bookshelf'),
         BaseProvider = require('./dataProvider.bookshelf.base'),
         PostsProvider;
 
@@ -14,6 +14,8 @@
     PostsProvider = function () {
         BaseProvider.call(this, models.Post, models.Posts);
     };
+
+    util.inherits(PostsProvider, BaseProvider);
 
     /**
      * Find results by page - returns an object containing the
@@ -34,6 +36,12 @@
      */
     PostsProvider.prototype.findPage = function (opts) {
         var postCollection;
+
+        // Allow findPage(n)
+        if (!_.isObject(opts)) {
+            opts = {page: opts};
+        }
+
         opts = _.defaults(opts || {}, {
             page: 1,
             limit: 15,
@@ -67,7 +75,7 @@
                 }
 
                 return qb.count(_.result(collection, 'idAttribute')).then(function (resp) {
-                    var totalPosts = resp.aggregate;
+                    var totalPosts = resp[0].aggregate;
                     return {
                         posts: collection.toJSON(),
                         page: opts.page,
@@ -78,8 +86,6 @@
                 });
             });
     };
-
-    util.inherits(PostsProvider, BaseProvider);
 
     module.exports = PostsProvider;
 }());
