@@ -4,7 +4,7 @@
     // Use 'testing' Ghost config
     process.env.NODE_ENV = 'testing';
 
-    var knex = require('knex'),
+    var knex = require('../../shared/models/base').Knex,
         migrations = {
             one: require("../../shared/data/migration/001")
         },

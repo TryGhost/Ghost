@@ -16,14 +16,14 @@
         'homepage': function (req, res) {
             api.posts.browse().then(function (posts) {
                 ghost.doFilter('prePostsRender', posts.toJSON(), function (posts) {
-                    res.render('index', {posts: posts, ghostGlobals: ghost.globals()});
+                    res.render('index', {posts: posts, ghostGlobals: ghost.globalConfig});
                 });
             });
         },
         'single': function (req, res) {
             api.posts.read({'slug': req.params.slug}).then(function (post) {
                 ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
-                    res.render('single', {post: post, ghostGlobals: ghost.globals()});
+                    res.render('single', {post: post, ghostGlobals: ghost.globalConfig});
                 });
             });
         }
