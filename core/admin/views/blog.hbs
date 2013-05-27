@@ -1,7 +1,3 @@
-{{#contentFor 'bodyScripts'}}
-    <script src="/core/admin/assets/js/blog.js"></script>
-{{/contentFor}}
-
 {{!< default}}
 <section class="content-list">
   <header class="floatingheader">
@@ -16,7 +12,7 @@
       </section>
       <a href="/ghost/editor" class="button button-add"><span class="hidden">New Post</span></a>
   </header>
-  <section class="content-list-content">
+  <section class="content-list-content js-content-list">
       <ol>
           {{#each posts}}
           {{! #if featured class="featured"{{/if}}
@@ -49,11 +45,11 @@
         <ul class="menu-drop-right">
             <li><a href="#" class="url">URL</a></li>
             <li><a href="#" class="something">Something</a></li>
-            <li><a href="#" class="delete">Delete</a></li>
+            <li><a href="#" class="delete js-delete-post">Delete</a></li>
         </ul>
     </section>
 </header>
-<section class="content-preview-content">
+<section class="content-preview-content js-content-preview">
     <div class="wrapper"></div>
 </section>
 </section>

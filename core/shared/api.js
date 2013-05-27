@@ -48,26 +48,26 @@
         }
     };
 
-    // # Users
+    // # User
     users = {
         add: function (postData) {
-            return dataProvider.Users.add(postData);
+            return dataProvider.User.add(postData);
         },
         check: function (postData) {
-            return dataProvider.Users.check(postData);
+            return dataProvider.User.check(postData);
         }
     };
 
-    // # Settings
+    // # Setting
     settings = {
         browse: function (options) {
-            return dataProvider.Settings.browse(options);
+            return dataProvider.Setting.browse(options);
         },
         read: function (options) {
-            return dataProvider.Settings.read(options.key);
+            return dataProvider.Setting.read(options.key);
         },
         edit: function (options) {
-            return dataProvider.Settings.edit(options);
+            return dataProvider.Setting.edit(options);
         }
     };
 

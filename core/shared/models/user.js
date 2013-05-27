@@ -46,7 +46,7 @@
          * Finds the user by email, and check's the password
          */
         check: function (_userdata) {
-            return this.model.forge({
+            return this.forge({
                 email_address: _userdata.email
             }).fetch().then(function (user) {
                 return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {

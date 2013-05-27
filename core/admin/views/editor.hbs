@@ -1,13 +1,3 @@
-{{#contentFor 'bodyScripts'}}
-    <script src="/core/admin/assets/lib/codemirror/codemirror.js"></script>
-    <script src="/core/admin/assets/lib/codemirror/mode/markdown/markdown.js"></script>
-    <script src="/core/admin/assets/lib/showdown/showdown.js"></script>
-    <script src="/core/admin/assets/lib/showdown/extensions/ghostdown.js"></script>
-    <script src="/core/admin/assets/lib/shortcuts.js"></script>
-    <script src="/core/admin/assets/js/editor.js"></script>
-    <script src="/core/admin/assets/js/tagui.js"></script>
-{{/contentFor}}
-
 {{!< default}}
 {{! TODO: Add "scrolling" class only when one of the panels is scrolled down by 5px or more }}
 <header>
@@ -19,7 +9,7 @@
 </header>
 
 <section class="entry-markdown active">
-    <header class="floatingheader">
+    <header class="floatingheader js-header">
         {{e "editor.headers.markdown.label" "Markdown"}}
         <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
     </header>
@@ -29,10 +19,10 @@
 </section>{{!.entry-markdown}}
 
 <section class="entry-preview">
-    <header class="floatingheader">
-        Preview <span class="entry-word-count">0 words</span>
+    <header class="floatingheader js-header">
+        Preview <span class="entry-word-count js-word-count">0 words</span>
     </header>
-    <section class="entry-preview-content">
+    <section class="entry-preview-content js-entry-preview-content">
         <div class="rendered-markdown">
             {{!The content gets inserted in here, bitches!}}
         </div>
@@ -41,19 +31,19 @@
 
 <footer id="publish-bar">
     <nav>
-        <section id="entry-categories" href="#" class="left">
+        <section id="entry-categories" href="#" class="left js-entry-categories">
             <label class="category-label" for="categories"><span class="hidden">Categories</span></label>
-            <div class="categories"></div>
+            <div class="js-categories"></div>
             <input type="hidden" class="category-holder" id="category-holder">
             <input class="category-input" id="categories" type="text"
-                   data-populate-hidden="#category-holder" data-input-behaviour="tag" data-populate=".categories" />
-            <ul class="suggestions overlay" data-populate=".categories"></ul>
+                   data-populate-hidden="#category-holder" data-input-behaviour="tag" data-populate=".js-categories" />
+            <ul class="suggestions js-suggestions overlay" data-populate=".js-categories"></ul>
         </section>
         <div class="right">
             <button id="entry-settings" href="#" class="button-link"><span class="hidden">Settings</span></button>
             <section id="entry-actions" class="splitbutton-save">
                 <button type="button" class="button-save" data-state="save-draft">Save Draft</button>
-                <a class="options up" href="#"><span class="hidden">Options</span></a>
+                <a class="options up js-options-toggle" href="#"><span class="hidden">Options</span></a>
                 <ul class="editor-options overlay" style="display:none">
                     <li data-title="publish-now" data-url=""><a href="#">Publish Now</a></li>
                     <li data-title="queue" data-url=""><a href="#">Add to Queue</a></li>
