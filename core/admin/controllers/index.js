@@ -64,9 +64,9 @@
                 console.log('user found: ', user);
                 req.session.user = "ghostadmin";
                 res.redirect(req.query.redirect || '/ghost/');
-            }, function (err) {
+            }, function (error) {
                 // Do something here to signal the reason for an error
-                console.log(err.stack);
+                req.flash('error', error.message);
                 res.redirect('/ghost/login/');
             });
         },
@@ -78,16 +78,19 @@
             });
         },
         'doRegister': function (req, res) {
-             // console.log(req.body);
-            if (req.body.email_address !== '' && req.body.password.length > 5) {
+            var email = req.body.email_address,
+                password = req.body.password;
+
+            if (email !== '' && password.length > 5) {
                 api.users.add({
-                    email_address: req.body.email_address,
-                    password: req.body.password
+                    email_address: email,
+                    password: password
                 }).then(function (user) {
                     console.log('user added', user);
                     res.redirect('/ghost/login/');
                 }, function (error) {
-                    console.log('there was an error', error);
+                    req.flash('error', error.message);
+                    res.redirect('/ghost/register/');
                 });
             } else {
                 req.flash('error', "The password is too short. Have at least 6 characters in there");

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app",
-    "test": "grunt validate"
+    "test": "grunt validate --verbose"
   },
   "dependencies": {
     "express": "3.1.x",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "grunt": "~0.4.1",
+    "grunt-cli": "0.1.9",
     "grunt-jslint": "0.2.x",
     "should": "~1.2.2",
     "grunt-mocha-test": "~0.4.0",
