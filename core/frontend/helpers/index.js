@@ -3,10 +3,11 @@
 
     var _ = require('underscore'),
         moment = require('moment'),
+        when = require('when'),
+        navHelper = require('./ghostNav'),
         coreHelpers;
 
     coreHelpers = function (ghost) {
-
         /**
          * [ description]
          * @todo ghost core helpers + a way for themes to register them
@@ -39,6 +40,10 @@
             return output;
         });
 
+        return when.all([
+            // Just one async helper for now, but could be more in the future
+            navHelper.registerWithGhost(ghost)
+        ]);
     };
 
 

@@ -6,12 +6,15 @@
 
     // Module dependencies.
     var express = require('express'),
+        when = require('when'),
+        errors = require('./core/shared/errorHandling'),
         admin = require('./core/admin/controllers'),
         frontend = require('./core/frontend/controllers'),
         api = require('./core/shared/api'),
         flash = require('connect-flash'),
         Ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
+        filters = require('./core/frontend/filters'),
         helpers = require('./core/frontend/helpers'),
 
     // ## Variables
@@ -66,53 +69,54 @@
         next();
     };
 
-    helpers.loadCoreHelpers(ghost);
+    console.log("Loading filters and helpers...");
+    when.all([filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
 
+        /**
+         * API routes..
+         * @todo auth should be public auth not user auth
+         */
+        ghost.app().get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
+        ghost.app().post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
+        ghost.app().get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
+        ghost.app().put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
+        ghost.app().del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
+        ghost.app().get('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.browse));
+        ghost.app().get('/api/v0.1/settings/:key', authAPI, api.requestHandler(api.settings.read));
+        ghost.app().put('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.edit));
 
-    /**
-     * API routes..
-     * @todo auth should be public auth not user auth
-     */
-    ghost.app().get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
-    ghost.app().post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
-    ghost.app().get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
-    ghost.app().put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
-    ghost.app().del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
-    ghost.app().get('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.browse));
-    ghost.app().get('/api/v0.1/settings/:key', authAPI, api.requestHandler(api.settings.read));
-    ghost.app().put('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.edit));
+        /**
+         * Admin routes..
+         * @todo put these somewhere in admin
+         */
 
-    /**
-     * Admin routes..
-     * @todo put these somewhere in admin
-     */
+        ghost.app().get(/^\/logout\/?$/, admin.logout);
+        ghost.app().get('/ghost/login/', admin.login);
+        ghost.app().get('/ghost/register/', admin.register);
+        ghost.app().post('/ghost/login/', admin.auth);
+        ghost.app().post('/ghost/register/', admin.doRegister);
+        ghost.app().get('/ghost/editor/:id', auth, admin.editor);
+        ghost.app().get('/ghost/editor', auth, admin.editor);
+        ghost.app().get('/ghost/blog', auth, admin.blog);
+        ghost.app().get('/ghost/settings', auth, admin.settings);
+        ghost.app().get('/ghost/debug', auth, admin.debug.index);
+        ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
+        ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
+        ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+            res.redirect('/ghost/');
+        });
+        ghost.app().get('/ghost/', auth, admin.index);
 
-    ghost.app().get(/^\/logout\/?$/, admin.logout);
-    ghost.app().get('/ghost/login/', admin.login);
-    ghost.app().get('/ghost/register/', admin.register);
-    ghost.app().post('/ghost/login/', admin.auth);
-    ghost.app().post('/ghost/register/', admin.doRegister);
-    ghost.app().get('/ghost/editor/:id', auth, admin.editor);
-    ghost.app().get('/ghost/editor', auth, admin.editor);
-    ghost.app().get('/ghost/blog', auth, admin.blog);
-    ghost.app().get('/ghost/settings', auth, admin.settings);
-    ghost.app().get('/ghost/debug', auth, admin.debug.index);
-    ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
-    ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
-    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
-        res.redirect('/ghost/');
-    });
-    ghost.app().get('/ghost/', auth, admin.index);
+        /**
+         * Frontend routes..
+         * @todo dynamic routing, homepage generator, filters ETC ETC
+         */
+        ghost.app().get('/:slug', frontend.single);
+        ghost.app().get('/', frontend.homepage);
 
-    /**
-     * Frontend routes..
-     * @todo dynamic routing, homepage generator, filters ETC ETC
-     */
-    ghost.app().get('/:slug', frontend.single);
-    ghost.app().get('/', frontend.homepage);
+        ghost.app().listen(3333, function () {
+            console.log("Express server listening on port " + 3333);
+        });
 
-
-    ghost.app().listen(3333, function () {
-        console.log("Express server listening on port " + 3333);
-    });
+    }, errors.logAndThrowError);
 }());

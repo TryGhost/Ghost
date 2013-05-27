@@ -6,8 +6,7 @@
     var _ = require("underscore"),
         should = require('should'),
         helpers = require('./helpers'),
-        PostProvider = require('../../shared/models/dataProvider.bookshelf.posts'),
-        Bookshelf = require('bookshelf');
+        PostProvider = require('../../shared/models/dataProvider.bookshelf.posts');
 
     describe('Bookshelf PostsProvider', function () {
 
