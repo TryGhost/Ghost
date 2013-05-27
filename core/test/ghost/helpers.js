@@ -1,4 +1,4 @@
-(function() {
+(function () {
     "use strict";
 
     // Use 'testing' Ghost config
@@ -13,7 +13,7 @@
         resetData: function () {
             return migrations.one.down().then(function () {
                 return migrations.one.up();
-            }, function() {
+            }, function () {
                 throw new Error("Failed to reset data");
             });
         }

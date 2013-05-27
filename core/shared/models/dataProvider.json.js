@@ -29,7 +29,7 @@
     DataProvider.prototype.globals.data = [];
 
 
-    DataProvider.prototype.globals.findAll = function() {
+    DataProvider.prototype.globals.findAll = function () {
         return when(this.data);
     };
 

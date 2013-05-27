@@ -20,11 +20,11 @@
                 // Simple bootstraping of the data model for now.
                 var migration = require('../data/migration/001');
 
-                migration.down().then(function() {
-                    migration.up().then(function () {
-                        console.log('all done....');
-                    });
+                return migration.down().then(function () {
+                    return migration.up();
                 });
+            }).then(function () {
+                console.log('all done....');
             });
         }
 
