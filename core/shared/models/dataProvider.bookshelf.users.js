@@ -3,7 +3,7 @@
 
     var util = require('util'),
         _ = require('underscore'),
-        bcrypt = require('bcrypt'),
+        bcrypt = require('bcrypt-nodejs'),
         models = require('./models.js'),
         when = require('when'),
         nodefn = require('when/node/function'),
@@ -30,9 +30,10 @@
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
 
-        return nodefn.call(bcrypt.hash, _user.password, 10).then(function (hash) {
+        return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
             userData.password = hash;
             return BaseProvider.prototype.add.call(self, userData);
+
         });
     };
 
