@@ -3,9 +3,8 @@
 (function () {
     "use strict";
 
-
     var when    = require('when'),
-        knex    = require('../../models/knex_init'),
+        knex    = require('../../models/base').Knex,
         fixtures = require('../fixtures/001'),
         up,
         down;
