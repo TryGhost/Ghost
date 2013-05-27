@@ -46,7 +46,7 @@
                 found.attributes.title.should.equal(firstPost.attributes.title);
 
                 done();
-            });
+            }, done);
         });
 
         it('can edit', function (done) {
@@ -87,9 +87,7 @@
                 createdPost.attributes.slug.should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+            }, done);
         });
 
         it('can delete', function (done) {
