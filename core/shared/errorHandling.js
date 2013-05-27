@@ -1,4 +1,4 @@
-(function() {
+(function () {
     "use strict";
 
     var _ = require('underscore'),
@@ -8,7 +8,7 @@
      * Basic error handling helpers
      */
     errors = {
-        throwError: function(err) {
+        throwError: function (err) {
             if (!err) {
                 return;
             }

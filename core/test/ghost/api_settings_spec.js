@@ -27,9 +27,7 @@
                 results.length.should.be.above(0);
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+            }).then(null, done);
         });
 
         it('can read', function (done) {
@@ -43,20 +41,17 @@
 
                 firstSetting = results.models[0];
 
-                settings.read(firstSetting.attributes.key).then(function (found) {
+                return settings.read(firstSetting.attributes.key);
 
-                    should.exist(found);
+            }).then(function (found) {
 
-                    found.attributes.value.should.equal(firstSetting.attributes.value);
+                should.exist(found);
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
+                found.attributes.value.should.equal(firstSetting.attributes.value);
 
-            }, function (error) {
-                throw error;
-            });
+                done();
+
+            }).then(null, done);
         });
 
         it('can edit single', function (done) {
@@ -71,29 +66,26 @@
 
                 firstPost = results.models[0];
 
-                // The edit method has been modified to take an object of 
+                // The edit method has been modified to take an object of
                 // key/value pairs
                 toEdit[firstPost.attributes.key] = "new value";
 
-                settings.edit(toEdit).then(function (edited) {
+                return settings.edit(toEdit);
 
-                    should.exist(edited);
+            }).then(function (edited) {
 
-                    edited.length.should.equal(1);
+                should.exist(edited);
 
-                    edited = edited[0];
+                edited.length.should.equal(1);
 
-                    edited.attributes.key.should.equal(firstPost.attributes.key);
-                    edited.attributes.value.should.equal('new value');
+                edited = edited[0];
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
+                edited.attributes.key.should.equal(firstPost.attributes.key);
+                edited.attributes.value.should.equal('new value');
 
-            }, function (error) {
-                throw error;
-            });
+                done();
+
+            }).then(null, done);
         });
 
         it('can edit multiple', function (done) {
@@ -111,34 +103,32 @@
                 firstPost = results.models[0];
                 secondPost = results.models[1];
 
-                // The edit method has been modified to take an object of 
+                // The edit method has been modified to take an object of
                 // key/value pairs
                 toEdit[firstPost.attributes.key] = "new value1";
                 toEdit[secondPost.attributes.key] = "new value2";
 
-                settings.edit(toEdit).then(function (edited) {
+                return settings.edit(toEdit);
 
-                    should.exist(edited);
+            }).then(function (edited) {
 
-                    edited.length.should.equal(2);
+                should.exist(edited);
 
-                    editedPost = edited[0];
+                edited.length.should.equal(2);
 
-                    editedPost.attributes.key.should.equal(firstPost.attributes.key);
-                    editedPost.attributes.value.should.equal('new value1');
+                editedPost = edited[0];
 
-                    editedPost = edited[1];
+                editedPost.attributes.key.should.equal(firstPost.attributes.key);
+                editedPost.attributes.value.should.equal('new value1');
 
-                    editedPost.attributes.key.should.equal(secondPost.attributes.key);
-                    editedPost.attributes.value.should.equal('new value2');
+                editedPost = edited[1];
 
-                    done();
-                }, function (error) {
-                    throw error;
-                });
-            }, function (error) {
-                throw error;
-            });
+                editedPost.attributes.key.should.equal(secondPost.attributes.key);
+                editedPost.attributes.value.should.equal('new value2');
+
+                done();
+
+            }).then(null, done);
         });
 
         it('can add', function (done) {
@@ -155,15 +145,11 @@
                 createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
 
                 done();
-            }, function (error) {
-                throw error;
-            });
+            }).then(null, done);
         });
 
         it('can delete', function (done) {
-            var firstSettingId,
-                ids,
-                hasDeletedId;
+            var firstSettingId;
 
             settings.browse().then(function (results) {
 
@@ -173,28 +159,27 @@
 
                 firstSettingId = results.models[0].id;
 
-                settings.destroy(firstSettingId).then(function () {
+                return settings.destroy(firstSettingId);
 
-                    settings.browse().then(function (newResults) {
+            }).then(function () {
 
-                        ids = _.pluck(newResults.models, "id");
+                return settings.browse();
 
-                        hasDeletedId = _.any(ids, function (id) {
-                            return id === firstSettingId;
-                        });
+            }).then(function (newResults) {
 
-                        hasDeletedId.should.equal(false);
+                var ids, hasDeletedId;
 
-                        done();
-                    }, function (error) {
-                        throw error;
-                    });
-                }, function (error) {
-                    throw error;
+                ids = _.pluck(newResults.models, "id");
+
+                hasDeletedId = _.any(ids, function (id) {
+                    return id === firstSettingId;
                 });
-            }, function (error) {
-                throw error;
-            });
+
+                hasDeletedId.should.equal(false);
+
+                done();
+
+            }).then(null, done);
         });
     });
 }());
