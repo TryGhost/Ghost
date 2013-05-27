@@ -2,12 +2,10 @@
 (function () {
     "use strict";
 
-    var Ghost = require('../../ghost'),
+    var ghost = require('../../ghost'),
         _ = require('underscore'),
         fs = require('fs'),
         api = require('../../shared/api'),
-
-        ghost = new Ghost(),
         adminNavbar,
         adminControllers;
 
