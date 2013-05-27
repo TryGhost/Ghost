@@ -21,26 +21,31 @@
     /**
      * Naive find all
      * @param args (optional)
+     * @param opts (optional)
      */
-    BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (args) {
-        args = args || {};
-        return this.collection.forge(args).fetch();
+    BookshelfBase.prototype.findAll = BookshelfBase.prototype.browse = function (opts) {
+        opts = opts || {};
+        return this.collection.forge().fetch(opts);
     };
 
     /**
      * Naive find one where args match
      * @param args
+     * @param opts (optional)
      */
-    BookshelfBase.prototype.findOne = BookshelfBase.prototype.read = function (args) {
-        return this.model.forge(args).fetch();
+    BookshelfBase.prototype.findOne = BookshelfBase.prototype.read = function (args, opts) {
+        opts = opts || {};
+        return this.model.forge(args).fetch(opts);
     };
 
     /**
      * Naive edit
      * @param editedObj
+     * @param opts (optional)
      */
-    BookshelfBase.prototype.edit = BookshelfBase.prototype.update = function (editedObj) {
-        return this.model.forge({id: editedObj.id}).fetch().then(function (foundObj) {
+    BookshelfBase.prototype.edit = BookshelfBase.prototype.update = function (editedObj, opts) {
+        opts = opts || {};
+        return this.model.forge({id: editedObj.id}).fetch(opts).then(function (foundObj) {
             return foundObj.set(editedObj).save();
         });
     };
@@ -48,17 +53,21 @@
     /**
      * Naive add
      * @param newObj
+     * @param opts (optional)
      */
-    BookshelfBase.prototype.add = BookshelfBase.prototype.create = function (newObj) {
-        return this.model.forge(newObj).save();
+    BookshelfBase.prototype.add = BookshelfBase.prototype.create = function (newObj, opts) {
+        opts = opts || {};
+        return this.model.forge(newObj).save(opts);
     };
 
     /**
      * Naive destroy
      * @param _identifier
+     * @param opts (optional)
      */
-    BookshelfBase.prototype.destroy = BookshelfBase.prototype['delete'] = function (_identifier) {
-        return this.model.forge({id: _identifier}).destroy();
+    BookshelfBase.prototype.destroy = BookshelfBase.prototype['delete'] = function (_identifier, opts) {
+        opts = opts || {};
+        return this.model.forge({id: _identifier}).destroy(opts);
     };
 
     module.exports = BookshelfBase;
