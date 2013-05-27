@@ -19,7 +19,7 @@
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should.throw("test1");
+            runThrowError.should['throw']("test1");
         });
 
         it("throws error strings", function () {
@@ -28,7 +28,7 @@
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should.throw("test2");
+            runThrowError.should['throw']("test2");
         });
 
         it("logs errors", function () {
@@ -52,7 +52,7 @@
             logStub.restore();
         });
 
-        it("logs promise errors with custom messages", function(done) {
+        it("logs promise errors with custom messages", function (done) {
             var def = when.defer(),
                 prom = def.promise,
                 logStub = sinon.stub(console, "log");
@@ -71,12 +71,12 @@
             def.reject();
         });
 
-        it("logs promise errors and redirects", function(done) {
+        it("logs promise errors and redirects", function (done) {
             var def = when.defer(),
                 prom = def.promise,
                 req = null,
                 res = {
-                    redirect: function() {
+                    redirect: function () {
                         return;
                     }
                 },

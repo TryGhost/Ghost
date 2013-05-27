@@ -1,4 +1,4 @@
-(function() {
+(function () {
     "use strict";
 
     var util = require('util'),
@@ -30,7 +30,7 @@
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
 
-        return nodefn.call(bcrypt.hash, _user.password, 10).then(function(hash) {
+        return nodefn.call(bcrypt.hash, _user.password, 10).then(function (hash) {
             userData.password = hash;
             return BaseProvider.prototype.add.call(self, userData);
         });
@@ -46,7 +46,7 @@
         return this.model.forge({
             email_address: _userdata.email
         }).fetch().then(function (user) {
-            return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function(matched) {
+            return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                 if (!matched) {
                     return when.reject(new Error('Password does not match'));
                 }
