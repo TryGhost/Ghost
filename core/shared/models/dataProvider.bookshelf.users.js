@@ -30,11 +30,17 @@
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
 
-        return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
-            userData.password = hash;
-            return BaseProvider.prototype.add.call(self, userData);
+        return self.model.forge({email_address: userData.email_address}).fetch().then(function (user) {
+            if (!!user.attributes.email_address) {
+                return when.reject(new Error('A user with that email address already exists.'));
+            }
 
+            return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
+                userData.password = hash;
+                return BaseProvider.prototype.add.call(self, userData);
+            });
         });
+
     };
 
     /**
@@ -47,12 +53,15 @@
         return this.model.forge({
             email_address: _userdata.email
         }).fetch().then(function (user) {
-            return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
-                if (!matched) {
-                    return when.reject(new Error('Password does not match'));
-                }
-                return user;
-            });
+            if (!!user.attributes.email_address) {
+                return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
+                    if (!matched) {
+                        return when.reject(new Error('Passwords do not match'));
+                    }
+                    return user;
+                });
+            }
+            return when.reject(new Error('We do not have a record for such user.'));
         });
     };
 
