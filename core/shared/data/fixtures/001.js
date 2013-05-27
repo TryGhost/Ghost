@@ -50,15 +50,16 @@ module.exports = {
 
     users: [
         {
-            "id":               "1",
-            "username":         "johnonolan",
+            "id":                "1",
+            "username":          "johnonolan",
             "first_name":        "John",
             "last_name":         "O'Nolan",
+            "password":          "$2a$10$.pb3wOEhbEPvArvOBB.iyuKslBjC7lSXCUzp29civDTvCg3M1j0XO",
             "email_address":     "john@onolan.org",
             "profile_picture":   "logo.png",
             "cover_picture":     "",
-            "bio":              "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
-            "url":              "john.onolan.org",
+            "bio":               "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
+            "url":               "john.onolan.org",
             "created_by":        1,
             "updated_by":        1
         }
