@@ -68,7 +68,8 @@
             connection: {
                 filename: './core/shared/data/testdb.db'
             },
-            debug: true
+            debug: false
+            // debug: true
         },
 
         staging: {},
