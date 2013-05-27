@@ -2,9 +2,7 @@
 
     "use strict";
 
-    var _ = require('underscore'),
-        GhostBookshelf,
-        BookshelfBase,
+    var GhostBookshelf,
         Bookshelf = require('bookshelf'),
         config = require('../../../config');
 

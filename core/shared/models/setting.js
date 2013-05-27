@@ -5,8 +5,7 @@
         Settings,
         GhostBookshelf = require('./base'),
         _ = require('underscore'),
-        when = require('when'),
-        SettingsProvider;
+        when = require('when');
 
     Setting = GhostBookshelf.Model.extend({
 
