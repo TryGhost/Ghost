@@ -149,10 +149,83 @@
             }
         });
 
+        // ## Shortcuts
         // Zen writing mode
         shortcut.add("Alt+Shift+Z", function () {
             $('body').toggleClass('zen');
         });
 
+        var MarkdownShortcuts = [
+            {
+                'key': 'Ctrl+B',
+                'style': 'bold'
+            },
+            {
+                'key': 'Meta+B',
+                'style': 'bold'
+            },
+            {
+                'key': 'Ctrl+I',
+                'style': 'italic'
+            },
+            {
+                'key': 'Meta+I',
+                'style': 'italic'
+            },
+            {
+                'key': 'Ctrl+Alt+U',
+                'style': 'strike'
+            },
+            {
+                'key': 'Ctrl+Shift+K',
+                'style': 'code'
+            },
+            {
+                'key': 'Alt+1',
+                'style': 'h1'
+            },
+            {
+                'key': 'Alt+2',
+                'style': 'h2'
+            },
+            {
+                'key': 'Alt+3',
+                'style': 'h3'
+            },
+            {
+                'key': 'Alt+4',
+                'style': 'h4'
+            },
+            {
+                'key': 'Alt+5',
+                'style': 'h5'
+            },
+            {
+                'key': 'Alt+6',
+                'style': 'h6'
+            },
+            {
+                'key': 'Ctrl+Shift+L',
+                'style': 'link'
+            },
+            {
+                'key': 'Ctrl+Shift+I',
+                'style': 'image'
+            },
+            {
+                'key': 'Ctrl+Q',
+                'style': 'blockquote'
+            },
+            {
+                'key': 'Ctrl+Shift+1',
+                'style': 'currentdate'
+            }
+        ];
+
+        $.each(MarkdownShortcuts, function (index, short) {
+            shortcut.add(short.key, function () {
+                return editor.addMarkdown({style: short.style});
+            });
+        });
     });
 }(jQuery, Showdown, CodeMirror, shortcut));
