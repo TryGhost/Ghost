@@ -6,10 +6,8 @@
 (function () {
     'use strict';
 
-    var Ghost = require('../../ghost'),
+    var ghost = require('../../ghost'),
         api = require('../../shared/api'),
-
-        ghost = new Ghost(),
         frontendControllers;
 
     frontendControllers = {

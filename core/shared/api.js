@@ -9,10 +9,8 @@
 (function () {
     "use strict";
 
-    var Ghost = require('../ghost'),
+    var ghost = require('../ghost'),
         _ = require('underscore'),
-
-        ghost = new Ghost(),
         posts,
         users,
         settings,

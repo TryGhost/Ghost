@@ -10,32 +10,27 @@
         frontend = require('./core/frontend/controllers'),
         api = require('./core/shared/api'),
         flash = require('connect-flash'),
-        Ghost = require('./core/ghost'),
+        ghost = require('./core/ghost'),
         I18n = require('./core/lang/i18n'),
         helpers = require('./core/frontend/helpers'),
 
-    // ## Variables
+        // ## Variables
         auth,
         authAPI,
+        app = ghost.app();
 
-        /**
-         * Create new Ghost object
-         * @type {Ghost}
-         */
-        ghost = new Ghost();
-
-    ghost.app().configure('development', function () {
-        ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-        ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-        ghost.app().use(express.logger('dev'));
-        ghost.app().use(I18n.load(ghost));
-        ghost.app().use(express.bodyParser());
-        ghost.app().use(express.cookieParser('try-ghost'));
-        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
-        ghost.app().use(ghost.initTheme(ghost.app()));
-        ghost.app().use(flash());
+    app.configure('development', function () {
+        app.use(express.favicon(__dirname + '/content/images/favicon.ico'));
+        app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        app.use(express.logger('dev'));
+        app.use(I18n.load(ghost));
+        app.use(express.bodyParser());
+        app.use(express.cookieParser('try-ghost'));
+        app.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+        app.use(ghost.initTheme(app));
+        app.use(flash());
         // bind locals - options which appear in every view - perhaps this should be admin only
-        ghost.app().use(function (req, res, next) {
+        app.use(function (req, res, next) {
             res.locals.messages = req.flash();
             next();
         });
@@ -73,46 +68,45 @@
      * API routes..
      * @todo auth should be public auth not user auth
      */
-    ghost.app().get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
-    ghost.app().post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
-    ghost.app().get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
-    ghost.app().put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
-    ghost.app().del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
-    ghost.app().get('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.browse));
-    ghost.app().get('/api/v0.1/settings/:key', authAPI, api.requestHandler(api.settings.read));
-    ghost.app().put('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.edit));
+    app.get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
+    app.post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
+    app.get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
+    app.put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
+    app.del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
+    app.get('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.browse));
+    app.get('/api/v0.1/settings/:key', authAPI, api.requestHandler(api.settings.read));
+    app.put('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.edit));
 
     /**
      * Admin routes..
      * @todo put these somewhere in admin
      */
 
-    ghost.app().get(/^\/logout\/?$/, admin.logout);
-    ghost.app().get('/ghost/login/', admin.login);
-    ghost.app().get('/ghost/register/', admin.register);
-    ghost.app().post('/ghost/login/', admin.auth);
-    ghost.app().post('/ghost/register/', admin.doRegister);
-    ghost.app().get('/ghost/editor/:id', auth, admin.editor);
-    ghost.app().get('/ghost/editor', auth, admin.editor);
-    ghost.app().get('/ghost/blog', auth, admin.blog);
-    ghost.app().get('/ghost/settings', auth, admin.settings);
-    ghost.app().get('/ghost/debug', auth, admin.debug.index);
-    ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
-    ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
-    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+    app.get(/^\/logout\/?$/, admin.logout);
+    app.get('/ghost/login/', admin.login);
+    app.get('/ghost/register/', admin.register);
+    app.post('/ghost/login/', admin.auth);
+    app.post('/ghost/register/', admin.doRegister);
+    app.get('/ghost/editor/:id', auth, admin.editor);
+    app.get('/ghost/editor', auth, admin.editor);
+    app.get('/ghost/blog', auth, admin.blog);
+    app.get('/ghost/settings', auth, admin.settings);
+    app.get('/ghost/debug', auth, admin.debug.index);
+    app.get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
+    app.get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
+    app.get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
-    ghost.app().get('/ghost/', auth, admin.index);
+    app.get('/ghost/', auth, admin.index);
 
     /**
      * Frontend routes..
      * @todo dynamic routing, homepage generator, filters ETC ETC
      */
-    ghost.app().get('/:slug', frontend.single);
-    ghost.app().get('/', frontend.homepage);
+    app.get('/:slug', frontend.single);
+    app.get('/', frontend.homepage);
 
-
-    ghost.app().listen(3333, function () {
+    app.listen(3333, function () {
         console.log("Express server listening on port " + 3333);
     });
 }());
