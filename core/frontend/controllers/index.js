@@ -18,7 +18,6 @@
                 ghost.doFilter('prePostsRender', posts.toJSON(), function (posts) {
                     res.render('index', {posts: posts, ghostGlobals: res.locals.ghostGlobals, navItems: res.locals.navItems});
                 });
-                
             });
         },
         'single': function (req, res) {
