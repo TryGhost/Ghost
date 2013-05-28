@@ -1,53 +1,38 @@
-/*global window, document, console, jQuery*/
-
-// Polyfill for Object.create
-if (typeof Object.create !== 'function') {
-    Object.create = function (obj) {
-        "use strict";
-        function F() {}
-        F.prototype = obj;
-        return new F();
-    };
-}
+/*global console, jQuery, CodeMirror*/
 
 // # Surrounds given text with Markdown syntax
-(function ($, window, document) {
+(function ($) {
     "use strict";
     var Markdown = {
         init : function (options, elem) {
             var self = this;
             self.elem = elem;
-            self.$elem = $(elem);
 
             self.style = (typeof options === 'string') ? options : options.style;
 
-            self.options = $.extend({}, $.fn.addMarkdown.options, options);
+            self.options = $.extend({}, CodeMirror.prototype.addMarkdown.options, options);
 
             self.replace();
         },
         replace: function () {
-            var text = this.options.target.getSelection(), md;
+            var text = this.elem.getSelection(), md;
             if (this.options.syntax[this.style]) {
                 md = this.options.syntax[this.style].replace('$1', text);
-                this.options.target.replaceSelection(md);
+                this.elem.replaceSelection(md);
             } else {
                 console.log("Invalid style.");
             }
 
         }
     };
-    $.fn.addMarkdown = function (options) {
-        return this.each(function () {
 
-            var markdown = Object.create(Markdown);
-            markdown.init(options, this);
-
-        });
+    CodeMirror.prototype.addMarkdown = function (options) {
+        var markdown = Object.create(Markdown);
+        markdown.init(options, this);
     };
 
-    $.fn.addMarkdown.options = {
+    CodeMirror.prototype.addMarkdown.options = {
         style: null,
-        target: null,
         syntax: {
             bold: "**$1**",
             italic: "_$1_",
@@ -60,9 +45,9 @@ if (typeof Object.create !== 'function') {
             h5: "\n##### $1\n",
             h6: "\n###### $1\n",
             link: "[$1](http://)",
-            image: "![$1](http://)",
+            image: "!image[$1](http://)",
             blockquote: "> $1",
             currentDate: new Date().toLocaleString()
         }
     };
-}(jQuery, window, document));
+}(jQuery));
