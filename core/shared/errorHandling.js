@@ -10,7 +10,7 @@
     errors = {
         throwError: function (err) {
             if (!err) {
-                return;
+                err = new Error("An error occurred");
             }
 
             if (_.isString(err)) {
