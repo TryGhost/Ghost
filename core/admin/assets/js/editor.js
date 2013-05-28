@@ -154,89 +154,77 @@
             $('body').toggleClass('zen');
         });
 
-        // Bold text
-        shortcut.add("Ctrl+B", function () {
-            return editor.addMarkdown({style: "bold"});
-        });
+        var MarkdownShortcuts = [
+            {
+                'key': 'Ctrl+B',
+                'style': 'bold'
+            },
+            {
+                'key': 'Meta+B',
+                'style': 'bold'
+            },
+            {
+                'key': 'Ctrl+I',
+                'style': 'italic'
+            },
+            {
+                'key': 'Meta+I',
+                'style': 'italic'
+            },
+            {
+                'key': 'Ctrl+Alt+U',
+                'style': 'strike'
+            },
+            {
+                'key': 'Ctrl+Shift+K',
+                'style': 'code'
+            },
+            {
+                'key': 'Alt+1',
+                'style': 'h1'
+            },
+            {
+                'key': 'Alt+2',
+                'style': 'h2'
+            },
+            {
+                'key': 'Alt+3',
+                'style': 'h3'
+            },
+            {
+                'key': 'Alt+4',
+                'style': 'h4'
+            },
+            {
+                'key': 'Alt+5',
+                'style': 'h5'
+            },
+            {
+                'key': 'Alt+6',
+                'style': 'h6'
+            },
+            {
+                'key': 'Ctrl+Shift+L',
+                'style': 'link'
+            },
+            {
+                'key': 'Ctrl+Shift+I',
+                'style': 'image'
+            },
+            {
+                'key': 'Ctrl+Q',
+                'style': 'blockquote'
+            },
+            {
+                'key': 'Ctrl+Shift+1',
+                'style': 'currentdate'
+            }
+        ];
 
-        // Bold text
-        shortcut.add("Meta+B", function () {
-            return editor.addMarkdown({style: "bold"});
-        });
-
-        // Italic text
-        shortcut.add("Ctrl+I", function () {
-            return editor.addMarkdown({style: "italic"});
-        });
-
-        // Italic text
-        shortcut.add("Meta+I", function () {
-            return editor.addMarkdown({style: "italic"});
-        });
-
-        // Strike through text
-        shortcut.add("Ctrl+Alt+U", function () {
-            return editor.addMarkdown({style: "strike"});
-        });
-
-        // Inline Code
-        shortcut.add("Ctrl+Shift+K", function () {
-            return editor.addMarkdown({style: "code"});
-        });
-
-        // Inline Code
-        shortcut.add("Meta+K", function () {
-            return editor.addMarkdown({style: "code"});
-        });
-
-        // H1
-        shortcut.add("Alt+1", function () {
-            return editor.addMarkdown({style: "h1"});
-        });
-
-        // H2
-        shortcut.add("Alt+2", function () {
-            return editor.addMarkdown({style: "h2"});
-        });
-
-        // H3
-        shortcut.add("Alt+3", function () {
-            return editor.addMarkdown({style: "h3"});
-        });
-
-        // H4
-        shortcut.add("Alt+4", function () {
-            return editor.addMarkdown({style: "h4"});
-        });
-
-        // H5
-        shortcut.add("Alt+5", function () {
-            return editor.addMarkdown({style: "h5"});
-        });
-
-        // H6
-        shortcut.add("Alt+6", function () {
-            return editor.addMarkdown({style: "h6"});
-        });
-
-        // Link
-        shortcut.add("Ctrl+Shift+L", function () {
-            return editor.addMarkdown({style: "link"});
-        });
-
-        // Image
-        shortcut.add("Ctrl+Shift+I", function () {
-            return editor.addMarkdown({style: "image"});
-        });
-
-        // Blockquote
-        shortcut.add("Ctrl+Q", function () {
-            return editor.addMarkdown({style: "blockquote"});
-        });
-
-        // Current Date
-        shortcut.add("Ctrl+Shift+1", function () {
-            return editor.addMarkdown({style: "currentDate"});
+        $.each(MarkdownShortcuts, function (index, short) {
+            shortcut.add(short.key, function () {
+                return editor.addMarkdown({style: short.style});
+            });
         });
     });
 }(jQuery, Showdown, CodeMirror, shortcut));
