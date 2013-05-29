@@ -25,6 +25,10 @@
             console.log("Error occurred: ", err.message || err);
         },
 
+        logStack: function (err) {
+            console.log(err.stack);
+        },
+
         logAndThrowError: function (err) {
             this.logError(err);
 
