@@ -4,141 +4,381 @@
  *
  */
 
-.widget {
-	width:341px;
-	height:300px;
-	background:#fff;
-	box-shadow: $shadow;
-	float:left;
-	margin:0 15px 15px 0;
-	display:none;
+/* ==========================================================================
+   Widget Base
+   ========================================================================== */
+
+%widget, .widget  {
+  width: $widget-base-width;
+  height: $widget-base-height;
+  float:left;
+  position:relative;
+  margin:0 15px 15px 0;
+  display: none;
+  background-color:#fff;
+  box-shadow: $shadow;
+
+  .widget-content {
+    @include box-sizing(border-box);
+    margin-bottom: 40px;
+    padding: 20px;
+  }
+
+  .widget-footer, .widget-header {
+    @include box-sizing(border-box);
+    width: 100%;
+    height: 40px;
+    font-size: 1.2em;
+    color: #cecbc7;
+    border-top: 1px solid #EDECE4;
+
+    .widget-title {
+      display: inline-block;
+      padding-top: 7px;
+      padding-left: 15px;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+  }
+
+  .widget-settings-toggle {
+    @include box-sizing(border-box);
+    display: block;
+    height: 39px;
+    width: 46px;
+    float: right;
+    padding: 7px 14px;
+    border-left: 1px solid #EDECE4;
+    cursor: pointer;
+    @include icon($i-settings, 1em);
+  }
+
+  .widget-footer {
+    position: absolute;
+    bottom: 0;
+  }
 }
 
-.none {
-	margin-right:0;
+/* ==========================================================================
+   Widget Sizes
+   ========================================================================== */
+
+.widget-1x2  {
+  height: $widget-base-height * 2;
 }
 
-.time {
-	background-image: url(../img/dash/Time@2x.png);
-	background-size: 341px 300px;
+.widget-2x2  {
+  width: $widget-base-width * 2;
+  height: $widget-base-height * 2;
 }
 
-.image {
-	max-width: 100%;
-	width: 682px + 15px;
-	background-image: url(../img/dash/Image@2x.png);
-	background-size: 697px 300px;
+.widget-2x1  {
+  width: $widget-base-width * 2;
 }
 
-.stats {
-	max-width: 100%;
-	width: 682px + 15px;
-	height: 615px;
-	background-image: url(../img/dash/Stats@2x.png);
-	background-size: 697px 615px;
+
+/* ==========================================================================
+   Widget Variations
+   ========================================================================== */
+
+%widget-number, .widget-number {
+  @extend %widget;
+
+  .widget-content {
+    .info {
+      margin-top: 30px;
+
+      .count {
+        display: block;
+        font-size: 5em;
+        line-height: 1em;
+        font-weight: 400;
+        color: #4a4a4a;
+      }
+
+      .sub {
+        font-size: 2em;
+        color: #9b9b9b;
+
+        mark {
+          background-color: transparent;
+
+          &.up {
+            color: $green;
+          }
+          &.down {
+            color: $red;
+          }
+        } // mark
+      } // .sub
+    } // .info
+  } // .widget-content
+
+  &.widget-2x2  {
+    .widget-content {
+      .info {
+        margin-top: 100px;
+
+        .count {
+          font-size: 9em;
+        }
+
+        .sub {
+          font-size: 2.5em;
+        }
+      } // .info
+    } // .widget-content
+  } // .widget-2x2
+} // %widget-number, .widget-number
+
+//For the settings panel
+.widget-settings {
+  @extend %widget;
+  background-color: #2d3032;
+
+  .widget-header {
+    height: 40px;
+    border-top: none;
+    border-bottom: 1px solid #4a4a4a;
+    color: #7E878B;
+  }
+
+  .widget-content {
+    padding: 0;
+  }
+
+  label {
+    width:100%;
+    height: 40px;
+    display: block;
+    border-bottom: 1px solid #4a4a4a;
+    font-size: 1.2em;
+  }
+
+  .title {
+    @include box-sizing(border-box);
+    display: inline-block;
+    width: 100px;
+    height: 100%;
+    padding: 8px;
+    color: #E3EDF2;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  input[type="text"] {
+    @include box-sizing(border-box);
+    height: 100%;
+    padding: 8px;
+    color: #E3EDF2;
+    text-transform: none;
+    background: none;
+    border: none;
+    border-left: 1px solid #4a4a4a;
+  }
+
+  .widget-footer, .widget-header {
+    border-color: #4a4a4a;
+  }
+
+  .widget-settings-toggle {
+    border-color: #4a4a4a;
+
+    &.close {
+      @include icon($i-x, 1em);
+    }
+    &.done {
+      background-color: #A0B95D;
+      color: #ffffff;
+      @include icon($i-check, 1em);
+    }
+  }
+} // .widget-settings
+
+.none  {
+  margin-right:0;
 }
 
-.facebook {
-	background-image: url(../img/dash/Facebook@2x.png);
-	background-size: 341px 300px;
+/* ==========================================================================
+   Individual Widgets
+   ========================================================================== */
+
+.widget-time  {
+  @extend %widget;
+
+  .summary {
+    margin-bottom: 30px;
+    font-size: 1.4em;
+    color: #cecbc7;
+
+    .day {
+      float: left;
+    }
+    .weather {
+      float: right;
+      // TODO: icon for weather
+    }
+
+  }
+
+  time {
+    margin-top: 30px;
+
+    .clock {
+      display: block;
+      font-size: 5em;
+      line-height: 1em;
+      font-weight: 400;
+      color: #4a4a4a;
+    }
+
+    .date {
+      font-size: 2em;
+      color: #9b9b9b;
+    }
+  }
+} // .widget-time
+
+.widget-image  {
+  @extend %widget;
+
+  .widget-content {
+    height: 100%;
+    background-image: url(../img/dash/Image@2x.png);
+    background-size: 100% 100%;
+  }
+
+  .widget-footer {
+    margin-top: -40px;
+    opacity: 0;
+    background: #ffffff;
+    @include transition(opacity 200ms linear);
+  }
+
+  &:hover {
+    .widget-footer {
+      opacity: 1;
+    }
+  }
+
+} // .widget-image
+
+.widget-stats  {
+  @extend %widget-number;
 }
 
-.gplus {
-	background-image: url(../img/dash/GooglePlus@2x.png);
-	background-size: 341px 300px;
+.widget-facebook  {
+  @extend %widget-number;
+
+  .info {
+    .faces {
+      display: block;
+      width: 100%;
+      height: 30px;
+      margin-top: 25px;
+      background-image: url("../img/dash/Facebook_Images@2x.png");
+      background-size: 100% 100%;
+    }
+  }
 }
 
-.twitter {
-	background-image: url(../img/dash/Twitter@2x.png);
-	background-size: 341px 300px;
+.widget-gplus  {
+  @extend %widget-number;
 }
 
-.campaignmonitor {
-	background-image: url(../img/dash/CampaignMonitor@2x.png);
-	background-size: 341px 300px;
+.widget-twitter  {
+  @extend %widget;
 }
 
-.posts {
-	background-image: url(../img/dash/PostsStats@2x.png);
-	background-size: 341px 300px;
-	position: relative;
+.widget-campaignmonitor  {
+  @extend %widget-number;
 }
 
-.chart {
-  box-sizing: border-box;
-  width: 250px;
-  height: 250px;
-  margin: 25px auto 0 auto;
-  background: #242628;
-  border: #efefef 54px solid;
-  border-radius: 500px;
-}
-
-#poststats {
+.widget-posts  {
+  @extend %widget;
   position: relative;
-  top:-54px;
-  left: -54px;
+
+  .chart  {
+    @include box-sizing(border-box);
+    width: 250px;
+    height: 250px;
+    position: relative;
+    z-index: 1;
+    margin: 0 auto;
+    background: #242628;
+    border: #efefef 54px solid;
+    border-radius: 250px;
+
+    #poststats  {
+      position: relative;
+      top:-54px;
+      left: -54px;
+    }
+
+    .data  {
+      position: absolute;
+      top: 5px;
+      color: $midgrey;
+      font-size: 13px;
+      list-style: none;
+
+      .ready  {
+        font-size: 18px;
+        vertical-align: -5%;
+        margin-right: 5px;
+        color: $green;
+      }
+
+      .pending  {
+        font-size: 18px;
+        vertical-align: -5%;
+        margin-right: 5px;
+        color: #f9e15d;
+      }
+
+      .draft  {
+        font-size: 18px;
+        vertical-align: -5%;
+        margin-right: 5px;
+        color: $red;
+      }
+
+    }
+
+  }
 }
 
-.data {
-	position: absolute;
-	top: 87px;
-	color: $midgrey;
-	font-size: 13px;
-	list-style: none;
-}
-
-.ready {
-	font-size: 18px;
-	vertical-align: -5%;
-	margin-right: 5px;
-	color: $green;
-}
-
-.pending {
-	font-size: 18px;
-	vertical-align: -5%;
-	margin-right: 5px;
-	color: #f9e15d;
-}
-
-.draft {
-	font-size: 18px;
-	vertical-align: -5%;
-	margin-right: 5px;
-	color: $red;
-}
 
 /*
 
-.dashboard-controls {
+.dashboard-controls  {
 	@extend %box;
 	padding:0 15px;
 
-	.text {
+	.text  {
 		padding:12px 0;
 	}
 }
 
-.controls-nav {
+.controls-nav  {
 	float:left;
 	margin-left:20px;
-	ul {
+	ul  {
 		border-left: $lightgrey 1px solid;
 
-		li {
+		li  {
 			margin: 0;
 			border-right: 1px solid $lightgrey;
 
-			a {
+			a  {
 				padding: 12px 15px;
 				color: $grey;
 
-				span {
+				span  {
 					color: $darkgrey;
 				}
 
-				&:hover {
+				&:hover  {
 					color: $darkgrey;
 					text-decoration: none;
 				}
@@ -147,18 +387,18 @@
 	}
 }
 
-.widget-stats {
-	span {
+.widget-stats  {
+	span  {
 		display: block;
 		font-size: 1.6em;
 		line-height: 1.2em;
 		color: $grey;
 		margin-bottom: 15px;
-		strong {
+		strong  {
 			font-size: 1.2em;
 		}
 	}
-	span:first-child {
+	span:first-child  {
 		font-size: 5.4em;
 		line-height: 1.4em;
 		color: #000;
@@ -166,16 +406,16 @@
 	}
 }
 
-@media only screen and (min-width: 1200px) {
-	.span4 .vert2 {
-		.widget-stats {
-			span {
+@media only screen and (min-width: 1200px)  {
+	.span4 .vert2  {
+		.widget-stats  {
+			span  {
 				font-size: 2.6em;
-				strong {
+				strong  {
 					font-size: 1.2em;
 				}
 			}
-			span:first-child {
+			span:first-child  {
 				font-size: 12.4em;
 			}
 		}
@@ -183,30 +423,30 @@
 }
 
 // Time & Date Box
-.time-date {
-	.time {
+.time-date  {
+	.time  {
 		font-size: 7.4em;
 		line-height: 0.7em;
 		border-bottom: 1px solid $lightgrey;
-		span {
+		span  {
 			font-size: 0.2em;
 			color: $grey;
 			text-transform: uppercase;
 			font-style: normal;
 		}
-		@media only screen and (min-width: 1400px) {
-			span {
+		@media only screen and (min-width: 1400px)  {
+			span  {
 				font-size: 0.3em;
 			}
 		}
 	}
-	.date {
+	.date  {
 		font-size: 2.2em;
 		line-height: 1em;
 		font-weight: bold;
 		color: #000;
 		padding: 15px 0;
-		span {
+		span  {
 			font-size: 0.7em;
 			font-weight: normal;
 			display: block;
@@ -217,23 +457,23 @@
 }
 
 // Post Statuses Box
-.post-statuses {
-	.status-levels {
+.post-statuses  {
+	.status-levels  {
 		width: 30%;
-		div {
+		div  {
 			text-indent: -9999px;
 		}
 	}
-	.status-text {
+	.status-text  {
 		width: 70%;
 		text-transform: uppercase;
 		font-size: 1.2em;
 		color: $grey;
-		div {
+		div  {
 			background: none;
 			padding: 15px 0;
 		}
-		strong {
+		strong  {
 			font-size: 1.6em;
 			width: 60px;
 			padding-right: 5px;
@@ -241,38 +481,38 @@
 			display: inline-block;
 		}
 	}
-	.scheduled {
+	.scheduled  {
 		background: $green;
-		strong {
+		strong  {
 			color: $green;
 		}
 	}
-	.pending {
+	.pending  {
 		background: #fcd039;
-		strong {
+		strong  {
 			color: #fcd039;
 		}
 	}
-	.draft {
+	.draft  {
 		background: $red;
-		strong {
+		strong  {
 			color: $red;
 		}
 	}
 }
 
-.todays-traffic {
-	ul {
-		li {
+.todays-traffic  {
+	ul  {
+		li  {
 			position: relative;
 			padding: 10px;
 			margin-bottom: 1px;
-			div {
+			div  {
 				position: relative;
 				z-index: 99;
 			}
 		}
-		li:before {
+		li:before  {
 			content: '';
 			position: absolute;
 			height: 34px;
@@ -280,84 +520,84 @@
 			left: 0;
 			z-index: 20;
 		}
-		li:nth-child(1):before {
+		li:nth-child(1):before  {
 			background: $blue;
 			width: 80%;
 		}
-		li:nth-child(2):before {
+		li:nth-child(2):before  {
 			background: lighten($blue, 3%);
 			width: 60%;
 		}
-		li:nth-child(3):before {
+		li:nth-child(3):before  {
 			background: lighten($blue, 6%);
 			width: 40%;
 		}
-		li:nth-child(4):before {
+		li:nth-child(4):before  {
 			background: lighten($blue, 10%);
 			width: 20%;
 		}
 	}
 }
 
-.table {
+.table  {
 	width: 100%;
 	display: block;
 	margin-bottom: 10px;
-	thead, tbody, tr {
+	thead, tbody, tr  {
 		display: block;
 	}
-	@media only screen and (min-width: 400px) {
-		thead {
+	@media only screen and (min-width: 400px)  {
+		thead  {
 			display: none;
 		}
 	}
-	tbody {
-		tr {
+	tbody  {
+		tr  {
 			background: $lightbrown;
 			margin-top: 5px;
 			display: block;
 			position: relative;
-			&:first-child {
+			&:first-child  {
 				margin-top: 0;
 			}
 		}
-		@media only screen and (min-width: 1200px) {
-			tr {
+		@media only screen and (min-width: 1200px)  {
+			tr  {
 				padding: 0 10px 0 40px;
 				margin-top: 15px;
 			}
 		}
-		td {
+		td  {
 			padding: 10px;
 			text-align: right;
 			color: $grey;
-			strong {
+			strong  {
 				color: #000;
 			}
-			span {
+			span  {
 				display: none;
 			}
-			@media only screen and (min-width: 500px) {
-				span {
+			@media only screen and (min-width: 500px)  {
+				span  {
 					display: inline;
 				}
 			}
-			.callout {
+			.callout  {
 				color: $green;
 			}
-			&:first-child {
+			&:first-child  {
 				text-align: left;
 			}
 		}
 	}
-	.user-img {
+	.user-img  {
 		position: absolute;
 		top: 0;
 		left: 0;
 		display: none;
 	}
-	@media only screen and (min-width: 1200px) {
-		.user-img {
+	@media only screen and (min-width: 1200px)  {
+		.user-img  {
 			display: block;
 		}
 	}
