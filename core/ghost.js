@@ -62,7 +62,7 @@
                 dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
-                plugin: function() { return plugin; },
+                plugin: function () { return plugin; },
                 paths: function () {
                     return {
                         'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
