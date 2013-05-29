@@ -17,31 +17,35 @@
             name: 'Dashboard',
             navClass: 'dashboard',
             key: 'admin.navbar.dashboard',
-            defaultString: 'dashboard',
-            path: ''
+            // defaultString: 'dashboard',
+            path: '/'
         },
-        blog: {
+        content: {
             name: 'Content',
             navClass: 'content',
-            key: 'admin.navbar.blog',
-            defaultString: 'blog',
-            path: '/blog'
+            key: 'admin.navbar.content',
+            // defaultString: 'content',
+            path: '/content/'
         },
         add: {
             name: 'New Post',
             navClass: 'editor',
             key: 'admin.navbar.editor',
-            defaultString: 'editor',
-            path: '/editor'
+            // defaultString: 'editor',
+            path: '/editor/'
         },
         settings: {
             name: 'Settings',
             navClass: 'settings',
             key: 'admin.navbar.settings',
-            defaultString: 'settings',
-            path: '/settings'
+            // defaultString: 'settings',
+            path: '/settings/'
         }
     };
+
+    ghost.doFilter('messWithAdmin', adminNavbar, function() {
+        console.log('the dofilter hook called in /core/admin/controllers/index.js');
+    });
 
     // TODO - make this a util or helper
     function setSelected(list, name) {
@@ -64,9 +68,9 @@
                 console.log('user found: ', user);
                 req.session.user = "ghostadmin";
                 res.redirect(req.query.redirect || '/ghost/');
-            }, function (err) {
+            }, function (error) {
                 // Do something here to signal the reason for an error
-                console.log(err.stack);
+                req.flash('error', error.message);
                 res.redirect('/ghost/login/');
             });
         },
@@ -78,16 +82,19 @@
             });
         },
         'doRegister': function (req, res) {
-             // console.log(req.body);
-            if (req.body.email_address !== '' && req.body.password.length > 5) {
+            var email = req.body.email_address,
+                password = req.body.password;
+
+            if (email !== '' && password.length > 5) {
                 api.users.add({
-                    email_address: req.body.email_address,
-                    password: req.body.password
+                    email_address: email,
+                    password: password
                 }).then(function (user) {
                     console.log('user added', user);
                     res.redirect('/ghost/login/');
                 }, function (error) {
-                    console.log('there was an error', error);
+                    req.flash('error', error.message);
+                    res.redirect('/ghost/register/');
                 });
             } else {
                 req.flash('error', "The password is too short. Have at least 6 characters in there");
@@ -111,7 +118,7 @@
                     .then(function (post) {
                         res.render('editor', {
                             bodyClass: 'editor',
-                            adminNav: setSelected(adminNavbar, 'blog'),
+                            adminNav: setSelected(adminNavbar, 'content'),
                             title: post.get('title'),
                             content: post.get('content')
                         });
@@ -123,12 +130,12 @@
                 });
             }
         },
-        'blog': function (req, res) {
+        'content': function (req, res) {
             api.posts.browse()
                 .then(function (posts) {
-                    res.render('blog', {
+                    res.render('content', {
                         bodyClass: 'manage',
-                        adminNav: setSelected(adminNavbar, 'blog'),
+                        adminNav: setSelected(adminNavbar, 'content'),
                         posts: posts.toJSON()
                     });
                 });

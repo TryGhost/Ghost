@@ -31,6 +31,14 @@
             runThrowError.should['throw']("test2");
         });
 
+        it("throws error even if nothing passed", function () {
+            var runThrowError = function () {
+                    errors.throwError();
+                };
+
+            runThrowError.should['throw']("An error occurred");
+        });
+
         it("logs errors", function () {
             var err = new Error("test1"),
                 logStub = sinon.stub(console, "log");

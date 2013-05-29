@@ -13,10 +13,10 @@
         _ = require('underscore'),
         Polyglot = require('node-polyglot'),
         models = require('./shared/models'),
+        ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
-        instance,
-        filterCallbacks = {},
 
+        instance,
         statuses;
 
     // ## Article Statuses
@@ -40,10 +40,12 @@
      */
     Ghost = function () {
         var app,
+            plugin,
             polyglot;
 
         if (!instance) {
             instance = this;
+            plugin = new ExampleFilter(instance).init();
 
             app = express();
 
@@ -60,18 +62,31 @@
                 dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
+                plugin: function() { return plugin; },
                 paths: function () {
                     return {
-                        'activeTheme':  __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
-                        'adminViews':   __dirname + '/admin/views/',
-                        'lang':         __dirname + '/lang/'
+                        'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
+                        'adminViews':    __dirname + '/admin/views/',
+                        'frontendViews': __dirname + '/frontend/views/',
+                        'lang':          __dirname + '/lang/'
                     };
                 }
             });
         }
-
         return instance;
     };
+
+    /**
+     * Holds the filters
+     * @type {Array}
+     */
+    Ghost.prototype.filterCallbacks = [];
+
+    /**
+     * Holds the filter hooks (that are built in to Ghost Core)
+     * @type {Array}
+     */
+    Ghost.prototype.filters = [];
 
     /**
      * @param  {string}   name
@@ -105,11 +120,11 @@
      * @param  {Function} fn
      */
     Ghost.prototype.registerFilter = function (name, fn) {
-        if (!filterCallbacks.hasOwnProperty(name)) {
-            filterCallbacks[name] = [];
+        if (!this.filterCallbacks.hasOwnProperty(name)) {
+            this.filterCallbacks[name] = [];
         }
         console.log('registering filter for ', name);
-        filterCallbacks[name].push(fn);
+        this.filterCallbacks[name].push(fn);
     };
 
     /**
@@ -121,14 +136,15 @@
     Ghost.prototype.doFilter = function (name, args, callback) {
         var fn;
 
-        if (filterCallbacks.hasOwnProperty(name)) {
-            for (fn in filterCallbacks[name]) {
-                if (filterCallbacks[name].hasOwnProperty(fn)) {
+        if (this.filterCallbacks.hasOwnProperty(name)) {
+            for (fn in this.filterCallbacks[name]) {
+                if (this.filterCallbacks[name].hasOwnProperty(fn)) {
                     console.log('doing filter for ', name);
-                    args = filterCallbacks[name][fn](args);
+                    args = this.filterCallbacks[name][fn](args);
                 }
             }
         }
+
         callback(args);
     };
 

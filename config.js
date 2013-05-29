@@ -68,7 +68,8 @@
             connection: {
                 filename: './core/shared/data/testdb.db'
             },
-            debug: true
+            debug: false
+            // debug: true
         },
 
         staging: {},
@@ -85,6 +86,17 @@
         description: "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard."
 
     };
+
+    /**
+     * @property {Array} nav
+     */
+    config.nav = [{
+        title: 'Home',
+        url: '/'
+    }, {
+        title: 'Admin',
+        url: '/ghost'
+    }];
 
     /**
      * @property {Object} exports
