@@ -6,29 +6,42 @@
 (function () {
     "use strict";
 
-    var knex = require('./knex_init'),
+    var _ = require('underscore'),
+        knex = require('./knex_init'),
         PostsProvider = require('./dataProvider.bookshelf.posts'),
         UsersProvider = require('./dataProvider.bookshelf.users'),
         SettingsProvider = require('./dataProvider.bookshelf.settings'),
         DataProvider,
-        instance;
+        instance,
+        defaultOptions = {
+            autoInit: false
+        };
 
-    DataProvider = function () {
+    DataProvider = function (options) {
+        options = _.defaults(options || {}, defaultOptions);
+
         if (!instance) {
             instance = this;
-            knex.Schema.hasTable('posts').then(null, function () {
-                // Simple bootstraping of the data model for now.
-                var migration = require('../data/migration/001');
 
-                return migration.down().then(function () {
-                    return migration.up();
-                });
-            }).then(function () {
-                console.log('all done....');
-            });
+            if (options.autoInit) {
+                this.init();
+            }
         }
 
         return instance;
+    };
+
+    DataProvider.prototype.init = function () {
+        return knex.Schema.hasTable('posts').then(null, function () {
+            // Simple bootstraping of the data model for now.
+            var migration = require('../data/migration/001');
+
+            return migration.down().then(function () {
+                return migration.up();
+            });
+        }).then(function () {
+            console.log('DataProvider ready');
+        });
     };
 
     DataProvider.prototype.posts = new PostsProvider();
