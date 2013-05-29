@@ -17,10 +17,10 @@
         jsonDataProvider = new JsonDataProvider(),
         BookshelfDataProvider = require('./shared/models/dataProvider.bookshelf'),
         bookshelfDataProvider = new BookshelfDataProvider(),
+        ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
-        instance,
-        filterCallbacks = {},
 
+        instance,
         statuses;
 
     // ## Article Statuses
@@ -45,10 +45,12 @@
     Ghost = function () {
         var app,
             globals,
+            plugin,
             polyglot;
 
         if (!instance) {
             instance = this;
+            plugin = new ExampleFilter(instance).init();
 
             // Temporary loading of settings
             jsonDataProvider.globals.findAll(function (error, data) {
@@ -70,6 +72,7 @@
                 dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
+                plugin: function() { return plugin; },
                 paths: function () {
                     return {
                         'activeTheme':  __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
@@ -79,9 +82,20 @@
                 }
             });
         }
-
         return instance;
     };
+
+    /**
+     * Holds the filters
+     * @type {Array}
+     */
+    Ghost.prototype.filterCallbacks = [];
+
+    /**
+     * Holds the filter hooks (that are built in to Ghost Core)
+     * @type {Array}
+     */
+    Ghost.prototype.filters = [];
 
     /**
      * @param  {string}   name
@@ -115,11 +129,11 @@
      * @param  {Function} fn
      */
     Ghost.prototype.registerFilter = function (name, fn) {
-        if (!filterCallbacks.hasOwnProperty(name)) {
-            filterCallbacks[name] = [];
+        if (!this.filterCallbacks.hasOwnProperty(name)) {
+            this.filterCallbacks[name] = [];
         }
         console.log('registering filter for ', name);
-        filterCallbacks[name].push(fn);
+        this.filterCallbacks[name].push(fn);
     };
 
     /**
@@ -131,11 +145,11 @@
     Ghost.prototype.doFilter = function (name, args, callback) {
         var fn;
 
-        if (filterCallbacks.hasOwnProperty(name)) {
-            for (fn in filterCallbacks[name]) {
-                if (filterCallbacks[name].hasOwnProperty(fn)) {
+        if (this.filterCallbacks.hasOwnProperty(name)) {
+            for (fn in this.filterCallbacks[name]) {
+                if (this.filterCallbacks[name].hasOwnProperty(fn)) {
                     console.log('doing filter for ', name);
-                    args = filterCallbacks[name][fn](args);
+                    args = this.filterCallbacks[name][fn](args);
                 }
             }
         }
