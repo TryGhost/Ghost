@@ -23,7 +23,7 @@
         // takes filter / pagination parameters
         // returns a list of posts in a json response
         browse: function (options) {
-            return ghost.dataProvider().posts.findAll(options);
+            return ghost.dataProvider().posts.findPage(options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response

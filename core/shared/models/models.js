@@ -22,6 +22,10 @@
 
         hasTimestamps: true,
 
+        defaults: {
+            status: 'draft'
+        },
+
         initialize: function () {
             this.on('creating', this.creating, this);
             this.on('saving', this.saving, this);
