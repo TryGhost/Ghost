@@ -63,6 +63,14 @@
             }
         },
 
+        travis: {
+            client: 'sqlite3',
+            connection: {
+                filename: './core/shared/data/tests.db'
+            },
+            debug: true
+        },
+
         development: {
             client: 'sqlite3',
             connection: {

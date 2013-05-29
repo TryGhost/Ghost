@@ -1,8 +1,8 @@
 (function () {
     "use strict";
 
-    // Use 'testing' Ghost config
-    process.env.NODE_ENV = 'testing';
+    // Use 'testing' Ghost config; unless we are running on travis (then show queries for debugging)
+    process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
 
     var knex = require('knex'),
         migrations = {
