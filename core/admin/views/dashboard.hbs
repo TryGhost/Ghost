@@ -4,9 +4,9 @@
     $(document).ready(function(){
 
       //$('body').click(function(){
-        $('.time').fadeIn(1000);
-        $('.image').delay(300).fadeIn(1000);
-        $('.posts').delay(600).fadeIn(900, function(){
+        $('.widget-time').fadeIn(1000);
+        $('.widget-image').delay(300).fadeIn(1000);
+        $('.widget-posts').delay(600).fadeIn(900, function(){
 
           var ctx = $("#poststats").get(0).getContext("2d");
           var data = [
@@ -32,32 +32,133 @@
 
         });
 
-        $('.stats').delay(800).fadeIn(1000);
-        $('.facebook').delay(1000).fadeIn(1000);
-        $('.gplus').delay(1200).fadeIn(1000);
-        $('.twitter').delay(1300).fadeIn(1000);
-        $('.campaignmonitor').delay(1400).fadeIn(1000);
+        $('.widget-stats').delay(800).fadeIn(1000);
+        $('.widget-facebook').delay(1000).fadeIn(1000);
+        $('.widget-gplus').delay(1200).fadeIn(1000);
+        $('.widget-twitter').delay(1300).fadeIn(1000);
+        $('.widget-campaignmonitor').delay(1400).fadeIn(1000);
       //});
-
     });
     </script>
 {{/contentFor}}
 
 {{!< default}}
-<div class="time widget"></div>
-<div class="image widget"></div>
-<div class="posts widget none">
-    <div class="chart">
-        <canvas id="poststats" width="250" height="250"></canvas>
-        <ul class="data">
-            <li><span class="ready">9</span> Ready</li>
-            <li><span class="pending">4</span> Pending</li>
-            <li><span class="draft">1</span> Draft</li>
-        </ul>
-    </div>
+<article class="widget-time">
+    <section class="widget-content">
+        <header class="summary clearfix">
+            <span class="day">Today</span>
+            <span class="weather">12°</span>
+        </header>
+        <time>
+            <span class="clock">12:42pm</span>
+            <span class="date">Monday / March 5 / 2013</span>
+        </time>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Linz, Austria</span>
+        <div class="widget-settings-toggle cog"></div>
+    </footer>
+</article>
+
+<div class="widget-image widget-2x1">
+    <section class="widget-content">
+
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Ghost</span>
+        <div class="widget-settings-toggle cog"></div>
+    </footer>
 </div>
-<div class="stats widget"></div>
-<div class="facebook widget"></div>
-<div class="gplus widget none"></div>
-<div class="twitter widget"></div>
-<div class="campaignmonitor widget none"></div>
+
+<div class="widget-posts none">
+    <section class="widget-content">
+        <div class="chart">
+            <canvas id="poststats" width="250" height="250"></canvas>
+            <ul class="data">
+                <li><span class="ready">9</span> Ready</li>
+                <li><span class="pending">4</span> Pending</li>
+                <li><span class="draft">1</span> Draft</li>
+            </ul>
+        </div>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Upcoming Posts</span>
+        <div class="widget-settings-toggle"></div>
+    </footer>
+</div>
+
+<div class="widget-stats widget-2x2">
+    <section class="widget-content">
+        <div class="info">
+            <span class="count">293,042</span>
+            <span class="sub"><mark class="up">+35%</mark> in the last 30 days</span>
+        </div>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Google Analytics Unique Visitors</span>
+        <div class="widget-settings-toggle"></div>
+    </footer>
+</div>
+
+<div class="widget-facebook">
+    <section class="widget-content">
+        <div class="info">
+            <span class="count">9,392</span>
+            <span class="sub"><mark class="down">-39</mark> likes today</span>
+            <span class="faces"></span>
+        </div>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Facebook</span>
+        <div class="widget-settings-toggle"></div>
+    </footer>
+</div>
+
+<div class="widget-gplus none">
+    <section class="widget-content">
+        <div class="info">
+            <span class="count">4,103</span>
+            <span class="sub">have you in circles</span>
+        </div>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Google Plus</span>
+        <div class="widget-settings-toggle"></div>
+    </footer>
+</div>
+
+<div class="widget-twitter widget-settings">
+    <header class="widget-header">
+        <span class="widget-title">Twitter Settings</span>
+        <div class="widget-settings-toggle close"></div>
+    </header>
+    <section class="widget-content">
+        <label>
+            <span class="title">Account</span> <input type="text" value="@JohnONolan"/>
+        </label>
+        <label>
+            <span class="title">Display</span> <input type="text" value="Latest Tweets"/>
+        </label>
+        <label>
+            <span class="title">Quantity</span> <input type="text" value="6"/>
+        </label>
+        <label>
+            <span class="title">Account</span> <input type="text" value="Account"/>
+        </label>
+    </section>
+    <footer class="widget-footer">
+        <div class="widget-settings-toggle done"></div>
+    </footer>
+</div>
+<div class="widget-campaignmonitor none">
+    <section class="widget-content">
+        <div class="info">
+            <span class="count">3,502</span>
+            <span class="sub"><mark class="up">+35</mark> subscribers this week</span>
+        </div>
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">Campaign Monitor</span>
+        <div class="widget-settings-toggle"></div>
+    </footer>
+</div>
