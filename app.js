@@ -28,7 +28,9 @@
          * Create new Ghost object
          * @type {Ghost}
          */
-        ghost = new Ghost();
+        ghost = new Ghost(),
+        ghostGlobals = ghost.globals();
+
 
 
     ghost.app().configure('development', function () {
@@ -44,6 +46,9 @@
         // bind locals - options which appear in every view - perhaps this should be admin only
         ghost.app().use(function (req, res, next) {
             res.locals.messages = req.flash();
+            res.locals.siteTitle = ghostGlobals.title;
+            res.locals.siteDescription = ghostGlobals.description;
+            res.locals.siteUrl = ghostGlobals.url;
             next();
         });
     });

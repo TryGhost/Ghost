@@ -19,9 +19,9 @@
         bookshelfDataProvider = new BookshelfDataProvider(),
         ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
-
         instance,
         statuses;
+
 
     // ## Article Statuses
     /**
@@ -48,12 +48,18 @@
             plugin,
             polyglot;
 
+
         if (!instance) {
             instance = this;
             plugin = new ExampleFilter(instance).init();
 
-            // Temporary loading of settings
-            jsonDataProvider.globals.findAll(function (error, data) {
+            /**
+             * Save the global bits here so that it can
+             * be reused in app.js
+             * @author javorszky (blame me)
+             */
+            jsonDataProvider.save(config.blogData);
+            jsonDataProvider.findAll(function (error, data) {
                 globals = data;
             });
 
