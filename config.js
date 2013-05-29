@@ -78,6 +78,17 @@
     };
 
     /**
+     * @property {Array} nav
+     */
+    config.nav = [{
+        title: 'Home',
+        url: '/'
+    }, {
+        title: 'Admin',
+        url: '/ghost'
+    }];
+
+    /**
      * @property {Object} exports
      */
     module.exports = config;

@@ -72,9 +72,10 @@
                 polyglot: function () { return polyglot; },
                 paths: function () {
                     return {
-                        'activeTheme':  __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
-                        'adminViews':   __dirname + '/admin/views/',
-                        'lang':         __dirname + '/lang/'
+                        'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
+                        'adminViews':    __dirname + '/admin/views/',
+                        'frontendViews': __dirname + '/frontend/views/',
+                        'lang':          __dirname + '/lang/'
                     };
                 }
             });
@@ -139,6 +140,7 @@
                 }
             }
         }
+
         callback(args);
     };
 
