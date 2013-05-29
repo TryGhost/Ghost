@@ -1,4 +1,4 @@
-# [Ghost v0.1.1](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
+# [Ghost v0.1.0](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
@@ -79,14 +79,6 @@ With bourbon, all you have to do is run `grunt init` from the root of Ghost, whi
 
 We also recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
 
-
-## Changelog
-
-### 0.1.1
-
-* Added bourbon awesomeness, and various fixes as per commit history.
-* Started writing changelogs
-* Removed compass dependencies, and made grunt work again. See Installation section.
 
 ## Copyright & License
 
