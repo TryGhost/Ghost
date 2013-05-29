@@ -9,6 +9,7 @@
             return ghost;
         };
     };
+
     FancyFirstChar.prototype.init = function () {
         this.ghost().registerFilter('prePostsRender', function (posts) {
             var post,
@@ -40,6 +41,8 @@
 
     FancyFirstChar.prototype.activate = function () {};
     FancyFirstChar.prototype.deactivate = function () {};
+
+
 
     module.exports = FancyFirstChar;
 }());

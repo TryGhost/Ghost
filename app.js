@@ -14,6 +14,8 @@
         I18n = require('./core/lang/i18n'),
         helpers = require('./core/frontend/helpers'),
 
+
+
     // ## Variables
         auth,
         authAPI,
@@ -23,6 +25,7 @@
          * @type {Ghost}
          */
         ghost = new Ghost();
+
 
     ghost.app().configure('development', function () {
         ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
@@ -40,6 +43,10 @@
             next();
         });
     });
+
+
+
+
 
     /**
      * Setup login details
@@ -94,7 +101,7 @@
     ghost.app().post('/ghost/register/', admin.doRegister);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
     ghost.app().get('/ghost/editor', auth, admin.editor);
-    ghost.app().get('/ghost/blog', auth, admin.blog);
+    ghost.app().get('/ghost/content', auth, admin.content);
     ghost.app().get('/ghost/settings', auth, admin.settings);
     ghost.app().get('/ghost/debug', auth, admin.debug.index);
     ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
@@ -105,7 +112,7 @@
     ghost.app().get('/ghost/', auth, admin.index);
 
     /**
-     * Frontend routes..
+     * Frontend routes
      * @todo dynamic routing, homepage generator, filters ETC ETC
      */
     ghost.app().get('/:slug', frontend.single);
@@ -114,5 +121,6 @@
 
     ghost.app().listen(3333, function () {
         console.log("Express server listening on port " + 3333);
+
     });
 }());

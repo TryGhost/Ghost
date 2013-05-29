@@ -17,31 +17,35 @@
             name: 'Dashboard',
             navClass: 'dashboard',
             key: 'admin.navbar.dashboard',
-            defaultString: 'dashboard',
-            path: ''
+            // defaultString: 'dashboard',
+            path: '/'
         },
-        blog: {
+        content: {
             name: 'Content',
             navClass: 'content',
-            key: 'admin.navbar.blog',
-            defaultString: 'blog',
-            path: '/blog'
+            key: 'admin.navbar.content',
+            // defaultString: 'content',
+            path: '/content/'
         },
         add: {
             name: 'New Post',
             navClass: 'editor',
             key: 'admin.navbar.editor',
-            defaultString: 'editor',
-            path: '/editor'
+            // defaultString: 'editor',
+            path: '/editor/'
         },
         settings: {
             name: 'Settings',
             navClass: 'settings',
             key: 'admin.navbar.settings',
-            defaultString: 'settings',
-            path: '/settings'
+            // defaultString: 'settings',
+            path: '/settings/'
         }
     };
+
+    ghost.doFilter('messWithAdmin', adminNavbar, function() {
+        console.log('the dofilter hook called in /core/admin/controllers/index.js');
+    });
 
     // TODO - make this a util or helper
     function setSelected(list, name) {
@@ -114,7 +118,7 @@
                     .then(function (post) {
                         res.render('editor', {
                             bodyClass: 'editor',
-                            adminNav: setSelected(adminNavbar, 'blog'),
+                            adminNav: setSelected(adminNavbar, 'content'),
                             title: post.get('title'),
                             content: post.get('content')
                         });
@@ -126,12 +130,12 @@
                 });
             }
         },
-        'blog': function (req, res) {
+        'content': function (req, res) {
             api.posts.browse()
                 .then(function (posts) {
-                    res.render('blog', {
+                    res.render('content', {
                         bodyClass: 'manage',
-                        adminNav: setSelected(adminNavbar, 'blog'),
+                        adminNav: setSelected(adminNavbar, 'content'),
                         posts: posts.toJSON()
                     });
                 });
