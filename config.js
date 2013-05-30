@@ -85,6 +85,16 @@
         production: {}
     };
 
+    config.globals = {
+
+        url: 'http://localhost:3333', //'http://john.onolan.org',
+
+        title: "John O'Nolan",
+
+        description: "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard."
+
+    };
+
     /**
      * @property {Array} nav
      */
