@@ -44,24 +44,14 @@
      */
     Ghost = function () {
         var app,
-            globals,
             plugin,
             polyglot;
 
 
         if (!instance) {
+            // this.init();
             instance = this;
             plugin = new ExampleFilter(instance).init();
-
-            /**
-             * Save the global bits here so that it can
-             * be reused in app.js
-             * @author javorszky (blame me)
-             */
-            jsonDataProvider.save(config.blogData);
-            jsonDataProvider.findAll(function (error, data) {
-                globals = data;
-            });
 
             app = express();
 
@@ -74,7 +64,7 @@
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globals: function () { return globals; }, // there's no management here to be sure this has loaded
+                globals: function () { return instance.init(); }, // there's no management here to be sure this has loaded
                 dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
@@ -87,9 +77,20 @@
                         'lang':          __dirname + '/lang/'
                     };
                 }
+
             });
+
         }
         return instance;
+    };
+
+    Ghost.prototype.init = function() {
+        var globals;
+        jsonDataProvider.save(config.blogData);
+        jsonDataProvider.findAll(function (error, data) {
+            globals = data;
+        });
+        return globals;
     };
 
     /**
