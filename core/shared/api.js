@@ -13,7 +13,6 @@
         _ = require('underscore'),
 
         ghost = new Ghost(),
-        dataProvider = ghost.dataProvider,
         posts,
         users,
         settings,
@@ -24,56 +23,56 @@
         // takes filter / pagination parameters
         // returns a list of posts in a json response
         browse: function (options) {
-            return dataProvider.Post.findAll(options);
+            return ghost.dataProvider().posts.findAll(options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response
         read: function (args) {
-            return dataProvider.Post.findOne(args);
+            return ghost.dataProvider().posts.findOne(args);
         },
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response
         edit: function (postData) {
-            return dataProvider.Post.edit(postData);
+            return ghost.dataProvider().posts.edit(postData);
         },
         // takes a json object representing a post,
         // returns the resulting post in a json response
         add: function (postData) {
-            return dataProvider.Post.add(postData);
+            return ghost.dataProvider().posts.add(postData);
         },
         // takes an identifier (id or slug?)
         // returns a json response with the id of the deleted post
         destroy: function (args) {
-            return dataProvider.Post.destroy(args.id);
+            return ghost.dataProvider().posts.destroy(args.id);
         }
     };
 
     // # Users
     users = {
         add: function (postData) {
-            return dataProvider.Users.add(postData);
+            return ghost.dataProvider().users.add(postData);
         },
         check: function (postData) {
-            return dataProvider.Users.check(postData);
+            return ghost.dataProvider().users.check(postData);
         }
     };
 
     // # Settings
     settings = {
         browse: function (options) {
-            return dataProvider.Settings.browse(options);
+            return ghost.dataProvider().settings.browse(options);
         },
         read: function (options) {
-            return dataProvider.Settings.read(options.key);
+            return ghost.dataProvider().settings.read(options.key);
         },
         edit: function (options) {
-            return dataProvider.Settings.edit(options);
+            return ghost.dataProvider().settings.edit(options);
         }
     };
 
     // categories: {};
-
     // post_categories: {};
+
 
     // requestHandler
     // decorator for api functions which are called via an HTTP request

@@ -25,7 +25,7 @@
         // Allow people to overwrite the navTemplatePath
         templatePath = templatePath || this.navTemplatePath;
 
-        return nodefn.call(fs.readFile, templatePath).then(function (navTemplateContents) {
+        return nodefn.call(fs.readFile, templatePath).then(function(navTemplateContents) {
             // TODO: Can handlebars compile async?
             self.navTemplateFunc = handlebars.compile(navTemplateContents.toString());
         });
@@ -40,11 +40,11 @@
     };
 
     // A static helper method for registering with ghost
-    GhostNavHelper.registerWithGhost = function (ghost) {
+    GhostNavHelper.registerWithGhost = function(ghost) {
         var templatePath = path.join(ghost.paths().frontendViews, 'nav.hbs'),
             ghostNavHelper = new GhostNavHelper(templatePath);
 
-        return ghostNavHelper.compileTemplate().then(function () {
+        return ghostNavHelper.compileTemplate().then(function() {
             ghost.registerThemeHelper("ghostNav", ghostNavHelper.renderNavItems);
         });
     };

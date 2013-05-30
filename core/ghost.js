@@ -12,7 +12,11 @@
         hbs = require('express-hbs'),
         _ = require('underscore'),
         Polyglot = require('node-polyglot'),
-        models = require('./shared/models'),
+
+        JsonDataProvider = require('./shared/models/dataProvider.json'),
+        jsonDataProvider = new JsonDataProvider(),
+        BookshelfDataProvider = require('./shared/models/dataProvider.bookshelf'),
+        bookshelfDataProvider = new BookshelfDataProvider(),
         ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
 
@@ -40,12 +44,18 @@
      */
     Ghost = function () {
         var app,
+            globals,
             plugin,
             polyglot;
 
         if (!instance) {
             instance = this;
             plugin = new ExampleFilter(instance).init();
+
+            // Temporary loading of settings
+            jsonDataProvider.globals.findAll(function (error, data) {
+                globals = data;
+            });
 
             app = express();
 
@@ -58,11 +68,11 @@
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globalConfig: config.globals,
-                dataProvider: models,
+                globals: function () { return globals; }, // there's no management here to be sure this has loaded
+                dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
-                plugin: function () { return plugin; },
+                plugin: function() { return plugin; },
                 paths: function () {
                     return {
                         'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
