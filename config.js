@@ -12,6 +12,15 @@
      */
     var config = {};
 
+
+    /**
+     * Blog settings
+     */
+    config.blogData = {
+        url: 'http://local.tryghost.org', //'http://john.onolan.org',
+        title: "Ghost Development",
+        description: "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard."
+    };
     // ## Admin settings
 
     /**

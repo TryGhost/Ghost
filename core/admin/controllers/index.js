@@ -186,7 +186,6 @@
                     } else {
                         req.flash('success', 'User Added');
                     }
-
                 });
             }
         }

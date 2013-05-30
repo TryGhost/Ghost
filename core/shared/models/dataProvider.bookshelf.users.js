@@ -30,9 +30,10 @@
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
 
+
         return self.model.forge({email_address: userData.email_address}).fetch().then(function (user) {
             if (!!user.attributes.email_address) {
-                return when.reject(new Error('A user with that email address already exists.'));
+                when.reject(new Error('A user with that email address already exists.'));
             }
 
             return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {

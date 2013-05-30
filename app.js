@@ -28,7 +28,10 @@
          * Create new Ghost object
          * @type {Ghost}
          */
-        ghost = new Ghost();
+        ghost = new Ghost(),
+        // This is assigned after the call to ghost.init() below
+        ghostGlobals;
+
 
 
     ghost.app().configure('development', function () {
@@ -44,6 +47,9 @@
         // bind locals - options which appear in every view - perhaps this should be admin only
         ghost.app().use(function (req, res, next) {
             res.locals.messages = req.flash();
+            res.locals.siteTitle = ghostGlobals.title;
+            res.locals.siteDescription = ghostGlobals.description;
+            res.locals.siteUrl = ghostGlobals.url;
             next();
         });
     });
@@ -94,7 +100,10 @@
     // Expose the promise we will resolve after our pre-loading
     ghost.loaded = loading.promise;
 
-    when.all([ghost.dataProvider().init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
+    when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
+
+        // Assign the globals we have loaded
+        ghostGlobals = ghost.globals();
 
         /**
          * API routes..

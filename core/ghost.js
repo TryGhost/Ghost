@@ -7,6 +7,7 @@
 
     // ## Setup Prerequisites
     var config = require('./../config'),
+        when = require('when'),
         express = require('express'),
         path = require('path'),
         hbs = require('express-hbs'),
@@ -19,9 +20,9 @@
         bookshelfDataProvider = new BookshelfDataProvider(),
         ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
-
         instance,
         statuses;
+
 
     // ## Article Statuses
     /**
@@ -44,18 +45,13 @@
      */
     Ghost = function () {
         var app,
-            globals,
             plugin,
             polyglot;
 
         if (!instance) {
+            // this.init();
             instance = this;
             plugin = new ExampleFilter(instance).init();
-
-            // Temporary loading of settings
-            jsonDataProvider.globals.findAll(function (error, data) {
-                globals = data;
-            });
 
             app = express();
 
@@ -68,7 +64,7 @@
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globals: function () { return globals; }, // there's no management here to be sure this has loaded
+                globals: function () { return instance.globalsData; }, // there's no management here to be sure this has loaded
                 dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
@@ -81,9 +77,22 @@
                         'lang':          __dirname + '/lang/'
                     };
                 }
+
             });
+
         }
         return instance;
+    };
+
+    Ghost.prototype.init = function() {
+        var initGlobals = jsonDataProvider.save(config.blogData).then(function () {
+            return jsonDataProvider.findAll().then(function (data) {
+                // We must have an instance to be able to call ghost.init(), right?
+                instance.globalsData = data;
+            });
+        });
+
+        return when.all([initGlobals, instance.dataProvider().init()]);
     };
 
     /**
