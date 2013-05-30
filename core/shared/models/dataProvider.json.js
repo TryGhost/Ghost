@@ -16,8 +16,8 @@
             instance = this;
             _.extend(instance, {
                 data: [],
-                findAll: function(callback) {
-                    callback(null, instance.data);
+                findAll: function() {
+                    return when(instance.data);
                 },
                 save: function (globals) {
                     _.each(globals, function (global, key) {

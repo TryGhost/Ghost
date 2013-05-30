@@ -116,8 +116,6 @@
             if (req.params.id !== undefined) {
                 api.posts.read({id: parseInt(req.params.id, 10)})
                     .then(function (post) {
-                        // res.flash('success', 'test');
-                        console.log('this thing runs');
                         res.render('editor', {
                             bodyClass: 'editor',
                             adminNav: setSelected(adminNavbar, 'content'),

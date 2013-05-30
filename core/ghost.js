@@ -7,6 +7,7 @@
 
     // ## Setup Prerequisites
     var config = require('./../config'),
+        when = require('when'),
         express = require('express'),
         path = require('path'),
         hbs = require('express-hbs'),
@@ -47,7 +48,6 @@
             plugin,
             polyglot;
 
-
         if (!instance) {
             // this.init();
             instance = this;
@@ -64,7 +64,7 @@
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globals: function () { return instance.init(); }, // there's no management here to be sure this has loaded
+                globals: function () { return instance.globalsData; }, // there's no management here to be sure this has loaded
                 dataProvider: function () { return bookshelfDataProvider; },
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
@@ -85,12 +85,14 @@
     };
 
     Ghost.prototype.init = function() {
-        var globals;
-        jsonDataProvider.save(config.blogData);
-        jsonDataProvider.findAll(function (error, data) {
-            globals = data;
+        var initGlobals = jsonDataProvider.save(config.blogData).then(function () {
+            return jsonDataProvider.findAll().then(function (data) {
+                // We must have an instance to be able to call ghost.init(), right?
+                instance.globalsData = data;
+            });
         });
-        return globals;
+
+        return when.all([initGlobals, instance.dataProvider().init()]);
     };
 
     /**

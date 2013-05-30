@@ -29,7 +29,8 @@
          * @type {Ghost}
          */
         ghost = new Ghost(),
-        ghostGlobals = ghost.globals();
+        // This is assigned after the call to ghost.init() below
+        ghostGlobals;
 
 
 
@@ -99,7 +100,10 @@
     // Expose the promise we will resolve after our pre-loading
     ghost.loaded = loading.promise;
 
-    when.all([ghost.dataProvider().init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
+    when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
+
+        // Assign the globals we have loaded
+        ghostGlobals = ghost.globals();
 
         /**
          * API routes..
