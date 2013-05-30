@@ -2,6 +2,30 @@
  * These are the styles used to control the look and feel of the widgetised
  * dashboard of the Ghost admin system. The first screen you see on login.
  *
+ * Table of Contents:
+ * Widget Base
+ * Widget Sizes
+ * Widget Variations
+ * Individual Widgets
+ *  Clock / Date
+ *  Ghost Image
+ *  Unique Visitors
+ *  Facebook Likes
+ *  Google Plus
+ *  Twitter
+ *  Campaign Monitor
+ *  Upcoming Posts
+ *  Most Popular Posts
+ *  Posts This Week
+ *  Instagram
+ *  RSS
+ *  Klout
+ *  Bounce Rate
+ *  Average time On Site
+ *  Last.Fm
+ *  Post Ideas
+ *  Tweets
+ *  Backups
  */
 
 /* ==========================================================================
@@ -9,8 +33,8 @@
    ========================================================================== */
 
 %widget, .widget  {
-  width: $widget-base-width;
-  height: $widget-base-height;
+  width: 340px;
+  height: 300px;
   float:left;
   position:relative;
   margin:0 15px 15px 0;
@@ -29,8 +53,8 @@
     width: 100%;
     height: 40px;
     font-size: 1.2em;
-    color: #cecbc7;
-    border-top: 1px solid #EDECE4;
+    color: $midbrown;
+    border-top: 1px solid $lightbrown;
 
     .widget-title {
       display: inline-block;
@@ -48,7 +72,7 @@
     width: 46px;
     float: right;
     padding: 7px 14px;
-    border-left: 1px solid #EDECE4;
+    border-left: 1px solid $lightbrown;
     cursor: pointer;
     @include icon($i-settings, 1em);
   }
@@ -64,21 +88,25 @@
    ========================================================================== */
 
 .widget-1x2  {
-  height: $widget-base-height * 2;
+  height: 615px;
 }
 
 .widget-2x2  {
-  width: $widget-base-width * 2;
-  height: $widget-base-height * 2;
+  width: 695px;
+  height: 615px;
 }
 
 .widget-2x1  {
-  width: $widget-base-width * 2;
+  width: 695px;
 }
 
 
 /* ==========================================================================
    Widget Variations
+   ========================================================================== */
+
+/* ==========================================================================
+   Number Widgets base styles
    ========================================================================== */
 
 %widget-number, .widget-number {
@@ -93,7 +121,7 @@
         font-size: 5em;
         line-height: 1em;
         font-weight: 400;
-        color: #4a4a4a;
+        color: $darkgrey;
       }
 
       .sub {
@@ -102,6 +130,7 @@
 
         mark {
           background-color: transparent;
+          font-weight: bold;
 
           &.up {
             color: $green;
@@ -109,9 +138,9 @@
           &.down {
             color: $red;
           }
-        } // mark
-      } // .sub
-    } // .info
+        }
+      }
+    }
   } // .widget-content
 
   &.widget-2x2  {
@@ -126,12 +155,15 @@
         .sub {
           font-size: 2.5em;
         }
-      } // .info
-    } // .widget-content
-  } // .widget-2x2
+      }
+    }
+  }
 } // %widget-number, .widget-number
 
-//For the settings panel
+/* ==========================================================================
+   Settings panel base styles
+   ========================================================================== */
+
 .widget-settings {
   @extend %widget;
   background-color: #2d3032;
@@ -140,7 +172,7 @@
     height: 40px;
     border-top: none;
     border-bottom: 1px solid #4a4a4a;
-    color: #7E878B;
+    color: $midgrey;
   }
 
   .widget-content {
@@ -170,7 +202,7 @@
     @include box-sizing(border-box);
     height: 100%;
     padding: 8px;
-    color: #E3EDF2;
+    color: $midgrey;
     text-transform: none;
     background: none;
     border: none;
@@ -188,12 +220,15 @@
       @include icon($i-x, 1em);
     }
     &.done {
-      background-color: #A0B95D;
-      color: #ffffff;
+      background-color: $green;
+      color: rgba(255,255,255,0.7);
       @include icon($i-check, 1em);
     }
   }
+
+
 } // .widget-settings
+
 
 .none  {
   margin-right:0;
@@ -203,20 +238,24 @@
    Individual Widgets
    ========================================================================== */
 
+/* ==========================================================================
+   Clock / Date
+   ========================================================================== */
+
 .widget-time  {
   @extend %widget;
 
   .summary {
     margin-bottom: 30px;
     font-size: 1.4em;
-    color: #cecbc7;
+    color: #9b9b9b;
 
     .day {
       float: left;
     }
     .weather {
       float: right;
-      // TODO: icon for weather
+      @include icon-after($i-weather-sun);
     }
 
   }
@@ -229,7 +268,7 @@
       font-size: 5em;
       line-height: 1em;
       font-weight: 400;
-      color: #4a4a4a;
+      color: $darkgrey;
     }
 
     .date {
@@ -238,6 +277,10 @@
     }
   }
 } // .widget-time
+
+/* ==========================================================================
+   Ghost Image
+   ========================================================================== */
 
 .widget-image  {
   @extend %widget;
@@ -263,9 +306,17 @@
 
 } // .widget-image
 
+/* ==========================================================================
+   Unique Visitors
+   ========================================================================== */
+
 .widget-stats  {
   @extend %widget-number;
 }
+
+/* ==========================================================================
+   Facebook Likes
+   ========================================================================== */
 
 .widget-facebook  {
   @extend %widget-number;
@@ -282,17 +333,33 @@
   }
 }
 
+/* ==========================================================================
+   Google Plus
+   ========================================================================== */
+
 .widget-gplus  {
   @extend %widget-number;
 }
+
+/* ==========================================================================
+   Twitter
+   ========================================================================== */
 
 .widget-twitter  {
   @extend %widget;
 }
 
+/* ==========================================================================
+   Campaign Monitor
+   ========================================================================== */
+
 .widget-campaignmonitor  {
   @extend %widget-number;
 }
+
+/* ==========================================================================
+   Upcoming Posts
+   ========================================================================== */
 
 .widget-posts  {
   @extend %widget;
@@ -308,6 +375,24 @@
     background: #242628;
     border: #efefef 54px solid;
     border-radius: 250px;
+
+    .sheen { // Bourbon gradient mixin not appropriate for this use-case.
+      width: 71px;
+      height: 142px;
+      position: absolute;
+      top: 0;
+      background-image: -webkit-gradient(linear, left bottom, right top, from(rgba(251, 255, 242, 0.00)), to(rgba(254, 253, 255, 1.00)));
+      background-image: -webkit-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+      background-image: -moz-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+      background-image: -o-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+      background-image: -ms-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+      background-image: linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+      filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1,StartColorStr='#fbfff2', EndColorStr='#fefdff');
+      border-radius: 71px 0 0 71px;
+      @include transform(rotate(45deg));
+      @include transform-origin(100% 50%);
+      opacity: 0.05;
+    }
 
     #poststats  {
       position: relative;
@@ -346,8 +431,323 @@
     }
 
   }
+} // .widget-posts
+
+/* ==========================================================================
+   Popular Posts
+   ========================================================================== */
+
+.widget-popular {
+  @extend %widget;
+  background: none;
+
+  .widget-content {
+    padding: 0;
+  }
+
+  .nav {
+    list-style: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tab {
+    @include box-sizing(border-box);
+    display: inline-block;
+    height: 35px;
+    margin: 0;
+    margin-top: 5px;
+    padding: 5px 15px 0;
+    float: left;
+    vertical-align: bottom;
+    background: #CDCCC5;
+    border-left: 1px solid $midbrown;
+
+    &:first-child {
+      border: none;
+    }
+
+    &.active {
+      height: 40px;
+      margin: 0;
+      padding-top: 10px;
+      background: #ffffff;
+    }
+
+    a {
+      vertical-align: middle;
+      display: inline-block;
+      color: #8D8C85;
+    }
+  }
+
+  .post-list {
+    max-height: 538px; // For overflow, dont way to make dynamic
+    background: #ffffff;
+    overflow: auto;
+  }
+
+  .post-item {
+    @include box-sizing(border-box);
+    display: block;
+    min-height: 80px;
+    width: 100%;
+    padding: 20px;
+    border-bottom: 1px solid $lightbrown;
+  }
+
+  .post-title {
+    font-size: 1.25em;
+    font-weight: normal;
+  }
+
+  .post-date {
+    @include icon($i-calendar);
+    margin-right: 20px;
+    color: $brown;
+  }
+
+  .post-count {
+    @include icon($i-stats);
+    color: $brown;
+  }
+
+  .widget-footer {
+    background: #ffffff;
+  }
+} // .widget-popular
+
+/* ==========================================================================
+   Posts This Week
+   ========================================================================== */
+
+.widget-postsWeek {
+  @extend %widget;
 }
 
+/* ==========================================================================
+   Instagram
+   ========================================================================== */
+
+.widget-instagram {
+  @extend %widget;
+  overflow: hidden;
+
+  .widget-content {
+    padding: 0;
+  }
+
+  .photo {
+    height: 100%;
+    width: 100%;
+  }
+
+  .widget-footer {
+    background: rgba(0,0,0,0.4);
+    border: none;
+
+    .widget-title {
+      color: #fff;
+    }
+  }
+
+  .widget-settings-toggle {
+    border: none;
+  }
+} // .widget-instagram
+
+/* ==========================================================================
+   RSS
+   ========================================================================== */
+
+.widget-rss {
+  @extend %widget;
+}
+
+/* ==========================================================================
+   Klout
+   ========================================================================== */
+
+.widget-klout  {
+  @extend %widget-number;
+}
+
+/* ==========================================================================
+   Bounce Rate
+   ========================================================================== */
+
+.widget-bounce  {
+  @extend %widget-number;
+}
+
+/* ==========================================================================
+   Average Time On Site
+   ========================================================================== */
+
+.widget-avgTime  {
+  @extend %widget-number;
+}
+
+/* ==========================================================================
+   Last.Fm
+   ========================================================================== */
+
+.widget-lastfm  {
+  @extend %widget;
+  overflow: hidden;
+
+  .widget-content {
+    padding: 0;
+  }
+
+  .cover {
+    height: 100%;
+    width: 100%;
+  }
+
+  .banner {
+    @include box-sizing(border-box);
+    display: block;
+    width: 100%;
+    padding: 20px;
+    position: absolute;
+    top: 80px;
+    background: rgba(0,0,0,0.7);
+
+    .song-artist, .song-title {
+      display: block;
+      color: #ffffff;
+    }
+
+    .song-artist {
+      font-size: 2em;
+      font-weight: bold;
+      line-height: 1em;
+    }
+
+    .song-title {
+      font-size: 1.2em;
+    }
+  }
+
+  .widget-footer {
+    background: #ffffff;
+  }
+
+} // .widget-lastfm
+
+/* ==========================================================================
+   Post Ideas
+   ========================================================================== */
+
+.widget-ideas {
+  @extend %widget;
+
+  .widget-content {
+    padding: 0;
+  }
+  .idea-title {
+    @include box-sizing(border-box);
+    display: block;
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+    padding: 20px;
+    font-size: 2em;
+    border: none;
+    border-bottom: 1px solid $lightbrown;
+  }
+  .idea-content {
+    @include box-sizing(border-box);
+    width: 100%;
+    padding: 20px;
+    font-size: 1.2em;
+    border: none;
+    resize: none;
+  }
+
+  .idea-title:focus, .idea-content:focus {
+    outline: none;
+  }
+} // .widget-ideas
+
+/* ==========================================================================
+   Tweets
+   ========================================================================== */
+
+.widget-tweets {
+  @extend %widget;
+
+  .twitter-display-image {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    display: inline-block;
+    float: left;
+    border-radius: 15px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 15px;
+    }
+  }
+
+  .twitter-name {
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-right: 5px;
+  }
+
+  .twitter-handle {
+    color: $midbrown;
+    font-size: 1.2em;
+  }
+
+  .latest-tweet {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+
+    a {
+      color: $orange;
+      font-weight: bold;
+    }
+  }
+
+  .tweet-time {
+    color: $midbrown;
+  }
+  .twitter-functions {
+    float: right;
+    font-size: 1.2em;
+
+    a:hover {
+      text-decoration: none;
+    }
+
+    .reply {
+      @include icon($i-reply, '', $midbrown);
+      margin-right: 5px;
+    }
+    .retweet {
+      @include icon($i-repost, '', $midbrown);
+      margin-right: 5px;
+    }
+    .favourite {
+      @include icon($i-unfeatured, '', $midbrown);
+    }
+  }
+} // .widget-tweets
+
+/* ==========================================================================
+   Backups
+   ========================================================================== */
+
+.widget-backups {
+  @extend %widget;
+}
 
 /*
 
