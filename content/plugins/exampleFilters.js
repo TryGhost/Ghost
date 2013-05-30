@@ -16,7 +16,7 @@
 
         this.ghost().registerFilter('messWithAdmin', function(adminNavbar){
             console.log('adminnavbar settings run');
-            delete adminNavbar.add;
+            // delete adminNavbar.add;
             return adminNavbar;
         });
 
