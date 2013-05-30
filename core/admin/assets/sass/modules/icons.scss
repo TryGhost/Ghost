@@ -106,6 +106,10 @@
  * references inside Sass variables.
  */
 
+// Placeholder 
+$i:                 \e018;
+
+// Icons 
 $i-ghost: 			\e000;
 $i-chevron-down: 	\e001;
 $i-users: 			\e002;
@@ -142,7 +146,7 @@ $i-services: 		\e020;
 $i-appearance: 		\e021;
 $i-video: 			\e022;
 $i-remove: 			\e023;
-$i-----: 	     	\e024;
+$i-reply: 	     	\e024;
 $i-stats: 			\e025;
 $i-featured: 		\e026;
 $i-unfeatured: 		\e027;
@@ -161,9 +165,12 @@ $i-check:           \e033;
 $i-x:               \e034;
 $i-link:            \e035;
 $i-camera:          \e036;
-
-// Placeholder
-$i: 				\e018;
+$i-repost:          \e037;
+$i-weather-rain:    \e038;
+$i-weather-sun:     \e039;
+$i-weather-partial: \e03a;
+$i-weather-snow:    \e03b;
+$i-weather-cloudy:  \e03c;
 
 
 /* =============================================================================
