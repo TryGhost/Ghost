@@ -43,7 +43,7 @@
         }
     };
 
-    ghost.doFilter('messWithAdmin', adminNavbar, function() {
+    ghost.doFilter('messWithAdmin', adminNavbar, function () {
         console.log('the dofilter hook called in /core/admin/controllers/index.js');
     });
 

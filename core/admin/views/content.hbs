@@ -1,7 +1,3 @@
-{{#contentFor 'bodyScripts'}}
-    <script src="/core/admin/assets/js/blog.js"></script>
-{{/contentFor}}
-
 {{!< default}}
 <section class="content-list">
   <header class="floatingheader">
@@ -20,7 +16,7 @@
       <ol>
           {{#each posts}}
           {{! #if featured class="featured"{{/if}}
-              <li data-id="{{id}}" data-content="{{content_html}}">
+              <li data-id="{{id}}">
                   <a class="permalink" href="#">
                       <h3 class="entry-title">{{title}}</h3>
                       <section class="entry-meta">

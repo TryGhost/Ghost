@@ -81,7 +81,7 @@
         return function (req, res) {
             var options = _.extend(req.body, req.params);
             return apiMethod(options).then(function (result) {
-                res.json(result);
+                res.json(result || {});
             }, function (error) {
                 res.json(400, {error: error});
             });

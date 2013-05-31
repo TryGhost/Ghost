@@ -83,8 +83,8 @@
      * Expose the standard locals that every external page should have available;
      * path, navItems and ghostGlobals
      */
-    ghostLocals = function(req, res, next) {
-        ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function(navData) {
+    ghostLocals = function (req, res, next) {
+        ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
             // Make sure we have a locals value.
             res.locals = res.locals || {};
 

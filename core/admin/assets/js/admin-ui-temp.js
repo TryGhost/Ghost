@@ -43,24 +43,6 @@
             $('body').toggleClass('fullscreen');
         });
 
-        $('.content-list-content li').on('click', function (e) {
-            var $target = $(e.target).closest('li'),
-                $preview = $('.content-preview');
-            $('.content-list-content li').removeClass('active');
-            $target.addClass('active');
-            // *****
-            // this means a *lot* of extra gumpf is in the DOM and should really be done with AJAX when we have proper
-            // data API endpoints
-            // ideally, we need a way to bind data to views properly... backbone marionette, angular, etc
-            // *****
-            //
-            /**
-             * @todo Remove gumpf
-             */
-            $preview.find('.content-preview-content .wrapper').html($target.data('content'));
-            $preview.find('.post-controls .post-edit').attr('href', '/ghost/editor/' + $target.data('id'));
-        });
-
         $('.options.up').on('click', function (e) {
             e.stopPropagation();
             $(this).next("ul").fadeToggle(200);

@@ -23,8 +23,12 @@
         <link rel="stylesheet" type="text/css" href="/core/admin/assets/lib/icheck/css/icheck.css"> <!-- TODO: Kill this - #29 -->
         {{{block "pageStyles"}}}
 
+        <!-- TODO: move all scripts to the end of body -->
         <script type="text/javascript" src="/core/admin/assets/lib/jquery/jquery.min.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/icheck/jquery.icheck.min.js"></script> <!-- The right place for this? -->
+        <script type="text/javascript" src="/core/admin/assets/lib/icheck/jquery.icheck.min.js"></script>
+        <script type="text/javascript" src="/core/admin/assets/lib/underscore.js"></script>
+        <script type="text/javascript" src="/core/admin/assets/lib/backbone/backbone.js"></script>
+        <script type="text/javascript" src="/core/admin/assets/lib/backbone/backbone-layout.js"></script>
         <script type="text/javascript" src="/core/admin/assets/js/toggle.js"></script>
         <script type="text/javascript" src="/core/admin/assets/js/admin-ui-temp.js"></script>
         {{{block "headScripts"}}}
@@ -34,12 +38,17 @@
             {{> navbar}}
         {{/unless}}
 
-        <main role="main">
+        <main role="main" id="main">
             {{> flashes}}
 
             {{{body}}}
         </main>
 
+        <script type="text/javascript" src="/core/admin/assets/js/init.js"></script>
+        <!-- // require '/core/admin/assets/js/models/*' -->
+        <script type="text/javascript" src="/core/admin/assets/js/models/post.js"></script>
+        <!-- // require '/core/admin/assets/js/views/*' -->
+        <script type="text/javascript" src="/core/admin/assets/js/views/blog.js"></script>
         {{{block "bodyScripts"}}}
     </body>
 </html>
