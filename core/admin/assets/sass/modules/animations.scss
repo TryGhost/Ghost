@@ -1,3 +1,16 @@
+/*
+ * Specific styles for re-usable animations in Ghost admin.
+ *
+ * Table of Contents:
+ * 
+ *
+ */
+
+
+/* =============================================================================
+   General
+   ============================================================================= */
+
 @-webkit-keyframes off-canvas {
   0%   { left:0; }
   100% { left:300px; }
