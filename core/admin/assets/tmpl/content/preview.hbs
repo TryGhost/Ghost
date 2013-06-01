@@ -1,0 +1,21 @@
+<header class="floatingheader">
+    <a class="{{#if featured}}featured{{else}}unfeatured{{/if}}" href="#">
+        <span class="hidden">Star</span>
+    </a>
+    {{! TODO: JavaScript toggle featured/unfeatured}}
+    <span class="status">Published</span>
+    <span class="normal">by</span>
+    <span class="author">John O'Nolan</span>
+    <section class="post-controls">
+        <a class="post-edit" href="#"><span class="hidden">Edit Post</span></a>
+        <a class="post-settings" href="#" data-toggle=".menu-drop-right"><span class="hidden">Post Settings</span></a>
+        <ul class="menu-drop-right">
+            <li><a href="#" class="url">URL</a></li>
+            <li><a href="#" class="something">Something</a></li>
+            <li><a href="#" class="delete">Delete</a></li>
+        </ul>
+    </section>
+</header>
+<section class="content-preview-content">
+    <div class="wrapper">{{{content_html}}}</div>
+</section>

@@ -77,7 +77,8 @@
                 opts = {page: opts};
             }
 
-            opts = _.extend({page: 1}, {
+            opts = _.extend({
+                page: 1,
                 limit: 15,
                 where: {},
                 status: 'published'

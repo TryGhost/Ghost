@@ -1,0 +1,207 @@
+// # Article Editor
+
+/*global window, alert, document, history, Backbone, Ghost, $, _, Showdown, CodeMirror, shortcut, Countable */
+(function () {
+    "use strict";
+
+    var PublishBar,
+        TagWidget,
+        ActionsWidget,
+        MarkdownShortcuts = [
+            {'key': 'Ctrl+B', 'style': 'bold'},
+            {'key': 'Meta+B', 'style': 'bold'},
+            {'key': 'Ctrl+I', 'style': 'italic'},
+            {'key': 'Meta+I', 'style': 'italic'},
+            {'key': 'Ctrl+Alt+U', 'style': 'strike'},
+            {'key': 'Ctrl+Shift+K', 'style': 'code'},
+            {'key': 'Alt+1', 'style': 'h1'},
+            {'key': 'Alt+2', 'style': 'h2'},
+            {'key': 'Alt+3', 'style': 'h3'},
+            {'key': 'Alt+4', 'style': 'h4'},
+            {'key': 'Alt+5', 'style': 'h5'},
+            {'key': 'Alt+6', 'style': 'h6'},
+            {'key': 'Ctrl+Shift+L', 'style': 'link'},
+            {'key': 'Ctrl+Shift+I', 'style': 'image'},
+            {'key': 'Ctrl+Q', 'style': 'blockquote'},
+            {'key': 'Ctrl+Shift+1', 'style': 'currentdate'}
+        ];
+
+    // The publish bar associated with a post, which has the TagWidget and
+    // Save button and options and such.
+    // ----------------------------------------
+    PublishBar = Backbone.View.extend({
+
+        initialize: function () {
+            this.addSubview(new TagWidget({el: this.$('#entry-categories'), model: this.model})).render();
+            this.addSubview(new ActionsWidget({el: this.$('#entry-actions'), model: this.model})).render();
+        }
+
+    });
+
+    // The Tag UI area associated with a post
+    // ----------------------------------------
+    TagWidget = Backbone.View.extend({
+
+    });
+
+    // The Publish, Queue, Publish Now buttons
+    // ----------------------------------------
+    ActionsWidget = Backbone.View.extend({
+
+        events: {
+            'click [data-set-status]': 'handleStatus',
+            'click .js-post-button': 'updatePost'
+        },
+
+        statusMap: {
+            'draft' : 'Save Draft',
+            'published': 'Update Post',
+            'scheduled' : 'Save Schedued Post'
+        },
+
+        initialize: function () {
+            this.listenTo(this.model, 'change:status', this.render);
+            this.model.on('change:id', function (m) {
+                Backbone.history.navigate('/editor/' + m.id);
+            });
+        },
+
+        handleStatus: function (e) {
+            e.preventDefault();
+            var status = $(e.currentTarget).attr('data-set-status'),
+                model = this.model;
+
+            if (status === 'publish-on') {
+                return alert('Scheduled publishing not supported yet.');
+            }
+            if (status === 'queue') {
+                return alert('Scheduled publishing not supported yet.');
+            }
+
+            this.savePost({
+                status: status
+            }).then(function () {
+                alert('Your post: ' + model.get('title') + ' has been ' + status);
+            });
+        },
+
+        updatePost: function (e) {
+            e.preventDefault();
+            this.savePost();
+        },
+
+        savePost: function (data) {
+            // TODO: The content getter here isn't great, shouldn't rely on currentView.
+            return this.model.save(_.extend({
+                title: $('#entry-title').val(),
+                content: Ghost.currentView.editor.getValue()
+            }, data));
+        },
+
+        render: function () {
+            this.$('.js-post-button').text(this.statusMap[this.model.get('status')]);
+        }
+
+    });
+
+    // The entire /editor page's route (TODO: move all views to client side templates)
+    // ----------------------------------------
+    Ghost.Views.Editor = Backbone.View.extend({
+
+        initialize: function () {
+
+            // Add the container view for the Publish Bar
+            this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
+
+            this.$('#entry-markdown').html(this.model.get('content'));
+
+            this.initMarkdown();
+            this.renderPreview();
+
+            // TODO: Debounce
+            this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
+
+            // Shadow on Markdown if scrolled
+            this.$('.CodeMirror-scroll').on('scroll', function (e) {
+                if ($('.CodeMirror-scroll').scrollTop() > 10) {
+                    $('.entry-markdown').addClass('scrolling');
+                } else {
+                    $('.entry-markdown').removeClass('scrolling');
+                }
+            });
+
+            // Shadow on Preview if scrolled
+            this.$('.entry-preview-content').on('scroll', function (e) {
+                if ($('.entry-preview-content').scrollTop() > 10) {
+                    $('.entry-preview').addClass('scrolling');
+                } else {
+                    $('.entry-preview').removeClass('scrolling');
+                }
+            });
+
+            // Zen writing mode shortcut
+            shortcut.add("Alt+Shift+Z", function () {
+                $('body').toggleClass('zen');
+            });
+
+            $('.entry-markdown header, .entry-preview header').click(function (e) {
+                $('.entry-markdown, .entry-preview').removeClass('active');
+                $(e.target).closest('section').addClass('active');
+            });
+
+        },
+
+        syncScroll: function (e) {
+            var $codeViewport = $(e.target),
+                $previewViewport = $('.entry-preview-content'),
+                $codeContent = $('.CodeMirror-sizer'),
+                $previewContent = $('.rendered-markdown'),
+
+                // calc position
+                codeHeight = $codeContent.height() - $codeViewport.height(),
+                previewHeight = $previewContent.height() - $previewViewport.height(),
+                ratio = previewHeight / codeHeight,
+                previewPostition = $codeViewport.scrollTop() * ratio;
+
+            // apply new scroll
+            $previewViewport.scrollTop(previewPostition);
+        },
+
+        // This updates the editor preview panel.
+        // Currently gets called on every key press.
+        // Also trigger word count update
+        renderPreview: function () {
+            var view = this,
+                preview = document.getElementsByClassName('rendered-markdown')[0];
+            preview.innerHTML = this.converter.makeHtml(this.editor.getValue());
+            Countable.once(preview, function (counter) {
+                view.$('.entry-word-count').text(counter.words + ' words');
+                view.$('.entry-character-count').text(counter.characters + ' characters');
+                view.$('.entry-paragraph-count').text(counter.paragraphs + ' paragraphs');
+            });
+        },
+
+        // Markdown converter & markdown shortcut initialization.
+        initMarkdown: function () {
+            this.converter = new Showdown.converter({extensions: ['ghostdown']});
+            this.editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
+                mode: 'markdown',
+                tabMode: 'indent',
+                lineWrapping: true
+            });
+
+            _.each(MarkdownShortcuts, function (combo) {
+                shortcut.add(combo.key, function () {
+                    return this.editor.addMarkdown({style: combo.style});
+                });
+            });
+
+            var view = this;
+            this.editor.on('change', function () {
+                view.renderPreview();
+            });
+        }
+
+    });
+
+}());

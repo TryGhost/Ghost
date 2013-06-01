@@ -22,17 +22,6 @@
         <link rel="stylesheet" type="text/css" href="/core/admin/assets/lib/codemirror/codemirror.css"> <!-- TODO: Kill this - #29 -->
         <link rel="stylesheet" type="text/css" href="/core/admin/assets/lib/icheck/css/icheck.css"> <!-- TODO: Kill this - #29 -->
         {{{block "pageStyles"}}}
-
-        <!-- TODO: move all scripts to the end of body -->
-        <script type="text/javascript" src="/core/admin/assets/lib/jquery/jquery.min.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/icheck/jquery.icheck.min.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/underscore.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/backbone/backbone.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/backbone/backbone-layout.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/lib/countable.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/js/toggle.js"></script>
-        <script type="text/javascript" src="/core/admin/assets/js/admin-ui-temp.js"></script>
-        {{{block "headScripts"}}}
     </head>
     <body class="{{bodyClass}}">
         {{#unless hideNavbar}}
@@ -45,11 +34,32 @@
             {{{body}}}
         </main>
 
-        <script type="text/javascript" src="/core/admin/assets/js/init.js"></script>
+        <script src="/core/admin/assets/lib/jquery/jquery.min.js"></script>
+        <script src="/core/admin/assets/lib/icheck/jquery.icheck.min.js"></script>
+        <script src="/core/admin/assets/lib/underscore.js"></script>
+        <script src="/core/admin/assets/lib/backbone/backbone.js"></script>
+        <script src="/core/admin/assets/lib/handlebars/handlebars-runtime.js"></script>
+        <script src="/core/admin/assets/lib/codemirror/codemirror.js"></script>
+        <script src="/core/admin/assets/lib/codemirror/mode/markdown/markdown.js"></script>
+        <script src="/core/admin/assets/lib/showdown/showdown.js"></script>
+        <script src="/core/admin/assets/lib/showdown/extensions/ghostdown.js"></script>
+        <script src="/core/admin/assets/lib/shortcuts.js"></script>
+        <script src="/core/admin/assets/lib/countable.js"></script>
+
+        <script src="/core/admin/assets/js/init.js"></script>
+        <script src="/core/admin/assets/js/hbs-tmpl.js"></script>
+        <script src="/core/admin/assets/js/toggle.js"></script>
+        <script src="/core/admin/assets/js/admin-ui-temp.js"></script>
+        <script src="/core/admin/assets/js/markdown-actions.js"></script>
+        <script src="/core/admin/assets/js/tagui.js"></script>
+
         <!-- // require '/core/admin/assets/js/models/*' -->
-        <script type="text/javascript" src="/core/admin/assets/js/models/post.js"></script>
+        <script src="/core/admin/assets/js/models/post.js"></script>
         <!-- // require '/core/admin/assets/js/views/*' -->
-        <script type="text/javascript" src="/core/admin/assets/js/views/blog.js"></script>
+        <script src="/core/admin/assets/js/views/blog.js"></script>
+        <script src="/core/admin/assets/js/views/editor.js"></script>
+        <script src="/core/admin/assets/js/router.js"></script>
+        <script src="/core/admin/assets/js/starter.js"></script>
         {{{block "bodyScripts"}}}
     </body>
 </html>

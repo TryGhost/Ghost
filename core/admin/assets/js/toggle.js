@@ -1,8 +1,26 @@
 // # Toggle Support
 
-/*global document, jQuery */
+/*global document, jQuery, Ghost */
 (function ($) {
     "use strict";
+
+    Ghost.temporary.initToggles = function ($el) {
+
+        $el.find('[data-toggle]').each(function () {
+            var toggle = $(this).data('toggle');
+            $(this).parent().children(toggle).hide();
+        });
+
+        $el.find('[data-toggle]').on('click', function (e) {
+            e.preventDefault();
+            $(this).toggleClass('active');
+            var toggle = $(this).data('toggle');
+            $(this).parent().children(toggle).fadeToggle(100).toggleClass('open');
+        });
+
+    };
+
+
     $(document).ready(function () {
 
         // ## Toggle Up In Your Grill
@@ -14,17 +32,7 @@
         //            <li>Toggled yo</li>
         //         </ul>
         //       </nav>
-        $('[data-toggle]').each(function () {
-            var toggle = $(this).data('toggle');
-            $(this).parent().children(toggle).hide();
-        });
-
-        $('[data-toggle]').on('click', function (e) {
-            e.preventDefault();
-            $(this).toggleClass('active');
-            var toggle = $(this).data('toggle');
-            $(this).parent().children(toggle).fadeToggle(100).toggleClass('open');
-        });
-
+        Ghost.temporary.initToggles($(document));
     });
+
 }(jQuery));
