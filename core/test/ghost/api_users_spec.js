@@ -6,22 +6,21 @@
     var _ = require('underscore'),
         should = require('should'),
         helpers = require('./helpers'),
-        UserProvider = require('../../shared/models/dataProvider.bookshelf.users');
+        Models = require('../../shared/models');
 
-    describe('Bookshelf UsersProvider', function () {
+    describe('Bookshelf User Model', function () {
 
-        var users;
+        var UserModel = Models.User;
 
         beforeEach(function (done) {
             helpers.resetData().then(function () {
-                users = new UserProvider();
                 done();
-            });
+            }, done);
         });
 
         it('can browse', function (done) {
 
-            users.browse().then(function (results) {
+            UserModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -35,7 +34,7 @@
         it('can read', function (done) {
             var firstUser;
 
-            users.browse().then(function (results) {
+            UserModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -43,7 +42,7 @@
 
                 firstUser = results.models[0];
 
-                return users.read({email_address: firstUser.attributes.email_address});
+                return UserModel.read({email_address: firstUser.attributes.email_address});
 
             }).then(function (found) {
 
@@ -60,7 +59,7 @@
         it('can edit', function (done) {
             var firstUser;
 
-            users.browse().then(function (results) {
+            UserModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -68,7 +67,7 @@
 
                 firstUser = results.models[0];
 
-                return users.edit({id: firstUser.id, url: "some.newurl.com"});
+                return UserModel.edit({id: firstUser.id, url: "some.newurl.com"});
 
             }).then(function (edited) {
 
@@ -87,7 +86,7 @@
                 email_address: "test@test1.com"
             };
 
-            users.add(userData).then(function (createdUser) {
+            UserModel.add(userData).then(function (createdUser) {
 
                 should.exist(createdUser);
 
@@ -101,7 +100,7 @@
         it('can delete', function (done) {
             var firstUserId;
 
-            users.browse().then(function (results) {
+            UserModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -109,11 +108,11 @@
 
                 firstUserId = results.models[0].id;
 
-                return users.destroy(firstUserId);
+                return UserModel.destroy(firstUserId);
 
             }).then(function () {
 
-                return users.browse();
+                return UserModel.browse();
 
             }).then(function (newResults) {
                 var ids, hasDeletedId;

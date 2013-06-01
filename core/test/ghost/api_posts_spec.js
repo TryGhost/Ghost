@@ -6,21 +6,20 @@
     var _ = require("underscore"),
         should = require('should'),
         helpers = require('./helpers'),
-        PostProvider = require('../../shared/models/dataProvider.bookshelf.posts');
+        Models = require('../../shared/models');
 
-    describe('Bookshelf PostsProvider', function () {
+    describe('Bookshelf Post Model', function () {
 
-        var posts;
+        var PostModel = Models.Post;
 
         beforeEach(function (done) {
             helpers.resetData().then(function () {
-                posts = new PostProvider();
                 done();
             }, done);
         });
 
         it('can browse', function (done) {
-            posts.browse().then(function (results) {
+            PostModel.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.equal(2);
@@ -32,14 +31,14 @@
         it('can read', function (done) {
             var firstPost;
 
-            posts.browse().then(function (results) {
+            PostModel.browse().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
                 firstPost = results.models[0];
 
-                return posts.read({slug: firstPost.attributes.slug});
+                return PostModel.read({slug: firstPost.attributes.slug});
             }).then(function (found) {
                 should.exist(found);
 
@@ -52,7 +51,7 @@
         it('can edit', function (done) {
             var firstPost;
 
-            posts.browse().then(function (results) {
+            PostModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -60,7 +59,7 @@
 
                 firstPost = results.models[0];
 
-                return posts.edit({id: firstPost.id, title: "new title"});
+                return PostModel.edit({id: firstPost.id, title: "new title"});
 
             }).then(function (edited) {
 
@@ -79,7 +78,7 @@
                 content: 'Test Content 1'
             };
 
-            posts.add(newPost).then(function (createdPost) {
+            PostModel.add(newPost).then(function (createdPost) {
                 should.exist(createdPost);
 
                 createdPost.attributes.title.should.equal(newPost.title, "title is correct");
@@ -92,7 +91,7 @@
 
         it('can delete', function (done) {
             var firstPostId;
-            posts.browse().then(function (results) {
+            PostModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -100,11 +99,11 @@
 
                 firstPostId = results.models[0].id;
 
-                return posts.destroy(firstPostId);
+                return PostModel.destroy(firstPostId);
 
             }).then(function () {
 
-                return posts.browse();
+                return PostModel.browse();
 
             }).then(function (newResults) {
                 var ids, hasDeletedId;
@@ -126,7 +125,7 @@
 
             helpers.insertMorePosts().then(function () {
 
-                return posts.findPage({page: 2});
+                return PostModel.findPage({page: 2});
 
             }).then(function (paginationResult) {
 
@@ -138,7 +137,7 @@
 
                 paginationResult.pages.should.equal(4);
 
-                return posts.findPage({page: 5});
+                return PostModel.findPage({page: 5});
 
             }).then(function (paginationResult) {
 
@@ -150,7 +149,7 @@
 
                 paginationResult.pages.should.equal(4);
 
-                return posts.findPage({limit: 30});
+                return PostModel.findPage({limit: 30});
 
             }).then(function (paginationResult) {
 
@@ -162,7 +161,7 @@
 
                 paginationResult.pages.should.equal(2);
 
-                return posts.findPage({limit: 10, page: 2, where: {language: 'fr'}});
+                return PostModel.findPage({limit: 10, page: 2, where: {language: 'fr'}});
 
             }).then(function (paginationResult) {
 
