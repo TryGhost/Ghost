@@ -3,7 +3,7 @@
  * used for publishing content with Ghost.
  *
  * Table of Contents:
- * 
+ *
  * Editor / Preview
  * Post Preview Content
  * Full Screen Mode
@@ -16,7 +16,7 @@
    ============================================================================= */
 
 .editor {
-	
+
 	// The main post title
 	.entry-title {
 		@extend %box;
@@ -42,11 +42,11 @@
 		}
 
 	}
-	
+
 	// The two content panel wrappers, positioned left/right
 	.entry-markdown { left:0; border-right:$lightbrown 2px solid; }
 	.entry-preview { right:0; border-left:$lightbrown 2px solid; }
-	
+
 	// The visual styles for both panels
 	.entry-markdown, .entry-preview {
 		@include box-sizing(border-box);
@@ -61,7 +61,7 @@
 		@include breakpoint($mobile) {
 			@include box-shadow(none);
 		}
-		
+
 		// Convert all content areas to small boxes
 		@include breakpoint($netbook) {
 			top:109px;
@@ -76,7 +76,7 @@
 				overflow: hidden;
 			}
 		}
-		
+
 		.floatingheader {
 
 			// Turn headers into tabs which act as links
@@ -116,19 +116,19 @@
 			}
 
 		}
-		
+
 		// Give the tab with the .active class the highest z-index
 		&.active {
 			z-index: 200;
 		}
-		
+
 		// Restore the normal height of the .active tab (inactive tab stays small, hidden behind)
 		&.active .markdown,
 		&.active .entry-preview-content {
 			height:auto;
 			overflow: auto;
 		}
-		
+
 		// Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
 		&.active header {
 			@include breakpoint($netbook) {
@@ -141,7 +141,7 @@
 				}
 			}
 		}
-		
+
 		// Hide markdown icon + wordcount when we hit mobile
 		@include breakpoint($mobile) {
 			.markdown-help,
@@ -166,7 +166,7 @@
 			right:0;
 			bottom:0;
 			left:0;
-			
+
 			&:focus {
 				outline: 0;
 			}
@@ -183,7 +183,7 @@
 			font-size:1.1em;
 			line-height:1.2em;
 			color: lighten($darkgrey, 30%);
-			
+
 			.CodeMirror-focused,
 			.CodeMirror-selected {
 			    color: $darkgrey;
@@ -220,7 +220,7 @@
 		.cm-quote {color:#000;}
 
 	}
-	
+
 	.entry-preview {
 		// Align the tab of entry-preview on the right
 		.floatingheader {
@@ -240,7 +240,7 @@
 			left:0;
 			padding: 60px 40px 40px 40px;
 			overflow: auto;
-			
+
 			// Tweak padding for smaller screens
 			@include breakpoint($netbook) {padding-top: 20px;}
 			@include breakpoint($mobile) {padding: 15px;}
@@ -268,7 +268,7 @@
 			}
 		}
 	}
-	
+
 }//.editor
 
 
@@ -323,7 +323,7 @@
 	}
 
 	img {
-		width: 100%; 
+		width: 100%;
 		height: auto;
 	}
 }
@@ -342,7 +342,7 @@ body.zen {
 		overflow: hidden;
 		@include transition(all 0.5s ease-out);
 	}
-	
+
 	main {top: 15px;@include transition(all 0.5s ease-out);}
 	.entry-markdown, .entry-preview {bottom:0;@include transition(all 0.5s ease-out);}
 
@@ -394,7 +394,7 @@ body.zen {
             };
         }
 	}
-	
+
 	.splitbutton-save{
 		.button-save{
 			@include transition(width 0.25s ease);
@@ -457,7 +457,7 @@ body.zen {
 	float: left;
 	margin-right: 5px;
 	padding: 0 5px;
-	color: $lightgrey; 
+	color: $lightgrey;
 	background: lighten($grey, 15%);
 	border-radius: $rounded;
 	@include box-shadow(
@@ -495,7 +495,7 @@ body.zen {
 	@include icon($i-settings, 1.1em){vertical-align:0;};
 	@include box-sizing(border-box);
 	display:inline-block;
-	padding: 0 10px;	
+	padding: 0 10px;
 	line-height: 1.8em;
 	color: $midgrey;
 	@include transition;

@@ -1,8 +1,12 @@
 // # Article Editor
 
-/*global window, document, history, jQuery, Showdown, CodeMirror, shortcut */
-(function ($, ShowDown, CodeMirror, shortcut) {
+/*global window, document, history, jQuery, Showdown, CodeMirror, shortcut, Countable */
+(function ($, ShowDown, CodeMirror, shortcut, Countable) {
     "use strict";
+
+    var wordCount = $('.entry-word-count'),
+        charCount = $('.entry-character-count'),
+        paragraphCount = $('.entry-paragraph-count'),
 
     // ## Converter Initialisation
     /**
@@ -11,12 +15,13 @@
      */
     // Initialise the Showdown converter for Markdown.
     // var delay;
-    var converter = new ShowDown.converter({extensions: ['ghostdown']}),
+        converter = new ShowDown.converter({extensions: ['ghostdown']}),
         editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
             mode: 'markdown',
             tabMode: 'indent',
             lineWrapping: true
         });
+
 
     // ## Functions
     /**
@@ -25,14 +30,14 @@
      * @constructor
      */
         // This updates the word count on the editor preview panel.
-    function updateWordCount() {
-        var wordCount = document.getElementsByClassName('entry-word-count')[0],
-            editorValue = editor.getValue();
+    // function updateWordCount() {
+    //     var wordCount = document.getElementsByClassName('entry-word-count')[0],
+    //         editorValue = editor.getValue();
 
-        if (editorValue.length) {
-            wordCount.innerHTML = editorValue.match(/\S+/g).length + ' words';
-        }
-    }
+    //     if (editorValue.length) {
+    //         wordCount.innerHTML = editorValue.match(/\S+/g).length + ' words';
+    //     }
+    // }
 
     /**
      * @method updatePreview
@@ -44,8 +49,14 @@
     function updatePreview() {
         var preview = document.getElementsByClassName('rendered-markdown')[0];
         preview.innerHTML = converter.makeHtml(editor.getValue());
+        console.log(preview);
+        Countable.once(preview, function (counter) {
+            // updateWordCount(counter);
+            wordCount.text(counter.words + ' words');
+            charCount.text(counter.characters + ' characters');
+            paragraphCount.text(counter.paragraphs + ' paragraphs');
 
-        updateWordCount();
+        });
     }
 
     /**
@@ -228,4 +239,4 @@
             });
         });
     });
-}(jQuery, Showdown, CodeMirror, shortcut));
+}(jQuery, Showdown, CodeMirror, shortcut, Countable));
