@@ -8,6 +8,7 @@
         api = require('../../shared/api'),
 
         ghost = new Ghost(),
+        dataProvider = ghost.dataProvider,
         adminNavbar,
         adminControllers;
 
@@ -170,7 +171,7 @@
                 });
             },
             'dbpopulate': function (req, res) {
-                ghost.dataProvider().populateData(function (error) {
+                dataProvider.populateData(function (error) {
                     if (error) {
                         req.flash('error', error);
                     } else {
@@ -180,7 +181,7 @@
                 });
             },
             'newUser': function (req, res) {
-                ghost.dataProvider().addNewUser(req, function (error) {
+                dataProvider.addNewUser(req, function (error) {
                     if (error) {
                         req.flash('error', error);
                     } else {

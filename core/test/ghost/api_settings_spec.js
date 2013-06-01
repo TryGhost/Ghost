@@ -6,21 +6,20 @@
     var _ = require("underscore"),
         should = require('should'),
         helpers = require('./helpers'),
-        SettingProvider = require('../../shared/models/dataProvider.bookshelf.settings');
+        Models = require('../../shared/models');
 
-    describe('Bookshelf SettingsProvider', function () {
+    describe('Bookshelf Setting Model', function () {
 
-        var settings;
+        var SettingModel = Models.Setting;
 
         beforeEach(function (done) {
             helpers.resetData().then(function () {
-                settings = new SettingProvider();
                 done();
-            });
+            }, done);
         });
 
         it('can browse', function (done) {
-            settings.browse().then(function (results) {
+            SettingModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -33,7 +32,7 @@
         it('can read', function (done) {
             var firstSetting;
 
-            settings.browse().then(function (results) {
+            SettingModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -41,7 +40,7 @@
 
                 firstSetting = results.models[0];
 
-                return settings.read(firstSetting.attributes.key);
+                return SettingModel.read(firstSetting.attributes.key);
 
             }).then(function (found) {
 
@@ -58,7 +57,7 @@
             var firstPost,
                 toEdit = {};
 
-            settings.browse().then(function (results) {
+            SettingModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -70,7 +69,7 @@
                 // key/value pairs
                 toEdit[firstPost.attributes.key] = "new value";
 
-                return settings.edit(toEdit);
+                return SettingModel.edit(toEdit);
 
             }).then(function (edited) {
 
@@ -94,7 +93,7 @@
                 editedPost,
                 toEdit = {};
 
-            settings.browse().then(function (results) {
+            SettingModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -108,7 +107,7 @@
                 toEdit[firstPost.attributes.key] = "new value1";
                 toEdit[secondPost.attributes.key] = "new value2";
 
-                return settings.edit(toEdit);
+                return SettingModel.edit(toEdit);
 
             }).then(function (edited) {
 
@@ -137,7 +136,7 @@
                 value: 'Test Content 1'
             };
 
-            settings.add(newSetting).then(function (createdSetting) {
+            SettingModel.add(newSetting).then(function (createdSetting) {
 
                 should.exist(createdSetting);
 
@@ -151,7 +150,7 @@
         it('can delete', function (done) {
             var firstSettingId;
 
-            settings.browse().then(function (results) {
+            SettingModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -159,11 +158,11 @@
 
                 firstSettingId = results.models[0].id;
 
-                return settings.destroy(firstSettingId);
+                return SettingModel.destroy(firstSettingId);
 
             }).then(function () {
 
-                return settings.browse();
+                return SettingModel.browse();
 
             }).then(function (newResults) {
 
