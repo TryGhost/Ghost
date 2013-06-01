@@ -76,8 +76,8 @@
             client: 'sqlite3',
             connection: {
                 filename: './core/shared/data/tests.db'
-            },
-            debug: true
+            }
+            // debug: true
         },
 
         development: {

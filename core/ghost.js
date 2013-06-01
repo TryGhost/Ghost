@@ -14,10 +14,7 @@
         _ = require('underscore'),
         Polyglot = require('node-polyglot'),
 
-        JsonDataProvider = require('./shared/models/dataProvider.json'),
-        jsonDataProvider = new JsonDataProvider(),
-        BookshelfDataProvider = require('./shared/models/dataProvider.bookshelf'),
-        bookshelfDataProvider = new BookshelfDataProvider(),
+        models = require('./shared/models'),
         ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
         instance,
@@ -49,8 +46,14 @@
             polyglot;
 
         if (!instance) {
-            // this.init();
             instance = this;
+
+            // Holds the filters
+            this.filterCallbacks = [];
+
+            // Holds the filter hooks (that are built in to Ghost Core)
+            this.filters = [];
+
             plugin = new ExampleFilter(instance).init();
 
             app = express();
@@ -64,8 +67,8 @@
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globals: function () { return instance.globalsData; }, // there's no management here to be sure this has loaded
-                dataProvider: function () { return bookshelfDataProvider; },
+                globals: function () { return instance.globalConfig; }, // there's no management here to be sure this has loaded
+                dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
                 plugin: function () { return plugin; },
@@ -84,28 +87,10 @@
         return instance;
     };
 
-    Ghost.prototype.init = function() {
-        var initGlobals = jsonDataProvider.save(config.blogData).then(function () {
-            return jsonDataProvider.findAll().then(function (data) {
-                // We must have an instance to be able to call ghost.init(), right?
-                instance.globalsData = data;
-            });
-        });
-
-        return when.all([initGlobals, instance.dataProvider().init()]);
+    Ghost.prototype.init = function () {
+        this.globalConfig = config.blogData;
+        return when.all([instance.dataProvider.init()]);
     };
-
-    /**
-     * Holds the filters
-     * @type {Array}
-     */
-    Ghost.prototype.filterCallbacks = [];
-
-    /**
-     * Holds the filter hooks (that are built in to Ghost Core)
-     * @type {Array}
-     */
-    Ghost.prototype.filters = [];
 
     /**
      * @param  {string}   name

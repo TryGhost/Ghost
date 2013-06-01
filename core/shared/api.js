@@ -13,6 +13,7 @@
         _ = require('underscore'),
 
         ghost = new Ghost(),
+        dataProvider = ghost.dataProvider,
         posts,
         users,
         settings,
@@ -23,50 +24,50 @@
         // takes filter / pagination parameters
         // returns a list of posts in a json response
         browse: function (options) {
-            return ghost.dataProvider().posts.findAll(options);
+            return dataProvider.Post.findAll(options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response
         read: function (args) {
-            return ghost.dataProvider().posts.findOne(args);
+            return dataProvider.Post.findOne(args);
         },
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response
         edit: function (postData) {
-            return ghost.dataProvider().posts.edit(postData);
+            return dataProvider.Post.edit(postData);
         },
         // takes a json object representing a post,
         // returns the resulting post in a json response
         add: function (postData) {
-            return ghost.dataProvider().posts.add(postData);
+            return dataProvider.Post.add(postData);
         },
         // takes an identifier (id or slug?)
         // returns a json response with the id of the deleted post
         destroy: function (args) {
-            return ghost.dataProvider().posts.destroy(args.id);
+            return dataProvider.Post.destroy(args.id);
         }
     };
 
     // # Users
     users = {
         add: function (postData) {
-            return ghost.dataProvider().users.add(postData);
+            return dataProvider.User.add(postData);
         },
         check: function (postData) {
-            return ghost.dataProvider().users.check(postData);
+            return dataProvider.User.check(postData);
         }
     };
 
     // # Settings
     settings = {
         browse: function (options) {
-            return ghost.dataProvider().settings.browse(options);
+            return dataProvider.Setting.browse(options);
         },
         read: function (options) {
-            return ghost.dataProvider().settings.read(options.key);
+            return dataProvider.Setting.read(options.key);
         },
         edit: function (options) {
-            return ghost.dataProvider().settings.edit(options);
+            return dataProvider.Setting.edit(options);
         }
     };
 

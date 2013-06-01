@@ -20,26 +20,28 @@
         it("uses init() to initialize", function (done) {
             var ghost = new Ghost(),
                 fakeDataProvider = {
-                    init: function() {
+                    init: function () {
                         return when.resolve();
                     }
                 },
-                dataProviderInitSpy = sinon.spy(fakeDataProvider, "init");
+                dataProviderInitSpy = sinon.spy(fakeDataProvider, "init"),
+                oldDataProvder = ghost.dataProvider;
 
-            // Stub out the dataProvider
-            sinon.stub(ghost, "dataProvider", function () {
-                return fakeDataProvider;
-            });
+            ghost.dataProvider = fakeDataProvider;
 
             should.not.exist(ghost.globals());
 
             ghost.init().then(function () {
+
                 should.exist(ghost.globals());
 
                 dataProviderInitSpy.called.should.equal(true);
 
+                ghost.dataProvider = oldDataProvder;
+
                 done();
-            }, done);
+            }).then(null, done);
+
         });
 
     });
