@@ -132,12 +132,12 @@
             }
         },
         'content': function (req, res) {
-            api.posts.browse()
-                .then(function (posts) {
+            api.posts.browse({status: req.params.status || 'all'})
+                .then(function (page) {
                     res.render('content', {
                         bodyClass: 'manage',
                         adminNav: setSelected(adminNavbar, 'content'),
-                        posts: posts.toJSON()
+                        posts: page.posts
                     });
                 });
         },
