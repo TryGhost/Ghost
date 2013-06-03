@@ -123,6 +123,7 @@
         });
 
         it('can fetch a paginated set, with various options', function (done) {
+            this.timeout(4000);
 
             helpers.insertMorePosts().then(function () {
 
