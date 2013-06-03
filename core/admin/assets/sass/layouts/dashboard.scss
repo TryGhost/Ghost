@@ -37,8 +37,6 @@
   height: 300px;
   float:left;
   position:relative;
-  margin:0 15px 15px 0;
-  display: none;
   background-color:#fff;
   box-shadow: $shadow;
 
@@ -88,16 +86,16 @@
    ========================================================================== */
 
 .widget-1x2  {
-  height: 615px;
+  height: 610px;
 }
 
 .widget-2x2  {
-  width: 695px;
-  height: 615px;
+  width: 690px;
+  height: 610px;
 }
 
 .widget-2x1  {
-  width: 695px;
+  width: 690px;
 }
 
 
@@ -213,6 +211,54 @@
     border-color: #4a4a4a;
   }
 
+  .widget-size-options {
+    display: inline-block;
+    height: 100%;
+    padding-top: 10px;
+    padding-left: 10px;
+
+    .size-options-container {
+      @include box-sizing(border-box);
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      padding: 3px;
+      cursor: pointer;
+
+    }
+
+    .mini-widget {
+      background: $midgrey;
+      margin: 1px;
+      float: left;
+
+      &.active {
+        background: #ffffff;
+      }
+    }
+
+    .size-1x1 {
+      width: 5px;
+      height: 5px;
+    }
+    .size-2x1 {
+      width: 12px;
+      height: 5px;
+    }
+    .size-1x2 {
+      width: 5px;
+      height: 12px;
+    }
+    .size-2x2 {
+      width: 12px;
+      height: 12px;
+    }
+
+    .active {
+      background: #171819;
+    }
+  } // .widget-size-options
+
   .widget-settings-toggle {
     border-color: #4a4a4a;
 
@@ -228,11 +274,6 @@
 
 
 } // .widget-settings
-
-
-.none  {
-  margin-right:0;
-}
 
 /* ==========================================================================
    Individual Widgets
