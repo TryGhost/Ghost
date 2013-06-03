@@ -1,12 +1,15 @@
 {{#contentFor 'bodyScripts'}}
+    <script src="/core/admin/assets/lib/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/core/admin/assets/lib/packery.pkgd.min.js"></script>
     <script src="/core/admin/assets/lib/chart.min.js"></script>
+    <script src="/core/admin/assets/js/views/dashboard.js"></script>
     <script>
     $(document).ready(function(){
-
-      //$('body').click(function(){
-        $('.widget-time').fadeIn(1000);
-        $('.widget-image').delay(300).fadeIn(1000);
-        $('.widget-posts').delay(600).fadeIn(900, function(){
+//
+//      //$('body').click(function(){
+//        $('.widget-time').fadeIn(1000);
+//        $('.widget-image').delay(300).fadeIn(1000);
+        $('.widget-posts').fadeIn(900, function(){
 
           var ctx = $("#poststats").get(0).getContext("2d");
           var data = [
@@ -31,323 +34,346 @@
           var poststats = new Chart(ctx).Doughnut(data, options);
 
         });
-
-        $('.widget-stats').delay(800).fadeIn(1000);
-        $('.widget-facebook').delay(1000).fadeIn(1000);
-        $('.widget-gplus').delay(1200).fadeIn(1000);
-        $('.widget-twitter').delay(1300).fadeIn(1000);
-        $('.widget-campaignmonitor').delay(1400).fadeIn(1000);
-        $('.widget-popular').delay(1600).fadeIn(1000);
-        $('.widget-postsWeek').delay(1800).fadeIn(1000);
-        $('.widget-instagram').delay(2000).fadeIn(1000);
-        $('.widget-rss').delay(2200).fadeIn(1000);
-        $('.widget-klout').delay(2400).fadeIn(1000);
-        $('.widget-bounce').delay(2600).fadeIn(1000);
-        $('.widget-avgTime').delay(2800).fadeIn(1000);
-        $('.widget-lastfm').delay(3000).fadeIn(1000);
-        $('.widget-ideas').delay(3200).fadeIn(1000);
-        $('.widget-tweets').delay(3400).fadeIn(1000);
-        $('.widget-backups').delay(3600).fadeIn(1000);
+//
+//        $('.widget-stats').delay(800).fadeIn(1000);
+//        $('.widget-facebook').delay(1000).fadeIn(1000);
+//        $('.widget-gplus').delay(1200).fadeIn(1000);
+//        $('.widget-twitter').delay(1300).fadeIn(1000);
+//        $('.widget-campaignmonitor').delay(1400).fadeIn(1000);
+//        $('.widget-popular').delay(1600).fadeIn(1000);
+//        $('.widget-postsWeek').delay(1800).fadeIn(1000);
+//        $('.widget-instagram').delay(2000).fadeIn(1000);
+//        $('.widget-rss').delay(2200).fadeIn(1000);
+//        $('.widget-klout').delay(2400).fadeIn(1000);
+//        $('.widget-bounce').delay(2600).fadeIn(1000);
+//        $('.widget-avgTime').delay(2800).fadeIn(1000);
+//        $('.widget-lastfm').delay(3000).fadeIn(1000);
+//        $('.widget-ideas').delay(3200).fadeIn(1000);
+//        $('.widget-tweets').delay(3400).fadeIn(1000);
+//        $('.widget-backups').delay(3600).fadeIn(1000);
       //});
     });
     </script>
 {{/contentFor}}
 
 {{!< default}}
-<article class="widget-time">
-    <section class="widget-content">
-        <header class="summary clearfix">
-            <span class="day">Today</span>
-            <span class="weather">12°</span>
-        </header>
-        <time>
-            <span class="clock">12:42pm</span>
-            <span class="date">Monday / March 5 / 2013</span>
-        </time>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Linz, Austria</span>
-        <div class="widget-settings-toggle cog"></div>
-    </footer>
-</article>
-
-<div class="widget-image widget-2x1">
-    <section class="widget-content">
-
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Ghost</span>
-        <div class="widget-settings-toggle cog"></div>
-    </footer>
-</div>
-
-<div class="widget-posts none">
-    <section class="widget-content">
-        <div class="chart">
-            <canvas id="poststats" width="250" height="250"></canvas>
-            <div class="sheen"></div>
-            <ul class="data">
-                <li><span class="ready">9</span> Ready</li>
-                <li><span class="pending">4</span> Pending</li>
-                <li><span class="draft">1</span> Draft</li>
-            </ul>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Upcoming Posts</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-stats widget-2x2">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">293,051</span>
-            <span class="sub"><mark class="up">+14%</mark> in the last 7 days</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Unique Visitors (7 days)</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-facebook">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">12,329</span>
-            <span class="sub"><mark class="down">-3</mark> likes today</span>
-            <span class="faces"></span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Facebook Likes</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-gplus none">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">4,103</span>
-            <span class="sub">have you in circles</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Google Plus</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-twitter widget-settings">
-    <header class="widget-header">
-        <span class="widget-title">Twitter Settings</span>
-        <div class="widget-settings-toggle close"></div>
-    </header>
-    <section class="widget-content">
-        <label>
-            <span class="title">Account</span> <input type="text" value="@JohnONolan"/>
-        </label>
-        <label>
-            <span class="title">Display</span> <input type="text" value="Latest Tweets"/>
-        </label>
-        <label>
-            <span class="title">Quantity</span> <input type="text" value="6"/>
-        </label>
-    </section>
-    <footer class="widget-footer">
-        <div class="widget-settings-toggle done"></div>
-    </footer>
-</div>
-
-<div class="widget-campaignmonitor none">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">5,693</span>
-            <span class="sub"><mark class="up">+63</mark> subscribers this week</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Campaign Monitor</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-popular widget-1x2">
-    <section class="widget-content">
-        <ul class="nav clearfix">
-            <li class="tab active"><a href="#">This Week</a></li>
-            <li class="tab"><a href="#">Month</a></li>
-            <li class="tab"><a href="#">Year</a></li>
-            <li class="tab"><a href="#">Ever</a></li>
-        </ul>
-        <ul class="post-list nav">
-            <li class="post-item">
-                <h1 class="post-title">The Night of The Headless Horseman Part II</h1>
-                <span class="post-date"> Yesterday</span>
-                <span class="post-count"> 3,128</span>
-            </li>
-            <li class="post-item">
-                <h4 class="post-title">Latin Script & Why it's Particularly Boring to Read</h4>
-                <span class="post-date"> Wednesday</span>
-                <span class="post-count"> 1,345</span>
-            </li>
-            <li class="post-item">
-                <h4 class="post-title">59 Signs Your Cat and/or Dog Might be Planning To Kill You</h4>
-                <span class="post-date"> Tuesday</span>
-                <span class="post-count"> 824</span>
-            </li>
-            <li class="post-item">
-                <h4 class="post-title">A Love Letter to Emma Stone</h4>
-                <span class="post-date"> Today</span>
-                <span class="post-count"> 293</span>
-            </li>
-            <li class="post-item">
-                <h4 class="post-title">Lorem Ipsum Dolor Sit Amet & Other Funny Moments</h4>
-                <span class="post-date"> Yesterday</span>
-                <span class="post-count"> 124</span>
-            </li>
-            <li class="post-item">
-                <h4 class="post-title">Matt Does Git</h4>
-                <span class="post-date"> Thursday</span>
-                <span class="post-count"> 100</span>
-            </li>
-        </ul>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Most Popular Posts</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-postsWeek">
-    <section class="widget-content">
-
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Posts This Week (Out Of 20)</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-
-<div class="widget-rss widget-2x2 none">
-    <section class="widget-content">
-
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Your RSS News Feed</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-instagram">
-    <section class="widget-content">
-        <img class="photo" src="http://f.cl.ly/items/303f3y1n3I2L1F10343E/instagram.jpg" />
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Instagram</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-klout">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">64.23</span>
-            <span class="sub"><mark class="down">-0.42</mark> in the last 30 days</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Klout</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-bounce">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">40.21%</span>
-            <span class="sub"><mark class="up">-2.53%</mark> in the last month</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Bounce Rate</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-avgTime">
-    <section class="widget-content">
-        <div class="info">
-            <span class="count">2m 16s</span>
-            <span class="sub"><mark class="up">+31.4%</mark> in the last month</span>
-        </div>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Average Time On Site</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-lastfm">
-    <section class="widget-content">
-        <img class="cover" src="http://f.cl.ly/items/0p0r3T3v3M0R0H1k1p0S/imagine_dragons.png" />
-        <section class="banner">
-            <span class="song-artist">Imagine Dragons</span>
-            <span class="song-title">On Top of The World</span>
+<section id="widget-container">
+    <article class="widget-time" data-type="widget">
+        <section class="widget-content">
+            <header class="summary clearfix">
+                <span class="day">Today</span>
+                <span class="weather">12°</span>
+            </header>
+            <time>
+                <span class="clock">12:42pm</span>
+                <span class="date">Monday / March 5 / 2013</span>
+            </time>
         </section>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Last.fm</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-ideas widget-2x1">
-    <section class="widget-content">
-        <input type="text" class="idea-title" placeholder="Enter the title of your post idea...." />
-        <textarea class="idea-content" placeholder="This is a brief synopsis of the idea here with your key points. Paste in any relevant links to your reference material. Markdown is fully supported. Hit enter when your done."></textarea>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Post Ideas</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
-
-<div class="widget-tweets">
-    <section class="widget-content">
-        <header>
-            <div class="twitter-display-image">
-                <img src="http://f.cl.ly/items/1A1S0D3T3p1g1B2Z3J0u/ghost_twitter.jpeg" />
-            </div>
-            <span class="twitter-name">Ghost</span>
-            <span class="twitter-handle">@tryghost</span>
-        </header>
-        <article class="latest-tweet">
-            If you're exploring the <a href="#">@twitterapi</a>, be sure and bring the new field guide along. <a href="#">dev.twitter.com/blog/...</a>
-        </article>
-        <footer>
-            <time class="tweet-time">3 May 12</time>
-            <div class="twitter-functions">
-                <a href="#"><i class="reply"></i></a>
-                <a href="#"><i class="retweet"></i></a>
-                <a href="#"><i class="favourite"></i></a>
-            </div>
+        <footer class="widget-footer">
+            <span class="widget-title">Linz, Austria</span>
+            <div class="widget-settings-toggle cog"></div>
         </footer>
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Twitter</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
+    </article>
 
-<div class="widget-backups none">
-    <section class="widget-content">
+    <div class="widget-image widget-2x1" data-type="widget">
+        <section class="widget-content">
 
-    </section>
-    <footer class="widget-footer">
-        <span class="widget-title">Backups</span>
-        <div class="widget-settings-toggle"></div>
-    </footer>
-</div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Ghost</span>
+            <div class="widget-settings-toggle cog"></div>
+        </footer>
+    </div>
+
+    <div class="widget-posts" data-type="widget">
+        <section class="widget-content">
+            <div class="chart">
+                <canvas id="poststats" width="250" height="250"></canvas>
+                <div class="sheen"></div>
+                <ul class="data">
+                    <li><span class="ready">9</span> Ready</li>
+                    <li><span class="pending">4</span> Pending</li>
+                    <li><span class="draft">1</span> Draft</li>
+                </ul>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Upcoming Posts</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-stats widget-2x2" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">293,051</span>
+                <span class="sub"><mark class="up">+14%</mark> in the last 7 days</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Unique Visitors (7 days)</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-facebook" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">12,329</span>
+                <span class="sub"><mark class="down">-3</mark> likes today</span>
+                <span class="faces"></span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Facebook Likes</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-gplus" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">4,103</span>
+                <span class="sub">have you in circles</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Google Plus</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-twitter widget-settings" data-type="widget">
+        <header class="widget-header">
+            <span class="widget-title">Twitter Settings</span>
+            <div class="widget-settings-toggle close"></div>
+        </header>
+        <section class="widget-content">
+            <label>
+                <span class="title">Account</span> <input type="text" value="@JohnONolan"/>
+            </label>
+            <label>
+                <span class="title">Display</span> <input type="text" value="Latest Tweets"/>
+            </label>
+            <label>
+                <span class="title">Quantity</span> <input type="text" value="6"/>
+            </label>
+        </section>
+        <footer class="widget-footer">
+            <div class="widget-size-options">
+                <div class="size-options-container active" data-size="1x1">
+                    <span class="mini-widget size-1x1 active"></span>
+                    <span class="mini-widget size-1x1"></span>
+                    <span class="mini-widget size-1x1"></span>
+                    <span class="mini-widget size-1x1"></span>
+                </div>
+                <div class="size-options-container" data-size="2x1">
+                    <span class="mini-widget size-2x1 active"></span>
+                    <span class="mini-widget size-1x1"></span>
+                    <span class="mini-widget size-1x1"></span>
+                </div>
+                <div class="size-options-container" data-size="1x2">
+                    <span class="mini-widget size-1x2 active"></span>
+                    <span class="mini-widget size-1x1"></span>
+                    <span class="mini-widget size-1x1"></span>
+                </div>
+                <div class="size-options-container" data-size="2x2">
+                    <span class="mini-widget size-2x2 active"></span>
+                </div>
+            </div>
+            <div class="widget-settings-toggle done"></div>
+        </footer>
+    </div>
+
+    <div class="widget-campaignmonitor" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">5,693</span>
+                <span class="sub"><mark class="up">+63</mark> subscribers this week</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Campaign Monitor</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-popular widget-1x2" data-type="widget">
+        <section class="widget-content">
+            <ul class="nav clearfix">
+                <li class="tab active"><a href="#">This Week</a></li>
+                <li class="tab"><a href="#">Month</a></li>
+                <li class="tab"><a href="#">Year</a></li>
+                <li class="tab"><a href="#">Ever</a></li>
+            </ul>
+            <ul class="post-list nav">
+                <li class="post-item">
+                    <h1 class="post-title">The Night of The Headless Horseman Part II</h1>
+                    <span class="post-date"> Yesterday</span>
+                    <span class="post-count"> 3,128</span>
+                </li>
+                <li class="post-item">
+                    <h4 class="post-title">Latin Script & Why it's Particularly Boring to Read</h4>
+                    <span class="post-date"> Wednesday</span>
+                    <span class="post-count"> 1,345</span>
+                </li>
+                <li class="post-item">
+                    <h4 class="post-title">59 Signs Your Cat and/or Dog Might be Planning To Kill You</h4>
+                    <span class="post-date"> Tuesday</span>
+                    <span class="post-count"> 824</span>
+                </li>
+                <li class="post-item">
+                    <h4 class="post-title">A Love Letter to Emma Stone</h4>
+                    <span class="post-date"> Today</span>
+                    <span class="post-count"> 293</span>
+                </li>
+                <li class="post-item">
+                    <h4 class="post-title">Lorem Ipsum Dolor Sit Amet & Other Funny Moments</h4>
+                    <span class="post-date"> Yesterday</span>
+                    <span class="post-count"> 124</span>
+                </li>
+                <li class="post-item">
+                    <h4 class="post-title">Matt Does Git</h4>
+                    <span class="post-date"> Thursday</span>
+                    <span class="post-count"> 100</span>
+                </li>
+            </ul>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Most Popular Posts</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-postsWeek" data-type="widget">
+        <section class="widget-content">
+
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Posts This Week (Out Of 20)</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+
+    <div class="widget-rss widget-2x2" data-type="widget">
+        <section class="widget-content">
+
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Your RSS News Feed</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-instagram" data-type="widget">
+        <section class="widget-content">
+            <img class="photo" src="http://f.cl.ly/items/303f3y1n3I2L1F10343E/instagram.jpg" />
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Instagram</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-klout" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">64.23</span>
+                <span class="sub"><mark class="down">-0.42</mark> in the last 30 days</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Klout</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-bounce" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">40.21%</span>
+                <span class="sub"><mark class="up">-2.53%</mark> in the last month</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Bounce Rate</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-avgTime" data-type="widget">
+        <section class="widget-content">
+            <div class="info">
+                <span class="count">2m 16s</span>
+                <span class="sub"><mark class="up">+31.4%</mark> in the last month</span>
+            </div>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Average Time On Site</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-lastfm" data-type="widget">
+        <section class="widget-content">
+            <img class="cover" src="http://f.cl.ly/items/0p0r3T3v3M0R0H1k1p0S/imagine_dragons.png" />
+            <section class="banner">
+                <span class="song-artist">Imagine Dragons</span>
+                <span class="song-title">On Top of The World</span>
+            </section>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Last.fm</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-ideas widget-2x1" data-type="widget">
+        <section class="widget-content">
+            <input type="text" class="idea-title" placeholder="Enter the title of your post idea...." />
+            <textarea class="idea-content" placeholder="This is a brief synopsis of the idea here with your key points. Paste in any relevant links to your reference material. Markdown is fully supported. Hit enter when your done."></textarea>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Post Ideas</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-tweets" data-type="widget">
+        <section class="widget-content">
+            <header>
+                <div class="twitter-display-image">
+                    <img src="http://f.cl.ly/items/1A1S0D3T3p1g1B2Z3J0u/ghost_twitter.jpeg" />
+                </div>
+                <span class="twitter-name">Ghost</span>
+                <span class="twitter-handle">@tryghost</span>
+            </header>
+            <article class="latest-tweet">
+                If you're exploring the <a href="#">@twitterapi</a>, be sure and bring the new field guide along. <a href="#">dev.twitter.com/blog/...</a>
+            </article>
+            <footer>
+                <time class="tweet-time">3 May 12</time>
+                <div class="twitter-functions">
+                    <a href="#"><i class="reply"></i></a>
+                    <a href="#"><i class="retweet"></i></a>
+                    <a href="#"><i class="favourite"></i></a>
+                </div>
+            </footer>
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Twitter</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+
+    <div class="widget-backups" data-type="widget">
+        <section class="widget-content">
+
+        </section>
+        <footer class="widget-footer">
+            <span class="widget-title">Backups</span>
+            <div class="widget-settings-toggle"></div>
+        </footer>
+    </div>
+</section>
