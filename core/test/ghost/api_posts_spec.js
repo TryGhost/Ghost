@@ -72,7 +72,7 @@
             }).then(null, done);
         });
 
-        it('can add', function (done) {
+        it('can add, defaulting as a draft', function (done) {
             var newPost = {
                 title: 'Test Title 1',
                 content: 'Test Content 1'
@@ -81,9 +81,10 @@
             PostModel.add(newPost).then(function (createdPost) {
                 should.exist(createdPost);
 
-                createdPost.attributes.title.should.equal(newPost.title, "title is correct");
-                createdPost.attributes.content.should.equal(newPost.content, "content is correct");
-                createdPost.attributes.slug.should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
+                createdPost.get('status').should.equal('draft');
+                createdPost.get('title').should.equal(newPost.title, "title is correct");
+                createdPost.get('content').should.equal(newPost.content, "content is correct");
+                createdPost.get('slug').should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
 
                 done();
             }).then(null, done);
@@ -172,6 +173,12 @@
                 paginationResult.posts.length.should.equal(10);
 
                 paginationResult.pages.should.equal(3);
+
+                return PostModel.findPage({limit: 10, page: 2, status: 'all'});
+
+            }).then(function (paginationResult) {
+
+                paginationResult.pages.should.equal(11);
 
                 done();
 

@@ -16,6 +16,10 @@
 
         hasTimestamps: true,
 
+        defaults: {
+            status: 'draft'
+        },
+
         initialize: function () {
             this.on('creating', this.creating, this);
             this.on('saving', this.saving, this);
@@ -69,16 +73,24 @@
             var postCollection;
 
             // Allow findPage(n)
-            if (!_.isObject(opts)) {
+            if (_.isString(opts) || _.isNumber(opts)) {
                 opts = {page: opts};
             }
 
-            opts = _.defaults(opts || {}, {
+            opts = _.extend({
                 page: 1,
                 limit: 15,
-                where: null
-            });
+                where: {},
+                status: 'published'
+            }, opts);
+
             postCollection = Posts.forge();
+
+            // Unless `all` is passed as an option, filter on
+            // the status provided.
+            if (opts.status !== 'all') {
+                opts.where.status = opts.status;
+            }
 
             // If there are where conditionals specified, add those
             // to the query.
@@ -93,7 +105,7 @@
             return postCollection
                 .query('limit', opts.limit)
                 .query('offset', opts.limit * (opts.page - 1))
-                .fetch(_.omit(opts, 'page', 'limit', 'where'))
+                .fetch(_.omit(opts, 'page', 'limit', 'where', 'status'))
                 .then(function (collection) {
                     var qb;
 
