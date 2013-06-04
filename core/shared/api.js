@@ -80,7 +80,7 @@
     // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
     requestHandler = function (apiMethod) {
         return function (req, res) {
-            var options = _.extend(req.body, req.params);
+            var options = _.extend(req.body, req.query, req.params);
             return apiMethod(options).then(function (result) {
                 res.json(result || {});
             }, function (error) {

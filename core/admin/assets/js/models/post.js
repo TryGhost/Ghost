@@ -2,16 +2,40 @@
 (function () {
     "use strict";
 
-    Ghost.Model.Post = Backbone.Model.extend({
-        urlRoot: '/api/v0.1/posts/',
+    Ghost.Models.Post = Backbone.Model.extend({
+
         defaults: {
             status: 'draft'
+        },
+
+        parse: function (resp) {
+            if (resp.tags) {
+                // TODO: parse tags into it's own collection on the model (this.tags)
+                return resp;
+            }
+            return resp;
+        },
+
+        validate: function (attrs) {
+            if (_.isEmpty(attrs.title)) {
+                return 'You must specify a title for the post.';
+            }
         }
     });
 
-    Ghost.Collection.Posts = Backbone.Collection.extend({
-        url: Ghost.settings.baseURL + '/posts',
-        model: Ghost.Model.Post
+    Ghost.Collections.Posts = Backbone.Collection.extend({
+        url: Ghost.settings.apiRoot + '/posts',
+        model: Ghost.Models.Post,
+        parse: function (resp) {
+            if (_.isArray(resp.posts)) {
+                this.limit = resp.limit;
+                this.currentPage = resp.page;
+                this.totalPages = resp.pages;
+                this.totalPosts = resp.total;
+                return resp.posts;
+            }
+            return resp;
+        }
     });
 
 }());

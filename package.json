@@ -29,6 +29,8 @@
     "grunt-shell": "~0.2.2",
     "grunt-contrib-sass": "~0.3.0",
     "sinon": "~1.7.2",
-    "mocha": "~1.10.0"
+    "mocha": "~1.10.0",
+    "grunt-contrib-handlebars": "~0.5.9",
+    "grunt-contrib-watch": "~0.4.4"
   }
 }
