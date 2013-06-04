@@ -5,10 +5,6 @@
     <script src="/core/admin/assets/js/views/dashboard.js"></script>
     <script>
     $(document).ready(function(){
-//
-//      //$('body').click(function(){
-//        $('.widget-time').fadeIn(1000);
-//        $('.widget-image').delay(300).fadeIn(1000);
         $('.widget-posts').fadeIn(900, function(){
 
           var ctx = $("#poststats").get(0).getContext("2d");
@@ -34,24 +30,6 @@
           var poststats = new Chart(ctx).Doughnut(data, options);
 
         });
-//
-//        $('.widget-stats').delay(800).fadeIn(1000);
-//        $('.widget-facebook').delay(1000).fadeIn(1000);
-//        $('.widget-gplus').delay(1200).fadeIn(1000);
-//        $('.widget-twitter').delay(1300).fadeIn(1000);
-//        $('.widget-campaignmonitor').delay(1400).fadeIn(1000);
-//        $('.widget-popular').delay(1600).fadeIn(1000);
-//        $('.widget-postsWeek').delay(1800).fadeIn(1000);
-//        $('.widget-instagram').delay(2000).fadeIn(1000);
-//        $('.widget-rss').delay(2200).fadeIn(1000);
-//        $('.widget-klout').delay(2400).fadeIn(1000);
-//        $('.widget-bounce').delay(2600).fadeIn(1000);
-//        $('.widget-avgTime').delay(2800).fadeIn(1000);
-//        $('.widget-lastfm').delay(3000).fadeIn(1000);
-//        $('.widget-ideas').delay(3200).fadeIn(1000);
-//        $('.widget-tweets').delay(3400).fadeIn(1000);
-//        $('.widget-backups').delay(3600).fadeIn(1000);
-      //});
     });
     </script>
 {{/contentFor}}
