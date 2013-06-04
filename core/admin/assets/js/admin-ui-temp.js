@@ -48,10 +48,5 @@
             $(this).next("ul").fadeToggle(200);
         });
 
-        $('.editor-options').on('click', 'li', function (e) {
-            $('.button-save').data("state", $(this).data("title")).attr('data-state', $(this).data("title")).text($(this).text());
-            $('.editor-options .active').removeClass('active');
-            $(this).addClass('active');
-        });
     });
 }(jQuery));

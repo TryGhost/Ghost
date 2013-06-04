@@ -23,6 +23,7 @@ projectFilesBackup
 # Ghost DB file
 *.db
 
+/core/admin/assets/tmpl/hbs-tmpl.js
 /core/admin/assets/css
 /core/admin/assets/sass/modules/bourbon
 .sass-cache/
