@@ -1,11 +1,18 @@
-/*global window, document, Ghost, Backbone, $, _ */
+/*global window, document, localStorage, Ghost, Backbone, $, _ */
 (function () {
     "use strict";
 
-    var $widgetContainer = $('#widget-container'), $itemElems;
+    var $widgetContainer = $('.js-widget-container'), $itemElems, widgetPositions;
+
+    widgetPositions = {
+        mobile: {},
+        tablet: {},
+        netbook: {},
+        desktop: {}
+    };
 
     $widgetContainer.packery({
-        itemSelector: '[data-type="widget"]',
+        itemSelector: '.js-widget',
         gutter: 10,
         columnWidth: 340,
         rowHeight: 300
@@ -17,8 +24,20 @@
     // bind Draggable events to Packery
     $widgetContainer.packery('bindUIDraggableEvents', $itemElems);
 
-    $(".size-options-container").on("click", function () {
-        var $parent = $(this).closest('[data-type="widget"]'), data = $(this).data('size');
+    // show item order after layout
+    function orderItems() {
+        // items are in order within the layout
+        var $itemElems = $($widgetContainer.packery('getItemElements')), order = {};
+
+        $.each($itemElems, function (index, key) {
+            order[key.getAttribute("data-widget-id")] = index;
+        });
+        return order;
+    }
+
+    // On resize button click
+    $(".js-widget-resizer").on("click", function () {
+        var $parent = $(this).closest('.js-widget'), data = $(this).data('size');
 
         $parent.removeClass("widget-1x2 widget-2x1 widget-2x2");
 
@@ -32,6 +51,22 @@
         $(this).siblings('.active').removeClass('active');
         $(this).addClass('active');
 
+    });
+
+    $widgetContainer.packery('on', 'dragItemPositioned', function () {
+        var viewportSize = $(window).width();
+        if (viewportSize <= 400) { // Mobile
+            widgetPositions.mobile = orderItems();
+        } else if (viewportSize > 400 && viewportSize <= 800) { // Tablet
+            widgetPositions.tablet = orderItems();
+        } else if (viewportSize > 800 && viewportSize <= 1000) {  // Netbook
+            widgetPositions.netbook = orderItems();
+        } else if (viewportSize > 1000) {
+            widgetPositions.desktop = orderItems();
+        }
+        localStorage.setItem('widgetPositions', JSON.stringify(widgetPositions));
+
+        // Retrieve the object from storage with `JSON.parse(localStorage.getItem('widgetPositions'));`
     });
 
 }());

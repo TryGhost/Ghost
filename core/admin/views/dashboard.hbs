@@ -57,8 +57,8 @@
 {{/contentFor}}
 
 {{!< default}}
-<section id="widget-container">
-    <article class="widget-time" data-type="widget">
+<section class="js-widget-container">
+    <article class="widget-time js-widget" data-widget-id="com.ghost.time">
         <section class="widget-content">
             <header class="summary clearfix">
                 <span class="day">Today</span>
@@ -75,7 +75,7 @@
         </footer>
     </article>
 
-    <div class="widget-image widget-2x1" data-type="widget">
+    <div class="widget-image widget-2x1 js-widget" data-widget-id="com.ghost.image">
         <section class="widget-content">
 
         </section>
@@ -85,7 +85,7 @@
         </footer>
     </div>
 
-    <div class="widget-posts" data-type="widget">
+    <div class="widget-posts js-widget" data-widget-id="com.ghost.posts">
         <section class="widget-content">
             <div class="chart">
                 <canvas id="poststats" width="250" height="250"></canvas>
@@ -103,7 +103,7 @@
         </footer>
     </div>
 
-    <div class="widget-stats widget-2x2" data-type="widget">
+    <div class="widget-stats widget-2x2 js-widget" data-widget-id="com.ghost.stats">
         <section class="widget-content">
             <div class="info">
                 <span class="count">293,051</span>
@@ -116,7 +116,7 @@
         </footer>
     </div>
 
-    <div class="widget-facebook" data-type="widget">
+    <div class="widget-facebook js-widget" data-widget-id="com.ghost.facebook">
         <section class="widget-content">
             <div class="info">
                 <span class="count">12,329</span>
@@ -130,7 +130,7 @@
         </footer>
     </div>
 
-    <div class="widget-gplus" data-type="widget">
+    <div class="widget-gplus js-widget" data-widget-id="com.ghost.gplus">
         <section class="widget-content">
             <div class="info">
                 <span class="count">4,103</span>
@@ -143,7 +143,7 @@
         </footer>
     </div>
 
-    <div class="widget-twitter widget-settings" data-type="widget">
+    <div class="widget-twitter widget-settings js-widget" data-widget-id="com.ghost.twitter">
         <header class="widget-header">
             <span class="widget-title">Twitter Settings</span>
             <div class="widget-settings-toggle close"></div>
@@ -161,23 +161,23 @@
         </section>
         <footer class="widget-footer">
             <div class="widget-size-options">
-                <div class="size-options-container active" data-size="1x1">
+                <div class="size-options-container active js-widget-resizer" data-size="1x1">
                     <span class="mini-widget size-1x1 active"></span>
                     <span class="mini-widget size-1x1"></span>
                     <span class="mini-widget size-1x1"></span>
                     <span class="mini-widget size-1x1"></span>
                 </div>
-                <div class="size-options-container" data-size="2x1">
+                <div class="size-options-container js-widget-resizer" data-size="2x1">
                     <span class="mini-widget size-2x1 active"></span>
                     <span class="mini-widget size-1x1"></span>
                     <span class="mini-widget size-1x1"></span>
                 </div>
-                <div class="size-options-container" data-size="1x2">
+                <div class="size-options-container js-widget-resizer" data-size="1x2">
                     <span class="mini-widget size-1x2 active"></span>
                     <span class="mini-widget size-1x1"></span>
                     <span class="mini-widget size-1x1"></span>
                 </div>
-                <div class="size-options-container" data-size="2x2">
+                <div class="size-options-container js-widget-resizer" data-size="2x2">
                     <span class="mini-widget size-2x2 active"></span>
                 </div>
             </div>
@@ -185,7 +185,7 @@
         </footer>
     </div>
 
-    <div class="widget-campaignmonitor" data-type="widget">
+    <div class="widget-campaignmonitor js-widget" data-widget-id="com.ghost.campaignmonitor">
         <section class="widget-content">
             <div class="info">
                 <span class="count">5,693</span>
@@ -198,7 +198,7 @@
         </footer>
     </div>
 
-    <div class="widget-popular widget-1x2" data-type="widget">
+    <div class="widget-popular widget-1x2 js-widget" data-widget-id="com.ghost.popular">
         <section class="widget-content">
             <ul class="nav clearfix">
                 <li class="tab active"><a href="#">This Week</a></li>
@@ -245,7 +245,7 @@
         </footer>
     </div>
 
-    <div class="widget-postsWeek" data-type="widget">
+    <div class="widget-postsWeek js-widget" data-widget-id="com.ghost.postsWeek">
         <section class="widget-content">
 
         </section>
@@ -256,7 +256,7 @@
     </div>
 
 
-    <div class="widget-rss widget-2x2" data-type="widget">
+    <div class="widget-rss widget-2x2 js-widget" data-widget-id="com.ghost.rss">
         <section class="widget-content">
 
         </section>
@@ -266,7 +266,7 @@
         </footer>
     </div>
 
-    <div class="widget-instagram" data-type="widget">
+    <div class="widget-instagram js-widget" data-widget-id="com.ghost.instagram">
         <section class="widget-content">
             <img class="photo" src="http://f.cl.ly/items/303f3y1n3I2L1F10343E/instagram.jpg" />
         </section>
@@ -276,7 +276,7 @@
         </footer>
     </div>
 
-    <div class="widget-klout" data-type="widget">
+    <div class="widget-klout js-widget" data-widget-id="com.ghost.klout">
         <section class="widget-content">
             <div class="info">
                 <span class="count">64.23</span>
@@ -289,7 +289,7 @@
         </footer>
     </div>
 
-    <div class="widget-bounce" data-type="widget">
+    <div class="widget-bounce js-widget" data-widget-id="com.ghost.bounce">
         <section class="widget-content">
             <div class="info">
                 <span class="count">40.21%</span>
@@ -302,7 +302,7 @@
         </footer>
     </div>
 
-    <div class="widget-avgTime" data-type="widget">
+    <div class="widget-avgTime js-widget" data-widget-id="com.ghost.avgTime">
         <section class="widget-content">
             <div class="info">
                 <span class="count">2m 16s</span>
@@ -315,7 +315,7 @@
         </footer>
     </div>
 
-    <div class="widget-lastfm" data-type="widget">
+    <div class="widget-lastfm js-widget" data-widget-id="com.ghost.lastfm">
         <section class="widget-content">
             <img class="cover" src="http://f.cl.ly/items/0p0r3T3v3M0R0H1k1p0S/imagine_dragons.png" />
             <section class="banner">
@@ -329,7 +329,7 @@
         </footer>
     </div>
 
-    <div class="widget-ideas widget-2x1" data-type="widget">
+    <div class="widget-ideas widget-2x1 js-widget" data-widget-id="com.ghost.ideas">
         <section class="widget-content">
             <input type="text" class="idea-title" placeholder="Enter the title of your post idea...." />
             <textarea class="idea-content" placeholder="This is a brief synopsis of the idea here with your key points. Paste in any relevant links to your reference material. Markdown is fully supported. Hit enter when your done."></textarea>
@@ -340,7 +340,7 @@
         </footer>
     </div>
 
-    <div class="widget-tweets" data-type="widget">
+    <div class="widget-tweets js-widget" data-widget-id="com.ghost.tweets">
         <section class="widget-content">
             <header>
                 <div class="twitter-display-image">
@@ -367,7 +367,7 @@
         </footer>
     </div>
 
-    <div class="widget-backups" data-type="widget">
+    <div class="widget-backups js-widget" data-widget-id="com.ghost.backups">
         <section class="widget-content">
 
         </section>
