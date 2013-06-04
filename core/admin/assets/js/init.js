@@ -1,8 +1,27 @@
 /*globals window, _, $, Backbone */
 (function ($) {
+
     "use strict";
 
-    _.extend(Backbone.View.prototype, {
+    var Ghost = {
+        Layout      : {},
+        Views       : {},
+        Collections : {},
+        Models      : {},
+
+        settings: {
+            apiRoot: '/api/v0.1'
+        },
+
+        // This is a helper object to denote legacy things in the
+        // middle of being transitioned.
+        temporary: {},
+
+        currentView: null,
+        router: null
+    };
+
+    Ghost.View = Backbone.View.extend({
 
         // Adds a subview to the current view, which will
         // ensure its removal when this view is removed,
@@ -41,24 +60,6 @@
         }
 
     });
-
-    var Ghost = {
-        Layout      : {},
-        Views       : {},
-        Collections : {},
-        Models      : {},
-
-        settings: {
-            apiRoot: '/api/v0.1'
-        },
-
-        // This is a helper object to denote legacy things in the
-        // middle of being transitioned.
-        temporary: {},
-
-        currentView: null,
-        router: null
-    };
 
     window.Ghost = Ghost;
 

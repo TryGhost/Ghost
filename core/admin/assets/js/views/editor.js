@@ -29,7 +29,7 @@
     // The publish bar associated with a post, which has the TagWidget and
     // Save button and options and such.
     // ----------------------------------------
-    PublishBar = Backbone.View.extend({
+    PublishBar = Ghost.View.extend({
 
         initialize: function () {
             this.addSubview(new TagWidget({el: this.$('#entry-categories'), model: this.model})).render();
@@ -40,13 +40,13 @@
 
     // The Tag UI area associated with a post
     // ----------------------------------------
-    TagWidget = Backbone.View.extend({
+    TagWidget = Ghost.View.extend({
 
     });
 
     // The Publish, Queue, Publish Now buttons
     // ----------------------------------------
-    ActionsWidget = Backbone.View.extend({
+    ActionsWidget = Ghost.View.extend({
 
         events: {
             'click [data-set-status]': 'handleStatus',
@@ -87,15 +87,27 @@
 
         updatePost: function (e) {
             e.preventDefault();
-            this.savePost();
+            var model = this.model;
+            this.savePost().then(function () {
+                alert('Your post was saved as ' + model.get('status'));
+            }, function () {
+                alert(model.validationError);
+            });
         },
 
         savePost: function (data) {
             // TODO: The content getter here isn't great, shouldn't rely on currentView.
-            return this.model.save(_.extend({
+            var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
                 content: Ghost.currentView.editor.getValue()
             }, data));
+
+            // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
+            // ourselves for more consistent promises.
+            if (saved) {
+                return saved;
+            }
+            return $.Deferred().reject();
         },
 
         render: function () {
@@ -106,7 +118,7 @@
 
     // The entire /editor page's route (TODO: move all views to client side templates)
     // ----------------------------------------
-    Ghost.Views.Editor = Backbone.View.extend({
+    Ghost.Views.Editor = Ghost.View.extend({
 
         initialize: function () {
 

@@ -17,7 +17,7 @@
 
     // Base view
     // ----------
-    Ghost.Views.Blog = Backbone.View.extend({
+    Ghost.Views.Blog = Ghost.View.extend({
         initialize: function (options) {
             this.addSubview(new PreviewContainer({ el: '.js-content-preview', collection: this.collection })).render();
             this.addSubview(new ContentList({ el: '.js-content-list', collection: this.collection })).render();
@@ -27,7 +27,7 @@
 
     // Content list (sidebar)
     // -----------------------
-    ContentList = Backbone.View.extend({
+    ContentList = Ghost.View.extend({
 
         events: {
             'click .content-list-content'    : 'scrollHandler'
@@ -56,7 +56,7 @@
 
     // Content Item
     // -----------------------
-    ContentItem = Backbone.View.extend({
+    ContentItem = Ghost.View.extend({
 
         tagName: 'li',
 
@@ -120,7 +120,7 @@
 
     // Content preview
     // ----------------
-    PreviewContainer = Backbone.View.extend({
+    PreviewContainer = Ghost.View.extend({
 
         activeId: null,
 
