@@ -6,9 +6,10 @@
     var _ = require('underscore'),
         should = require('should'),
         helpers = require('./helpers'),
+        errors = require('../../shared/errorHandling'),
         Models = require('../../shared/models');
 
-    describe('Bookshelf User Model', function () {
+    describe('User Model', function () {
 
         var UserModel = Models.User;
 
@@ -133,6 +134,16 @@
                 done();
 
             }).then(null, done);
+        });
+
+        it("can get effective permissions", function (done) {
+            UserModel.effectivePermissions(1).then(function (effectivePermissions) {
+                should.exist(effectivePermissions);
+
+                effectivePermissions.length.should.be.above(0);
+
+                done();
+            }, errors.logError);
         });
     });
 

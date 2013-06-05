@@ -8,7 +8,9 @@
         nodefn = require('when/node/function'),
         bcrypt = require('bcrypt-nodejs'),
         Posts = require('./post').Posts,
-        GhostBookshelf = require('./base');
+        GhostBookshelf = require('./base'),
+        Role = require('./role').Role,
+        Permission = require('./permission').Permission;
 
     User = GhostBookshelf.Model.extend({
 
@@ -18,6 +20,14 @@
 
         posts: function () {
             return this.hasMany(Posts, 'created_by');
+        },
+
+        roles: function () {
+            return this.belongsToMany(Role);
+        },
+
+        permissions: function () {
+            return this.belongsToMany(Permission);
         }
 
     }, {
@@ -62,6 +72,35 @@
                     return user;
                 });
             });
+        },
+
+        effectivePermissions: function (id) {
+            return this.read({id: id}, { withRelated: ['permissions', 'roles.permissions'] })
+                .then(function (foundUser) {
+                    var seenPerms = {},
+                        rolePerms = _.map(foundUser.related('roles').models, function (role) {
+                            return role.related('permissions').models;
+                        }),
+                        allPerms = [];
+
+                    rolePerms.push(foundUser.related('permissions').models);
+
+                    _.each(rolePerms, function (rolePermGroup) {
+                        _.each(rolePermGroup, function (perm) {
+                            var key = perm.get('action_type') + '-' + perm.get('object_type') + '-' + perm.get('object_id');
+
+                            // Only add perms once
+                            if (seenPerms[key]) {
+                                return;
+                            }
+
+                            allPerms.push(perm);
+                            seenPerms[key] = true;
+                        });
+                    });
+
+                    return when.resolve(allPerms);
+                });
         }
 
     });

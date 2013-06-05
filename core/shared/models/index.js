@@ -9,6 +9,8 @@
     module.exports = {
         Post: require('./post').Post,
         User: require('./user').User,
+        Role: require('./role').Role,
+        Permission: require('./permission').Permission,
         Setting: require('./setting').Setting,
         init: function () {
             return knex.Schema.hasTable('posts').then(null, function () {

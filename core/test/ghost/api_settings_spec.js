@@ -8,7 +8,7 @@
         helpers = require('./helpers'),
         Models = require('../../shared/models');
 
-    describe('Bookshelf Setting Model', function () {
+    describe('Setting Model', function () {
 
         var SettingModel = Models.Setting;
 
