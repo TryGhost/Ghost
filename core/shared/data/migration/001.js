@@ -47,6 +47,38 @@
                 t.integer('updated_by');
             }),
 
+            knex.Schema.createTable('roles', function (t) {
+                t.increments().primary();
+                t.string('name');
+                t.string('description');
+            }),
+
+            knex.Schema.createTable('roles_users', function (t) {
+                t.increments().primary();
+                t.integer('role_id');
+                t.integer('user_id');
+            }),
+
+            knex.Schema.createTable('permissions', function (t) {
+                t.increments().primary();
+                t.string('name');
+                t.string('object_type');
+                t.string('action_type');
+                t.integer('object_id');
+            }),
+
+            knex.Schema.createTable('permissions_users', function (t) {
+                t.increments().primary();
+                t.integer('user_id');
+                t.integer('permission_id');
+            }),
+
+            knex.Schema.createTable('permissions_roles', function(t) {
+                t.increments().primary();
+                t.integer('role_id');
+                t.integer('permission_id');
+            }),
+
             knex.Schema.createTable('settings', function (t) {
                 t.increments().primary();
                 t.string('key');
@@ -63,6 +95,10 @@
             return when.all([
                 knex('posts').insert(fixtures.posts),
                 knex('users').insert(fixtures.users),
+                knex('roles').insert(fixtures.roles),
+                knex('roles_users').insert(fixtures.roles_users),
+                knex('permissions').insert(fixtures.permissions),
+                knex('permissions_roles').insert(fixtures.permissions_roles),
                 knex('settings').insert(fixtures.settings)
             ]);
 
@@ -74,8 +110,17 @@
         return when.all([
             knex.Schema.dropTableIfExists("posts"),
             knex.Schema.dropTableIfExists("users"),
-            knex.Schema.dropTableIfExists("settings")
-        ]);
+            knex.Schema.dropTableIfExists("roles"),
+            knex.Schema.dropTableIfExists("settings"),
+            knex.Schema.dropTableIfExists("permissions")
+        ]).then(function() {
+            // Drop the relation tables after the model tables?
+            return when.all([
+                knex.Schema.dropTableIfExists("roles_users"),
+                knex.Schema.dropTableIfExists("permissions_users"),
+                knex.Schema.dropTableIfExists("permissions_roles")
+            ]);
+        });
     };
 
     exports.up = up;

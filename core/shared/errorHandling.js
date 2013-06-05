@@ -21,6 +21,7 @@
         },
 
         logError: function (err) {
+            err = err || "Unknown";
             // TODO: Logging framework hookup
             console.log("Error occurred: ", err.message || err);
         },

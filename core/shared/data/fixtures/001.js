@@ -63,5 +63,71 @@ module.exports = {
             "created_by":        1,
             "updated_by":        1
         }
+    ],
+
+    roles: [
+        {
+            "id": 1,
+            "name": "Administrator",
+            "description": "Administrators"
+        },
+        {
+            "id": 2,
+            "name": "Editor",
+            "description": "Editors"
+        },
+        {
+            "id": 3,
+            "name": "Author",
+            "description": "Authors"
+        }
+    ],
+
+    roles_users: [
+        {
+            "id": 1,
+            "role_id": 1,
+            "user_id": 1
+        }
+    ],
+
+    permissions: [
+        {
+            "id": 1,
+            "name": "Edit posts",
+            "action_type": "edit",
+            "object_type": "post"
+        },
+        {
+            "id": 2,
+            "name": "Remove posts",
+            "action_type": "remove",
+            "object_type": "post"
+        },
+        {
+            "id": 3,
+            "name": "Create posts",
+            "action_type": "create",
+            "object_type": "post"
+        }
+    ],
+
+    permissions_roles: [
+        {
+            "id": 1,
+            "permission_id": 1,
+            "role_id": 1
+        },
+        {
+            "id": 2,
+            "permission_id": 2,
+            "role_id": 1
+        },
+        {
+            "id": 3,
+            "permission_id": 3,
+            "role_id": 1
+        }
     ]
+
 };

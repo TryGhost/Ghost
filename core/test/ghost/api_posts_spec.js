@@ -8,7 +8,7 @@
         helpers = require('./helpers'),
         Models = require('../../shared/models');
 
-    describe('Bookshelf Post Model', function () {
+    describe('Post Model', function () {
 
         var PostModel = Models.Post;
 
