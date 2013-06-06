@@ -48,6 +48,10 @@
 
         user: function () {
             return this.belongsTo(User, 'created_by');
+        },
+
+        author: function () {
+            return this.belongsTo(User, 'author_id');
         }
 
     }, {
@@ -81,7 +85,8 @@
                 page: 1,
                 limit: 15,
                 where: {},
-                status: 'published'
+                status: 'published',
+                orderBy: 'published_at DESC'
             }, opts);
 
             postCollection = Posts.forge();
@@ -105,7 +110,8 @@
             return postCollection
                 .query('limit', opts.limit)
                 .query('offset', opts.limit * (opts.page - 1))
-                .fetch(_.omit(opts, 'page', 'limit', 'where', 'status'))
+                .query('orderBy', opts.orderBy)
+                .fetch(_.omit(opts, 'page', 'limit', 'where', 'status', 'orderBy'))
                 .then(function (collection) {
                     var qb;
 

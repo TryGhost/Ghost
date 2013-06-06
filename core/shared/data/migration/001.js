@@ -16,25 +16,31 @@
 
             knex.Schema.createTable('posts', function (t) {
                 t.increments().primary();
+                t.string('uuid');
                 t.string('title');
                 t.string('slug');
                 t.text('content');
                 t.text('content_html');
+                t.string('meta_title');
+                t.string('meta_description');
+                t.string('meta_keywords');
                 t.bool('featured');
                 t.string('image');
                 t.string('status');
                 t.string('language');
+                t.integer('author_id');
                 t.date('created_at');
                 t.integer('created_by');
                 t.date('updated_at');
                 t.integer('updated_by');
+                t.date('published_at');
+                t.integer('published_by');
             }),
 
             knex.Schema.createTable('users', function (t) {
                 t.increments().primary();
-                t.string('username');
-                t.string('first_name');
-                t.string('last_name');
+                t.string('uuid');
+                t.string('full_name');
                 t.string('password');
                 t.string('email_address');
                 t.string('profile_picture');
@@ -81,8 +87,10 @@
 
             knex.Schema.createTable('settings', function (t) {
                 t.increments().primary();
+                t.string('uuid');
                 t.string('key');
                 t.text('value');
+                t.string('type');
                 t.date('created_at');
                 t.integer('created_by');
                 t.date('updated_at');
@@ -106,7 +114,6 @@
     };
 
     down = function () {
-
         return when.all([
             knex.Schema.dropTableIfExists("posts"),
             knex.Schema.dropTableIfExists("users"),

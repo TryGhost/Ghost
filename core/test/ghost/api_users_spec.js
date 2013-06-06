@@ -49,7 +49,7 @@
 
                 should.exist(found);
 
-                found.attributes.username.should.equal(firstUser.attributes.username);
+                found.attributes.full_name.should.equal(firstUser.attributes.full_name);
 
                 done();
 
