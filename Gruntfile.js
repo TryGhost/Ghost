@@ -17,7 +17,7 @@
                     // Lint files in the root, including Gruntfile.js
                     "*.js",
                     // Lint core files, but not libs
-                    ["core/**/*.js", "!**/assets/lib/**/*.js"]
+                    ["core/**/*.js", "!**/assets/lib/**/*.js", "!**/assets/tmpl/*.js"]
                 ]
             },
 
