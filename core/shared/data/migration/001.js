@@ -79,7 +79,7 @@
                 t.integer('permission_id');
             }),
 
-            knex.Schema.createTable('permissions_roles', function(t) {
+            knex.Schema.createTable('permissions_roles', function (t) {
                 t.increments().primary();
                 t.integer('role_id');
                 t.integer('permission_id');
@@ -120,7 +120,7 @@
             knex.Schema.dropTableIfExists("roles"),
             knex.Schema.dropTableIfExists("settings"),
             knex.Schema.dropTableIfExists("permissions")
-        ]).then(function() {
+        ]).then(function () {
             // Drop the relation tables after the model tables?
             return when.all([
                 knex.Schema.dropTableIfExists("roles_users"),

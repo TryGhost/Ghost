@@ -14,8 +14,8 @@
 
         should.exist(RoleModel);
 
-        beforeEach(function(done) {
-            helpers.resetData().then(function() {
+        beforeEach(function (done) {
+            helpers.resetData().then(function () {
                 done();
             }, done);
         });
@@ -78,7 +78,7 @@
             }).then(function () {
                 return RoleModel.browse();
             }).then(function (foundRoles) {
-                var hasRemovedId = foundRoles.any(function(role) {
+                var hasRemovedId = foundRoles.any(function (role) {
                     return role.id === 1;
                 });
 
@@ -95,8 +95,8 @@
 
         should.exist(PermissionModel);
 
-        beforeEach(function(done) {
-            helpers.resetData().then(function() {
+        beforeEach(function (done) {
+            helpers.resetData().then(function () {
                 done();
             }, done);
         });
@@ -157,7 +157,7 @@
             }).then(function () {
                 return PermissionModel.browse();
             }).then(function (foundPermissions) {
-                var hasRemovedId = foundPermissions.any(function(permission) {
+                var hasRemovedId = foundPermissions.any(function (permission) {
                     return permission.id === 1;
                 });
 

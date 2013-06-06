@@ -47,7 +47,7 @@
 
                 return PermissionsProvider.add(newPerm);
             },
-            createTestPermissions = function() {
+            createTestPermissions = function () {
                 var createActions = _.map(testPerms, function (testPerm) {
                     return createPermission(null, testPerm.act, testPerm.obj);
                 });
