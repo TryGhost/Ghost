@@ -17,7 +17,9 @@
         posts,
         users,
         settings,
-        requestHandler;
+        requestHandler,
+        settingsObject,
+        settingsCollection;
 
     // # Posts
     posts = {
@@ -59,15 +61,38 @@
     };
 
     // # Settings
+
+    // Turn a settings collection into a single object/hashmap
+    settingsObject = function (settings) {
+        return (settings.toJSON ? settings.toJSON() : settings).reduce(function (res, item) {
+            if (item.toJSON) { item = item.toJSON(); }
+            if (item.key) { res[item.key] = item.value; }
+            return res;
+        }, {});
+    };
+    // Turn an object into a collection
+    settingsCollection = function (settings) {
+        return _.map(settings, function (value, key) {
+            return { key: key, value: value };
+        });
+    };
+
     settings = {
         browse: function (options) {
-            return dataProvider.Setting.browse(options);
+            return dataProvider.Settings.browse(options).then(settingsObject);
         },
         read: function (options) {
-            return dataProvider.Setting.read(options.key);
+            return dataProvider.Settings.read(options.key).then(function (setting) {
+                return _.pick(setting.toJSON(), 'key', 'value');
+            });
         },
-        edit: function (options) {
-            return dataProvider.Setting.edit(options);
+        edit: function (settings) {
+            settings = settingsCollection(settings);
+            return dataProvider.Settings.edit(settings).then(settingsObject);
+        },
+        add: function (settings) {
+            settings = settingsCollection(settings);
+            return dataProvider.Settings.add(settings).then(settingsObject);
         }
     };
 

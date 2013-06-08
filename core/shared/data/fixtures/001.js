@@ -60,6 +60,13 @@ module.exports = {
             "created_by":    1,
             "updated_by":    1,
             "type":         "general"
+        },
+        {
+            "key":          "email",
+            "value":        "john@onolan.org",
+            "created_by":    1,
+            "updated_by":    1,
+            "type":         "general"
         }
     ],
 
