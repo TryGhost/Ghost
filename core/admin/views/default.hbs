@@ -56,10 +56,13 @@
         <!-- // require '/core/admin/assets/js/models/*' -->
         <script src="/core/admin/assets/js/models/post.js"></script>
         <!-- // require '/core/admin/assets/js/views/*' -->
+        <script src="/core/admin/assets/js/views/base.js"></script>
         <script src="/core/admin/assets/js/views/blog.js"></script>
         <script src="/core/admin/assets/js/views/editor.js"></script>
         <script src="/core/admin/assets/js/router.js"></script>
-        <script src="/core/admin/assets/js/starter.js"></script>
         {{{block "bodyScripts"}}}
+        <script>
+            Ghost.init();
+        </script>
     </body>
 </html>
