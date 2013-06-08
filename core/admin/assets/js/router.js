@@ -6,18 +6,25 @@
     Ghost.Router = Backbone.Router.extend({
 
         routes: {
-            'content/': 'blog',
-            'editor': 'editor',
-            'editor/': 'editor',
-            'editor/:id': 'editor'
+            'content/'         : 'blog',
+            'settings/'        : 'settings',
+            'settings(/:pane)' : 'settings',
+            'editor/'          : 'editor',
+            'editor(/:id)'     : 'editor'
         },
 
         blog: function () {
             var posts = new Ghost.Collections.Posts();
-            posts.fetch({data: {status: 'all'}}).then(function () {
+            posts.fetch({ data: { status: 'all' } }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
             });
+        },
 
+        settings: function (pane) {
+            var settings = new Ghost.Models.Settings();
+            settings.fetch().then(function () {
+                Ghost.currentView = new Ghost.Views.Settings({ el: '#main', model: settings, pane: pane });
+            });
         },
 
         editor: function (id) {
