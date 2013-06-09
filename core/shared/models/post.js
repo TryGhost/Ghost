@@ -5,6 +5,7 @@
     var Post,
         Posts,
         _ = require('underscore'),
+        when = require('when'),
         Showdown = require('showdown'),
         converter = new Showdown.converter(),
         User = require('./user').User,
@@ -134,6 +135,41 @@
                         };
                     });
                 });
+        },
+
+        permissable: function (postModelOrId, userId, action_type, userPermissions) {
+            var self = this,
+                hasPermission,
+                postModel = postModelOrId;
+
+            // If we passed in an id instead of a model, get the model
+            // then check the permissions
+            if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
+                return this.read({id: postModelOrId}).then(function (foundPostModel) {
+                    return self.permissable(foundPostModel, userId, action_type, userPermissions);
+                });
+            }
+
+            // TODO: This logic is temporary, will probably need to be updated
+
+            hasPermission = _.any(userPermissions, function (perm) {
+                if (perm.get('object_type') !== 'post') {
+                    return false;
+                }
+
+                // True, if no object_id specified, or it matches
+                return !perm.get('object_id') || perm.get('object_id') === postModel.id;
+            });
+
+            // If this is the author of the post, allow it.
+            hasPermission = hasPermission || userId === postModel.get('author_id');
+
+            if (hasPermission) {
+                return when.resolve();
+            }
+
+            // Otherwise, you shall not pass.
+            return when.reject();
         }
 
     });
