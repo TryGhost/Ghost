@@ -18,8 +18,18 @@
         ExampleFilter = require('../content/plugins/exampleFilters'),
         Ghost,
         instance,
+        defaults,
         statuses;
 
+    // ## Default values
+    /**
+     * A hash of default values to use instead of 'magic' numbers/strings.
+     * @type {Object}
+     */
+    defaults = {
+        filterPriority: 5,
+        maxPriority: 9
+    };
 
     // ## Article Statuses
     /**
@@ -121,14 +131,20 @@
 
     /**
      * @param  {string}   name
+     * @param  {integer}  priority
      * @param  {Function} fn
      */
-    Ghost.prototype.registerFilter = function (name, fn) {
-        if (!this.filterCallbacks.hasOwnProperty(name)) {
-            this.filterCallbacks[name] = [];
+    Ghost.prototype.registerFilter = function (name, priority, fn) {
+        // Curry the priority optional parameter to a default of 5
+        if (_.isFunction(priority)) {
+            fn = priority;
+            priority = defaults.filterPriority;
         }
-        console.log('registering filter for ', name);
-        this.filterCallbacks[name].push(fn);
+
+        this.filterCallbacks[name] = this.filterCallbacks[name] || {};
+        this.filterCallbacks[name][priority] = this.filterCallbacks[name][priority] || [];
+
+        this.filterCallbacks[name][priority].push(fn);
     };
 
     /**
@@ -138,16 +154,24 @@
      * @return {method} callback
      */
     Ghost.prototype.doFilter = function (name, args, callback) {
-        var fn;
+        var callbacks = this.filterCallbacks[name];
 
-        if (this.filterCallbacks.hasOwnProperty(name)) {
-            for (fn in this.filterCallbacks[name]) {
-                if (this.filterCallbacks[name].hasOwnProperty(fn)) {
-                    console.log('doing filter for ', name);
-                    args = this.filterCallbacks[name][fn](args);
-                }
-            }
+        // Bug out early if no callbacks by that name
+        if (!callbacks) {
+            return callback(args);
         }
+
+        _.times(defaults.maxPriority + 1, function (priority) {
+            // Bug out if no handlers on this priority
+            if (!_.isArray(callbacks[priority])) {
+                return;
+            }
+
+            // Call each handler for this priority level
+            _.each(callbacks[priority], function (filterHandler) {
+                args = filterHandler(args);
+            });
+        });
 
         callback(args);
     };
@@ -179,6 +203,9 @@
             next();
         };
     };
+
+    // TODO: Expose the defaults for other people to see/manipulate as a static value?
+    // Ghost.defaults = defaults;
 
     module.exports = Ghost;
 }());
