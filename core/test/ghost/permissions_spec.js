@@ -6,12 +6,14 @@
     var _ = require("underscore"),
         when = require('when'),
         should = require('should'),
+        sinon = require('sinon'),
         errors = require('../../shared/errorHandling'),
         helpers = require('./helpers'),
         permissions = require('../../shared/permissions'),
         Models = require('../../shared/models'),
         UserProvider = Models.User,
-        PermissionsProvider = Models.Permission;
+        PermissionsProvider = Models.Permission,
+        PostProvider = Models.Post;
 
     describe('permissions', function () {
 
@@ -33,6 +35,21 @@
                 { act: "remove", obj: "user" }
             ],
             currTestPermId = 1,
+            currTestUserId = 1,
+            createTestUser = function (email_address) {
+                if (!email_address) {
+                    currTestUserId += 1;
+                    email_address = "test" + currTestPermId + "@test.com";
+                }
+
+                var newUser = {
+                    id: currTestUserId,
+                    email_address: email_address,
+                    password: "testing123"
+                };
+
+                return UserProvider.add(newUser);
+            },
             createPermission = function (name, act, obj) {
                 if (!name) {
                     currTestPermId += 1;
@@ -129,29 +146,33 @@
                 description: "test2 description"
             });
 
-            testRole.save().then(function () {
-                return testRole.load('permissions');
-            }).then(function () {
-                var rolePermission = new Models.Permission({
-                    name: "test edit posts",
-                    action_type: 'edit',
-                    object_type: 'post'
+            testRole.save()
+                .then(function () {
+                    return testRole.load('permissions');
+                })
+                .then(function () {
+                    var rolePermission = new Models.Permission({
+                        name: "test edit posts",
+                        action_type: 'edit',
+                        object_type: 'post'
+                    });
+
+                    testRole.related('permissions').length.should.equal(0);
+
+                    return rolePermission.save().then(function () {
+                        return testRole.permissions().attach(rolePermission);
+                    });
+                })
+                .then(function () {
+                    return Models.Role.read({id: testRole.id}, { withRelated: ['permissions']});
+                })
+                .then(function (updatedRole) {
+                    should.exist(updatedRole);
+
+                    updatedRole.related('permissions').length.should.equal(1);
+
+                    done();
                 });
-
-                testRole.related('permissions').length.should.equal(0);
-
-                return rolePermission.save().then(function () {
-                    return testRole.permissions().attach(rolePermission);
-                });
-            }).then(function () {
-                return Models.Role.read({id: testRole.id}, { withRelated: ['permissions']});
-            }).then(function (updatedRole) {
-                should.exist(updatedRole);
-
-                updatedRole.related('permissions').length.should.equal(1);
-
-                done();
-            });
         });
 
         it('does not allow edit post without permission', function (done) {
@@ -218,6 +239,56 @@
                     done();
                 }, function () {
                     errors.logError(new Error("Did not allow edit post with permission"));
+                });
+        });
+
+        it('can use permissable function on Model to allow something', function (done) {
+            var testUser,
+                permissableStub = sinon.stub(PostProvider, 'permissable', function () {
+                    return when.resolve();
+                });
+
+            createTestUser()
+                .then(function (createdTestUser) {
+                    testUser = createdTestUser;
+
+                    return permissions.canThis(testUser).edit.post(123);
+                })
+                .then(function () {
+                    permissableStub.restore();
+
+                    permissableStub.calledWith(123, testUser.id, 'edit').should.equal(true);
+
+                    done();
+                })
+                .otherwise(function () {
+                    permissableStub.restore();
+                    errors.logError(new Error("Did not allow testUser"));
+                });
+        });
+
+        it('can use permissable function on Model to forbid something', function (done) {
+            var testUser,
+                permissableStub = sinon.stub(PostProvider, 'permissable', function () {
+                    return when.reject();
+                });
+
+            createTestUser()
+                .then(function (createdTestUser) {
+                    testUser = createdTestUser;
+
+                    return permissions.canThis(testUser).edit.post(123);
+                })
+                .then(function () {
+                    permissableStub.restore();
+
+                    errors.logError(new Error("Allowed testUser to edit post"));
+                })
+                .otherwise(function () {
+                    permissableStub.restore();
+                    permissableStub.calledWith(123, testUser.id, 'edit').should.equal(true);
+
+                    done();
                 });
         });
 
