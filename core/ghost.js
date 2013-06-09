@@ -16,6 +16,11 @@
 
         models = require('./shared/models'),
         ExampleFilter = require('../content/plugins/exampleFilters'),
+
+        requireTree = require('./shared/require-tree'),
+        themeDirectories = requireTree('content/themes'),
+        pluginDirectories = requireTree('content/plugins'),
+
         Ghost,
         instance,
         statuses;
@@ -49,10 +54,17 @@
             instance = this;
 
             // Holds the filters
-            this.filterCallbacks = [];
+            instance.filterCallbacks = [];
 
             // Holds the filter hooks (that are built in to Ghost Core)
-            this.filters = [];
+            instance.filters = [];
+
+            // Holds the theme directories temporarily
+            instance.themeDirectories = {};
+
+            // Holds the plugin directories temporarily
+            instance.pluginDirectories = {};
+
 
             plugin = new ExampleFilter(instance).init();
 
@@ -64,32 +76,44 @@
             // load Plugins...
             // var f = new FancyFirstChar(ghost).init();
 
+
+
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
-                globals: function () { return instance.globalConfig; }, // there's no management here to be sure this has loaded
+
+                // there's no management here to be sure this has loaded
+                globals: function () { return instance.globalConfig; },
                 dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
                 plugin: function () { return plugin; },
+                getPaths: function () {
+                    return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
+                        instance.themeDirectories = paths[0];
+                        instance.pluginDirectories = paths[1];
+                        return;
+                    });
+                },
                 paths: function () {
                     return {
                         'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
                         'adminViews':    __dirname + '/admin/views/',
                         'frontendViews': __dirname + '/frontend/views/',
-                        'lang':          __dirname + '/lang/'
+                        'lang':          __dirname + '/lang/',
+                        'availableThemes': instance.themeDirectories,
+                        'availablePlugins': instance.pluginDirectories
                     };
                 }
-
             });
-
         }
         return instance;
     };
 
     Ghost.prototype.init = function () {
         this.globalConfig = config.blogData;
-        return when.all([instance.dataProvider.init()]);
+
+        return when.all([instance.dataProvider.init(), instance.getPaths()]);
     };
 
     /**
@@ -148,7 +172,6 @@
                 }
             }
         }
-
         callback(args);
     };
 
@@ -162,7 +185,6 @@
         var self = this;
         return function initTheme(req, res, next) {
             app.set('view engine', 'hbs');
-
             if (/(^\/ghost$|^\/ghost\/)/.test(req.url) === false) {
                 app.engine('hbs', hbs.express3(
                     {partialsDir: self.paths().activeTheme + 'partials'}
@@ -175,7 +197,6 @@
             }
             app.use(express['static'](self.paths().activeTheme));
             app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
-
             next();
         };
     };

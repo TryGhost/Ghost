@@ -40,6 +40,10 @@
             return output;
         });
 
+        ghost.registerThemeHelper('json', function (object, options) {
+            return JSON.stringify(object);
+        });
+
         return when.all([
             // Just one async helper for now, but could be more in the future
             navHelper.registerWithGhost(ghost)
