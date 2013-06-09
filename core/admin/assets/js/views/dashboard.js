@@ -1,8 +1,13 @@
-/*global window, document, localStorage, Ghost, Backbone, $, _ */
+/*global window, document, localStorage, Ghost, Backbone, confirm, JST, $, _ */
 (function () {
     "use strict";
 
-    var $widgetContainer = $('.js-widget-container'), $itemElems, widgetPositions;
+    var Widgets,
+        Widget,
+        WidgetContent,
+        $widgetContainer,
+        $itemElems,
+        widgetPositions;
 
     widgetPositions = {
         mobile: {},
@@ -11,62 +16,155 @@
         desktop: {}
     };
 
-    $widgetContainer.packery({
-        itemSelector: '.js-widget',
-        gutter: 10,
-        columnWidth: 340,
-        rowHeight: 300
+    // Base view
+    // ----------
+    Ghost.Views.Dashboard = Ghost.View.extend({
+        initialize: function (options) {
+            this.addSubview(new Widgets({ el: '.js-widget-container', collection: this.collection })).render();
+        }
     });
 
-    $itemElems = $($widgetContainer.packery('getItemElements'));
-    // make item elements draggable
-    $itemElems.draggable();
-    // bind Draggable events to Packery
-    $widgetContainer.packery('bindUIDraggableEvents', $itemElems);
+    // Widgets
+    // ----------
+    Widgets = Ghost.View.extend({
+        initialize: function () {
+            $widgetContainer = this.$el;
+        },
 
-    // show item order after layout
-    function orderItems() {
-        // items are in order within the layout
-        var $itemElems = $($widgetContainer.packery('getItemElements')), order = {};
+        packeryInit: function () {
+            var self = this;
+            $widgetContainer.packery({
+                itemSelector: '.js-widget',
+                gutter: 10,
+                columnWidth: 340,
+                rowHeight: 300
+            });
 
-        $.each($itemElems, function (index, key) {
-            order[key.getAttribute("data-widget-id")] = index;
-        });
-        return order;
-    }
+            $itemElems = $($widgetContainer.packery('getItemElements'));
 
-    // On resize button click
-    $(".js-widget-resizer").on("click", function () {
-        var $parent = $(this).closest('.js-widget'), data = $(this).data('size');
+            // make item elements draggable
+            $itemElems.draggable();
+            // bind Draggable events to Packery
+            $widgetContainer.packery('bindUIDraggableEvents', $itemElems);
 
-        $parent.removeClass("widget-1x2 widget-2x1 widget-2x2");
+            $widgetContainer.packery('on', 'dragItemPositioned', function () {
+                var viewportSize = $(window).width();
+                if (viewportSize <= 400) { // Mobile
+                    widgetPositions.mobile = self.getWidgetOrder($itemElems);
+                } else if (viewportSize > 400 && viewportSize <= 800) { // Tablet
+                    widgetPositions.tablet = self.getWidgetOrder($itemElems);
+                } else if (viewportSize > 800 && viewportSize <= 1000) { // Netbook
+                    widgetPositions.netbook = self.getWidgetOrder($itemElems);
+                } else if (viewportSize > 1000) {
+                    widgetPositions.desktop = self.getWidgetOrder($itemElems);
+                }
+                localStorage.setItem('widgetPositions', JSON.stringify(widgetPositions));
 
-        if (data !== "1x1") {
-            $parent.addClass('widget-' + data);
-            $widgetContainer.packery('fit', $parent.get(0));
-        } else {
-            $widgetContainer.packery();
+                // Retrieve the object from storage with `JSON.parse(localStorage.getItem('widgetPositions'));`
+            });
+        },
+
+        getWidgetOrder: function (itemElems) {
+            // items are in order within the layout
+            var order = {};
+
+            _.each(itemElems, function (widget, index) {
+                order[widget.getAttribute("data-widget-id")] = index;
+            });
+            return order;
+        },
+
+        render: function () {
+            this.collection.each(function (model) {
+                this.$el.append(this.addSubview(new Widget({model: model})).render().el);
+            }, this);
+            this.packeryInit();
         }
-
-        $(this).siblings('.active').removeClass('active');
-        $(this).addClass('active');
 
     });
 
-    $widgetContainer.packery('on', 'dragItemPositioned', function () {
-        var viewportSize = $(window).width();
-        if (viewportSize <= 400) { // Mobile
-            widgetPositions.mobile = orderItems();
-        } else if (viewportSize > 400 && viewportSize <= 800) { // Tablet
-            widgetPositions.tablet = orderItems();
-        } else if (viewportSize > 800 && viewportSize <= 1000) {  // Netbook
-            widgetPositions.netbook = orderItems();
-        } else if (viewportSize > 1000) {
-            widgetPositions.desktop = orderItems();
-        }
-        localStorage.setItem('widgetPositions', JSON.stringify(widgetPositions));
+    // Widget
+    // ----------
+    Widget = Ghost.View.extend({
 
-        // Retrieve the object from storage with `JSON.parse(localStorage.getItem('widgetPositions'));`
+        tagName: 'article',
+        attributes: function () {
+            var size = (this.model.get('size'))
+                ? " widget-" + this.model.get('size')
+                : "",
+                settings = (this.model.attributes.settings.enabled)
+                ? " widget-settings"
+                : "";
+
+            return {
+                class: 'widget-' + this.model.get('name') + size + settings + ' js-widget',
+                'data-widget-id': this.model.get('applicationID')
+            };
+        },
+
+        events: {
+            'click .js-widget-resizer': 'resizeWidget',
+            'click .js-view-settings': 'showSettings',
+            'click .js-view-widget': 'showWidget'
+        },
+
+        resizeWidget: function (e) {
+            e.preventDefault();
+            var data = $(e.currentTarget).data('size');
+
+            this.$el.removeClass("widget-1x2 widget-2x1 widget-2x2");
+
+            if (data !== "1x1") {
+                this.$el.addClass('widget-' + data);
+                $widgetContainer.packery('fit', this.el);
+            } else {
+                $widgetContainer.packery();
+            }
+
+            $(e.currentTarget).siblings('.active').removeClass('active');
+            $(e.currentTarget).addClass('active');
+        },
+
+        showSettings: function (e) {
+            e.preventDefault();
+            this.model.attributes.settings.enabled = true;
+            this.$el.addClass("widget-settings");
+            this.render();
+        },
+
+        showWidget: function (e) {
+            e.preventDefault();
+            this.model.attributes.settings.enabled = false;
+            this.$el.removeClass("widget-settings");
+            this.render();
+        },
+
+        template: JST['content/widget'],
+
+        render: function () {
+            this.$el.html(this.template(this.model.toJSON()));
+            if (!this.model.attributes.settings.enabled) {
+                this.$(".widget-content").html(this.addSubview(new WidgetContent({model: this.model})).render().el);
+            }
+            return this;
+        }
+
+    });
+
+    // Widget Content
+    // ----------
+    WidgetContent = Ghost.View.extend({
+
+        getTemplate: function () {
+            return JST['content/widgets/' + this.model.attributes.content.template];
+        },
+
+        render: function () {
+            this.template =  this.getTemplate();
+            this.$el.html(this.template(this.model.toJSON()));
+            return this;
+        }
+
     });
 
 }());
