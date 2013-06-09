@@ -144,8 +144,6 @@
         'settings': function (req, res) {
             api.settings.browse()
                 .then(function (settings) {
-                    settings = settings.toJSON();
-                    settings = _.object(_.pluck(settings, 'key'), _.pluck(settings, 'value'));
                     res.render('settings', {
                         bodyClass: 'settings',
                         adminNav: setSelected(adminNavbar, 'settings'),

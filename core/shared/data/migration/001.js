@@ -88,7 +88,7 @@
             knex.Schema.createTable('settings', function (t) {
                 t.increments().primary();
                 t.string('uuid');
-                t.string('key');
+                t.string('key').unique();
                 t.text('value');
                 t.string('type');
                 t.date('created_at');

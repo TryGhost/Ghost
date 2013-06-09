@@ -8,9 +8,9 @@
         helpers = require('./helpers'),
         Models = require('../../shared/models');
 
-    describe('Setting Model', function () {
+    describe('Settings Model', function () {
 
-        var SettingModel = Models.Setting;
+        var SettingsModel = Models.Settings;
 
         beforeEach(function (done) {
             helpers.resetData().then(function () {
@@ -19,7 +19,7 @@
         });
 
         it('can browse', function (done) {
-            SettingModel.browse().then(function (results) {
+            SettingsModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -32,7 +32,7 @@
         it('can read', function (done) {
             var firstSetting;
 
-            SettingModel.browse().then(function (results) {
+            SettingsModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -40,7 +40,7 @@
 
                 firstSetting = results.models[0];
 
-                return SettingModel.read(firstSetting.attributes.key);
+                return SettingsModel.read(firstSetting.attributes.key);
 
             }).then(function (found) {
 
@@ -54,22 +54,21 @@
         });
 
         it('can edit single', function (done) {
-            var firstPost,
-                toEdit = {};
+            var firstSetting;
 
-            SettingModel.browse().then(function (results) {
+            SettingsModel.browse().then(function (results) {
 
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
-                firstPost = results.models[0];
+                firstSetting = results.models[0];
 
                 // The edit method has been modified to take an object of
                 // key/value pairs
-                toEdit[firstPost.attributes.key] = "new value";
+                firstSetting.set('value', 'new value');
 
-                return SettingModel.edit(toEdit);
+                return SettingsModel.edit(firstSetting);
 
             }).then(function (edited) {
 
@@ -79,7 +78,7 @@
 
                 edited = edited[0];
 
-                edited.attributes.key.should.equal(firstPost.attributes.key);
+                edited.attributes.key.should.equal(firstSetting.attributes.key);
                 edited.attributes.value.should.equal('new value');
 
                 done();
@@ -88,26 +87,25 @@
         });
 
         it('can edit multiple', function (done) {
-            var firstPost,
-                secondPost,
-                editedPost,
-                toEdit = {};
+            var model1,
+                model2,
+                editedModel;
 
-            SettingModel.browse().then(function (results) {
+            SettingsModel.browse().then(function (results) {
 
                 should.exist(results);
 
                 results.length.should.be.above(0);
 
-                firstPost = results.models[0];
-                secondPost = results.models[1];
+                model1 = results.models[0];
+                model2 = results.models[1];
 
                 // The edit method has been modified to take an object of
                 // key/value pairs
-                toEdit[firstPost.attributes.key] = "new value1";
-                toEdit[secondPost.attributes.key] = "new value2";
+                model1.set('value', 'new value1');
+                model2.set('value', 'new value2');
 
-                return SettingModel.edit(toEdit);
+                return SettingsModel.edit([model1, model2]);
 
             }).then(function (edited) {
 
@@ -115,15 +113,15 @@
 
                 edited.length.should.equal(2);
 
-                editedPost = edited[0];
+                editedModel = edited[0];
 
-                editedPost.attributes.key.should.equal(firstPost.attributes.key);
-                editedPost.attributes.value.should.equal('new value1');
+                editedModel.attributes.key.should.equal(model1.attributes.key);
+                editedModel.attributes.value.should.equal('new value1');
 
-                editedPost = edited[1];
+                editedModel = edited[1];
 
-                editedPost.attributes.key.should.equal(secondPost.attributes.key);
-                editedPost.attributes.value.should.equal('new value2');
+                editedModel.attributes.key.should.equal(model2.attributes.key);
+                editedModel.attributes.value.should.equal('new value2');
 
                 done();
 
@@ -136,7 +134,7 @@
                 value: 'Test Content 1'
             };
 
-            SettingModel.add(newSetting).then(function (createdSetting) {
+            SettingsModel.add(newSetting).then(function (createdSetting) {
 
                 should.exist(createdSetting);
 
@@ -150,7 +148,7 @@
         it('can delete', function (done) {
             var firstSettingId;
 
-            SettingModel.browse().then(function (results) {
+            SettingsModel.browse().then(function (results) {
 
                 should.exist(results);
 
@@ -158,11 +156,11 @@
 
                 firstSettingId = results.models[0].id;
 
-                return SettingModel.destroy(firstSettingId);
+                return SettingsModel.destroy(firstSettingId);
 
             }).then(function () {
 
-                return SettingModel.browse();
+                return SettingsModel.browse();
 
             }).then(function (newResults) {
 

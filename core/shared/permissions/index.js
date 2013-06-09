@@ -81,7 +81,7 @@
                     }
 
                     return when.reject();
-                }).otherwise(function() {
+                }).otherwise(function () {
                     // No permissions loaded, or error loading permissions
 
                     // Still check for permissable without permissions
