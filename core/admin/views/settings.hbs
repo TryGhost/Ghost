@@ -13,7 +13,7 @@
                 <li class="general active"><a href="#general">General</a></li>
                 <li class="publishing"><a href="#content">Content</a></li>
                 <li class="users"><a href="#users">Users</a></li>
-                <li class="appearance"><a href="#">Appearance</a></li>
+                <li class="appearance"><a href="#appearance">Appearance</a></li>
                 <li class="services"><a href="#">Connected Services</a></li>
                 <li class="plugins"><a href="#">Plugins</a></li>
             </ul>
@@ -198,6 +198,19 @@
                     <label class="editor">Editor</label>
                 </li>
             </ul>
+        </section>
+    </section>
+    <section id="appearance" class="settings-content">
+        <header>
+            <h2 class="title">Appearance</h2>
+        </header>
+        <section class="content">
+            <h6 class="sub">Raw json be here</h6>
+            <p>Active theme: {{json settings.activeTheme}}</p>
+            <p>Available themes: {{json availableThemes}}</p>
+            <p>Available plugins: {{json availablePlugins}}</p>
+
+
         </section>
     </section>
 </div>

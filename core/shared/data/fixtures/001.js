@@ -60,6 +60,20 @@ module.exports = {
             "created_by":    1,
             "updated_by":    1,
             "type":         "general"
+        },
+        {
+            "key":          "activePlugins",
+            "value":        "",
+            "created_by":    1,
+            "updated_by":    1,
+            "type":         "general"
+        },
+        {
+            "key":          "activeTheme",
+            "value":        "content/themes/casper",
+            "created_by":    1,
+            "updated_by":    1,
+            "type":         "general"
         }
     ],
 
