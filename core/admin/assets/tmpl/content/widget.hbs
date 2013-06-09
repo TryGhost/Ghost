@@ -1,0 +1,44 @@
+{{#if settings.enabled}}
+        <header class="widget-header">
+            <span class="widget-title">{{Title}} Settings</span>
+            <div class="widget-settings-toggle close js-view-widget"></div>
+        </header>
+        <section class="widget-content">
+            {{#each settings.options}}
+            <label>
+               <span class="title">{{this.title}}</span> <input type="text" value="{{this.value}}"/>
+            </label>
+            {{/each}}
+       </section>
+       <footer class="widget-footer">
+           <div class="widget-size-options">
+               <div class="size-options-container active js-widget-resizer" data-size="1x1">
+                   <span class="mini-widget size-1x1 active"></span>
+                   <span class="mini-widget size-1x1"></span>
+                   <span class="mini-widget size-1x1"></span>
+                   <span class="mini-widget size-1x1"></span>
+               </div>
+               <div class="size-options-container js-widget-resizer" data-size="2x1">
+                   <span class="mini-widget size-2x1 active"></span>
+                   <span class="mini-widget size-1x1"></span>
+                   <span class="mini-widget size-1x1"></span>
+               </div>
+               <div class="size-options-container js-widget-resizer" data-size="1x2">
+                   <span class="mini-widget size-1x2 active"></span>
+                   <span class="mini-widget size-1x1"></span>
+                   <span class="mini-widget size-1x1"></span>
+               </div>
+               <div class="size-options-container js-widget-resizer" data-size="2x2">
+                   <span class="mini-widget size-2x2 active"></span>
+               </div>
+           </div>
+           <div class="widget-settings-toggle done js-submit-changes"></div>
+        </footer>
+{{else}}
+    <section class="widget-content">
+    </section>
+    <footer class="widget-footer">
+        <span class="widget-title">{{title}}</span>
+        {{#if settings.settingsPane}}<div class="widget-settings-toggle js-view-settings"></div>{{/if}}
+    </footer>
+{{/if}}
