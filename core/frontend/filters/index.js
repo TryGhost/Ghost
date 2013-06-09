@@ -2,10 +2,11 @@
     "use strict";
 
     var _ = require('underscore'),
+        defaultCoreFilterPriority = 4,
         coreFilters;
 
     coreFilters = function (ghost) {
-        ghost.registerFilter('ghostNavItems', function (args) {
+        ghost.registerFilter('ghostNavItems', defaultCoreFilterPriority, function (args) {
             var selectedItem;
 
             // Set the nav items based on the config
