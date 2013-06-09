@@ -45,13 +45,7 @@
         ghost.app().use(ghost.initTheme(ghost.app()));
         ghost.app().use(flash());
         // bind locals - options which appear in every view - perhaps this should be admin only
-        ghost.app().use(function (req, res, next) {
-            res.locals.messages = req.flash();
-            res.locals.siteTitle = ghostGlobals.title;
-            res.locals.siteDescription = ghostGlobals.description;
-            res.locals.siteUrl = ghostGlobals.url;
-            next();
-        });
+
     });
 
     /**
@@ -88,6 +82,8 @@
             // Make sure we have a locals value.
             res.locals = res.locals || {};
 
+
+
             // Extend it with nav data and ghostGlobals
             _.extend(res.locals, navData, {
                 ghostGlobals: ghost.globals()
@@ -101,9 +97,21 @@
     ghost.loaded = loading.promise;
 
     when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
-
         // Assign the globals we have loaded
         ghostGlobals = ghost.globals();
+
+        ghost.app().use(function (req, res, next) {
+            res.locals.messages = req.flash();
+            res.locals.siteTitle = ghostGlobals.title;
+            res.locals.siteDescription = ghostGlobals.description;
+            res.locals.siteUrl = ghostGlobals.url;
+            res.locals.activeTheme = ghostGlobals.activeTheme;
+            res.locals.activePlugin = ghostGlobals.activePlugin;
+            res.locals.availableThemes = ghost.paths().availableThemes;
+            res.locals.availablePlugins = ghost.paths().availablePlugins;
+
+            next();
+        });
 
         /**
          * API routes..
