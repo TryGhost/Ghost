@@ -26,7 +26,7 @@
 		position:relative;
 
 		@include breakpoint($mobile) {
-			@include box-shadow(none);
+			box-shadow: none;
 		}
 
 		input {
@@ -59,7 +59,7 @@
 		box-shadow: $shadow;
 
 		@include breakpoint($mobile) {
-			@include box-shadow(none);
+			box-shadow: none;
 		}
 
 		// Convert all content areas to small boxes
@@ -91,7 +91,7 @@
 			    position:absolute;
 			    top:-40px;
 			    left:0;
-			    @include box-shadow(rgba(0,0,0,0.1) 0 -2px 3px inset);
+			    box-shadow: rgba(0,0,0,0.1) 0 -2px 3px inset;
 
 			    a {
 			        color:#fff;
@@ -135,7 +135,7 @@
 				cursor:auto;
 				color: $brown;
 				background:#fff;
-				@include box-shadow(none);
+				box-shadow: none;
 				a {
 					color: $brown;
 				}
@@ -253,7 +253,7 @@
 
 		.floatingheader {
 			@include breakpoint($netbook) {
-	            @include box-shadow(none);
+	            box-shadow: none;
 	        }
 
 	        &::before,
@@ -264,7 +264,7 @@
 		.CodeMirror-scroll,
 		.entry-preview-content {
 			@include breakpoint($netbook) {
-				@include box-shadow(0 5px 5px rgba(0,0,0,0.05) inset);
+				box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
 			}
 		}
 	}
@@ -364,7 +364,7 @@ body.zen {
 	left:0;
 	right:0;
 	z-index:900;
-	@include box-shadow(0 -2px 8px rgba(0,0,0,0.2));
+	box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
 
 	@include breakpoint($netbook) {font-weight:normal;}
 
@@ -384,7 +384,7 @@ body.zen {
 		min-height: 30px;
 		height: 30px;
 		margin-top:5px;
-		@include box-shadow(rgba(255,255,255,0.4) 0 1px 0 inset);
+		box-shadow: rgba(255,255,255,0.4) 0 1px 0 inset;
 
 		&.up:hover {
             @include icon($i-chevron-down) {
@@ -460,10 +460,9 @@ body.zen {
 	color: $lightgrey;
 	background: lighten($grey, 15%);
 	border-radius: $rounded;
-	@include box-shadow(
+	box-shadow: 
 		rgba(255,255,255,0.2) 0 1px 0 inset,
-		#000 0 1px 3px
-	);
+		#000 0 1px 3px;
 
 	&:hover {
 		cursor: pointer;
@@ -478,10 +477,9 @@ body.zen {
 
   li.selected{
     background: $blue;
-    @include box-shadow(
+    box-shadow: 
         rgba(255,255,255,0.2) 0 1px 0 inset,
-        rgba(0,0,0,0.5) 0 1px 5px
-    );
+        rgba(0,0,0,0.5) 0 1px 5px;
   }
 
   mark{

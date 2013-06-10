@@ -106,24 +106,25 @@ h2 {
 
 h1 a:hover {
     text-decoration: none;
-    @include box-shadow($blue 0 -5px 0 inset);
+
+    box-shadow: $blue 0 -5px 0 inset;
 }
 
 h2 a:hover {
     text-decoration: none;
-    @include box-shadow($blue 0 -4px 0 inset);
+    box-shadow: $blue 0 -4px 0 inset;
 }
 
 h3 a:hover {
     text-decoration: none;
-    @include box-shadow($blue 0 -3px 0 inset);
+    box-shadow: $blue 0 -3px 0 inset;
 }
 
 h4 a:hover,
 h5 a:hover,
 h6 a:hover {
     text-decoration: none;
-    @include box-shadow($blue 0 -1px 0 inset);
+    box-shadow: $blue 0 -1px 0 inset;
 }
 
 hgroup {
@@ -140,7 +141,7 @@ hgroup {
             color: $darkgrey;
 
             &:hover {
-                @include box-shadow($darkgrey 0 -1px 0 inset);
+                box-shadow: $darkgrey 0 -1px 0 inset;
             }
 
         }
@@ -285,7 +286,9 @@ kbd {
     font-weight: bold;
     background: #f4f4f4;
     border-radius: 4px;
-    @include box-shadow(0 1px 0 rgba(0, 0, 0, 0.2),0 1px 0 0 #fff inset);
+    box-shadow: 
+        0 1px 0 rgba(0, 0, 0, 0.2), 
+        0 1px 0 0 #fff inset;
 }
 
 // Tabular Data
@@ -424,7 +427,7 @@ nav {
                 text-decoration: none;
                 position:relative;
                 background:darken($grey, 2%);
-                @include box-shadow(0 -2px 2px rgba(0,0,0,0.2) inset);
+                box-shadow: 0 -2px 2px rgba(0,0,0,0.2) inset;
             }
 
             // Make a little arrow pointing up at the currently active menu item
@@ -482,7 +485,7 @@ nav {
                 color: $lightgrey;
                 background: darken($grey, 3%);
                 @include transition(none);
-                @include box-shadow(none);
+                box-shadow: none;
             }
         }
 
@@ -496,7 +499,7 @@ nav {
             left:-1px;
             z-index: 800;
             background:darken($grey, 3%);
-            @include box-shadow(rgba(0,0,0,0.2) 0 4px 6px);
+            box-shadow: rgba(0,0,0,0.2) 0 4px 6px;
         }
 
         li {
@@ -506,7 +509,7 @@ nav {
                 &:hover {
                     background: darken($darkgrey, 10%);
                     @include transition(none);
-                    @include box-shadow(none);
+                    box-shadow: none;
                 }
 
                 &:before { margin-right: 1em; } // space for icons
@@ -605,7 +608,7 @@ nav {
             border-bottom:$grey 1px solid;
 
             a:hover,
-            &.active a {@include box-shadow(none)}
+            &.active a {box-shadow: none;}
 
             &.active a:after {display:none;}
 
@@ -652,13 +655,13 @@ nav {
 
             > ul {
                 padding: 0;
-                @include box-shadow(none);
+                box-shadow: none;
                 width: 100%;
                 font-weight: 300;
             }
 
             .open {
-                @include box-shadow(rgba(0,0,0,0.4) 0 10px 20px);
+                box-shadow: rgba(0,0,0,0.4) 0 10px 20px;
             }
 
             li {
@@ -707,7 +710,7 @@ nav {
     color: $lightgrey;
     background: $darkgrey;
     border-radius: 3px;
-    @include box-shadow(rgba(0,0,0,0.5) 0 1px 15px);
+    box-shadow: rgba(0,0,0,0.5) 0 1px 15px;
 
     // The triangle chiclet that points to where the menu came from
     // By default, this is bottom center.
@@ -739,10 +742,9 @@ nav {
 
         &:hover {
             background: $blue;
-            @include box-shadow(
+            box-shadow: 
                 rgba(255,255,255,0.2) 0 1px 0 inset,
-                rgba(0,0,0,0.5) 0 1px 5px
-            );
+                rgba(0,0,0,0.5) 0 1px 5px;
         }
 
     }
@@ -949,10 +951,9 @@ main {
 .scrolling {
 
     .floatingheader {
-        @include box-shadow(
+        box-shadow: 
             rgba(0,0,0,0.02) 0 1px 2px,
-            rgba(255, 255, 255, 0.5) 0 -1px 0 inset
-        );
+            rgba(255, 255, 255, 0.5) 0 -1px 0 inset;
 
         &::before {
             content: "";
@@ -962,7 +963,7 @@ main {
             bottom:0;
             left:50%;
             margin-left: -40%;
-            @include box-shadow(rgba(0,0,0,0.02) 0 2px 2px);
+            box-shadow: rgba(0,0,0,0.02) 0 2px 2px;
         }
         &::after {
             content: "";
@@ -972,7 +973,7 @@ main {
             bottom:0;
             left:50%;
             margin-left: -15%;
-            @include box-shadow(rgba(0,0,0,0.02) 0 3px 3px);
+            box-shadow: rgba(0,0,0,0.02) 0 3px 3px;
         }
     }
 
@@ -1068,12 +1069,11 @@ main {
         @include transition;
 
         &:hover {
-            @include box-shadow(
+            box-shadow: 
                 rgba(0,0,0,0.05) 5px 0 0 inset,
                 rgba(0,0,0,0.05) -5px 0 0 inset,
                 rgba(0,0,0,0.05) 0 5px 0 inset,
-                rgba(0,0,0,0.05) 0 -5px 0 inset
-            );
+                rgba(0,0,0,0.05) 0 -5px 0 inset;
             @include transition;
         }
 

@@ -175,7 +175,7 @@ input[type="button"] {
     color:#777;
     font-weight: normal;
     background: #eee;
-    @include box-shadow(none);
+    box-shadow: none;
     &:hover {
         border-color: rgba(0,0,0,0.1);
     }
@@ -187,7 +187,7 @@ button[type="submit"],
 input[type="submit"] {
     @extend %button;
     background: $blue;
-    @include box-shadow(none);
+    box-shadow: none;
     &:hover {background: darken($blue, 10%);}
 }
 
@@ -204,7 +204,7 @@ button[type="reset"],
 input[type="reset"] {
     @extend %button;
     background: $red;
-    @include box-shadow(none);
+    box-shadow: none;
     &:hover {background: darken($red, 10%);}
 }
 
@@ -266,11 +266,10 @@ input[type="reset"] {
         color: #fff;
         background: #e5e5e5;
         border-radius: 0 2px 2px 0;
-        @include box-shadow(
+        box-shadow: 
             rgba(0,0,0,0.02) 0 1px 0 inset,
             rgba(0,0,0,0.02) -1px 0 0 inset,
-            rgba(0,0,0,0.02) 0 -1px 0 inset
-        );
+            rgba(0,0,0,0.02) 0 -1px 0 inset;
         @include icon($i-chevron-down, 9px) {
             position: absolute;
             top: 50%;
@@ -282,7 +281,7 @@ input[type="reset"] {
         
         // Spin the arrow on hover
         &:hover {
-            @include box-shadow(none);
+            box-shadow: none;
             background: #f8f8f8;
             @include icon($i-chevron-down) {
                 @include transform(rotate(360deg));
@@ -306,11 +305,10 @@ input[type="reset"] {
     .options {
         color:#777;
         &:hover {
-            @include box-shadow(
+            box-shadow: 
                 rgba(0,0,0,0.07) 0 1px 0 inset,
                 rgba(0,0,0,0.07) -1px 0 0 inset,
-                rgba(0,0,0,0.07) 0 -1px 0 inset
-            );
+                rgba(0,0,0,0.07) 0 -1px 0 inset;
         }
     }
 }

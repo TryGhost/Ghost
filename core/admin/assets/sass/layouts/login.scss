@@ -125,7 +125,7 @@
             padding: 9px;
             min-height: 30px;
             min-width: 80px;
-            @include box-shadow(rgba(255,255,255,0.15) 0 1px 0 inset);
+            box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
 
             @include breakpoint(630px) {
                 margin:0;

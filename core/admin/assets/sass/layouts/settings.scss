@@ -51,10 +51,10 @@
         left:0;
         bottom:0;
         z-index: 700;
-        @include box-shadow($lightbrown 1px 0 0);
+        box-shadow: $lightbrown 1px 0 0;
         @include breakpoint($tablet) {
             width:100%;
-            @include box-shadow(none);
+            box-shadow: none;
         }
 
         > header {
@@ -62,7 +62,7 @@
             padding: 30px 15px 30px 40px;
             margin-bottom: 0;
             border-bottom: none;
-            @include box-shadow(#edece4 0 -1px 0 inset);
+            box-shadow: #edece4 0 -1px 0 inset;
             @include breakpoint($netbook) {
                 padding-left: 15px;
             };
@@ -112,7 +112,9 @@
                     position:relative;
                     z-index: 300;
                     border-top: #edece4 1px solid;
-                    @include box-shadow(#fff 1px 0 0, #edece4 0 1px 0);
+                    box-shadow: 
+                        #fff 1px 0 0, 
+                        #edece4 0 1px 0;
                     @include transition;
 
                     a {

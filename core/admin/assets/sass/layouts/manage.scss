@@ -133,14 +133,13 @@
 
                     border-bottom: lighten($midgrey, 40%) 1px solid;
                     background: lighten($midgrey, 45%);
-                    @include box-shadow(
+                    box-shadow: 
                         lighten($midgrey, 40%) 0 -1px 0, // top border
                         rgba(0,0,0,0.06) 7px 0 0 inset, // big left border
-                        lighten($midgrey, 40%) 1px 0 0 inset // small left border
-                    );
+                        lighten($midgrey, 40%) 1px 0 0 inset; // small left border
 
                     a:hover {
-                        @include box-shadow(rgba(0,0,0,0.1) 7px 0 0 inset);
+                        box-shadow: rgba(0,0,0,0.1) 7px 0 0 inset;
                         @include transition(all 0.4s ease);
                     }
 
