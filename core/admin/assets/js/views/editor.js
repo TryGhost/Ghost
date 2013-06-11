@@ -14,12 +14,12 @@
             {'key': 'Meta+I', 'style': 'italic'},
             {'key': 'Ctrl+Alt+U', 'style': 'strike'},
             {'key': 'Ctrl+Shift+K', 'style': 'code'},
-            {'key': 'Alt+1', 'style': 'h1'},
-            {'key': 'Alt+2', 'style': 'h2'},
-            {'key': 'Alt+3', 'style': 'h3'},
-            {'key': 'Alt+4', 'style': 'h4'},
-            {'key': 'Alt+5', 'style': 'h5'},
-            {'key': 'Alt+6', 'style': 'h6'},
+            {'key': 'Ctrl+Alt+1', 'style': 'h1'},
+            {'key': 'Ctrl+Alt+2', 'style': 'h2'},
+            {'key': 'Ctrl+Alt+3', 'style': 'h3'},
+            {'key': 'Ctrl+Alt+4', 'style': 'h4'},
+            {'key': 'Ctrl+Alt+5', 'style': 'h5'},
+            {'key': 'Ctrl+Alt+6', 'style': 'h6'},
             {'key': 'Ctrl+Shift+L', 'style': 'link'},
             {'key': 'Ctrl+Shift+I', 'style': 'image'},
             {'key': 'Ctrl+Q', 'style': 'blockquote'},
@@ -60,9 +60,40 @@
         },
 
         initialize: function () {
+            var self = this;
+            // Toggle publish
+            shortcut.add("Ctrl+Alt+P", function () {
+                self.toggleStatus();
+            });
+            shortcut.add("Ctrl+S", function () {
+                self.updatePost();
+            });
+            shortcut.add("Meta+S", function () {
+                self.updatePost();
+            });
             this.listenTo(this.model, 'change:status', this.render);
             this.model.on('change:id', function (m) {
                 Backbone.history.navigate('/editor/' + m.id);
+            });
+        },
+
+        toggleStatus: function () {
+            var keys = Object.keys(this.statusMap),
+                model = this.model,
+                currentIndex = keys.indexOf(model.get('status')),
+                newIndex;
+
+
+            if (keys[currentIndex + 1] === 'scheduled') { // TODO: Remove once scheduled posts work
+                newIndex = currentIndex + 2 > keys.length - 1 ? 0 : currentIndex + 1;
+            } else {
+                newIndex = currentIndex + 1 > keys.length - 1 ? 0 : currentIndex + 1;
+            }
+
+            this.savePost({
+                status: keys[newIndex]
+            }).then(function () {
+                alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
             });
         },
 
@@ -86,7 +117,9 @@
         },
 
         updatePost: function (e) {
-            e.preventDefault();
+            if (e) {
+                e.preventDefault();
+            }
             var model = this.model;
             this.savePost().then(function () {
                 alert('Your post was saved as ' + model.get('status'));
@@ -202,13 +235,14 @@
                 lineWrapping: true
             });
 
+            var view = this;
+
             _.each(MarkdownShortcuts, function (combo) {
                 shortcut.add(combo.key, function () {
-                    return this.editor.addMarkdown({style: combo.style});
+                    return view.editor.addMarkdown({style: combo.style});
                 });
             });
 
-            var view = this;
             this.editor.on('change', function () {
                 view.renderPreview();
             });
