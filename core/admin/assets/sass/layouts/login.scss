@@ -17,9 +17,14 @@
         background: $lightbrown;
     }
 
-    main {
+    main { 
+        top: 15px; 
+        @include breakpoint($mobile) { top: 0; }
+    }
+
+    .login-box {
         max-width: 530px;
-        margin: 240px auto;
+        margin: 240px auto; // TODO: Change this to proper vertical centering with JS
         padding: 0;
         text-align: center;
         background: #fff;
