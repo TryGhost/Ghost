@@ -45,7 +45,7 @@
 
             return this.forge({email_address: userData.email_address}).fetch().then(function (user) {
                 if (!!user.attributes.email_address) {
-                    when.reject(new Error('A user with that email address already exists.'));
+                    return when.reject(new Error('A user with that email address already exists.'));
                 }
 
                 return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
