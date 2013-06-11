@@ -19,6 +19,14 @@
         return (obj.textContent || obj.innerText || $(obj).text() || "") === meta[3];
     };
 
+    // Called on Window resize
+    $(window).resize(function () {
+
+        var loginContainer = $(".js-login-container"),
+            marginTop = Math.round(($(window).height() / 2) - loginContainer.outerHeight());
+        loginContainer.css('margin-top', marginTop);
+
+    });
 
     $(document).ready(function () {
 
@@ -33,9 +41,7 @@
 
         // LOGIN SCREEN
 
-        var loginContainer = $(".js-login-container"),
-            marginTop = Math.round(($(window).height() - loginContainer.height()) / 2);
-        loginContainer.css('margin-top', marginTop);
+        $(window).resize();
 
         // EDITOR / NOTIFICATIONS
 
