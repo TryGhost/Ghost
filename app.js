@@ -138,7 +138,7 @@
         ghost.app().get('/ghost/editor/:id', auth, admin.editor);
         ghost.app().get('/ghost/editor', auth, admin.editor);
         ghost.app().get('/ghost/content', auth, admin.content);
-        ghost.app().get('/ghost/settings', auth, admin.settings);
+        ghost.app().get('/ghost/settings*', auth, admin.settings);
         ghost.app().get('/ghost/debug', auth, admin.debug.index);
         ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
         ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);

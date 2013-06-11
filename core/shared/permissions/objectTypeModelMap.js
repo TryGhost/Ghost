@@ -6,6 +6,6 @@
         'role': require('../models/role').Role,
         'user': require('../models/user').User,
         'permission': require('../models/permission').Permission,
-        'setting': require('../models/setting').Setting
+        'setting': require('../models/settings').Settings
     };
 }());

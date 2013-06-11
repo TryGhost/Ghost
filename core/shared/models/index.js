@@ -11,7 +11,7 @@
         User: require('./user').User,
         Role: require('./role').Role,
         Permission: require('./permission').Permission,
-        Setting: require('./setting').Setting,
+        Settings: require('./settings').Settings,
         init: function () {
             return knex.Schema.hasTable('posts').then(null, function () {
                 // Simple bootstraping of the data model for now.
