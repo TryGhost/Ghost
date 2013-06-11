@@ -1,6 +1,6 @@
 // # Temporary Admin UI
 
-/*global document, jQuery */
+/*global window, document, jQuery */
 
 (function ($) {
     "use strict";
@@ -30,6 +30,12 @@
                 $("body").find(".overlay:visible").fadeOut();
             }
         });
+
+        // LOGIN SCREEN
+
+        var loginContainer = $(".js-login-container"),
+            marginTop = Math.round(($(window).height() - loginContainer.height()) / 2);
+        loginContainer.css('margin-top', marginTop);
 
         // EDITOR / NOTIFICATIONS
 
