@@ -24,7 +24,7 @@
 
         var loginContainer = $(".js-login-container"),
             marginTop = Math.floor((loginContainer.parent().height() - loginContainer.height()) / 2) - 15;
-        loginContainer.css('margin-top', marginTop).fadeIn(400);
+        loginContainer.css('margin-top', marginTop).delay(250).fadeIn(750);
 
     });
 

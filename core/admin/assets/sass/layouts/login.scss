@@ -39,12 +39,13 @@
 #login {
     @include box-sizing(border-box);
     max-width: 530px;
+    color: lighten($midgrey, 15%);
 
     @include breakpoint(630px) {
         max-width: 264px;
     }
 
-    div { // Yes. Really. Every Div.
+    div { // Yes. Really.
         position:relative;
         margin:0 0 5px 0;
         background: lighten($darkgrey, 10%);
@@ -66,23 +67,27 @@
         font-weight: 200;
         background: transparent;
         box-shadow: none;
-        @include transition(none);
-
-        &:focus {
-            background: lighten($darkgrey, 15%);
-            border-color: #000;
-        }
+        @include transition(background ease 0.25s);
 
         @include breakpoint(630px) {
             width:236px;
             @include transition(none);
+        }
+        
+        &:focus { 
+            background: lighten($darkgrey, 15%); 
         }
 
     }
 
     .email-wrap {
         position:relative;
-        @include icon($i-mail, 12px) {position:absolute;bottom:11px;left:8px;z-index:100;};
+        @include icon($i-mail, 12px) {
+            position:absolute;
+            bottom:11px;
+            left:8px;
+            z-index:100;
+        }
         margin-right: 3px;
         border-radius: 2px 0 0 2px;
 
@@ -93,12 +98,18 @@
 
         .email {
             padding-left: 28px;
+            border-radius: 2px 0 0 2px;
         }
     }
 
     .password-wrap {
         position:relative;
-        @include icon($i-lock, 10px) {position:absolute;bottom:12px;left:11px;z-index:100;};
+        @include icon($i-lock, 10px) {
+            position:absolute;
+            bottom:12px;
+            left:11px;
+            z-index:100;
+        }
         border-radius: 0 2px 2px 0;
 
         @include breakpoint(630px) {
@@ -107,6 +118,7 @@
 
         .password {
             padding-left: 28px;
+            border-radius: 0 2px 2px 0;
         }
 
     }
@@ -129,6 +141,7 @@
 
     .meta {
         clear:both;
+        color: $midgrey;
     }
 
     a {
@@ -136,7 +149,7 @@
         font-size: 0.9em;
 
         &:hover { 
-            color: $lightgrey;
+            color: lighten($midgrey, 5%);
             text-decoration: none;
         }
     }
