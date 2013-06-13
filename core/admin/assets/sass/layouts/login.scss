@@ -19,15 +19,16 @@
     }
 
     main { 
-        top: 15px; 
+        top: 15px;
         @include breakpoint($mobile) { top: 0; }
     }
 }//.ghost-login
 
 .login-box {
     max-width: 530px;
-    margin: 240px auto; // TODO: Change this to proper vertical centering with JS
+    margin: 0 auto;
     padding: 0;
+    display: none;
 
     @include breakpoint(630px) {
         max-width: 264px;
