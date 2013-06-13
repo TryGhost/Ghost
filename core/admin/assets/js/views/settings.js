@@ -15,7 +15,7 @@
             }));
 
             this.$('input').iCheck({
-                checkboxClass: 'icheckbox_square-grey'
+                checkboxClass: 'icheckbox_ghost'
             });
         }
     });
