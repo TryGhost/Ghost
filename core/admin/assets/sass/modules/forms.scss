@@ -7,6 +7,7 @@
  * General
  * Buttons
  * Split Buttons
+ * iCheck jQuery Plugin Styles
  *
  */
 
@@ -123,6 +124,7 @@ form {
         margin: 5px 0;
         font-weight: normal;
         padding:0.55em 0;
+        cursor: pointer;
     }
 
 }//form
@@ -351,35 +353,43 @@ input[type="reset"] {
 
 
 /* =============================================================================
-   iCheck
+   iCheck jQuery Plugin Styles
    ============================================================================= */
 .icheckbox_ghost,
 .iradio_ghost {
     @include box-sizing(border-box);
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
     float: left;
-    margin: 0;
+    margin: 2px 0 0 0;
     padding: 0;
     margin-right: 6px;
     background: none;
     border: none;
-    cursor: pointer;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    border-radius: 2px;
+    @include transition(
+        border ease 0.25s,
+        background ease 0.2s
+    );
 }
 
 .icheckbox_ghost {
     border: 1px solid darken($lightbrown, 5%);
 }
 .icheckbox_ghost.hover {
-    border: $blue 2px solid;
+    border: $brown 1px solid;
 }
 .icheckbox_ghost.checked {
-    padding-left: 2px;
     background: $blue;
-    border: none;
-    @include icon($i-check, 1em, #fff);
+    border: $blue 1px solid;
+    padding:0;
+    @include icon($i-check, 12px, #fff) {
+        position: relative;
+        top: -4px;
+        left: -1px
+    }
 }
 .icheckbox_ghost.disabled {
     border: 1px solid $lightbrown;
@@ -396,7 +406,6 @@ input[type="reset"] {
     border: $blue 2px solid;
 }
 .iradio_ghost.checked {
-    padding-left: 2px;
     background: $blue;
     border: none;
     @include icon($i-check, 1em, #fff);
