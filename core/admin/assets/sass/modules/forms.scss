@@ -109,7 +109,7 @@ form {
         line-height:30px;
     }
 
-    .radio input[type="radio"], 
+    .radio input[type="radio"],
     .checkbox input[type="checkbox"] {
         float: left;
         width:auto;
@@ -248,12 +248,12 @@ input[type="reset"] {
     position: relative;
     font-size: 0; // hack to stop space after button
     white-space: nowrap;
-    
+
     button {
         font-size: 11px; // hack to restore font size
         @include border-right-radius(0);
     }
-    
+
     // This is the additional dropdown arrow, to the right of the button.
     .options {
         display: inline-block;
@@ -266,7 +266,7 @@ input[type="reset"] {
         color: #fff;
         background: #e5e5e5;
         border-radius: 0 2px 2px 0;
-        box-shadow: 
+        box-shadow:
             rgba(0,0,0,0.02) 0 1px 0 inset,
             rgba(0,0,0,0.02) -1px 0 0 inset,
             rgba(0,0,0,0.02) 0 -1px 0 inset;
@@ -278,7 +278,7 @@ input[type="reset"] {
             margin-right: -5px;
             @include transition(transform 0.3s ease, margin-top 0.3s ease);
         };
-        
+
         // Spin the arrow on hover
         &:hover {
             box-shadow: none;
@@ -287,7 +287,7 @@ input[type="reset"] {
                 @include transform(rotate(360deg));
             };
         }
-        
+
         // If it has a class of "up" spin it an extra 180degress to point up
         &.up:hover {
             @include icon($i-chevron-down) {
@@ -305,7 +305,7 @@ input[type="reset"] {
     .options {
         color:#777;
         &:hover {
-            box-shadow: 
+            box-shadow:
                 rgba(0,0,0,0.07) 0 1px 0 inset,
                 rgba(0,0,0,0.07) -1px 0 0 inset,
                 rgba(0,0,0,0.07) 0 -1px 0 inset;
@@ -347,5 +347,65 @@ input[type="reset"] {
         background: lighten($darkgrey, 4%);
         &:hover {background: $darkgrey;}
     }
+}
+
+
+/* =============================================================================
+   iCheck
+   ============================================================================= */
+.icheckbox_ghost,
+.iradio_ghost {
+    @include box-sizing(border-box);
+    display: block;
+    width: 22px;
+    height: 22px;
+    float: left;
+    margin: 0;
+    padding: 0;
+    margin-right: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+.icheckbox_ghost {
+    border: 1px solid darken($lightbrown, 5%);
+}
+.icheckbox_ghost.hover {
+    border: $blue 2px solid;
+}
+.icheckbox_ghost.checked {
+    padding-left: 2px;
+    background: $blue;
+    border: none;
+    @include icon($i-check, 1em, #fff);
+}
+.icheckbox_ghost.disabled {
+    border: 1px solid $lightbrown;
+}
+.icheckbox_ghost.checked.disabled {
+    background: $lightbrown;
+}
+
+.iradio_ghost {
+    border-radius: 11px;
+    border: 1px solid darken($lightbrown, 5%);
+}
+.iradio_ghost.hover {
+    border: $blue 2px solid;
+}
+.iradio_ghost.checked {
+    padding-left: 2px;
+    background: $blue;
+    border: none;
+    @include icon($i-check, 1em, #fff);
+}
+.iradio_ghost.disabled {
+    border: 1px solid $lightbrown;
+    cursor: default;
+}
+.iradio_ghost.checked.disabled {
+    background: $lightbrown;
 }
 
