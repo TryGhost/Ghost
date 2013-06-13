@@ -23,8 +23,8 @@
     $(window).resize(function () {
 
         var loginContainer = $(".js-login-container"),
-            marginTop = Math.round(($(window).height() / 2) - loginContainer.outerHeight());
-        loginContainer.css('margin-top', marginTop);
+            marginTop = Math.floor((loginContainer.parent().height() - loginContainer.height()) / 2) - 15;
+        loginContainer.css('margin-top', marginTop).fadeIn(400);
 
     });
 
