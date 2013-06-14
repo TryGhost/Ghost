@@ -10,7 +10,9 @@
             one: require("../../shared/data/migration/001")
         },
         helpers,
-        samplePost;
+        samplePost,
+        sampleUser,
+        sampleUserRole;
 
     samplePost = function (i, status, lang) {
         return {
@@ -27,8 +29,24 @@
         };
     };
 
+    sampleUser = function (i) {
+        return {
+            email_address: "john_" + i + "@onolan.org",
+            password: "$2a$10$c5G9RS5.dXRt3UqvZ5wNgOLQLc7ZFc2DJo01du0oLT1YYOM67KJMe",
+            full_name: "John O'Nolan"
+        };
+    };
+
+    sampleUserRole = function (i) {
+        return {
+            role_id: i,
+            user_id: i
+        };
+    };
+
     helpers = {
         resetData: function () {
+
             return migrations.one.down().then(function () {
                 return migrations.one.up();
             });
@@ -46,6 +64,22 @@
                 promises.push(knex('posts').insert(posts));
             }
             return when.all(promises);
+        },
+        insertDefaultUser: function () {
+
+            var users = [],
+                userRoles = [],
+                u_promises = [];
+
+            users.push(sampleUser(1));
+            userRoles.push(sampleUserRole(1));
+            u_promises.push(knex('users').insert(users));
+            u_promises.push(knex('roles_users').insert(userRoles));
+
+            return when.all(u_promises).then(function (results) {
+
+                return;
+            });
         }
     };
 

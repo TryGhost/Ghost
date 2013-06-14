@@ -46,6 +46,10 @@
 
                     api: {
                         src: ['core/test/**/api*_spec.js']
+                    },
+
+                    perm: {
+                        src: ['core/test/**/permissions_spec.js']
                     }
                 },
 
@@ -162,6 +166,9 @@
             // Run API tests only
             grunt.registerTask("test-api", ["mochaTest:api"]);
 
+            // Run permisisons tests only
+            grunt.registerTask("test-p", ["mochaTest:perm"]);
+
             // Run tests and lint code
             grunt.registerTask("validate", ["jslint", "mochaTest:all"]);
 
@@ -183,7 +190,7 @@
                 "bump",
                 "updateCurrentPackageInfo",
                 "copy:nightly",
-                "zip:nightly",
+                "zip:nightly"
                 /* Caution: shit gets real below here */
                 //"shell:commitNightly",
                 //"shell:tagNightly",

@@ -20,8 +20,16 @@
         should.exist(permissions);
 
         beforeEach(function (done) {
-            helpers.resetData().then(function () { done(); }, errors.throwError);
+            helpers.resetData().then(function (result) {
+                return when(helpers.insertDefaultUser());
+            }).then(function (results) {
+                done();
+            });
         });
+
+        // beforeEach(function (done) {
+        //     helpers.resetData().then(function () { done(); }, errors.throwError);
+        // });
 
         var testPerms = [
                 { act: "edit", obj: "post" },
@@ -35,21 +43,21 @@
                 { act: "remove", obj: "user" }
             ],
             currTestPermId = 1,
-            currTestUserId = 1,
-            createTestUser = function (email_address) {
-                if (!email_address) {
-                    currTestUserId += 1;
-                    email_address = "test" + currTestPermId + "@test.com";
-                }
+            // currTestUserId = 1,
+            // createTestUser = function (email_address) {
+            //     if (!email_address) {
+            //         currTestUserId += 1;
+            //         email_address = "test" + currTestPermId + "@test.com";
+            //     }
 
-                var newUser = {
-                    id: currTestUserId,
-                    email_address: email_address,
-                    password: "testing123"
-                };
+            //     var newUser = {
+            //         id: currTestUserId,
+            //         email_address: email_address,
+            //         password: "testing123"
+            //     };
 
-                return UserProvider.add(newUser);
-            },
+            //     return UserProvider.add(newUser);
+            // },
             createPermission = function (name, act, obj) {
                 if (!name) {
                     currTestPermId += 1;
@@ -248,9 +256,12 @@
                     return when.resolve();
                 });
 
-            createTestUser()
-                .then(function (createdTestUser) {
-                    testUser = createdTestUser;
+
+
+            // createTestUser()
+            UserProvider.browse()
+                .then(function (foundUser) {
+                    testUser = foundUser.models[0];
 
                     return permissions.canThis(testUser).edit.post(123);
                 })
@@ -273,9 +284,12 @@
                     return when.reject();
                 });
 
-            createTestUser()
-                .then(function (createdTestUser) {
-                    testUser = createdTestUser;
+
+            // createTestUser()
+            UserProvider.browse()
+                .then(function (foundUser) {
+                    testUser = foundUser.models[0];
+
 
                     return permissions.canThis(testUser).edit.post(123);
                 })

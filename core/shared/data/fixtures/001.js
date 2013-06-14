@@ -84,21 +84,6 @@ module.exports = {
         }
     ],
 
-    users: [
-        {
-            "id":                "1",
-            "full_name":        "John O'Nolan",
-            "password":          "$2a$10$.pb3wOEhbEPvArvOBB.iyuKslBjC7lSXCUzp29civDTvCg3M1j0XO",
-            "email_address":     "john@onolan.org",
-            "profile_picture":   "logo.png",
-            "cover_picture":     "",
-            "bio":               "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
-            "url":               "john.onolan.org",
-            "created_by":        1,
-            "updated_by":        1
-        }
-    ],
-
     roles: [
         {
             "id": 1,
@@ -114,14 +99,6 @@ module.exports = {
             "id": 3,
             "name": "Author",
             "description": "Authors"
-        }
-    ],
-
-    roles_users: [
-        {
-            "id": 1,
-            "role_id": 1,
-            "user_id": 1
         }
     ],
 
