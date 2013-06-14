@@ -157,43 +157,57 @@
             <header>
                 <h2 class="title">Users</h2>
                 <section class="page-actions">
-                    <button class="button-add">Add User</button>
+                    <button class="button-add">New User</button>
                 </section>
             </header>
             <section class="content">
-                <h6 class="sub">Invited Users</h6>
-                <ul class="users">
-                    <li class="clearfix">
-                        <div class="user_image"></div>
-                        <div class="user_info">
-                            <span class="name">Some Name</span>
-                            <span class="timestamp">Invitation Sent: 7 hours ago</span>
-                        </div>
-                    </li>
-                </ul>
-                <h6 class="sub">Active Users</h6>
-                <ul class="users">
-                    <li class="clearfix">
-                        <div class="user_image">
-                            <img src="/core/admin/assets/img/user.jpg" alt="user"/>
-                        </div>
-                        <div class="user_info">
-                            <span class="name">Some Name</span>
-                            <span class="timestamp">Last Seen: 7 hours ago</span>
-                        </div>
-                        <label class="admin">Admin</label>
-                    </li>
-                    <li class="clearfix">
-                        <div class="user_image">
-                            <img src="/core/admin/assets/img/user.jpg" alt="user"/>
-                        </div>
-                        <div class="user_info">
-                            <span class="name">Some Name</span>
-                            <span class="timestamp">Last Seen: 2 days ago</span>
-                        </div>
-                        <label class="editor">Editor</label>
-                    </li>
-                </ul>
+                <section id="users-pending" class="user-group">
+                    <header class="user-group-header"><h3>Invited Users</h3></header>
+                    <ul class="users">
+                        <li class="user">
+                            <figure class="user-image invite"></figure>
+                            <section class="user-meta">
+                                <h4 class="user-name">Some Name</h4>
+                                <span class="user-last-seen">Invitation Sent: 7 hours ago</span>
+                            </section>
+                        </li>
+                    </ul>
+                </section>
+                <section id="users-active" class="user-group">
+                    <header class="user-group-header">
+                        <h3>Active Users</h3>
+
+                        <form class="user-search">
+                            <label>
+                                <i class="search-icon"></i>
+                                <input class="user-search-input" type="text"/>
+                            </label>
+                        </form>
+                    </header>
+
+                    <ul class="users">
+                        <li class="user">
+                            <figure class="user-image">
+                                <img src="/core/admin/assets/img/user.jpg" alt="user"/>
+                            </figure>
+                            <section class="user-meta">
+                                <h4 class="user-name">Some Name</h4>
+                                <span class="user-last-seen">Last Seen: 7 hours ago</span>
+                            </section>
+                            <span class="user-role admin">Admin</span>
+                        </li>
+                        <li class="user">
+                            <figure class="user-image">
+                                <img src="/core/admin/assets/img/user.jpg" alt="user"/>
+                            </figure>
+                            <section class="user-meta">
+                                <h4 class="user-name">Some Name</h4>
+                                <span class="user-last-seen">Last Seen: 2 days ago</span>
+                            </section>
+                            <span class="user-role editor">Editor</span>
+                        </li>
+                    </ul>
+                </section>
             </section>
         </section>
         <section id="appearance" class="settings-content">

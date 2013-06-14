@@ -14,7 +14,6 @@
    ============================================================================= */
 
 .settings {
-    
     // The main white bg for the page
     .wrapper {
         background: #fff;
@@ -42,7 +41,7 @@
 /* =============================================================================
    Sidebar
    ============================================================================= */
-    
+
     //The whole left column sidebar, duh.
     .settings-sidebar {
         width:20%;
@@ -68,7 +67,7 @@
             };
         }
     }//.settings-sidebar
-        
+
     //Main settings-menu styles, apply to every item
     .settings-menu {
         position:absolute;
@@ -112,8 +111,8 @@
                     position:relative;
                     z-index: 300;
                     border-top: #edece4 1px solid;
-                    box-shadow: 
-                        #fff 1px 0 0, 
+                    box-shadow:
+                        #fff 1px 0 0,
                         #edece4 0 1px 0;
                     @include transition;
 
@@ -151,7 +150,7 @@
 /* =============================================================================
    Content
    ============================================================================= */
-    
+
     // The main content panel on the right
     .settings-content {
         padding:0;
@@ -164,7 +163,7 @@
 
         display: none;
         &.active {display:block;}
-        
+
         > header {
             height: 17px;
             padding: 30px 220px 29px 40px;
@@ -217,95 +216,130 @@
             right:0;
             left:0;
             bottom:0;
-            overflow:auto;
             padding:40px;
+            overflow:auto;
+
             @include breakpoint($netbook) { padding-left:15px; }
             @include breakpoint($letterbox) { top: 0; }
+        }
 
-            .sub{
-              color: rgb(158, 157, 149);
-              padding-bottom: 20px;
-              -moz-border-bottom-colors: none;
-              -moz-border-left-colors: none;
-              -moz-border-right-colors: none;
-              -moz-border-top-colors: none;
-              border-color: -moz-use-text-color -moz-use-text-color #EDECE4;
-              border-image: none;
-              border-right: 0 none;
-              border-style: none none solid;
-              border-width: 0 0 1px;
-              margin-bottom: 0px;
+
+        .user-group-header {
+            margin-bottom: 0px;
+            padding-bottom: 20px;
+            border: 0 none;
+            border-bottom: 1px solid darken($lightbrown, 10%);
+
+            h3 {
+                display: inline-block;
+                margin: 0;
+                color: $midbrown;
+                font-weight: normal;
+                font-size: 1.1em;
+                line-height: 1em;
             }
-            ul.users{
-              list-style: none;
-              padding: 0px;
-              margin-top: 0px;
-              width: 75%;
-              clear: both;
-              li{
-                display: block;
-                width: 100%;
-                padding: 20px;
+
+        }
+
+        .user-search {
+            display: inline-block;
+            float: right;
+
+            label { margin: 0}
+
+            &:hover .user-search-input, .user-search-input:focus {
+                width: 260px;
+                padding: 0 10px;
+            }
+
+            .user-search-input {
                 @include box-sizing(border-box);
-                -moz-border-bottom-colors: none;
-                -moz-border-left-colors: none;
-                -moz-border-right-colors: none;
-                -moz-border-top-colors: none;
-                border-color: -moz-use-text-color -moz-use-text-color #EDECE4;
-                border-image: none;
-                border-right: 0 none;
-                border-style: none none solid;
-                border-width: 0 0 1px;
+                width: 0px;
+                padding: 0;
+                border: none;
+                border-bottom: lighten($lightbrown, 2%) 1px solid;
+                @include transition(width 0.2s ease-in-out);
+                box-shadow: none;
+            }
 
-                &:last-child{
-                  border: none;
-                }
-                .user_image{
-                  float: left;
-                  width: 40px;
-                  height: 40px;
-                  margin-right: 17px;
-                  background-color: #ccc;
-                  border-radius: 20px;
-
-                  img{
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 20px;
-                  }
-                }
-
-                .user_info{
-                  float: left;
-                  span{
-                    display: block;
-                    line-height: 1em;
-                    &.name{
-                      margin-top: 0.4em;
-                      font-weight: bold;
-                      font-size: 1.2em;
-                    }
-                  }
-                }
-
-                label{
-                  float: right;
-                  color: #fff;
-                  padding: 4px 8px;
-                  margin-right: 20px;
-                  &.admin{
-                    background-color: #DE523A;
-                  }
-
-                  &.editor{
-                    background-color: #4A8CBD;
-                  }
-                }
-              }
-
+            .search-icon {
+                @include icon($i-search, 1em, $midbrown);
             }
         }
 
+        .users {
+            padding: 0px;
+            margin-top: 0px;
+            list-style: none;
+        }
+
+        .user {
+            @include box-sizing(border-box);
+            display: block;
+            width: 100%;
+            padding: 20px;
+            border: 0 none;
+            border-top: 1px solid $lightgrey;
+
+            &:first-child {
+                border: none;
+            }
+
+            .user-image {
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                margin-right: 17px;
+                vertical-align: middle;
+                background-color: $lightbrown;
+                border-radius: 20px;
+
+                &.invite {
+                    @include box-sizing(border-box);
+                    padding-top: 8px;
+                    text-align: center;
+                    @include icon($i-mail, 1em, $brown);
+                }
+
+                img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                }
+            }
+
+            .user-meta {
+                display: inline-block;
+                vertical-align: middle;
+
+                .user-name {
+                    margin: 0;
+                    margin-top: 0.4em;
+                    font-weight: 400;
+                    font-size: 1.2em;
+                    line-height: 1em;
+                }
+
+                .user-last-seen {
+                    line-height: 1em;
+                }
+            }
+        }
+
+        .user-role {
+            padding: 2px 8px;
+            float: right;
+            font-size: 0.8em;
+            color: #fff;
+            text-transform: uppercase;
+
+            &.admin {
+                background-color: #DE523A;
+            }
+            &.editor {
+                background-color: #4A8CBD;
+            }
+        }
     }//.settings-content
 
 }//.settings
