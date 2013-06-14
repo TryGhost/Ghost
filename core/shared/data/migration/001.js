@@ -102,9 +102,9 @@
 
             return when.all([
                 knex('posts').insert(fixtures.posts),
-                knex('users').insert(fixtures.users),
+                // knex('users').insert(fixtures.users),
                 knex('roles').insert(fixtures.roles),
-                knex('roles_users').insert(fixtures.roles_users),
+                // knex('roles_users').insert(fixtures.roles_users),
                 knex('permissions').insert(fixtures.permissions),
                 knex('permissions_roles').insert(fixtures.permissions_roles),
                 knex('settings').insert(fixtures.settings)

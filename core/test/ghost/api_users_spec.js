@@ -7,22 +7,54 @@
         should = require('should'),
         helpers = require('./helpers'),
         errors = require('../../shared/errorHandling'),
-        Models = require('../../shared/models');
+        Models = require('../../shared/models'),
+        when = require('when');
+
+    require('mocha-as-promised')();
 
     describe('User Model', function () {
 
         var UserModel = Models.User;
 
         beforeEach(function (done) {
-            helpers.resetData().then(function () {
+            helpers.resetData().then(function (result) {
+                return when(helpers.insertDefaultUser());
+            }).then(function (results) {
                 done();
-            }, done);
+            });
+        });
+
+        it('can add first', function (done) {
+            var userData = {
+                    password: 'testpass1',
+                    email_address: "test@test1.com"
+                };
+
+            when(helpers.resetData()).then(function (result) {
+                UserModel.add(userData).then(function (createdUser) {
+                    should.exist(createdUser);
+                    createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
+                    createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
+
+                    done();
+                }, done);
+            });
+        });
+
+        it('can\'t add second', function (done) {
+            var userData = {
+                password: 'testpass3',
+                email_address: "test3@test1.com"
+            };
+
+            return when(UserModel.add(userData)).otherwise(function (failure) {
+                return failure.message.should.eql('A user is already registered. Only one user for now!');
+            });
         });
 
         it('can browse', function (done) {
 
             UserModel.browse().then(function (results) {
-
                 should.exist(results);
 
                 results.length.should.be.above(0);
@@ -81,21 +113,14 @@
             }).then(null, done);
         });
 
-        it('can add', function (done) {
-            var userData = {
-                password: 'testpass1',
-                email_address: "test@test1.com"
-            };
+        it("can get effective permissions", function (done) {
+            UserModel.effectivePermissions(1).then(function (effectivePermissions) {
+                should.exist(effectivePermissions);
 
-            UserModel.add(userData).then(function (createdUser) {
-
-                should.exist(createdUser);
-
-                createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
-                createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
+                effectivePermissions.length.should.be.above(0);
 
                 done();
-            }).then(null, done);
+            }, errors.logError);
         });
 
         it('can delete', function (done) {
@@ -124,27 +149,14 @@
                 }
 
                 ids = _.pluck(newResults.models, "id");
-
                 hasDeletedId = _.any(ids, function (id) {
                     return id === firstUserId;
                 });
 
                 hasDeletedId.should.equal(false);
-
                 done();
 
             }).then(null, done);
         });
-
-        it("can get effective permissions", function (done) {
-            UserModel.effectivePermissions(1).then(function (effectivePermissions) {
-                should.exist(effectivePermissions);
-
-                effectivePermissions.length.should.be.above(0);
-
-                done();
-            }, errors.logError);
-        });
     });
-
 }());

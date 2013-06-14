@@ -33,6 +33,9 @@
 
                 api: {
                     src: ['core/test/**/api*_spec.js']
+                },
+                perm: {
+                    src: ['core/test/**/permissions_spec.js']
                 }
             },
 
@@ -99,6 +102,7 @@
 
         // Run API tests only
         grunt.registerTask("test-api", ["mochaTest:api"]);
+        grunt.registerTask("test-p", ["mochaTest:perm"]);
 
         // Run tests and lint code
         grunt.registerTask("validate", ["jslint", "mochaTest:all"]);

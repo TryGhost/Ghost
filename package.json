@@ -31,6 +31,7 @@
     "sinon": "~1.7.2",
     "mocha": "~1.10.0",
     "grunt-contrib-handlebars": "~0.5.9",
-    "grunt-contrib-watch": "~0.4.4"
+    "grunt-contrib-watch": "~0.4.4",
+    "mocha-as-promised": "~1.4.0"
   }
 }
