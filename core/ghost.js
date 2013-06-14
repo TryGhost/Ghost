@@ -121,9 +121,23 @@
     };
 
     Ghost.prototype.init = function () {
-        this.globalConfig = config.blogData;
+        var settings = {},
+            self = this,
+            configDeferred = when.defer(),
+            configPromise = configDeferred.promise;
 
-        return when.all([instance.dataProvider.init(), instance.getPaths()]);
+        models.Settings.findAll().then(function (result) {
+            _.map(result.models, function (member) {
+                if (!settings.hasOwnProperty(member.attributes.key)) {
+                    settings[member.attributes.key] = member.attributes.value;
+                }
+            });
+            configDeferred.resolve(settings);
+        });
+        return when.all([instance.dataProvider.init(), instance.getPaths(), configPromise]).then(function (results) {
+            self.globalConfig = results[2];
+            return;
+        });
     };
 
     /**
