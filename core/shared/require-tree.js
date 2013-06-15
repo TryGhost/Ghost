@@ -29,6 +29,12 @@
                 treePromise = treeDeferred.promise;
 
             fs.readdir(dir, function (error, files) {
+                if (error) {
+                    return treeDeferred.reject(error);
+                }
+
+                files = files || [];
+
                 files.forEach(function (file) {
                     var fileDeferred = when.defer(),
                         filePromise = fileDeferred.promise,
