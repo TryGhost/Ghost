@@ -36,6 +36,12 @@
             }
             this.set('content_html', converter.makeHtml(this.get('content')));
 
+            if (this.hasChanged('status') && this.get('status') === 'published') {
+                this.set('published_at', new Date());
+                // This will need to go elsewhere in the API layer.
+                this.set('published_by', 1);
+            }
+
             // refactoring of ghost required in order to make these details available here
             // this.set('language', this.get('language') || ghost.config().defaultLang);
             // this.set('status', this.get('status') || ghost.statuses().draft);
