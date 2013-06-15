@@ -18,8 +18,8 @@
         ExampleFilter = require('../content/plugins/exampleFilters'),
 
         requireTree = require('./shared/require-tree'),
-        themeDirectories = requireTree('content/themes'),
-        pluginDirectories = requireTree('content/plugins'),
+        themeDirectories = requireTree(path.resolve(__dirname + '../../content/themes')),
+        pluginDirectories = requireTree(path.resolve(__dirname + '../../content/plugins')),
 
         Ghost,
         instance,
