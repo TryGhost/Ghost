@@ -3,6 +3,8 @@
 
     var User,
         Users,
+        UserRole,
+        // UserRoles,
         _ = require('underscore'),
         when = require('when'),
         nodefn = require('when/node/function'),
@@ -11,6 +13,13 @@
         GhostBookshelf = require('./base'),
         Role = require('./role').Role,
         Permission = require('./permission').Permission;
+
+
+
+    UserRole = GhostBookshelf.Model.extend({
+        tableName: 'roles_users'
+    });
+
 
     User = GhostBookshelf.Model.extend({
 
@@ -39,10 +48,45 @@
          * Hashes the password provided before saving to the database.
          */
         add: function (_user) {
+
             var User = this,
                 // Clone the _user so we don't expose the hashed password unnecessarily
-                userData = _.extend({}, _user);
+                userData = _.extend({}, _user),
+                fail = false,
+                userRoles = {
 
+                    "role_id": 1,
+                    "user_id": 1
+                };
+
+            /**
+             * This only allows one user to be added to the database, otherwise fails.
+             * @param  {object} user
+             * @author javorszky
+             */
+            return this.forge().fetch().then(function (user) {
+
+                _.each(user.attributes, function (value, key, list) {
+                    fail = true;
+                });
+
+                if (fail) {
+                    return when.reject(new Error('A user is already registered. Only one user for now!'));
+                }
+
+                return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
+                    userData.password = hash;
+                    GhostBookshelf.Model.add.call(UserRole, userRoles);
+                    return GhostBookshelf.Model.add.call(User, userData);
+                });
+            });
+
+            /**
+             * Temporarily replacing the function below with another one that checks
+             * whether there's anyone registered at all. This is due to #138
+             * @author  javorszky
+             */
+            /**
             return this.forge({email_address: userData.email_address}).fetch().then(function (user) {
                 if (!!user.attributes.email_address) {
                     return when.reject(new Error('A user with that email address already exists.'));
@@ -53,6 +97,7 @@
                     return GhostBookshelf.Model.add.call(User, userData);
                 });
             });
+             */
         },
 
         /**
