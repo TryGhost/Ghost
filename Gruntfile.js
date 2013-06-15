@@ -9,6 +9,7 @@
             var cfg = {
                 // Common paths to be used by tasks
                 paths: {
+                    adminAssets: './core/admin/assets',
                     build: buildDirectory,
                     nightlyBuild: path.join(buildDirectory, 'nightly'),
                     dist: distDirectory,
@@ -57,14 +58,14 @@
                 sass: {
                     admin: {
                         files: {
-                            'core/admin/assets/css/screen.css': 'core/admin/assets/sass/screen.scss'
+                            '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                         }
                     }
                 },
 
                 shell: {
                     bourbon: {
-                        command: 'bourbon install --path core/admin/assets/sass/modules/'
+                        command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
                     },
 
                     commitNightly: {
@@ -85,30 +86,28 @@
                 },
 
                 handlebars: {
-
                     core: {
-
                         options: {
-
                             namespace: "JST",
-
                             processName: function (filename) {
                                 filename = filename.replace('./core/admin/assets/tmpl/', '');
                                 return filename.replace('.hbs', '');
                             }
                         },
-
                         files: {
-                            "./core/admin/assets/tmpl/hbs-tmpl.js": "./core/admin/assets/tmpl/**/*.hbs"
+                            "<%= paths.adminAssets %>/tmpl/hbs-tmpl.js": "<%= paths.adminAssets %>/tmpl/**/*.hbs"
                         }
-
                     }
                 },
 
                 watch: {
                     handlebars: {
-                        files: './core/admin/assets/tmpl/**/*.hbs',
+                        files: '<%= paths.adminAssets %>/tmpl/**/*.hbs',
                         tasks: ['handlebars']
+                    },
+                    sass: {
+                        files: '<%= paths.adminAssets %>/sass/**/*',
+                        tasks: ['sass:admin']
                     }
                 },
 
@@ -118,7 +117,6 @@
                             expand: true,
                             src: [
                                 '**',
-
                                 '!node_modules/**',
                                 '!core/shared/data/*.db',
                                 '!.sass*',
@@ -161,7 +159,7 @@
 
             // Prepare the project for development
             // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-            grunt.registerTask("init", ["shell:bourbon", "sass:admin"]);
+            grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
 
             // Run API tests only
             grunt.registerTask("test-api", ["mochaTest:api"]);
@@ -173,7 +171,7 @@
             grunt.registerTask("validate", ["jslint", "mochaTest:all"]);
 
             /* Nightly builds
-             * - Bump patch version in package.json, 
+             * - Bump patch version in package.json,
              * - Copy files to build-folder/nightly/#{version} directory
              * - Clean out unnecessary files (travis, .git*, .af*, .groc*)
              * - Zip files in build folder to dist-folder/#{version} directory
@@ -199,7 +197,7 @@
             ]);
 
             // When you just say "grunt"
-            grunt.registerTask("default", ['sass:admin', 'handlebars', 'watch']);
+            grunt.registerTask("default", ['sass:admin', 'handlebars']);
         };
 
     module.exports = configureGrunt;

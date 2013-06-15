@@ -28,6 +28,17 @@ The top priorities right now are:
 
 Frontend can be located at [localhost:3333](localhost:3333), Admin is at [localhost:3333/ghost](localhost:3333/ghost)
 
+Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically
+
+### Updating with the latest changes
+
+Pulling down the latest changes from master will often require more than just a pull, you may also need to do one or more of the following:
+
+ * **npm install** - fetch any new dependencies
+ * **grunt** - will recompile handlebars templates and sass for the admin (as long as you have previously run grunt init to install bourbon)
+ * git submodule update - fetch the latest changes to Casper (the default theme)
+ * delete core/shared/data/testdb.db - delete the database and allow Ghost to recreate the fixtures
+
 ### SQLite3 Install Instructions
 Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
 
