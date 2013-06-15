@@ -3,6 +3,7 @@
 
     var Settings,
         GhostBookshelf = require('./base'),
+        uuid = require('node-uuid'),
         _ = require('underscore'),
         when = require('when');
 
@@ -10,7 +11,12 @@
     // but the overlying API treats them as a single key:value mapping
     Settings = GhostBookshelf.Model.extend({
         tableName: 'settings',
-        hasTimestamps: true
+        hasTimestamps: true,
+        defaults: function () {
+            return {
+                uuid: uuid.v4()
+            };
+        }
     }, {
         read: function (_key) {
             // Allow for just passing the key instead of attributes

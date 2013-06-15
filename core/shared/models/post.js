@@ -5,6 +5,7 @@
     var Post,
         Posts,
         _ = require('underscore'),
+        uuid = require('node-uuid'),
         when = require('when'),
         Showdown = require('showdown'),
         converter = new Showdown.converter(),
@@ -17,8 +18,11 @@
 
         hasTimestamps: true,
 
-        defaults: {
-            status: 'draft'
+        defaults: function () {
+            return {
+                uuid: uuid.v4(),
+                status: 'draft'
+            };
         },
 
         initialize: function () {

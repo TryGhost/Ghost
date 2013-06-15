@@ -81,6 +81,7 @@
             PostModel.add(newPost).then(function (createdPost) {
                 should.exist(createdPost);
 
+                createdPost.has('uuid').should.equal(true);
                 createdPost.get('status').should.equal('draft');
                 createdPost.get('title').should.equal(newPost.title, "title is correct");
                 createdPost.get('content').should.equal(newPost.content, "content is correct");
