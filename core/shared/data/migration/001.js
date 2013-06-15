@@ -29,12 +29,12 @@
                 t.string('status');
                 t.string('language');
                 t.integer('author_id');
-                t.date('created_at');
+                t.dateTime('created_at');
                 t.integer('created_by');
-                t.date('updated_at');
-                t.integer('updated_by');
-                t.date('published_at');
-                t.integer('published_by');
+                t.dateTime('updated_at').nullable();
+                t.integer('updated_by').nullable();
+                t.dateTime('published_at').nullable();
+                t.integer('published_by').nullable();
             }),
 
             knex.Schema.createTable('users', function (t) {
@@ -47,9 +47,9 @@
                 t.string('cover_picture');
                 t.text('bio');
                 t.string('url');
-                t.date('created_at');
+                t.dateTime('created_at');
                 t.integer('created_by');
-                t.date('updated_at');
+                t.dateTime('updated_at');
                 t.integer('updated_by');
             }),
 
@@ -91,9 +91,9 @@
                 t.string('key').unique();
                 t.text('value');
                 t.string('type');
-                t.date('created_at');
+                t.dateTime('created_at');
                 t.integer('created_by');
-                t.date('updated_at');
+                t.dateTime('updated_at');
                 t.integer('updated_by');
             })
 
