@@ -6,11 +6,14 @@
 (function () {
     "use strict";
 
+    var path = require('path'),
+        config;
+
     /**
      * @module config
      * @type {Object}
      */
-    var config = {};
+    config = {};
 
     // ## Admin settings
 
@@ -59,14 +62,14 @@
         testing: {
             client: 'sqlite3',
             connection: {
-                filename: './core/shared/data/tests.db'
+                filename: path.join(__dirname, '/core/shared/data/tests.db')
             }
         },
 
         travis: {
             client: 'sqlite3',
             connection: {
-                filename: './core/shared/data/tests.db'
+                filename: path.join(__dirname, '/core/shared/data/tests.db')
             }
             // debug: true
         },
@@ -74,7 +77,7 @@
         development: {
             client: 'sqlite3',
             connection: {
-                filename: './core/shared/data/testdb.db'
+                filename: path.join(__dirname, '/core/shared/data/testdb.db')
             },
             debug: false
             // debug: true
