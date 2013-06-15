@@ -114,7 +114,6 @@
         };
     };
 
-
     module.exports.posts = posts;
     module.exports.users = users;
     module.exports.settings = settings;
