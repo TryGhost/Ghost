@@ -75,8 +75,8 @@
                 res.redirect('/ghost/login/');
             });
         },
-        'register': function (req, res) {
-            res.render('register', {
+        'signup': function (req, res) {
+            res.render('signup', {
                 bodyClass: 'ghost-login',
                 hideNavbar: true,
                 adminNav: setSelected(adminNavbar, 'login')
@@ -95,7 +95,7 @@
                     res.redirect('/ghost/login/');
                 }, function (error) {
                     req.flash('error', error.message);
-                    res.redirect('/ghost/register/');
+                    res.redirect('/ghost/signup/');
                 });
             } else {
                 req.flash('error', "The password is too short. Have at least 6 characters in there");
