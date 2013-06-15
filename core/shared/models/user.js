@@ -6,6 +6,7 @@
         UserRole,
         // UserRoles,
         _ = require('underscore'),
+        uuid = require('node-uuid'),
         when = require('when'),
         nodefn = require('when/node/function'),
         bcrypt = require('bcrypt-nodejs'),
@@ -26,6 +27,12 @@
         tableName: 'users',
 
         hasTimestamps: true,
+
+        defaults: function () {
+            return {
+                uuid: uuid.v4()
+            };
+        },
 
         posts: function () {
             return this.hasMany(Posts, 'created_by');

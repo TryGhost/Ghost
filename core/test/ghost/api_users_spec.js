@@ -33,6 +33,7 @@
             when(helpers.resetData()).then(function (result) {
                 UserModel.add(userData).then(function (createdUser) {
                     should.exist(createdUser);
+                    createdUser.has('uuid').should.equal(true);
                     createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
                     createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
 

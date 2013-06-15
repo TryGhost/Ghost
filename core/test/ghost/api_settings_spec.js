@@ -137,7 +137,7 @@
             SettingsModel.add(newSetting).then(function (createdSetting) {
 
                 should.exist(createdSetting);
-
+                createdSetting.has('uuid').should.equal(true);
                 createdSetting.attributes.key.should.equal(newSetting.key, "key is correct");
                 createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
 
