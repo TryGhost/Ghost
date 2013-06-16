@@ -79,6 +79,10 @@
             };
 
             PostModel.add(newPost).then(function (createdPost) {
+
+                return new PostModel({id: createdPost.id}).fetch();
+
+            }).then(function (createdPost) {
                 should.exist(createdPost);
 
                 createdPost.has('uuid').should.equal(true);
@@ -86,9 +90,16 @@
                 createdPost.get('title').should.equal(newPost.title, "title is correct");
                 createdPost.get('content').should.equal(newPost.content, "content is correct");
                 createdPost.get('slug').should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
+                should.equal(createdPost.get('published_at'), null);
 
+                // Set the status to published to check that `published_at` is set.
+                return createdPost.save({status: 'published'});
+
+            }).then(function(publishedPost) {
+                publishedPost.get('published_at').should.be.instanceOf(Date);
                 done();
             }).then(null, done);
+
         });
 
         it('can delete', function (done) {
