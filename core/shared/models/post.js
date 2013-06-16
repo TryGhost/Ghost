@@ -97,7 +97,7 @@
                 limit: 15,
                 where: {},
                 status: 'published',
-                orderBy: 'published_at DESC'
+                orderBy: ['published_at', 'DESC']
             }, opts);
 
             postCollection = Posts.forge();
@@ -121,7 +121,7 @@
             return postCollection
                 .query('limit', opts.limit)
                 .query('offset', opts.limit * (opts.page - 1))
-                .query('orderBy', opts.orderBy)
+                .query('orderBy', opts.orderBy[0], opts.orderBy[1])
                 .fetch(_.omit(opts, 'page', 'limit', 'where', 'status', 'orderBy'))
                 .then(function (collection) {
                     var qb;
