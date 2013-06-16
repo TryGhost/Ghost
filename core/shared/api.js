@@ -11,6 +11,8 @@
 
     var Ghost = require('../ghost'),
         _ = require('underscore'),
+        when = require('when'),
+        errors = require('./errorHandling'),
 
         ghost = new Ghost(),
         dataProvider = ghost.dataProvider,
@@ -18,6 +20,7 @@
         users,
         settings,
         requestHandler,
+        cachedSettingsRequestHandler,
         settingsObject,
         settingsCollection;
 
@@ -25,37 +28,37 @@
     posts = {
         // takes filter / pagination parameters
         // returns a page of posts in a json response
-        browse: function (options) {
+        browse: function browse(options) {
             return dataProvider.Post.findPage(options);
         },
         // takes an identifier (id or slug?)
         // returns a single post in a json response
-        read: function (args) {
+        read: function read(args) {
             return dataProvider.Post.findOne(args);
         },
         // takes a json object with all the properties which should be updated
         // returns the resulting post in a json response
-        edit: function (postData) {
+        edit: function edit(postData) {
             return dataProvider.Post.edit(postData);
         },
         // takes a json object representing a post,
         // returns the resulting post in a json response
-        add: function (postData) {
+        add: function add(postData) {
             return dataProvider.Post.add(postData);
         },
         // takes an identifier (id or slug?)
         // returns a json response with the id of the deleted post
-        destroy: function (args) {
+        destroy: function destroy(args) {
             return dataProvider.Post.destroy(args.id);
         }
     };
 
     // # Users
     users = {
-        add: function (postData) {
+        add: function add(postData) {
             return dataProvider.User.add(postData);
         },
-        check: function (postData) {
+        check: function check(postData) {
             return dataProvider.User.check(postData);
         }
     };
@@ -78,21 +81,17 @@
     };
 
     settings = {
-        browse: function (options) {
+        browse: function browse(options) {
             return dataProvider.Settings.browse(options).then(settingsObject);
         },
-        read: function (options) {
+        read: function read(options) {
             return dataProvider.Settings.read(options.key).then(function (setting) {
                 return _.pick(setting.toJSON(), 'key', 'value');
             });
         },
-        edit: function (settings) {
+        edit: function edit(settings) {
             settings = settingsCollection(settings);
             return dataProvider.Settings.edit(settings).then(settingsObject);
-        },
-        add: function (settings) {
-            settings = settingsCollection(settings);
-            return dataProvider.Settings.add(settings).then(settingsObject);
         }
     };
 
@@ -114,8 +113,42 @@
         };
     };
 
+    cachedSettingsRequestHandler = function (apiMethod) {
+        if (!ghost.settings()) {
+            return requestHandler(apiMethod);
+        }
+
+        return function (req, res) {
+            var options = _.extend(req.body, req.query, req.params),
+                promise;
+
+            switch (apiMethod.name) {
+            case 'browse':
+                promise = when(ghost.settings());
+                break;
+            case 'read':
+                promise = when(ghost.settings()[options.key]);
+                break;
+            case 'edit':
+                promise = apiMethod(options).then(function (result) {
+                    ghost.updateSettingsCache(result);
+                    return result;
+                });
+                break;
+            default:
+                errors.logAndThrowError(new Error('Unknown method name for settings API: ' + apiMethod.name));
+            }
+            return promise.then(function (result) {
+                res.json(result || {});
+            }, function (error) {
+                res.json(400, {error: error});
+            });
+        };
+    };
+
     module.exports.posts = posts;
     module.exports.users = users;
     module.exports.settings = settings;
     module.exports.requestHandler = requestHandler;
+    module.exports.cachedSettingsRequestHandler = cachedSettingsRequestHandler;
 }());
