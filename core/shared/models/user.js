@@ -8,6 +8,7 @@
         _ = require('underscore'),
         uuid = require('node-uuid'),
         when = require('when'),
+        errors = require('../errorHandling'),
         nodefn = require('when/node/function'),
         bcrypt = require('bcrypt-nodejs'),
         Posts = require('./post').Posts,
@@ -85,8 +86,8 @@
                     userData.password = hash;
                     GhostBookshelf.Model.add.call(UserRole, userRoles);
                     return GhostBookshelf.Model.add.call(User, userData);
-                });
-            });
+                }, errors.logAndThrowError);
+            }, errors.logAndThrowError);
 
             /**
              * Temporarily replacing the function below with another one that checks
@@ -122,8 +123,8 @@
                         return when.reject(new Error('Passwords do not match'));
                     }
                     return user;
-                });
-            });
+                }, errors.logAndThrowError);
+            }, errors.logAndThrowError);
         },
 
         effectivePermissions: function (id) {
@@ -152,7 +153,7 @@
                     });
 
                     return when.resolve(allPerms);
-                });
+                }, errors.logAndThrowError);
         }
 
     });

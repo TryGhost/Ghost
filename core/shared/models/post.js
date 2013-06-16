@@ -7,6 +7,7 @@
         _ = require('underscore'),
         uuid = require('node-uuid'),
         when = require('when'),
+        errors = require('../errorHandling'),
         Showdown = require('showdown'),
         converter = new Showdown.converter(),
         User = require('./user').User,
@@ -143,8 +144,8 @@
                             pages: Math.ceil(totalPosts / opts.limit),
                             total: totalPosts
                         };
-                    });
-                });
+                    }, errors.logAndThrowError);
+                }, errors.logAndThrowError);
         },
 
         permissable: function (postModelOrId, userId, action_type, userPermissions) {
@@ -157,7 +158,7 @@
             if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
                 return this.read({id: postModelOrId}).then(function (foundPostModel) {
                     return self.permissable(foundPostModel, userId, action_type, userPermissions);
-                });
+                }, errors.logAndThrowError);
             }
 
             // TODO: This logic is temporary, will probably need to be updated

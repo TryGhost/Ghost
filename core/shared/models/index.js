@@ -4,6 +4,7 @@
     "use strict";
 
     var GhostBookshelf = require('./base'),
+        errors = require('../errorHandling'),
         knex = GhostBookshelf.Knex;
 
     module.exports = {
@@ -18,10 +19,10 @@
                 var migration = require('../data/migration/001');
                 return migration.down().then(function () {
                     return migration.up();
-                });
-            }).then(function () {
+                }, errors.logAndThrowError);
+            }, errors.logAndThrowError).then(function () {
                 console.log('models loaded');
-            });
+            }, errors.logAndThrowError);
         }
     };
 

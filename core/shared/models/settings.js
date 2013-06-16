@@ -5,6 +5,7 @@
         GhostBookshelf = require('./base'),
         uuid = require('node-uuid'),
         _ = require('underscore'),
+        errors = require('../errorHandling'),
         when = require('when');
 
     // Each setting is saved as a separate row in the database,
@@ -36,7 +37,7 @@
                 if (item.toJSON) { item = item.toJSON(); }
                 return settings.forge({ key: item.key }).fetch().then(function (setting) {
                     return setting.set('value', item.value).save();
-                });
+                }, errors.logAndThrowError);
             });
         }
     });
