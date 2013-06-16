@@ -32,194 +32,193 @@
                         <p>How your blog name appears on the site</p>
                     </label>
 
-                        <label>
-                            <b>Blog Logo</b>
-                            <img src="/core/admin/assets/img/logo.png" alt="logo" height="38" width="381"/>
-                            <p>Display a logo on your site in place of blog title</p>
+                    <label>
+                        <b>Blog Logo</b>
+                        <img src="/core/admin/assets/img/logo.png" alt="logo" height="38" width="381"/>
+                        <p>Display a logo on your site in place of blog title</p>
+                    </label>
+
+                    <label>
+                        <b>Blog Icon</b>
+                        <img src="/core/admin/assets/img/test-icon.png" alt="logo" height="38" width="38"/>
+                        <p>The icon for your blog, used in your browser tab and elsewhere</p>
+                    </label>
+
+                    <label>
+                        <b>Email Address</b>
+                        <input id="email-address" type="text" value="{{email}}" />
+                        <p>Address to use for <a href="#">admin notifications</a></p>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Show my email address on my public profile
                         </label>
+                    </label>
 
-                        <label>
-                            <b>Blog Icon</b>
-                            <img src="/core/admin/assets/img/test-icon.png" alt="logo" height="38" width="38"/>
-                            <p>The icon for your blog, used in your browser tab and elsewhere</p>
+                    <label>
+                        <b>URL Structure</b>
+                        <select id="url-structure" name="general[urlstructure]">
+                            <option value="post-name">Simple Post Name</option>
+                            <option value="date-based">Date Based</option>
+                            <option value="number based">Number Based</option>
+                            <option value="custom">Custom...</option>
+                        </select>
+                    </label>
+
+                </fieldset>
+
+                <hr />
+
+                <fieldset>
+
+                    <label>
+                        <b>Time Zone</b>
+                        <select id="url-structure" name="general[timezone]">
+                            <option value="1">Vienna (UTC+1)</option>
+                        </select>
+                    </label>
+
+                </fieldset>
+
+            {{/with}}
+            </form>
+        </section>
+    </section>
+    <section id="content" class="settings-content">
+        <header>
+            <h2 class="title">Content</h2>
+            <section class="page-actions">
+                <button class="button-save">Save</button>
+            </section>
+        </header>
+        <section class="content">
+            <form id="settings-general">
+                <fieldset>
+                    <label>
+                        <b>Typography</b>
+                        <select id="url-structure" name="general[urlstructure]">
+                            <option value="post-name">Lato (Light)</option>
+                        </select>
+                        <p>Sexy sans-serif font that will make your toes tickle.</p>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Load fonts directly from Google
                         </label>
+                    </label>
 
-                        <label>
-                            <b>Email Address</b>
-                            <input id="email-address" type="text" value="{{email}}" />
-                            <p>Address to use for <a href="#">admin notifications</a></p>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Show my email address on my public profile
-                            </label>
+                    <label>
+                        <b>Post Options</b>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Display Post Meta
+                            <p>Post Author / Date / Views</p>
                         </label>
-
-                        <label>
-                            <b>URL Structure</b>
-                            <select id="url-structure" name="general[urlstructure]">
-                                <option value="post-name">Simple Post Name</option>
-                                <option value="date-based">Date Based</option>
-                                <option value="number based">Number Based</option>
-                                <option value="custom">Custom...</option>
-                            </select>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Show Author Box After Post
                         </label>
-
-                    </fieldset>
-
-                    <hr />
-
-                    <fieldset>
-
-                        <label>
-                            <b>Time Zone</b>
-                            <select id="url-structure" name="general[timezone]">
-                                <option value="1">Vienna (UTC+1)</option>
-                            </select>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Enable Comments
                         </label>
+                    </label>
 
-                    </fieldset>
+                </fieldset>
 
-                {{/with}}
-                </form>
+                <hr />
+
+                <fieldset>
+
+                    <label>
+                        <b>SEO Title Pattern</b>
+                        <input id="seo-title" type="text" value="[Post Name] - [Site Title]" />
+                        <p>The pattern used to display your title tags</p>
+                    </label>
+
+                    <label>
+                        <b>SEO Description Pattern</b>
+                        <input id="seo-description" type="text" value="Auto" />
+                        <p>The pattern used to display your meta descriptions</p>
+                    </label>
+
+                    <label>
+                        <b>Google+</b>
+                        <label class="checkbox">
+                            <input type="checkbox" value="1" /> Connect to author profile on Google
+                        </label>
+                    </label>
+
+                    <label>
+                        <b>Home Page Description</b>
+                        <textarea id="blog-description"></textarea>
+                        <p>Display a logo on your site in place of blog title</p>
+                    </label>
+
+                </fieldset>
+
+            </form>
+        </section>
+    </section>
+    <section id="users" class="settings-content">
+        <header>
+            <h2 class="title">Users</h2>
+            <section class="page-actions">
+                <button class="button-add">New User</button>
+            </section>
+        </header>
+        <section class="content">
+            <section id="users-pending" class="user-group">
+                <header class="user-group-header"><h3>Invited Users</h3></header>
+                <ul class="users">
+                    <li class="user">
+                        <figure class="user-image invite"></figure>
+                        <section class="user-meta">
+                            <h4 class="user-name">Some Name</h4>
+                            <span class="user-last-seen">Invitation Sent: 7 hours ago</span>
+                        </section>
+                    </li>
+                </ul>
+            </section>
+            <section id="users-active" class="user-group">
+                <header class="user-group-header">
+                    <h3>Active Users</h3>
+
+                    <form class="user-search">
+                        <label>
+                            <i class="search-icon"></i>
+                            <input class="user-search-input" type="text"/>
+                        </label>
+                    </form>
+                </header>
+
+                <ul class="users">
+                    <li class="user">
+                        <figure class="user-image">
+                            <img src="/core/admin/assets/img/user.jpg" alt="user"/>
+                        </figure>
+                        <section class="user-meta">
+                            <h4 class="user-name">Some Name</h4>
+                            <span class="user-last-seen">Last Seen: 7 hours ago</span>
+                        </section>
+                        <span class="user-role admin">Admin</span>
+                    </li>
+                    <li class="user">
+                        <figure class="user-image">
+                            <img src="/core/admin/assets/img/user.jpg" alt="user"/>
+                        </figure>
+                        <section class="user-meta">
+                            <h4 class="user-name">Some Name</h4>
+                            <span class="user-last-seen">Last Seen: 2 days ago</span>
+                        </section>
+                        <span class="user-role editor">Editor</span>
+                    </li>
+                </ul>
             </section>
         </section>
-        <section id="content" class="settings-content">
-            <header>
-                <h2 class="title">Content</h2>
-                <section class="page-actions">
-                    <button class="button-save">Save</button>
-                </section>
-            </header>
-            <section class="content">
-                <form id="settings-general">
-                    <fieldset>
-                        <label>
-                            <b>Typography</b>
-                            <select id="url-structure" name="general[urlstructure]">
-                                <option value="post-name">Lato (Light)</option>
-                            </select>
-                            <p>Sexy sans-serif font that will make your toes tickle.</p>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Load fonts directly from Google
-                            </label>
-                        </label>
-
-                        <label>
-                            <b>Post Options</b>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Display Post Meta
-                                <p>Post Author / Date / Views</p>
-                            </label>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Show Author Box After Post
-                            </label>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Enable Comments
-                            </label>
-                        </label>
-
-                    </fieldset>
-
-                    <hr />
-
-                    <fieldset>
-
-                        <label>
-                            <b>SEO Title Pattern</b>
-                            <input id="seo-title" type="text" value="[Post Name] - [Site Title]" />
-                            <p>The pattern used to display your title tags</p>
-                        </label>
-
-                        <label>
-                            <b>SEO Description Pattern</b>
-                            <input id="seo-description" type="text" value="Auto" />
-                            <p>The pattern used to display your meta descriptions</p>
-                        </label>
-
-                        <label>
-                            <b>Google+</b>
-                            <label class="checkbox">
-                                <input type="checkbox" value="1" /> Connect to author profile on Google
-                            </label>
-                        </label>
-
-                        <label>
-                            <b>Home Page Description</b>
-                            <textarea></textarea>
-                            <p>Display a logo on your site in place of blog title</p>
-                        </label>
-
-                    </fieldset>
-
-                </form>
-            </section>
+    </section>
+    <section id="appearance" class="settings-content">
+        <header>
+            <h2 class="title">Appearance</h2>
+        </header>
+        <section class="content">
+            <h6 class="sub">Raw json be here</h6>
+            <p>Active theme: {{json settings.activeTheme}}</p>
+            <p>Available themes: {{json availableThemes}}</p>
+            <p>Available plugins: {{json availablePlugins}}</p>
         </section>
-        <section id="users" class="settings-content">
-            <header>
-                <h2 class="title">Users</h2>
-                <section class="page-actions">
-                    <button class="button-add">New User</button>
-                </section>
-            </header>
-            <section class="content">
-                <section id="users-pending" class="user-group">
-                    <header class="user-group-header"><h3>Invited Users</h3></header>
-                    <ul class="users">
-                        <li class="user">
-                            <figure class="user-image invite"></figure>
-                            <section class="user-meta">
-                                <h4 class="user-name">Some Name</h4>
-                                <span class="user-last-seen">Invitation Sent: 7 hours ago</span>
-                            </section>
-                        </li>
-                    </ul>
-                </section>
-                <section id="users-active" class="user-group">
-                    <header class="user-group-header">
-                        <h3>Active Users</h3>
-
-                        <form class="user-search">
-                            <label>
-                                <i class="search-icon"></i>
-                                <input class="user-search-input" type="text"/>
-                            </label>
-                        </form>
-                    </header>
-
-                    <ul class="users">
-                        <li class="user">
-                            <figure class="user-image">
-                                <img src="/core/admin/assets/img/user.jpg" alt="user"/>
-                            </figure>
-                            <section class="user-meta">
-                                <h4 class="user-name">Some Name</h4>
-                                <span class="user-last-seen">Last Seen: 7 hours ago</span>
-                            </section>
-                            <span class="user-role admin">Admin</span>
-                        </li>
-                        <li class="user">
-                            <figure class="user-image">
-                                <img src="/core/admin/assets/img/user.jpg" alt="user"/>
-                            </figure>
-                            <section class="user-meta">
-                                <h4 class="user-name">Some Name</h4>
-                                <span class="user-last-seen">Last Seen: 2 days ago</span>
-                            </section>
-                            <span class="user-role editor">Editor</span>
-                        </li>
-                    </ul>
-                </section>
-            </section>
-        </section>
-        <section id="appearance" class="settings-content">
-            <header>
-                <h2 class="title">Appearance</h2>
-            </header>
-            <section class="content">
-                <h6 class="sub">Raw json be here</h6>
-                <p>Active theme: {{json settings.activeTheme}}</p>
-                <p>Available themes: {{json availableThemes}}</p>
-                <p>Available plugins: {{json availablePlugins}}</p>
-            </section>
-        </section>
-    </div>
+    </section>
 </div>

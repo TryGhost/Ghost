@@ -101,6 +101,22 @@
     Settings.content = Settings.Pane.extend({
         el: '#content',
         events: {
+            'click .button-save': 'saveSettings'
+        },
+        saveSettings: function () {
+            this.model.save({
+                description: this.$('#blog-description').val()
+            }, {
+                success: function () {
+                    alert('Saved');
+                }
+            });
+        },
+
+        render: function () {
+            var settings = this.model.toJSON();
+            this.$('#blog-description').val(settings.description);
+            Settings.Pane.prototype.render.call(this);
         }
     });
 
