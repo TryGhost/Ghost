@@ -9,6 +9,7 @@
     var config = require('./../config'),
         when = require('when'),
         express = require('express'),
+        errors = require('../core/shared/errorHandling'),
         path = require('path'),
         hbs = require('express-hbs'),
         _ = require('underscore'),
@@ -121,23 +122,21 @@
     };
 
     Ghost.prototype.init = function () {
-        var settings = {},
-            self = this,
-            configDeferred = when.defer(),
-            configPromise = configDeferred.promise;
+        var self = this;
 
-        models.Settings.findAll().then(function (result) {
-            _.map(result.models, function (member) {
-                if (!settings.hasOwnProperty(member.attributes.key)) {
-                    settings[member.attributes.key] = member.attributes.value;
-                }
-            });
-            configDeferred.resolve(settings);
-        });
-        return when.all([instance.dataProvider.init(), instance.getPaths(), configPromise]).then(function (results) {
-            self.globalConfig = results[2];
-            return;
-        });
+        return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+            // TODO: this should use api.browse
+            return models.Settings.findAll().then(function (result) {
+                var settings = {};
+                _.map(result.models, function (member) {
+                    if (!settings.hasOwnProperty(member.attributes.key)) {
+                        settings[member.attributes.key] = member.attributes.value;
+                    }
+                });
+
+                self.globalConfig = settings;
+            }, errors.logAndThrowError);
+        }, errors.logAndThrowError);
     };
 
     /**
