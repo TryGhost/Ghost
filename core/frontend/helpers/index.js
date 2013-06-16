@@ -5,6 +5,7 @@
         moment = require('moment'),
         when = require('when'),
         navHelper = require('./ghostNav'),
+        hbs = require('express-hbs'),
         coreHelpers;
 
     coreHelpers = function (ghost) {
@@ -42,6 +43,77 @@
 
         ghost.registerThemeHelper('json', function (object, options) {
             return JSON.stringify(object);
+        });
+
+        ghost.registerThemeHelper('foreach', function (context, options) {
+            var fn = options.fn,
+                inverse = options.inverse,
+                i = 0,
+                j = 0,
+                key,
+                ret = "",
+                data;
+
+            if (options.data) {
+                data = hbs.handlebars.createFrame(options.data);
+            }
+
+            if (context && typeof context === 'object') {
+                if (context instanceof Array) {
+                    for (j = context.length; i < j; i += 1) {
+                        if (data) {
+                            data.index = i;
+                            data.first = data.last = data.even = data.odd = false;
+                            if (i === 0) {
+                                data.first = true;
+                            }
+                            if (i === j - 1) {
+                                data.last = true;
+                            }
+                            // first post is index zero but still needs to be odd
+                            if (i % 2 === 1) {
+                                data.even = true;
+                            } else {
+                                data.odd = true;
+                            }
+                        }
+                        ret = ret + fn(context[i], { data: data });
+                    }
+                } else {
+                    for (key in context) {
+                        if (context.hasOwnProperty(key)) {
+                            j += 1;
+                        }
+                    }
+                    for (key in context) {
+                        if (context.hasOwnProperty(key)) {
+                            if (data) {
+                                data.key = key;
+                                data.first = data.last = data.even = data.odd = false;
+                                if (i === 0) {
+                                    data.first = true;
+                                }
+                                if (i === j - 1) {
+                                    data.last = true;
+                                }
+                                // first post is index zero but still needs to be odd
+                                if (i % 2 === 1) {
+                                    data.even = true;
+                                } else {
+                                    data.odd = true;
+                                }
+                            }
+                            ret = ret + fn(context[key], {data: data});
+                            i += 1;
+                        }
+                    }
+                }
+            }
+
+            if (i === 0) {
+                ret = inverse(this);
+            }
+            return ret;
         });
 
         return when.all([
