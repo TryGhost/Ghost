@@ -94,7 +94,7 @@
                 config: function () { return config; },
 
                 // there's no management here to be sure this has loaded
-                globals: function () { return instance.globalConfig; },
+                settings: function () { return instance.settingsCache; },
                 dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
@@ -134,7 +134,7 @@
                     }
                 });
 
-                self.globalConfig = settings;
+                self.settingsCache = settings;
             }, errors.logAndThrowError);
         }, errors.logAndThrowError);
     };
