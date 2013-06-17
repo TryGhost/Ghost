@@ -64,10 +64,11 @@
         });
 
         it('can add, defaulting as a draft', function (done) {
-            var newPost = {
-                title: 'Test Title 1',
-                content: 'Test Content 1'
-            };
+            var createdPostUpdatedDate,
+                newPost = {
+                    title: 'Test Title 1',
+                    content: 'Test Content 1'
+                };
 
             PostModel.add(newPost).then(function (createdPost) {
                 return new PostModel({id: createdPost.id}).fetch();
@@ -78,12 +79,25 @@
                 createdPost.get('title').should.equal(newPost.title, "title is correct");
                 createdPost.get('content').should.equal(newPost.content, "content is correct");
                 createdPost.get('slug').should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
+                //createdPost.get('created_at').should.be.instanceOf(Date); - why is this not true?
+                createdPost.get('created_by').should.equal(1);
+                createdPost.get('author_id').should.equal(1);
+                createdPost.get('created_by').should.equal(createdPost.get('author_id'));
+                //createdPost.get('updated_at').should.be.instanceOf(Date); - why is this not true?
+                createdPost.get('updated_by').should.equal(1);
                 should.equal(createdPost.get('published_at'), null);
+                should.equal(createdPost.get('published_by'), null);
+
+                createdPostUpdatedDate = createdPost.get('updated_at');
 
                 // Set the status to published to check that `published_at` is set.
                 return createdPost.save({status: 'published'});
             }).then(function (publishedPost) {
                 publishedPost.get('published_at').should.be.instanceOf(Date);
+                publishedPost.get('published_by').should.equal(1);
+                publishedPost.get('updated_at').should.be.instanceOf(Date);
+                publishedPost.get('updated_by').should.equal(1);
+                publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                 done();
             }).then(null, done);

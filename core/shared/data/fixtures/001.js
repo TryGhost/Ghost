@@ -18,9 +18,9 @@ module.exports = {
             "status":           "published",
             "featured":         true,
             "author_id":        1,
-            "created_at":       1352475600601,
+            "created_at":       '2012-11-09T15:40:46.776Z',
             "created_by":       1,
-            "published_at":     1352475600601,
+            "published_at":     '2012-11-09T15:40:46.776Z',
             "published_by":     1
         },
         {
@@ -37,9 +37,9 @@ module.exports = {
             "status":           "published",
             "featured":         true,
             "author_id":        1,
-            "created_at":       1340582400102,
+            "created_at":       '2012-06-25T01:00:23.776Z',
             "created_by":       1,
-            "published_at":     1340582400102,
+            "published_at":     '2012-06-25T01:00:23.776Z',
             "published_by":     1
         }
     ],
@@ -51,7 +51,7 @@ module.exports = {
             "value":        "http://localhost:3333",
             "created_by":    1,
             "updated_by":    1,
-            "type":         "general"
+            "type":         "blog"
         },
         {
             "uuid":         uuid.v4(),
@@ -59,7 +59,7 @@ module.exports = {
             "value":        "John O'Nolan",
             "created_by":    1,
             "updated_by":    1,
-            "type":         "general"
+            "type":         "blog"
         },
         {
             "uuid":         uuid.v4(),
@@ -67,7 +67,7 @@ module.exports = {
             "value":        "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
             "created_by":    1,
             "updated_by":    1,
-            "type":         "general"
+            "type":         "blog"
         },
         {
             "uuid":         uuid.v4(),
@@ -99,7 +99,7 @@ module.exports = {
             "value":        "001",
             "created_by":    1,
             "updated_by":    1,
-            "type":         "general"
+            "type":         "core"
         }
     ],
 

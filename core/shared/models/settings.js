@@ -15,7 +15,8 @@
         hasTimestamps: true,
         defaults: function () {
             return {
-                uuid: uuid.v4()
+                uuid: uuid.v4(),
+                type: 'general'
             };
         }
     }, {
