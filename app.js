@@ -49,20 +49,30 @@
     });
 
     /**
-     * Setup login details
-     * p.s. love it.
+     * Authenticate a request by redirecting to login if not logged in
      *
      * @type {*}
      */
     auth = function (req, res, next) {
         if (!req.session.user) {
-            req.flash('warn', "Please login");
-            res.redirect('/ghost/login/?redirect=' + encodeURIComponent(req.path));
-            return;
+            if (req.url && /^\/ghost\/?$/gi.test(req.url)) {
+                // TODO: Welcome message?  Intro if no logins yet?
+                req.shutUpJsLint = true;
+            } else {
+                req.flash('warn', "Please login");
+            }
+
+            return res.redirect('/ghost/login/?redirect=' + encodeURIComponent(req.path));
         }
+
         next();
     };
 
+    /**
+     * Authenticate a request by responding with a 401 and json error details
+     *
+     * @type {*}
+     */
     authAPI = function (req, res, next) {
         if (!req.session.user) {
             // TODO: standardize error format/codes/messages
