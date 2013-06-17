@@ -87,14 +87,12 @@
             // load Plugins...
             // var f = new FancyFirstChar(ghost).init();
 
-
-
             _.extend(instance, {
                 app: function () { return app; },
                 config: function () { return config; },
 
                 // there's no management here to be sure this has loaded
-                globals: function () { return instance.globalConfig; },
+                settings: function () { return instance.settingsCache; },
                 dataProvider: models,
                 statuses: function () { return statuses; },
                 polyglot: function () { return polyglot; },
@@ -125,6 +123,19 @@
         var self = this;
 
         return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+            return self.updateSettingsCache();
+        }, errors.logAndThrowError);
+    };
+
+
+    Ghost.prototype.updateSettingsCache = function (settings) {
+        var self = this;
+
+        settings = settings || {};
+
+        if (!_.isEmpty(settings)) {
+            self.settingsCache = settings;
+        } else {
             // TODO: this should use api.browse
             return models.Settings.findAll().then(function (result) {
                 var settings = {};
@@ -134,9 +145,9 @@
                     }
                 });
 
-                self.globalConfig = settings;
+                self.settingsCache = settings;
             }, errors.logAndThrowError);
-        }, errors.logAndThrowError);
+        }
     };
 
     /**
