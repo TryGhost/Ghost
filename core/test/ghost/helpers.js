@@ -47,10 +47,15 @@
     helpers = {
         resetData: function () {
 
-            return migrations.one.down().then(function () {
+            return this.clearData().then(function () {
                 return migrations.one.up();
             });
         },
+
+        clearData: function () {
+            return migrations.one.down();
+        },
+
         insertMorePosts: function () {
             var lang, status, posts, promises = [], i, j;
             for (i = 0; i < 2; i += 1) {

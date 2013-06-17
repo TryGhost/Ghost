@@ -92,6 +92,14 @@ module.exports = {
             "created_by":    1,
             "updated_by":    1,
             "type":         "general"
+        },
+        {
+            "uuid":         uuid.v4(),
+            "key":          "currentVersion",
+            "value":        "001",
+            "created_by":    1,
+            "updated_by":    1,
+            "type":         "general"
         }
     ],
 
