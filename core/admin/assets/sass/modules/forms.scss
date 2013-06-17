@@ -67,7 +67,7 @@ form {
         line-height: 1.4em;
         background: #fff;
         border: darken($lightbrown, 5%) 1px solid;
-        box-shadow: $shadow;
+        border-radius: $rounded;
         @include transition;
     }
 
