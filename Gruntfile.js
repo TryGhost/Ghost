@@ -33,7 +33,7 @@
                         // Lint files in the root, including Gruntfile.js
                         "*.js",
                         // Lint core files, but not libs
-                        ["core/**/*.js", "!**/assets/lib/**/*.js", "!**/assets/tmpl/*.js"]
+                        ["core/**/*.js", "!**/assets/lib/**/*.js", "!**/assets/tpl/*.js"]
                     ]
                 },
 
@@ -92,19 +92,19 @@
                         options: {
                             namespace: "JST",
                             processName: function (filename) {
-                                filename = filename.replace('./core/admin/assets/tmpl/', '');
+                                filename = filename.replace('./core/admin/assets/tpl/', '');
                                 return filename.replace('.hbs', '');
                             }
                         },
                         files: {
-                            "<%= paths.adminAssets %>/tmpl/hbs-tmpl.js": "<%= paths.adminAssets %>/tmpl/**/*.hbs"
+                            "<%= paths.adminAssets %>/tpl/hbs-tpl.js": "<%= paths.adminAssets %>/tpl/**/*.hbs"
                         }
                     }
                 },
 
                 watch: {
                     handlebars: {
-                        files: '<%= paths.adminAssets %>/tmpl/**/*.hbs',
+                        files: '<%= paths.adminAssets %>/tpl/**/*.hbs',
                         tasks: ['handlebars']
                     },
                     sass: {
