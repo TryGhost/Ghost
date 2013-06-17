@@ -27,19 +27,19 @@
                     }
                 },
                 dataProviderInitSpy = sinon.spy(fakeDataProvider, "init"),
-                oldDataProvder = ghost.dataProvider;
+                oldDataProvider = ghost.dataProvider;
 
             ghost.dataProvider = fakeDataProvider;
 
-            should.not.exist(ghost.globals());
+            should.not.exist(ghost.settings());
 
             ghost.init().then(function () {
 
-                should.exist(ghost.globals());
+                should.exist(ghost.settings());
 
                 dataProviderInitSpy.called.should.equal(true);
 
-                ghost.dataProvider = oldDataProvder;
+                ghost.dataProvider = oldDataProvider;
 
                 done();
             }).then(null, done);

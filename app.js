@@ -18,20 +18,19 @@
         filters = require('./core/frontend/filters'),
         helpers = require('./core/frontend/helpers'),
 
-    // ## Variables
+    // ## Custom Middleware
         auth,
         authAPI,
         ghostLocals,
+
+    // ## Variables
         loading = when.defer(),
 
         /**
          * Create new Ghost object
          * @type {Ghost}
          */
-        ghost = new Ghost(),
-        // This is assigned after the call to ghost.init() below
-        ghostGlobals;
-
+        ghost = new Ghost();
 
 
     ghost.app().configure('development', function () {
@@ -44,8 +43,6 @@
         ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
         ghost.app().use(ghost.initTheme(ghost.app()));
         ghost.app().use(flash());
-        // bind locals - options which appear in every view - perhaps this should be admin only
-
     });
 
     /**
@@ -75,18 +72,19 @@
 
     /**
      * Expose the standard locals that every external page should have available;
-     * path, navItems and ghostGlobals
+     * path, navItems and settingsCache
      */
     ghostLocals = function (req, res, next) {
         ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
             // Make sure we have a locals value.
             res.locals = res.locals || {};
 
-
-
-            // Extend it with nav data and ghostGlobals
+            // Extend it with nav data and settings
             _.extend(res.locals, navData, {
-                ghostGlobals: ghost.globals()
+                messages: req.flash(),
+                settings: ghost.settings(),
+                availableThemes: ghost.paths().availableThemes,
+                availablePlugins: ghost.paths().availablePlugins
             });
 
             next();
@@ -97,21 +95,9 @@
     ghost.loaded = loading.promise;
 
     when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
-        // Assign the globals we have loaded
-        ghostGlobals = ghost.globals();
 
-        ghost.app().use(function (req, res, next) {
-            res.locals.messages = req.flash();
-            res.locals.siteTitle = ghostGlobals.title;
-            res.locals.siteDescription = ghostGlobals.description;
-            res.locals.siteUrl = ghostGlobals.url;
-            res.locals.activeTheme = ghostGlobals.activeTheme;
-            res.locals.activePlugin = ghostGlobals.activePlugin;
-            res.locals.availableThemes = ghost.paths().availableThemes;
-            res.locals.availablePlugins = ghost.paths().availablePlugins;
-
-            next();
-        });
+        // post init config
+        ghost.app().use(ghostLocals);
 
         /**
          * API routes..
@@ -122,9 +108,9 @@
         ghost.app().get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
         ghost.app().put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
         ghost.app().del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
-        ghost.app().get('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.browse));
-        ghost.app().get('/api/v0.1/settings/:key', authAPI, api.requestHandler(api.settings.read));
-        ghost.app().put('/api/v0.1/settings', authAPI, api.requestHandler(api.settings.edit));
+        ghost.app().get('/api/v0.1/settings', authAPI, api.cachedSettingsRequestHandler(api.settings.browse));
+        ghost.app().get('/api/v0.1/settings/:key', authAPI, api.cachedSettingsRequestHandler(api.settings.read));
+        ghost.app().put('/api/v0.1/settings', authAPI, api.cachedSettingsRequestHandler(api.settings.edit));
 
         /**
          * Admin routes..
@@ -151,8 +137,8 @@
          * Frontend routes..
          * @todo dynamic routing, homepage generator, filters ETC ETC
          */
-        ghost.app().get('/:slug', ghostLocals, frontend.single);
-        ghost.app().get('/', ghostLocals, frontend.homepage);
+        ghost.app().get('/:slug', frontend.single);
+        ghost.app().get('/', frontend.homepage);
 
         ghost.app().listen(3333, function () {
             console.log("Express server listening on port " + 3333);
