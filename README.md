@@ -2,29 +2,56 @@
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
-Visit the project's home page at [http://tryghost.org](http://tryghost.org)!
-
-## Early-Access Developer Introduction
-
-Welcome to the Ghost core repo. The code here is the result of a few stolen hours of free time hacking a proof of concept for the Kickstarter video. Pretty much everything is subject to and expected to change. A full list of the currently-working features can be found [here](https://github.com/TryGhost/Ghost/wiki/Working-Features).
-
-The top priorities right now are:
-
-* Having a core RESTful API and consuming it internally
-* Data model design & implementation - including a potential switch from JugglingDB to bookshelf.js
-* Authentication and ACL
-* Improving core architecture & design - modular structure, better dependency injection, testable code with tests
+Visit the project's website at [http://tryghost.org](http://tryghost.org)!
 
 
-## Getting Started:
+## Getting Started
+
+1. Run the app from the command line
+2. Navigate to /ghost/ - you will be prompted to log in
+3. Create a new user
+4. Log in
+5. Start using Ghost
+
+Note - this is still very alpha. Not everything works yet.
+
+### Currently Working Features
+
+* Login / Logout / Register
+	* User can register an email address & password
+        * User can login
+        * User can logout
+        * All /ghost/ routes (the admin) are auth-protected
+* Dashboard
+	* new post link
+* Admin menu
+	* G, dashboard, content, new post & settings menu items go to correct pages
+* Content screen
+	* Lists all posts with correct titles (incorrect time etc)
+    * Select post in list highlights that post and opens it in the preview pane
+* Write screen
+	* Live preview works for all standard markdown
+    * Save draft button saves entered title & content. Everything is published by default.
+    * Editing/opening existing post puts correct info in title and content panels & save updates content.
+* Database
+	* The database is created and populated with basic data on first run of the server
+    * New posts and edits save and last forever
+    * The data can be reset by opening data/datastore.db and emptying the file. The next restart of the server will cause the database to be recreated and repopulated.
+* Frontend
+	* Homepage lists a number of posts as configured in config.js
+    * Clicking on an individual post loads an individual post page
+    * Date formatting helper uses moment
+
+
+## Working on Ghost Core
 
 **Note:** It is highly recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for developing Ghost.
 
 1. Clone the git repo
-1. cd into the project folder and run `npm install`.
+2. cd into the project folder and run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild", follow the Sqlite3 install instructions
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. run `grunt init` from the root. (make sure you have Casper 1.1 installed though, or have installed `bourbon` on your vagrant. See Ghost-Vagrant for that)
+3. run `grunt init` from the root. (make sure you have Casper 1.1 installed though, or have installed `bourbon` on your vagrant. See Ghost-Vagrant for that)
 
 Frontend can be located at [localhost:3333](localhost:3333), Admin is at [localhost:3333/ghost](localhost:3333/ghost)
 
