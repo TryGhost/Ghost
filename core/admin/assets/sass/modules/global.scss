@@ -177,7 +177,7 @@ aside + p {
 a {
     color:$blue;
     text-decoration:none;
-    @include transition;
+    @include transition(all 0.15s ease-in-out);
 
     &:hover {
         text-decoration:underline;
@@ -1100,7 +1100,7 @@ main {
         font-weight: bold;
         font-family: $font-family-mono;
         overflow: hidden;
-        @include transition;
+        @include transition(all 0.15s ease-in-out);
 
         &:hover {
             box-shadow: 
@@ -1108,7 +1108,7 @@ main {
                 rgba(0,0,0,0.05) -5px 0 0 inset,
                 rgba(0,0,0,0.05) 0 5px 0 inset,
                 rgba(0,0,0,0.05) 0 -5px 0 inset;
-            @include transition;
+            @include transition(all 0.15s ease-in-out);
         }
 
         small {
@@ -1121,12 +1121,12 @@ main {
             display: block;
             width:100px;
             opacity: 0.6;
-            @include transition;
+            @include transition(all 0.15s ease-in-out);
         }
 
         &:hover small {
             opacity: 1;
-            @include transition;
+            @include transition(all 0.15s ease-in-out);
         }
     }
 
