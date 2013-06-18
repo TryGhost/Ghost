@@ -34,8 +34,8 @@
     "grunt-contrib-handlebars": "~0.5.9",
     "grunt-contrib-watch": "~0.4.4",
     "grunt-bump": "0.0.2",
-    "grunt-zip": "~0.9.0",
     "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-compress": "~0.5.2",
     "mocha-as-promised": "~1.4.0"
   }
 }

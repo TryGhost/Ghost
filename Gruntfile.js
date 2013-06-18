@@ -12,8 +12,10 @@
                     adminAssets: './core/admin/assets',
                     build: buildDirectory,
                     nightlyBuild: path.join(buildDirectory, 'nightly'),
+                    buildBuild: path.join(buildDirectory, 'build'),
                     dist: distDirectory,
-                    nightlyDist: path.join(distDirectory, 'nightly')
+                    nightlyDist: path.join(distDirectory, 'nightly'),
+                    buildDist: path.join(distDirectory, 'build')
                 },
 
                 pkg: grunt.file.readJSON('package.json'),
@@ -127,14 +129,42 @@
                             ],
                             dest: "<%= paths.nightlyBuild %>/<%= pkg.version %>/"
                         }]
+                    },
+                    build: {
+                        files: [{
+                            expand: true,
+                            src: [
+                                '**',
+                                '!node_modules/**',
+                                '!core/shared/data/*.db',
+                                '!.sass*',
+                                '!.af*',
+                                '!.git*',
+                                '!.groc*',
+                                '!.travis.yml'
+                            ],
+                            dest: "<%= paths.buildBuild %>/"
+                        }]
                     }
                 },
 
-                zip: {
+
+                compress: {
                     nightly: {
+                        options: {
+                            archive: "<%= paths.nightlyDist %>/Ghost-Nightly-<%= pkg.version %>.zip"
+                        },
+                        expand: true,
                         cwd: "<%= paths.nightlyBuild %>/<%= pkg.version %>/",
-                        src: ["<%= paths.nightlyBuild %>/<%= pkg.version %>/**"],
-                        dest: "<%= paths.nightlyDist %>/Ghost-Nightly-<%= pkg.version %>.zip"
+                        src: ["**"]
+                    },
+                    build: {
+                        options: {
+                            archive: "<%= paths.buildDist %>/Ghost-Build.zip"
+                        },
+                        expand: true,
+                        cwd: "<%= paths.buildBuild %>/",
+                        src: ["**"]
                     }
                 }
             };
@@ -145,8 +175,8 @@
             grunt.loadNpmTasks("grunt-mocha-test");
             grunt.loadNpmTasks("grunt-shell");
             grunt.loadNpmTasks("grunt-bump");
-            grunt.loadNpmTasks("grunt-zip");
 
+            grunt.loadNpmTasks("grunt-contrib-compress");
             grunt.loadNpmTasks("grunt-contrib-copy");
             grunt.loadNpmTasks("grunt-contrib-watch");
             grunt.loadNpmTasks("grunt-contrib-sass");
@@ -182,18 +212,27 @@
              * - TODO: POST to pubsubhubub to notify of new build?
              */
             grunt.registerTask("nightly", [
+                "shell:bourbon",
                 "sass:admin",
                 "handlebars",
                 "validate",
                 "bump",
                 "updateCurrentPackageInfo",
                 "copy:nightly",
-                "zip:nightly"
+                "compress:nightly"
                 /* Caution: shit gets real below here */
                 //"shell:commitNightly",
                 //"shell:tagNightly",
                 //"shell:pushMaster",
                 //"shell:pushMasterTags"
+            ]);
+
+            grunt.registerTask("build", [
+                "shell:bourbon",
+                "sass:admin",
+                "handlebars",
+                "copy:build",
+                "compress:build"
             ]);
 
             // When you just say "grunt"
