@@ -1,24 +1,24 @@
 {{#if messages}}
     {{#each messages.error}}
-        <section class="notification-error">
+        <section class="notification-error js-notification">
           {{.}}
           <a class="close" href="#"><span class="hidden">Close</span></a>
         </section>
     {{/each}}
     {{#each messages.success}}
-        <section class="notification-success">
+        <section class="notification-success js-notification">
             {{.}}
             <a class="close" href="#"><span class="hidden">Close</span></a>
         </section>
     {{/each}}
     {{#each messages.warn}}
-        <section class="notification-alert">
+        <section class="notification-alert js-notification">
             {{.}}
             <a class="close" href="#"><span class="hidden">Close</span></a>
         </section>
     {{/each}}
     {{#each messages.info}}
-        <section class="notification">
+        <section class="notification js-notification">
             {{.}}
             <a class="close" href="#"><span class="hidden">Close</span></a>
         </section>
