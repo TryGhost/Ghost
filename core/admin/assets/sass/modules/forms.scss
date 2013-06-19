@@ -68,7 +68,7 @@ form {
         background: #fff;
         border: darken($lightbrown, 5%) 1px solid;
         border-radius: $rounded;
-        @include transition;
+        @include transition(all 0.15s ease-in-out);
     }
 
     textarea {
@@ -101,7 +101,6 @@ form {
         background:#fff;
         outline:none;
         outline-width:0;
-        @include transition;
     }
 
     select {
