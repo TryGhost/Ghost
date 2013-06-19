@@ -28,6 +28,11 @@
 
     });
 
+    // Allow notifications to be dismissed
+    $(document).on('click', '.js-notification .close',  function () {
+        $(this).parent().fadeOut(200,  function () { $(this).remove(); });
+    });
+
     $(document).ready(function () {
 
         // ## Set interactions for all menus
