@@ -74,9 +74,9 @@
              */
             return this.forge().fetch().then(function (user) {
 
-                _.each(user.attributes, function (value, key, list) {
+                if (user) {
                     fail = true;
-                });
+                }
 
                 if (fail) {
                     return when.reject(new Error('A user is already registered. Only one user for now!'));
