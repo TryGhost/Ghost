@@ -139,7 +139,11 @@
             this.render();
         },
 
-        template: JST['content/widget'],
+        templateName: "widget",
+
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
 
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
@@ -155,12 +159,11 @@
     // ----------
     WidgetContent = Ghost.View.extend({
 
-        getTemplate: function () {
-            return JST['content/widgets/' + this.model.attributes.content.template];
+        template: function (data) {
+            return JST['widgets/' + this.model.attributes.content.template](data);
         },
 
         render: function () {
-            this.template =  this.getTemplate();
             this.$el.html(this.template(this.model.toJSON()));
             return this;
         }
