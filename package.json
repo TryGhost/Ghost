@@ -36,6 +36,7 @@
     "grunt-bump": "0.0.2",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-compress": "~0.5.2",
-    "mocha-as-promised": "~1.4.0"
+    "mocha-as-promised": "~1.4.0",
+    "grunt-docco": "~0.2.0"
   }
 }

@@ -1,0 +1,211 @@
+<!DOCTYPE html>  <html> <head>   <title>ghost.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="ghost.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="app.html">                 app.js               </a>                                           <a class="source" href="config.html">                 config.js               </a>                                           <a class="source" href="admin-ui-temp.html">                 admin-ui-temp.js               </a>                                           <a class="source" href="init.html">                 init.js               </a>                                           <a class="source" href="markdown-actions.html">                 markdown-actions.js               </a>                                           <a class="source" href="router.html">                 router.js               </a>                                           <a class="source" href="tagui.html">                 tagui.js               </a>                                           <a class="source" href="toggle.html">                 toggle.js               </a>                                           <a class="source" href="index.html">                 index.js               </a>                                           <a class="source" href="ghost.html">                 ghost.js               </a>                                           <a class="source" href="i18n.html">                 i18n.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               ghost.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>Ghost Module</h1>
+
+<p>Defines core methods required to build the frontend</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/*global module, require, __dirname */</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h2> Setup Prerequisites</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">config</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./../config&#39;</span><span class="p">),</span>
+        <span class="nx">when</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;when&#39;</span><span class="p">),</span>
+        <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">),</span>
+        <span class="nx">errors</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../core/shared/errorHandling&#39;</span><span class="p">),</span>
+        <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">),</span>
+        <span class="nx">hbs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-hbs&#39;</span><span class="p">),</span>
+        <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;underscore&#39;</span><span class="p">),</span>
+        <span class="nx">Polyglot</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;node-polyglot&#39;</span><span class="p">),</span>
+
+        <span class="nx">models</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./shared/models&#39;</span><span class="p">),</span>
+        <span class="nx">ExampleFilter</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../content/plugins/exampleFilters&#39;</span><span class="p">),</span>
+
+        <span class="nx">requireTree</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./shared/require-tree&#39;</span><span class="p">),</span>
+        <span class="nx">themeDirectories</span> <span class="o">=</span> <span class="nx">requireTree</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;../../content/themes&#39;</span><span class="p">)),</span>
+        <span class="nx">pluginDirectories</span> <span class="o">=</span> <span class="nx">requireTree</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;../../content/plugins&#39;</span><span class="p">)),</span>
+
+        <span class="nx">Ghost</span><span class="p">,</span>
+        <span class="nx">instance</span><span class="p">,</span>
+        <span class="nx">defaults</span><span class="p">,</span>
+        <span class="nx">statuses</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <h2>Default values</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="cm">/**</span>
+<span class="cm">     * A hash of default values to use instead of &#39;magic&#39; numbers/strings.</span>
+<span class="cm">     * @type {Object}</span>
+<span class="cm">     */</span>
+    <span class="nx">defaults</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">filterPriority</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="nx">maxPriority</span><span class="o">:</span> <span class="mi">9</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <h2> Article Statuses</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="cm">/**</span>
+<span class="cm">     * A list of atricle status types</span>
+<span class="cm">     * @type {Object}</span>
+<span class="cm">     */</span>
+    <span class="nx">statuses</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;draft&#39;</span><span class="o">:</span> <span class="s1">&#39;draft&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;complete&#39;</span><span class="o">:</span> <span class="s1">&#39;complete&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;approved&#39;</span><span class="o">:</span> <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;scheduled&#39;</span><span class="o">:</span> <span class="s1">&#39;scheduled&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;published&#39;</span><span class="o">:</span> <span class="s1">&#39;published&#39;</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <h2>Module Methods</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="cm">/**</span>
+<span class="cm">     * @method Ghost</span>
+<span class="cm">     * @returns {*}</span>
+<span class="cm">     * @constructor</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">app</span><span class="p">,</span>
+            <span class="nx">plugin</span><span class="p">,</span>
+            <span class="nx">polyglot</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">instance</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">instance</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Holds the filters</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">instance</span><span class="p">.</span><span class="nx">filterCallbacks</span> <span class="o">=</span> <span class="p">[];</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Holds the filter hooks (that are built in to Ghost Core)</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">instance</span><span class="p">.</span><span class="nx">filters</span> <span class="o">=</span> <span class="p">[];</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Holds the theme directories temporarily</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">instance</span><span class="p">.</span><span class="nx">themeDirectories</span> <span class="o">=</span> <span class="p">{};</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Holds the plugin directories temporarily</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">instance</span><span class="p">.</span><span class="nx">pluginDirectories</span> <span class="o">=</span> <span class="p">{};</span>
+
+
+            <span class="nx">plugin</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ExampleFilter</span><span class="p">(</span><span class="nx">instance</span><span class="p">).</span><span class="nx">init</span><span class="p">();</span>
+
+            <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+            <span class="nx">polyglot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Polyglot</span><span class="p">();</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>functionality
+load Plugins...
+var f = new FancyFirstChar(ghost).init();</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">app</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">config</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">config</span><span class="p">;</span> <span class="p">},</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>there's no management here to be sure this has loaded</p>             </td>             <td class="code">               <div class="highlight"><pre>                <span class="nx">settings</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">settingsCache</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">dataProvider</span><span class="o">:</span> <span class="nx">models</span><span class="p">,</span>
+                <span class="nx">statuses</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">statuses</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">polyglot</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">polyglot</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">plugin</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">plugin</span><span class="p">;</span> <span class="p">},</span>
+                <span class="nx">getPaths</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nx">when</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span><span class="nx">themeDirectories</span><span class="p">,</span> <span class="nx">pluginDirectories</span><span class="p">]).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">paths</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">instance</span><span class="p">.</span><span class="nx">themeDirectories</span> <span class="o">=</span> <span class="nx">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+                        <span class="nx">instance</span><span class="p">.</span><span class="nx">pluginDirectories</span> <span class="o">=</span> <span class="nx">paths</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+                        <span class="k">return</span><span class="p">;</span>
+                    <span class="p">});</span>
+                <span class="p">},</span>
+                <span class="nx">paths</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;activeTheme&#39;</span><span class="o">:</span>   <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/../content/&#39;</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">themeDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">activeTheme</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;adminViews&#39;</span><span class="o">:</span>    <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/admin/views/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;frontendViews&#39;</span><span class="o">:</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/frontend/views/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;lang&#39;</span><span class="o">:</span>          <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/lang/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;availableThemes&#39;</span><span class="o">:</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">themeDirectories</span><span class="p">,</span>
+                        <span class="s1">&#39;availablePlugins&#39;</span><span class="o">:</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">pluginDirectories</span>
+                    <span class="p">};</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">instance</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">init</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="nx">when</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">dataProvider</span><span class="p">.</span><span class="nx">init</span><span class="p">(),</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">getPaths</span><span class="p">()).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">updateSettingsCache</span><span class="p">();</span>
+        <span class="p">},</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">logAndThrowError</span><span class="p">);</span>
+    <span class="p">};</span>
+
+
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">updateSettingsCache</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">settings</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+        <span class="nx">settings</span> <span class="o">=</span> <span class="nx">settings</span> <span class="o">||</span> <span class="p">{};</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_</span><span class="p">.</span><span class="nx">isEmpty</span><span class="p">(</span><span class="nx">settings</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">settingsCache</span> <span class="o">=</span> <span class="nx">settings</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>TODO: this should use api.browse</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Settings</span><span class="p">.</span><span class="nx">findAll</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">settings</span> <span class="o">=</span> <span class="p">{};</span>
+                <span class="nx">_</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">models</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">member</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">settings</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">member</span><span class="p">.</span><span class="nx">attributes</span><span class="p">.</span><span class="nx">key</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">settings</span><span class="p">[</span><span class="nx">member</span><span class="p">.</span><span class="nx">attributes</span><span class="p">.</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">member</span><span class="p">.</span><span class="nx">attributes</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+
+                <span class="nx">self</span><span class="p">.</span><span class="nx">settingsCache</span> <span class="o">=</span> <span class="nx">settings</span><span class="p">;</span>
+            <span class="p">},</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">logAndThrowError</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {method}  hbs.registerHelper</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerThemeHelper</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">hbs</span><span class="p">.</span><span class="nx">registerHelper</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {*}</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerTheme</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     * @return {*}</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerPlugin</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name</span>
+<span class="cm">     * @param  {integer}  priority</span>
+<span class="cm">     * @param  {Function} fn</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">registerFilter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">priority</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Curry the priority optional parameter to a default of 5</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">priority</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">fn</span> <span class="o">=</span> <span class="nx">priority</span><span class="p">;</span>
+            <span class="nx">priority</span> <span class="o">=</span> <span class="nx">defaults</span><span class="p">.</span><span class="nx">filterPriority</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">||</span> <span class="p">{};</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">][</span><span class="nx">priority</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">][</span><span class="nx">priority</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">][</span><span class="nx">priority</span><span class="p">].</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * @param  {string}   name     [description]</span>
+<span class="cm">     * @param  {*}   args</span>
+<span class="cm">     * @param  {Function} callback</span>
+<span class="cm">     * @return {method} callback</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">doFilter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">callbacks</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">filterCallbacks</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Bug out early if no callbacks by that name</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">callbacks</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nx">_</span><span class="p">.</span><span class="nx">times</span><span class="p">(</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">maxPriority</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">priority</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Bug out if no handlers on this priority</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">callbacks</span><span class="p">[</span><span class="nx">priority</span><span class="p">]))</span> <span class="p">{</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Call each handler for this priority level</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">callbacks</span><span class="p">[</span><span class="nx">priority</span><span class="p">],</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">filterHandler</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">args</span> <span class="o">=</span> <span class="nx">filterHandler</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+            <span class="p">});</span>
+        <span class="p">});</span>
+
+        <span class="nx">callback</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Initialise Theme</span>
+<span class="cm">     *</span>
+<span class="cm">     * @todo  Tod (?) Old comment</span>
+<span class="cm">     * @param  {Object} app</span>
+<span class="cm">     */</span>
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">initTheme</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="k">return</span> <span class="kd">function</span> <span class="nx">initTheme</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;hbs&#39;</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="sr">/(^\/ghost$|^\/ghost\/)/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">url</span><span class="p">)</span> <span class="o">===</span> <span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s1">&#39;hbs&#39;</span><span class="p">,</span> <span class="nx">hbs</span><span class="p">.</span><span class="nx">express3</span><span class="p">(</span>
+                    <span class="p">{</span><span class="nx">partialsDir</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span> <span class="o">+</span> <span class="s1">&#39;partials&#39;</span><span class="p">}</span>
+                <span class="p">));</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s1">&#39;hbs&#39;</span><span class="p">,</span> <span class="nx">hbs</span><span class="p">.</span><span class="nx">express3</span><span class="p">({</span><span class="nx">partialsDir</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">adminViews</span> <span class="o">+</span> <span class="s1">&#39;partials&#39;</span><span class="p">}));</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">adminViews</span><span class="p">);</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;/core/admin/assets&#39;</span><span class="p">,</span> <span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/admin/assets&#39;</span><span class="p">)));</span>
+            <span class="p">}</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">self</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">activeTheme</span><span class="p">));</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;/content/images&#39;</span><span class="p">,</span> <span class="nx">express</span><span class="p">[</span><span class="s1">&#39;static&#39;</span><span class="p">](</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/../content/images&#39;</span><span class="p">)));</span>
+            <span class="nx">next</span><span class="p">();</span>
+        <span class="p">};</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>TODO: Expose the defaults for other people to see/manipulate as a static value?
+Ghost.defaults = defaults;</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Ghost</span><span class="p">;</span>
+<span class="p">}());</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

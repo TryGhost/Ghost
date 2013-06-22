@@ -1,0 +1,34 @@
+<!DOCTYPE html>  <html> <head>   <title>init.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="ghost.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="app.html">                 app.js               </a>                                           <a class="source" href="config.html">                 config.js               </a>                                           <a class="source" href="admin-ui-temp.html">                 admin-ui-temp.js               </a>                                           <a class="source" href="init.html">                 init.js               </a>                                           <a class="source" href="markdown-actions.html">                 markdown-actions.js               </a>                                           <a class="source" href="router.html">                 router.js               </a>                                           <a class="source" href="tagui.html">                 tagui.js               </a>                                           <a class="source" href="toggle.html">                 toggle.js               </a>                                           <a class="source" href="index.html">                 index.js               </a>                                           <a class="source" href="ghost.html">                 ghost.js               </a>                                           <a class="source" href="i18n.html">                 i18n.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               init.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/*globals window, _, $, Backbone */</span>
+<span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+    <span class="kd">var</span> <span class="nx">Ghost</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">Layout</span>      <span class="o">:</span> <span class="p">{},</span>
+        <span class="nx">Views</span>       <span class="o">:</span> <span class="p">{},</span>
+        <span class="nx">Collections</span> <span class="o">:</span> <span class="p">{},</span>
+        <span class="nx">Models</span>      <span class="o">:</span> <span class="p">{},</span>
+
+        <span class="nx">settings</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">apiRoot</span><span class="o">:</span> <span class="s1">&#39;/api/v0.1&#39;</span>
+        <span class="p">},</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>This is a helper object to denote legacy things in the
+middle of being transitioned.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">temporary</span><span class="o">:</span> <span class="p">{},</span>
+
+        <span class="nx">currentView</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nx">router</span><span class="o">:</span> <span class="kc">null</span>
+    <span class="p">};</span>
+
+    <span class="nx">Ghost</span><span class="p">.</span><span class="nx">init</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">Ghost</span><span class="p">.</span><span class="nx">router</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Ghost</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+        <span class="nx">Backbone</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">start</span><span class="p">({</span>
+            <span class="nx">pushState</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nx">hashChange</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nx">root</span><span class="o">:</span> <span class="s1">&#39;/ghost&#39;</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+
+    <span class="nb">window</span><span class="p">.</span><span class="nx">Ghost</span> <span class="o">=</span> <span class="nx">Ghost</span><span class="p">;</span>
+
+<span class="p">}());</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>  <html> <head>   <title>i18n.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="ghost.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="app.html">                 app.js               </a>                                           <a class="source" href="config.html">                 config.js               </a>                                           <a class="source" href="admin-ui-temp.html">                 admin-ui-temp.js               </a>                                           <a class="source" href="init.html">                 init.js               </a>                                           <a class="source" href="markdown-actions.html">                 markdown-actions.js               </a>                                           <a class="source" href="router.html">                 router.js               </a>                                           <a class="source" href="tagui.html">                 tagui.js               </a>                                           <a class="source" href="toggle.html">                 toggle.js               </a>                                           <a class="source" href="index.html">                 index.js               </a>                                           <a class="source" href="ghost.html">                 ghost.js               </a>                                           <a class="source" href="i18n.html">                 i18n.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               i18n.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+    <span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">),</span>
+        <span class="cm">/**</span>
+<span class="cm">         * Create new Polyglot object</span>
+<span class="cm">         * @type {Polyglot}</span>
+<span class="cm">         */</span>
+        <span class="nx">I18n</span><span class="p">;</span>
+
+    <span class="nx">I18n</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ghost</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>TODO: validate</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="kd">var</span> <span class="nx">lang</span> <span class="o">=</span> <span class="nx">ghost</span><span class="p">.</span><span class="nx">config</span><span class="p">().</span><span class="nx">defaultLang</span><span class="p">,</span>
+            <span class="nx">path</span> <span class="o">=</span> <span class="nx">ghost</span><span class="p">.</span><span class="nx">paths</span><span class="p">().</span><span class="nx">lang</span><span class="p">,</span>
+            <span class="nx">langFilePath</span> <span class="o">=</span> <span class="nx">path</span> <span class="o">+</span> <span class="nx">lang</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nx">lang</span> <span class="o">===</span> <span class="s1">&#39;en&#39;</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>TODO: do stuff here to optimise for en</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Make jslint empty block error go away</p>             </td>             <td class="code">               <div class="highlight"><pre>                <span class="nx">lang</span> <span class="o">=</span> <span class="s1">&#39;en&#39;</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="cm">/** TODO potentially use req.acceptedLanguages rather than the default</span>
+<span class="cm">            *   TODO handle loading language file for frontend on frontend request etc</span>
+<span class="cm">            *   TODO switch this mess to be promise driven */</span>
+            <span class="nx">fs</span><span class="p">.</span><span class="nx">stat</span><span class="p">(</span><span class="nx">langFilePath</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;No language file found for language &#39;</span> <span class="o">+</span> <span class="nx">lang</span> <span class="o">+</span> <span class="s1">&#39;. Defaulting to en&#39;</span><span class="p">);</span>
+                    <span class="nx">lang</span> <span class="o">=</span> <span class="s1">&#39;en&#39;</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">langFilePath</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">throw</span> <span class="nx">error</span><span class="p">;</span>
+                    <span class="p">}</span>
+
+                    <span class="k">try</span> <span class="p">{</span>
+                        <span class="nx">data</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+                    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">throw</span> <span class="nx">e</span><span class="p">;</span> <span class="c1">// TODO - do something better with the error here</span>
+                    <span class="p">}</span>
+
+                    <span class="nx">ghost</span><span class="p">.</span><span class="nx">polyglot</span><span class="p">().</span><span class="nx">extend</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+
+                    <span class="nx">next</span><span class="p">();</span>
+                <span class="p">});</span>
+            <span class="p">});</span>
+        <span class="p">};</span>
+    <span class="p">};</span>
+
+
+    <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">load</span> <span class="o">=</span> <span class="nx">I18n</span><span class="p">;</span>
+<span class="p">}());</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

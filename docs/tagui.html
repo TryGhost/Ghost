@@ -1,0 +1,192 @@
+<!DOCTYPE html>  <html> <head>   <title>tagui.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="ghost.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="app.html">                 app.js               </a>                                           <a class="source" href="config.html">                 config.js               </a>                                           <a class="source" href="admin-ui-temp.html">                 admin-ui-temp.js               </a>                                           <a class="source" href="init.html">                 init.js               </a>                                           <a class="source" href="markdown-actions.html">                 markdown-actions.js               </a>                                           <a class="source" href="router.html">                 router.js               </a>                                           <a class="source" href="tagui.html">                 tagui.js               </a>                                           <a class="source" href="toggle.html">                 toggle.js               </a>                                           <a class="source" href="index.html">                 index.js               </a>                                           <a class="source" href="ghost.html">                 ghost.js               </a>                                           <a class="source" href="i18n.html">                 i18n.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               tagui.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h2>Tag Selector UI</h2>             </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/*jslint regexp: true */</span> <span class="c1">// - would like to remove this</span>
+<span class="cm">/*global jQuery, document, window */</span>
+
+<span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+    <span class="kd">var</span> <span class="nx">suggestions</span><span class="p">,</span>
+        <span class="nx">categoryOffset</span><span class="p">,</span>
+        <span class="nx">existingTags</span> <span class="o">=</span> <span class="p">[</span> <span class="c1">// This will be replaced by an API return.</span>
+            <span class="s1">&#39;quim&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quimtastic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quimmy&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quimlord&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quickly&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;joaquim pheonix&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quimcy jones&#39;</span>
+        <span class="p">],</span>
+        <span class="nx">keys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">UP</span><span class="o">:</span> <span class="mi">38</span><span class="p">,</span>
+            <span class="nx">DOWN</span><span class="o">:</span> <span class="mi">40</span><span class="p">,</span>
+            <span class="nx">ESC</span><span class="o">:</span> <span class="mi">27</span><span class="p">,</span>
+            <span class="nx">ENTER</span><span class="o">:</span> <span class="mi">13</span><span class="p">,</span>
+            <span class="nx">COMMA</span><span class="o">:</span> <span class="mi">188</span><span class="p">,</span>
+            <span class="nx">BACKSPACE</span><span class="o">:</span> <span class="mi">8</span>
+        <span class="p">};</span>
+
+    <span class="kd">function</span> <span class="nx">findTerms</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">,</span> <span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">searchTerm</span> <span class="o">=</span> <span class="nx">searchTerm</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+        <span class="k">return</span> <span class="nx">$</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">match</span> <span class="o">=</span> <span class="nx">item</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+            <span class="k">return</span> <span class="nx">match</span> <span class="o">?</span> <span class="nx">item</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">showSuggestions</span><span class="p">(</span><span class="nx">$target</span><span class="p">,</span> <span class="nx">searchTerm</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">show</span><span class="p">();</span>
+        <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="nx">findTerms</span><span class="p">(</span><span class="nx">searchTerm</span><span class="p">,</span> <span class="nx">existingTags</span><span class="p">),</span>
+            <span class="nx">pos</span> <span class="o">=</span> <span class="nx">$target</span><span class="p">.</span><span class="nx">position</span><span class="p">(),</span>
+            <span class="nx">styles</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="nx">left</span><span class="o">:</span> <span class="nx">pos</span><span class="p">.</span><span class="nx">left</span>
+            <span class="p">},</span>
+            <span class="nx">maxSuggestions</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="c1">// Limit the suggestions number</span>
+            <span class="nx">results_length</span> <span class="o">=</span> <span class="nx">results</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span>
+            <span class="nx">i</span><span class="p">,</span>
+            <span class="nx">suggest</span><span class="p">;</span>
+
+        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="nx">styles</span><span class="p">);</span>
+        <span class="nx">suggestions</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">results_length</span> <span class="o">&lt;</span> <span class="nx">maxSuggestions</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">maxSuggestions</span> <span class="o">=</span> <span class="nx">results_length</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">maxSuggestions</span><span class="p">;</span> <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">suggestions</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;&lt;li&gt;&lt;a href=&#39;#&#39;&gt;&quot;</span> <span class="o">+</span> <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&lt;/a&gt;&lt;/li&gt;&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nx">suggest</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;ul.suggestions li a:contains(&quot;&#39;</span> <span class="o">+</span> <span class="nx">searchTerm</span> <span class="o">+</span> <span class="s1">&#39;&quot;)&#39;</span><span class="p">);</span>
+
+        <span class="nx">suggest</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">html</span><span class="p">(),</span>
+                <span class="nx">term</span> <span class="o">=</span> <span class="nx">searchTerm</span><span class="p">,</span>
+                <span class="nx">pattern</span><span class="p">;</span>
+
+            <span class="nx">term</span> <span class="o">=</span> <span class="nx">term</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/(\s+)/</span><span class="p">,</span> <span class="s2">&quot;(&lt;[^&gt;]+&gt;)*$1(&lt;[^&gt;]+&gt;)*&quot;</span><span class="p">);</span>
+            <span class="nx">pattern</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="nx">term</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">);</span>
+
+            <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">src_str</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">pattern</span><span class="p">,</span> <span class="s2">&quot;&lt;mark&gt;$1&lt;/mark&gt;&quot;</span><span class="p">);</span>
+            <span class="nx">src_str</span> <span class="o">=</span> <span class="nx">src_str</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/(&lt;mark&gt;[^&lt;&gt;]*)((&lt;[^&gt;]+&gt;)+)([^&lt;&gt;]*&lt;\/mark&gt;)/</span><span class="p">,</span> <span class="s2">&quot;$1&lt;/mark&gt;$2&lt;mark&gt;$4&quot;</span><span class="p">);</span>
+
+            <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">src_str</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">handleTagKeyup</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">$target</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">),</span>
+            <span class="nx">searchTerm</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">trim</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">val</span><span class="p">()).</span><span class="nx">toLowerCase</span><span class="p">(),</span>
+            <span class="nx">category</span><span class="p">,</span>
+            <span class="nx">populator</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">UP</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">))</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s2">&quot;li:last-child&quot;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">).</span><span class="nx">prev</span><span class="p">().</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">DOWN</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">))</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s2">&quot;li:first-child&quot;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">removeClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">).</span><span class="nx">next</span><span class="p">().</span><span class="nx">addClass</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">ESC</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">ENTER</span> <span class="o">||</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">COMMA</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">searchTerm</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Submit tag using enter or comma key</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">suggestions</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">&quot;:visible&quot;</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">length</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category:containsExact(&quot;&#39;</span> <span class="o">+</span> <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;&quot;)&#39;</span><span class="p">).</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+
+                    <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span> <span class="o">+</span> <span class="nx">suggestions</span><span class="p">.</span><span class="nx">children</span><span class="p">(</span><span class="s2">&quot;.selected&quot;</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">);</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">))</span> <span class="p">{</span>
+
+                        <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                        <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">COMMA</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">searchTerm</span> <span class="o">=</span> <span class="nx">searchTerm</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">);</span>
+                <span class="p">}</span>  <span class="c1">// Remove comma from string if comma is uses to submit.</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category:containsExact(&quot;&#39;</span> <span class="o">+</span> <span class="nx">searchTerm</span> <span class="o">+</span> <span class="s1">&#39;&quot;)&#39;</span><span class="p">).</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span> <span class="o">+</span> <span class="nx">searchTerm</span> <span class="o">+</span> <span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">);</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+                        <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="nx">$target</span><span class="p">.</span><span class="nx">val</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">focus</span><span class="p">();</span>
+            <span class="nx">searchTerm</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span> <span class="c1">// Used to reset search term</span>
+            <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">UP</span> <span class="o">||</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">DOWN</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">searchTerm</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">showSuggestions</span><span class="p">(</span><span class="nx">$target</span><span class="p">,</span> <span class="nx">searchTerm</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">handleTagKeyDown</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">$target</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">),</span>
+            <span class="nx">populator</span><span class="p">,</span>
+            <span class="nx">lastBlock</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Delete character tiggers on Keydown, so needed to check on that event rather than Keyup.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="o">===</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">BACKSPACE</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">$target</span><span class="p">.</span><span class="nx">val</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+            <span class="nx">lastBlock</span> <span class="o">=</span> <span class="nx">populator</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.category&#39;</span><span class="p">).</span><span class="nx">last</span><span class="p">();</span>
+            <span class="nx">lastBlock</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">handleSuggestionClick</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">$target</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">),</span>
+            <span class="nx">category</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;span class=&quot;category&quot;&gt;&#39;</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;&lt;/span&gt;&#39;</span><span class="p">),</span>
+            <span class="nx">populator</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">parent</span><span class="p">().</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">populator</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">$target</span><span class="p">.</span><span class="nx">parent</span><span class="p">().</span><span class="nx">data</span><span class="p">(</span><span class="s1">&#39;populate&#39;</span><span class="p">));</span>
+            <span class="nx">populator</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">category</span><span class="p">);</span>
+            <span class="nx">suggestions</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-input-behaviour=&quot;tag&quot;]&#39;</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">focus</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">handleCategoryClick</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">handleClickOff</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">matchMedia</span><span class="p">(</span><span class="s1">&#39;max-width: 650px&#39;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">toggleClass</span><span class="p">(</span><span class="s1">&#39;off-canvas&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">suggestions</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;ul.suggestions&quot;</span><span class="p">).</span><span class="nx">hide</span><span class="p">();</span> <span class="c1">// Initnialise suggestions overlay</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-input&#39;</span><span class="p">).</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">categoryOffset</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-input&#39;</span><span class="p">).</span><span class="nx">offset</span><span class="p">().</span><span class="nx">left</span><span class="p">;</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.category-blocks&#39;</span><span class="p">).</span><span class="nx">css</span><span class="p">({</span><span class="s1">&#39;left&#39;</span><span class="o">:</span> <span class="nx">categoryOffset</span> <span class="o">+</span> <span class="s1">&#39;px&#39;</span><span class="p">});</span>
+        <span class="p">}</span>
+
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-input-behaviour=&quot;tag&quot;]&#39;</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;keyup&#39;</span><span class="p">,</span> <span class="nx">handleTagKeyup</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;keydown&#39;</span><span class="p">,</span> <span class="nx">handleTagKeyDown</span><span class="p">);</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;ul.suggestions&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s2">&quot;li&quot;</span><span class="p">,</span> <span class="nx">handleSuggestionClick</span><span class="p">);</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.categories&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s2">&quot;.category&quot;</span><span class="p">,</span> <span class="nx">handleCategoryClick</span><span class="p">);</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;[data-off-canvas]&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="nx">handleClickOff</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}(</span><span class="nx">jQuery</span><span class="p">));</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>  <html> <head>   <title>markdown-actions.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="ghost.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="app.html">                 app.js               </a>                                           <a class="source" href="config.html">                 config.js               </a>                                           <a class="source" href="admin-ui-temp.html">                 admin-ui-temp.js               </a>                                           <a class="source" href="init.html">                 init.js               </a>                                           <a class="source" href="markdown-actions.html">                 markdown-actions.js               </a>                                           <a class="source" href="router.html">                 router.js               </a>                                           <a class="source" href="tagui.html">                 tagui.js               </a>                                           <a class="source" href="toggle.html">                 toggle.js               </a>                                           <a class="source" href="index.html">                 index.js               </a>                                           <a class="source" href="ghost.html">                 ghost.js               </a>                                           <a class="source" href="i18n.html">                 i18n.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               markdown-actions.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/*global console, jQuery, CodeMirror*/</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h1>Surrounds given text with Markdown syntax</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">Markdown</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">init</span> <span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">elem</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">elem</span> <span class="o">=</span> <span class="nx">elem</span><span class="p">;</span>
+
+            <span class="nx">self</span><span class="p">.</span><span class="nx">style</span> <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">options</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">options</span> <span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">style</span><span class="p">;</span>
+
+            <span class="nx">self</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">({},</span> <span class="nx">CodeMirror</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addMarkdown</span><span class="p">.</span><span class="nx">options</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+
+            <span class="nx">self</span><span class="p">.</span><span class="nx">replace</span><span class="p">();</span>
+        <span class="p">},</span>
+        <span class="nx">replace</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">text</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">elem</span><span class="p">.</span><span class="nx">getSelection</span><span class="p">(),</span> <span class="nx">md</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">syntax</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">style</span><span class="p">])</span> <span class="p">{</span>
+                <span class="nx">md</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">syntax</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">style</span><span class="p">].</span><span class="nx">replace</span><span class="p">(</span><span class="s1">&#39;$1&#39;</span><span class="p">,</span> <span class="nx">text</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">elem</span><span class="p">.</span><span class="nx">replaceSelection</span><span class="p">(</span><span class="nx">md</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Invalid style.&quot;</span><span class="p">);</span>
+            <span class="p">}</span>
+
+        <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">CodeMirror</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addMarkdown</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">markdown</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">Markdown</span><span class="p">);</span>
+        <span class="nx">markdown</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="nx">CodeMirror</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addMarkdown</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">style</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nx">syntax</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">bold</span><span class="o">:</span> <span class="s2">&quot;**$1**&quot;</span><span class="p">,</span>
+            <span class="nx">italic</span><span class="o">:</span> <span class="s2">&quot;_$1_&quot;</span><span class="p">,</span>
+            <span class="nx">strike</span><span class="o">:</span> <span class="s2">&quot;~~$1~~&quot;</span><span class="p">,</span>
+            <span class="nx">code</span><span class="o">:</span> <span class="s2">&quot;`$1`&quot;</span><span class="p">,</span>
+            <span class="nx">h1</span><span class="o">:</span> <span class="s2">&quot;\n# $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">h2</span><span class="o">:</span> <span class="s2">&quot;\n## $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">h3</span><span class="o">:</span> <span class="s2">&quot;\n### $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">h4</span><span class="o">:</span> <span class="s2">&quot;\n#### $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">h5</span><span class="o">:</span> <span class="s2">&quot;\n##### $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">h6</span><span class="o">:</span> <span class="s2">&quot;\n###### $1\n&quot;</span><span class="p">,</span>
+            <span class="nx">link</span><span class="o">:</span> <span class="s2">&quot;[$1](http://)&quot;</span><span class="p">,</span>
+            <span class="nx">image</span><span class="o">:</span> <span class="s2">&quot;!image[$1](http://)&quot;</span><span class="p">,</span>
+            <span class="nx">blockquote</span><span class="o">:</span> <span class="s2">&quot;&gt; $1&quot;</span><span class="p">,</span>
+            <span class="nx">currentDate</span><span class="o">:</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">toLocaleString</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}(</span><span class="nx">jQuery</span><span class="p">));</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

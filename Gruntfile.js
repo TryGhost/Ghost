@@ -166,6 +166,16 @@
                         cwd: "<%= paths.buildBuild %>/",
                         src: ["**"]
                     }
+                },
+
+                docco: {
+                    debug: {
+                        src: ["README.md", "config.js", "app.js", "core/ghost.js", "core/admin/assets/js/*.js", "core/frontend/helpers/index.js", "core/lang/i18n.js"],
+                        options: {
+                            output: './docs',
+                            css: './docs/ghost.css'
+                        }
+                    }
                 }
             };
 
@@ -181,6 +191,7 @@
             grunt.loadNpmTasks("grunt-contrib-watch");
             grunt.loadNpmTasks("grunt-contrib-sass");
             grunt.loadNpmTasks("grunt-contrib-handlebars");
+            grunt.loadNpmTasks('grunt-docco');
 
             // Update the package information after changes
             grunt.registerTask('updateCurrentPackageInfo', function () {
@@ -236,7 +247,7 @@
             ]);
 
             // When you just say "grunt"
-            grunt.registerTask("default", ['sass:admin', 'handlebars']);
+            grunt.registerTask("default", ['sass:admin', 'handlebars', 'docco']);
         };
 
     module.exports = configureGrunt;
