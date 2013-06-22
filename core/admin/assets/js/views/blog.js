@@ -109,7 +109,11 @@
             Backbone.trigger('blog:activeItem', item.data('id'));
         },
 
-        template: JST['content/list-item'],
+        templateName: "list-item",
+
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
 
         render: function () {
             this.$el.html(this.template(_.extend({active: this.active}, this.model.toJSON())));
@@ -157,7 +161,11 @@
             window.location = '/ghost/editor/' + this.model.get('id');
         },
 
-        template: JST['content/preview'],
+        templateName: "preview",
+
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
 
         render: function () {
             if (this.activeId) {
