@@ -232,6 +232,7 @@
             this.editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
                 mode: 'markdown',
                 tabMode: 'indent',
+                tabindex: "2",
                 lineWrapping: true
             });
 
