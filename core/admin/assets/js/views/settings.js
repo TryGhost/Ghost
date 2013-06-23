@@ -61,6 +61,7 @@
     Settings.Pane = Ghost.View.extend({
         destroy: function () {
             this.$el.removeClass('active');
+            this.undelegateEvents();
         },
 
         render: function () {
