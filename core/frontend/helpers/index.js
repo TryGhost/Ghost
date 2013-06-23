@@ -50,6 +50,7 @@
                 inverse = options.inverse,
                 i = 0,
                 j = 0,
+                columns = options.hash.columns,
                 key,
                 ret = "",
                 data;
@@ -58,24 +59,33 @@
                 data = hbs.handlebars.createFrame(options.data);
             }
 
+            function setKeys(_data, _i, _j, _columns) {
+                if (_i === 0) {
+                    _data.first = true;
+                }
+                if (_i === _j - 1) {
+                    _data.last = true;
+                }
+                // first post is index zero but still needs to be odd
+                if (_i % 2 === 1) {
+                    _data.even = true;
+                } else {
+                    _data.odd = true;
+                }
+                if (_i % _columns === 0) {
+                    _data.rowStart = true;
+                } else if (_i % _columns === (_columns - 1)) {
+                    _data.rowEnd = true;
+                }
+                return _data;
+            }
             if (context && typeof context === 'object') {
                 if (context instanceof Array) {
                     for (j = context.length; i < j; i += 1) {
                         if (data) {
                             data.index = i;
-                            data.first = data.last = data.even = data.odd = false;
-                            if (i === 0) {
-                                data.first = true;
-                            }
-                            if (i === j - 1) {
-                                data.last = true;
-                            }
-                            // first post is index zero but still needs to be odd
-                            if (i % 2 === 1) {
-                                data.even = true;
-                            } else {
-                                data.odd = true;
-                            }
+                            data.first = data.rowEnd = data.rowStart = data.last = data.even = data.odd = false;
+                            data = setKeys(data, i, j, columns);
                         }
                         ret = ret + fn(context[i], { data: data });
                     }
@@ -89,19 +99,8 @@
                         if (context.hasOwnProperty(key)) {
                             if (data) {
                                 data.key = key;
-                                data.first = data.last = data.even = data.odd = false;
-                                if (i === 0) {
-                                    data.first = true;
-                                }
-                                if (i === j - 1) {
-                                    data.last = true;
-                                }
-                                // first post is index zero but still needs to be odd
-                                if (i % 2 === 1) {
-                                    data.even = true;
-                                } else {
-                                    data.odd = true;
-                                }
+                                data.first = data.rowEnd = data.rowStart = data.last = data.even = data.odd = false;
+                                data = setKeys(data, i, j, columns);
                             }
                             ret = ret + fn(context[key], {data: data});
                             i += 1;
