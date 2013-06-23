@@ -38,7 +38,7 @@
         ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
         ghost.app().use(express.logger('dev'));
         ghost.app().use(I18n.load(ghost));
-        ghost.app().use(express.bodyParser());
+        ghost.app().use(express.bodyParser({}));
         ghost.app().use(express.cookieParser('try-ghost'));
         ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
         ghost.app().use(ghost.initTheme(ghost.app()));
@@ -136,8 +136,9 @@
         ghost.app().get('/ghost/content', auth, admin.content);
         ghost.app().get('/ghost/settings*', auth, admin.settings);
         ghost.app().get('/ghost/debug', auth, admin.debug.index);
-        ghost.app().get('/ghost/debug/db/delete/', auth, admin.debug.dbdelete);
-        ghost.app().get('/ghost/debug/db/populate/', auth, admin.debug.dbpopulate);
+        ghost.app().get('/ghost/debug/db/export/', auth, admin.debug['export']);
+        ghost.app().post('/ghost/debug/db/import/', auth, admin.debug.import);
+        ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
         ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
             res.redirect('/ghost/');
         });

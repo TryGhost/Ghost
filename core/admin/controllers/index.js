@@ -3,8 +3,13 @@
     "use strict";
 
     var Ghost = require('../../ghost'),
+        dataExport = require('../../shared/data/export'),
+        dataImport = require('../../shared/data/import'),
         _ = require('underscore'),
         fs = require('fs'),
+        path = require('path'),
+        when = require('when'),
+        nodefn = require('when/node/function'),
         api = require('../../shared/api'),
 
         ghost = new Ghost(),
@@ -158,34 +163,108 @@
                     adminNav: setSelected(adminNavbar, 'settings')
                 });
             },
-            'dbdelete': function (req, res) {
-                fs.writeFile(__dirname + '/../ghost/data/datastore.db', '', function (error) {
-                    if (error) {
-                        req.flash('error', error);
-                    } else {
-                        req.flash('success', 'Everything got deleted');
-                    }
-                    res.redirect('/ghost/debug');
-                });
+            'export': function (req, res) {
+                // Get current version from settings
+                api.settings.read({ key: "currentVersion" })
+                    .then(function (setting) {
+                        // Export the current versions data
+                        return dataExport(setting.value);
+                    }, function () {
+                        // If no setting, assume 001
+                        return dataExport("001");
+                    })
+                    .then(function (exportedData) {
+                        // Save the exported data to the file system for download
+                        var fileName = path.resolve(__dirname + '/../../shared/data/export/exported-' + (new Date().getTime()) + '.json');
+
+                        return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
+                            return when(fileName);
+                        });
+                    })
+                    .then(function (exportedFilePath) {
+                        // Send the exported data file
+                        res.download(exportedFilePath, 'GhostData.json');
+                    })
+                    .otherwise(function (error) {
+                        // Notify of an error if it occurs
+                        req.flash("error", error.message || error);
+                        res.redirect("/ghost/debug");
+                    });
             },
-            'dbpopulate': function (req, res) {
-                dataProvider.populateData(function (error) {
-                    if (error) {
-                        req.flash('error', error);
-                    } else {
-                        req.flash('success', 'Data populated');
-                    }
-                    res.redirect('/ghost/debug');
-                });
+            'import': function (req, res) {
+                if (!req.files.importfile) {
+                    // Notify of an error if it occurs
+                    req.flash("error", "Must select a file to import");
+                    return res.redirect("/ghost/debug");
+                }
+
+                // Get the current version for importing
+                api.settings.read({ key: "currentVersion" })
+                    .then(function (setting) {
+                        return when(setting.value);
+                    }, function () {
+                        return when("001");
+                    })
+                    .then(function (currentVersion) {
+                        // Read the file contents
+                        return nodefn.call(fs.readFile, req.files.importfile.path)
+                            .then(function (fileContents) {
+                                var importData;
+
+                                // Parse the json data
+                                try {
+                                    importData = JSON.parse(fileContents);
+                                } catch (e) {
+                                    return when.reject(new Error("Failed to parse the import file"));
+                                }
+
+                                if (!importData.meta || !importData.meta.version) {
+                                    return when.reject(new Error("Import data does not specify version"));
+                                }
+
+                                // Import for the current version
+                                return dataImport(currentVersion, importData);
+                            });
+                    })
+                    .then(function () {
+                        req.flash("success", "Data imported");
+                    })
+                    .otherwise(function (error) {
+                        // Notify of an error if it occurs
+                        req.flash("error", error.message || error);
+                    })
+                    .then(function () {
+                        res.redirect("/ghost/debug");
+                    });
             },
-            'newUser': function (req, res) {
-                dataProvider.addNewUser(req, function (error) {
-                    if (error) {
-                        req.flash('error', error);
-                    } else {
-                        req.flash('success', 'User Added');
-                    }
-                });
+            'reset': function (req, res) {
+                // Grab the current version so we can get the migration
+                api.settings.read({ key: "currentVersion" })
+                    .then(function (setting) {
+                        var migration = require("../../shared/data/migration/" + setting.value);
+
+                        // Run the downward migration
+                        return migration.down();
+                    }, function () {
+                        // If no version in the DB, assume 001
+                        var migration = require("../../shared/data/migration/001");
+
+                        // Run the downward migration
+                        return migration.down();
+                    })
+                    .then(function () {
+                        // Re-initalize the providers (should run the migration up again)
+                        return dataProvider.init();
+                    })
+                    .then(function () {
+                        req.flash("success", "Database reset");
+                    })
+                    .otherwise(function (error) {
+                        req.flash("error", error.message || error);
+                    })
+                    .then(function () {
+                        res.redirect('/ghost/debug');
+                    });
             }
         }
     };
