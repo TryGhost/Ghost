@@ -22,6 +22,7 @@
         auth,
         authAPI,
         ghostLocals,
+        disableCachedResult,
 
     // ## Variables
         loading = when.defer(),
@@ -101,6 +102,15 @@
         });
     };
 
+    disableCachedResult = function (req, res, next) {
+        res.set({
+            "Cache-Control": "no-cache, must-revalidate",
+            "Expires": "Sat, 26 Jul 1997 05:00:00 GMT"
+        });
+
+        next();
+    };
+
     // Expose the promise we will resolve after our pre-loading
     ghost.loaded = loading.promise;
 
@@ -113,14 +123,14 @@
          * API routes..
          * @todo auth should be public auth not user auth
          */
-        ghost.app().get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
-        ghost.app().post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
-        ghost.app().get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
-        ghost.app().put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
-        ghost.app().del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
-        ghost.app().get('/api/v0.1/settings', authAPI, api.cachedSettingsRequestHandler(api.settings.browse));
-        ghost.app().get('/api/v0.1/settings/:key', authAPI, api.cachedSettingsRequestHandler(api.settings.read));
-        ghost.app().put('/api/v0.1/settings', authAPI, api.cachedSettingsRequestHandler(api.settings.edit));
+        ghost.app().get('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
+        ghost.app().post('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
+        ghost.app().get('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
+        ghost.app().put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
+        ghost.app().del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+        ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
+        ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
+        ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
 
         /**
          * Admin routes..
