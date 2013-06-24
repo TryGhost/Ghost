@@ -166,6 +166,42 @@
                         cwd: "<%= paths.buildBuild %>/",
                         src: ["**"]
                     }
+                },
+
+                docco: {
+                    application: {
+                        src: [
+                            "README.md",
+                            "config.js",
+                            "app.js",
+                            "core/ghost.js",
+                            "core/admin/assets/js/*.js",
+                            "core/admin/assets/js/models/*.js",
+                            "core/admin/assets/js/views/*.js",
+                            "core/admin/controllers/*.js",
+                            "core/frontend/controllers/*.js",
+                            "core/frontend/helpers/*.js",
+                            "core/frontend/filters/*.js",
+                            "core/lang/i18n.js",
+                            "core/shared/*.js",
+                            "core/shared/models/*.js",
+                            "core/shared/permissions/*.js"
+                        ],
+                        options: {
+                            output: './docs',
+                            css: './docs/ghost.css'
+                        }
+                    },
+                    test: {
+                        src: [
+                            "core/test/ghost.js",
+                            "core/test/ghost/*.js"
+                        ],
+                        options: {
+                            output: './docs/test',
+                            css: './docs/ghost.css'
+                        }
+                    }
                 }
             };
 
@@ -181,6 +217,7 @@
             grunt.loadNpmTasks("grunt-contrib-watch");
             grunt.loadNpmTasks("grunt-contrib-sass");
             grunt.loadNpmTasks("grunt-contrib-handlebars");
+            grunt.loadNpmTasks('grunt-docco');
 
             // Update the package information after changes
             grunt.registerTask('updateCurrentPackageInfo', function () {
@@ -189,7 +226,7 @@
 
             // Prepare the project for development
             // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-            grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
+            grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars', 'docco']);
 
             // Run API tests only
             grunt.registerTask("test-api", ["mochaTest:api"]);
@@ -198,7 +235,9 @@
             grunt.registerTask("test-p", ["mochaTest:perm"]);
 
             // Run tests and lint code
-            grunt.registerTask("validate", ["jslint", "mochaTest:all"]);
+            grunt.registerTask("validate", ["jslint", "mochaTest:all", 'docco:test']);
+
+            grunt.registerTask("docs", ["docco"]);
 
             /* Nightly builds
              * - Bump patch version in package.json,
@@ -236,7 +275,7 @@
             ]);
 
             // When you just say "grunt"
-            grunt.registerTask("default", ['sass:admin', 'handlebars']);
+            grunt.registerTask("default", ['sass:admin', 'handlebars', 'docco:application']);
         };
 
     module.exports = configureGrunt;
