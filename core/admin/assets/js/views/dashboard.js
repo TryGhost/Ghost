@@ -149,6 +149,9 @@
             this.$el.html(this.template(this.model.toJSON()));
             if (!this.model.attributes.settings.enabled) {
                 this.$(".widget-content").html(this.addSubview(new WidgetContent({model: this.model})).render().el);
+            } else {
+                var size = !this.model.get('size') ? "1x1" : this.model.get('size');
+                this.$el.find("[data-size='" + size + "']").addClass('active');
             }
             return this;
         }
