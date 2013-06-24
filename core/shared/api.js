@@ -82,16 +82,20 @@
 
     settings = {
         browse: function browse(options) {
-            return dataProvider.Settings.browse(options).then(settingsObject);
+            return dataProvider.Settings.browse(options).then(settingsObject, errors.logAndThrowError);
         },
         read: function read(options) {
             return dataProvider.Settings.read(options.key).then(function (setting) {
+                if (!setting) {
+                    return when.reject("Unable to find setting: " + options.key);
+                }
+
                 return _.pick(setting.toJSON(), 'key', 'value');
-            });
+            }, errors.logAndThrowError);
         },
         edit: function edit(settings) {
             settings = settingsCollection(settings);
-            return dataProvider.Settings.edit(settings).then(settingsObject);
+            return dataProvider.Settings.edit(settings).then(settingsObject, errors.logAndThrowError);
         }
     };
 

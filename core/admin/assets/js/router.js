@@ -11,7 +11,8 @@
             'settings/'        : 'settings',
             'settings(/:pane)' : 'settings',
             'editor/'          : 'editor',
-            'editor(/:id)'     : 'editor'
+            'editor(/:id)'     : 'editor',
+            'debug/'           : 'debug',
         },
 
         blog: function () {
@@ -39,6 +40,10 @@
             } else {
                 Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
             }
+        },
+
+        debug: function () {
+            Ghost.currentView = new Ghost.Views.Debug({ el: "#main" });
         },
 
         dashboard: function () {
