@@ -349,6 +349,16 @@
     }
   }
 
+  &.widget-settings {
+      .widget-content {
+          background-image: none;
+      }
+      .widget-footer {
+          background: inherit;
+          opacity: 1;
+      }
+  }
+
 } // .widget-image
 
 /* ==========================================================================
