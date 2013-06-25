@@ -32,6 +32,8 @@
                 this.currentPage = resp.page;
                 this.totalPages = resp.pages;
                 this.totalPosts = resp.total;
+                this.nextPage = resp.next;
+                this.prevPage = resp.prev;
                 return resp.posts;
             }
             return resp;
