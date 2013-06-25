@@ -156,6 +156,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
      */
     ghost.app().get('/:slug', frontend.single);
     ghost.app().get('/', frontend.homepage);
+    ghost.app().get('/page/:page/', frontend.homepage);
 
     ghost.app().listen(3333, function () {
         console.log("Express server listening on port " + 3333);

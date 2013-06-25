@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     when = require('when'),
+    pagination = require('./paginate'),
     navHelper = require('./ghostNav'),
     hbs = require('express-hbs'),
     coreHelpers;
@@ -111,11 +112,11 @@ coreHelpers = function (ghost) {
         }
         return ret;
     });
-
-    return when.all([
-        // Just one async helper for now, but could be more in the future
-        navHelper.registerWithGhost(ghost)
-    ]);
+    // Just one async helper for now, but could be more in the future
+    return when.join(
+        navHelper.registerWithGhost(ghost),
+        pagination.registerWithGhost(ghost)
+    );
 };
 
 module.exports.loadCoreHelpers = coreHelpers;

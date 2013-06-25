@@ -140,14 +140,26 @@ Post = GhostBookshelf.Model.extend({
                 }
 
                 return qb.count(_.result(collection, 'idAttribute')).then(function (resp) {
-                    var totalPosts = resp[0].aggregate;
-                    return {
-                        posts: collection.toJSON(),
-                        page: opts.page,
-                        limit: opts.limit,
-                        pages: Math.ceil(totalPosts / opts.limit),
-                        total: totalPosts
-                    };
+                    var totalPosts = resp[0].aggregate,
+                        data = {
+                            posts: collection.toJSON(),
+                            page: opts.page,
+                            limit: opts.limit,
+                            pages: Math.ceil(totalPosts / opts.limit),
+                            total: totalPosts
+                        };
+
+                    if (data.pages > 1) {
+                        if (data.page === 1) {
+                            data.next = data.page + 1;
+                        } else if (data.page === data.pages) {
+                            data.prev = data.page - 1;
+                        } else {
+                            data.next = data.page + 1;
+                            data.prev = data.page - 1;
+                        }
+                    }
+                    return data;
                 }, errors.logAndThrowError);
             }, errors.logAndThrowError);
     },
