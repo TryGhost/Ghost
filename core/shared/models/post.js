@@ -60,9 +60,16 @@ Post = GhostBookshelf.Model.extend({
 
     // #### generateSlug
     // Create a string act as the permalink for a post.
-    // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
     generateSlug: function () {
-        return this.set('slug', this.get('title').replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase());
+        // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
+        var slug = this.get('title').replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase();
+        // Remove trailing hypen
+        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 2) : slug;
+        // Check the filtered slug doesn't match any of the reserved keywords
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
+            .test(slug) ? slug + '-post' : slug;
+        // TODO: test for duplicate slugs and increment
+        return this.set('slug', slug);
     },
 
     user: function () {
