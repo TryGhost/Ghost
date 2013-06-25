@@ -58,8 +58,11 @@ Post = GhostBookshelf.Model.extend({
         }
     },
 
+    // #### generateSlug
+    // Create a string act as the permalink for a post.
+    // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
     generateSlug: function () {
-        return this.set('slug', this.get('title').replace(/\:/g, '').replace(/\s/g, '-').toLowerCase());
+        return this.set('slug', this.get('title').replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase());
     },
 
     user: function () {
@@ -72,21 +75,24 @@ Post = GhostBookshelf.Model.extend({
 
 }, {
 
-    /**
-     * Find results by page - returns an object containing the
-     * information about the request (page, limit), along with the
-     * info needed for pagination (pages, total).
-     *
-     * {
-         *   posts: [
-         *    {...}, {...}, {...}
-         *   ],
-         *   page: __,
-         *   limit: __,
-         *   pages: __,
-         *   total: __
-         * }
-     *
+     // #### findPage
+     // Find results by page - returns an object containing the
+     // information about the request (page, limit), along with the
+     // info needed for pagination (pages, total).
+
+     // **response:**
+
+     //     {
+     //         posts: [
+     //         {...}, {...}, {...}
+     //     ],
+     //     page: __,
+     //     limit: __,
+     //     pages: __,
+     //     total: __
+     //     }
+
+    /*
      * @params opts
      */
     findPage: function (opts) {
