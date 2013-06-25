@@ -132,27 +132,25 @@ var path = require('path'),
             },
 
             groc: {
-                application: [
-                    "README.md",
-                    "config.js",
-                    "app.js",
-                    "core/ghost.js",
-                    "core/admin/assets/js/*.js",
-                    "core/admin/assets/js/models/*.js",
-                    "core/admin/assets/js/views/*.js",
-                    "core/admin/controllers/*.js",
-                    "core/frontend/controllers/*.js",
-                    "core/frontend/filters/*.js",
-                    "core/frontend/helpers/*.js",
-                    "core/lang/i18n.js",
-                    "core/shared/models/*.js",
-                    "core/shared/permissions/*.js",
-                    "core/shared/*.js",
-                    "core/test/ghost/*.js",
-                    "core/test/ghost.js"
-                ],
-                options: {
-                    "out": "./docs/"
+                docs: {
+                    options: {
+                        "out": "./docs/",
+                        "glob": [
+                            "README.md",
+                            "config.js",
+                            "app.js",
+                            "core/ghost.js",
+                            "core/admin/assets/js/*.js",
+                            "core/admin/assets/js/**/*.js",
+                            "core/admin/controllers/*.js",
+                            "core/frontend/**/*.js",
+                            "core/lang/i18n.js",
+                            "core/shared/**/*.js",
+                            "core/shared/*.js",
+                            "core/test/**/*.js",
+                            "core/test/ghost.js"
+                        ]
+                    }
                 }
             },
 
