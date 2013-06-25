@@ -1,4 +1,4 @@
-# [Ghost v0.1.1](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
+# [Ghost v0.2](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
@@ -23,11 +23,11 @@ Note - this is still very alpha. Not everything works yet.
         * User can logout
         * All /ghost/ routes (the admin) are auth-protected
 * Dashboard
-	* new post link
+	* All widgets are static at the moment. Blogging related functionality is our first priority.
 * Admin menu
 	* G, dashboard, content, new post & settings menu items go to correct pages
 * Content screen
-	* Lists all posts with correct titles (incorrect time etc)
+	* Lists all posts
     * Select post in list highlights that post and opens it in the preview pane
 * Write screen
 	* Live preview works for all standard markdown
