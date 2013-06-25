@@ -1,4 +1,4 @@
-/*global window, document, Ghost, Backbone, confirm, JST, $, _ */
+/*global window, document, Ghost, $, _, Backbone, JST */
 (function () {
     "use strict";
 
@@ -147,7 +147,7 @@
 
         deletePost: function (e) {
             e.preventDefault();
-            if (confirm('Are you sure you want to delete this post?')) {
+            if (window.confirm('Are you sure you want to delete this post?')) {
                 this.model.destroy({
                     wait: true
                 });

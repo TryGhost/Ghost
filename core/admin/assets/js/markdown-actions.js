@@ -1,7 +1,7 @@
-/*global console, jQuery, CodeMirror*/
-
 // # Surrounds given text with Markdown syntax
-(function ($) {
+
+/*global $, CodeMirror */
+(function () {
     "use strict";
     var Markdown = {
         init : function (options, elem) {
@@ -19,10 +19,7 @@
             if (this.options.syntax[this.style]) {
                 md = this.options.syntax[this.style].replace('$1', text);
                 this.elem.replaceSelection(md);
-            } else {
-                console.log("Invalid style.");
             }
-
         }
     };
 
@@ -50,4 +47,5 @@
             currentDate: new Date().toLocaleString()
         }
     };
-}(jQuery));
+
+}());

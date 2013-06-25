@@ -1,7 +1,7 @@
 // # Toggle Support
 
-/*global document, jQuery, Ghost */
-(function ($) {
+/*global document, $, Ghost */
+(function () {
     "use strict";
 
     Ghost.temporary.initToggles = function ($el) {
@@ -35,4 +35,4 @@
         Ghost.temporary.initToggles($(document));
     });
 
-}(jQuery));
+}());

@@ -1,4 +1,3 @@
-
 var uuid = require('node-uuid');
 
 /*global module */
@@ -159,5 +158,4 @@ module.exports = {
             "role_id": 1
         }
     ]
-
 };
