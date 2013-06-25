@@ -1,5 +1,5 @@
 /*global window, document, Ghost, Backbone, $, JST, _ */
-(function (_, undefined) {
+(function (_) {
     "use strict";
 
     Ghost.View = Backbone.View.extend({

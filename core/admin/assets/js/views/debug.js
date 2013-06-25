@@ -1,5 +1,5 @@
 /*global jQuery, window, document, Ghost, Backbone, $, _, alert */
-(function ($, _, Backbone, Ghost, undefined) {
+(function ($, _, Backbone, Ghost) {
     "use strict";
 
     Ghost.Views.Debug = Ghost.View.extend({

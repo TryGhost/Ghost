@@ -12,7 +12,7 @@
             'settings(/:pane)' : 'settings',
             'editor/'          : 'editor',
             'editor(/:id)'     : 'editor',
-            'debug/'           : 'debug',
+            'debug/'           : 'debug'
         },
 
         blog: function () {

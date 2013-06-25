@@ -21,20 +21,52 @@
                 pkg: grunt.file.readJSON('package.json'),
 
                 // JSLint all the things!
-                jslint: {
-                    directives: {
-                        node: true,
-                        browser: true,
-                        nomen: true,
-                        todo: true,
-                        unparam: true
+                jslintm: {
+                    node: {
+                        directives: {
+                            // node environment
+                            node: true,
+                            // browser environment
+                            browser: false,
+                            // allow dangling underscores in var names
+                            nomen: true,
+                            // allow to do statements
+                            todo: true,
+                            // allow unused parameters
+                            unparam: true,
+                            // don't require use strict pragma
+                            sloppy: true
+                        },
+                        files: {
+                            src: [
+                                "*.js",
+                                "core/**/*.js"
+                            ]
+                        },
+                        // Lint core files, but not libs, frontend or hbs files
+                        exclude: [
+                            "**/assets/lib/**/*.js",
+                            "**/assets/js/**/*.js",
+                            "**/assets/tpl/*.js"
+                        ]
                     },
-                    files: [
-                        // Lint files in the root, including Gruntfile.js
-                        "*.js",
-                        // Lint core files, but not libs
-                        ["core/**/*.js", "!**/assets/lib/**/*.js", "!**/assets/tpl/*.js"]
-                    ]
+                    frontend: {
+                        directives: {
+                            // node environment
+                            node: false,
+                            // browser environment
+                            browser: true,
+                            // allow dangling underscores in var names
+                            nomen: true,
+                            // allow to do statements
+                            todo: true,
+                             // allow unused parameters
+                            unparam: true
+                        },
+                        files: {
+                            src: "**/assets/js/**/*.js"
+                        }
+                    }
                 },
 
                 mochaTest: {
@@ -211,6 +243,9 @@
             grunt.registerTask('updateCurrentPackageInfo', function () {
                 cfg.pkg = grunt.file.readJSON('package.json');
             });
+
+            // jslintm aliased to jslint
+            grunt.registerTask("jslint", ["jslintm"]);
 
             // Prepare the project for development
             // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?

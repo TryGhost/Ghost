@@ -89,15 +89,11 @@
 
         tagName: 'article',
         attributes: function () {
-            var size = (this.model.get('size'))
-                ? " widget-" + this.model.get('size')
-                : "",
-                settings = (this.model.attributes.settings.enabled)
-                ? " widget-settings"
-                : "";
+            var size = (this.model.get('size')) ? " widget-" + this.model.get('size') : "",
+                settings = (this.model.attributes.settings.enabled) ? " widget-settings" : "";
 
             return {
-                class: 'widget-' + this.model.get('name') + size + settings + ' js-widget',
+                'class': 'widget-' + this.model.get('name') + size + settings + ' js-widget',
                 'data-widget-id': this.model.get('applicationID')
             };
         },
