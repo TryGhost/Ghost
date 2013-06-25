@@ -13,9 +13,10 @@
 
         $el.find('[data-toggle]').on('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
             $(this).toggleClass('active');
             var toggle = $(this).data('toggle');
-            $(this).parent().children(toggle).fadeToggle(100).toggleClass('open');
+            $(this).parent().children(toggle).fadeToggle(200).toggleClass('open');
         });
 
     };

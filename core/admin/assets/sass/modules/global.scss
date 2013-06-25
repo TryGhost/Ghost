@@ -643,12 +643,6 @@ nav {
                 @include transition(left 0.3s ease 0s);
             }
             > a {
-                @include icon-after($i-chevron-down, 12px) {
-                    position:absolute;
-                    right: 20px;
-                    top: 15px;
-                }
-
                 &:hover { background: inherit; }
                 &.active { background: darken($grey, 3%); }
             }
@@ -694,7 +688,8 @@ nav {
     };
 
     &.active {
-        @include icon-after($i-chevron-down, 8px, $darkgrey);
+        color: $darkgrey;
+        @include icon-after($i-chevron-down, 8px);
     }
 }
 
