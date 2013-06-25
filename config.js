@@ -33,27 +33,20 @@ config.forceI18n = true;
 // Themes
 config.themeDir = 'themes';
 
+// Current active theme
 /**
  * @property {string} activeTheme
  */
 config.activeTheme = 'casper';
 
-// ## Homepage settings
+// Default Navigation Items
 /**
- * @module homepage
- * @type {Object}
+ * @property {Array} nav
  */
-config.homepage = {};
-
-/**
- * @property {number} features
- */
-config.homepage.features = 1;
-
-/**
- * @property {number} posts
- */
-config.homepage.posts = 4;
+config.nav = [{
+    title: 'Home',
+    url: '/'
+}];
 
 config.database = {
     testing: {
@@ -84,17 +77,6 @@ config.database = {
 
     production: {}
 };
-
-/**
- * @property {Array} nav
- */
-config.nav = [{
-    title: 'Home',
-    url: '/'
-}, {
-    title: 'Admin',
-    url: '/ghost'
-}];
 
 /**
  * @property {Object} exports

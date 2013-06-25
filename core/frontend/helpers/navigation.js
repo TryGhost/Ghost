@@ -3,9 +3,9 @@ var fs = require('fs'),
     _ = require('underscore'),
     handlebars = require('express-hbs').handlebars,
     nodefn = require('when/node/function'),
-    GhostNavHelper;
+    NavHelper;
 
-GhostNavHelper = function (navTemplate) {
+NavHelper = function (navTemplate) {
     // Bind the context for our methods.
     _.bindAll(this, 'compileTemplate', 'renderNavItems');
 
@@ -16,7 +16,7 @@ GhostNavHelper = function (navTemplate) {
     }
 };
 
-GhostNavHelper.prototype.compileTemplate = function (templatePath) {
+NavHelper.prototype.compileTemplate = function (templatePath) {
     var self = this;
 
     // Allow people to overwrite the navTemplatePath
@@ -28,7 +28,7 @@ GhostNavHelper.prototype.compileTemplate = function (templatePath) {
     });
 };
 
-GhostNavHelper.prototype.renderNavItems = function (navItems) {
+NavHelper.prototype.renderNavItems = function (navItems) {
     var output;
 
     output = this.navTemplateFunc({links: navItems});
@@ -37,13 +37,13 @@ GhostNavHelper.prototype.renderNavItems = function (navItems) {
 };
 
 // A static helper method for registering with ghost
-GhostNavHelper.registerWithGhost = function (ghost) {
+NavHelper.registerWithGhost = function (ghost) {
     var templatePath = path.join(ghost.paths().frontendViews, 'nav.hbs'),
-        ghostNavHelper = new GhostNavHelper(templatePath);
+        ghostNavHelper = new NavHelper(templatePath);
 
     return ghostNavHelper.compileTemplate().then(function () {
-        ghost.registerThemeHelper("ghostNav", ghostNavHelper.renderNavItems);
+        ghost.registerThemeHelper("nav", ghostNavHelper.renderNavItems);
     });
 };
 
-module.exports = GhostNavHelper;
+module.exports = NavHelper;

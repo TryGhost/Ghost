@@ -3,15 +3,15 @@ var should = require('should'),
     sinon = require('sinon'),
     _ = require('underscore'),
     path = require('path'),
-    GhostNavHelper = require('../../frontend/helpers/ghostNav');
+    NavHelper = require('../../frontend/helpers/navigation');
 
-describe('ghostNav Helper', function () {
+describe('Navigation Helper', function () {
     var navTemplatePath = path.join(process.cwd(), 'core/frontend/views/nav.hbs');
 
-    should.exist(GhostNavHelper, "GhostNavHelper exists");
+    should.exist(NavHelper, "Navigation helper exists");
 
     it('can compile the nav template', function (done) {
-        var helper = new GhostNavHelper(navTemplatePath);
+        var helper = new NavHelper(navTemplatePath);
 
         helper.compileTemplate().then(function () {
             should.exist(helper.navTemplateFunc);
@@ -22,7 +22,7 @@ describe('ghostNav Helper', function () {
     });
 
     it('can render nav items', function () {
-        var helper = new GhostNavHelper(function (data) { return "rendered " + data.links.length; }),
+        var helper = new NavHelper(function (data) { return "rendered " + data.links.length; }),
             templateSpy = sinon.spy(helper, 'navTemplateFunc'),
             fakeNavItems = [{
                 title: 'test1',
@@ -56,7 +56,7 @@ describe('ghostNav Helper', function () {
             },
             registerStub = sinon.stub(fakeGhost, 'registerThemeHelper');
 
-        GhostNavHelper.registerWithGhost(fakeGhost).then(function () {
+        NavHelper.registerWithGhost(fakeGhost).then(function () {
             registerStub.called.should.equal(true);
 
             done();

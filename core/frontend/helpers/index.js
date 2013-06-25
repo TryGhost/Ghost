@@ -2,7 +2,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     when = require('when'),
     pagination = require('./paginate'),
-    navHelper = require('./ghostNav'),
+    navHelper = require('./navigation'),
     hbs = require('express-hbs'),
     coreHelpers;
 
