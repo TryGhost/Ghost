@@ -9,13 +9,6 @@
     var suggestions,
         categoryOffset,
         existingTags = [ // This will be replaced by an API return.
-            'quim',
-            'quimtastic',
-            'quimmy',
-            'quimlord',
-            'quickly',
-            'joaquim pheonix',
-            'quimcy jones'
         ],
         keys = {
             UP: 38,
