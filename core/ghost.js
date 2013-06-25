@@ -230,6 +230,9 @@ Ghost.prototype.initTheme = function (app) {
     var self = this;
     return function initTheme(req, res, next) {
         app.set('view engine', 'hbs');
+        // return the correct mime type for woff files
+        express['static'].mime.define({'application/font-woff': ['woff']});
+
         if (!res.isAdmin) {
             app.engine('hbs', hbs.express3(
                 {partialsDir: self.paths().activeTheme + 'partials'}
