@@ -44,19 +44,21 @@ ghost.app().configure('development', function () {
 
 /**
  * Authenticate a request by redirecting to login if not logged in
+ * We strip /ghost/ out of the redirect parameter for neatness
  *
  * @type {*}
  */
 auth = function (req, res, next) {
     if (!req.session.user) {
-        if (req.url && /^\/ghost\/?$/gi.test(req.url)) {
-            // TODO: Welcome message?  Intro if no logins yet?
-            req.shutUpJsLint = true;
-        } else {
+        var path = req.path.replace(/^\/ghost\/?/gi, ''),
+            redirect = '';
+
+        if (path !== '') {
             req.flash('warn', "Please login");
+            redirect = '?r=' + encodeURIComponent(path);
         }
 
-        return res.redirect('/ghost/login/?redirect=' + encodeURIComponent(req.path));
+        return res.redirect('/ghost/login/' + redirect);
     }
 
     next();
