@@ -17,6 +17,7 @@ var express = require('express'),
 // ## Custom Middleware
     auth,
     authAPI,
+    isGhostAdmin,
     ghostLocals,
     disableCachedResult,
 
@@ -29,18 +30,6 @@ var express = require('express'),
      */
     ghost = new Ghost();
 
-
-ghost.app().configure('development', function () {
-    ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-    ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    ghost.app().use(express.logger('dev'));
-    ghost.app().use(I18n.load(ghost));
-    ghost.app().use(express.bodyParser({}));
-    ghost.app().use(express.cookieParser('try-ghost'));
-    ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
-    ghost.app().use(ghost.initTheme(ghost.app()));
-    ghost.app().use(flash());
-});
 
 /**
  * Authenticate a request by redirecting to login if not logged in
@@ -79,17 +68,34 @@ authAPI = function (req, res, next) {
     next();
 };
 
-/**
- * Expose the standard locals that every external page should have available;
- * path, navItems and settingsCache
- */
-ghostLocals = function (req, res, next) {
-    ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
-        // Make sure we have a locals value.
-        res.locals = res.locals || {};
+// #### isGhostAdmin
+// Middleware which uses the URL to detect whether this response should be an admin response
+// This is used to ensure the right content is served, and is not for security purposes
+isGhostAdmin = function (req, res, next) {
+    res.isAdmin = /(^\/ghost$|^\/ghost\/)/.test(req.url);
 
-        // Extend it with nav data and settings
-        _.extend(res.locals, navData, {
+    next();
+};
+
+// Expose the standard locals that every external page should have available,
+// separating between the frontend / theme and the admin
+ghostLocals = function (req, res, next) {
+    // Make sure we have a locals value.
+    res.locals = res.locals || {};
+
+    if (!res.isAdmin) {
+        // filter the navigation items
+        ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
+            // pass the theme navigation items and settings
+            _.extend(res.locals, navData, {
+                settings: ghost.settings()
+            });
+
+            next();
+        });
+    } else {
+        _.extend(res.locals,  {
+            // pass the admin flash messages, settings and paths
             messages: req.flash(),
             settings: ghost.settings(),
             availableThemes: ghost.paths().availableThemes,
@@ -97,9 +103,10 @@ ghostLocals = function (req, res, next) {
         });
 
         next();
-    });
+    }
 };
 
+// Disable any caching until it can be done properly
 disableCachedResult = function (req, res, next) {
     res.set({
         "Cache-Control": "no-cache, must-revalidate",
@@ -108,6 +115,20 @@ disableCachedResult = function (req, res, next) {
 
     next();
 };
+
+ghost.app().configure('development', function () {
+    ghost.app().use(isGhostAdmin);
+    ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
+    ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+    ghost.app().use(express.logger('dev'));
+    ghost.app().use(I18n.load(ghost));
+    ghost.app().use(express.bodyParser({}));
+    ghost.app().use(express.cookieParser('try-ghost'));
+    ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+    ghost.app().use(ghost.initTheme(ghost.app()));
+    ghost.app().use(flash());
+});
+
 
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;

@@ -230,7 +230,7 @@ Ghost.prototype.initTheme = function (app) {
     var self = this;
     return function initTheme(req, res, next) {
         app.set('view engine', 'hbs');
-        if (/(^\/ghost$|^\/ghost\/)/.test(req.url) === false) {
+        if (!res.isAdmin) {
             app.engine('hbs', hbs.express3(
                 {partialsDir: self.paths().activeTheme + 'partials'}
             ));
