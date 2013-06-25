@@ -67,9 +67,8 @@ adminControllers = {
     },
     'auth': function (req, res) {
         api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-            console.log('user found: ', user);
             req.session.user = "ghostadmin";
-            res.redirect('/ghost/' + req.query.r || '/ghost/');
+            res.redirect(req.query.r ? '/ghost/' + req.query.r : '/ghost/');
         }, function (error) {
             // Do something here to signal the reason for an error
             req.flash('error', error.message);
