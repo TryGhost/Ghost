@@ -1,21 +1,17 @@
-(function () {
-    "use strict";
+var when = require('when');
 
-    var when = require('when');
+module.exports = function (version) {
+    var exporter;
 
-    module.exports = function (version) {
-        var exporter;
+    try {
+        exporter = require("./" + version);
+    } catch (ignore) {
+        // Zero effs given
+    }
 
-        try {
-            exporter = require("./" + version);
-        } catch (ignore) {
-            // Zero effs given
-        }
+    if (!exporter) {
+        return when.reject("No exporter found");
+    }
 
-        if (!exporter) {
-            return when.reject("No exporter found");
-        }
-
-        return exporter.exportData();
-    };
-}());
+    return exporter.exportData();
+};

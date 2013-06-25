@@ -3,104 +3,100 @@
 /**
  * global module
  **/
-(function () {
-    "use strict";
+var path = require('path'),
+    config;
 
-    var path = require('path'),
-        config;
+/**
+ * @module config
+ * @type {Object}
+ */
+config = {};
 
-    /**
-     * @module config
-     * @type {Object}
-     */
-    config = {};
+// ## Admin settings
 
-    // ## Admin settings
+/**
+ * @property {string} defaultLang
+ */
+config.defaultLang = 'en';
 
-    /**
-     * @property {string} defaultLang
-     */
-    config.defaultLang = 'en';
+/**
+ * @property {boolean} forceI18n
+ */
+config.forceI18n = true;
 
-    /**
-     * @property {boolean} forceI18n
-     */
-    config.forceI18n = true;
+// ## Themes
 
-    // ## Themes
+/**
+ * @property {string} themeDir
+ */
 
-    /**
-     * @property {string} themeDir
-     */
+// Themes
+config.themeDir = 'themes';
 
-    // Themes
-    config.themeDir = 'themes';
+/**
+ * @property {string} activeTheme
+ */
+config.activeTheme = 'casper';
 
-    /**
-     * @property {string} activeTheme
-     */
-    config.activeTheme = 'casper';
+// ## Homepage settings
+/**
+ * @module homepage
+ * @type {Object}
+ */
+config.homepage = {};
 
-    // ## Homepage settings
-    /**
-     * @module homepage
-     * @type {Object}
-     */
-    config.homepage = {};
+/**
+ * @property {number} features
+ */
+config.homepage.features = 1;
 
-    /**
-     * @property {number} features
-     */
-    config.homepage.features = 1;
+/**
+ * @property {number} posts
+ */
+config.homepage.posts = 4;
 
-    /**
-     * @property {number} posts
-     */
-    config.homepage.posts = 4;
+config.database = {
+    testing: {
+        client: 'sqlite3',
+        connection: {
+            filename: path.join(__dirname, '/core/shared/data/tests.db')
+        }
+    },
 
-    config.database = {
-        testing: {
-            client: 'sqlite3',
-            connection: {
-                filename: path.join(__dirname, '/core/shared/data/tests.db')
-            }
+    travis: {
+        client: 'sqlite3',
+        connection: {
+            filename: path.join(__dirname, '/core/shared/data/tests.db')
+        }
+        // debug: true
+    },
+
+    development: {
+        client: 'sqlite3',
+        connection: {
+            filename: path.join(__dirname, '/core/shared/data/testdb.db')
         },
+        debug: false
+        // debug: true
+    },
 
-        travis: {
-            client: 'sqlite3',
-            connection: {
-                filename: path.join(__dirname, '/core/shared/data/tests.db')
-            }
-            // debug: true
-        },
+    staging: {},
 
-        development: {
-            client: 'sqlite3',
-            connection: {
-                filename: path.join(__dirname, '/core/shared/data/testdb.db')
-            },
-            debug: false
-            // debug: true
-        },
+    production: {}
+};
 
-        staging: {},
+/**
+ * @property {Array} nav
+ */
+config.nav = [{
+    title: 'Home',
+    url: '/'
+}, {
+    title: 'Admin',
+    url: '/ghost'
+}];
 
-        production: {}
-    };
-
-    /**
-     * @property {Array} nav
-     */
-    config.nav = [{
-        title: 'Home',
-        url: '/'
-    }, {
-        title: 'Admin',
-        url: '/ghost'
-    }];
-
-    /**
-     * @property {Object} exports
-     */
-    module.exports = config;
-}());
+/**
+ * @property {Object} exports
+ */
+module.exports = config;
