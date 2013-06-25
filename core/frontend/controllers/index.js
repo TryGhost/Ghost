@@ -12,9 +12,10 @@ var Ghost = require('../../ghost'),
 
 frontendControllers = {
     'homepage': function (req, res) {
-        api.posts.browse().then(function (page) {
+        var page = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+        api.posts.browse({page: page}).then(function (page) {
             ghost.doFilter('prePostsRender', page.posts, function (posts) {
-                res.render('index', {posts: posts});
+                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
         });
     },
