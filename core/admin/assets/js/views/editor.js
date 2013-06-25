@@ -1,6 +1,6 @@
 // # Article Editor
 
-/*global window, alert, document, history, Backbone, Ghost, $, _, Showdown, CodeMirror, shortcut, Countable */
+/*global window, document, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable */
 (function () {
     "use strict";
 
@@ -93,7 +93,7 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
+                window.alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
             });
         },
 
@@ -103,16 +103,16 @@
                 model = this.model;
 
             if (status === 'publish-on') {
-                return alert('Scheduled publishing not supported yet.');
+                return window.alert('Scheduled publishing not supported yet.');
             }
             if (status === 'queue') {
-                return alert('Scheduled publishing not supported yet.');
+                return window.alert('Scheduled publishing not supported yet.');
             }
 
             this.savePost({
                 status: status
             }).then(function () {
-                alert('Your post: ' + model.get('title') + ' has been ' + status);
+                window.alert('Your post: ' + model.get('title') + ' has been ' + status);
             });
         },
 
@@ -122,9 +122,9 @@
             }
             var model = this.model;
             this.savePost().then(function () {
-                alert('Your post was saved as ' + model.get('status'));
+                window.alert('Your post was saved as ' + model.get('status'));
             }, function () {
-                alert(model.validationError);
+                window.alert(model.validationError);
             });
         },
 
@@ -248,7 +248,6 @@
                 view.renderPreview();
             });
         }
-
     });
 
 }());

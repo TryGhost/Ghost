@@ -1,15 +1,12 @@
 // ## Tag Selector UI
 
-/*jslint regexp: true */ // - would like to remove this
-/*global jQuery, document, window */
-
-(function ($) {
+/*global window, document, $ */
+(function () {
     "use strict";
 
     var suggestions,
         categoryOffset,
-        existingTags = [ // This will be replaced by an API return.
-        ],
+        existingTags = [], // This will be replaced by an API return.
         keys = {
             UP: 38,
             DOWN: 40,
@@ -60,6 +57,7 @@
             pattern = new RegExp("(" + term + ")", "i");
 
             src_str = src_str.replace(pattern, "<mark>$1</mark>");
+            /*jslint regexp: true */ // - would like to remove this
             src_str = src_str.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
 
             $(this).html(src_str);
@@ -186,4 +184,5 @@
         $('.categories').on('click', ".category", handleCategoryClick);
         $('[data-off-canvas]').on('click', handleClickOff);
     });
-}(jQuery));
+
+}());

@@ -1,6 +1,5 @@
 /*global window, document, Ghost, Backbone, $, _ */
 (function () {
-
     "use strict";
 
     Ghost.Router = Backbone.Router.extend({

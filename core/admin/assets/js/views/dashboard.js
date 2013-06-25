@@ -1,4 +1,4 @@
-/*global window, document, localStorage, Ghost, Backbone, confirm, JST, $, _ */
+/*global window, document, Ghost, $, _, Backbone, JST */
 (function () {
     "use strict";
 

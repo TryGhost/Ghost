@@ -1,5 +1,5 @@
-/*global window, document, Ghost, Backbone, $, JST, _ */
-(function (_) {
+/*global window, document, Ghost, $, _, Backbone, JST */
+(function () {
     "use strict";
 
     Ghost.View = Backbone.View.extend({
@@ -72,4 +72,4 @@
         }
     });
 
-}(_));
+}());

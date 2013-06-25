@@ -1,5 +1,5 @@
-/*global jQuery, window, document, Ghost, Backbone, $, _, alert */
-(function ($, _, Backbone, Ghost) {
+/*global window, document, Ghost, $, _, Backbone, JST */
+(function () {
     "use strict";
 
     Ghost.Views.Debug = Ghost.View.extend({
@@ -22,4 +22,4 @@
         }
     });
 
-}(jQuery, _, Backbone, window.Ghost));
+}());

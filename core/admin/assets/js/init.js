@@ -1,6 +1,5 @@
-/*globals window, _, $, Backbone */
-(function ($) {
-
+/*globals window, $, _, Backbone */
+(function () {
     "use strict";
 
     var Ghost = {
