@@ -49,7 +49,7 @@ ghost.doFilter('messWithAdmin', adminNavbar, function () {
     console.log('the dofilter hook called in /core/admin/controllers/index.js');
 });
 
-// TODO - make this a util or helper
+// TODO: make this a util or helper
 function setSelected(list, name) {
     _.each(list, function (item, key) {
         item.selected = key === name;

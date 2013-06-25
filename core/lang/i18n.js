@@ -21,9 +21,9 @@ I18n = function (ghost) {
             lang = 'en';
         }
 
-        /** TODO potentially use req.acceptedLanguages rather than the default
-        *   TODO handle loading language file for frontend on frontend request etc
-        *   TODO switch this mess to be promise driven */
+        /** TODO: potentially use req.acceptedLanguages rather than the default
+        *   TODO: handle loading language file for frontend on frontend request etc
+        *   TODO: switch this mess to be promise driven */
         fs.stat(langFilePath, function (error) {
             if (error) {
                 console.log('No language file found for language ' + lang + '. Defaulting to en');
@@ -38,7 +38,7 @@ I18n = function (ghost) {
                 try {
                     data = JSON.parse(data);
                 } catch (e) {
-                    throw e; // TODO - do something better with the error here
+                    throw e; // TODO: do something better with the error here
                 }
 
                 ghost.polyglot().extend(data);
