@@ -1,8 +1,7 @@
 // # Temporary Admin UI
 
-/*global window, document, jQuery */
-
-(function ($) {
+/*global window, document, $ */
+(function () {
     "use strict";
 
     // UTILS
@@ -66,4 +65,5 @@
         });
 
     });
-}(jQuery));
+
+}());

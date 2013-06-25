@@ -1,4 +1,4 @@
-/*global window, document, Ghost, Backbone, $, _, alert */
+/*global window, document, Ghost, $, _, Backbone */
 (function () {
     "use strict";
 
@@ -85,7 +85,7 @@
                 email: this.$('#email-address').val()
             }, {
                 success: function () {
-                    alert('Saved');
+                    window.alert('Saved');
                 }
             });
         },
@@ -109,7 +109,7 @@
                 description: this.$('#blog-description').val()
             }, {
                 success: function () {
-                    alert('Saved');
+                    window.alert('Saved');
                 }
             });
         },

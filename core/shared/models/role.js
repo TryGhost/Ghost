@@ -1,32 +1,26 @@
-(function () {
+var User = require('./user').User,
+    Permission = require('./permission').Permission,
+    GhostBookshelf = require('./base'),
+    Role,
+    Roles;
 
-    "use strict";
+Role = GhostBookshelf.Model.extend({
+    tableName: 'roles',
 
-    var User = require('./user').User,
-        Permission = require('./permission').Permission,
-        GhostBookshelf = require('./base'),
-        Role,
-        Roles;
+    users: function () {
+        return this.belongsToMany(User);
+    },
 
-    Role = GhostBookshelf.Model.extend({
-        tableName: 'roles',
+    permissions: function () {
+        return this.belongsToMany(Permission);
+    }
+});
 
-        users: function () {
-            return this.belongsToMany(User);
-        },
+Roles = GhostBookshelf.Collection.extend({
+    model: Role
+});
 
-        permissions: function () {
-            return this.belongsToMany(Permission);
-        }
-    });
-
-    Roles = GhostBookshelf.Collection.extend({
-        model: Role
-    });
-
-    module.exports = {
-        Role: Role,
-        Roles: Roles
-    };
-
-}());
+module.exports = {
+    Role: Role,
+    Roles: Roles
+};

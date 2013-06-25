@@ -1,21 +1,17 @@
-(function () {
-    "use strict";
+var when = require('when');
 
-    var when = require('when');
+module.exports = function (version, data) {
+    var importer;
 
-    module.exports = function (version, data) {
-        var importer;
+    try {
+        importer = require("./" + version);
+    } catch (ignore) {
+        // Zero effs given
+    }
 
-        try {
-            importer = require("./" + version);
-        } catch (ignore) {
-            // Zero effs given
-        }
+    if (!importer) {
+        return when.reject("No importer found");
+    }
 
-        if (!importer) {
-            return when.reject("No importer found");
-        }
-
-        return importer.importData(data);
-    };
-}());
+    return importer.importData(data);
+};
