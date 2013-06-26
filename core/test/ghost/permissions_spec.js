@@ -20,7 +20,7 @@ describe('permissions', function () {
             return when(helpers.insertDefaultUser());
         }).then(function (results) {
             done();
-        });
+        }).otherwise(errors.logAndThrowError);
     });
 
     // beforeEach(function (done) {

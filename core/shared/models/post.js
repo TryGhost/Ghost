@@ -45,10 +45,7 @@ Post = GhostBookshelf.Model.extend({
     },
 
     creating: function () {
-        if (!this.get('slug')) {
-            this.generateSlug();
-        }
-
+        var self = this;
         if (!this.get('created_by')) {
             this.set('created_by', 1);
         }
@@ -56,20 +53,46 @@ Post = GhostBookshelf.Model.extend({
         if (!this.get('author_id')) {
             this.set('author_id', 1);
         }
+
+        if (!this.get('slug')) {
+            // Generating a slug requires a db call to look for conflicting slugs
+            return this.generateSlug(this.get('title'))
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
     },
 
     // #### generateSlug
     // Create a string act as the permalink for a post.
-    generateSlug: function () {
+    generateSlug: function (title) {
+        var slug,
+            slugTryCount = 1,
+            // Look for a post with a matching slug, append an incrementing number if so
+            checkIfSlugExists = function (slugToFind) {
+                return Post.read({slug: slugToFind}).then(function (found) {
+                    if (!found) {
+                        return when.resolve(slugToFind);
+                    }
+
+                    slugTryCount += 1;
+
+                    // TODO: Bug out (when.reject) if over 10 tries or something?
+
+                    return checkIfSlugExists(slugToFind + slugTryCount);
+                });
+            };
+
         // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
-        var slug = this.get('title').replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase();
+        slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase();
         // Remove trailing hypen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 2) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
             .test(slug) ? slug + '-post' : slug;
-        // TODO: test for duplicate slugs and increment
-        return this.set('slug', slug);
+
+        // Test for duplicate slugs.
+        return checkIfSlugExists(slug);
     },
 
     user: function () {
