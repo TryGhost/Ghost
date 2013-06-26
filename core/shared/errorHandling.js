@@ -20,7 +20,7 @@ errors = {
     logError: function (err) {
         err = err || "Unknown";
         // TODO: Logging framework hookup
-        console.log("Error occurred: ", err.message || err);
+        console.log("Error occurred: ", err.message || err, err.stack || "");
     },
 
     logAndThrowError: function (err) {

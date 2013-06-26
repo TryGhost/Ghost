@@ -100,6 +100,27 @@ describe('Post Model', function () {
 
     });
 
+    it('can generate a non conflicting slug', function (done) {
+        var newPost = {
+                title: 'Test Title',
+                content: 'Test Content 1'
+            };
+
+        PostModel.add(newPost).then(function (createdPost) {
+
+            createdPost.get('slug').should.equal('test-title');
+
+            newPost.content = 'Test Content 2';
+            return PostModel.add(newPost);
+        }).then(function (secondPost) {
+
+            secondPost.get('slug').should.equal('test-title2');
+            secondPost.get('content').should.equal("Test Content 2");
+
+            done();
+        }).otherwise(done);
+    });
+
     it('can delete', function (done) {
         var firstPostId;
         PostModel.browse().then(function (results) {
