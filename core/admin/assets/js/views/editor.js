@@ -1,6 +1,6 @@
 // # Article Editor
 
-/*global window, document, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable */
+/*global window, document, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable, JST */
 (function () {
     "use strict";
 
@@ -93,26 +93,55 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                window.alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
+                this.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'success',
+                        message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
+                        status: 'passive'
+                    }]
+                }));
+                // window.alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
             });
         },
 
         handleStatus: function (e) {
             e.preventDefault();
             var status = $(e.currentTarget).attr('data-set-status'),
-                model = this.model;
+                model = this.model,
+                self = this;
 
             if (status === 'publish-on') {
-                return window.alert('Scheduled publishing not supported yet.');
+                this.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'alert',
+                        message: 'Scheduled publishing not supported yet.',
+                        status: 'passive'
+                    }]
+                }));
+                // return window.alert('Scheduled publishing not supported yet.');
             }
             if (status === 'queue') {
-                return window.alert('Scheduled publishing not supported yet.');
+                this.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'alert',
+                        message: 'Scheduled publishing not supported yet.',
+                        status: 'passive'
+                    }]
+                }));
+                // return window.alert('Scheduled publishing not supported yet.');
             }
 
             this.savePost({
                 status: status
             }).then(function () {
-                window.alert('Your post: ' + model.get('title') + ' has been ' + status);
+                self.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'success',
+                        message: 'Your post: ' + model.get('title') + ' has been ' + status,
+                        status: 'passive'
+                    }]
+                }));
+                // window.alert('Your post: ' + model.get('title') + ' has been ' + status);
             });
         },
 
@@ -120,11 +149,26 @@
             if (e) {
                 e.preventDefault();
             }
-            var model = this.model;
+            var model = this.model,
+                self = this;
             this.savePost().then(function () {
-                window.alert('Your post was saved as ' + model.get('status'));
+                self.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'success',
+                        message: 'Your post was saved as ' + model.get('status'),
+                        status: 'passive'
+                    }]
+                }));
+                // window.alert('Your post was saved as ' + model.get('status'));
             }, function () {
-                window.alert(model.validationError);
+                self.addSubview(new Ghost.Views.FlashCollectionView({
+                    model: [{
+                        type: 'error',
+                        message: model.validationError,
+                        status: 'passive'
+                    }]
+                }));
+                // window.alert(model.validationError);
             });
         },
 
@@ -247,6 +291,54 @@
             this.editor.on('change', function () {
                 view.renderPreview();
             });
+        }
+    });
+
+    /**
+     * This is the view to generate the markup for the individual
+     * notification. Will be included into #flashbar.
+     *
+     * States can be
+     * - persistent
+     * - passive
+     *
+     * Types can be
+     * - error
+     * - success
+     * - alert
+     * -   (empty)
+     *
+     */
+    Ghost.Views.FlashView = Ghost.View.extend({
+        templateName: 'notification',
+        className: 'js-bb-notification',
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
+        render: function() {
+            var html = this.template(this.model);
+            this.$el.html(html);
+            return this;
+        }
+    });
+
+
+    /**
+     * This handles Notification groups
+     */
+    Ghost.Views.FlashCollectionView = Ghost.View.extend({
+        el: '#flashbar',
+        initialize: function() {
+            this.render();
+        },
+        render: function() {
+            _.each(this.model, function (item) {
+                this.renderItem(item);
+            }, this);
+        },
+        renderItem: function (item) {
+            var itemView = new Ghost.Views.FlashView({ model: item });
+            this.$el.prepend(itemView.render().el);
         }
     });
 

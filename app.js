@@ -96,7 +96,7 @@ ghostLocals = function (req, res, next) {
     } else {
         _.extend(res.locals,  {
             // pass the admin flash messages, settings and paths
-            messages: req.flash(),
+            messages: ghost.notifications,
             settings: ghost.settings(),
             availableThemes: ghost.paths().availableThemes,
             availablePlugins: ghost.paths().availablePlugins
@@ -172,6 +172,12 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
         res.redirect('/ghost/');
     });
     ghost.app().get('/ghost/', auth, admin.index);
+
+
+    // Notifications routes
+    ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
+    ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
+
 
     /**
      * Frontend routes..
