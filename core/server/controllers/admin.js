@@ -110,6 +110,7 @@ adminControllers = {
         });
     },
     'editor': function (req, res) {
+        console.log(res.locals);
         if (req.params.id !== undefined) {
             api.posts.read({id: parseInt(req.params.id, 10)})
                 .then(function (post) {

@@ -27,7 +27,9 @@
         {{/unless}}
 
         <main role="main" id="main">
-            {{> flashes}}
+            <aside id="flashbar">
+                {{> flashes}}
+            </aside>
 
             {{{body}}}
         </main>
