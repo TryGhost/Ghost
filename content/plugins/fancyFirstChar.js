@@ -17,7 +17,7 @@
                 newContent,
                 firstCharIndex = 0;
 
-            console.log('got content to filter', posts);
+
 
             for (post in posts) {
                 if (posts.hasOwnProperty(post)) {

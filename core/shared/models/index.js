@@ -15,8 +15,6 @@ module.exports = {
             return migration.down().then(function () {
                 return migration.up();
             }, errors.logAndThrowError);
-        }, errors.logAndThrowError).then(function () {
-            console.log('models loaded');
         }, errors.logAndThrowError);
     }
 };
