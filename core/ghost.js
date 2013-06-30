@@ -12,7 +12,6 @@ var config = require('./../config'),
     Polyglot = require('node-polyglot'),
 
     models = require('./shared/models'),
-    ExampleFilter = require('../content/plugins/exampleFilters'),
 
     requireTree = require('./shared/require-tree'),
     themeDirectories = requireTree(path.resolve(__dirname + '../../content/themes')),
@@ -54,7 +53,6 @@ statuses = {
  */
 Ghost = function () {
     var app,
-        plugin,
         polyglot;
 
     if (!instance) {
@@ -71,9 +69,6 @@ Ghost = function () {
 
         // Holds the plugin directories temporarily
         instance.pluginDirectories = {};
-
-
-        plugin = new ExampleFilter(instance).init();
 
         app = express();
 
@@ -92,7 +87,6 @@ Ghost = function () {
             dataProvider: models,
             statuses: function () { return statuses; },
             polyglot: function () { return polyglot; },
-            plugin: function () { return plugin; },
             getPaths: function () {
                 return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
                     instance.themeDirectories = paths[0];
