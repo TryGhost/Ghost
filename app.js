@@ -182,7 +182,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/page/:page/', frontend.homepage);
 
     ghost.app().listen(3333, function () {
-        console.log("Express server listening on port " + 3333);
+        // console.log("Express server listening on port " + 3333);
 
         // Let everyone know we have finished loading
         loading.resolve();

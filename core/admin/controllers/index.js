@@ -45,10 +45,6 @@ adminNavbar = {
     }
 };
 
-ghost.doFilter('messWithAdmin', adminNavbar, function () {
-    console.log('the dofilter hook called in /core/admin/controllers/index.js');
-});
-
 // TODO: make this a util or helper
 function setSelected(list, name) {
     _.each(list, function (item, key) {
@@ -91,7 +87,7 @@ adminControllers = {
                 email_address: email,
                 password: password
             }).then(function (user) {
-                console.log('user added', user);
+                // console.log('user added', user);
                 res.redirect('/ghost/login/');
             }, function (error) {
                 req.flash('error', error.message);
