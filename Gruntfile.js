@@ -1,6 +1,6 @@
 var path = require('path'),
-    buildDirectory = path.resolve(process.cwd(), '../build'),
-    distDirectory =  path.resolve(process.cwd(), '../dist'),
+    buildDirectory = path.resolve(process.cwd(), '.build'),
+    distDirectory =  path.resolve(process.cwd(), '.dist'),
     configureGrunt = function (grunt) {
 
         var cfg = {
