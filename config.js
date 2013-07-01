@@ -39,6 +39,11 @@ config.themeDir = 'themes';
  */
 config.activeTheme = 'casper';
 
+
+config.activePlugins = [
+    'fancyFirstChar.js'
+];
+
 // Default Navigation Items
 /**
  * @property {Array} nav
