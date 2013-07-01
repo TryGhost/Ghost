@@ -33,4 +33,5 @@ projectFilesBackup
 /core/admin/assets/sass/modules/bourbon
 /ghost/.idea/
 /core/shared/data/export/exported*
-/docs/*
+/docs
+/_site
