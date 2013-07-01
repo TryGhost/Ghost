@@ -217,6 +217,12 @@ var path = require('path'),
                     cwd: "<%= paths.buildBuild %>/",
                     src: ["**"]
                 }
+            },
+
+            bump: {
+                options: {
+                    push: false
+                }
             }
         };
 
