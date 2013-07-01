@@ -1,0 +1,151 @@
+/* ==========================================================================
+   General
+   ========================================================================== */
+
+body {
+    padding-top:60px;
+    font-family: 'Open Sans', Lato, sans-serif;
+    background: #edece4;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+.navbar {
+    background: #fff;
+    box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+}
+
+.navbar-brand {
+    padding: 20px 15px;
+}
+
+.navbar-nav > li > a {
+    padding-top:20px;
+    padding-bottom:20px;
+}
+
+/* ==========================================================================
+   Global Headers
+   ========================================================================== */
+
+.bs-masthead {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 100px 15px;
+    text-align: center;
+}
+
+.bs-masthead h1 {
+    font-size: 100px;
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+.bs-masthead p {
+    margin-left: 15%;
+    margin-right: 15%;
+    font-size: 30px;
+    font-weight: 300;
+}
+
+.bs-header {
+    padding: 50px 20px 60px 20px;
+    font-size: 1.6em;
+    font-weight: 300;
+    color: #5a5a5a;
+    text-align: center;
+}
+
+.bs-header h1 {
+    font-size: 2.4em;
+}
+
+/* ==========================================================================
+   Main Content Area
+   ========================================================================== */
+
+#content {
+    padding: 1px 3em 2em 3em;
+    background: #fff;
+    box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+}
+
+#sidebar {
+    float: right;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+    border-radius: 3px;
+    border: none;
+    text-transform: uppercase;
+    font-weight: 300;
+}
+
+.btn-primary {
+    background: #5ba4e5;
+}
+
+.btn-success {
+    background: #9fbb58;
+}
+
+.btn-success:hover {
+    background: #8ba644
+}
+
+/* ==========================================================================
+   Home Page
+   ========================================================================== */
+
+#social {
+    padding: 15px 0;
+    text-align: center;
+    background-color: #fff;
+}
+
+#social ul {
+    margin-left: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+#social li {
+    display: inline-block;
+    padding: 5px 8px;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+#global-footer {
+    padding: 40px 20px;
+    color: #a6a6a6;
+    font-size: 0.8em;
+    text-align: center;
+    background: #18191b;
+    border-bottom:#0a0a0a 5px solid;
+}
+
+#global-footer p {
+    margin:0;
+}
+
+#global-footer a {
+    color: #e2edf2;
+}
+
+#global-footer hr {
+    width: 40%;
+    margin: 1em auto;
+    border-top:0;
+    border-color: #4d5356;
+}
