@@ -14,8 +14,10 @@ var config = require('./../config'),
     models = require('./shared/models'),
 
     requireTree = require('./shared/require-tree'),
-    themeDirectories = requireTree(path.resolve(__dirname + '../../content/themes')),
-    pluginDirectories = requireTree(path.resolve(__dirname + '../../content/plugins')),
+    themePath = path.resolve(__dirname + '../../content/themes'),
+    pluginPath = path.resolve(__dirname + '../../content/plugins'),
+    themeDirectories = requireTree(themePath),
+    pluginDirectories = requireTree(pluginPath),
 
     Ghost,
     instance,
@@ -113,10 +115,35 @@ Ghost.prototype.init = function () {
     var self = this;
 
     return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+        return self.loadPlugins();
+    }, errors.logAndThrowError).then(function () {
         return self.updateSettingsCache();
     }, errors.logAndThrowError);
 };
 
+Ghost.prototype.loadPlugins = function () {
+    var self = this,
+        pluginPaths = _.values(self.paths().availablePlugins),
+        pluginPromises = [];
+
+    _.each(self.config().activePlugins, function (plugin) {
+        var match = _.find(pluginPaths, function (path) {
+            return new RegExp(plugin + '$').test(path);
+        });
+
+        if (match) {
+            pluginPromises.push(require(path.join(pluginPath, plugin)));
+        }
+    });
+
+    return when.all(pluginPromises).then(function (plugins) {
+        _.each(plugins, function (plugin) {
+            if (_.isFunction(plugin.init)) {
+                plugin.init(self);
+            }
+        });
+    }, errors.logAndThrowError);
+};
 
 Ghost.prototype.updateSettingsCache = function (settings) {
     var self = this;
