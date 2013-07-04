@@ -121,19 +121,6 @@ describe('Post Model', function () {
         }).otherwise(done);
     });
 
-    it('can generate slugs without 2 letter words', function (done) {
-        var newPost = {
-            title: 'I am an idiot',
-            content: 'Test Content 1'
-        };
-
-        PostModel.add(newPost).then(function (createdPost) {
-
-            createdPost.get('slug').should.equal('idiot');
-
-            done();
-        });
-    });
 
     it('can generate slugs without duplicate hyphens', function (done) {
         var newPost = {
