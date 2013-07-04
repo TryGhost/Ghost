@@ -17,7 +17,7 @@ describe("Import", function () {
     beforeEach(function (done) {
         helpers.resetData().then(function () {
             done();
-        }, done);
+        }, errors.logAndThrowError);
     });
 
     it("resolves 001", function (done) {
@@ -32,7 +32,7 @@ describe("Import", function () {
             importStub.restore();
 
             done();
-        }, errors.throwError);
+        }, errors.logAndThrowError);
     });
 
     describe("001", function () {
@@ -72,7 +72,7 @@ describe("Import", function () {
                 importedData[2].length.should.equal(exportData.data.settings.length);
 
                 done();
-            });
+            }).otherwise(errors.logAndThrowError);
         });
     });
 });
