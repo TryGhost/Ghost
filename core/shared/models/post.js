@@ -67,6 +67,7 @@ Post = GhostBookshelf.Model.extend({
     // Create a string act as the permalink for a post.
     generateSlug: function (title) {
         var slug,
+            shortSlug,
             slugTryCount = 1,
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
@@ -85,14 +86,31 @@ Post = GhostBookshelf.Model.extend({
 
         // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
         slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/\s/g, '-').toLowerCase();
-        // Remove trailing hypen
+        // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 2) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
             .test(slug) ? slug + '-post' : slug;
 
+        // Replace multiple hyphens and anything with less than two letters with one hyphen
+        shortSlug = _.filter(slug.split('-'), function (part) {
+            return part.length > 2;
+        }).join('-');
+
+        // If we've gotten rid of everything, come back through with lower threshold
+        if (shortSlug.length < 1) {
+            shortSlug = _.filter(slug.split('-'), function (part) {
+                return part.length > 1;
+            }).join('-');
+
+            // If we've still got no slug, default to just 'post'
+            if (shortSlug.length < 1) {
+                shortSlug = "post";
+            }
+        }
+
         // Test for duplicate slugs.
-        return checkIfSlugExists(slug);
+        return checkIfSlugExists(shortSlug);
     },
 
     user: function () {

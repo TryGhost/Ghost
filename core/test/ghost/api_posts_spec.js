@@ -74,12 +74,12 @@ describe('Post Model', function () {
             createdPost.get('status').should.equal('draft');
             createdPost.get('title').should.equal(newPost.title, "title is correct");
             createdPost.get('content').should.equal(newPost.content, "content is correct");
-            createdPost.get('slug').should.equal(newPost.title.toLowerCase().replace(/ /g, '-'), 'slug is correct');
-            //createdPost.get('created_at').should.be.instanceOf(Date); - why is this not true?
+            createdPost.get('slug').should.equal('test-title');
+            createdPost.get('created_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
             createdPost.get('created_by').should.equal(createdPost.get('author_id'));
-            //createdPost.get('updated_at').should.be.instanceOf(Date); - why is this not true?
+            createdPost.get('updated_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
             createdPost.get('updated_by').should.equal(1);
             should.equal(createdPost.get('published_at'), null);
             should.equal(createdPost.get('published_by'), null);
@@ -121,6 +121,34 @@ describe('Post Model', function () {
         }).otherwise(done);
     });
 
+    it('can generate slugs without 2 letter words', function (done) {
+        var newPost = {
+            title: 'I am an idiot',
+            content: 'Test Content 1'
+        };
+
+        PostModel.add(newPost).then(function (createdPost) {
+
+            createdPost.get('slug').should.equal('idiot');
+
+            done();
+        });
+    });
+
+    it('can generate slugs without duplicate hyphens', function (done) {
+        var newPost = {
+            title: 'apprehensive  titles  have  too  many  spaces  ',
+            content: 'Test Content 1'
+        };
+
+        PostModel.add(newPost).then(function (createdPost) {
+
+            createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces');
+
+            done();
+        });
+    });
+
     it('can delete', function (done) {
         var firstPostId;
         PostModel.browse().then(function (results) {
@@ -136,7 +164,6 @@ describe('Post Model', function () {
 
             ids = _.pluck(newResults.models, "id");
             hasDeletedId = _.any(ids, function (id) {
-
                 return id === firstPostId;
             });
             hasDeletedId.should.equal(false);
