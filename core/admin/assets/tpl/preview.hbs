@@ -3,7 +3,7 @@
         <span class="hidden">Star</span>
     </a>
     {{! TODO: JavaScript toggle featured/unfeatured}}
-    <span class="status">Published</span>
+    <span class="status">{{#if published}}Published{{else}}Written{{/if}}</span>
     <span class="normal">by</span>
     <span class="author">Joe Bloggs</span>
     <section class="post-controls">
