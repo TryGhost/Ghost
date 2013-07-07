@@ -1,6 +1,6 @@
 // # Temporary Admin UI
 
-/*global window, document, $ */
+/*global window, document, $, Ghost, console */
 (function () {
     "use strict";
 
@@ -28,9 +28,49 @@
     });
 
     // Allow notifications to be dismissed
-    $(document).on('click', '.js-notification .close',  function () {
+    $(document).on('click', '.js-notification.notification-passive .close',  function () {
         $(this).parent().fadeOut(200,  function () { $(this).remove(); });
     });
+
+    $(document).on('click', '.js-notification.notification-persistent .close',  function () {
+        var self = this;
+        $.ajax({
+            type: "DELETE",
+            url: '/api/v0.1/notifications/' + $(this).data('id')
+        }).done(function (result) {
+            if ($(self).parent().parent().hasClass('js-bb-notification')) {
+                $(self).parent().parent().fadeOut(200, function () { $(self).remove(); });
+            } else {
+                $(self).parent().fadeOut(200, function () { $(self).remove(); });
+            }
+        });
+    });
+
+
+    /**
+     * Example of how to add a persistent notification.
+     */
+    // $(document).on('click', '.add-persistent-notification', function (event) {
+    //     event.preventDefault();
+    //     var msg = {
+    //             type: 'error',
+    //             message: 'This is an error',
+    //             status: 'persistent',
+    //             id: 'per-' + $('.notification-persistent').length + 1
+    //         };
+
+    //     $.ajax({
+    //         type: "POST",
+    //         url: '/api/v0.1/notifications/',
+    //         data: msg
+    //     }).done(function (result) {
+    //         var fcv;
+    //         fcv = new Ghost.Views.FlashCollectionView({
+    //             model: [msg]
+    //         });
+    //         console.log(fcv);
+    //     });
+    // });
 
     $(document).ready(function () {
 

@@ -13,6 +13,7 @@ var Ghost = require('../ghost'),
     dataProvider = ghost.dataProvider,
     posts,
     users,
+    notifications,
     settings,
     requestHandler,
     cachedSettingsRequestHandler,
@@ -55,6 +56,20 @@ users = {
     },
     check: function check(postData) {
         return dataProvider.User.check(postData);
+    }
+};
+
+// # Notifications
+
+notifications = {
+    destroy: function destroy(i) {
+        ghost.notifications = _.reject(ghost.notifications, function (element) {
+            return element.id === i.id;
+        });
+        return when(ghost.notifications);
+    },
+    add: function add(notification) {
+        return when(ghost.notifications.push(notification));
     }
 };
 
@@ -147,6 +162,7 @@ cachedSettingsRequestHandler = function (apiMethod) {
 
 module.exports.posts = posts;
 module.exports.users = users;
+module.exports.notifications = notifications;
 module.exports.settings = settings;
 module.exports.requestHandler = requestHandler;
 module.exports.cachedSettingsRequestHandler = cachedSettingsRequestHandler;
