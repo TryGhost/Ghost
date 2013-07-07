@@ -4,7 +4,7 @@ var GhostBookshelf,
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
 // others' if they're using the library outside of ghost.
-GhostBookshelf = Bookshelf.Initialize('ghost', config.database[process.env.NODE_ENV || 'development']);
+GhostBookshelf = Bookshelf.Initialize('ghost', config.env[process.env.NODE_ENV || 'development'].database);
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.

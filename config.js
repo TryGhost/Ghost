@@ -53,34 +53,74 @@ config.nav = [{
     url: '/'
 }];
 
-config.database = {
+config.env = {
     testing: {
-        client: 'sqlite3',
-        connection: {
-            filename: path.join(__dirname, '/core/shared/data/tests.db')
+        database: {
+            client: 'sqlite3',
+            connection: {
+                filename: path.join(__dirname, '/core/shared/data/ghost-test.db')
+            }
+        },
+        url: {
+            host: '127.0.0.1',
+            port: '2368'
         }
     },
 
     travis: {
-        client: 'sqlite3',
-        connection: {
-            filename: path.join(__dirname, '/core/shared/data/tests.db')
+        database: {
+            client: 'sqlite3',
+            connection: {
+                filename: path.join(__dirname, '/core/shared/data/ghost-travis.db')
+            }
+        },
+        url: {
+            host: '127.0.0.1',
+            port: '2368'
         }
-        // debug: true
     },
 
     development: {
-        client: 'sqlite3',
-        connection: {
-            filename: path.join(__dirname, '/core/shared/data/testdb.db')
+        database: {
+            client: 'sqlite3',
+            connection: {
+                filename: path.join(__dirname, '/core/shared/data/ghost-dev.db')
+            },
+            debug: true
         },
-        debug: false
-        // debug: true
+        url: {
+            host: '127.0.0.1',
+            port: '2368'
+        }
     },
 
-    staging: {},
+    staging: {
+        database: {
+            client: 'sqlite3',
+            connection: {
+                filename: path.join(__dirname, '/core/shared/data/ghost-staging.db')
+            },
+            debug: false
+        },
+        url: {
+            host: '127.0.0.1',
+            port: '2368'
+        }
+    },
 
-    production: {}
+    production: {
+        database: {
+            client: 'sqlite3',
+            connection: {
+                filename: path.join(__dirname, '/core/shared/data/ghost.db')
+            },
+            debug: false
+        },
+        url: {
+            host: '127.0.0.1',
+            port: '2368'
+        }
+    }
 };
 
 /**

@@ -138,7 +138,7 @@ var path = require('path'),
                         "glob": [
                             "README.md",
                             "config.js",
-                            "app.js",
+                            "index.js",
                             "core/ghost.js",
                             "core/admin/assets/js/*.js",
                             "core/admin/assets/js/**/*.js",

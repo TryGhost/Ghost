@@ -181,11 +181,19 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/', frontend.homepage);
     ghost.app().get('/page/:page/', frontend.homepage);
 
-    ghost.app().listen(3333, function () {
-        // console.log("Express server listening on port " + 3333);
 
-        // Let everyone know we have finished loading
-        loading.resolve();
-    });
+
+    ghost.app().listen(
+        ghost.config().env[process.env.NODE_ENV || 'development'].url.port,
+        ghost.config().env[process.env.NODE_ENV || 'development'].url.host,
+        function () {
+            console.log("Express server listening on address:",
+                ghost.config().env[process.env.NODE_ENV || 'development'].url.host + ':'
+                    + ghost.config().env[process.env.NODE_ENV || 'development'].url.port);
+
+            // Let everyone know we have finished loading
+            loading.resolve();
+        }
+    );
 
 }, errors.logAndThrowError);
