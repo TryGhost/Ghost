@@ -130,6 +130,10 @@
 
         savePost: function (data) {
             // TODO: The content getter here isn't great, shouldn't rely on currentView.
+            _.each(this.model.blacklist, function (item) {
+                this.model.unset(item);
+            }, this);
+
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
                 content: Ghost.currentView.editor.getValue()

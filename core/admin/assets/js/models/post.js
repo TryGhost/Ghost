@@ -8,6 +8,8 @@
             status: 'draft'
         },
 
+        blacklist: ['published', 'draft'],
+
         parse: function (resp) {
             if (resp.status) {
                 resp.published = !!(resp.status === "published");
