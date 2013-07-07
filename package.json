@@ -15,7 +15,7 @@
     "moment": "2.0.0",
     "underscore": "1.4.4",
     "showdown": "0.3.1",
-    "sqlite3": "2.1.10",
+    "sqlite3": "git+https://github.com/developmentseed/node-sqlite3.git#master",
     "bookshelf": "0.1.9",
     "knex": "0.1.7",
     "when": "2.1.1",
