@@ -15,8 +15,15 @@ coreHelpers = function (ghost) {
      * @return {Object} A Moment time / date object
      */
     ghost.registerThemeHelper('dateFormat', function (context, block) {
-        var f = block.hash.format || "MMM Do, YYYY";
-        return moment(context).format(f);
+        var f = block.hash.format || "MMM Do, YYYY",
+            timeago = block.hash.timeago,
+            date;
+        if (timeago) {
+            date = moment(context).fromNow();
+        } else {
+            date = moment(context).format(f);
+        }
+        return date;
     });
 
     /**
