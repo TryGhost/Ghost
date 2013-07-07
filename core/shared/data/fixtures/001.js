@@ -47,7 +47,7 @@ module.exports = {
         {
             "uuid":         uuid.v4(),
             "key":          "url",
-            "value":        "http://localhost:3333",
+            "value":        "http://localhost:2368",
             "created_by":    1,
             "updated_by":    1,
             "type":         "blog"

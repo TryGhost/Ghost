@@ -36,7 +36,7 @@ Note - this is still very alpha. Not everything works yet.
 * Database
 	* The database is created and populated with basic data on first run of the server
     * New posts and edits save and last forever
-    * The data can be reset by opening data/datastore.db and emptying the file. The next restart of the server will cause the database to be recreated and repopulated.
+    * The data can be reset by finding core/shared/data/*.db and emptying or deleting the file. The next restart of the server will cause the database to be recreated and repopulated.
 * Frontend
 	* Homepage lists a number of posts as configured in config.js
     * Clicking on an individual post loads an individual post page
@@ -53,7 +53,7 @@ Note - this is still very alpha. Not everything works yet.
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
 3. run `grunt init` from the root. (make sure you have Casper 1.1 installed though, or have installed `bourbon` on your vagrant. See Ghost-Vagrant for that)
 
-Frontend can be located at [localhost:3333](localhost:3333), Admin is at [localhost:3333/ghost](localhost:3333/ghost)
+Frontend can be located at [localhost:2368](localhost:2368), Admin is at [localhost:2368/ghost](localhost:2368/ghost)
 
 Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically
 
@@ -64,7 +64,7 @@ Pulling down the latest changes from master will often require more than just a 
  * **npm install** - fetch any new dependencies
  * **grunt** - will recompile handlebars templates and sass for the admin (as long as you have previously run grunt init to install bourbon)
  * git submodule update - fetch the latest changes to Casper (the default theme)
- * delete core/shared/data/testdb.db - delete the database and allow Ghost to recreate the fixtures
+ * delete core/shared/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### SQLite3 Install Instructions
 Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
