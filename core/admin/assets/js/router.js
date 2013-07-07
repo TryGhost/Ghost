@@ -16,7 +16,7 @@
 
         blog: function () {
             var posts = new Ghost.Collections.Posts();
-            posts.fetch({ data: { status: 'all' } }).then(function () {
+            posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
             });
         },
