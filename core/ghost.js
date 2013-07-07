@@ -234,7 +234,12 @@ Ghost.prototype.doFilter = function (name, args, callback) {
 
         // Call each handler for this priority level
         _.each(callbacks[priority], function (filterHandler) {
-            args = filterHandler(args);
+            try {
+                args = filterHandler(args);
+            } catch (e) {
+                // If a filter causes an error, we log it so that it can be debugged, but do not throw the error
+                errors.logError(e);
+            }
         });
     });
 
