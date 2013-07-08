@@ -86,7 +86,7 @@ config.env = {
             connection: {
                 filename: path.join(__dirname, '/core/shared/data/ghost-dev.db')
             },
-            debug: true
+            debug: false
         },
         url: {
             host: '127.0.0.1',

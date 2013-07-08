@@ -1,5 +1,6 @@
 var GhostBookshelf,
     Bookshelf = require('bookshelf'),
+    _ = require('underscore'),
     config = require('../../../config');
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
@@ -11,6 +12,35 @@ GhostBookshelf = Bookshelf.Initialize('ghost', config.env[process.env.NODE_ENV |
 GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
     // Base prototype properties will go here
+    // Fix problems with dates
+    fixDates: function (attrs) {
+        _.each(attrs, function (value, key) {
+            if (key.substr(-3) === '_at' && value !== null) {
+                attrs[key] = new Date(attrs[key]);
+            }
+        });
+
+        return attrs;
+    },
+
+    format: function (attrs) {
+        return this.fixDates(attrs);
+    },
+
+    toJSON: function (options) {
+        var attrs = this.fixDates(_.extend({}, this.attributes)),
+            relations = this.relations;
+
+        if (options && options.shallow) {
+            return attrs;
+        }
+
+        _.each(relations, function (key) {
+            attrs[key] = relations[key].toJSON();
+        });
+
+        return attrs;
+    }
 
 }, {
 

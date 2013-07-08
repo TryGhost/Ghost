@@ -17,9 +17,11 @@ module.exports = {
             "status":           "published",
             "featured":         true,
             "author_id":        1,
-            "created_at":       '2012-11-09T15:40:46.776Z',
+            "created_at":       '1352475600601',
             "created_by":       1,
-            "published_at":     '2012-11-09T15:40:46.776Z',
+            "updated_at":       '1352475600601',
+            "updated_by":       1,
+            "published_at":     '1352475600601',
             "published_by":     1
         },
         {
@@ -36,9 +38,11 @@ module.exports = {
             "status":           "published",
             "featured":         true,
             "author_id":        1,
-            "created_at":       '2012-06-25T01:00:23.776Z',
+            "created_at":       '1340582400102',
             "created_by":       1,
-            "published_at":     '2012-06-25T01:00:23.776Z',
+            "updated_at":       '1340582400102',
+            "updated_by":       1,
+            "published_at":     '1340582400102',
             "published_by":     1
         }
     ],
