@@ -67,7 +67,6 @@ Post = GhostBookshelf.Model.extend({
     // Create a string act as the permalink for a post.
     generateSlug: function (title) {
         var slug,
-            shortSlug,
             slugTryCount = 1,
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
@@ -80,12 +79,19 @@ Post = GhostBookshelf.Model.extend({
 
                     // TODO: Bug out (when.reject) if over 10 tries or something?
 
-                    return checkIfSlugExists(slugToFind + slugTryCount);
+                    return checkIfSlugExists(slugToFind + '-' + slugTryCount);
                 });
             };
 
-        // Remove reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\` and convert spaces to hyphens
-        slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\]/g, '').replace(/(\s|\.)/g, '-').replace(/-+/g, '-').toLowerCase();
+        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
+        slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+        // Replace dots and spaces with a dash
+                    .replace(/(\s|\.)/g, '-')
+        // Convert 2 or more dashes into a single dash
+                    .replace(/-+/g, '-')
+        // Make the whole thing lowercase
+                    .toLowerCase();
+
         // Remove trailing hypen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
@@ -93,7 +99,7 @@ Post = GhostBookshelf.Model.extend({
             .test(slug) ? slug + '-post' : slug;
 
         // Test for duplicate slugs.
-        return checkIfSlugExists(shortSlug);
+        return checkIfSlugExists(slug);
     },
 
     user: function () {

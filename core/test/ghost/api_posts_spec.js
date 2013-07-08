@@ -74,7 +74,7 @@ describe('Post Model', function () {
             createdPost.get('status').should.equal('draft');
             createdPost.get('title').should.equal(newPost.title, "title is correct");
             createdPost.get('content').should.equal(newPost.content, "content is correct");
-            createdPost.get('slug').should.equal('test-title');
+            createdPost.get('slug').should.equal('test-title-1');
             createdPost.get('created_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
@@ -114,7 +114,7 @@ describe('Post Model', function () {
             return PostModel.add(newPost);
         }).then(function (secondPost) {
 
-            secondPost.get('slug').should.equal('test-title2');
+            secondPost.get('slug').should.equal('test-title-2');
             secondPost.get('content').should.equal("Test Content 2");
 
             done();
