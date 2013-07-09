@@ -66,7 +66,7 @@ var path = require('path'),
                 }
             },
 
-            mochaTest: {
+            mochacli: {
                 options: {
                     ui: "bdd",
                     reporter: "spec"
@@ -229,7 +229,7 @@ var path = require('path'),
         grunt.initConfig(cfg);
 
         grunt.loadNpmTasks("grunt-jslint");
-        grunt.loadNpmTasks("grunt-mocha-test");
+        grunt.loadNpmTasks("grunt-mocha-cli");
         grunt.loadNpmTasks("grunt-shell");
         grunt.loadNpmTasks("grunt-bump");
 
@@ -253,13 +253,13 @@ var path = require('path'),
         grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
 
         // Run API tests only
-        grunt.registerTask("test-api", ["mochaTest:api"]);
+        grunt.registerTask("test-api", ["mochacli:api"]);
 
         // Run permisisons tests only
-        grunt.registerTask("test-p", ["mochaTest:perm"]);
+        grunt.registerTask("test-p", ["mochacli:perm"]);
 
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "mochaTest:all"]);
+        grunt.registerTask("validate", ["jslint", "mochacli:all"]);
 
         // Generate Docs
         grunt.registerTask("docs", ["groc"]);
