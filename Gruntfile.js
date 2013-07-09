@@ -280,7 +280,7 @@ var path = require('path'),
             "sass:admin",
             "handlebars",
             "validate",
-            "bump",
+            "bump:git",
             "updateCurrentPackageInfo",
             "copy:nightly",
             "compress:nightly"
