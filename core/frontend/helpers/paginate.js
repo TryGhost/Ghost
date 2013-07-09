@@ -20,7 +20,7 @@ PaginationHelper = function (paginationTemplate) {
 PaginationHelper.prototype.compileTemplate = function (templatePath) {
     var self = this;
 
-
+    // Allow people to overwrite the paginationTemplatePath
     templatePath = templatePath || this.paginationTemplatePath;
 
     return nodefn.call(fs.readFile, templatePath).then(function (paginationContents) {
@@ -29,11 +29,9 @@ PaginationHelper.prototype.compileTemplate = function (templatePath) {
     });
 };
 
-PaginationHelper.prototype.renderPagination = function (context, options) {
-    var output = this.paginationTemplateFunc(context);
-    return output;
+PaginationHelper.prototype.renderPagination = function (context) {
+    return new handlebars.SafeString(this.paginationTemplateFunc(context));
 };
-
 
 PaginationHelper.registerWithGhost = function (ghost) {
     var templatePath = path.join(ghost.paths().frontendViews, 'pagination.hbs'),

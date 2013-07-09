@@ -3,6 +3,7 @@ var fs = require('fs'),
     _ = require('underscore'),
     handlebars = require('express-hbs').handlebars,
     nodefn = require('when/node/function'),
+
     NavHelper;
 
 NavHelper = function (navTemplate) {
@@ -29,11 +30,7 @@ NavHelper.prototype.compileTemplate = function (templatePath) {
 };
 
 NavHelper.prototype.renderNavItems = function (navItems) {
-    var output;
-
-    output = this.navTemplateFunc({links: navItems});
-
-    return output;
+    return new handlebars.SafeString(this.navTemplateFunc({links: navItems}));
 };
 
 // A static helper method for registering with ghost

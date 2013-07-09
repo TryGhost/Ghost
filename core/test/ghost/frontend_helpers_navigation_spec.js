@@ -37,7 +37,7 @@ describe('Navigation Helper', function () {
 
         // Returns a string returned from navTemplateFunc
         should.exist(rendered);
-        rendered.should.equal("rendered 2");
+        rendered.string.should.equal("rendered 2");
 
         templateSpy.calledWith({ links: fakeNavItems }).should.equal(true);
     });
