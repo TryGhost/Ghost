@@ -160,7 +160,7 @@ describe('Post Model', function () {
     });
 
     it('can fetch a paginated set, with various options', function (done) {
-        this.timeout(4000);
+        this.timeout(5000);
 
         helpers.insertMorePosts().then(function () {
 
@@ -197,6 +197,6 @@ describe('Post Model', function () {
             paginationResult.pages.should.equal(11);
 
             done();
-        }).then(null, done);
+        }, done);
     });
 });

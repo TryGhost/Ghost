@@ -78,10 +78,7 @@ helpers = {
         u_promises.push(knex('users').insert(users));
         u_promises.push(knex('roles_users').insert(userRoles));
 
-        return when.all(u_promises).then(function (results) {
-
-            return;
-        });
+        return when.all(u_promises);
     }
 };
 

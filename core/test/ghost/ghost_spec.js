@@ -38,7 +38,7 @@ describe("Ghost API", function () {
             ghost.dataProvider = oldDataProvider;
 
             done();
-        }).then(null, done);
+        }, done);
 
     });
 

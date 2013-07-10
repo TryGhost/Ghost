@@ -6,8 +6,6 @@ var _ = require('underscore'),
     Models = require('../../shared/models'),
     when = require('when');
 
-require('mocha-as-promised')();
-
 describe('User Model', function () {
 
     var UserModel = Models.User;
@@ -17,7 +15,7 @@ describe('User Model', function () {
             return when(helpers.insertDefaultUser());
         }).then(function (results) {
             done();
-        });
+        }, done);
     });
 
     it('can add first', function (done) {
@@ -26,7 +24,7 @@ describe('User Model', function () {
                 email_address: "test@test1.com"
             };
 
-        when(helpers.resetData()).then(function (result) {
+        helpers.resetData().then(function (result) {
             UserModel.add(userData).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -44,8 +42,9 @@ describe('User Model', function () {
             email_address: "test3@test1.com"
         };
 
-        return when(UserModel.add(userData)).otherwise(function (failure) {
-            return failure.message.should.eql('A user is already registered. Only one user for now!');
+        return UserModel.add(userData).then(done, function (failure) {
+            failure.message.should.eql('A user is already registered. Only one user for now!');
+            done();
         });
     });
 
@@ -58,7 +57,7 @@ describe('User Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 
     it('can read', function (done) {
@@ -82,7 +81,7 @@ describe('User Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
 
     });
 
@@ -107,7 +106,7 @@ describe('User Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 
     it("can get effective permissions", function (done) {
@@ -117,7 +116,7 @@ describe('User Model', function () {
             effectivePermissions.length.should.be.above(0);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it('can delete', function (done) {
@@ -153,6 +152,6 @@ describe('User Model', function () {
             hasDeletedId.should.equal(false);
             done();
 
-        }).then(null, done);
+        }, done);
     });
 });
