@@ -13,19 +13,13 @@ var _ = require("underscore"),
 
 describe('permissions', function () {
 
-    should.exist(permissions);
-
     beforeEach(function (done) {
         helpers.resetData().then(function (result) {
-            return when(helpers.insertDefaultUser());
+            return helpers.insertDefaultUser();
         }).then(function (results) {
             done();
         }).otherwise(errors.logAndThrowError);
     });
-
-    // beforeEach(function (done) {
-    //     helpers.resetData().then(function () { done(); }, errors.throwError);
-    // });
 
     var testPerms = [
             { act: "edit", obj: "post" },
