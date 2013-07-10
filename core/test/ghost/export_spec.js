@@ -29,7 +29,7 @@ describe("Export", function () {
             exportStub.restore();
 
             done();
-        }, errors.throwError);
+        }, done);
     });
 
     describe("001", function () {
@@ -52,9 +52,7 @@ describe("Export", function () {
                 });
 
                 done();
-            }, function () {
-                console.log("Error in exporter");
-            });
+            }, done);
         });
     });
 });

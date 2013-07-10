@@ -18,7 +18,7 @@ describe('permissions', function () {
             return helpers.insertDefaultUser();
         }).then(function (results) {
             done();
-        }).otherwise(errors.logAndThrowError);
+        }, done);
     });
 
     var testPerms = [
