@@ -1,12 +1,14 @@
 var _ = require('underscore'),
     moment = require('moment'),
     when = require('when'),
-    pagination = require('./paginate'),
-    navHelper = require('./navigation'),
     hbs = require('express-hbs'),
+    errors = require('../../shared/errorHandling'),
     coreHelpers;
 
 coreHelpers = function (ghost) {
+    var navHelper,
+        paginationHelper;
+
     /**
      * [ description]
      * @todo ghost core helpers + a way for themes to register them
@@ -119,10 +121,40 @@ coreHelpers = function (ghost) {
         }
         return ret;
     });
-    // Just one async helper for now, but could be more in the future
+
+    // ## Template driven helpers
+    // Template driven helpers require that their template is loaded before they can be registered.
+
+    // ###Nav Helper
+    // `{{nav}}`
+    // Outputs a navigation menu built from items in config.js
+    navHelper = ghost.loadTemplate('nav').then(function (templateFn) {
+        ghost.registerThemeHelper('nav', function (options) {
+            if (!_.isObject(this.navItems) || _.isFunction(this.navItems)) {
+                errors.logAndThrowError('navItems data is not an object or is a function');
+                return;
+            }
+            return new hbs.handlebars.SafeString(templateFn({links: this.navItems}));
+        });
+    });
+
+    // ### Pagination Helper
+    // `{{paginate}}`
+    // Outputs previous and next buttons, along with info about the current page
+    paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
+        ghost.registerThemeHelper('paginate', function (options) {
+            if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
+                errors.logAndThrowError('pagination data is not an object or is a function');
+                return;
+            }
+            return new hbs.handlebars.SafeString(templateFn(this.pagination));
+        });
+    });
+
+    // Return once the template-driven helpers have loaded
     return when.join(
-        navHelper.registerWithGhost(ghost),
-        pagination.registerWithGhost(ghost)
+        navHelper,
+        paginationHelper
     );
 };
 
