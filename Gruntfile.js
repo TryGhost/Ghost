@@ -221,7 +221,7 @@ var path = require('path'),
 
             bump: {
                 options: {
-                    push: false
+                    pushTo: "origin build"
                 }
             }
         };
