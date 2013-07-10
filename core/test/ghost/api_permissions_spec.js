@@ -23,7 +23,7 @@ describe("Role Model", function () {
             foundRoles.models.length.should.be.above(0);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can read roles", function (done) {
@@ -31,7 +31,7 @@ describe("Role Model", function () {
             should.exist(foundRole);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can edit roles", function (done) {
@@ -47,7 +47,7 @@ describe("Role Model", function () {
             updatedRole.get("name").should.equal("updated");
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can add roles", function (done) {
@@ -81,7 +81,7 @@ describe("Role Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 });
 
@@ -104,7 +104,7 @@ describe("Permission Model", function () {
             foundPermissions.models.length.should.be.above(0);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can read permissions", function (done) {
@@ -112,7 +112,7 @@ describe("Permission Model", function () {
             should.exist(foundPermission);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can edit permissions", function (done) {
@@ -128,7 +128,7 @@ describe("Permission Model", function () {
             updatedPermission.get("name").should.equal("updated");
 
             done();
-        }, errors.logError);
+        }, done);
     });
 
     it("can add permissions", function (done) {
@@ -160,6 +160,6 @@ describe("Permission Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }, errors.logError);
+        }, done);
     });
 });

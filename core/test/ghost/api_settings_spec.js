@@ -22,7 +22,7 @@ describe('Settings Model', function () {
             results.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }, done);
     });
 
     it('can read', function (done) {
@@ -46,7 +46,7 @@ describe('Settings Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 
     it('can edit single', function (done) {
@@ -79,7 +79,7 @@ describe('Settings Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 
     it('can edit multiple', function (done) {
@@ -121,7 +121,7 @@ describe('Settings Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 
     it('can add', function (done) {
@@ -139,7 +139,7 @@ describe('Settings Model', function () {
             createdSetting.attributes.type.should.equal("general");
 
             done();
-        }).then(null, done);
+        }, done);
     });
 
     it('can delete', function (done) {
@@ -173,6 +173,6 @@ describe('Settings Model', function () {
 
             done();
 
-        }).then(null, done);
+        }, done);
     });
 });

@@ -13,11 +13,12 @@ var _ = require("underscore"),
 describe("Import", function () {
 
     should.exist(exporter);
+    should.exist(importer);
 
     beforeEach(function (done) {
         helpers.resetData().then(function () {
             done();
-        }, errors.logAndThrowError);
+        }, done);
     });
 
     it("resolves 001", function (done) {
@@ -32,7 +33,7 @@ describe("Import", function () {
             importStub.restore();
 
             done();
-        }, errors.logAndThrowError);
+        }, done);
     });
 
     describe("001", function () {
@@ -72,7 +73,7 @@ describe("Import", function () {
                 importedData[2].length.should.equal(exportData.data.settings.length);
 
                 done();
-            }).otherwise(errors.logAndThrowError);
+            }, done);
         });
     });
 });
