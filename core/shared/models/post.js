@@ -32,7 +32,7 @@ Post = GhostBookshelf.Model.extend({
         if (!this.get('title')) {
             throw new Error('Post title cannot be blank');
         }
-        this.set('content_html', converter.makeHtml(this.get('content')));
+        this.set('content', converter.makeHtml(this.get('content_raw')));
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             this.set('published_at', new Date());

@@ -13,12 +13,12 @@ coreHelpers = function (ghost) {
      * [ description]
      * @todo ghost core helpers + a way for themes to register them
      * @param  {Object} context date object
-     * @param  {*} block
+     * @param  {*} options
      * @return {Object} A Moment time / date object
      */
-    ghost.registerThemeHelper('dateFormat', function (context, block) {
-        var f = block.hash.format || "MMM Do, YYYY",
-            timeago = block.hash.timeago,
+    ghost.registerThemeHelper('dateFormat', function (context, options) {
+        var f = options.hash.format || "MMM Do, YYYY",
+            timeago = options.hash.timeago,
             date;
         if (timeago) {
             date = moment(context).fromNow();
@@ -27,6 +27,13 @@ coreHelpers = function (ghost) {
         }
         return date;
     });
+
+    // ### Content Helper
+    // Turns content html into a safestring so that the user doesn't have to escape it
+    ghost.registerThemeHelper('content', function (options) {
+        return new hbs.handlebars.SafeString(this.content);
+    });
+
 
     /**
      * [ description]
