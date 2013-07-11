@@ -7,11 +7,24 @@ Visit the project's website at [http://tryghost.org](http://tryghost.org)!
 
 ## Getting Started
 
-1. Run the app from the command line
-2. Navigate to /ghost/ - you will be prompted to log in
-3. Create a new user
-4. Log in
-5. Start using Ghost
+### Installing from a VIP Release
+
+*Please Note:* VIP Releases are pre-built packages, GitHub releases (tags) are not. To install from a GitHub release you need to follow instructions 2-5 from the [Working on Ghost Core](#working-on-ghost-core) section.
+
+1.  Once you've downloaded one of the release packages, unzip it, and place the directory wherever you would like to run the code
+2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.js and index.js are)
+3.  run `npm install` to install the node dependencies (if you get errors to do with SQLite, please see the compatibility notes)
+4.  To start ghost, run `npm start`
+5.  Visit `http://localhost:2368/` in your web browser
+
+### Logging in For The First Time
+
+Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost` from a web browser, where you will be prompted for a login.
+
+1.  Click on the "register new user" link
+2.  Enter your user details (careful here: There is no password reset yet!)
+3.  Return to the login screen and use those details to log in.
+
 
 Note - this is still very alpha. Not everything works yet.
 
@@ -45,15 +58,22 @@ Note - this is still very alpha. Not everything works yet.
 
 ## Working on Ghost Core
 
-**Note:** It is highly recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for developing Ghost.
+**Note:** It is recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for developing Ghost.
+
+Pre-requisites:
+- node 0.10 or 0.11
+- ruby and the gems 'sass' and 'bourbon'
+- if you want to build the docs, python and pygments
 
 1. Clone the git repo
-2. cd into the project folder and run `npm install`.
-	* If the install fails with errors to do with "node-gyp rebuild", follow the Sqlite3 install instructions
+2. cd into the project folder
+3. Run `git submodule update --init`
+4. Run `npm install`.
+	* If the install fails with errors to do with "node-gyp rebuild", follow the SQLite3 install instructions
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-3. run `grunt init` from the root. (make sure you have Casper 1.1 installed though, or have installed `bourbon` on your vagrant. See Ghost-Vagrant for that)
+5. run `grunt init` from the root - this installs bourbon, compiles sass and compiles handlebars templates
 
-Frontend can be located at [localhost:2368](localhost:2368), Admin is at [localhost:2368/ghost](localhost:2368/ghost)
+Frontend can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost](http://localhost:2368/ghost)
 
 Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically
 
@@ -61,10 +81,10 @@ Whist developing you may wish to use **grunt watch** to watch for changes to han
 
 Pulling down the latest changes from master will often require more than just a pull, you may also need to do one or more of the following:
 
- * **npm install** - fetch any new dependencies
- * **grunt** - will recompile handlebars templates and sass for the admin (as long as you have previously run grunt init to install bourbon)
- * git submodule update - fetch the latest changes to Casper (the default theme)
- * delete core/shared/data/*.db - delete the database and allow Ghost to recreate the fixtures
+ * `npm install` - fetch any new dependencies
+ * `git submodule update` - fetch the latest changes to Casper (the default theme)
+ * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run grunt init to install bourbon)
+ * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### SQLite3 Install Instructions
 Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
