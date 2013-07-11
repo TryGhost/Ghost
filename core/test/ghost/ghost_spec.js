@@ -2,9 +2,17 @@
 var should = require('should'),
     when = require('when'),
     sinon = require('sinon'),
+    path = require('path'),
+    _ = require('underscore'),
     Ghost = require('../../ghost');
 
 describe("Ghost API", function () {
+    var testTemplatePath = 'core/test/ghost/fixtures/',
+        ghost;
+
+    beforeEach(function () {
+        ghost = new Ghost();
+    });
 
     it("is a singleton", function () {
         var logStub = sinon.stub(console, "log"),
@@ -16,8 +24,7 @@ describe("Ghost API", function () {
     });
 
     it("uses init() to initialize", function (done) {
-        var ghost = new Ghost(),
-            fakeDataProvider = {
+        var fakeDataProvider = {
                 init: function () {
                     return when.resolve();
                 }
@@ -43,8 +50,7 @@ describe("Ghost API", function () {
     });
 
     it("can register filters with specific priority", function () {
-        var ghost = new Ghost(),
-            filterName = 'test',
+        var filterName = 'test',
             filterPriority = 9,
             testFilterHandler = sinon.spy();
 
@@ -57,8 +63,7 @@ describe("Ghost API", function () {
     });
 
     it("can register filters with default priority", function () {
-        var ghost = new Ghost(),
-            filterName = 'test',
+        var filterName = 'test',
             defaultPriority = 5,
             testFilterHandler = sinon.spy();
 
@@ -71,8 +76,7 @@ describe("Ghost API", function () {
     });
 
     it("executes filters in priority order", function (done) {
-        var ghost = new Ghost(),
-            filterName = 'testpriority',
+        var filterName = 'testpriority',
             testFilterHandler1 = sinon.spy(),
             testFilterHandler2 = sinon.spy(),
             testFilterHandler3 = sinon.spy();
@@ -90,5 +94,45 @@ describe("Ghost API", function () {
 
             done();
         });
+    });
+
+    it("can compile a template", function (done) {
+        var template = path.join(process.cwd(), testTemplatePath, 'test.hbs');
+
+        should.exist(ghost.compileTemplate, 'Template Compiler exists');
+
+        ghost.compileTemplate(template).then(function (templateFn) {
+            should.exist(templateFn);
+            _.isFunction(templateFn).should.equal(true);
+
+            templateFn().should.equal('<h1>HelloWorld</h1>');
+            done();
+        }, done);
+    });
+
+    it("loads templates for helpers", function (done) {
+        var compileSpy = sinon.spy(ghost, 'compileTemplate');
+
+        should.exist(ghost.loadTemplate, 'load template function exists');
+
+        // In order for the test to work, need to replace the path to the template
+        ghost.paths = sinon.stub().returns({
+            frontendViews: path.join(process.cwd(), testTemplatePath)
+        });
+
+        ghost.loadTemplate('test').then(function (templateFn) {
+            // test that compileTemplate was called with the expected path
+            compileSpy.calledOnce.should.equal(true);
+            compileSpy.calledWith(path.join(process.cwd(), testTemplatePath, 'test.hbs')).should.equal(true);
+
+            should.exist(templateFn);
+            _.isFunction(templateFn).should.equal(true);
+
+            templateFn().should.equal('<h1>HelloWorld</h1>');
+
+            compileSpy.restore();
+
+            done();
+        }, done);
     });
 });
