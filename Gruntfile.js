@@ -16,7 +16,7 @@ var path = require('path'),
                 weeklyDist: path.join(distDirectory, 'weekly'),
                 buildDist: path.join(distDirectory, 'build')
             },
-
+            buildType: 'Build',
             pkg: grunt.file.readJSON('package.json'),
 
             // JSLint all the things!
@@ -231,6 +231,9 @@ var path = require('path'),
 
             bump: {
                 options: {
+                    tagName: '%VERSION%',
+                    commitMessage: '<%= buildType %> Release %VERSION%',
+                    tagMessage: '<%= buildType %> Release %VERSION%',
                     pushTo: "origin build"
                 }
             }
@@ -253,6 +256,10 @@ var path = require('path'),
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
             cfg.pkg = grunt.file.readJSON('package.json');
+        });
+
+        grunt.registerTask('setCurrentBuildType', function (type) {
+            cfg.buildType = type;
         });
 
         // jslintm aliased to jslint
@@ -282,6 +289,7 @@ var path = require('path'),
          * - Zip files in build folder to dist-folder/#{version} directory
          */
         grunt.registerTask("nightly", [
+            "setCurrentBuildType:Nightly",
             "shell:bourbon",
             "sass:admin",
             "handlebars",
@@ -292,6 +300,7 @@ var path = require('path'),
         ]);
 
         grunt.registerTask("weekly", [
+            "setCurrentBuildType:Weekly",
             "shell:bourbon",
             "sass:admin",
             "handlebars",
