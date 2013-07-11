@@ -1,0 +1,15 @@
+<ul class="nav clearfix">
+    <li class="tab active"><a href="#">This Week</a></li>
+    <li class="tab"><a href="#">Month</a></li>
+    <li class="tab"><a href="#">Year</a></li>
+    <li class="tab"><a href="#">Ever</a></li>
+</ul>
+<ul class="post-list nav">
+    {{#each content.data.posts}}
+        <li class="post-item">
+            <h1 class="post-title">{{this.title}}</h1>
+            <span class="post-date"> {{this.time}}</span>
+            <span class="post-count"> {{this.count}}</span>
+        </li>
+    {{/each}}
+</ul>

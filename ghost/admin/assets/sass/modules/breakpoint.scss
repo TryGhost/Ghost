@@ -1,0 +1,546 @@
+/*
+ * Breakpoint Sass 1.3.0
+ * Last updated: 2012-08-28
+ * Copyright: Mason Wendell 2012 - MIT Licensed
+ * Source: https://github.com/canarymason/breakpoint
+ */
+
+//////////////////////////////
+// Default Variables
+//////////////////////////////
+$breakpoint-default-feature:  'min-width'     !default;
+$breakpoint-default-media:    'all'           !default;
+$breakpoint-force-media-all:  false           !default;
+$breakpoint-default-pair:     'width'         !default;
+$breakpoint-to-ems:           false           !default;
+$breakpoint-prefixes:         'webkit' 'moz'  !default;
+$breakpoint-prefixed-queries: 'device-pixel-ratio' 'min-device-pixel-ratio' 'max-device-pixel-ratio'                      !default;
+
+$breakpoint-no-queries:       false           !default;
+$breakpoint-no-query-wrappers: false           !default;
+
+$breakpoint-base-font-size: false;
+
+//////////////////////////////
+// Converts the input value to Base EMs
+//////////////////////////////
+@function breakpoint-to-base-em($value, $base-font-size: false) {
+  $value-unit: unit($value);
+
+  // Will convert relative EMs into root EMs.
+  @if $base-font-size and type-of($base-font-size) == 'number' and $value-unit == 'em' {
+    $base-unit: unit($base-font-size);
+
+    @if $base-unit == 'px' or $base-unit == '%' or $base-unit == 'em' or $base-unit == 'pt' {
+      @return base-conversion($value) / base-conversion($base-font-size) * 1em;
+    }
+    @else {
+      @warn '#{$base-font-size} is not set in valid units for font size!';
+      @return false;
+    }
+  }
+  @else {
+    @return base-conversion($value);
+  }
+}
+
+@function base-conversion($value) {
+  $unit: unit($value);
+
+  @if $unit == 'px' {
+    @return $value / 16px * 1em;
+  }
+  @else if $unit == '%' {
+    @return $value / 100% * 1em;
+  }
+  @else if $unit == 'em' {
+    @return $value;
+  }
+  @else if $unit == 'pt' {
+    @return $value / 12pt * 1em;
+  }
+  @else {
+    @return $value;
+//    @warn 'Everything is terrible! What have you done?!';
+  }
+}
+
+//////////////////////////////
+// Returns whether the feature can have a min/max pair
+//////////////////////////////
+@function breakpoint-min-max($feature) {
+  @if $feature == 'color' or $feature == 'color-index' or $feature == 'aspect-ratio' or $feature == 'device-height' or $feature == 'device-width' or $feature == 'height' or $feature == 'monochrome' or $feature == 'resolution' or $feature == 'width' or $feature == 'device-pixel-ratio' {
+    @return true;
+  }
+  @else {
+    @return false;
+  }
+}
+
+//////////////////////////////
+// Returns whether the feature can have a string value
+//////////////////////////////
+@function breakpoint-string-value($feature) {
+@if $feature == 'orientation' or $feature == 'scan' or $feature == 'color' or $feature == 'resolution' or $feature == 'min-resolution' or $feature == 'max-resolution' {
+    @return true;
+  }
+  @else {
+    @return false;
+  }
+}
+
+//////////////////////////////
+// Experimental Media Queries
+//////////////////////////////
+@function breakpoint-experimental($property, $prefix) {
+  @if $property == 'min-device-pixel-ratio' {
+    @if $prefix == 'webkit' {
+      @return '-#{$prefix}-#{$property}';
+    }
+    @else if $prefix == 'moz' {
+      @return 'min--#{$prefix}-device-pixel-ratio';
+    }
+    @else {
+      @warn '#{$property} is not fully supported in -#{prefix}';
+      @return 'ERROR';
+    }
+  }
+  @else if $property == 'max-device-pixel-ratio' {
+    @if $prefix == 'webkit' {
+      @return '-#{$prefix}-#{$property}';
+    }
+    @else if $prefix == 'moz' {
+      @return 'max--#{$prefix}-device-pixel-ratio';
+    }
+    @else {
+      @warn '#{$property} is not fully supported in -#{prefix}';
+      @return 'ERROR';
+    }
+  }
+  @else {
+    @return '-#{$prefix}-#{$property}';
+  }
+}
+
+
+//////////////////////////////
+// Private Breakpoint Variables
+//////////////////////////////
+$TXkgdmFyaWFibGUhIEdvIGF3YXkh: () !default;
+
+//////////////////////////////
+// Breakpoint Get Context
+// $feature: Input feature to get it's current MQ context. Returns false if no context
+//////////////////////////////
+@function breakpoint-get-context($feature) {
+  @each $context in $TXkgdmFyaWFibGUhIEdvIGF3YXkh {
+    @if $feature == nth($context, 1) {
+      @return nth($context, 2);
+    }
+  }
+
+  @return false;
+}
+
+//////////////////////////////
+// Private function to set context
+//////////////////////////////
+@function U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($feature, $value) {
+  @if $value == 'monochrome' {
+    $feature: 'monochrome';
+  }
+
+  $append: $feature;
+  $append: join($append, $value, space);
+
+  $TXkgdmFyaWFibGUhIEdvIGF3YXkh: append($TXkgdmFyaWFibGUhIEdvIGF3YXkh, $append, comma);
+
+  @return true;
+}
+
+//////////////////////////////
+// Private function to reset context
+//////////////////////////////
+@mixin TXkgcmVzZXQhIEdvIGF3YXkh {
+  $TXkgdmFyaWFibGUhIEdvIGF3YXkh: ();
+}
+
+//////////////////////////////
+// Breakpoint Mixin
+//////////////////////////////
+@mixin breakpoint($breakpoint, $media: $breakpoint-default-media, $no-query: false, $base-font-size: $breakpoint-base-font-size) {
+  // Query and Media String Defaults
+  $query:         false !default;
+  $query-holder:  false !default;
+  $media-string:  false !default;
+  $do-prefix:     false !default;
+
+  $webkit:        false !default;
+  $webkit-first:  true !default;
+  $moz:           false !default;
+  $moz-first:     true !default;
+  $o:             false !default;
+  $o-first:       true !default;
+  $ms:            false !default;
+  $ms-first:      true !default;
+
+  // Holder for Count
+  $first:         true  !default;
+
+  // Reset Context
+  @include TXkgcmVzZXQhIEdvIGF3YXkh;
+
+  // Set Media Context
+  $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh('media', $media);
+
+  // Initialize Query String
+  @if $media != 'all' or $breakpoint-force-media-all {
+    $media-string: "#{$media} ";
+  }
+  @else {
+    $media-string: "";
+  }
+
+  // If we have a single query, let's just work with that.
+  @if is_breakpoint_list($breakpoint) == false {
+    @each $prefix-query in $breakpoint-prefixed-queries {
+      @if $do-prefix == false {
+        $do-prefix: featureExists($prefix-query, $breakpoint);
+      }
+    }
+    @if $do-prefix {
+      @each $prfx in $breakpoint-prefixes {
+        @if $prfx == 'webkit' {
+          $webkit: breakpoint-switch($breakpoint, $media-string, true, $prfx, $base-font-size: $base-font-size);
+        }
+
+        @if $prfx == 'moz' {
+          $moz: breakpoint-switch($breakpoint, $media-string, true, $prfx, $base-font-size: $base-font-size);
+        }
+
+        @if $prfx == 'o' {
+          $o: breakpoint-switch($breakpoint, $media-string, true, $prfx, $base-font-size: $base-font-size);
+        }
+
+        @if $prfx == 'ms' {
+          $ms: breakpoint-switch($breakpoint, $media-string, true, $prfx, $base-font-size: $base-font-size);
+        }
+      }
+    }
+    @else {
+      $query: breakpoint-switch($breakpoint, $media-string, true, $base-font-size: $base-font-size);
+    }
+  }
+  @else {
+    // See if Prefix Query exists
+    @each $prefix-query in $breakpoint-prefixed-queries {
+      @if $do-prefix == false {
+        $do-prefix: featureExists($prefix-query, $breakpoint);
+      }
+    }
+
+    @if $do-prefix {
+      @each $prfx in $breakpoint-prefixes {
+        @each $bkpt in $breakpoint {
+          @if $prfx == 'webkit' {
+            @if $webkit-first {
+              $webkit: breakpoint-switch($bkpt, $media-string, true, $prfx, $base-font-size: $base-font-size);
+              $webkit-first: false;
+            }
+            @else {
+              $webkit: join($webkit, breakpoint-switch($bkpt, $media-string, $prefix: $prfx, $base-font-size: $base-font-size));
+            }
+          }
+
+          @if $prfx == 'moz' {
+            @if $moz-first {
+              $moz: breakpoint-switch($bkpt, $media-string, true, $prfx, $base-font-size: $base-font-size);
+              $moz-first: false;
+            }
+            @else {
+              $moz: join($moz, breakpoint-switch($bkpt, $media-string, $prefix: $prfx, $base-font-size: $base-font-size));
+            }
+          }
+
+          @if $prfx == 'o' {
+            @if $o-first {
+              $o: breakpoint-switch($bkpt, $media-string, true, $prfx, $base-font-size: $base-font-size);
+              $o-first: false;
+            }
+            @else {
+              $o: join($o, breakpoint-switch($bkpt, $media-string, $prefix: $prfx, $base-font-size: $base-font-size));
+            }
+          }
+
+          @if $prfx == 'ms' {
+            @if $ms-first {
+              $ms: breakpoint-switch($bkpt, $media-string, true, $prfx, $base-font-size: $base-font-size);
+              $ms-first: false;
+            }
+            @else {
+              $ms: join($ms, breakpoint-switch($bkpt, $media-string, $prefix: $prfx, $base-font-size: $base-font-size));
+            }
+          }
+        }
+      }
+    }
+    @else {
+      @each $bkpt in $breakpoint {
+        @if $first == true {
+          $query: breakpoint-switch($bkpt, $media-string, true, $base-font-size: $base-font-size);
+          $first: false;
+        }
+        @else {
+          $query: join($query, breakpoint-switch($bkpt, $media-string, $base-font-size: $base-font-size));
+        }
+      }
+    }
+  }
+
+  @if $breakpoint-no-queries {
+    @if $no-query {
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh('no queries', true);
+      @if $breakpoint-no-query-wrappers and type-of($no-query) == string {
+        #{$no-query} & {
+          @content;
+          $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh('no query wrapper', $no-query);
+        }
+      }
+      @else {
+        @content;
+      }
+    }
+  }
+  @else {
+    @if $breakpoint-no-query-wrappers and type-of($no-query) == string {
+      #{$no-query} & {
+        @content;
+        $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh('no query wrapper', $no-query);
+      }
+    }
+    @if $query {
+      @media #{$query} {
+        @content;
+      }
+    }
+    @else {
+      $pf-queries: $webkit, $moz, $o, $ms;
+      $pf-query: ();
+
+      @each $pfq in $pf-queries {
+        @if $pfq {
+          $pf-query: append($pf-query, $pfq, comma);
+        }
+      }
+      @media #{$pf-query} {
+        @content;
+      }
+    }
+  }
+
+  @include TXkgcmVzZXQhIEdvIGF3YXkh;
+}
+
+@function breakpoint-switch($breakpoint, $media-string, $first: false, $prefix: false, $base-font-size: $breakpoint-base-font-size) {
+  // Feature/Value/Length/Query Placehoders:
+  $feature:       false !default;
+  $min-feature:   "min-#{$breakpoint-default-pair}" !default;
+  $max-feature:   "max-#{$breakpoint-default-pair}" !default;
+  $value:         false !default;
+  $min-value:     false !default;
+  $max-value:     false !default;
+  $length:        false !default;
+  $query:         false !default;
+
+  $length: length($breakpoint);
+  // Check to see if there is only one item.
+  @if $length == 1 {
+    $value: $breakpoint;
+    @if type-of($breakpoint) == 'number' {
+      $feature: $breakpoint-default-feature;
+    }
+
+    // If EM Breakpoints are active, do it!
+    @if $breakpoint-to-ems and type-of($value) == 'number' {
+      $value: breakpoint-to-base-em($value, $base-font-size);
+    }
+    // Build the Query
+    $query: breakpoint-generate($media-string, $feature, $value, $first);
+    // Set Context
+    $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($feature, $value);
+  }
+  @else if $length == 2 {
+    // If both are numbers, we've got a double!
+    @if type-of(nth($breakpoint, 1)) == 'number' and type-of(nth($breakpoint, 2)) == 'number' {
+      // See which is larger.
+      @if nth($breakpoint, 1) > nth($breakpoint, 2) {
+        $min-value: nth($breakpoint, 2);
+        $max-value: nth($breakpoint, 1);
+      }
+      @else {
+        $min-value: nth($breakpoint, 1);
+        $max-value: nth($breakpoint, 2);
+      }
+
+      // If EM Breakpoints are active, do it!
+      @if $breakpoint-to-ems and type-of($min-value) == 'number' {
+        $min-value: breakpoint-to-base-em($min-value, $base-font-size);
+      }
+      @if $breakpoint-to-ems and type-of($max-value) == 'number' {
+        $max-value: breakpoint-to-base-em($max-value, $base-font-size);
+      }
+
+      // Min/Max for given
+      $query: breakpoint-generate($media-string, $min-feature, $min-value, $first);
+      $query: join($query, breakpoint-generate($media-string, $max-feature, $max-value));
+      // Set Context
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($min-feature, $min-value);
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($max-feature, $max-value);
+    }
+    @else if type-of(nth($breakpoint, 1)) == 'string' and type-of(nth($breakpoint, 2)) == 'string' {
+      @if breakpoint-string-value(nth($breakpoint, 1)) == true {
+        $feature: nth($breakpoint, 1);
+        $value: nth($breakpoint, 2);
+      }
+      @else {
+        $feature: nth($breakpoint, 2);
+        $value: nth($breakpoint, 1);
+      }
+
+      // If EM Breakpoints are active, do it!
+      @if $breakpoint-to-ems and type-of($value) == 'number' {
+        $value: breakpoint-to-base-em($value, $base-font-size);
+      }
+
+      // Build the Query
+      $query: breakpoint-generate($media-string, $feature, $value, $first);
+      // Set Context
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($feature, $value);
+    }
+    @else {
+      // Because we can have either the first or second option be the feature, we switch on it.
+      @if type-of(nth($breakpoint, 1)) == string {
+        $feature: nth($breakpoint, 1);
+        $value: nth($breakpoint, 2);
+      }
+      @else if type-of(nth($breakpoint, 2)) == string {
+        $feature: nth($breakpoint, 2);
+        $value: nth($breakpoint, 1);
+      }
+
+      @if $feature == 'device-pixel-ratio' or $feature == 'min-device-pixel-ratio' or $feature == 'max-device-pixel-ratio' {
+        $feature: breakpoint-experimental($feature, $prefix);
+        //$value: 96 * $value * 1dpi;
+        //        @if $feature == 'device-pixel-ratio' {
+        //          $feature: 'resolution';
+        //        }
+        //        @else if $feature == 'min-device-pixel-ratio' {
+        //          $feature: 'min-resolution';
+        //        }
+        //        @else if $feature == 'max-device-pixel-ratio' {
+        //          $feature: 'max-resolution';
+        //        }
+      }
+
+      // If EM Breakpoints are active, do it!
+      @if $breakpoint-to-ems and type-of($value) == 'number' {
+        $value: breakpoint-to-base-em($value, $base-font-size);
+      }
+
+      // Build the Query
+      $query: breakpoint-generate($media-string, $feature, $value, $first);
+      // Set Context
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($feature, $value);
+    }
+  }
+  @else if $length == 3 {
+    @if type-of(nth($breakpoint, 1)) == 'string' {
+      $feature: nth($breakpoint, 1);
+      // See which is larger.
+      @if nth($breakpoint, 2) > nth($breakpoint, 3) {
+        $min-value: nth($breakpoint, 3);
+        $max-value: nth($breakpoint, 2);
+      }
+      @else {
+        $min-value: nth($breakpoint, 2);
+        $max-value: nth($breakpoint, 3);
+      }
+    }
+    @else {
+      $feature: nth($breakpoint, 3);
+      // See which is larger.
+      @if nth($breakpoint, 1) > nth($breakpoint, 2) {
+        $min-value: nth($breakpoint, 2);
+        $max-value: nth($breakpoint, 1);
+      }
+      @else {
+        $min-value: nth($breakpoint, 1);
+        $max-value: nth($breakpoint, 2);
+      }
+    }
+
+    // If EM Breakpoints are active, do it!
+    @if $breakpoint-to-ems and type-of($min-value) == 'number' {
+      $min-value: breakpoint-to-base-em($min-value, $base-font-size);
+    }
+    @if $breakpoint-to-ems and type-of($max-value) == 'number' {
+      $max-value: breakpoint-to-base-em($max-value, $base-font-size);
+    }
+
+    @if breakpoint-min-max($feature) == true {
+      @if $feature == 'device-pixel-ratio' {
+        $min-feature: breakpoint-experimental('min-#{$feature}', $prefix);
+        $max-feature: breakpoint-experimental('max-#{$feature}', $prefix);
+      }
+      @else {
+        $min-feature: 'min-#{$feature}';
+        $max-feature: 'max-#{$feature}';
+      }
+
+      // Min/Max for given
+      $query: breakpoint-generate($media-string, $min-feature, $min-value, $first);
+      $query: join($query, breakpoint-generate($media-string, $max-feature, $max-value));
+      // Set Context
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($min-feature, $min-value);
+      $context: U2V0IHlvdXIgb3duIGRhbW4gY29udGV4dHMh($max-feature, $max-value);
+    }
+    @else {
+      @warn '#{$feature} cannot have a min/max value!';
+    }
+  }
+
+  @return $query;
+}
+
+@function breakpoint-generate($media, $feature, $value, $first: false) {
+  // Media Query string to be returned
+  $new-string: "";
+
+  // If it's the first item, it gets special treatment
+  @if $first == true {
+    // And Statement
+    $and: 'and ';
+    // If $media is blank (i.e. all), remove and statement
+    @if $media == '' {
+      $and: '';
+    }
+
+    @if $feature != false {
+      $new-string: #{$media}unquote("#{$and}(#{$feature}: #{$value})");
+    }
+    @else {
+      $new-string: #{$media}unquote("#{$and}(#{$value})");
+    }
+  }
+
+  @else {
+    @if $feature != false {
+      $new-string: unquote("and (#{$feature}: #{$value})");
+    }
+    @else {
+      $new-string: unquote("and (#{$value})");
+    }
+  }
+
+  @return $new-string;
+}
