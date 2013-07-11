@@ -6,8 +6,10 @@ var config = require('./../config'),
     when = require('when'),
     express = require('express'),
     errors = require('../core/shared/errorHandling'),
+    fs = require('fs'),
     path = require('path'),
     hbs = require('express-hbs'),
+    nodefn = require('when/node/function'),
     _ = require('underscore'),
     Polyglot = require('node-polyglot'),
 
@@ -165,6 +167,21 @@ Ghost.prototype.updateSettingsCache = function (settings) {
             self.settingsCache = settings;
         }, errors.logAndThrowError);
     }
+};
+
+// ## Template utils
+
+Ghost.prototype.compileTemplate = function (templatePath) {
+    return nodefn.call(fs.readFile, templatePath).then(function (templateContents) {
+        return hbs.handlebars.compile(templateContents.toString());
+    }, errors.logAndThrowError);
+};
+
+Ghost.prototype.loadTemplate = function (name) {
+    // TODO: allow themes to override these templates
+    var templatePath = path.join(this.paths().frontendViews, name + '.hbs');
+
+    return this.compileTemplate(templatePath);
 };
 
 /**
