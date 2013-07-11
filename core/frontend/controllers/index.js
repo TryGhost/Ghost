@@ -22,7 +22,7 @@ frontendControllers = {
     'single': function (req, res) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
-                res.render('single', {post: post});
+                res.render('post', {post: post});
             });
         });
     }
