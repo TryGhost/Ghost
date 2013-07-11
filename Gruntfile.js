@@ -9,9 +9,11 @@ var path = require('path'),
                 adminAssets: './core/admin/assets',
                 build: buildDirectory,
                 nightlyBuild: path.join(buildDirectory, 'nightly'),
+                weeklyBuild: path.join(buildDirectory, 'weekly'),
                 buildBuild: path.join(buildDirectory, 'build'),
                 dist: distDirectory,
                 nightlyDist: path.join(distDirectory, 'nightly'),
+                weeklyDist: path.join(distDirectory, 'weekly'),
                 buildDist: path.join(distDirectory, 'build')
             },
 
@@ -97,22 +99,6 @@ var path = require('path'),
             shell: {
                 bourbon: {
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
-                },
-
-                commitNightly: {
-                    command: 'git commit package.json -m "Nightly build <%= pkg.version %>"'
-                },
-
-                tagNightly: {
-                    command: 'git tag <%= pkg.version %> -a -m "Nightly build <%= pkg.version %>"'
-                },
-
-                pushMaster: {
-                    command: 'git push origin master'
-                },
-
-                pushMasterTags: {
-                    command: 'git push origin master --tags'
                 }
             },
 
@@ -182,6 +168,22 @@ var path = require('path'),
                         dest: "<%= paths.nightlyBuild %>/<%= pkg.version %>/"
                     }]
                 },
+                weekly: {
+                    files: [{
+                        expand: true,
+                        src: [
+                            '**',
+                            '!node_modules/**',
+                            '!core/shared/data/*.db',
+                            '!.sass*',
+                            '!.af*',
+                            '!.git*',
+                            '!.groc*',
+                            '!.travis.yml'
+                        ],
+                        dest: "<%= paths.weeklyBuild %>/<%= pkg.version %>/"
+                    }]
+                },
                 build: {
                     files: [{
                         expand: true,
@@ -207,6 +209,14 @@ var path = require('path'),
                     },
                     expand: true,
                     cwd: "<%= paths.nightlyBuild %>/<%= pkg.version %>/",
+                    src: ["**"]
+                },
+                weekly: {
+                    options: {
+                        archive: "<%= paths.weeklyDist %>/Ghost-Weekly-<%= pkg.version %>.zip"
+                    },
+                    expand: true,
+                    cwd: "<%= paths.weeklyBuild %>/<%= pkg.version %>/",
                     src: ["**"]
                 },
                 build: {
@@ -265,15 +275,11 @@ var path = require('path'),
         grunt.registerTask("docs", ["groc"]);
 
         /* Nightly builds
-         * - Bump patch version in package.json,
-         * - Copy files to build-folder/nightly/#{version} directory
+         * - Do our standard build steps (sass, handlebars, etc)
+         * - Bump patch version in package.json, commit, tag and push
+         * - Copy files to build-folder/#/#{version} directory
          * - Clean out unnecessary files (travis, .git*, .af*, .groc*)
          * - Zip files in build folder to dist-folder/#{version} directory
-         * - git commit package.json -m "Nightly build #{version}"
-         * - git tag -a -m "Nightly build #{version}"
-         * - git push origin master
-         * - git push origin master --tags
-         * - TODO: POST to pubsubhubub to notify of new build?
          */
         grunt.registerTask("nightly", [
             "shell:bourbon",
@@ -283,11 +289,16 @@ var path = require('path'),
             "updateCurrentPackageInfo",
             "copy:nightly",
             "compress:nightly"
-            /* Caution: shit gets real below here */
-            //"shell:commitNightly",
-            //"shell:tagNightly",
-            //"shell:pushMaster",
-            //"shell:pushMasterTags"
+        ]);
+
+        grunt.registerTask("weekly", [
+            "shell:bourbon",
+            "sass:admin",
+            "handlebars",
+            "bump:build",
+            "updateCurrentPackageInfo",
+            "copy:weekly",
+            "compress:weekly"
         ]);
 
         grunt.registerTask("build", [
