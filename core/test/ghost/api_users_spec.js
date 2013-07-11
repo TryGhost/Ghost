@@ -2,8 +2,8 @@
 var _ = require('underscore'),
     should = require('should'),
     helpers = require('./helpers'),
-    errors = require('../../shared/errorHandling'),
-    Models = require('../../shared/models'),
+    errors = require('../../server/errorHandling'),
+    Models = require('../../server/models');
     when = require('when');
 
 describe('User Model', function () {

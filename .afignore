@@ -21,4 +21,4 @@ projectFilesBackup
 .DS_Store
 
 # Ghost DB file
-ghost/data/*.db
+*.db

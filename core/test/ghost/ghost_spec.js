@@ -117,7 +117,7 @@ describe("Ghost API", function () {
 
         // In order for the test to work, need to replace the path to the template
         ghost.paths = sinon.stub().returns({
-            frontendViews: path.join(process.cwd(), testTemplatePath)
+            helperTemplates: path.join(process.cwd(), testTemplatePath)
         });
 
         ghost.loadTemplate('test').then(function (templateFn) {

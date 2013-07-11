@@ -58,7 +58,7 @@ config.env = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/shared/data/ghost-test.db')
+                filename: path.join(__dirname, '/core/server/data/ghost-test.db')
             }
         },
         url: {
@@ -71,7 +71,7 @@ config.env = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/shared/data/ghost-travis.db')
+                filename: path.join(__dirname, '/core/server/data/ghost-travis.db')
             }
         },
         url: {
@@ -84,7 +84,7 @@ config.env = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/shared/data/ghost-dev.db')
+                filename: path.join(__dirname, '/core/server/data/ghost-dev.db')
             },
             debug: false
         },
@@ -98,7 +98,7 @@ config.env = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/shared/data/ghost-staging.db')
+                filename: path.join(__dirname, '/core/server/data/ghost-staging.db')
             },
             debug: false
         },
@@ -112,7 +112,7 @@ config.env = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/shared/data/ghost.db')
+                filename: path.join(__dirname, '/core/server/data/ghost.db')
             },
             debug: false
         },

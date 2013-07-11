@@ -2,7 +2,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     when = require('when'),
     hbs = require('express-hbs'),
-    errors = require('../../shared/errorHandling'),
+    errors = require('../errorHandling'),
     coreHelpers;
 
 coreHelpers = function (ghost) {

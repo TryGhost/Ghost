@@ -1,0 +1,76 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+
+        <title>{{siteTitle}}</title>
+        <meta name="description" content="{{siteDescription}}">
+        <meta name="author" content="">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+
+        <link rel="shortcut icon" href="/favicon.ico">
+        <meta http-equiv="cleartype" content="on">
+
+        <link rel="stylesheet" type='text/css' href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
+        <link rel="stylesheet" href="/public/css/screen.css">
+        <link rel="stylesheet" type="text/css" href="/public/vendor/codemirror/codemirror.css"> <!-- TODO: Kill this - #29 -->
+        {{{block "pageStyles"}}}
+    </head>
+    <body class="{{bodyClass}}">
+        {{#unless hideNavbar}}
+            {{> navbar}}
+        {{/unless}}
+
+        <main role="main" id="main">
+            {{> flashes}}
+
+            {{{body}}}
+        </main>
+
+        <script src="/public/vendor/jquery/jquery.min.js"></script>
+        <script src="/public/vendor/icheck/jquery.icheck.min.js"></script>
+        <script src="/public/vendor/underscore.js"></script>
+        <script src="/public/vendor/backbone/backbone.js"></script>
+        <script src="/public/vendor/handlebars/handlebars-runtime.js"></script>
+        <script src="/public/vendor/codemirror/codemirror.js"></script>
+        <script src="/public/vendor/codemirror/mode/markdown/markdown.js"></script>
+        <script src="/public/vendor/showdown/showdown.js"></script>
+        <script src="/public/vendor/showdown/extensions/ghostdown.js"></script>
+        <script src="/public/vendor/shortcuts.js"></script>
+        <script src="/public/vendor/countable.js"></script>
+        <script src="/public/vendor/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+        <script src="/public/vendor/packery.pkgd.min.js"></script>
+
+        <script src="/public/init.js"></script>
+        <script src="/public/tpl/hbs-tpl.js"></script>
+        <script src="/public/toggle.js"></script>
+        <script src="/public/admin-ui-temp.js"></script>
+        <script src="/public/markdown-actions.js"></script>
+        <script src="/public/tagui.js"></script>
+        <script src="/public/vendor/moment.js"></script>
+        <script src="/public/helpers/index.js"></script>
+
+        <!-- // require '/public/models/*' -->
+        <script src="/public/models/post.js"></script>
+        <script src="/public/models/widget.js"></script>
+        <script src="/public/models/settings.js"></script>
+        <!-- // require '/public/views/*' -->
+        <script src="/public/views/base.js"></script>
+        <script src="/public/views/dashboard.js"></script>
+        <script src="/public/views/blog.js"></script>
+        <script src="/public/views/editor.js"></script>
+        <script src="/public/views/settings.js"></script>
+        <script src="/public/views/debug.js"></script>
+        <script src="/public/router.js"></script>
+        {{{block "bodyScripts"}}}
+        <script>
+            Ghost.init();
+        </script>
+    </body>
+</html>

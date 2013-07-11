@@ -5,7 +5,7 @@ var should = require('should'),
     _ = require('underscore'),
     handlebars = require('express-hbs').handlebars,
     path = require('path'),
-    helpers = require('../../frontend/helpers'),
+    helpers = require('../../server/helpers'),
     Ghost = require('../../ghost');
 
 describe('Core Helpers', function () {
