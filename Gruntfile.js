@@ -127,7 +127,7 @@ var path = require('path'),
                     options: {
                         namespace: "JST",
                         processName: function (filename) {
-                            filename = filename.replace('./core/client/tpl/', '');
+                            filename = filename.replace('core/client/tpl/', '');
                             return filename.replace('.hbs', '');
                         }
                     },
