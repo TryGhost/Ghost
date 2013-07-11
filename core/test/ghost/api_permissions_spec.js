@@ -23,7 +23,7 @@ describe("Role Model", function () {
             foundRoles.models.length.should.be.above(0);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can read roles", function (done) {
@@ -31,7 +31,7 @@ describe("Role Model", function () {
             should.exist(foundRole);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can edit roles", function (done) {
@@ -47,7 +47,7 @@ describe("Role Model", function () {
             updatedRole.get("name").should.equal("updated");
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can add roles", function (done) {
@@ -63,7 +63,7 @@ describe("Role Model", function () {
             createdRole.attributes.description.should.equal(newRole.description);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can delete roles", function (done) {
@@ -81,7 +81,7 @@ describe("Role Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 });
 
@@ -104,7 +104,7 @@ describe("Permission Model", function () {
             foundPermissions.models.length.should.be.above(0);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can read permissions", function (done) {
@@ -112,7 +112,7 @@ describe("Permission Model", function () {
             should.exist(foundPermission);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can edit permissions", function (done) {
@@ -128,7 +128,7 @@ describe("Permission Model", function () {
             updatedPermission.get("name").should.equal("updated");
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can add permissions", function (done) {
@@ -142,7 +142,7 @@ describe("Permission Model", function () {
             createdPerm.attributes.name.should.equal(newPerm.name);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("can delete permissions", function (done) {
@@ -160,6 +160,6 @@ describe("Permission Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 });

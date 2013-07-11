@@ -45,7 +45,7 @@ describe("Ghost API", function () {
             ghost.dataProvider = oldDataProvider;
 
             done();
-        }, done);
+        }).then(null, done);
 
     });
 
@@ -107,7 +107,7 @@ describe("Ghost API", function () {
 
             templateFn().should.equal('<h1>HelloWorld</h1>');
             done();
-        }, done);
+        }).then(null, done);
     });
 
     it("loads templates for helpers", function (done) {
@@ -133,6 +133,6 @@ describe("Ghost API", function () {
             compileSpy.restore();
 
             done();
-        }, done);
+        }).then(null, done);
     });
 });

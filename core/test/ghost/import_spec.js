@@ -33,7 +33,7 @@ describe("Import", function () {
             importStub.restore();
 
             done();
-        }, done);
+        }).then(null, done);
     });
 
     describe("001", function () {
@@ -56,7 +56,7 @@ describe("Import", function () {
                 return when.all(truncateOps);
             }).then(function () {
                 return importer("001", exportData);
-            }).then(function (importResult) {
+            }).then(function () {
                 // Grab the data from tables
                 return when.all([
                     knex("users").select(),
@@ -73,7 +73,7 @@ describe("Import", function () {
                 importedData[2].length.should.equal(exportData.data.settings.length);
 
                 done();
-            }, done);
+            }).then(null, done);
         });
     });
 });

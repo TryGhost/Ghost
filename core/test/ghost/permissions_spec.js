@@ -14,9 +14,9 @@ var _ = require("underscore"),
 describe('permissions', function () {
 
     beforeEach(function (done) {
-        helpers.resetData().then(function (result) {
+        helpers.resetData().then(function () {
             return helpers.insertDefaultUser();
-        }).then(function (results) {
+        }).then(function () {
             done();
         }, done);
     });
@@ -82,7 +82,7 @@ describe('permissions', function () {
                 actionsMap.should.equal(permissions.actionsMap);
 
                 done();
-            }, errors.throwError);
+            }).then(null, done);
     });
 
     it('can add user to role', function (done) {
@@ -111,7 +111,7 @@ describe('permissions', function () {
             updatedUser.related('roles').length.should.equal(existingUserRoles + 1);
 
             done();
-        });
+        }).then(null, done);
     });
 
     it('can add user permissions', function (done) {
@@ -135,7 +135,7 @@ describe('permissions', function () {
             updatedUser.related('permissions').length.should.equal(1);
 
             done();
-        });
+        }).then(null, done);
     });
 
     it('can add role permissions', function (done) {
@@ -170,7 +170,7 @@ describe('permissions', function () {
                 updatedRole.related('permissions').length.should.equal(1);
 
                 done();
-            });
+            }).then(null, done);
     });
 
     it('does not allow edit post without permission', function (done) {
@@ -193,9 +193,7 @@ describe('permissions', function () {
             })
             .then(function () {
                 errors.logError(new Error("Allowed edit post without permission"));
-            }, function () {
-                done();
-            });
+            }, done);
     });
 
     it('allows edit post with permission', function (done) {
@@ -235,9 +233,7 @@ describe('permissions', function () {
             })
             .then(function () {
                 done();
-            }, function () {
-                errors.logError(new Error("Did not allow edit post with permission"));
-            });
+            }, done);
     });
 
     it('can use permissable function on Model to allow something', function (done) {
@@ -245,8 +241,6 @@ describe('permissions', function () {
             permissableStub = sinon.stub(PostProvider, 'permissable', function () {
                 return when.resolve();
             });
-
-
 
         // createTestUser()
         UserProvider.browse()
@@ -265,6 +259,8 @@ describe('permissions', function () {
             .otherwise(function () {
                 permissableStub.restore();
                 errors.logError(new Error("Did not allow testUser"));
+
+                done();
             });
     });
 

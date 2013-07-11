@@ -118,7 +118,7 @@ describe('Post Model', function () {
             secondPost.get('content').should.equal("Test Content 2");
 
             done();
-        }).otherwise(done);
+        }).then(null, done);
     });
 
 
@@ -133,7 +133,7 @@ describe('Post Model', function () {
             createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces');
 
             done();
-        });
+        }).then(null, done);
     });
 
     it('can delete', function (done) {
@@ -197,6 +197,6 @@ describe('Post Model', function () {
             paginationResult.pages.should.equal(11);
 
             done();
-        }, done);
+        }).then(null, done);
     });
 });

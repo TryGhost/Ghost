@@ -49,7 +49,7 @@ describe('Core Helpers', function () {
                 compileSpy.restore();
 
                 done();
-            }, done);
+            }).then(null, done);
         });
     });
 });
