@@ -1,12 +1,12 @@
 var Ghost = require('../../ghost'),
-    dataExport = require('../../shared/data/export'),
-    dataImport = require('../../shared/data/import'),
+    dataExport = require('../data/export'),
+    dataImport = require('../data/import'),
     _ = require('underscore'),
     fs = require('fs'),
     path = require('path'),
     when = require('when'),
     nodefn = require('when/node/function'),
-    api = require('../../shared/api'),
+    api = require('../api'),
 
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
@@ -238,7 +238,7 @@ adminControllers = {
                     return migration.down();
                 }, function () {
                     // If no version in the DB, assume 001
-                    var migration = require("../../shared/data/migration/001");
+                    var migration = require(".././migration/001");
 
                     // Run the downward migration
                     return migration.down();
