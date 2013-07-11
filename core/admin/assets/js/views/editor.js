@@ -129,14 +129,14 @@
         },
 
         savePost: function (data) {
-            // TODO: The content getter here isn't great, shouldn't rely on currentView.
+            // TODO: The content_raw getter here isn't great, shouldn't rely on currentView.
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
 
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
-                content: Ghost.currentView.editor.getValue()
+                content_raw: Ghost.currentView.editor.getValue()
             }, data));
 
             // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
@@ -162,7 +162,7 @@
             // Add the container view for the Publish Bar
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
 
-            this.$('#entry-markdown').html(this.model.get('content'));
+            this.$('#entry-markdown').html(this.model.get('content_raw'));
 
             this.initMarkdown();
             this.renderPreview();

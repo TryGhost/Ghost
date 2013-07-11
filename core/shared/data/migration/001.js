@@ -13,8 +13,8 @@ up = function () {
             t.string('uuid');
             t.string('title');
             t.string('slug');
+            t.text('content_raw');
             t.text('content');
-            t.text('content_html');
             t.string('meta_title');
             t.string('meta_description');
             t.string('meta_keywords');

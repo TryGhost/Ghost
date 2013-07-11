@@ -25,10 +25,10 @@ fancyFirstChar = {
         ghost.registerFilter('prePostsRender', function (posts) {
             if (_.isArray(posts)) {
                 _.each(posts, function (post) {
-                    post.content_html = fancify(post.content_html);
+                    post.content = fancify(post.content);
                 });
-            } else if (posts.hasOwnProperty('content_html')) {
-                posts.content_html = fancify(posts.content_html);
+            } else if (posts.hasOwnProperty('content')) {
+                posts.content = fancify(posts.content);
             }
 
             return posts;
