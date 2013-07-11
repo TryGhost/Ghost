@@ -4,9 +4,9 @@ var _ = require("underscore"),
     when = require('when'),
     sinon = require('sinon'),
     helpers = require('./helpers'),
-    exporter = require('../../shared/data/export'),
-    Exporter001 = require('../../shared/data/export/001'),
-    errors = require('../../shared/errorHandling');
+    exporter = require('../../server/data/export'),
+    Exporter001 = require('../../server/data/export/001'),
+    errors = require('../../server/errorHandling');
 
 describe("Export", function () {
 

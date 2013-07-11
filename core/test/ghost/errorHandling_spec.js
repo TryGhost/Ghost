@@ -2,7 +2,7 @@
 var should = require('should'),
     when = require('when'),
     sinon = require('sinon'),
-    errors = require('../../shared/errorHandling');
+    errors = require('../../server/errorHandling');
 
 describe("Error handling", function () {
 

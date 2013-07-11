@@ -6,7 +6,7 @@ var path = require('path'),
         var cfg = {
             // Common paths to be used by tasks
             paths: {
-                adminAssets: './core/admin/assets',
+                adminAssets: './core/client/assets',
                 build: buildDirectory,
                 nightlyBuild: path.join(buildDirectory, 'nightly'),
                 weeklyBuild: path.join(buildDirectory, 'weekly'),
@@ -21,7 +21,7 @@ var path = require('path'),
 
             // JSLint all the things!
             jslintm: {
-                node: {
+                server: {
                     directives: {
                         // node environment
                         node: true,
@@ -39,17 +39,12 @@ var path = require('path'),
                     files: {
                         src: [
                             "*.js",
-                            "core/**/*.js"
+                            "core/*.js",
+                            "core/server/**/*.js"
                         ]
-                    },
-                    // Lint core files, but not libs, frontend or hbs files
-                    exclude: [
-                        "**/assets/lib/**/*.js",
-                        "**/assets/js/**/*.js",
-                        "**/assets/tpl/*.js"
-                    ]
+                    }
                 },
-                frontend: {
+                client: {
                     directives: {
                         // node environment
                         node: false,
@@ -63,7 +58,32 @@ var path = require('path'),
                         unparam: true
                     },
                     files: {
-                        src: "**/assets/js/**/*.js"
+                        src: "core/client/**/*.js"
+                    },
+                    exclude: [
+                        "core/client/assets/**/*.js",
+                        "core/client/tpl/**/*.js"
+                    ]
+                },
+                shared: {
+                    directives: {
+                        // node environment
+                        node: true,
+                        // browser environment
+                        browser: false,
+                        // allow dangling underscores in var names
+                        nomen: true,
+                        // allow to do statements
+                        todo: true,
+                        // allow unused parameters
+                        unparam: true,
+                        // don't require use strict pragma
+                        sloppy: true
+                    },
+                    files: {
+                        src: [
+                            "core/shared/**/*.js"
+                        ]
                     }
                 }
             },
@@ -107,12 +127,12 @@ var path = require('path'),
                     options: {
                         namespace: "JST",
                         processName: function (filename) {
-                            filename = filename.replace('./core/admin/assets/tpl/', '');
+                            filename = filename.replace('./core/client/tpl/', '');
                             return filename.replace('.hbs', '');
                         }
                     },
                     files: {
-                        "<%= paths.adminAssets %>/tpl/hbs-tpl.js": "<%= paths.adminAssets %>/tpl/**/*.hbs"
+                        "core/client/tpl/hbs-tpl.js": "core/client/tpl/**/*.hbs"
                     }
                 }
             },
@@ -126,15 +146,13 @@ var path = require('path'),
                             "config.js",
                             "index.js",
                             "core/ghost.js",
-                            "core/admin/assets/js/*.js",
-                            "core/admin/assets/js/**/*.js",
-                            "core/admin/controllers/*.js",
-                            "core/frontend/**/*.js",
-                            "core/lang/i18n.js",
+                            "core/server/**/*.js",
                             "core/shared/**/*.js",
-                            "core/shared/*.js",
-                            "core/test/**/*.js",
-                            "core/test/ghost.js"
+                            "core/client/**/*.js"
+                        ],
+                        "except": [
+                            "!core/client/assets/**/*.js",
+                            "!core/client/tpl/**/*.js"
                         ]
                     }
                 }
@@ -142,7 +160,7 @@ var path = require('path'),
 
             watch: {
                 handlebars: {
-                    files: '<%= paths.adminAssets %>/tpl/**/*.hbs',
+                    files: 'core/client/tpl/**/*.hbs',
                     tasks: ['handlebars']
                 },
                 sass: {
@@ -158,7 +176,7 @@ var path = require('path'),
                         src: [
                             '**',
                             '!node_modules/**',
-                            '!core/shared/data/*.db',
+                            '!core/server/data/*.db',
                             '!.sass*',
                             '!.af*',
                             '!.git*',
@@ -174,7 +192,7 @@ var path = require('path'),
                         src: [
                             '**',
                             '!node_modules/**',
-                            '!core/shared/data/*.db',
+                            '!core/server/data/*.db',
                             '!.sass*',
                             '!.af*',
                             '!.git*',
@@ -190,11 +208,12 @@ var path = require('path'),
                         src: [
                             '**',
                             '!node_modules/**',
-                            '!core/shared/data/*.db',
+                            '!core/server/data/*.db',
                             '!.sass*',
                             '!.af*',
                             '!.git*',
                             '!.groc*',
+                            '!.iml*',
                             '!.travis.yml'
                         ],
                         dest: "<%= paths.buildBuild %>/"

@@ -2,7 +2,7 @@
 var _ = require("underscore"),
     should = require('should'),
     helpers = require('./helpers'),
-    Models = require('../../shared/models');
+    Models = require('../../server/models');
 
 describe('Post Model', function () {
 

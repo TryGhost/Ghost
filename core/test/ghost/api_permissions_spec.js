@@ -1,8 +1,8 @@
 /*globals describe, it, beforeEach */
 var should = require('should'),
     helpers = require('./helpers'),
-    errors = require('../../shared/errorHandling'),
-    Models = require('../../shared/models');
+    errors = require('../../server/errorHandling'),
+    Models = require('../../server/models');
 
 describe("Role Model", function () {
 

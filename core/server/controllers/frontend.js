@@ -5,7 +5,7 @@
 /*global require, module */
 
 var Ghost = require('../../ghost'),
-    api = require('../../shared/api'),
+    api = require('../api'),
 
     ghost = new Ghost(),
     frontendControllers;

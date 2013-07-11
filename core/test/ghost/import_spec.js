@@ -3,12 +3,12 @@ var _ = require("underscore"),
     should = require('should'),
     when = require('when'),
     sinon = require('sinon'),
-    knex = require("../../shared/models/base").Knex,
+    knex = require("../../server/models/base").Knex,
     helpers = require('./helpers'),
-    exporter = require('../../shared/data/export'),
-    importer = require('../../shared/data/import'),
-    Importer001 = require('../../shared/data/import/001'),
-    errors = require('../../shared/errorHandling');
+    exporter = require('../../server/data/export'),
+    importer = require('../../server/data/import'),
+    Importer001 = require('../../server/data/import/001'),
+    errors = require('../../server/errorHandling');
 
 describe("Import", function () {
 

@@ -5,7 +5,7 @@
 var config = require('./../config'),
     when = require('when'),
     express = require('express'),
-    errors = require('../core/shared/errorHandling'),
+    errors = require('./server/errorHandling'),
     fs = require('fs'),
     path = require('path'),
     hbs = require('express-hbs'),
@@ -13,9 +13,9 @@ var config = require('./../config'),
     _ = require('underscore'),
     Polyglot = require('node-polyglot'),
 
-    models = require('./shared/models'),
+    models = require('./server/models'),
 
-    requireTree = require('./shared/require-tree'),
+    requireTree = require('./server/require-tree'),
     themePath = path.resolve(__dirname + '../../content/themes'),
     pluginPath = path.resolve(__dirname + '../../content/plugins'),
     themeDirectories = requireTree(themePath),
@@ -100,11 +100,11 @@ Ghost = function () {
             },
             paths: function () {
                 return {
-                    'activeTheme':   __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
-                    'adminViews':    __dirname + '/admin/views/',
-                    'frontendViews': __dirname + '/frontend/views/',
-                    'lang':          __dirname + '/lang/',
-                    'availableThemes': instance.themeDirectories,
+                    'activeTheme':      __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
+                    'adminViews':       __dirname + '/server/views/',
+                    'helperTemplates':  __dirname + '/server/helpers/tpl/',
+                    'lang':             __dirname + '/shared/lang/',
+                    'availableThemes':  instance.themeDirectories,
                     'availablePlugins': instance.pluginDirectories
                 };
             }
@@ -179,7 +179,7 @@ Ghost.prototype.compileTemplate = function (templatePath) {
 
 Ghost.prototype.loadTemplate = function (name) {
     // TODO: allow themes to override these templates
-    var templatePath = path.join(this.paths().frontendViews, name + '.hbs');
+    var templatePath = path.join(this.paths().helperTemplates, name + '.hbs');
 
     return this.compileTemplate(templatePath);
 };
@@ -284,7 +284,9 @@ Ghost.prototype.initTheme = function (app) {
         } else {
             app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
             app.set('views', self.paths().adminViews);
-            app.use('/core/admin/assets', express['static'](path.join(__dirname, '/admin/assets')));
+            app.use('/public', express['static'](path.join(__dirname, '/client/assets')));
+            app.use('/public', express['static'](path.join(__dirname, '/client')));
+
         }
         app.use(express['static'](self.paths().activeTheme));
         app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));

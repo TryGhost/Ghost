@@ -26,15 +26,14 @@ projectFilesBackup
 .build
 .dist
 
-/core/admin/assets/tpl/hbs-tpl.js
-/core/admin/assets/css
-/core/admin/assets/sass/modules/bourbon
+/core/client/tpl/hbs-tpl.js
+/core/client/assets/css
 .sass-cache/
-/core/admin/assets/sass/config.rb
-/core/admin/assets/sass/layouts/config.rb
-/core/admin/assets/sass/modules/config.rb
-/core/admin/assets/sass/modules/bourbon
-/ghost/.idea/
-/core/shared/data/export/exported*
+/core/client/assets/sass/config.rb
+/core/client/assets/sass/layouts/config.rb
+/core/client/assets/sass/modules/config.rb
+/core/client/assets/sass/modules/bourbon
+/core/client/assets/sass/modules/bourbon/*
+/core/server/data/export/exported*
 /docs
 /_site
