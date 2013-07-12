@@ -163,7 +163,7 @@
     }
 
     function handleClickOff(e) {
-        if (window.matchMedia('max-width: 650px')) {
+        if (window.matchMedia('(max-width: 650px)').matches) {
             e.preventDefault();
             $('body').toggleClass('off-canvas');
         }
