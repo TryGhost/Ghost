@@ -338,7 +338,7 @@ var path = require('path'),
         ]);
 
         // When you just say "grunt"
-        grunt.registerTask("default", ['sass:admin', 'handlebars']);
+        grunt.registerTask("default", ['init']);
     };
 
 module.exports = configureGrunt;
