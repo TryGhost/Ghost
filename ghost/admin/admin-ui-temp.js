@@ -40,6 +40,9 @@
             var $target = $(event.target);
             if (!$target.parents().is(".overlay:visible") && !$target.is(".overlay:visible")) {
                 $("body").find(".overlay:visible").fadeOut();
+
+                // Toggle active classes on menu headers
+                $("[data-toggle].active").removeClass("active");
             }
         });
 
