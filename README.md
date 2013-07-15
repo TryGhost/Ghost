@@ -1,16 +1,18 @@
-#Ghost Documentation
+#The Ghost Guide
 
-The getting-started guide for the Ghost blogging platform.
+We've put together a short guide to help you get started with Ghost. This guide will take you through installing Ghost for the first time, getting everything set up, customising your blog, as well as getting started with basic theme and plugin development. The Ghost Guide is available to read online by anyone at [docs.tryghost.org](http://docs.tryghost.org).
 
-## Getting Started
+## Running Locally
 
-To simply read the docs, please check out [docs.tryghost.org](http://docs.tryghost.org), to generate these docs for use or modification locally, please follow these instructions:
+If you would like to download these docs and run them locally/offline for your own use and modification, pleae follow these instructions to get started:
 
-1. Clone the Ghost repository and check out the `/gh-pages/` branch
-2. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
-3. Build the docs - `$ jekyll build`
-4. Start the server - `$ jekyll serve`
-5. View the docs on [http://localhost:2302](http://localhost:2302)
+1. Clone the [Ghost repository](https://github.com/TryGhost/Ghost) and check out the `/gh-pages/` branch
+2. Go to this directory - `cd ~/User/path/to/Ghost`
+3. Edit `config.yml` and comment out the `url:` line
+4. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
+5. Build the docs - `$ jekyll build`
+6. Start the server - `$ jekyll serve`
+7. View the docs on [http://localhost:4478](http://localhost:4478)
 
 ## Contributions
 
