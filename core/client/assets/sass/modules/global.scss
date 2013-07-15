@@ -183,6 +183,10 @@ a {
         text-decoration:underline;
     }
 
+    &.highlight {
+        color: $orange;
+        font-weight: bold;
+    }
 }
 
 hr {
