@@ -8,6 +8,7 @@
     // ----------
     Ghost.Views.Settings = Ghost.View.extend({
         initialize: function (options) {
+            $(".settings-content").removeClass('active');
             this.addSubview(new Settings.Sidebar({
                 el: '.settings-sidebar',
                 pane: options.pane,
