@@ -44,6 +44,13 @@
 
 	}
 
+    .entry-container {
+        position: relative;
+        height: -webkit-calc(100% - 70px);
+        height: -moz-calc(100% - 70px);
+        height: calc(100% - 70px);
+    }
+
 	// The two content panel wrappers, positioned left/right
 	.entry-markdown { left:0; border-right:$lightbrown 2px solid; }
 	.entry-preview { right:0; border-left:$lightbrown 2px solid; }
@@ -55,7 +62,7 @@
 		padding: 15px;
 		position: absolute;
 		bottom:40px; // height of the publish bar
-		top:69px; // height of the post title + margin
+		top:0px; // height of the post title + margin
 		background: #fff;
 		box-shadow: $shadow;
 
@@ -65,7 +72,7 @@
 
 		// Convert all content areas to small boxes
 		@include breakpoint($netbook) {
-			top:109px;
+			top:40px;
 			left:0;
 			right:0;
 			width:100%;
