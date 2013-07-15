@@ -8,6 +8,15 @@ body {
     background: #edece4;
 }
 
+a {
+    color: #5ba4e5;
+    -webkit-transition: all 0.25s ease;
+}
+
+a:hover {
+    color: #5ba4e5;
+}
+
 /* ==========================================================================
    Navigation
    ========================================================================== */
@@ -24,6 +33,34 @@ body {
 .navbar-nav > li > a {
     padding-top:20px;
     padding-bottom:20px;
+}
+
+.bs-sidenav li a {
+    color: #5a5a5a;
+    position: relative;
+    overflow: visible;
+    padding:10px 5px;
+}
+
+.bs-sidenav li a:hover,
+.bs-sidenav li a:focus {
+    color: #5ba4e5;
+    background: transparent;
+}
+
+.bs-sidenav li.active li.active a {
+    color:#5ba4e5;
+}
+.bs-sidenav > li.active li.active a:before {
+    content: "";
+    display: block;
+    border-width: 8px 0 8px 8px;
+    border-style:solid;
+    border-color: transparent #fff;
+    position: absolute;
+    top: 10px;
+    left: -15px;
+    z-index: 100;
 }
 
 /* ==========================================================================
