@@ -1,3 +1,4 @@
 pygments:     true
 permalink:    pretty
-port:         2302
+port:         4478
+url:          http://docs.tryghost.org

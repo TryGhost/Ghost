@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>{{ page.title }}</title>
+<link rel="canonical" href="{{ site.url }}{{ page.url }}">
 
-<link href="assets/css/bootstrap.css" rel="stylesheet">
-<link href="assets/css/main.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ site.url }}/assets/css/bootstrap.css" >
+<link rel="stylesheet" href="{{ site.url }}/assets/css/main.css">
 
 <!--[if lt IE 9]>
-  <script src="assets/js/html5shiv.js"></script>
-  <script src="assets/js/respond.min.js"></script>
+  <script src="{{ site.url }}/assets/js/html5shiv.js"></script>
+  <script src="{{ site.url }}/assets/js/respond.min.js"></script>
 <![endif]-->
 
-<link rel="shortcut icon" href="assets/ico/favicon.png">
+<link rel="shortcut icon" href="/assets/img/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
 
 </head>
@@ -54,7 +55,9 @@
 </header>
 
 <main id="main" role="main">
-{{ content }}
+
+  {{ content }}
+
 </main>
 
 <footer id="global-footer">
@@ -64,8 +67,8 @@
     All documentation is released under the Creative Commons <a href="http://creativecommons.org/licenses/by/3.0/">By-3.0</a> License.</p>
 </footer>
 
-<script src="assets/js/jquery.js"></script>
-<script src="assets/js/bootstrap.min.js"></script>
+<script src="{{ site.url }}/assets/js/jquery.js"></script>
+<script src="{{ site.url }}/assets/js/bootstrap.min.js"></script>
 
 </body>
 </html>
