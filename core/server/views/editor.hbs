@@ -8,27 +8,28 @@
     </section>
 </header>
 
-<section class="entry-markdown active">
-    <header class="floatingheader">
-        {{e "editor.headers.markdown.label" "Markdown"}}
-        <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
-    </header>
-    <section class="entry-markdown-content">
-        <textarea id="entry-markdown"></textarea>
-    </section>
-</section>{{!.entry-markdown}}
+<section class="entry-container">
+    <section class="entry-markdown active">
+        <header class="floatingheader">
+            {{e "editor.headers.markdown.label" "Markdown"}}
+            <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
+        </header>
+        <section class="entry-markdown-content">
+            <textarea id="entry-markdown"></textarea>
+        </section>
+    </section>{{!.entry-markdown}}
 
-<section class="entry-preview">
-    <header class="floatingheader">
-        Preview <span class="entry-word-count js-entry-word-count">0 words</span>
-    </header>
-    <section class="entry-preview-content">
-        <div class="rendered-markdown">
-            {{!The content gets inserted in here, bitches!}}
-        </div>
-    </section>
-</section>{{!.entry-preview}}
-
+    <section class="entry-preview">
+        <header class="floatingheader">
+            Preview <span class="entry-word-count js-entry-word-count">0 words</span>
+        </header>
+        <section class="entry-preview-content">
+            <div class="rendered-markdown">
+                {{!The content gets inserted in here, bitches!}}
+            </div>
+        </section>
+    </section>{{!.entry-preview}}
+</section>
 <footer id="publish-bar">
     <nav>
         <section id="entry-categories" href="#" class="left">
