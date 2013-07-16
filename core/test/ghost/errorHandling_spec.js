@@ -2,7 +2,11 @@
 var should = require('should'),
     when = require('when'),
     sinon = require('sinon'),
-    errors = require('../../server/errorHandling');
+    errors = require('../../server/errorHandling'),
+    // storing current environment
+    currentEnv = process.env.NODE_ENV;
+
+
 
 describe("Error handling", function () {
 
@@ -39,6 +43,8 @@ describe("Error handling", function () {
         var err = new Error("test1"),
             logStub = sinon.stub(console, "log");
 
+        // give environment a value that will console log
+        process.env.NODE_ENV = "development";
         errors.logError(err);
 
         // Calls log with message on Error objects
@@ -54,6 +60,8 @@ describe("Error handling", function () {
         logStub.calledWith("Error occurred: ", err).should.equal(true);
 
         logStub.restore();
+        process.env.NODE_ENV = currentEnv;
+
     });
 
     it("logs promise errors with custom messages", function (done) {
@@ -61,6 +69,8 @@ describe("Error handling", function () {
             prom = def.promise,
             logStub = sinon.stub(console, "log");
 
+        // give environment a value that will console log
+        process.env.NODE_ENV = "development";
         prom.then(function () {
             throw new Error("Ran success handler");
         }, errors.logErrorWithMessage("test1"));
@@ -71,7 +81,10 @@ describe("Error handling", function () {
 
             done();
         });
-
+        prom.ensure(function () {
+            // gives the environment the correct value back
+            process.env.NODE_ENV = currentEnv;
+        });
         def.reject();
     });
 
@@ -87,6 +100,8 @@ describe("Error handling", function () {
             logStub = sinon.stub(console, "log"),
             redirectStub = sinon.stub(res, "redirect");
 
+        // give environment a value that will console log
+        process.env.NODE_ENV = "development";
         prom.then(function () {
             throw new Error("Ran success handler");
         }, errors.logErrorWithRedirect("test1", "/testurl", req, res));
@@ -100,7 +115,10 @@ describe("Error handling", function () {
 
             done();
         });
-
+        prom.ensure(function () {
+            // gives the environment the correct value back
+            process.env.NODE_ENV = currentEnv;
+        });
         def.reject();
     });
 });

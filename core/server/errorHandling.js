@@ -20,7 +20,11 @@ errors = {
     logError: function (err) {
         err = err || "Unknown";
         // TODO: Logging framework hookup
-        console.log("Error occurred: ", err.message || err, err.stack || "");
+//        Eventually we'll have better logging which will know about envs
+        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging'
+                || process.env.NODE_ENV === 'production') {
+            console.log("Error occurred: ", err.message || err, err.stack || "");
+        }
     },
 
     logAndThrowError: function (err) {

@@ -154,6 +154,22 @@ coreHelpers = function (ghost) {
                 errors.logAndThrowError('pagination data is not an object or is a function');
                 return;
             }
+            if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages)
+                    || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)
+                    || _.isUndefined(this.pagination.prev) || _.isUndefined(this.pagination.prev)) {
+                errors.logAndThrowError('All values must be defined for page, pages, limit, total, prev and next');
+                return;
+            }
+            if ((!_.isNumber(this.pagination.next) && !_.isNull(this.pagination.next))
+                    || (!_.isNumber(this.pagination.prev) && !_.isNull(this.pagination.prev))) {
+                errors.logAndThrowError('Invalid value, Next/Prev must be a number or null');
+                return;
+            }
+            if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages)
+                    || !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
+                errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
+                return;
+            }
             return new hbs.handlebars.SafeString(templateFn(this.pagination));
         });
     });
