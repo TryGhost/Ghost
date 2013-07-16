@@ -1,6 +1,7 @@
 // # Temporary Admin UI
 
-/*global window, document, $ */
+/*global window, document, _, $ */
+
 (function () {
     "use strict";
 
@@ -18,14 +19,23 @@
         return (obj.textContent || obj.innerText || $(obj).text() || "") === meta[3];
     };
 
-    // Called on Window resize
-    $(window).resize(function () {
+    var positionCenter = _.debounce(function (e) {
 
-        var loginContainer = $(".js-login-container"),
-            marginTop = Math.floor((loginContainer.parent().height() - loginContainer.height()) / 2) - 15;
-        loginContainer.css('margin-top', marginTop).delay(250).fadeIn(750);
+            var loginContainer = $(".js-login-container"),
+                marginTop = Math.floor((loginContainer.parent().height() - loginContainer.height()) / 2) - 15;
+            loginContainer.animate({'margin-top': marginTop}, 200);
+            $(window).trigger('centered');
 
-    });
+        }, 100); // Maximum run of once per 100 milliseconds
+
+    function fadeInAndFocus() {
+        $(".js-login-container").fadeIn(750, function () {
+            $("[name='email']").focus();
+        });
+    }
+
+    $(window).on('resize', positionCenter);
+    $(window).one('centered', fadeInAndFocus);
 
     // Allow notifications to be dismissed
     $(document).on('click', '.js-notification .close',  function () {
@@ -47,8 +57,8 @@
         });
 
         // LOGIN SCREEN
+        $(window).trigger('resize');
 
-        $(window).resize();
 
         // EDITOR / NOTIFICATIONS
 
