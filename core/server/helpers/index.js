@@ -155,14 +155,13 @@ coreHelpers = function (ghost) {
                 return;
             }
             if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages)
-                    || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)
-                    || _.isUndefined(this.pagination.prev) || _.isUndefined(this.pagination.prev)) {
-                errors.logAndThrowError('All values must be defined for page, pages, limit, total, prev and next');
+                    || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
+                errors.logAndThrowError('All values must be defined for page, pages, limit and total');
                 return;
             }
-            if ((!_.isNumber(this.pagination.next) && !_.isNull(this.pagination.next))
-                    || (!_.isNumber(this.pagination.prev) && !_.isNull(this.pagination.prev))) {
-                errors.logAndThrowError('Invalid value, Next/Prev must be a number or null');
+            if ((!_.isUndefined(this.pagination.next) && !_.isNumber(this.pagination.next))
+                    || (!_.isUndefined(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
+                errors.logAndThrowError('Invalid value, Next/Prev must be a number');
                 return;
             }
             if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages)
