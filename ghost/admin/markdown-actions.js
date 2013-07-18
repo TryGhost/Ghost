@@ -38,7 +38,7 @@
                 md = text.toLocaleLowerCase();
                 break;
             case "titlecase":
-                md = text.replace(/\w\S*/g, function (text) {return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase(); });
+                md = text.toTitleCase();
                 break;
             case "selectword":
                 cursor = this.elem.getCursor();
