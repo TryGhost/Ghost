@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js"><!--<![endif]--><head>
+    <meta charset="utf-8">
+
+    <title>Matthew Harrison-Jones</title>
+    <meta content="Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard." name="description">
+    <meta content="" name="author">
+    <meta content="True" name="HandheldFriendly">
+    <meta content="320" name="MobileOptimized">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+
+    <link href="/favicon.ico" rel="shortcut icon">
+    <meta content="on" http-equiv="cleartype">
+
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700" type="text/css" rel="stylesheet">
+    <link href="../../client/assets/css/screen.css" rel="stylesheet">
+    <link href="../../client/assets/vendor/codemirror/codemirror.css" type="text/css" rel="stylesheet"> <!-- TODO: Kill this - #29 -->
+
+</head>
+<body class="settings">
+
+
+<header class="navbar" id="global-header">
+    <a data-off-canvas="left" href="#" id="ghost"><span class="hidden">Ghost</span></a>
+    <nav role="navigation" id="global-nav">
+        <ul id="main-menu">
+
+            <li class="dashboard"><a href="/ghost/">Dashboard</a></li>
+
+            <li class="content"><a href="/ghost/content/">Content</a></li>
+
+            <li class="editor"><a href="/ghost/editor/">New Post</a></li>
+
+            <li class="settings active"><a href="/ghost/settings/">Settings</a></li>
+
+
+            <li class="subnav" id="usermenu">
+                <a data-toggle="ul" href="#">
+                    <img alt="Avatar" src="../../client/assets/img/user.jpg" class="avatar">
+                    <span class="name">John O'Nolan</span>
+                </a>
+                <ul style="display: none;">
+                    <li class="usermenu-profile"><a href="#">Your Profile</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-help"><a href="#">Help / Support</a></li>
+                    <li class="usermenu-shortcuts"><a href="#">Keyboard Shortcuts</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-signout"><a href="/logout/">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+
+<main id="main" role="main">
+
+    <div class="wrapper">
+        <aside role="complementary" class="settings-sidebar">
+            <header>
+                <h1 class="title">Settings</h1>
+            </header>
+            <nav class="settings-menu">
+                <ul>
+                    <li class="general"><a href="#general">General</a></li>
+                    <li class="publishing"><a href="#content">Content</a></li>
+                    <li class="users"><a href="#users">Users</a></li>
+                    <li class="appearance"><a href="#appearance">Theme</a></li>
+                    <li class="services"><a href="#">Connected Services</a></li>
+                    <li class="plugins"><a href="#">Plugins</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <section class="settings-content active" id="user-profile">
+            <header>
+                <h2 class="title">Your Profile</h2>
+                <section class="page-actions">
+                    <button class="button-save">Save</button>
+                </section>
+            </header>
+            <section class="content no-padding">
+                <header class="user-profile-header">
+                    <figure class="cover-image">
+                        <img src="http://f.cl.ly/items/2Q2y3E1n2v043X0v1d2G/bg.jpg" title="John O'Nolan Cover Image"/>
+                        <button class="button-change-cover">Change Cover</button>
+                    </figure>
+                </header>
+                <form class="user-details-container">
+                    <fieldset class="user-details-top">
+                        <figure class="user-avatar-image">
+                            <img src="http://f.cl.ly/items/0O2g3h462E2r2y1g1v2s/gravatar-j7-200.jpg" title="John O'Nolan"/>
+                            <button class="button-change-avatar">Update Avatar</button>
+                        </figure>
+                        <label>
+                            <input type="text" value="John O'Nolan" id="user-name">
+                            <p>Use your real name so people can recognise you.</p>
+                        </label>
+                    </fieldset>
+                    <fieldset class="user-details-bottom">
+
+                        <label>
+                            <b>Email</b>
+                            <input type="text" value="john@onolan.org" id="user-email">
+                            <p>Email will not be publicly displayed. <a class="highlight" href="#" >Learn more</a>.</p>
+                        </label>
+
+                        <label>
+                            <b>Location</b>
+                            <input type="text" value="Linz, Austria" id="user-location">
+                            <p>Where in the world do you live?</p>
+                        </label>
+
+                        <label>
+                            <b>Website</b>
+                            <input type="text" value="http://john.onolan.org" id="user-website">
+                            <p>Have a website or blog other than this one? Link it.</p>
+                        </label>
+
+                        <label class="bio-container">
+                            <b>Bio</b>
+                            <textarea id="user-bio">Interactive designer, public speaker, startup advisor and writer. </textarea>
+                            <p class="bio-desc">Write about you, in <strong>200</strong> characters or less.</p>
+                            <span class="word-count">97</span>
+                        </label>
+
+                        <hr>
+
+                    </fieldset>
+
+                    <fieldset class="user-details-bottom">
+
+                        <label>
+                            <b>Old Password</b>
+                            <input type="password" id="user-password-old">
+                            <p><a href="#" >Forgot your password?</a></p>
+                        </label>
+
+                        <label>
+                            <b>New Password</b>
+                            <input type="password" id="user-password-new">
+                        </label>
+
+                        <label>
+                            <b>Verify Password</b>
+                            <input type="password" id="user-new-password-verification">
+                        </label>
+
+                    </fieldset>
+
+                </form>
+            </section>
+        </section>
+    </div>
+</main>
+
+<script src="../../client/assets/vendor/jquery/jquery.min.js"></script>
+<script src="../../client/assets/vendor/icheck/jquery.icheck.min.js"></script>
+<script src="../../client/assets/vendor/underscore.js"></script>
+<script src="../../client/assets/vendor/backbone/backbone.js"></script>
+<script src="../../client/assets/vendor/handlebars/handlebars-runtime.js"></script>
+<script src="../../client/assets/vendor/codemirror/codemirror.js"></script>
+<script src="../../client/assets/vendor/codemirror/mode/markdown/markdown.js"></script>
+<script src="../../client/assets/vendor/showdown/showdown.js"></script>
+<script src="../../client/assets/vendor/showdown/extensions/ghostdown.js"></script>
+<script src="../../client/assets/vendor/shortcuts.js"></script>
+<script src="../../client/assets/vendor/countable.js"></script>
+<script src="../../client/assets/vendor/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../../client/assets/vendor/packery.pkgd.min.js"></script>
+
+<script src="../../client/assets/init.js"></script>
+<script src="../../client/assets/tpl/hbs-tmpl.js"></script>
+<script src="../../client/assets/toggle.js"></script>
+<script src="../../client/assets/admin-ui-temp.js"></script>
+<script src="../../client/assets/markdown-actions.js"></script>
+<script src="../../client/assets/tagui.js"></script>
+
+<!-- // require '../../client/assets/js/models/*' -->
+<script src="../../client/assets/models/post.js"></script>
+<script src="../../client/assets/models/widget.js"></script>
+<script src="../../client/assets/models/settings.js"></script>
+<!-- // require '../../client/assets/js/views/*' -->
+<script src="../../client/assets/views/base.js"></script>
+<script src="../../client/assets/views/dashboard.js"></script>
+<script src="../../client/assets/views/blog.js"></script>
+<script src="../../client/assets/views/editor.js"></script>
+<script src="../../client/assets/views/settings.js"></script>
+<script src="../../client/assets/router.js"></script>
+
+</body></html>

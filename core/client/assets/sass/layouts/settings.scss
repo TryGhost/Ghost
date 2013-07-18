@@ -219,10 +219,17 @@
             padding:40px;
             overflow:auto;
 
+            &.no-padding {
+                padding: 0;
+            }
+
             @include breakpoint($netbook) { padding-left:15px; }
             @include breakpoint($letterbox) { top: 0; }
         }
 
+/* =============================================================================
+   Users List
+   ============================================================================= */
 
         .user-group-header {
             margin-bottom: 0px;
@@ -339,6 +346,117 @@
             &.editor {
                 background-color: #4A8CBD;
             }
+        }
+
+/* =============================================================================
+   User Profile
+   ============================================================================= */
+
+        .user-profile-header {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .cover-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+
+            img {
+                position: absolute;
+                max-width: 100%;
+            }
+        }
+
+        .button-change-cover {
+            position: absolute;
+            right: 40px;
+            bottom: 40px;
+            background: rgba(0,0,0,0.4);
+            color: #FFFFFF;
+            z-index: 2;
+
+            &:hover {
+                background: rgba(0,0,0,0.8);
+            }
+        }
+
+        .user-details-container {
+            position: relative;
+            top: -90px;
+            z-index: 1;
+        }
+
+        .user-details-top {
+            margin-bottom: 0;
+            overflow: auto;
+
+            p {
+                color: #FFFFFF;
+            }
+        }
+
+        .user-avatar-image {
+            @include box-sizing(border-box);
+            position: relative;
+            width: 120px;
+            height: 120px;
+            float: left;
+            margin-left: 40px;
+            margin-right: 20px;
+            border-radius: 60px;
+            border: 3px solid #FFFFFF;
+            cursor: pointer;
+            z-index: 2;
+
+            img {
+                width: 100%;
+                height: 100%;
+                border-radius: 60px;
+            }
+
+            .button-change-avatar {
+                position: absolute;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                display: block;
+                border-radius: 60px;
+                background: rgba(0,0,0,0.5);
+                opacity: 0;
+                color: #FFFFFF;
+                @include transition(opacity 0.3s ease);
+            }
+
+            &:hover {
+                .button-change-avatar {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .user-details-bottom {
+            padding: 0 40px;
+            margin: 0;
+        }
+
+        .bio-container {
+            max-width: 370px;
+        }
+
+        .bio-desc {
+            display: inline-block;
+        }
+
+        .word-count {
+            margin-right: 20px;
+            float: right;
+            font-weight: bold;
+            color: darken($brown, 5%);
         }
     }//.settings-content
 
