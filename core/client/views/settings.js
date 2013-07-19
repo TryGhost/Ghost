@@ -81,12 +81,13 @@
         },
 
         saveSettings: function () {
+            var self = this;
             this.model.save({
                 title: this.$('#blog-title').val(),
                 email: this.$('#email-address').val()
             }, {
                 success: function () {
-                    this.addSubview(new Ghost.Views.NotificationCollection({
+                    self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'success',
                             message: 'Saved',
@@ -95,7 +96,7 @@
                     }));
                 },
                 error: function () {
-                    this.addSubview(new Ghost.Views.NotificationCollection({
+                    self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'error',
                             message: 'Something went wrong, not saved :(',
