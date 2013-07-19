@@ -93,14 +93,21 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                this.addSubview(new Ghost.Views.FlashCollectionView({
+                this.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'success',
                         message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
                         status: 'passive'
                     }]
                 }));
-                // window.alert('Your post: ' + model.get('title') + ' has been ' + keys[newIndex]);
+            }, function () {
+                this.addSubview(new Ghost.Views.NotificationCollection({
+                    model: [{
+                        type: 'error',
+                        message: 'Your post: ' + model.get('title') + ' has not been ' + keys[newIndex],
+                        status: 'passive'
+                    }]
+                }));
             });
         },
 
@@ -111,7 +118,7 @@
                 self = this;
 
             if (status === 'publish-on') {
-                this.addSubview(new Ghost.Views.FlashCollectionView({
+                this.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'alert',
                         message: 'Scheduled publishing not supported yet.',
@@ -121,7 +128,7 @@
                 // return window.alert('Scheduled publishing not supported yet.');
             }
             if (status === 'queue') {
-                this.addSubview(new Ghost.Views.FlashCollectionView({
+                this.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'alert',
                         message: 'Scheduled publishing not supported yet.',
@@ -134,7 +141,7 @@
             this.savePost({
                 status: status
             }).then(function () {
-                self.addSubview(new Ghost.Views.FlashCollectionView({
+                self.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'success',
                         message: 'Your post: ' + model.get('title') + ' has been ' + status,
@@ -142,6 +149,14 @@
                     }]
                 }));
                 // window.alert('Your post: ' + model.get('title') + ' has been ' + status);
+            }, function () {
+                self.addSubview(new Ghost.Views.NotificationCollection({
+                    model: [{
+                        type: 'error',
+                        message: 'Your post: ' + model.get('title') + ' has not been ' + status,
+                        status: 'passive'
+                    }]
+                }));
             });
         },
 
@@ -152,7 +167,7 @@
             var model = this.model,
                 self = this;
             this.savePost().then(function () {
-                self.addSubview(new Ghost.Views.FlashCollectionView({
+                self.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'success',
                         message: 'Your post was saved as ' + model.get('status'),
@@ -161,7 +176,7 @@
                 }));
                 // window.alert('Your post was saved as ' + model.get('status'));
             }, function () {
-                self.addSubview(new Ghost.Views.FlashCollectionView({
+                self.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
                         type: 'error',
                         message: model.validationError,
@@ -298,52 +313,6 @@
         }
     });
 
-    /**
-     * This is the view to generate the markup for the individual
-     * notification. Will be included into #flashbar.
-     *
-     * States can be
-     * - persistent
-     * - passive
-     *
-     * Types can be
-     * - error
-     * - success
-     * - alert
-     * -   (empty)
-     *
-     */
-    Ghost.Views.FlashView = Ghost.View.extend({
-        templateName: 'notification',
-        className: 'js-bb-notification',
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-        render: function() {
-            var html = this.template(this.model);
-            this.$el.html(html);
-            return this;
-        }
-    });
 
-
-    /**
-     * This handles Notification groups
-     */
-    Ghost.Views.FlashCollectionView = Ghost.View.extend({
-        el: '#flashbar',
-        initialize: function() {
-            this.render();
-        },
-        render: function() {
-            _.each(this.model, function (item) {
-                this.renderItem(item);
-            }, this);
-        },
-        renderItem: function (item) {
-            var itemView = new Ghost.Views.FlashView({ model: item });
-            this.$el.prepend(itemView.render().el);
-        }
-    });
 
 }());
