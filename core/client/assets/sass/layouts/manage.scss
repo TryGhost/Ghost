@@ -15,7 +15,11 @@
    ============================================================================= */
 
 .manage {
-
+    .content-view-container {
+        position: relative;
+        height: 100%;
+        width: 100%;
+    }
     .content-list {
         @include box-sizing(border-box);
         width: 35%;
