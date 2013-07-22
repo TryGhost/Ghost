@@ -28,7 +28,9 @@
             {'key': 'Ctrl+Shift+U', 'style': 'lowercase'},
             {'key': 'Ctrl+Alt+Shift+U', 'style': 'titlecase'},
             {'key': 'Ctrl+Alt+W', 'style': 'selectword'},
-            {'key': 'Ctrl+L', 'style': 'list'}
+            {'key': 'Ctrl+L', 'style': 'list'},
+            {'key': 'Ctrl+Alt+C', 'style': 'copyHTML'},
+            {'key': 'CMD+Alt+C', 'style': 'copyHTML'}
         ];
 
     // The publish bar associated with a post, which has the TagWidget and

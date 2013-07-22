@@ -1,6 +1,6 @@
 // # Surrounds given text with Markdown syntax
 
-/*global $, CodeMirror */
+/*global $, window, CodeMirror, Showdown */
 (function () {
     "use strict";
     var Markdown = {
@@ -15,7 +15,7 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, md, cursor, word;
+            var text = this.elem.getSelection(), pass = true, md, cursor, word, converter;
             switch (this.style) {
             case "link":
                 md = this.options.syntax.link.replace('$1', text);
@@ -48,6 +48,12 @@
                 } else {
                     this.elem.setSelection({line: cursor.line, ch: word.start}, {line: cursor.line, ch: word.end});
                 }
+                break;
+            case "copyHTML":
+                converter = new Showdown.converter();
+                md = converter.makeHtml(text);
+                window.prompt("Copy to clipboard: Ctrl+C, Enter", md);
+                pass = false;
                 break;
             case "list":
                 md = text.replace(/^/gm, "* ");
