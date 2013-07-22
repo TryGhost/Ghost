@@ -167,7 +167,7 @@ adminControllers = {
                 })
                 .then(function (exportedData) {
                     // Save the exported data to the file system for download
-                    var fileName = path.resolve(__dirname + '/../../shared/data/export/exported-' + (new Date().getTime()) + '.json');
+                    var fileName = path.resolve(__dirname + '/../../server/data/export/exported-' + (new Date().getTime()) + '.json');
 
                     return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
                         return when(fileName);
