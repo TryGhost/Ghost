@@ -890,6 +890,83 @@ nav {
 }
 
 /* ==========================================================================
+   Modals
+   ========================================================================== */
+#modal-container {
+    &.active {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+
+        &.dark {
+            background: rgba(0,0,0,0.4);
+        }
+    }
+}
+
+body.blur > *:not(#modal-container) {
+    -webkit-filter: blur(2px);
+    filter: blur(2px); // Not used yet
+}
+
+%modal, .modal {
+    @include box-sizing(border-box);
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    width: 450px;
+    padding: 0px;
+    margin-left: -225px;
+    background: #FFFFFF;
+    border: 6px solid rgba(0,0,0,0.5);
+    border-radius: $rounded;
+
+    &.fadeIn {
+        @include animation(fadeIn 0.3s linear 1);
+    }
+}
+
+.modal-header {
+    position: relative;
+    padding: 20px;
+    border-bottom: 1px solid $lightgrey;
+
+    h1 {
+        display: inline-block;
+        margin: 0;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+
+    .close {
+        @include box-sizing(border-box);
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        width: 16px;
+        min-height: 16px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        opacity: 0.4;
+
+        @include icon($i-close, 1em, $midgrey);
+        @include transition(opacity 0.3s linear);
+
+        &:hover{
+           opacity: 1;
+        }
+    }
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+/* ==========================================================================
    Main Elements
    ========================================================================== */
 
