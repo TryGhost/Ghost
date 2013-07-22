@@ -148,7 +148,8 @@
         deletePost: function (e) {
             e.preventDefault();
             if (window.confirm('Are you sure you want to delete this post?')) {
-                var self = this;
+                var self = this,
+                    title = self.model.get('title');
 
                 self.model.destroy({
                     wait: true
@@ -156,7 +157,7 @@
                     self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'success',
-                            message: 'Your post: ' + self.model.get('title') + ' has been deleted',
+                            message: 'Your post: ' + title + ' has been deleted',
                             status: 'passive'
                         }]
                     }));
@@ -164,7 +165,7 @@
                     self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'error',
-                            message: 'Your post: ' + self.model.get('title') + ' has not been deleted.',
+                            message: 'Your post: ' + title + ' has not been deleted.',
                             status: 'passive'
                         }]
                     }));
