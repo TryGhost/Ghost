@@ -221,7 +221,6 @@
             this.initMarkdown();
             this.renderPreview();
 
-            // TODO: Debounce
             this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
 
             // Shadow on Markdown if scrolled
@@ -254,7 +253,7 @@
 
         },
 
-        syncScroll: function (e) {
+        syncScroll: _.debounce(function (e) {
             var $codeViewport = $(e.target),
                 $previewViewport = $('.entry-preview-content'),
                 $codeContent = $('.CodeMirror-sizer'),
@@ -268,7 +267,7 @@
 
             // apply new scroll
             $previewViewport.scrollTop(previewPostition);
-        },
+        }, 50),
 
         // This updates the editor preview panel.
         // Currently gets called on every key press.
