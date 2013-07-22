@@ -1,21 +1,23 @@
 {{!< default}}
-<section class="content-list js-content-list">
-  <header class="floatingheader">
-      <section class="content-filter">
-          <a class="dropdown" href="#" data-toggle=".menu-drop">All Posts</a>
-          <ul class="menu-drop overlay" style="display:none;">
-              <li class="active"><a href="#">All Posts</a></li>
-              <li><a href="#">Recently Edited</a></li>
-              <li><a href="#">By Author...</a></li>
-              <li><a href="#">Search</a></li>
-          </ul>
+<section class="content-view-container">
+    <section class="content-list js-content-list">
+      <header class="floatingheader">
+          <section class="content-filter">
+              <a class="dropdown" href="#" data-toggle=".menu-drop">All Posts</a>
+              <ul class="menu-drop overlay" style="display:none;">
+                  <li class="active"><a href="#">All Posts</a></li>
+                  <li><a href="#">Recently Edited</a></li>
+                  <li><a href="#">By Author...</a></li>
+                  <li><a href="#">Search</a></li>
+              </ul>
+          </section>
+          <a href="/ghost/editor" class="button button-add"><span class="hidden">New Post</span></a>
+      </header>
+      <section class="content-list-content">
+          <ol></ol>
       </section>
-      <a href="/ghost/editor" class="button button-add"><span class="hidden">New Post</span></a>
-  </header>
-  <section class="content-list-content">
-      <ol></ol>
-  </section>
-</section>
+    </section>
 
-<section class="content-preview js-content-preview">
+    <section class="content-preview js-content-preview">
+    </section>
 </section>
