@@ -125,7 +125,6 @@
                         status: 'passive'
                     }]
                 }));
-                // return window.alert('Scheduled publishing not supported yet.');
             }
             if (status === 'queue') {
                 this.addSubview(new Ghost.Views.NotificationCollection({
@@ -135,7 +134,6 @@
                         status: 'passive'
                     }]
                 }));
-                // return window.alert('Scheduled publishing not supported yet.');
             }
 
             this.savePost({
@@ -148,7 +146,6 @@
                         status: 'passive'
                     }]
                 }));
-                // window.alert('Your post: ' + model.get('title') + ' has been ' + status);
             }, function () {
                 self.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
@@ -174,7 +171,6 @@
                         status: 'passive'
                     }]
                 }));
-                // window.alert('Your post was saved as ' + model.get('status'));
             }, function () {
                 self.addSubview(new Ghost.Views.NotificationCollection({
                     model: [{
@@ -183,7 +179,6 @@
                         status: 'passive'
                     }]
                 }));
-                // window.alert(model.validationError);
             });
         },
 

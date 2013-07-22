@@ -55,11 +55,6 @@
         });
     });
 
-    $(document).on('animationend', '.js-notification', function () {
-        $(this).hide();
-    });
-
-
     /**
      * Example of how to add a persistent notification.
      */
