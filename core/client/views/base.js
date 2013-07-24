@@ -129,4 +129,67 @@
         }
     });
 
+    /**
+     * This is the view to generate the markup for the individual
+     * modal. Will be included into #modals.
+     *
+     *
+     *
+     * Types can be
+     * -   (empty)
+     *
+     */
+    Ghost.Views.Modal = Ghost.View.extend({
+        el: '#modal-container',
+        templateName: 'modal',
+        className: 'js-bb-modal',
+        initialize: function () {
+            this.render();
+        },
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
+        events: {
+            'click .close': 'removeItem'
+        },
+        render: function () {
+            this.$el.html(this.template(this.model));
+            this.$(".modal-content").html(this.addSubview(new Ghost.Views.Modal.ContentView({model: this.model})).render().el);
+            this.$el.children(".js-modal").center();
+            this.$el.addClass("active");
+            if (document.body.style.webkitFilter !== undefined) { // Detect webkit filters
+                $("body").addClass("blur");
+            } else {
+                this.$el.addClass("dark");
+            }
+            return this;
+        },
+        removeItem: function (e) {
+            e.preventDefault();
+            $(e.currentTarget).closest('.js-modal').fadeOut(300, function () {
+                $(this).remove();
+                $("#modal-container").removeClass('active dark');
+                if (document.body.style.filter !== undefined) {
+                    $("body").removeClass("blur");
+                }
+            });
+        }
+    });
+
+    /**
+     * Modal Content
+     * @type {*}
+     */
+    Ghost.Views.Modal.ContentView = Ghost.View.extend({
+
+        template: function (data) {
+            return JST['modals/' + this.model.content.template](data);
+        },
+
+        render: function () {
+            this.$el.html(this.template(this.model));
+            return this;
+        }
+
+    });
 }());
