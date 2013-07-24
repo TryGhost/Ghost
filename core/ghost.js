@@ -286,6 +286,7 @@ Ghost.prototype.initTheme = function (app) {
             app.set('views', self.paths().adminViews);
             app.use('/public', express['static'](path.join(__dirname, '/client/assets')));
             app.use('/public', express['static'](path.join(__dirname, '/client')));
+            app.use('/shared', express['static'](path.join(__dirname, '/shared/')));
 
         }
         app.use(express['static'](self.paths().activeTheme));
