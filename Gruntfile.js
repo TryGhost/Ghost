@@ -84,7 +84,10 @@ var path = require('path'),
                         src: [
                             "core/shared/**/*.js"
                         ]
-                    }
+                    },
+                    exclude: [
+                        "core/shared/vendor/**/*.js"
+                    ]
                 }
             },
 
