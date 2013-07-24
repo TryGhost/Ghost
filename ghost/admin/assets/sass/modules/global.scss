@@ -914,15 +914,13 @@ body.blur > *:not(#modal-container) {
 
 %modal, .modal {
     @include box-sizing(border-box);
-    position: fixed;
-    top: 10%;
-    left: 50%;
+    max-height: calc(100%-80px);
     width: 450px;
     padding: 0px;
-    margin-left: -225px;
     background: #FFFFFF;
     border: 6px solid rgba(0,0,0,0.5);
     border-radius: $rounded;
+    overflow:auto;
 
     &.fadeIn {
         @include animation(fadeIn 0.3s linear 1);
