@@ -260,6 +260,10 @@
 
         },
 
+        events: {
+            'click .markdown-help': 'showHelp'
+        },
+
         syncScroll: _.debounce(function (e) {
             var $codeViewport = $(e.target),
                 $previewViewport = $('.entry-preview-content'),
@@ -275,6 +279,18 @@
             // apply new scroll
             $previewViewport.scrollTop(previewPostition);
         }, 50),
+
+        showHelp: function () {
+            this.addSubview(new Ghost.Views.Modal({
+                model: {
+                    title: 'Markdown Help',
+                    content: {
+                        template: 'markdown'
+                    },
+                    animation: 'fadeIn'
+                }
+            }));
+        },
 
         // This updates the editor preview panel.
         // Currently gets called on every key press.
