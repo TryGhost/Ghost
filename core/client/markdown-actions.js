@@ -52,7 +52,8 @@
             case "copyHTML":
                 converter = new Showdown.converter();
                 md = converter.makeHtml(text);
-                window.prompt("Copy to clipboard: Ctrl+C, Enter", md);
+                $(".modal-copyToHTML-content").text(md).selectText();
+                $(".js-modal").center();
                 pass = false;
                 break;
             case "list":
