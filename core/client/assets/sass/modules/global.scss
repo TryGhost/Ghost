@@ -914,7 +914,7 @@ body.blur > *:not(#modal-container) {
 
 %modal, .modal {
     @include box-sizing(border-box);
-    max-height: calc(100%-80px);
+    max-height: 90%;
     width: 450px;
     padding: 0px;
     background: #FFFFFF;
