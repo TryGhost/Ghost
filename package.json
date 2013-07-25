@@ -20,7 +20,8 @@
     "knex": "0.1.7",
     "when": "2.1.1",
     "bcrypt-nodejs": "0.0.3",
-    "node-uuid": "1.4.0"
+    "node-uuid": "1.4.0",
+    "colors": "~0.6.0-1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
