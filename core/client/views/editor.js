@@ -318,6 +318,14 @@
 
             var view = this;
 
+            // Inject modal for HTML to be viewed in
+            shortcut.add("Ctrl+Alt+C", function () {
+                view.showHTML();
+            });
+            shortcut.add("Ctrl+Alt+C", function () {
+                view.showHTML();
+            });
+
             _.each(MarkdownShortcuts, function (combo) {
                 shortcut.add(combo.key, function () {
                     return view.editor.addMarkdown({style: combo.style});
@@ -327,6 +335,18 @@
             this.editor.on('change', function () {
                 view.renderPreview();
             });
+        },
+
+        showHTML: function () {
+            this.addSubview(new Ghost.Views.Modal({
+                model: {
+                    title: 'Copied HTML',
+                    content: {
+                        template: 'copyToHTML'
+                    },
+                    animation: 'fadeIn'
+                }
+            }));
         }
     });
 
