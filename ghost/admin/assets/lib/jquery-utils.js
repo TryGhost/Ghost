@@ -54,4 +54,32 @@
         }
     };
 
+    /**
+     * Set interactions for all menus and overlays
+     * This finds all visible 'hideClass' elements and hides them upon clicking away from the element itself.
+     * A callback can be defined to customise the results. By default it will hide the element.
+     * @param callback
+     */
+    $.fn.hideAway = function (callback) {
+        var $self = $(this);
+        $("body").on('click', function (event) {
+            var $target = $(event.target),
+                hideClass = $self.selector;
+            if (!$target.parents().is(hideClass + ":visible") && !$target.is(hideClass + ":visible")) {
+                if (callback) {
+                    callback($("body").find(hideClass + ":visible"));
+                } else {
+                    $("body").find(hideClass + ":visible").fadeOut();
+
+                    // Toggle active classes on menu headers
+                    $("[data-toggle].active").removeClass("active");
+                }
+            }
+        });
+
+        return this;
+    };
+
+    $('.overlay').hideAway(); // TODO: Move to a more sensible global file.
+
 }());
