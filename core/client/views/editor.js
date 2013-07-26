@@ -283,11 +283,16 @@
         showHelp: function () {
             this.addSubview(new Ghost.Views.Modal({
                 model: {
-                    title: 'Markdown Help',
-                    content: {
-                        template: 'markdown'
+                    options: {
+                        close: true,
+                        type: "info",
+                        style: "wide",
+                        animation: 'fadeIn'
                     },
-                    animation: 'fadeIn'
+                    content: {
+                        template: 'markdown',
+                        title: 'Markdown Help'
+                    }
                 }
             }));
         },
@@ -340,11 +345,16 @@
         showHTML: function () {
             this.addSubview(new Ghost.Views.Modal({
                 model: {
-                    title: 'Copied HTML',
-                    content: {
-                        template: 'copyToHTML'
+                    options: {
+                        close: true,
+                        type: "info",
+                        style: "wide",
+                        animation: 'fadeIn'
                     },
-                    animation: 'fadeIn'
+                    content: {
+                        template: 'copyToHTML',
+                        title: 'Copied HTML'
+                    }
                 }
             }));
         }

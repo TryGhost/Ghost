@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, JST */
+/*global window, document, Ghost, $, _, Backbone, JST, shortcut */
 (function () {
     "use strict";
 
@@ -145,12 +145,33 @@
         className: 'js-bb-modal',
         initialize: function () {
             this.render();
+            var self = this;
+            if (!this.model.options.confirm) {
+                shortcut.add("ESC", function () {
+                    self.removeItem();
+                });
+                $(document).on('click', '.modal-background', function (e) {
+                    self.removeItem(e);
+                });
+            } else {
+                // Initiate functions for buttons here so models don't get tied up.
+                this.acceptModal = function () {
+                    this.model.options.confirm.accept.func();
+                };
+                this.rejectModal = function () {
+                    this.model.options.confirm.reject.func();
+                };
+                shortcut.remove("ESC");
+                $(document).off('click', '.modal-background');
+            }
         },
         template: function (data) {
             return JST[this.templateName](data);
         },
         events: {
-            'click .close': 'removeItem'
+            'click .close': 'removeItem',
+            'click .js-button-accept': 'acceptModal',
+            'click .js-button-reject': 'rejectModal'
         },
         render: function () {
             this.$el.html(this.template(this.model));
@@ -164,15 +185,25 @@
             }
             return this;
         },
+        remove: function () {
+            this.undelegateEvents();
+            this.$el.empty();
+            this.stopListening();
+            return this;
+        },
         removeItem: function (e) {
-            e.preventDefault();
-            $(e.currentTarget).closest('.js-modal').fadeOut(300, function () {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            $('.js-modal').fadeOut(300, function () {
                 $(this).remove();
                 $("#modal-container").removeClass('active dark');
                 if (document.body.style.filter !== undefined) {
                     $("body").removeClass("blur");
                 }
             });
+            this.remove();
         }
     });
 
