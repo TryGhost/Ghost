@@ -1,5 +1,12 @@
-<article class="modal{{#if type}}-{{type}}{{/if}} {{animation}} js-modal">
-    <header class="modal-header"><h1>{{title}}</h1><a class="close" href="#"><span class="hidden">Close</span></a></header>
+<aside class="modal-background"></aside>
+<article class="modal{{#if options.type}}-{{options.type}}{{/if}} {{#if options.style}}modal-style-{{options.style}}{{/if}}  {{options.animation}} js-modal">
+    <header class="modal-header"><h1>{{content.title}}</h1>{{#if options.close}}<a class="close" href="#"><span class="hidden">Close</span></a>{{/if}}</header>
     <section class="modal-content">
     </section>
+    {{#if options.confirm}}
+    <footer class="modal-footer">
+        <button class="button-add js-button-accept">{{options.confirm.accept.text}}</button>
+        <button class="button-delete js-button-reject">{{options.confirm.reject.text}}</button>
+    </footer>
+    {{/if}}
 </article>

@@ -83,18 +83,6 @@
 
     $(document).ready(function () {
 
-        // ## Set interactions for all menus
-        // This finds all visible '.overlay' elements and hides them upon clicking away from the element itself.
-        $("body").on('click', function (event) {
-            var $target = $(event.target);
-            if (!$target.parents().is(".overlay:visible") && !$target.is(".overlay:visible")) {
-                $("body").find(".overlay:visible").fadeOut();
-
-                // Toggle active classes on menu headers
-                $("[data-toggle].active").removeClass("active");
-            }
-        });
-
         // LOGIN SCREEN
         $(window).trigger('resize');
 
