@@ -899,11 +899,21 @@ nav {
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 1000;
+        z-index: 999;
 
         &.dark {
             background: rgba(0,0,0,0.4);
         }
+
+        .modal-background {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
     }
 }
 
@@ -921,10 +931,19 @@ body.blur > *:not(#modal-container) {
     border: 6px solid rgba(0,0,0,0.5);
     border-radius: $rounded;
     overflow:auto;
+    z-index: 1001;
 
     &.fadeIn {
         @include animation(fadeIn 0.3s linear 1);
     }
+}
+
+.modal-info {
+    @extend %modal;
+}
+
+.modal-action {
+    @extend %modal;
 }
 
 .modal-header {
@@ -962,6 +981,17 @@ body.blur > *:not(#modal-container) {
 
 .modal-content {
     padding: 20px;
+}
+
+.modal-footer {
+    padding: 20px;
+    padding-top: 0;
+    text-align: center;
+}
+
+.modal-style-wide {
+    @extend %modal;
+    width: 550px;
 }
 
 /* ==========================================================================
