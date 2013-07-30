@@ -85,6 +85,7 @@ isGhostAdmin = function (req, res, next) {
 ghostLocals = function (req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
+    res.locals.version = packageInfo.version;
 
     if (!res.isAdmin) {
         // filter the navigation items
