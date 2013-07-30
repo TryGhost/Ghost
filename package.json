@@ -6,6 +6,10 @@
     "start": "node index",
     "test": "grunt validate --verbose"
   },
+  "engines": {
+      "node": ">=0.10.* <0.11.4"
+  },
+  "engineStrict": true,
   "dependencies": {
     "express": "3.1.2",
     "express-hbs": "0.2.0",
@@ -15,13 +19,14 @@
     "moment": "2.0.0",
     "underscore": "1.4.4",
     "showdown": "0.3.1",
-    "sqlite3": "git+https://github.com/developmentseed/node-sqlite3.git#6ae402e",
+    "sqlite3": "2.1.14",
     "bookshelf": "0.1.9",
     "knex": "0.1.7",
     "when": "2.1.1",
     "bcrypt-nodejs": "0.0.3",
     "node-uuid": "1.4.0",
-    "colors": "~0.6.0-1"
+    "colors": "~0.6.0-1",
+    "semver": "2.1.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

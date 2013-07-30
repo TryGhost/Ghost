@@ -5,6 +5,7 @@ var express = require('express'),
     when = require('when'),
     _ = require('underscore'),
     colors = require("colors"),
+    semver = require("semver"),
     errors = require('./core/server/errorHandling'),
     admin = require('./core/server/controllers/admin'),
     frontend = require('./core/server/controllers/frontend'),
@@ -14,6 +15,7 @@ var express = require('express'),
     I18n = require('./core/shared/lang/i18n'),
     filters = require('./core/server/filters'),
     helpers = require('./core/server/helpers'),
+    packageInfo = require('./package.json'),
 
 // ## Custom Middleware
     auth,
@@ -199,7 +201,19 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().listen(
         ghost.config().env[process.env.NODE_ENV || 'development'].url.port,
         ghost.config().env[process.env.NODE_ENV || 'development'].url.host,
-        function() {
+        function () {
+
+            // Tell users if their node version is not supported, and exit
+            if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+                console.log(
+                    "\n !!! INVALID NODE VERSION !!!\n".red,
+                    "Ghost requires node version".red,
+                    packageInfo.engines.node.yellow,
+                    "as defined in package.json\n".red
+                );
+
+                process.exit(-1);
+            }
 
             // Remove once software becomes suitably 'ready'
             console.log(
