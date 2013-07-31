@@ -22,62 +22,61 @@
             {{#with settings}}
             <form id="settings-general">
                 <fieldset>
-                    <label>
-                        <b>Blog Title</b>
-                        <input id="blog-title" type="text" value="{{title}}" />
+                    <div class="form-group">
+                        <label><strong>Blog Title</strong></label>
+                        <input id="blog-title" name="general[title]" type="text" value="{{title}}" />
                         <p>How your blog name appears on the site</p>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>Blog Logo</b>
+                    <div class="form-group">
+                        <label><strong>Blog Logo</strong></label>
                         <img src="/public/img/logo.png" alt="logo" height="38" width="381"/>
                         <p>Display a logo on your site in place of blog title</p>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>Blog Icon</b>
+                    <div class="form-group">
+                        <label><strong>Blog Icon</strong></label>
                         <img src="/public/img/test-icon.png" alt="logo" height="38" width="38"/>
                         <p>The icon for your blog, used in your browser tab and elsewhere</p>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>Email Address</b>
-                        <input id="email-address" type="text" value="{{email}}" />
+                    <div class="form-group">
+                        <label for="email-address"><strong>Email Address</strong></label>
+                        <input id="email-address" name="general[email-address]" type="text" value="{{email}}" />
                         <p>Address to use for <a href="#">admin notifications</a></p>
                         <label class="checkbox">
-                            <input type="checkbox" value="1" /> Show my email address on my public profile
+                            <input type="checkbox" value="1" name="general[public-email]" /> Show my email address on my public profile
                         </label>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>URL Structure</b>
+                    <div class="form-group">
+                        <label for="url-structure"><strong>URL Structure</strong></label>
                         <select id="url-structure" name="general[urlstructure]">
                             <option value="post-name">Simple Post Name</option>
                             <option value="date-based">Date Based</option>
                             <option value="number based">Number Based</option>
                             <option value="custom">Custom...</option>
                         </select>
-                    </label>
+                    </div>
 
                 </fieldset>
 
                 <hr />
 
                 <fieldset>
-
-                    <label>
-                        <b>Time Zone</b>
-                        <select id="url-structure" name="general[timezone]">
+                    <div class="form-group">
+                        <label for="timezone"><strong>Time Zone</strong></label>
+                        <select id="timezone" name="general[timezone]">
                             <option value="1">Vienna (UTC+1)</option>
                         </select>
-                    </label>
-
+                    </div>
                 </fieldset>
 
             {{/with}}
             </form>
         </section>
     </section>
+
     <section id="content" class="settings-content">
         <header>
             <h2 class="title">Content</h2>
@@ -86,69 +85,70 @@
             </section>
         </header>
         <section class="content">
-            <form id="settings-general">
+            <form id="settings-content">
                 <fieldset>
-                    <label>
-                        <b>Typography</b>
-                        <select id="url-structure" name="general[urlstructure]">
+                    <div class="form-group">
+                        <label for="typography"><strong>Typography</strong></label>
+                        <select id="typography" name="content[typography]">
                             <option value="post-name">Lato (Light)</option>
                         </select>
                         <p>Sexy sans-serif font that will make your toes tickle.</p>
                         <label class="checkbox">
-                            <input type="checkbox" value="1" /> Load fonts directly from Google
+                            <input type="checkbox" value="1" name="content[type-load-google]"/> Load fonts directly from Google
                         </label>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>Post Options</b>
+                    <div class="form-group">
+                        <label><strong>Post Options</strong></label>
                         <label class="checkbox">
-                            <input type="checkbox" value="1" /> Display Post Meta
-                            <p>Post Author / Date / Views</p>
+                            <input type="checkbox" name="content[display-post-meta]" value="1" /> Display Post Meta
                         </label>
-                        <label class="checkbox">
-                            <input type="checkbox" value="1" /> Show Author Box After Post
-                        </label>
-                        <label class="checkbox">
-                            <input type="checkbox" value="1" /> Enable Comments
-                        </label>
-                    </label>
+                        <p>Post Author / Date / Views</p>
 
+                        <label class="checkbox">
+                            <input type="checkbox" name="content[show-author]" value="1" /> Show Author Box After Post
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" name="content[comments]" value="1" /> Enable Comments
+                        </label>
+                    </div>
                 </fieldset>
 
                 <hr />
 
                 <fieldset>
-
-                    <label>
-                        <b>SEO Title Pattern</b>
-                        <input id="seo-title" type="text" value="[Post Name] - [Site Title]" />
+                    <div class="form-group">
+                        <label for="seo-title"><strong>SEO Title Pattern</strong></label>
+                        <input id="seo-title" name="content[seo-title]" type="text" value="[Post Name] - [Site Title]" />
                         <p>The pattern used to display your title tags</p>
-                    </label>
 
-                    <label>
-                        <b>SEO Description Pattern</b>
-                        <input id="seo-description" type="text" value="Auto" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="seo-description"><strong>SEO Description Pattern</strong></label>
+                        <input id="seo-description" name="content[seo-description]" type="text" value="Auto" />
                         <p>The pattern used to display your meta descriptions</p>
-                    </label>
+                    </div>
 
-                    <label>
-                        <b>Google+</b>
+                    <div class="form-group">
+                        <label><strong>Google+</strong></label>
                         <label class="checkbox">
-                            <input type="checkbox" value="1" /> Connect to author profile on Google
+                            <input type="checkbox" name="content[google-profile]" value="1" /> Connect to author profile on Google
                         </label>
-                    </label>
 
-                    <label>
-                        <b>Home Page Description</b>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blog-description"><strong>Home Page Description</strong></label>
                         <textarea id="blog-description"></textarea>
-                        <p>Display a logo on your site in place of blog title</p>
-                    </label>
+                    </div>
 
                 </fieldset>
 
             </form>
         </section>
     </section>
+
     <section id="users" class="settings-content">
         <header>
             <h2 class="title">Users</h2>
@@ -206,6 +206,7 @@
             </section>
         </section>
     </section>
+
     <section id="appearance" class="settings-content">
         <header>
             <h2 class="title">Appearance</h2>
@@ -217,6 +218,7 @@
             <p>Available plugins: {{json availablePlugins}}</p>
         </section>
     </section>
+
     <section id="plugins" class="settings-content">
         <header>
             <h2 class="title">Plugins</h2>
