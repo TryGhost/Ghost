@@ -1,47 +1,46 @@
 {
-  "name": "ghost",
-  "version": "0.2.0",
-  "private": true,
-  "scripts": {
-    "start": "node index",
-    "test": "grunt validate --verbose"
-  },
-  "engines": {
-      "node": ">=0.10.* <0.11.4"
-  },
-  "engineStrict": true,
-  "dependencies": {
-    "express": "3.1.2",
-    "express-hbs": "0.2.0",
-    "connect-flash": "0.1.1",
-    "node-polyglot": "0.2.1",
-    "css": "1.1.0",
-    "moment": "2.0.0",
-    "underscore": "1.4.4",
-    "showdown": "0.3.1",
-    "sqlite3": "2.1.14",
-    "bookshelf": "0.1.9",
-    "knex": "0.1.7",
-    "when": "2.1.1",
-    "bcrypt-nodejs": "0.0.3",
-    "node-uuid": "1.4.0",
-    "colors": "~0.6.0-1",
-    "semver": "2.1.0"
-  },
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-jslint": "git+https://github.com/ErisDS/grunt-jslint.git#custom",
-    "should": "~1.2.2",
-    "grunt-shell": "~0.2.2",
-    "grunt-contrib-sass": "~0.3.0",
-    "sinon": "~1.7.2",
-    "mocha": "~1.10.0",
-    "grunt-contrib-handlebars": "~0.5.9",
-    "grunt-contrib-watch": "~0.4.4",
-    "grunt-bump": "~0.0.11",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-compress": "~0.5.2",
-    "grunt-groc": "~0.3.0",
-    "grunt-mocha-cli": "~1.0.6"
-  }
+    "name": "ghost",
+    "version": "0.2.0",
+    "private": true,
+    "scripts": {
+        "start": "node index",
+        "test": "grunt validate --verbose"
+    },
+    "engines": {
+        "node": ">=0.10.* <0.11.4"
+    },
+    "engineStrict": true,
+    "dependencies": {
+        "express": "3.3.4",
+        "express-hbs": "0.2.0",
+        "connect-flash": "0.1.1",
+        "node-polyglot": "0.2.1",
+        "moment": "2.1.0",
+        "underscore": "1.5.1",
+        "showdown": "0.3.1",
+        "sqlite3": "2.1.14",
+        "bookshelf": "0.2.4",
+        "knex": "0.1.8",
+        "when": "2.2.1",
+        "bcrypt-nodejs": "0.0.3",
+        "node-uuid": "1.4.0",
+        "colors": "0.6.1",
+        "semver": "2.1.0"
+    },
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-jslint": "~1.0.0",
+        "grunt-shell": "~0.3.1",
+        "grunt-contrib-sass": "~0.4.1",
+        "grunt-contrib-handlebars": "~0.5.10",
+        "grunt-contrib-watch": "~0.5.1",
+        "grunt-bump": "~0.0.11",
+        "grunt-contrib-copy": "~0.4.1",
+        "grunt-contrib-compress": "~0.5.2",
+        "grunt-groc": "~0.3.0",
+        "grunt-mocha-cli": "~1.0.6",
+        "sinon": "~1.7.3",
+        "should": "~1.2.2",
+        "mocha": "~1.12.0"
+    }
 }
