@@ -7,7 +7,7 @@ var should = require('should'),
     Ghost = require('../../ghost');
 
 describe("Ghost API", function () {
-    var testTemplatePath = 'core/test/ghost/fixtures/',
+    var testTemplatePath = 'core/test/unit/fixtures/',
         ghost;
 
     beforeEach(function () {

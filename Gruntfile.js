@@ -98,15 +98,15 @@ var path = require('path'),
                 },
 
                 all: {
-                    src: ['core/test/**/*_spec.js']
+                    src: ['core/test/unit/**/*_spec.js']
                 },
 
                 api: {
-                    src: ['core/test/**/api*_spec.js']
+                    src: ['core/test/unit/**/api*_spec.js']
                 },
 
                 perm: {
-                    src: ['core/test/**/permissions_spec.js']
+                    src: ['core/test/unit/**/permissions_spec.js']
                 }
             },
 
