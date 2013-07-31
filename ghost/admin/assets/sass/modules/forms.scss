@@ -36,11 +36,8 @@ form {
 
     label {
         display:block;
-        margin:1.5em 0;
-        padding-left:140px;
-        position:relative;
 
-        b {
+        strong {
             display:inline-block;
             position: absolute;
             top:0.5em;
@@ -124,6 +121,12 @@ form {
         font-weight: normal;
         padding:0.55em 0;
         cursor: pointer;
+    }
+
+    .form-group {
+        position:relative;
+        margin:1.5em 0;
+        padding-left:140px;
     }
 
 }//form
