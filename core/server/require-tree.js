@@ -49,7 +49,7 @@ var when = require('when'),
                 });
             });
 
-            return keys.all(subtree).then(function(theFiles) {
+            return keys.all(subtree).then(function (theFiles) {
                 return treeDeferred.resolve(theFiles);
             });
         });

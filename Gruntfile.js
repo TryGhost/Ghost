@@ -20,7 +20,7 @@ var path = require('path'),
             pkg: grunt.file.readJSON('package.json'),
 
             // JSLint all the things!
-            jslintm: {
+            jslint: {
                 server: {
                     directives: {
                         // node environment
@@ -283,9 +283,6 @@ var path = require('path'),
         grunt.registerTask('setCurrentBuildType', function (type) {
             cfg.buildType = type;
         });
-
-        // jslintm aliased to jslint
-        grunt.registerTask("jslint", ["jslintm"]);
 
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?

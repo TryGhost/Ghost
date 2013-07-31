@@ -120,7 +120,7 @@ disableCachedResult = function (req, res, next) {
     next();
 };
 
-ghost.app().configure(function() {
+ghost.app().configure(function () {
     ghost.app().use(isGhostAdmin);
     ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
     ghost.app().use(I18n.load(ghost));
@@ -136,7 +136,7 @@ ghost.app().configure(function() {
     }
 });
 
-ghost.app().configure("development", function() {
+ghost.app().configure("development", function () {
     ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
     ghost.app().use(express.logger('dev'));
 });
@@ -178,7 +178,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/ghost/settings*', auth, admin.settings);
     ghost.app().get('/ghost/debug', auth, admin.debug.index);
     ghost.app().get('/ghost/debug/db/export/', auth, admin.debug['export']);
-    ghost.app().post('/ghost/debug/db/import/', auth, admin.debug.import);
+    ghost.app().post('/ghost/debug/db/import/', auth, admin.debug['import']);
     ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
