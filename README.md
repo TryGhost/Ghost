@@ -1,4 +1,4 @@
-# [Ghost v0.2.0](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
+# [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://magnum.travis-ci.com/TryGhost/Ghost.png?token=hMRLUurj2P3wzBdscyQs&branch=master)](https://magnum.travis-ci.com/TryGhost/Ghost)
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
@@ -68,10 +68,11 @@ Pre-requisites:
 1. Clone the git repo
 2. cd into the project folder
 3. Run `git submodule update --init`
-4. Run `npm install`.
+4. Run `npm install -g grunt-cli`
+5. Run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild", follow the SQLite3 install instructions
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-5. run `grunt init` from the root - this installs bourbon, compiles sass and compiles handlebars templates
+6. run `grunt init` from the root - this installs bourbon, compiles sass and compiles handlebars templates
 
 Frontend can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost](http://localhost:2368/ghost)
 
@@ -83,7 +84,7 @@ Pulling down the latest changes from master will often require more than just a 
 
  * `npm install` - fetch any new dependencies
  * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run grunt init to install bourbon)
+ * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run `grunt init` to install bourbon)
  * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### SQLite3 Install Instructions
@@ -101,13 +102,14 @@ For transparency and insight into our release cycle, and for striving to maintai
 
 Releases will be numbered with the following format:
 
-`<major>.<minor>.<patch>`
+`<major>.<minor>.<patch>-<build>`
 
 Constructed with the following guidelines:
 
 * A new *major* release indicates a large change where backwards compatibility is broken.
 * A new *minor* release indicates a normal change that maintains backwards compatibility.
 * A new *patch* release indicates a bugfix or small change which does not affect compatibility.
+* A new *build* release indicates this is a pre-release of a new version.
 
 ## Bugs
 
