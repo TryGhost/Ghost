@@ -162,13 +162,6 @@
         $(e.currentTarget).remove();
     }
 
-    function handleClickOff(e) {
-        if (window.matchMedia('(max-width: 650px)').matches) {
-            e.preventDefault();
-            $('body').toggleClass('off-canvas');
-        }
-    }
-
     $(document).ready(function () {
         suggestions = $("ul.suggestions").hide(); // Initnialise suggestions overlay
 
@@ -182,7 +175,7 @@
             .on('keydown', handleTagKeyDown);
         $('ul.suggestions').on('click', "li", handleSuggestionClick);
         $('.categories').on('click', ".category", handleCategoryClick);
-        $('[data-off-canvas]').on('click', handleClickOff);
+
     });
 
 }());
