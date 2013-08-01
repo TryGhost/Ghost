@@ -25,6 +25,7 @@
     // ---------------
     Settings.Sidebar = Ghost.View.extend({
         initialize: function (options) {
+            this.render();
             this.menu = this.$('.settings-menu');
             this.showContent(options.pane || 'general');
         },
@@ -42,19 +43,21 @@
 
         showContent: function (id) {
             Backbone.history.navigate('/settings/' + id);
-            if (this.pane && '#' + id === this.pane.el) {
+            if (this.pane && id === this.pane.el.id) {
                 return;
             }
             _.result(this.pane, 'destroy');
             this.setActive(id);
-            this.pane = new Settings[id]({ model: this.model });
+            this.pane = new Settings[id]({ el: '.settings-content', model: this.model });
             this.pane.render();
         },
 
         setActive: function (id) {
             this.menu.find('li').removeClass('active');
             this.menu.find('a[href=#' + id + ']').parent().addClass('active');
-        }
+        },
+
+        templateName: 'settings/sidebar'
     });
 
     // Content panes
@@ -65,17 +68,18 @@
             this.undelegateEvents();
         },
 
-        render: function () {
+        afterRender: function () {
+            this.$el.attr('id', this.id);
             this.$el.addClass('active');
         }
     });
 
-    // TODO: render templates on the client
     // TODO: use some kind of data-binding for forms
 
     // ### General settings
     Settings.general = Settings.Pane.extend({
-        el: '#general',
+        id: "general",
+
         events: {
             'click .button-save': 'saveSettings'
         },
@@ -107,26 +111,28 @@
             });
         },
 
-        render: function () {
+        templateName: 'settings/general',
+
+        beforeRender: function () {
             var settings = this.model.toJSON();
             this.$('#blog-title').val(settings.title);
             this.$('#email-address').val(settings.email);
-            Settings.Pane.prototype.render.call(this);
         }
     });
 
     // ### Content settings
     Settings.content = Settings.Pane.extend({
-        el: '#content',
+        id: 'content',
         events: {
             'click .button-save': 'saveSettings'
         },
         saveSettings: function () {
+            var self = this;
             this.model.save({
                 description: this.$('#blog-description').val()
             }, {
                 success: function () {
-                    this.addSubview(new Ghost.Views.NotificationCollection({
+                    self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'success',
                             message: 'Saved',
@@ -136,7 +142,7 @@
 
                 },
                 error: function () {
-                    this.addSubview(new Ghost.Views.NotificationCollection({
+                    self.addSubview(new Ghost.Views.NotificationCollection({
                         model: [{
                             type: 'error',
                             message: 'Something went wrong, not saved :(',
@@ -147,10 +153,11 @@
             });
         },
 
-        render: function () {
+        templateName: 'settings/content',
+
+        beforeRender: function () {
             var settings = this.model.toJSON();
             this.$('#blog-description').val(settings.description);
-            Settings.Pane.prototype.render.call(this);
         }
     });
 

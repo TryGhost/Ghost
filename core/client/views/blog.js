@@ -111,15 +111,9 @@
 
         templateName: "list-item",
 
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
-        render: function () {
-            this.$el.html(this.template(_.extend({active: this.active}, this.model.toJSON())));
-            return this;
+        templateData: function () {
+            return _.extend({active: this.active}, this.model.toJSON());
         }
-
     });
 
     // Content preview
@@ -182,14 +176,10 @@
 
         templateName: "preview",
 
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
         render: function () {
             if (this.activeId) {
                 this.model = this.collection.get(this.activeId);
-                this.$el.html(this.template(this.model.toJSON()));
+                this.$el.html(this.template(this.templateData()));
             }
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');

@@ -15,13 +15,8 @@
             $(window).trigger('resize');
         },
 
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
-        render: function () {
+        afterRender: function () {
             var self = this;
-            this.$el.html(this.template());
 
             $(window).on('resize', _.debounce(function (e) {
                 $(".js-login-container").center();
@@ -76,15 +71,6 @@
 
         initialize: function (options) {
             this.render();
-        },
-
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
-        render: function () {
-            this.$el.html(this.template());
-            return this;
         },
 
         submitHandler: function (event) {

@@ -18,14 +18,14 @@ casper.test.begin("Content screen is correct", 9, function suite(test) {
     });
 
     casper.then(function testActiveItem() {
-        casper.test.assertEquals(casper.evaluate(function () {
+        casper.test.assertEvalEquals(function () {
             return document.querySelector('.content-list-content li').className;
-        }), "active", "first item is active");
+        }, "active", "first item is active");
 
     }).thenClick(".content-list-content li:nth-child(2) a", function then() {
-        casper.test.assertEquals(casper.evaluate(function () {
+        casper.test.assertEvalEquals(function () {
             return document.querySelectorAll('.content-list-content li')[1].className;
-        }), "active", "second item is active");
+        }, "active", "second item is active");
     });
 
     // TODO: finish testing delete
