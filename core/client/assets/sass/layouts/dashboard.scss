@@ -32,6 +32,10 @@
    Widget Base
    ========================================================================== */
 
+.js-widget-container {
+    padding-bottom: 15px;
+}
+
 %widget, .widget  {
   width: 340px;
   height: 300px;
