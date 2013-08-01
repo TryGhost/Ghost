@@ -20,7 +20,14 @@ module.exports = {
                 .where('key', 'currentVersion')
                 .select('value')
                 .then(function (currentVersionSetting) {
-                    // We are assuming here that the currentVersionSetting will 
+                    if (currentVersionSetting && currentVersionSetting.length > 0) {
+                        currentVersionSetting = currentVersionSetting[0].value;
+                    } else {
+                        // we didn't get a response we understood, assume initialVersion
+                        currentVersionSetting = initialVersion;
+                    }
+
+                    // We are assuming here that the currentVersionSetting will
                     // always be less than the currentVersion value.
                     if (currentVersionSetting === currentVersion) {
                         return when.resolve();
