@@ -11,7 +11,18 @@
             'settings(/:pane)' : 'settings',
             'editor/'          : 'editor',
             'editor(/:id)'     : 'editor',
-            'debug/'           : 'debug'
+            'debug/'           : 'debug',
+            'register/'        : 'register',
+            'signup/'          : 'signup',
+            'login/'           : 'login'
+        },
+
+        signup: function () {
+            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-login-container' });
+        },
+
+        login: function () {
+            Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-container' });
         },
 
         blog: function () {
