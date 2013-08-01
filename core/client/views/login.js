@@ -12,6 +12,7 @@
 
         initialize: function (options) {
             this.render();
+            $(window).trigger('resize');
         },
 
         template: function (data) {
@@ -19,7 +20,14 @@
         },
 
         render: function () {
+            var self = this;
             this.$el.html(this.template());
+
+            $(window).on('resize', _.debounce(function (e) {
+                $(".js-login-container").center();
+            }, 100));
+
+            $(window).one('centered', self.fadeInAndFocus);
             return this;
         },
 
@@ -48,6 +56,12 @@
                         }]
                     }));
                 }
+            });
+        },
+
+        fadeInAndFocus: function () {
+            $(".js-login-container").fadeIn(750, function () {
+                $("[name='email']").focus();
             });
         }
     });
