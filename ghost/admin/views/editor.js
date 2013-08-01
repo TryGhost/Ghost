@@ -41,14 +41,16 @@
         initialize: function () {
             this.addSubview(new TagWidget({el: this.$('#entry-categories'), model: this.model})).render();
             this.addSubview(new ActionsWidget({el: this.$('#entry-actions'), model: this.model})).render();
-        }
+        },
+
+        render: function () { return this; }
 
     });
 
     // The Tag UI area associated with a post
     // ----------------------------------------
     TagWidget = Ghost.View.extend({
-
+        render: function () { return this; }
     });
 
     // The Publish, Queue, Publish Now buttons
@@ -372,9 +374,9 @@
                     }
                 }
             }));
-        }
+        },
+
+        render: function () { return this; }
     });
-
-
 
 }());

@@ -137,12 +137,7 @@
 
         templateName: "widget",
 
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
-        render: function () {
-            this.$el.html(this.template(this.model.toJSON()));
+        afterRender: function () {
             if (!this.model.attributes.settings.enabled) {
                 this.$(".widget-content").html(this.addSubview(new WidgetContent({model: this.model})).render().el);
             } else {
@@ -160,11 +155,6 @@
 
         template: function (data) {
             return JST['widgets/' + this.model.attributes.content.template](data);
-        },
-
-        render: function () {
-            this.$el.html(this.template(this.model.toJSON()));
-            return this;
         }
 
     });
