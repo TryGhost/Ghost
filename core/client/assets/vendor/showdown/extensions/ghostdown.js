@@ -5,7 +5,7 @@
             {
                 type: 'lang',
                 filter: function (source) {
-                    return source.replace(/\n?!image\[([\d\w\s]*)\]/gi, function (match, alt, a) {
+                    return source.replace(/\n?!(?:image)?\[([^\n\]]*)\](?:\(([^\n\)]*)\))?/gi, function (match, alt, a) {
                         return '<section  class="js-drop-zone image-uploader">' +
                             '<span class="media"><span class="hidden">Image Upload</span></span>' +
                             '<div class="description">Add image of <strong>' + alt + '</strong></div>' +
