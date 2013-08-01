@@ -64,11 +64,9 @@ adminControllers = {
     'auth': function (req, res) {
         api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
             req.session.user = "ghostadmin";
-            res.redirect(req.query.r ? '/ghost/' + req.query.r : '/ghost/');
+            res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
         }, function (error) {
-            // Do something here to signal the reason for an error
-            req.flash('error', error.message);
-            res.redirect('/ghost/login/');
+            res.send(401);
         });
     },
     'signup': function (req, res) {
@@ -79,7 +77,7 @@ adminControllers = {
         });
     },
     'doRegister': function (req, res) {
-        var email = req.body.email_address,
+        var email = req.body.email,
             password = req.body.password;
 
         if (email !== '' && password.length > 5) {
@@ -87,15 +85,12 @@ adminControllers = {
                 email_address: email,
                 password: password
             }).then(function (user) {
-                // console.log('user added', user);
-                res.redirect('/ghost/login/');
+                res.json(200, {redirect: '/ghost/login/'});
             }, function (error) {
-                req.flash('error', error.message);
-                res.redirect('/ghost/signup/');
+                res.json(401, {message: error.message});
             });
         } else {
-            req.flash('error', "The password is too short. Have at least 6 characters in there");
-            res.redirect('back');
+            res.json(400, {message: 'The password is too short. Have at least 6 characters in there'});
         }
     },
     'logout': function (req, res) {
