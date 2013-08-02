@@ -178,10 +178,24 @@ Ghost.prototype.compileTemplate = function (templatePath) {
 };
 
 Ghost.prototype.loadTemplate = function (name) {
-    // TODO: allow themes to override these templates
-    var templatePath = path.join(this.paths().helperTemplates, name + '.hbs');
+    var self = this,
+        templateFileName = name + '.hbs',
+        // Check for theme specific version first
+        templatePath = path.join(this.paths().activeTheme, "partials", templateFileName),
+        deferred = when.defer();
 
-    return this.compileTemplate(templatePath);
+    // Can't use nodefn here because exists just returns one parameter, true or false
+
+    fs.exists(templatePath, function (exists) {
+        if (!exists) {
+            // Fall back to helpers templates location
+            templatePath = path.join(self.paths().helperTemplates, templateFileName);
+        }
+
+        self.compileTemplate(templatePath).then(deferred.resolve, deferred.reject);
+    });
+
+    return deferred.promise;
 };
 
 /**
