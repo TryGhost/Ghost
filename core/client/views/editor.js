@@ -228,6 +228,21 @@
             this.initMarkdown();
             this.renderPreview();
 
+            $('.entry-content header, .entry-preview header').on('click', function () {
+                $('.entry-content, .entry-preview').removeClass('active');
+                $(this).closest('section').addClass('active');
+            });
+
+            $('.entry-title .icon-fullscreen').on('click', function (e) {
+                e.preventDefault();
+                $('body').toggleClass('fullscreen');
+            });
+
+            $('.options.up').on('click', function (e) {
+                e.stopPropagation();
+                $(this).next("ul").fadeToggle(200);
+            });
+
             this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
 
             // Shadow on Markdown if scrolled
