@@ -74,6 +74,9 @@ Ghost = function () {
         // Holds the plugin directories temporarily
         instance.pluginDirectories = {};
 
+        // Holds the persistent notifications
+        instance.notifications = [];
+
         app = express();
 
         polyglot = new Polyglot();
