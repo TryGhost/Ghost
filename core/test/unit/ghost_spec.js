@@ -8,6 +8,7 @@ var should = require('should'),
 
 describe("Ghost API", function () {
     var testTemplatePath = 'core/test/unit/fixtures/',
+        themeTemplatePath= 'core/test/unit/fixtures/theme',
         ghost;
 
     beforeEach(function () {
@@ -111,16 +112,24 @@ describe("Ghost API", function () {
     });
 
     it("loads templates for helpers", function (done) {
-        var compileSpy = sinon.spy(ghost, 'compileTemplate');
+        var compileSpy = sinon.spy(ghost, 'compileTemplate'),
+            pathsStub;
 
         should.exist(ghost.loadTemplate, 'load template function exists');
 
         // In order for the test to work, need to replace the path to the template
-        ghost.paths = sinon.stub().returns({
-            helperTemplates: path.join(process.cwd(), testTemplatePath)
+        pathsStub = sinon.stub(ghost, "paths", function () {
+            return {
+                // Forcing the theme path to be the same
+                activeTheme: path.join(process.cwd(), testTemplatePath),
+                helperTemplates: path.join(process.cwd(), testTemplatePath)
+            };
         });
 
         ghost.loadTemplate('test').then(function (templateFn) {
+            compileSpy.restore();
+            pathsStub.restore();
+
             // test that compileTemplate was called with the expected path
             compileSpy.calledOnce.should.equal(true);
             compileSpy.calledWith(path.join(process.cwd(), testTemplatePath, 'test.hbs')).should.equal(true);
@@ -130,7 +139,38 @@ describe("Ghost API", function () {
 
             templateFn().should.equal('<h1>HelloWorld</h1>');
 
+            
+
+            done();
+        }).then(null, done);
+    });
+
+    it("loads templates from themes first", function (done) {
+        var compileSpy = sinon.spy(ghost, 'compileTemplate'),
+            pathsStub;
+
+        should.exist(ghost.loadTemplate, 'load template function exists');
+
+        // In order for the test to work, need to replace the path to the template
+        pathsStub = sinon.stub(ghost, "paths", function () {
+            return {
+                activeTheme: path.join(process.cwd(), themeTemplatePath),
+                helperTemplates: path.join(process.cwd(), testTemplatePath)
+            };
+        });
+
+        ghost.loadTemplate('test').then(function (templateFn) {
+            // test that compileTemplate was called with the expected path
+            compileSpy.calledOnce.should.equal(true);
+            compileSpy.calledWith(path.join(process.cwd(), themeTemplatePath, 'partials', 'test.hbs')).should.equal(true);
+
+            should.exist(templateFn);
+            _.isFunction(templateFn).should.equal(true);
+
+            templateFn().should.equal('<h1>HelloWorld Themed</h1>');
+
             compileSpy.restore();
+            pathsStub.restore();
 
             done();
         }).then(null, done);
