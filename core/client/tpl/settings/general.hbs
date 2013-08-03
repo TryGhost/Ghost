@@ -1,0 +1,60 @@
+<header>
+    <h2 class="title">General</h2>
+    <section class="page-actions">
+        <button class="button-save">Save</button>
+    </section>
+</header>
+<section class="content">
+    <form id="settings-general">
+        <fieldset>
+            <div class="form-group">
+                <label><strong>Blog Title</strong></label>
+                <input id="blog-title" name="general[title]" type="text" value="{{title}}" />
+                <p>How your blog name appears on the site</p>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Blog Logo</strong></label>
+                <img src="/public/img/logo.png" alt="logo" height="38" width="381"/>
+                <p>Display a logo on your site in place of blog title</p>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Blog Icon</strong></label>
+                <img src="/public/img/test-icon.png" alt="logo" height="38" width="38"/>
+                <p>The icon for your blog, used in your browser tab and elsewhere</p>
+            </div>
+
+            <div class="form-group">
+                <label for="email-address"><strong>Email Address</strong></label>
+                <input id="email-address" name="general[email-address]" type="text" value="{{email}}" />
+                <p>Address to use for <a href="#">admin notifications</a></p>
+                <label class="checkbox">
+                    <input type="checkbox" value="1" name="general[public-email]" /> Show my email address on my public profile
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="url-structure"><strong>URL Structure</strong></label>
+                <select id="url-structure" name="general[urlstructure]">
+                    <option value="post-name">Simple Post Name</option>
+                    <option value="date-based">Date Based</option>
+                    <option value="number based">Number Based</option>
+                    <option value="custom">Custom...</option>
+                </select>
+            </div>
+
+        </fieldset>
+
+        <hr />
+
+        <fieldset>
+            <div class="form-group">
+                <label for="timezone"><strong>Time Zone</strong></label>
+                <select id="timezone" name="general[timezone]">
+                    <option value="1">Vienna (UTC+1)</option>
+                </select>
+            </div>
+        </fieldset>
+    </form>
+</section>

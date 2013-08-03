@@ -2,7 +2,41 @@
 (function () {
     "use strict";
 
-    Ghost.View = Backbone.View.extend({
+    Ghost.TemplateView = Backbone.View.extend({
+        templateName: "widget",
+
+        template: function (data) {
+            return JST[this.templateName](data);
+        },
+
+        templateData: function () {
+            if (this.model) {
+                return this.model.toJSON();
+            }
+
+            if (this.collection) {
+                return this.collection.toJSON();
+            }
+
+            return {};
+        },
+
+        render: function () {
+            if (_.isFunction(this.beforeRender)) {
+                this.beforeRender();
+            }
+
+            this.$el.html(this.template(this.templateData()));
+
+            if (_.isFunction(this.afterRender)) {
+                this.afterRender();
+            }
+
+            return this;
+        }
+    });
+
+    Ghost.View = Ghost.TemplateView.extend({
 
         // Adds a subview to the current view, which will
         // ensure its removal when this view is removed,
@@ -40,36 +74,6 @@
             return Backbone.View.prototype.remove.apply(this, arguments);
         }
 
-    });
-
-    Ghost.TemplateView = Ghost.View.extend({
-        templateName: "widget",
-
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
-
-        templateData: function () {
-            if (this.model) {
-                return this.model.toJSON();
-            }
-
-            if (this.collection) {
-                return this.collection.toJSON();
-            }
-
-            return {};
-        },
-
-        render: function () {
-            this.$el.html(this.template(this.templateData()));
-
-            if (_.isFunction(this.afterRender)) {
-                this.afterRender();
-            }
-
-            return this;
-        }
     });
 
     /**

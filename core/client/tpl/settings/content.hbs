@@ -1,0 +1,69 @@
+<header>
+    <h2 class="title">Content</h2>
+    <section class="page-actions">
+        <button class="button-save">Save</button>
+    </section>
+</header>
+<section class="content">
+    <form id="settings-content">
+        <fieldset>
+            <div class="form-group">
+                <label for="typography"><strong>Typography</strong></label>
+                <select id="typography" name="content[typography]">
+                    <option value="post-name">Lato (Light)</option>
+                </select>
+                <p>Sexy sans-serif font that will make your toes tickle.</p>
+                <label class="checkbox">
+                    <input type="checkbox" value="1" name="content[type-load-google]"/> Load fonts directly from Google
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Post Options</strong></label>
+                <label class="checkbox">
+                    <input type="checkbox" name="content[display-post-meta]" value="1" /> Display Post Meta
+                </label>
+                <p>Post Author / Date / Views</p>
+
+                <label class="checkbox">
+                    <input type="checkbox" name="content[show-author]" value="1" /> Show Author Box After Post
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" name="content[comments]" value="1" /> Enable Comments
+                </label>
+            </div>
+        </fieldset>
+
+        <hr />
+
+        <fieldset>
+            <div class="form-group">
+                <label for="seo-title"><strong>SEO Title Pattern</strong></label>
+                <input id="seo-title" name="content[seo-title]" type="text" value="[Post Name] - [Site Title]" />
+                <p>The pattern used to display your title tags</p>
+
+            </div>
+
+            <div class="form-group">
+                <label for="seo-description"><strong>SEO Description Pattern</strong></label>
+                <input id="seo-description" name="content[seo-description]" type="text" value="Auto" />
+                <p>The pattern used to display your meta descriptions</p>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Google+</strong></label>
+                <label class="checkbox">
+                    <input type="checkbox" name="content[google-profile]" value="1" /> Connect to author profile on Google
+                </label>
+
+            </div>
+
+            <div class="form-group">
+                <label for="blog-description"><strong>Home Page Description</strong></label>
+                <textarea id="blog-description">{{description}}</textarea>
+            </div>
+
+        </fieldset>
+
+    </form>
+</section>
