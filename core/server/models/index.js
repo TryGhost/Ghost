@@ -8,5 +8,10 @@ module.exports = {
     Settings: require('./settings').Settings,
     init: function () {
         return migrations.init();
+    },
+    reset: function () {
+        return migrations.reset().then(function () {
+            return migrations.init();
+        });
     }
 };

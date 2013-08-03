@@ -15,7 +15,6 @@
             <h2 class="title">General</h2>
         </header>
         <section class="content">
-            {{> flashes}}
             <form id="settings-export">
                 <fieldset>
                     <label>
@@ -31,7 +30,7 @@
                         <b>Import</b>
                         <input type="file" class="button-add" name="importfile"></input>
                         <input type="submit" class="button-save" value="Import"></input>
-                        <p>Import from another Ghost installation.</p>
+                        <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
                     </label>
                 </fieldset>
             </form>
