@@ -33,7 +33,7 @@
             'margin-left': -this.outerWidth() / 2 + 'px',
             'margin-top': -this.outerHeight() / 2 + 'px'
         });
-
+        $(window).trigger('centered');
         return this;
     };
 
