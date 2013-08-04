@@ -94,10 +94,6 @@
     Ghost.Views.Notification = Ghost.View.extend({
         templateName: 'notification',
         className: 'js-bb-notification',
-        events: {
-            'click .js-notification.notification-passive .close': 'closePassive',
-            'click .js-notification.notification-persistent .close': 'closePersistent'
-        },
         template: function (data) {
             return JST[this.templateName](data);
         },
@@ -105,24 +101,7 @@
             var html = this.template(this.model);
             this.$el.html(html);
             return this;
-        },
-        closePassive: function (e) {
-            $(e.currentTarget).parent().fadeOut(200,  function () { $(this).remove(); });
-        },
-        closePersistent: function (e) {
-            var self = e.currentTarget;
-            $.ajax({
-                type: "DELETE",
-                url: '/api/v0.1/notifications/' + $(this).data('id')
-            }).done(function (result) {
-                if ($(self).parent().parent().hasClass('js-bb-notification')) {
-                    $(self).parent().parent().fadeOut(200, function () { $(self).remove(); });
-                } else {
-                    $(self).parent().fadeOut(200, function () { $(self).remove(); });
-                }
-            });
         }
-
     });
 
     /**
@@ -137,7 +116,9 @@
             'animationend .js-notification': 'removeItem',
             'webkitAnimationEnd .js-notification': 'removeItem',
             'oanimationend .js-notification': 'removeItem',
-            'MSAnimationEnd .js-notification': 'removeItem'
+            'MSAnimationEnd .js-notification': 'removeItem',
+            'click .js-notification.notification-passive .close': 'closePassive',
+            'click .js-notification.notification-persistent .close': 'closePersistent'
         },
         render: function () {
             _.each(this.model, function (item) {
@@ -150,9 +131,41 @@
         },
         removeItem: function (e) {
             e.preventDefault();
-            $(e.currentTarget).remove();
+            var self = e.currentTarget;
+            if (self.className.indexOf('notification-persistent') !== -1) {
+                $.ajax({
+                    type: "DELETE",
+                    url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
+                }).done(function (result) {
+                    $(e.currentTarget).remove();
+                });
+            } else {
+                $(e.currentTarget).remove();
+            }
+
+        },
+        closePassive: function (e) {
+            $(e.currentTarget).parent().fadeOut(200,  function () { $(this).remove(); });
+        },
+        closePersistent: function (e) {
+            var self = e.currentTarget;
+            $.ajax({
+                type: "DELETE",
+                url: '/api/v0.1/notifications/' + $(self).data('id')
+            }).done(function (result) {
+                if ($(self).parent().parent().hasClass('js-bb-notification')) {
+                    $(self).parent().parent().fadeOut(200, function () { $(self).remove(); });
+                } else {
+                    $(self).parent().fadeOut(200, function () { $(self).remove(); });
+                }
+            });
         }
     });
+
+
+    // This is needed so Backbone recognizes elements already rendered server side
+    // as valid views, and events are bound
+    window.notColl = new Ghost.Views.NotificationCollection();
 
     /**
      * This is the view to generate the markup for the individual
