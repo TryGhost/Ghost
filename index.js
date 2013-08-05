@@ -163,6 +163,10 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
     ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
     ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
+    ghost.app().get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
+    ghost.app().get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));
+    ghost.app().put('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+
 
     /**
      * Admin routes..

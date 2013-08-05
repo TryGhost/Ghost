@@ -33,10 +33,7 @@
         },
 
         settings: function (pane) {
-            var settings = new Ghost.Models.Settings();
-            settings.fetch().then(function () {
-                Ghost.currentView = new Ghost.Views.Settings({ el: '#main', model: settings, pane: pane });
-            });
+            Ghost.currentView = new Ghost.Views.Settings({ el: '#main', pane: pane });
         },
 
         editor: function (id) {
