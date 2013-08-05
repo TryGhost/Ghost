@@ -321,6 +321,7 @@
             var view = this,
                 preview = document.getElementsByClassName('rendered-markdown')[0];
             preview.innerHTML = this.converter.makeHtml(this.editor.getValue());
+            view.$('.js-drop-zone').upload({editor: true});
             Countable.once(preview, function (counter) {
                 view.$('.entry-word-count').text(counter.words + ' words');
                 view.$('.entry-character-count').text(counter.characters + ' characters');
