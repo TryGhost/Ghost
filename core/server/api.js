@@ -95,6 +95,10 @@ settings = {
         return dataProvider.Settings.browse(options).then(settingsObject, errors.logAndThrowError);
     },
     read: function read(options) {
+        if (_.isString(options)) {
+            options = { key: options };
+        }
+
         return dataProvider.Settings.read(options.key).then(function (setting) {
             if (!setting) {
                 return when.reject("Unable to find setting: " + options.key);
@@ -103,9 +107,26 @@ settings = {
             return _.pick(setting.toJSON(), 'key', 'value');
         }, errors.logAndThrowError);
     },
-    edit: function edit(settings) {
-        settings = settingsCollection(settings);
-        return dataProvider.Settings.edit(settings).then(settingsObject, errors.logAndThrowError);
+    edit: function edit(key, value) {
+        // Check for passing a collection of settings first
+        if (_.isObject(key)) {
+            key = settingsCollection(key);
+            return dataProvider.Settings.edit(key).then(settingsObject, errors.logAndThrowError);
+        }
+
+        return dataProvider.Settings.read(key).then(function (setting) {
+            if (!setting) {
+                return when.reject("Unable to find setting: " + key);
+            }
+
+            if (!_.isString(value)) {
+                value = JSON.stringify(value);
+            }
+
+            setting.set('value', value);
+
+            return dataProvider.Settings.edit(setting);
+        }, errors.logAndThrowError);
     }
 };
 

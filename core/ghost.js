@@ -15,6 +15,8 @@ var config = require('./../config'),
 
     models = require('./server/models'),
 
+    plugins = require('./server/plugins'),
+
     requireTree = require('./server/require-tree'),
     themePath = path.resolve(__dirname + '../../content/themes'),
     pluginPath = path.resolve(__dirname + '../../content/plugins'),
@@ -77,6 +79,8 @@ Ghost = function () {
         // Holds the persistent notifications
         instance.notifications = [];
 
+        instance.availablePlugins = {};
+
         app = express();
 
         polyglot = new Polyglot();
@@ -120,33 +124,9 @@ Ghost.prototype.init = function () {
     var self = this;
 
     return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
-        return self.loadPlugins();
+        return self.initPlugins();
     }, errors.logAndThrowError).then(function () {
         return self.updateSettingsCache();
-    }, errors.logAndThrowError);
-};
-
-Ghost.prototype.loadPlugins = function () {
-    var self = this,
-        pluginPaths = _.values(self.paths().availablePlugins),
-        pluginPromises = [];
-
-    _.each(self.config().activePlugins, function (plugin) {
-        var match = _.find(pluginPaths, function (path) {
-            return new RegExp(plugin + '$').test(path);
-        });
-
-        if (match) {
-            pluginPromises.push(require(path.join(pluginPath, plugin)));
-        }
-    });
-
-    return when.all(pluginPromises).then(function (plugins) {
-        _.each(plugins, function (plugin) {
-            if (_.isFunction(plugin.init)) {
-                plugin.init(self);
-            }
-        });
     }, errors.logAndThrowError);
 };
 
@@ -247,6 +227,25 @@ Ghost.prototype.registerFilter = function (name, priority, fn) {
 };
 
 /**
+ * @param  {string}   name
+ * @param  {integer}  priority
+ * @param  {Function} fn
+ */
+Ghost.prototype.unregisterFilter = function (name, priority, fn) {
+    // Curry the priority optional parameter to a default of 5
+    if (_.isFunction(priority)) {
+        fn = priority;
+        priority = defaults.filterPriority;
+    }
+
+    // Check if it even exists
+    if (this.filterCallbacks[name] && this.filterCallbacks[name][priority]) {
+        // Remove the function from the list of filter funcs
+        this.filterCallbacks[name][priority] = _.without(this.filterCallbacks[name][priority], fn);
+    }
+};
+
+/**
  * @param  {string}   name     [description]
  * @param  {*}   args
  * @param  {Function} callback
@@ -281,9 +280,24 @@ Ghost.prototype.doFilter = function (name, args, callback) {
 };
 
 /**
+ * Initialise plugins.  Will load from config.activePlugins by default
+ * 
+ * @param {Array} pluginsToLoad
+ */
+Ghost.prototype.initPlugins = function (pluginsToLoad) {
+    pluginsToLoad = pluginsToLoad || config.activePlugins;
+
+    var self = this;
+
+    return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
+        // Extend the loadedPlugins onto the available plugins
+        _.extend(self.availablePlugins, loadedPlugins);
+    }, errors.logAndThrowError);
+};
+
+/**
  * Initialise Theme
  *
- * @todo  Tod (?) Old comment
  * @param  {Object} app
  */
 Ghost.prototype.initTheme = function (app) {
