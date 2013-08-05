@@ -25,15 +25,9 @@ describe("Ghost API", function () {
     });
 
     it("uses init() to initialize", function (done) {
-        var fakeDataProvider = {
-                init: function () {
-                    return when.resolve();
-                }
-            },
-            dataProviderInitSpy = sinon.spy(fakeDataProvider, "init"),
-            oldDataProvider = ghost.dataProvider;
-
-        ghost.dataProvider = fakeDataProvider;
+        var dataProviderInitMock = sinon.stub(ghost.dataProvider, "init", function () {
+            return when.resolve();
+        });
 
         should.not.exist(ghost.settings());
 
@@ -41,12 +35,12 @@ describe("Ghost API", function () {
 
             should.exist(ghost.settings());
 
-            dataProviderInitSpy.called.should.equal(true);
+            dataProviderInitMock.called.should.equal(true);
 
-            ghost.dataProvider = oldDataProvider;
+            dataProviderInitMock.restore();
 
             done();
-        }).then(null, done);
+        }, done);
 
     });
 
