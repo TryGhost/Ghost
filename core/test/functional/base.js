@@ -9,30 +9,45 @@
  *
  * Usage (from test/functional):
  *
- * casperjs test admin/ --includes=base.js [--host=localhost --port=2368 --email=ghost@tryghost.org --password=Sl1m3r]
+ * casperjs test admin/ --includes=base.js [--host=localhost --port=2368 --noPort=false --email=ghost@tryghost.org --password=Sl1m3r]
  *
  * --host - your local host address e.g. localhost or local.tryghost.org
  * --port - port number of your local Ghost
  * --email - the email address your admin user is registered with
  * --password - the password your admin user is registered with
+ * --noPort - don't include a port number
  *
  * Requirements:
  * you must have phantomjs 1.9.1 and casperjs 1.1.0-DEV installed in order for these tests to work
  */
 
-var host = casper.cli.options.url || 'localhost',
+var host = casper.cli.options.host || 'localhost',
+    noPort = casper.cli.options.noPort || false,
     port = casper.cli.options.port || '2368',
     email = casper.cli.options.email || 'ghost@tryghost.org',
     password = casper.cli.options.password || 'Sl1m3r',
-    url = "http://" + host + ":" + port + "/",
+    url = "http://" + host + (noPort ? '/' : ":" + port + "/"),
     user = {
         email: email,
         password: password
     },
-    testPost = {title: "A post title", content: "I am a post \n #With some content"};
+    testPost = {
+        title: "Bacon ipsum dolor sit amet",
+        content: "I am a test post.\n#I have some small content"
+    };
 
+casper.writeContentToCodeMirror = function (content) {
+    var lines = content.split("\n");
 
-casper.test.on("fail", function captureFailure(failure) {
+    casper.each(lines, function (self, line) {
+        self.sendKeys('.CodeMirror-wrap textarea', line, {keepFocus: true});
+        self.sendKeys('.CodeMirror-wrap textarea', casper.page.event.key.Enter, {keepFocus: true});
+    });
+
+    return this;
+};
+
+casper.test.on("fail", function captureFailure() {
     var filename = casper.test.filename || "casper_test_fail.png";
     casper.capture(new Date().getTime() + '_' + filename);
 });
