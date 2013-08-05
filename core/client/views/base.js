@@ -182,9 +182,11 @@
                 // Initiate functions for buttons here so models don't get tied up.
                 this.acceptModal = function () {
                     this.model.options.confirm.accept.func();
+                    self.removeItem();
                 };
                 this.rejectModal = function () {
                     this.model.options.confirm.reject.func();
+                    self.removeItem();
                 };
                 shortcut.remove("ESC");
                 $(document).off('click', '.modal-background');
