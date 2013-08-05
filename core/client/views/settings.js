@@ -176,7 +176,8 @@
         },
 
         events: {
-            'click .button-save': 'saveUser'
+            'click .button-save': 'saveUser',
+            'click .button-change-password': 'changePassword'
         },
 
         saveUser: function () {
@@ -191,6 +192,55 @@
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
+            });
+        },
+
+        changePassword: function (event) {
+            event.preventDefault();
+
+            var self = this,
+                email = this.$('#user-email').val(),
+                oldPassword = this.$('#user-password-old').val(),
+                newPassword = this.$('#user-password-new').val(),
+                ne2Password = this.$('#user-new-password-verification').val();
+
+            if (newPassword !== ne2Password || newPassword.length < 6 || oldPassword.length < 6) {
+                this.saveError();
+                return;
+            }
+
+            $.ajax({
+                url: '/ghost/changepw/',
+                type: 'POST',
+                data: {
+                    email: email,
+                    password: oldPassword,
+                    newpassword: newPassword,
+                    ne2password: ne2Password
+                },
+                success: function (msg) {
+
+                    self.addSubview(new Ghost.Views.NotificationCollection({
+                        model: [{
+                            type: 'success',
+                            message: msg.msg,
+                            status: 'passive',
+                            id: 'success-98'
+                        }]
+                    }));
+                    self.$('#user-password-old').val('');
+                    self.$('#user-password-new').val('');
+                    self.$('#user-new-password-verification').val('');
+                },
+                error: function (obj, string, status) {
+                    self.addSubview(new Ghost.Views.NotificationCollection({
+                        model: [{
+                            type: 'error',
+                            message: 'Invalid username or password',
+                            status: 'passive'
+                        }]
+                    }));
+                }
             });
         },
 

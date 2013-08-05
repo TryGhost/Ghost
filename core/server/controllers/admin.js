@@ -69,6 +69,19 @@ adminControllers = {
             res.send(401);
         });
     },
+    changepw: function (req, res) {
+        api.users.changePassword({
+            email: req.body.email,
+            oldpw: req.body.password,
+            newpw: req.body.newpassword,
+            ne2pw: req.body.ne2password
+        }).then(function (user) {
+            res.json(200, {msg: 'Password changed successfully'});
+        }, function (error) {
+            res.send(401);
+        });
+
+    },
     'signup': function (req, res) {
         res.render('signup', {
             bodyClass: 'ghost-login',
