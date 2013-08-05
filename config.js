@@ -41,7 +41,7 @@ config.activeTheme = 'casper';
 
 
 config.activePlugins = [
-    'fancyFirstChar.js'
+    'FancyFirstChar'
 ];
 
 // Default Navigation Items
