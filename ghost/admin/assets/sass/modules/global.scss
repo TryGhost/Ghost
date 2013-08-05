@@ -871,10 +871,12 @@ nav {
     @include icon($i-success);
     background: $green;
 
-    @include animation(fade-out 1s linear);
-    @include animation-delay(3s);
-    @include animation-iteration-count(1);
-    @include animation-fill-mode(forwards);
+    &.notification-passive {
+        @include animation(fade-out 1s linear);
+        @include animation-delay(3s);
+        @include animation-iteration-count(1);
+        @include animation-fill-mode(forwards);
+    }
 }
 
 .notification-error {
