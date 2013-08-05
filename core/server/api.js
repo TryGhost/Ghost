@@ -51,6 +51,15 @@ posts = {
 
 // # Users
 users = {
+    browse: function browse(options) {
+        return dataProvider.User.browse(options);
+    },
+    read: function read(args) {
+        return dataProvider.User.read(args);
+    },
+    edit: function edit(postData) {
+        return dataProvider.User.edit(postData);
+    },
     add: function add(postData) {
         return dataProvider.User.add(postData);
     },
