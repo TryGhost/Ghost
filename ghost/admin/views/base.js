@@ -129,6 +129,10 @@
             var itemView = new Ghost.Views.Notification({ model: item });
             this.$el.html(itemView.render().el);
         },
+        addItem: function (item) {
+            this.model.push(item);
+            this.renderItem(item);
+        },
         removeItem: function (e) {
             e.preventDefault();
             var self = e.currentTarget;
@@ -161,11 +165,6 @@
             });
         }
     });
-
-
-    // This is needed so Backbone recognizes elements already rendered server side
-    // as valid views, and events are bound
-    window.notColl = new Ghost.Views.NotificationCollection();
 
     /**
      * This is the view to generate the markup for the individual

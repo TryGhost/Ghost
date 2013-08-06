@@ -102,21 +102,17 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                this.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'success',
-                        message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'success',
+                    message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
+                    status: 'passive'
+                });
             }, function () {
-                this.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'error',
-                        message: 'Your post: ' + model.get('title') + ' has not been ' + keys[newIndex],
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: 'Your post: ' + model.get('title') + ' has not been ' + keys[newIndex],
+                    status: 'passive'
+                });
             });
         },
 
@@ -127,42 +123,34 @@
                 self = this;
 
             if (status === 'publish-on') {
-                this.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'alert',
-                        message: 'Scheduled publishing not supported yet.',
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'alert',
+                    message: 'Scheduled publishing not supported yet.',
+                    status: 'passive'
+                });
             }
             if (status === 'queue') {
-                this.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'alert',
-                        message: 'Scheduled publishing not supported yet.',
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'alert',
+                    message: 'Scheduled publishing not supported yet.',
+                    status: 'passive'
+                });
             }
 
             this.savePost({
                 status: status
             }).then(function () {
-                self.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'success',
-                        message: 'Your post: ' + model.get('title') + ' has been ' + status,
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'success',
+                    message: 'Your post: ' + model.get('title') + ' has been ' + status,
+                    status: 'passive'
+                });
             }, function () {
-                self.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'error',
-                        message: 'Your post: ' + model.get('title') + ' has not been ' + status,
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: 'Your post: ' + model.get('title') + ' has not been ' + status,
+                    status: 'passive'
+                });
             });
         },
 
@@ -173,21 +161,17 @@
             var model = this.model,
                 self = this;
             this.savePost().then(function () {
-                self.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'success',
-                        message: 'Your post was saved as ' + model.get('status'),
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'success',
+                    message: 'Your post was saved as ' + model.get('status'),
+                    status: 'passive'
+                });
             }, function () {
-                self.addSubview(new Ghost.Views.NotificationCollection({
-                    model: [{
-                        type: 'error',
-                        message: model.validationError,
-                        status: 'passive'
-                    }]
-                }));
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: model.validationError,
+                    status: 'passive'
+                });
             });
         },
 

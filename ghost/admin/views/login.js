@@ -59,13 +59,11 @@
                     window.location.href = msg.redirect;
                 },
                 error: function (obj, string, status) {
-                    self.addSubview(new Ghost.Views.NotificationCollection({
-                        model: [{
-                            type: 'error',
-                            message: 'Invalid username or password',
-                            status: 'passive'
-                        }]
-                    }));
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: 'Invalid username or password',
+                        status: 'passive'
+                    });
                 }
             });
         }
@@ -97,13 +95,11 @@
                 },
                 error: function (obj, string, status) {
                     var msgobj = $.parseJSON(obj.responseText);
-                    self.addSubview(new Ghost.Views.NotificationCollection({
-                        model: [{
-                            type: 'error',
-                            message: msgobj.message,
-                            status: 'passive'
-                        }]
-                    }));
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: msgobj.message,
+                        status: 'passive'
+                    });
                 }
             });
         }
