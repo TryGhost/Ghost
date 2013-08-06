@@ -65,6 +65,9 @@ users = {
     },
     check: function check(postData) {
         return dataProvider.User.check(postData);
+    },
+    changePassword: function changePassword(postData) {
+        return dataProvider.User.changePassword(postData);
     }
 };
 

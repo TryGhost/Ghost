@@ -124,6 +124,37 @@ User = GhostBookshelf.Model.extend({
         }, errors.logAndThrowError);
     },
 
+    /**
+     * Naive change password method
+     * @param  {object} _userdata email, old pw, new pw, new pw2
+     *
+     */
+    changePassword: function (_userdata) {
+        var email = _userdata.email,
+            oldPassword = _userdata.oldpw,
+            newPassword = _userdata.newpw,
+            ne2Password = _userdata.ne2pw;
+
+        if (newPassword !== ne2Password) {
+            return when.reject(new Error('Passwords aren\'t the same'));
+        }
+
+        return this.forge({
+            email_address: email
+        }).fetch({require: true}).then(function (user) {
+            return nodefn.call(bcrypt.compare, oldPassword, user.get('password'))
+                .then(function (matched) {
+                    if (!matched) {
+                        return when.reject(new Error('Passwords do not match'));
+                    }
+                    return nodefn.call(bcrypt.hash, newPassword, null, null).then(function (hash) {
+                        user.save({password: hash});
+                        return user;
+                    });
+                });
+        });
+    },
+
     effectivePermissions: function (id) {
         return this.read({id: id}, { withRelated: ['permissions', 'roles.permissions'] })
             .then(function (foundUser) {
