@@ -95,23 +95,19 @@
             this.$el.addClass('active');
         },
         saveSuccess: function () {
-            this.addSubview(new Ghost.Views.NotificationCollection({
-                model: [{
-                    type: 'success',
-                    message: 'Saved',
-                    status: 'passive'
-                }]
-            }));
+            Ghost.notifications.addItem({
+                type: 'success',
+                message: 'Saved',
+                status: 'passive'
+            });
 
         },
         saveError: function () {
-            this.addSubview(new Ghost.Views.NotificationCollection({
-                model: [{
-                    type: 'error',
-                    message: 'Something went wrong, not saved :(',
-                    status: 'passive'
-                }]
-            }));
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: 'Something went wrong, not saved :(',
+                status: 'passive'
+            });
         }
     });
 
