@@ -126,6 +126,7 @@ ghost.app().configure(function () {
     ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
     ghost.app().use(I18n.load(ghost));
     ghost.app().use(express.bodyParser({}));
+    ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
     ghost.app().use(express.cookieParser('try-ghost'));
     ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
     ghost.app().use(ghost.initTheme(ghost.app()));
@@ -195,6 +196,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
     ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
 
+    ghost.app().post('/ghost/upload', admin.uploader);
 
     /**
      * Frontend routes..

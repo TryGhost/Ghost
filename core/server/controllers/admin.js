@@ -2,11 +2,12 @@ var Ghost = require('../../ghost'),
     dataExport = require('../data/export'),
     dataImport = require('../data/import'),
     _ = require('underscore'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     when = require('when'),
     nodefn = require('when/node/function'),
     api = require('../api'),
+    moment = require('moment'),
 
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
@@ -54,6 +55,40 @@ function setSelected(list, name) {
 }
 
 adminControllers = {
+    'uploader': function (req, res) {
+        var currentDate = moment(),
+            month = currentDate.format("MMM"),
+            year =  currentDate.format("YYYY"),
+            tmp_path = req.files.uploadimage.path,
+            dir = path.join('content/images', year, month),
+            target_path = path.join(dir, req.files.uploadimage.name),
+            ext = path.extname(req.files.uploadimage.name),
+            src = path.join('/', target_path);
+
+
+        function renameFile() {
+            // adds directories recursively
+            fs.mkdirs(dir, function (err) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    fs.copy(tmp_path, target_path, function (err) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            res.send(src);
+                        }
+                    });
+                }
+            });
+        }
+
+        if (ext === ".jpg" || ext === ".png" || ext === ".gif") {
+            renameFile();
+        } else {
+            res.send("Invalid filetype");
+        }
+    },
     'login': function (req, res) {
         res.render('login', {
             bodyClass: 'ghost-login',
