@@ -45,8 +45,7 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val(),
-                self = this;
+                password = this.$el.find('.password').val();
 
             $.ajax({
                 url: '/ghost/login/',
@@ -80,8 +79,7 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val(),
-                self = this;
+                password = this.$el.find('.password').val();
 
             $.ajax({
                 url: '/ghost/signup/',
