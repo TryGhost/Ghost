@@ -178,6 +178,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/ghost/signup/', admin.signup);
     ghost.app().post('/ghost/login/', admin.auth);
     ghost.app().post('/ghost/signup/', admin.doRegister);
+    ghost.app().post('/ghost/changepw/', auth, admin.changepw);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
     ghost.app().get('/ghost/editor', auth, admin.editor);
     ghost.app().get('/ghost/content', auth, admin.content);
