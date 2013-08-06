@@ -8,6 +8,7 @@ var Ghost = require('../../ghost'),
     nodefn = require('when/node/function'),
     api = require('../api'),
     moment = require('moment'),
+    errors = require('../errorHandling'),
 
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
@@ -20,28 +21,24 @@ adminNavbar = {
         name: 'Dashboard',
         navClass: 'dashboard',
         key: 'admin.navbar.dashboard',
-        // defaultString: 'dashboard',
         path: '/'
     },
     content: {
         name: 'Content',
         navClass: 'content',
         key: 'admin.navbar.content',
-        // defaultString: 'content',
         path: '/content/'
     },
     add: {
         name: 'New Post',
         navClass: 'editor',
         key: 'admin.navbar.editor',
-        // defaultString: 'editor',
         path: '/editor/'
     },
     settings: {
         name: 'Settings',
         navClass: 'settings',
         key: 'admin.navbar.settings',
-        // defaultString: 'settings',
         path: '/settings/'
     }
 };
@@ -70,11 +67,11 @@ adminControllers = {
             // adds directories recursively
             fs.mkdirs(dir, function (err) {
                 if (err) {
-                    console.error(err);
+                    errors.logError(err);
                 } else {
                     fs.copy(tmp_path, target_path, function (err) {
                         if (err) {
-                            console.error(err);
+                            errors.logError(err);
                         } else {
                             res.send(src);
                         }
@@ -153,7 +150,6 @@ adminControllers = {
         });
     },
     'editor': function (req, res) {
-        console.log(res.locals);
         if (req.params.id !== undefined) {
             api.posts.read({id: parseInt(req.params.id, 10)})
                 .then(function (post) {

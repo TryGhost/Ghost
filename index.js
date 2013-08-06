@@ -1,7 +1,10 @@
 // # Ghost main app file
+// Contains the app configuration and all of the routing
+
+// If no env is set, default to development
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Module dependencies.
+// Module dependencies
 var express = require('express'),
     when = require('when'),
     _ = require('underscore'),
@@ -18,30 +21,17 @@ var express = require('express'),
     helpers = require('./core/server/helpers'),
     packageInfo = require('./package.json'),
 
-// ## Custom Middleware
-    auth,
-    authAPI,
-    isGhostAdmin,
-    ghostLocals,
-    disableCachedResult,
-
-// ## Variables
+// Variables
     loading = when.defer(),
-
-    /**
-     * Create new Ghost object
-     * @type {Ghost}
-     */
     ghost = new Ghost();
 
 
-/**
- * Authenticate a request by redirecting to login if not logged in
- * We strip /ghost/ out of the redirect parameter for neatness
- *
- * @type {*}
- */
-auth = function (req, res, next) {
+// ##Custom Middleware
+
+// ### Auth Middleware
+// Authenticate a request by redirecting to login if not logged in.
+// We strip /ghost/ out of the redirect parameter for neatness
+function auth(req, res, next) {
     if (!req.session.user) {
         var path = req.path.replace(/^\/ghost\/?/gi, ''),
             redirect = '';
@@ -55,35 +45,34 @@ auth = function (req, res, next) {
     }
 
     next();
-};
+}
 
-/**
- * Authenticate a request by responding with a 401 and json error details
- *
- * @type {*}
- */
-authAPI = function (req, res, next) {
+// ## AuthApi Middleware
+// Authenticate a request to the API by responding with a 401 and json error details
+function authAPI(req, res, next) {
     if (!req.session.user) {
         // TODO: standardize error format/codes/messages
         var err = { code: 42, message: 'Please login' };
         res.json(401, { error: err });
         return;
     }
-    next();
-};
 
-// #### isGhostAdmin
-// Middleware which uses the URL to detect whether this response should be an admin response
+    next();
+}
+
+// ### GhostAdmin Middleware
+// Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
-isGhostAdmin = function (req, res, next) {
+function isGhostAdmin(req, res, next) {
     res.isAdmin = /(^\/ghost$|^\/ghost\/)/.test(req.url);
 
     next();
-};
+}
 
+// ### GhostLocals Middleware
 // Expose the standard locals that every external page should have available,
 // separating between the frontend / theme and the admin
-ghostLocals = function (req, res, next) {
+function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
@@ -109,18 +98,20 @@ ghostLocals = function (req, res, next) {
 
         next();
     }
-};
+}
 
+// ### DisableCachedResult Middleware
 // Disable any caching until it can be done properly
-disableCachedResult = function (req, res, next) {
+function disableCachedResult(req, res, next) {
     res.set({
         "Cache-Control": "no-cache, must-revalidate",
         "Expires": "Sat, 26 Jul 1997 05:00:00 GMT"
     });
 
     next();
-};
+}
 
+// ##Configuration
 ghost.app().configure(function () {
     ghost.app().use(isGhostAdmin);
     ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
@@ -138,6 +129,7 @@ ghost.app().configure(function () {
     }
 });
 
+// Development only configuration
 ghost.app().configure("development", function () {
     ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
     ghost.app().use(express.logger('dev'));
@@ -152,27 +144,32 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     // post init config
     ghost.app().use(ghostLocals);
 
-    /**
-     * API routes..
-     * @todo auth should be public auth not user auth
-     */
+
+    // ## Routing
+
+    // ### API routes
+    /* TODO: auth should be public auth not user auth */
+    // #### Posts
     ghost.app().get('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
     ghost.app().post('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
     ghost.app().get('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
     ghost.app().put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
     ghost.app().del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+    // #### Settings
     ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
     ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
     ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
+    // #### Users
     ghost.app().get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
     ghost.app().get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));
     ghost.app().put('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    // #### Notifications
+    ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
+    ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
 
 
-    /**
-     * Admin routes..
-     * @todo put these somewhere in admin
-     */
+    // ### Admin routes
+    /* TODO: put these somewhere in admin */
     ghost.app().get(/^\/logout\/?$/, admin.logout);
     ghost.app().get('/ghost/login/', admin.login);
     ghost.app().get('/ghost/signup/', admin.signup);
@@ -187,26 +184,20 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/ghost/debug/db/export/', auth, admin.debug['export']);
     ghost.app().post('/ghost/debug/db/import/', auth, admin.debug['import']);
     ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
+    ghost.app().post('/ghost/upload', admin.uploader);
     ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
     ghost.app().get('/ghost/', auth, admin.index);
 
-
-    // Notifications routes
-    ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
-    ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
-
-    ghost.app().post('/ghost/upload', admin.uploader);
-
-    /**
-     * Frontend routes..
-     * @todo dynamic routing, homepage generator, filters ETC ETC
-     */
+    // ### Frontend routes
+    /* TODO: dynamic routing, homepage generator, filters ETC ETC */
     ghost.app().get('/:slug', frontend.single);
     ghost.app().get('/', frontend.homepage);
     ghost.app().get('/page/:page/', frontend.homepage);
 
+
+    // ## Start Ghost App
     ghost.app().listen(
         ghost.config().env[process.env.NODE_ENV || 'development'].url.port,
         ghost.config().env[process.env.NODE_ENV || 'development'].url.host,
@@ -224,6 +215,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
                 process.exit(-1);
             }
 
+            // Alpha warning, reminds users this is not production-ready software (yet)
             // Remove once software becomes suitably 'ready'
             console.log(
                 "\n !!! ALPHA SOFTWARE WARNING !!!\n".red,
@@ -231,6 +223,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
                 "Expect to see bugs and other issues (but please report them.)\n".red
             );
 
+            // Startup message
             console.log("Express server listening on address:",
                 ghost.config().env[process.env.NODE_ENV || 'development'].url.host + ':'
                     + ghost.config().env[process.env.NODE_ENV || 'development'].url.port);

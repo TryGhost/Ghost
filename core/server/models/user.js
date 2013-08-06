@@ -105,12 +105,7 @@ User = GhostBookshelf.Model.extend({
          */
     },
 
-    /**
-     * User check
-     * @param  _userdata
-     *
-     * Finds the user by email, and check's the password
-     */
+    // Finds the user by email, and checks the password
     check: function (_userdata) {
         return this.forge({
             email_address: _userdata.email

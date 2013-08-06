@@ -1,58 +1,43 @@
 // # Ghost Configuration
 
-/**
- * global module
- **/
 var path = require('path'),
-    config;
-
-/**
- * @module config
- * @type {Object}
- */
-config = {};
+    config  = {};
 
 // ## Admin settings
 
-/**
- * @property {string} defaultLang
- */
+// Default language
 config.defaultLang = 'en';
 
-/**
- * @property {boolean} forceI18n
- */
+// Force i18n to be on
 config.forceI18n = true;
 
-// ## Themes
+// ## Themes & Plugins
 
-/**
- * @property {string} themeDir
- */
-
-// Themes
+// Themes directory, relative to `content/`
 config.themeDir = 'themes';
 
 // Current active theme
-/**
- * @property {string} activeTheme
- */
 config.activeTheme = 'casper';
 
-
+// Current active plugins
 config.activePlugins = [
     'FancyFirstChar'
 ];
 
-// Default Navigation Items
-/**
- * @property {Array} nav
- */
-config.nav = [{
-    title: 'Home',
-    url: '/'
-}];
+// ## Default Navigation Items
+// Add new objects here to extend the menu output by {{nav}}
+config.nav = [
+    {
+        // Title is the text shown for this nav item
+        title: 'Home',
+        // Url can be a relative path, or external URL
+        url: '/'
+    }
+    // new items go here
+];
 
+// ## Environment
+// **Warning:** Only change the settings below here if you are sure of what you are doing!
 config.env = {
     testing: {
         database: {
@@ -80,6 +65,7 @@ config.env = {
         }
     },
 
+    // Default configuration
     development: {
         database: {
             client: 'sqlite3',
@@ -123,7 +109,5 @@ config.env = {
     }
 };
 
-/**
- * @property {Object} exports
- */
+// Export config
 module.exports = config;

@@ -168,7 +168,7 @@ var path = require('path'),
                             "core/client/**/*.js"
                         ],
                         "except": [
-                            "!core/client/assets/**/*.js",
+                            "!core/**/vendor/**/*.js",
                             "!core/client/tpl/**/*.js"
                         ]
                     }

@@ -14,10 +14,6 @@
                 pane: options.pane,
                 model: this.model
             }));
-
-            this.$('input').iCheck({
-                checkboxClass: 'icheckbox_ghost'
-            });
         }
     });
 
@@ -93,6 +89,10 @@
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
+
+            this.$('input').iCheck({
+                checkboxClass: 'icheckbox_ghost'
+            });
         },
         saveSuccess: function () {
             Ghost.notifications.addItem({
@@ -143,9 +143,8 @@
         },
 
         afterRender: function () {
-            this.$el.attr('id', this.id);
-            this.$el.addClass('active');
             this.$('.js-drop-zone').upload();
+            Settings.Pane.prototype.afterRender.call(this);
         }
     });
 
@@ -224,27 +223,22 @@
                     ne2password: ne2Password
                 },
                 success: function (msg) {
-
-                    self.addSubview(new Ghost.Views.NotificationCollection({
-                        model: [{
-                            type: 'success',
-                            message: msg.msg,
-                            status: 'passive',
-                            id: 'success-98'
-                        }]
-                    }));
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: msg.msg,
+                        status: 'passive',
+                        id: 'success-98'
+                    });
                     self.$('#user-password-old').val('');
                     self.$('#user-password-new').val('');
                     self.$('#user-new-password-verification').val('');
                 },
                 error: function (obj, string, status) {
-                    self.addSubview(new Ghost.Views.NotificationCollection({
-                        model: [{
-                            type: 'error',
-                            message: 'Invalid username or password',
-                            status: 'passive'
-                        }]
-                    }));
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: 'Invalid username or password',
+                        status: 'passive'
+                    });
                 }
             });
         },

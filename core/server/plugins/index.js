@@ -11,7 +11,7 @@ function getInstalledPlugins() {
     }
 
     return ghostApi.settings.read("installedPlugins").then(function (installed) {
-        installed = installed || "[]";
+        installed.value = installed.value || "[]";
 
         try {
             installed = JSON.parse(installed.value);

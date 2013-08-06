@@ -1,9 +1,6 @@
 // # Ghost Data API
 // Provides access to the data model
 
-/**
- * This is intended to replace the old dataProvider files and should access & manipulate the models directly
- */
 var Ghost = require('../ghost'),
     _ = require('underscore'),
     when = require('when'),
@@ -20,73 +17,135 @@ var Ghost = require('../ghost'),
     settingsObject,
     settingsCollection;
 
-// # Posts
+// ## Posts
 posts = {
-    // takes filter / pagination parameters
-    // returns a page of posts in a json response
+    // #### Browse
+
+    // **takes:** filter / pagination parameters
     browse: function browse(options) {
+        // **returns:** a promise for a page of posts in a json object
         return dataProvider.Post.findPage(options);
     },
-    // takes an identifier (id or slug?)
-    // returns a single post in a json response
+
+    // #### Read
+
+    // **takes:** an identifier (id or slug?)
     read: function read(args) {
+        // **returns:** a promise for a single post in a json object
         return dataProvider.Post.findOne(args);
     },
-    // takes a json object with all the properties which should be updated
-    // returns the resulting post in a json response
+
+    // #### Edit
+
+    // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
+        // **returns:** a promise for the resulting post in a json object
         return dataProvider.Post.edit(postData);
     },
-    // takes a json object representing a post,
-    // returns the resulting post in a json response
+
+    // #### Add
+
+    // **takes:** a json object representing a post,
     add: function add(postData) {
+        // **returns:** a promise for the resulting post in a json object
         return dataProvider.Post.add(postData);
     },
-    // takes an identifier (id or slug?)
-    // returns a json response with the id of the deleted post
+
+    // #### Destroy
+
+    // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
+        // **returns:** a promise for a json response with the id of the deleted post
         return dataProvider.Post.destroy(args.id);
     }
 };
 
-// # Users
+// ## Users
 users = {
+    // #### Browse
+
+    // **takes:** options object
     browse: function browse(options) {
+        // **returns:** a promise for a collection of users in a json object
         return dataProvider.User.browse(options);
     },
+
+    // #### Read
+
+    // **takes:** an identifier (id or slug?)
     read: function read(args) {
+        // **returns:** a promise for a single user in a json object
         return dataProvider.User.read(args);
     },
-    edit: function edit(postData) {
-        return dataProvider.User.edit(postData);
+
+    // #### Edit
+
+    // **takes:** a json object representing a user
+    edit: function edit(userData) {
+        // **returns:** a promise for the resulting user in a json object
+        return dataProvider.User.edit(userData);
     },
-    add: function add(postData) {
-        return dataProvider.User.add(postData);
+
+    // #### Add
+
+    // **takes:** a json object representing a user
+    add: function add(userData) {
+
+        // **returns:** a promise for the resulting user in a json object
+        return dataProvider.User.add(userData);
     },
-    check: function check(postData) {
-        return dataProvider.User.check(postData);
+
+    // #### Check
+    // Checks a password matches the given email address
+
+    // **takes:** a json object representing a user
+    check: function check(userData) {
+        // **returns:** on success, returns a promise for the resulting user in a json object
+        return dataProvider.User.check(userData);
     },
-    changePassword: function changePassword(postData) {
-        return dataProvider.User.changePassword(postData);
+
+    // #### Change Password
+
+    // **takes:** a json object representing a user
+    changePassword: function changePassword(userData) {
+        // **returns:** on success, returns a promise for the resulting user in a json object
+        return dataProvider.User.changePassword(userData);
     }
 };
 
-// # Notifications
-
+// ## Notifications
 notifications = {
+    // #### Destroy
+
+    // **takes:** an identifier (id)
     destroy: function destroy(i) {
         ghost.notifications = _.reject(ghost.notifications, function (element) {
             return element.id === i.id;
         });
+        // **returns:** a promise for remaining notifications as a json object
         return when(ghost.notifications);
     },
+
+    // #### Add
+
+    // **takes:** a notification object of the form
+    // ```
+    //  msg = {
+    //      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
+    //      message: 'This is an error', // A string. Should fit in one line.
+    //      status: 'persistent', // or 'passive'
+    //      id: 'auniqueid' // A unique ID
+    //  };
+    // ```
     add: function add(notification) {
+        // **returns:** a promise for all notifications as a json object
         return when(ghost.notifications.push(notification));
     }
 };
 
-// # Settings
+// ## Settings
 
+// ### Helpers
 // Turn a settings collection into a single object/hashmap
 settingsObject = function (settings) {
     return (settings.toJSON ? settings.toJSON() : settings).reduce(function (res, item) {
@@ -103,14 +162,23 @@ settingsCollection = function (settings) {
 };
 
 settings = {
+    // #### Browse
+
+    // **takes:** options object
     browse: function browse(options) {
+         // **returns:** a promise for a settings json object
         return dataProvider.Settings.browse(options).then(settingsObject, errors.logAndThrowError);
     },
+
+    // #### Read
+
+    // **takes:** either a json object containing a key, or a single key string
     read: function read(options) {
         if (_.isString(options)) {
             options = { key: options };
         }
 
+        // **returns:** a promise for a single key-value pair
         return dataProvider.Settings.read(options.key).then(function (setting) {
             if (!setting) {
                 return when.reject("Unable to find setting: " + options.key);
@@ -119,13 +187,19 @@ settings = {
             return _.pick(setting.toJSON(), 'key', 'value');
         }, errors.logAndThrowError);
     },
+
+    // #### Edit
+
+     // **takes:** either a json object representing a collection of settings, or a key and value pair
     edit: function edit(key, value) {
         // Check for passing a collection of settings first
         if (_.isObject(key)) {
             key = settingsCollection(key);
+
             return dataProvider.Settings.edit(key).then(settingsObject, errors.logAndThrowError);
         }
 
+         // **returns:** a promise for a settings json object
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
                 return when.reject("Unable to find setting: " + key);
@@ -142,11 +216,9 @@ settings = {
     }
 };
 
-// categories: {};
-// post_categories: {};
+// ## Request Handlers
 
-
-// requestHandler
+// ### requestHandler
 // decorator for api functions which are called via an HTTP request
 // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
 requestHandler = function (apiMethod) {
@@ -160,6 +232,8 @@ requestHandler = function (apiMethod) {
     };
 };
 
+// ### cachedSettingsRequestHandler
+// Special request handler for settings to access the internal cache version of the settings object
 cachedSettingsRequestHandler = function (apiMethod) {
     if (!ghost.settings()) {
         return requestHandler(apiMethod);
@@ -193,6 +267,7 @@ cachedSettingsRequestHandler = function (apiMethod) {
     };
 };
 
+// Public API
 module.exports.posts = posts;
 module.exports.users = users;
 module.exports.notifications = notifications;
