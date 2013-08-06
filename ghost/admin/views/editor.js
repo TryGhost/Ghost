@@ -119,8 +119,7 @@
         handleStatus: function (e) {
             e.preventDefault();
             var status = $(e.currentTarget).attr('data-set-status'),
-                model = this.model,
-                self = this;
+                model = this.model;
 
             if (status === 'publish-on') {
                 Ghost.notifications.addItem({
@@ -158,8 +157,7 @@
             if (e) {
                 e.preventDefault();
             }
-            var model = this.model,
-                self = this;
+            var model = this.model;
             this.savePost().then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
