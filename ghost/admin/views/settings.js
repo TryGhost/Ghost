@@ -124,7 +124,10 @@
         saveSettings: function () {
             this.model.save({
                 title: this.$('#blog-title').val(),
-                email: this.$('#email-address').val()
+                email: this.$('#email-address').val(),
+                logo: this.$('#logo').attr("src"),
+                icon: this.$('#icon').attr("src")
+
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
@@ -137,6 +140,12 @@
             var settings = this.model.toJSON();
             this.$('#blog-title').val(settings.title);
             this.$('#email-address').val(settings.email);
+        },
+
+        afterRender: function () {
+            this.$el.attr('id', this.id);
+            this.$el.addClass('active');
+            this.$('.js-drop-zone').upload();
         }
     });
 

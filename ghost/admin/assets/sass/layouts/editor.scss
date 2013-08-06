@@ -117,7 +117,7 @@
                 padding: 5px;
 
 			    &:hover {
-			        @include icon($i-question, '', $brown)
+			        @include icon($i-question, '', $brown);
 			    }
 			}
 
@@ -255,7 +255,6 @@
 			@include breakpoint($netbook) {padding-top: 20px;}
 			@include breakpoint($mobile) {padding: 15px;}
 		}
-
 	}
 
 	// Special case, when scrolling, add shadows to content headers.
@@ -331,11 +330,21 @@
 			text-align: center;
 		}
 	}
-
+    a {
+        &.image-edit {
+            width: 16px;
+            height: 16px;
+        }
+    }
 	img {
 		width: 100%;
 		height: auto;
 	}
+    // prevent uploaded image from being streched in editor
+    .pre-image-uploader img {
+        width: auto;
+    }
+
 }
 
 

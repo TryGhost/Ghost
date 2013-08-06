@@ -1135,6 +1135,16 @@ main {
         color: $brown;
         text-decoration: none;
     }
+    .image-edit {
+        line-height: 12px;
+        padding: 10px;
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        text-decoration: none;
+    }
 
     .image-webcam {
         @include icon($i-camera, 12px);
@@ -1146,9 +1156,10 @@ main {
         right: 0;
         color: $brown;
         text-decoration: none;
+
     }
 
-    .fileupload {
+    input {
         position: absolute;
         right: 0;
         margin: 0;
@@ -1162,7 +1173,7 @@ main {
 
     .progress {
         position: relative;
-        top: -39px;
+        top: -22px;
         margin:  auto;
         margin-bottom: -12px;
         display: block;
@@ -1186,7 +1197,61 @@ main {
         background: $blue;
     }
 }
+.pre-image-uploader {
+    @include box-sizing(border-box);
+    @include baseline;
+    position: relative;
+    overflow:hidden;
+    height: auto;
+    color: $brown;
 
+    input {
+        position: absolute;
+        left: 9999px;
+        opacity: 0;
+    }
+    .image-edit {
+
+        line-height: 12px;
+        padding: 10px;
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        text-decoration: none;
+    }
+}
+
+
+
+
+
+//.progress {
+//    position: relative;
+//    top: -39px;
+//    margin:  auto;
+//    margin-bottom: -12px;
+//    display: block;
+//    overflow: hidden;
+//    @include linear-gradient(to bottom, #f5f5f5, #f9f9f9);
+//    border-radius: 12px;
+//    box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
+//}
+//
+//.fileupload-loading {
+//    display: block;
+//    top: 50%;
+//    width: 35px;
+//    height: 28px;
+//    margin: -28px auto 0;
+//    background-size: contain;
+//}
+//
+//.bar {
+//    height: 12px;
+//    background: $blue;
+//}
 
 /* ==========================================================================
    Misc
