@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
+    downsize = require('downsize'),
     when = require('when'),
     hbs = require('express-hbs'),
     errors = require('../errorHandling'),
@@ -29,8 +30,29 @@ coreHelpers = function (ghost) {
     });
 
     // ### Content Helper
-    // Turns content html into a safestring so that the user doesn't have to escape it
+    // 
+    // *Usage example:*
+    // `{{content}}`
+    // `{{content words=20}}`
+    // `{{content characters=256}}`
+    // 
+    // Turns content html into a safestring so that the user doesn't have to
+    // escape it or tell handlebars to leave it alone with a triple-brace.
+    // 
+    // Enables tag-safe truncation of content by characters or words.
+    // 
+    // **returns** SafeString content html, complete or truncated.
+    //
     ghost.registerThemeHelper('content', function (options) {
+        var truncateOptions = (options || {}).hash || {};
+        truncateOptions = _.pick(truncateOptions, ["words", "characters"]);
+
+        if (truncateOptions.words || truncateOptions.characters) {
+            return new hbs.handlebars.SafeString(
+                downsize(this.content, truncateOptions)
+            );
+        }
+
         return new hbs.handlebars.SafeString(this.content);
     });
 
