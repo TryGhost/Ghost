@@ -109,7 +109,7 @@ Constructed with the following guidelines:
 * A new *major* release indicates a large change where backwards compatibility is broken.
 * A new *minor* release indicates a normal change that maintains backwards compatibility.
 * A new *patch* release indicates a bugfix or small change which does not affect compatibility.
-* A new *build* release indicates this is a pre-release of a new version.
+* A new *build* release indicates this is a pre-release of the version.
 
 ## Bugs
 
@@ -117,11 +117,7 @@ If you have a bug or feature request, please [open a new issue](https://github.c
 
 ## Contributions
 
-Pleas submit pull requests in order to contribute back to Ghost - referencing any relevant or open issues in the bug tracker.
-
-All code should conform, strictly, to the Ghost project [Code Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
-
-All HTML and CSS should conform to the [Code Guide](http://github.com/mdo/code-guide), maintained by [Mark Otto](http://github.com/mdo).
+Please see our [Guide to Contributing](https://github.com/TryGhost/Ghost/wiki/Contributing).
 
 ## Community
 
