@@ -31,6 +31,34 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             rendered.string.should.equal(content);
         });
+        
+        it('can truncate content by word', function () {
+            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    handlebars.helpers.content
+                        .call(
+                            {content: content},
+                            {"hash":{"words": 2}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p>Hello <strong>World</strong></p>");
+        });
+        
+        it('can truncate content by character', function () {
+            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    handlebars.helpers.content
+                        .call(
+                            {content: content},
+                            {"hash":{"characters": 8}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p>Hello <strong>Wo</strong></p>");
+        });
     });
 
     describe('Navigation Helper', function () {
