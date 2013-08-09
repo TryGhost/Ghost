@@ -98,7 +98,7 @@ adminControllers = {
             req.session.user = "ghostadmin";
             res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
         }, function (error) {
-            res.send(401);
+            res.send(401, error.message);
         });
     },
     changepw: function (req, res) {
