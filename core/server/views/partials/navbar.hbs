@@ -9,8 +9,8 @@
 
             <li id="usermenu" class="subnav">
                 <a href="#" data-toggle="ul" class="dropdown">
-                    <img class="avatar" src="/public/img/user.jpg" alt="Avatar" />
-                    <span class="name">Ghost v{{version}}</span>
+                    <img class="avatar" src="{{#if currentUser.profile}}{{currentUser.profile}}{{else}}/public/img/user.jpg{{/if}}" alt="Avatar" />
+                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}Ghost{{/if}} v{{version}}</span>
                 </a>
                 <ul class="overlay">
                     <li class="usermenu-profile"><a href="#">Your Profile</a></li>

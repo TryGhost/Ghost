@@ -94,15 +94,15 @@ adminControllers = {
     },
     'auth': function (req, res) {
         api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-            req.session.user = "ghostadmin";
+            req.session.user = user.id;
             res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
         }, function (error) {
-            res.send(401);
+            res.send(401, error.message);
         });
     },
     changepw: function (req, res) {
         api.users.changePassword({
-            email: req.body.email,
+            currentUser: req.session.user,
             oldpw: req.body.password,
             newpw: req.body.newpassword,
             ne2pw: req.body.ne2password

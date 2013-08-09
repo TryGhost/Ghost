@@ -60,7 +60,7 @@
                 error: function (obj, string, status) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: 'Invalid username or password',
+                        message: obj.responseText,
                         status: 'passive'
                     });
                 }

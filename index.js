@@ -40,10 +40,8 @@ function auth(req, res, next) {
             req.flash('warn', "Please login");
             redirect = '?r=' + encodeURIComponent(path);
         }
-
         return res.redirect('/ghost/login/' + redirect);
     }
-
     next();
 }
 
@@ -88,15 +86,29 @@ function ghostLocals(req, res, next) {
             next();
         });
     } else {
-        _.extend(res.locals,  {
-            // pass the admin flash messages, settings and paths
-            messages: ghost.notifications,
-            settings: ghost.settings(),
-            availableThemes: ghost.paths().availableThemes,
-            availablePlugins: ghost.paths().availablePlugins
+        api.users.read({id: req.session.user}).then(function (currentUser) {
+            _.extend(res.locals,  {
+                // pass the admin flash messages, settings and paths
+                messages: ghost.notifications,
+                settings: ghost.settings(),
+                availableThemes: ghost.paths().availableThemes,
+                availablePlugins: ghost.paths().availablePlugins,
+                currentUser: {
+                    name: currentUser.attributes.full_name,
+                    profile: currentUser.attributes.profile_picture
+                }
+            });
+            next();
+        }).otherwise(function () {
+            _.extend(res.locals,  {
+                // pass the admin flash messages, settings and paths
+                messages: ghost.notifications,
+                settings: ghost.settings(),
+                availableThemes: ghost.paths().availableThemes,
+                availablePlugins: ghost.paths().availablePlugins
+            });
+            next();
         });
-
-        next();
     }
 }
 
