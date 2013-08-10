@@ -110,7 +110,11 @@
     Ghost.Views.NotificationCollection = Ghost.View.extend({
         el: '#flashbar',
         initialize: function () {
+            var self = this;
             this.render();
+            Backbone.history.on('route', function () {
+                self.clearEverything();
+            });
         },
         events: {
             'animationend .js-notification': 'removeItem',
@@ -132,6 +136,9 @@
         addItem: function (item) {
             this.model.push(item);
             this.renderItem(item);
+        },
+        clearEverything: function () {
+            this.$el.find('.js-notification.notification-passive').fadeOut(200,  function () { $(this).remove(); });
         },
         removeItem: function (e) {
             e.preventDefault();
