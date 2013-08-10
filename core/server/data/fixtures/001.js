@@ -37,7 +37,7 @@ module.exports = {
         {
             "uuid":         uuid.v4(),
             "key":          "title",
-            "value":        "John O'Nolan",
+            "value":        "Ghost",
             "created_by":    1,
             "updated_by":    1,
             "type":         "blog"
@@ -45,7 +45,7 @@ module.exports = {
         {
             "uuid":         uuid.v4(),
             "key":          "description",
-            "value":        "Interactive designer, public speaker, startup advisor and writer. Living in Austria, attempting world domination via keyboard.",
+            "value":        "Just a blogging platform.",
             "created_by":    1,
             "updated_by":    1,
             "type":         "blog"
@@ -53,7 +53,7 @@ module.exports = {
         {
             "uuid":         uuid.v4(),
             "key":          "email",
-            "value":        "john@onolan.org",
+            "value":        "ghost@example.com",
             "created_by":    1,
             "updated_by":    1,
             "type":         "general"
