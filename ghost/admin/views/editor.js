@@ -305,9 +305,9 @@
             preview.innerHTML = this.converter.makeHtml(this.editor.getValue());
             view.$('.js-drop-zone').upload({editor: true});
             Countable.once(preview, function (counter) {
-                view.$('.entry-word-count').text(counter.words + ' words');
-                view.$('.entry-character-count').text(counter.characters + ' characters');
-                view.$('.entry-paragraph-count').text(counter.paragraphs + ' paragraphs');
+                view.$('.entry-word-count').text($.pluralize(counter.words, 'word'));
+                view.$('.entry-character-count').text($.pluralize(counter.characters, 'character'));
+                view.$('.entry-paragraph-count').text($.pluralize(counter.paragraphs, 'paragraph'));
             });
         },
 
