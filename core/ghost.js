@@ -17,8 +17,9 @@ var config = require('./../config'),
     requireTree = require('./server/require-tree'),
 
 // Variables
-    themePath = path.resolve(__dirname + '../../content/themes'),
-    pluginPath = path.resolve(__dirname + '../../content/plugins'),
+    appRoot = path.resolve(__dirname, '../'),
+    themePath = path.resolve(appRoot + '/content/themes'),
+    pluginPath = path.resolve(appRoot + '/content/plugins'),
     themeDirectories = requireTree(themePath),
     pluginDirectories = requireTree(pluginPath),
 
@@ -102,10 +103,13 @@ Ghost = function () {
             },
             paths: function () {
                 return {
-                    'activeTheme':      __dirname + '/../content/' + config.themeDir + '/' + config.activeTheme + '/',
-                    'adminViews':       __dirname + '/server/views/',
-                    'helperTemplates':  __dirname + '/server/helpers/tpl/',
-                    'lang':             __dirname + '/shared/lang/',
+                    'appRoot':          appRoot,
+                    'themePath':        themePath,
+                    'pluginPath':       pluginPath,
+                    'activeTheme':      path.join(themePath, config.activeTheme),
+                    'adminViews':       path.join(appRoot, '/core/server/views/'),
+                    'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
+                    'lang':             path.join(appRoot, '/core/shared/lang/'),
                     'availableThemes':  instance.themeDirectories,
                     'availablePlugins': instance.pluginDirectories
                 };
@@ -265,7 +269,7 @@ Ghost.prototype.initTheme = function (app) {
 
         if (!res.isAdmin) {
             app.engine('hbs', hbs.express3(
-                {partialsDir: self.paths().activeTheme + 'partials'}
+                {partialsDir: path.join(self.paths().activeTheme, 'partials')}
             ));
             app.set('views', self.paths().activeTheme);
         } else {
