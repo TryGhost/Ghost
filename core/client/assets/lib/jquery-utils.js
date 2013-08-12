@@ -82,4 +82,17 @@
 
     $('.overlay').hideAway(); // TODO: Move to a more sensible global file.
 
+    /**
+     * Adds appropriate inflection for pluralizing the singular form of a word when appropriate.
+     * This is an overly simplistic implementation that does not handle irregular plurals.
+     * @param {Number} count 
+     * @param {String} singularWord
+     * @returns {String}
+     */
+    $.pluralize = function inflect(count, singularWord) {
+    	var base = [count, ' ', singularWord];
+
+        return (count === 1) ? base.join('') : base.concat('s').join('');
+    };
+
 }());
