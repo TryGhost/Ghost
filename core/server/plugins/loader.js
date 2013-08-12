@@ -3,7 +3,6 @@ var path = require("path"),
     _ = require("underscore"),
     when = require("when"),
     ghostInstance,
-    pluginRootDirectory = path.join(process.cwd(), "content/plugins"),
     loader;
 
 function getGhostInstance() {
@@ -18,11 +17,21 @@ function getGhostInstance() {
     return ghostInstance;
 }
 
+// Get a relative path to the given plugins root, defaults
+// to be relative to __dirname
+function getPluginRelativePath(name, relativeTo, ghost) {
+    ghost = ghost || getGhostInstance();
+    relativeTo = relativeTo || __dirname;
+
+    return path.relative(relativeTo, path.join(ghost.paths().pluginPath, name));
+}
+
+
 function getPluginByName(name, ghost) {
     ghost = ghost || getGhostInstance();
 
     // Grab the plugin class to instantiate
-    var PluginClass = require(loader.getPluginRelativePath(name)),
+    var PluginClass = require(getPluginRelativePath(name)),
         plugin;
 
     // Check for an actual class, otherwise just use whatever was returned
@@ -37,14 +46,6 @@ function getPluginByName(name, ghost) {
 
 // The loader is responsible for loading plugins
 loader = {
-    // Get a relative path to the given plugins root, defaults
-    // to be relative to __dirname
-    getPluginRelativePath: function (name, relativeTo) {
-        relativeTo = relativeTo || __dirname;
-
-        return path.relative(relativeTo, path.join(pluginRootDirectory, name));
-    },
-
     // Load a plugin and return the instantiated plugin
     installPluginByName: function (name, ghost) {
         var plugin = getPluginByName(name, ghost);
