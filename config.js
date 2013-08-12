@@ -13,9 +13,6 @@ config.forceI18n = true;
 
 // ## Themes & Plugins
 
-// Themes directory, relative to `content/`
-config.themeDir = 'themes';
-
 // Current active theme
 config.activeTheme = 'casper';
 
