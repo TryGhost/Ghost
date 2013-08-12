@@ -84,3 +84,46 @@ casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
         test.done();
     });
 });
+
+casper.test.begin("Word count and plurality", 4, function suite(test) {
+
+    casper.test.filename = "editor_plurality_test.png";
+
+    casper.start(url + "ghost/editor", function testTitleAndUrl() {
+        test.assertTitle("", "Ghost admin has no title");
+    }).viewport(1280, 1024);
+
+    casper.then(function checkZeroPlural() {
+        test.assertSelectorHasText('.entry-word-count', '0 words', 'count of 0 produces plural "words".');
+    });
+
+    casper.then(function () {
+        casper.writeContentToCodeMirror('test');
+    });
+
+    // We must wait after sending keys to CodeMirror
+    casper.wait(1000, function doneWait() {
+        this.echo('I\'ve waited for 1 seconds.');
+    });
+
+    casper.then(function checkSinglular() {
+        test.assertSelectorHasText('.entry-word-count', '1 word', 'count of 1 produces singular "word".');
+    });
+
+    casper.then(function () {
+        casper.writeContentToCodeMirror('test'); // append another word, assumes newline
+    });
+
+    // We must wait after sending keys to CodeMirror
+    casper.wait(1000, function doneWait() {
+        this.echo('I\'ve waited for 1 seconds.');
+    });
+
+    casper.then(function checkPlural() {
+        test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
+    });
+
+    casper.run(function () {
+        test.done();
+    });
+});
