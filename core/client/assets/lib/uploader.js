@@ -22,9 +22,9 @@
     UploadUi = function ($dropzone, settings) {
         var source,
             $link = $('<a class="js-edit-image image-edit" href="#" >' +
-                '<img src="/public/assets/img/addImage.png" width="16" height="16" alt="add, edit"></a>'),
+                '<img src="/public/assets/img/add-image.png" width="16" height="16" alt="add, edit"></a>'),
             $back = $('<a class="js-return-image image-edit" href="#" >' +
-                '<img src="/public/assets/img/returnImage.png" width="16" height="16" alt="add, edit"></a>');
+                '<img src="/public/assets/img/return-image.png" width="16" height="16" alt="add, edit"></a>');
 
         $.extend(this, {
             bindFileUpload: function () {
