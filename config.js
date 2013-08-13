@@ -6,7 +6,7 @@ var path = require('path'),
 // ## Admin settings
 
 // Default language
-config.defaultLang = 'en';
+config.defaultLang = 'en_US';
 
 // Force i18n to be on
 config.forceI18n = true;
