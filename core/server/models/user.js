@@ -116,7 +116,9 @@ User = GhostBookshelf.Model.extend({
                 }
                 return user;
             }, errors.logAndThrowError);
-        }, errors.logAndThrowError);
+        }, function (error) {
+            return when.reject(new Error('Email address or password is incorrect'));
+        });
     },
 
     /**
