@@ -1,5 +1,6 @@
 var GhostBookshelf,
     Bookshelf = require('bookshelf'),
+    moment = require('moment'),
     _ = require('underscore'),
     config = require('../../../config');
 
@@ -16,7 +17,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
     fixDates: function (attrs) {
         _.each(attrs, function (value, key) {
             if (key.substr(-3) === '_at' && value !== null) {
-                attrs[key] = new Date(attrs[key]);
+                attrs[key] = moment(attrs[key]).toDate();
             }
         });
 
