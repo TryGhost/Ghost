@@ -224,7 +224,7 @@ describe('permissions', function () {
 
                 // TODO: Verify updatedUser.related('permissions') has the permission?
 
-                var canThisResult = permissions.canThis(updatedUser);
+                var canThisResult = permissions.canThis(updatedUser.id);
 
                 should.exist(canThisResult.edit);
                 should.exist(canThisResult.edit.post);

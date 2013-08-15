@@ -54,15 +54,9 @@ User = GhostBookshelf.Model.extend({
      */
     add: function (_user) {
 
-        var User = this,
-        // Clone the _user so we don't expose the hashed password unnecessarily
-            userData = _.extend({}, _user),
-            fail = false,
-            userRoles = {
-
-                "role_id": 1,
-                "user_id": 1
-            };
+        var self = this,
+            // Clone the _user so we don't expose the hashed password unnecessarily
+            userData = _.extend({}, _user);
 
         /**
          * This only allows one user to be added to the database, otherwise fails.
@@ -70,20 +64,27 @@ User = GhostBookshelf.Model.extend({
          * @author javorszky
          */
         return this.forge().fetch().then(function (user) {
-
+            // Check if user exists
             if (user) {
-                fail = true;
-            }
-
-            if (fail) {
                 return when.reject(new Error('A user is already registered. Only one user for now!'));
             }
 
-            return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
-                userData.password = hash;
-                GhostBookshelf.Model.add.call(UserRole, userRoles);
-                return GhostBookshelf.Model.add.call(User, userData);
-            }, errors.logAndThrowError);
+            // Hash the provided password with bcrypt
+            return nodefn.call(bcrypt.hash, _user.password, null, null);
+        }).then(function (hash) {
+            // Assign the hashed password
+            userData.password = hash;
+            // Save the user with the hashed password
+            return GhostBookshelf.Model.add.call(self, userData);
+        }).then(function (addedUser) {
+            // Assign the userData to our created user so we can pass it back
+            userData = addedUser;
+
+            // Add this user to the admin role (assumes admin = role_id: 1)
+            return UserRole.add({role_id: 1, user_id: addedUser.id});
+        }).then(function (addedUserRole) {
+            // Return the added user as expected
+            return when.resolve(userData);
         }, errors.logAndThrowError);
 
         /**
