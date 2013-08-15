@@ -5,6 +5,8 @@ var Ghost = require('../ghost'),
     _ = require('underscore'),
     when = require('when'),
     errors = require('./errorHandling'),
+    permissions = require('./permissions'),
+    canThis = permissions.canThis,
 
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
@@ -40,7 +42,15 @@ posts = {
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        return dataProvider.Post.edit(postData);
+        if (!this.user) {
+            return when.reject("You do not have permission to edit this post.");
+        }
+
+        return canThis(this.user).edit.post(postData.id).then(function () {
+            return dataProvider.Post.edit(postData);
+        }, function () {
+            return when.reject("You do not have permission to edit this post.");
+        });
     },
 
     // #### Add
@@ -48,7 +58,15 @@ posts = {
     // **takes:** a json object representing a post,
     add: function add(postData) {
         // **returns:** a promise for the resulting post in a json object
-        return dataProvider.Post.add(postData);
+        if (!this.user) {
+            return when.reject("You do not have permission to add posts.");
+        }
+
+        return canThis(this.user).create.post().then(function () {
+            return dataProvider.Post.add(postData);
+        }, function () {
+            return when.reject("You do not have permission to add posts.");
+        });
     },
 
     // #### Destroy
@@ -56,7 +74,15 @@ posts = {
     // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
         // **returns:** a promise for a json response with the id of the deleted post
-        return dataProvider.Post.destroy(args.id);
+        if (!this.user) {
+            return when.reject("You do not have permission to remove posts.");
+        }
+
+        return canThis(this.user).remove.post(args.id).then(function () {
+            return dataProvider.Post.destroy(args.id);
+        }, function () {
+            return when.reject("You do not have permission to remove posts.");
+        });
     }
 };
 

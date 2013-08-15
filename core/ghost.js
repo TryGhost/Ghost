@@ -15,6 +15,7 @@ var config = require('./../config'),
     models = require('./server/models'),
     plugins = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
+    permissions = require('./server/permissions'),
 
 // Variables
     appRoot = path.resolve(__dirname, '../'),
@@ -127,7 +128,10 @@ Ghost.prototype.init = function () {
         return self.initPlugins();
     }, errors.logAndThrowError).then(function () {
         return self.updateSettingsCache();
-    }, errors.logAndThrowError);
+    }, errors.logAndThrowError).then(function () {
+        // Initialize the permissions values
+        return permissions.init();
+    });
 };
 
 // Maintain the internal cache of the settings object
