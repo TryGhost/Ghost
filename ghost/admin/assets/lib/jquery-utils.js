@@ -5,7 +5,7 @@
 (function () {
     "use strict";
 
-    // UTILS
+    // ## UTILS
 
     /**
      * Allows to check contents of each element exactly
@@ -80,7 +80,9 @@
         return this;
     };
 
-    $('.overlay').hideAway(); // TODO: Move to a more sensible global file.
+    // ## GLOBALS
+
+    $('.overlay').hideAway();
 
     /**
      * Adds appropriate inflection for pluralizing the singular form of a word when appropriate.

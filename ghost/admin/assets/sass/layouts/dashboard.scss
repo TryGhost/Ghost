@@ -44,6 +44,10 @@
   background-color:#fff;
   box-shadow: $shadow;
 
+  @include breakpoint($mobile) {
+      width: 100%;
+  }
+
   .widget-content {
     @include box-sizing(border-box);
     margin-bottom: 40px;
