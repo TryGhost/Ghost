@@ -23,6 +23,10 @@
         height: 100%;
         margin:0;
         padding:0;
+
+        @include breakpoint($tablet) {
+            overflow-x: hidden;
+        }
     }
 
     .title {
@@ -48,6 +52,7 @@
         left:0;
         bottom:0;
         z-index: 700;
+        background: #FFFFFF;
         box-shadow: $lightbrown 1px 0 0;
         @include breakpoint($tablet) {
             width:100%;
@@ -157,7 +162,15 @@
         right:0;
         left:20%;
         bottom:0;
-        @include breakpoint($tablet) { display: none; }
+        background: #FFFFFF;
+
+        @include breakpoint($tablet) {
+            display: none;
+            width: 100%;
+            left: 100%;
+            right: -100%;
+            margin-left: 15px;
+        }
 
         display: none;
         &.active {display:block;}
