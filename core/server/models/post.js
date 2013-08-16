@@ -7,6 +7,7 @@ var Post,
     Showdown = require('showdown'),
     converter = new Showdown.converter(),
     User = require('./user').User,
+    config = require('../../../config'),
     GhostBookshelf = require('./base');
 
 Post = GhostBookshelf.Model.extend({
@@ -18,8 +19,8 @@ Post = GhostBookshelf.Model.extend({
     defaults: function () {
         return {
             uuid: uuid.v4(),
-            status: 'draft'
-            // TODO: language: ghost.config().defaultLang);
+            status: 'draft',
+            language: config.defaultLang
         };
     },
 
