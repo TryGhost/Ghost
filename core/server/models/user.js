@@ -91,18 +91,18 @@ User = GhostBookshelf.Model.extend({
          * whether there's anyone registered at all. This is due to #138
          * @author  javorszky
          */
-        /**
-         return this.forge({email_address: userData.email_address}).fetch().then(function (user) {
-                if (!!user.attributes.email_address) {
-                    return when.reject(new Error('A user with that email address already exists.'));
-                }
 
-                return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
-                    userData.password = hash;
-                    return GhostBookshelf.Model.add.call(User, userData);
-                });
-            });
-         */
+        // return this.forge({email_address: userData.email_address}).fetch().then(function (user) {
+        //     if (user !== null) {
+        //         return when.reject(new Error('A user with that email address already exists.'));
+        //     }
+        //     return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
+        //         userData.password = hash;
+        //         GhostBookshelf.Model.add.call(UserRole, userRoles);
+        //         return GhostBookshelf.Model.add.call(User, userData);
+        //     }, errors.logAndThrowError);
+        // }, errors.logAndThrowError);
+
     },
 
     // Finds the user by email, and checks the password
@@ -116,7 +116,9 @@ User = GhostBookshelf.Model.extend({
                 }
                 return user;
             }, errors.logAndThrowError);
-        }, errors.logAndThrowError);
+        }, function (error) {
+            return when.reject(new Error('Email address or password is incorrect'));
+        });
     },
 
     /**
@@ -125,7 +127,7 @@ User = GhostBookshelf.Model.extend({
      *
      */
     changePassword: function (_userdata) {
-        var email = _userdata.email,
+        var userid = _userdata.currentUser,
             oldPassword = _userdata.oldpw,
             newPassword = _userdata.newpw,
             ne2Password = _userdata.ne2pw;
@@ -135,7 +137,7 @@ User = GhostBookshelf.Model.extend({
         }
 
         return this.forge({
-            email_address: email
+            id: userid
         }).fetch({require: true}).then(function (user) {
             return nodefn.call(bcrypt.compare, oldPassword, user.get('password'))
                 .then(function (matched) {

@@ -75,6 +75,10 @@ users = {
     // **takes:** an identifier (id or slug?)
     read: function read(args) {
         // **returns:** a promise for a single user in a json object
+        if (args.id === 'me') {
+            args = {id: this.user};
+        }
+
         return dataProvider.User.read(args);
     },
 
@@ -83,6 +87,7 @@ users = {
     // **takes:** a json object representing a user
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
+        userData.id = this.user;
         return dataProvider.User.edit(userData);
     },
 
@@ -223,8 +228,12 @@ settings = {
 // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
 requestHandler = function (apiMethod) {
     return function (req, res) {
-        var options = _.extend(req.body, req.query, req.params);
-        return apiMethod(options).then(function (result) {
+        var options = _.extend(req.body, req.query, req.params),
+            apiContext = {
+                user: req.session && req.session.user
+            };
+
+        return apiMethod.call(apiContext, options).then(function (result) {
             res.json(result || {});
         }, function (error) {
             res.json(400, {error: error});
