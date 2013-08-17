@@ -43,7 +43,7 @@
             var self = this,
                 model;
 
-            Backbone.history.navigate('/settings/' + id);
+            Backbone.history.navigate('/settings/' + id, {trigger: true});
             if (this.pane && id === this.pane.el.id) {
                 return;
             }
