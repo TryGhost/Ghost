@@ -8,6 +8,9 @@ var path = require('path'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
     configureGrunt = function (grunt) {
 
+        // load all grunt tasks
+        require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+
         var cfg = {
             // Common paths to be used by tasks
             paths: {
@@ -23,6 +26,67 @@ var path = require('path'),
             },
             buildType: 'Build',
             pkg: grunt.file.readJSON('package.json'),
+
+            // Watch files and livereload in the browser during development
+            watch: {
+                handlebars: {
+                    files: ['core/client/tpl/**/*.hbs'],
+                    tasks: ['handlebars']
+                },
+                sass: {
+                    files: ['<%= paths.adminAssets %>/sass/**/*'],
+                    tasks: ['sass:admin']
+                },
+                livereload: {
+                    files: [
+                        // Theme CSS
+                        'content/themes/casper/css/*.css',
+                        // Theme JS
+                        'content/themes/casper/js/*.js',
+                        // Admin CSS
+                        '<%= paths.adminAssets %>/css/*.css',
+                        // Admin JS
+                        'core/client/*.js',
+                        'core/client/helpers/*.js',
+                        'core/client/models/*.js',
+                        'core/client/tpl/*.js',
+                        'core/client/views/*.js'
+                    ],
+                    options: {
+                        livereload: true
+                    }
+                },
+                express: {
+                    // Restart any time client or server js files change
+                    files:  ['core/server/**/*.js'],
+                    tasks:  ['express:dev'],
+                    options: {
+                        //Without this option specified express won't be reloaded
+                        nospawn: true
+                    }
+                }
+            },
+
+            // Start our server in development
+            express: {
+                options: {
+                    script: "index.js"
+                },
+
+                dev: {
+                    options: {
+                        //output: "Express server listening on address:.*$"
+                    }
+                }
+            },
+
+            // Open the site in a browser
+            open: {
+                server: {
+                    // TODO: Load this port from config?
+                    path: 'http://127.0.0.1:2368'
+                }
+            },
 
             // JSLint all the things!
             jslint: {
@@ -175,17 +239,6 @@ var path = require('path'),
                 }
             },
 
-            watch: {
-                handlebars: {
-                    files: 'core/client/tpl/**/*.hbs',
-                    tasks: ['handlebars']
-                },
-                sass: {
-                    files: '<%= paths.adminAssets %>/sass/**/*',
-                    tasks: ['sass:admin']
-                }
-            },
-
             copy: {
                 nightly: {
                     files: [{
@@ -276,18 +329,6 @@ var path = require('path'),
         };
 
         grunt.initConfig(cfg);
-
-        grunt.loadNpmTasks("grunt-jslint");
-        grunt.loadNpmTasks("grunt-mocha-cli");
-        grunt.loadNpmTasks("grunt-shell");
-        grunt.loadNpmTasks("grunt-bump");
-
-        grunt.loadNpmTasks("grunt-contrib-compress");
-        grunt.loadNpmTasks("grunt-contrib-copy");
-        grunt.loadNpmTasks("grunt-contrib-watch");
-        grunt.loadNpmTasks("grunt-contrib-sass");
-        grunt.loadNpmTasks("grunt-contrib-handlebars");
-        grunt.loadNpmTasks('grunt-groc');
 
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
@@ -599,6 +640,14 @@ var path = require('path'),
             "changelog",
             "copy:build",
             "compress:build"
+        ]);
+
+        // Dev Mode; watch files and restart server on changes
+        grunt.registerTask("dev", [
+            "default",
+            "express:dev",
+            "open",
+            "watch"
         ]);
 
         // When you just say "grunt"

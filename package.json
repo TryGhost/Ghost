@@ -41,6 +41,9 @@
         "grunt-contrib-compress": "~0.5.2",
         "grunt-groc": "~0.3.0",
         "grunt-mocha-cli": "~1.0.6",
+        "grunt-express-server": "~0.4.2",
+        "grunt-open": "~0.2.2",
+        "matchdep": "~0.1.2",
         "sinon": "~1.7.3",
         "should": "~1.2.2",
         "mocha": "~1.12.0"
