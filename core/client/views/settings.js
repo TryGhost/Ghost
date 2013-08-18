@@ -43,7 +43,7 @@
             var self = this,
                 model;
 
-            Backbone.history.navigate('/settings/' + id);
+            Backbone.history.navigate('/settings/' + id, {trigger: true});
             if (this.pane && id === this.pane.el.id) {
                 return;
             }
@@ -184,6 +184,7 @@
             'click .button-change-password': 'changePassword'
         },
 
+
         saveUser: function () {
             this.model.save({
                 'full_name':        this.$('#user-name').val(),
@@ -203,7 +204,6 @@
             event.preventDefault();
 
             var self = this,
-                email = this.$('#user-email').val(),
                 oldPassword = this.$('#user-password-old').val(),
                 newPassword = this.$('#user-password-new').val(),
                 ne2Password = this.$('#user-new-password-verification').val();
@@ -217,7 +217,6 @@
                 url: '/ghost/changepw/',
                 type: 'POST',
                 data: {
-                    email: email,
                     password: oldPassword,
                     newpassword: newPassword,
                     ne2password: ne2Password

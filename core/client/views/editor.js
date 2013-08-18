@@ -23,14 +23,14 @@
             {'key': 'Ctrl+Shift+L', 'style': 'link'},
             {'key': 'Ctrl+Shift+I', 'style': 'image'},
             {'key': 'Ctrl+Q', 'style': 'blockquote'},
-            {'key': 'Ctrl+Shift+1', 'style': 'currentdate'},
+            {'key': 'Ctrl+Shift+1', 'style': 'currentDate'},
             {'key': 'Ctrl+U', 'style': 'uppercase'},
             {'key': 'Ctrl+Shift+U', 'style': 'lowercase'},
             {'key': 'Ctrl+Alt+Shift+U', 'style': 'titlecase'},
             {'key': 'Ctrl+Alt+W', 'style': 'selectword'},
             {'key': 'Ctrl+L', 'style': 'list'},
             {'key': 'Ctrl+Alt+C', 'style': 'copyHTML'},
-            {'key': 'CMD+Alt+C', 'style': 'copyHTML'}
+            {'key': 'Meta+Alt+C', 'style': 'copyHTML'}
         ];
 
     // The publish bar associated with a post, which has the TagWidget and
@@ -157,17 +157,20 @@
             if (e) {
                 e.preventDefault();
             }
-            var model = this.model;
+            var view = this,
+                model = this.model;
             this.savePost().then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
                     message: 'Your post was saved as ' + model.get('status'),
                     status: 'passive'
                 });
-            }, function () {
+            }, function (request) {
+                var message = view.getRequestErrorMessage(request) || model.validationError;
+
                 Ghost.notifications.addItem({
                     type: 'error',
-                    message: model.validationError,
+                    message: message,
                     status: 'passive'
                 });
             });

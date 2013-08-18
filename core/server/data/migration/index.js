@@ -7,7 +7,7 @@ var _ = require('underscore'),
     initialVersion = "001",
     // This currentVersion string should always be the current version of Ghost,
     // we could probably load it from the config file.
-    currentVersion = "002";
+    currentVersion = "003";
 
 function getCurrentVersion() {
     return knex.Schema.hasTable('settings').then(function () {
