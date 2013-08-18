@@ -13,6 +13,14 @@ var _ = require('underscore'),
     CanThisResult,
     exported;
 
+function hasActionsMap() {
+    // Just need to find one key in the actionsMap
+
+    return _.any(exported.actionsMap, function (val, key) {
+        return Object.hasOwnProperty(key);
+    });
+}
+
 // Base class for canThis call results
 CanThisResult = function () {
     this.userPermissionLoad = false;
@@ -98,14 +106,16 @@ CanThisResult.prototype.beginCheck = function (user) {
     var self = this,
         userId = user.id || user;
 
+    if (!hasActionsMap()) {
+        throw new Error("No actions map found, please call permissions.init() before use.");
+    }
+
     // TODO: Switch logic based on object type; user, role, post.
 
     // Kick off the fetching of the user data
     this.userPermissionLoad = UserProvider.effectivePermissions(userId);
 
     // Iterate through the actions and their related object types
-    // We should have loaded these through a permissions.init() call previously
-    // TODO: Throw error if not init() yet?
     _.each(exported.actionsMap, function (obj_types, act_type) {
         // Build up the object type handlers;
         // the '.post()' parts in canThis(user).edit.post()

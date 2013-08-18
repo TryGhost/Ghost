@@ -231,20 +231,30 @@ Post = GhostBookshelf.Model.extend({
             }, errors.logAndThrowError);
         }
 
-        // TODO: This logic is temporary, will probably need to be updated
-
+        // Check if any permissions apply for this user and post.
         hasPermission = _.any(userPermissions, function (perm) {
-            if (perm.get('object_type') !== 'post') {
+            // Check for matching action type and object type
+            if (perm.get('action_type') !== action_type ||
+                    perm.get('object_type') !== 'post') {
                 return false;
             }
 
-            // True, if no object_id specified, or it matches
+            // If asking whether we can create posts,
+            // and we have a create posts permission then go ahead and say yes
+            if (action_type === 'create' && perm.get('action_type') === action_type) {
+                return true;
+            }
+
+            // Check for either no object id or a matching one
             return !perm.get('object_id') || perm.get('object_id') === postModel.id;
         });
 
         // If this is the author of the post, allow it.
-        hasPermission = hasPermission || userId === postModel.get('author_id');
+        // Moved below the permissions checks because there may not be a postModel
+        // in the case like canThis(user).create.post()
+        hasPermission = hasPermission || (postModel && userId === postModel.get('author_id'));
 
+        // Resolve if we have appropriate permissions
         if (hasPermission) {
             return when.resolve();
         }

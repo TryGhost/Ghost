@@ -157,17 +157,20 @@
             if (e) {
                 e.preventDefault();
             }
-            var model = this.model;
+            var view = this,
+                model = this.model;
             this.savePost().then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
                     message: 'Your post was saved as ' + model.get('status'),
                     status: 'passive'
                 });
-            }, function () {
+            }, function (request) {
+                var message = view.getRequestErrorMessage(request) || model.validationError;
+
                 Ghost.notifications.addItem({
                     type: 'error',
-                    message: model.validationError,
+                    message: message,
                     status: 'passive'
                 });
             });
