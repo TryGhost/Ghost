@@ -87,9 +87,11 @@
         },
 
         toggleStatus: function () {
-            var keys = Object.keys(this.statusMap),
+            var view = this,
+                keys = Object.keys(this.statusMap),
                 model = this.model,
-                currentIndex = keys.indexOf(model.get('status')),
+                prevStatus = this.model.get('status'),
+                currentIndex = keys.indexOf(prevStatus),
                 newIndex;
 
 
@@ -107,18 +109,20 @@
                     message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
                     status: 'passive'
                 });
-            }, function () {
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: 'Your post: ' + model.get('title') + ' has not been ' + keys[newIndex],
-                    status: 'passive'
-                });
+            }, function (response) {
+                var status = keys[newIndex];
+                // Show a notification about the error
+                view.reportSaveError(response, model, status);
+                // Set the button text back to previous
+                model.set({ status: prevStatus });
             });
         },
 
         handleStatus: function (e) {
             e.preventDefault();
-            var status = $(e.currentTarget).attr('data-set-status'),
+            var view = this,
+                status = $(e.currentTarget).attr('data-set-status'),
+                prevStatus = this.model.get('status'),
                 model = this.model;
 
             if (status === 'publish-on') {
@@ -144,12 +148,11 @@
                     message: 'Your post: ' + model.get('title') + ' has been ' + status,
                     status: 'passive'
                 });
-            }, function () {
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: 'Your post: ' + model.get('title') + ' has not been ' + status,
-                    status: 'passive'
-                });
+            }, function (response) {
+                // Show a notification about the error
+                view.reportSaveError(response, model, status);
+                // Set the button text back to previous
+                model.set({ status: prevStatus });
             });
         },
 
@@ -193,6 +196,25 @@
                 return saved;
             }
             return $.Deferred().reject();
+        },
+
+        reportSaveError: function (response, model, status) {
+            var title = model.get('title') || '[Untitled]',
+                message = 'Your post: ' + title + ' has not been ' + status;
+
+            if (response) {
+                // Get message from response
+                message = this.getErrorMessageFromResponse(response);
+            } else if (model.validationError) {
+                // Grab a validation error
+                message += "; " + model.validationError;
+            }
+
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: message,
+                status: 'passive'
+            });
         },
 
         render: function () {
