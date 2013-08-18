@@ -1142,6 +1142,14 @@ main {
         color: $brown;
         text-decoration: none;
     }
+    .button-add {
+        display: inline-block;
+        position:relative;
+        z-index: 700;
+        color: #fff;
+        padding-left:5px;
+    }
+
     .image-edit {
         line-height: 12px;
         padding: 10px;
@@ -1163,7 +1171,6 @@ main {
         right: 0;
         color: $brown;
         text-decoration: none;
-
     }
 
     input {
@@ -1199,11 +1206,21 @@ main {
         background-size: contain;
     }
 
+    .failed {
+        position: relative;
+        top: -40px;
+        font-size: 16px;
+    }
     .bar {
         height: 12px;
         background: $blue;
+
+        &.fail {
+            background: $orange;
+        }
     }
 }
+
 .pre-image-uploader {
     @include box-sizing(border-box);
     @include baseline;
@@ -1230,35 +1247,6 @@ main {
     }
 }
 
-
-
-
-
-//.progress {
-//    position: relative;
-//    top: -39px;
-//    margin:  auto;
-//    margin-bottom: -12px;
-//    display: block;
-//    overflow: hidden;
-//    @include linear-gradient(to bottom, #f5f5f5, #f9f9f9);
-//    border-radius: 12px;
-//    box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
-//}
-//
-//.fileupload-loading {
-//    display: block;
-//    top: 50%;
-//    width: 35px;
-//    height: 28px;
-//    margin: -28px auto 0;
-//    background-size: contain;
-//}
-//
-//.bar {
-//    height: 12px;
-//    background: $blue;
-//}
 
 /* ==========================================================================
    Misc
