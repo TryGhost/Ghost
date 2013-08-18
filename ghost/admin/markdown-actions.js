@@ -1,6 +1,6 @@
 // # Surrounds given text with Markdown syntax
 
-/*global $, window, CodeMirror, Showdown */
+/*global $, window, CodeMirror, Showdown, moment */
 (function () {
     "use strict";
     var Markdown = {
@@ -15,8 +15,50 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, md, cursor, word, converter;
+            var text = this.elem.getSelection(), pass = true, md, cursor, line, word, converter;
             switch (this.style) {
+            case "h1":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "# " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 2);
+                pass = false;
+                break;
+            case "h2":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "## " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 3);
+                pass = false;
+                break;
+            case "h3":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "### " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 4);
+                pass = false;
+                break;
+            case "h4":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "#### " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 5);
+                pass = false;
+                break;
+            case "h5":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "##### " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 6);
+                pass = false;
+                break;
+            case "h6":
+                cursor = this.elem.getCursor();
+                line = this.elem.getLine(cursor.line);
+                this.elem.setLine(cursor.line, "###### " + line);
+                this.elem.setCursor(cursor.line, cursor.ch + 7);
+                pass = false;
+                break;
             case "link":
                 md = this.options.syntax.link.replace('$1', text);
                 this.elem.replaceSelection(md, "end");
@@ -58,8 +100,11 @@
                 break;
             case "list":
                 md = text.replace(/^/gm, "* ");
-                this.elem.replaceSelection("\n" + md + "\n", "end");
+                this.elem.replaceSelection(md, "end");
                 pass = false;
+                break;
+            case "currentDate":
+                md = moment(new Date()).format("D MMMM YYYY");
                 break;
             default:
                 if (this.options.syntax[this.style]) {
@@ -84,16 +129,9 @@
             italic: "_$1_",
             strike: "~~$1~~",
             code: "`$1`",
-            h1: "\n# $1\n",
-            h2: "\n## $1\n",
-            h3: "\n### $1\n",
-            h4: "\n#### $1\n",
-            h5: "\n##### $1\n",
-            h6: "\n###### $1\n",
             link: "[$1](http://)",
             image: "!image[$1](http://)",
-            blockquote: "> $1",
-            currentDate: new Date().toLocaleString()
+            blockquote: "> $1"
         }
     };
 
