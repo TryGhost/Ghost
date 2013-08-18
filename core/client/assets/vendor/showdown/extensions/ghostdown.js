@@ -5,11 +5,16 @@
             {
                 type: 'lang',
                 filter: function (source) {
-                    return source.replace(/\n?!(?:image)?\[([^\n\]]*)\](?:\(([^\n\)]*)\))?/gi, function (match, alt, a) {
-                        return '<section  class="js-drop-zone image-uploader">' +
-                            '<div class="description">Add image of <strong>' + alt + '</strong></div>' +
-                            '<input data-url="upload" class="js-fileupload fileupload" type="file" name="uploadimage">' +
-                            '</section>';
+                    return source.replace(/\n?!(?:image)?\[([^\n\]]*)\](?:\(([^\n\)]*)\))?/gi, function (match, alt, src) {
+                        var result = "";
+
+                        if (src !== "http://") {
+                            result = '<img class="js-upload-target" src="' + src + '"/>';
+                        }
+                        return '<section  class="js-drop-zone image-uploader">' + result +
+                               '<div class="description">Add image of <strong>' + alt + '</strong></div>' +
+                               '<input data-url="upload" class="js-fileupload fileupload" type="file" name="uploadimage">' +
+                               '</section>';
                     });
                 }
             }
