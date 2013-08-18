@@ -1,5 +1,7 @@
 /*globals describe, beforeEach, it */
 var _ = require("underscore"),
+    when = require('when'),
+    sequence = require('when/sequence'),
     should = require('should'),
     helpers = require('./helpers'),
     Models = require('../../server/models');
@@ -110,19 +112,34 @@ describe('Post Model', function () {
                 content_raw: 'Test Content 1'
             };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        // Create 12 posts with the sametitle
+        sequence(_.times(12, function (i) {
+            return function () {
+                return PostModel.add({
+                    title: "Test Title",
+                    content_raw: "Test Content " + (i+1)
+                });
+            };
+        })).then(function (createdPosts) {
+            // Should have created 12 posts
+            createdPosts.length.should.equal(12);
 
-            createdPost.get('slug').should.equal('test-title');
+            // Should have unique slugs and contents
+            _(createdPosts).each(function (post, i) {
+                var num = i + 1;
 
-            newPost.content_raw = 'Test Content 2';
-            return PostModel.add(newPost);
-        }).then(function (secondPost) {
-
-            secondPost.get('slug').should.equal('test-title-2');
-            secondPost.get('content_raw').should.equal("Test Content 2");
+                // First one has normal title
+                if (num === 1) {
+                    post.get('slug').should.equal('test-title');
+                    return;
+                }
+                
+                post.get('slug').should.equal('test-title-' + num);
+                post.get('content_raw').should.equal('Test Content ' + num);
+            });
 
             done();
-        }).then(null, done);
+        }).otherwise(done);
     });
 
 

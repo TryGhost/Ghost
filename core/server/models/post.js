@@ -71,15 +71,26 @@ Post = GhostBookshelf.Model.extend({
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
                 return Post.read({slug: slugToFind}).then(function (found) {
+                    var trimSpace;
+
                     if (!found) {
                         return when.resolve(slugToFind);
                     }
 
                     slugTryCount += 1;
 
-                    // TODO: Bug out (when.reject) if over 10 tries or something?
+                    // If this is the first time through, add the hyphen
+                    if (slugTryCount === 2) {
+                        slugToFind += '-';
+                    } else {
+                        // Otherwise, trim the number off the end
+                        trimSpace = -(String(slugTryCount - 1).length);
+                        slugToFind = slugToFind.slice(0, trimSpace);
+                    }
 
-                    return checkIfSlugExists(slugToFind + '-' + slugTryCount);
+                    slugToFind += slugTryCount;
+
+                    return checkIfSlugExists(slugToFind);
                 });
             };
 
