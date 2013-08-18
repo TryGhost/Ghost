@@ -28,3 +28,24 @@ casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
         test.done();
     });
 });
+
+casper.test.begin("Ghost dashboard interactions are correct", 2, function suite(test) {
+
+    casper.test.filename = "dashboard_interactions_test.png";
+
+    casper.start(url + "ghost", function testTitleAndUrl() {
+        test.assertExists(".widget-time", "Time widget is present");
+    }).viewport(1280, 1024);
+
+    casper.then(function testWidgetDragAbility() {
+        var origPos = this.getElementBounds('.widget-time');
+        this.mouse.down('.widget-time .widget-footer');
+        this.mouse.move(150, 650);
+        this.mouse.up(150, 650);
+        test.assertNotEquals(this.getElementBounds('.widget-time'), origPos, 'Time Widget has moved');
+    });
+
+    casper.run(function () {
+        test.done();
+    });
+});
