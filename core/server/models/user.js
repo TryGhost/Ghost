@@ -85,7 +85,7 @@ User = GhostBookshelf.Model.extend({
         }).then(function (addedUserRole) {
             // Return the added user as expected
             return when.resolve(userData);
-        }, errors.logAndThrowError);
+        });
 
         /**
          * Temporarily replacing the function below with another one that checks
@@ -118,7 +118,7 @@ User = GhostBookshelf.Model.extend({
                 return user;
             }, errors.logAndThrowError);
         }, function (error) {
-            return when.reject(new Error('Email address or password is incorrect'));
+            return when.reject(new Error('There is no user with that email address.'));
         });
     },
 

@@ -97,7 +97,7 @@ adminControllers = {
             req.session.user = user.id;
             res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
         }, function (error) {
-            res.send(401, error.message);
+            res.json(401, {error: error.message});
         });
     },
     changepw: function (req, res) {
@@ -124,22 +124,18 @@ adminControllers = {
         var email = req.body.email,
             password = req.body.password;
 
-        if (email !== '' && password.length > 5) {
-            api.users.add({
-                email_address: email,
-                password: password
-            }).then(function (user) {
-                // Automatically log the new user in, unless created by an existing account
-                if (req.session.user === undefined) {
-                    req.session.user = user.id;
-                }
-                res.json(200, {redirect: '/ghost/'});
-            }, function (error) {
-                res.json(401, {message: error.message});
-            });
-        } else {
-            res.json(400, {message: 'The password is too short. Have at least 6 characters in there'});
-        }
+        api.users.add({
+            email_address: email,
+            password: password
+        }).then(function (user) {
+            if (req.session.user === undefined) {
+                req.session.user = user.id;
+            }
+            res.json(200, {redirect: '/ghost/'});
+        }, function (error) {
+            res.json(401, {error: error.message});
+        });
+
     },
     'logout': function (req, res) {
         delete req.session.user;

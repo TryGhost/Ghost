@@ -45,7 +45,8 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val();
+                password = this.$el.find('.password').val(),
+                self = this;
 
             $.ajax({
                 url: '/ghost/login/',
@@ -60,7 +61,7 @@
                 error: function (obj, string, status) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: obj.responseText,
+                        message: self.getRequestErrorMessage(obj),
                         status: 'passive'
                     });
                 }
@@ -79,7 +80,8 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val();
+                password = this.$el.find('.password').val(),
+                self = this;
 
             $.ajax({
                 url: '/ghost/signup/',
@@ -92,10 +94,9 @@
                     window.location.href = msg.redirect;
                 },
                 error: function (obj, string, status) {
-                    var msgobj = $.parseJSON(obj.responseText);
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: msgobj.message,
+                        message: self.getRequestErrorMessage(obj),
                         status: 'passive'
                     });
                 }
