@@ -902,6 +902,7 @@ nav {
         left: 0;
         right: 0;
         z-index: 999;
+        @include transition(background 300ms ease);
 
         &.dark {
             background: rgba(0,0,0,0.4);
@@ -920,8 +921,14 @@ nav {
 }
 
 body.blur > *:not(#modal-container) {
+    @include transition(all 300ms ease);
     -webkit-filter: blur(2px);
-    filter: blur(2px); // Not used yet
+       -moz-filter: blur(2px);
+        -ms-filter: blur(2px);
+         -o-filter: blur(2px);
+    filter: blur(2px);
+    @include transform(translateZ(0));
+
 }
 
 %modal, .modal {
