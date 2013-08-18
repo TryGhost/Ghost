@@ -54,13 +54,14 @@
         // by `addSubview`, which will in-turn remove any
         // children of those views, and so on.
         removeSubviews: function () {
-            var i, l, children = this.subviews;
+            var children = this.subviews;
+
             if (!children) {
                 return this;
             }
-            for (i = 0, l = children.length; i < l; i += 1) {
-                children[i].remove();
-            }
+
+            _(children).invoke("remove");
+
             this.subviews = [];
             return this;
         },
@@ -72,6 +73,32 @@
                 this.removeSubviews();
             }
             return Backbone.View.prototype.remove.apply(this, arguments);
+        },
+
+        // Used in API request fail handlers to parse a standard api error
+        // response json for the message to display
+        getRequestErrorMessage: function (request) {
+            var message;
+
+            // Can't really continue without a request
+            if (!request) {
+                return null;
+            }
+
+            // Seems like a sensible default
+            message = request.statusText;
+
+            // If a non 200 response
+            if (request.status !== 200) {
+                try {
+                    // Try to parse out the error, or default to "Unknown"
+                    message =  request.responseJSON.error || "Unknown Error";
+                } catch (e) {
+                    message = "The server returned an error (" + (request.status || "?") + ").";
+                }
+            }
+
+            return message;
         }
 
     });

@@ -15,6 +15,7 @@ var config = require('./../config'),
     models = require('./server/models'),
     plugins = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
+    permissions = require('./server/permissions'),
 
 // Variables
     appRoot = path.resolve(__dirname, '../'),
@@ -124,9 +125,14 @@ Ghost.prototype.init = function () {
     var self = this;
 
     return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+        // Initialize plugins
         return self.initPlugins();
-    }, errors.logAndThrowError).then(function () {
+    }).then(function () {
+        // Initialize the settings cache
         return self.updateSettingsCache();
+    }).then(function () {
+        // Initialize the permissions actions and objects
+        return permissions.init();
     }, errors.logAndThrowError);
 };
 
