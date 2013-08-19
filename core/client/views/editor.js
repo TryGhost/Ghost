@@ -343,7 +343,8 @@
                 mode: 'markdown',
                 tabMode: 'indent',
                 tabindex: "2",
-                lineWrapping: true
+                lineWrapping: true,
+                dragDrop: false
             });
 
             var view = this;
