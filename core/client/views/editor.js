@@ -14,6 +14,7 @@
             {'key': 'Meta+I', 'style': 'italic'},
             {'key': 'Ctrl+Alt+U', 'style': 'strike'},
             {'key': 'Ctrl+Shift+K', 'style': 'code'},
+            {'key': 'Meta+K', 'style': 'code'},
             {'key': 'Ctrl+Alt+1', 'style': 'h1'},
             {'key': 'Ctrl+Alt+2', 'style': 'h2'},
             {'key': 'Ctrl+Alt+3', 'style': 'h3'},
