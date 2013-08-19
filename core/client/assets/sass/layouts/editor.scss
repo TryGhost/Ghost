@@ -336,13 +336,10 @@
         }
     }
 	img {
-		width: 100%;
+		max-width: 100%;
 		height: auto;
+        margin: 0 auto;
 	}
-    // prevent uploaded image from being streched in editor
-    .pre-image-uploader img {
-        width: auto;
-    }
 
 }
 
