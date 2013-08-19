@@ -253,6 +253,12 @@
 			padding: 60px 40px 40px 40px;
 			overflow: auto;
 
+			// Breaking for long words in preview region
+			word-break: break-word;
+			word-break: break-all;
+			-webkit-hyphens: auto;
+			hyphens: auto;
+
 			// Tweak padding for smaller screens
 			@include breakpoint($netbook) {padding-top: 20px;}
 			@include breakpoint($mobile) {padding: 15px;}
