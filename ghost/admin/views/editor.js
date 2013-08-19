@@ -344,9 +344,9 @@
         initMarkdown: function () {
             var self = this;
 
-            this.converter = new Showdown.converter({extensions: ['ghostdown']});
+            this.converter = new Showdown.converter({extensions: ['ghostdown', 'github']});
             this.editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
-                mode: 'markdown',
+                mode: 'gfm',
                 tabMode: 'indent',
                 tabindex: "2",
                 lineWrapping: true,
