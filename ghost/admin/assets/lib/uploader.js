@@ -33,6 +33,7 @@
                         $dropzone.find('a.js-return-image').remove();
                         $dropzone.find('span.media, div.description, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
                             .animate({opacity: 0}, 250, function () {
+                                $dropzone.find('div.description').hide().css({"opacity": 100});
                                 if (settings.progressbar) {
                                     $dropzone.find('div.js-fail').after($progress);
                                     $progress.animate({opacity: 100}, 250);
@@ -85,6 +86,7 @@
                                     $back.css({"opacity": 100});
                                     $dropzone.find('.js-upload-target').after($back);
                                 }
+                                $dropzone.find('div.description').show();
                                 self.removeExtras();
                                 self.init();
                             });
@@ -133,7 +135,7 @@
             },
 
             removeExtras: function () {
-                $dropzone.find('div.description, span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
+                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
                     .remove();
             },
 
@@ -162,6 +164,7 @@
                 // This is the start point if an image already exists
                 source = $dropzone.find('img.js-upload-target').attr('src');
                 $dropzone.removeClass('image-uploader').addClass('pre-image-uploader');
+                $dropzone.find('div.description').hide();
 
                 if (!$dropzone.find('a.js-edit-image')[0]) {
                     $link.css({"opacity": 100});
@@ -173,6 +176,7 @@
                     $dropzone.find('img.js-upload-target').attr({"src": ""}).css({"display": "none"});
                     $back.css({"cursor": "pointer", "z-index": 9999, "opacity": 100});
                     $dropzone.find('.js-upload-target').after($back);
+                    $dropzone.find('div.description').show();
                     self.init();
                 });
             },
