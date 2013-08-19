@@ -20,6 +20,7 @@ var express = require('express'),
     filters = require('./core/server/filters'),
     helpers = require('./core/server/helpers'),
     packageInfo = require('./package.json'),
+    uuid = require('node-uuid'),
 
 // Variables
     loading = when.defer(),
@@ -130,7 +131,7 @@ ghost.app().configure(function () {
     ghost.app().use(I18n.load(ghost));
     ghost.app().use(express.bodyParser({}));
     ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
-    ghost.app().use(express.cookieParser('try-ghost'));
+    ghost.app().use(express.cookieParser(uuid.v4()));
     ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
     ghost.app().use(ghost.initTheme(ghost.app()));
     ghost.app().use(flash());
