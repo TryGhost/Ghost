@@ -129,7 +129,11 @@ adminControllers = {
                 email_address: email,
                 password: password
             }).then(function (user) {
-                res.json(200, {redirect: '/ghost/login/'});
+                // Automatically log the new user in, unless created by an existing account
+                if (req.session.user === undefined) {
+                    req.session.user = user.id;
+                }
+                res.json(200, {redirect: '/ghost/'});
             }, function (error) {
                 res.json(401, {message: error.message});
             });
