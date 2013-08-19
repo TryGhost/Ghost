@@ -12,8 +12,15 @@ var Ghost = require('../../ghost'),
 
 frontendControllers = {
     'homepage': function (req, res) {
-        var page = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
-        api.posts.browse({page: page}).then(function (page) {
+        // Parse the page number
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+        api.posts.browse({page: pageParam}).then(function (page) {
+            // If page is greater than number of pages we have, redirect to last page
+            if (pageParam > page.pages) {
+                return res.redirect("/page/" + (page.pages) + "/");
+            }
+
+            // Render the page of posts
             ghost.doFilter('prePostsRender', page.posts, function (posts) {
                 res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
