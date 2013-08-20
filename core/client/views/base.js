@@ -254,7 +254,7 @@
         },
         afterRender: function () {
             this.$(".modal-content").html(this.addSubview(new Ghost.Views.Modal.ContentView({model: this.model})).render().el);
-            this.$el.children(".js-modal").center().css("max-height", $(window).height() - 120); // same as resize(), but the debounce causes init lag
+            this.$el.children(".js-modal").center({animate: false}).css("max-height", $(window).height() - 120); // same as resize(), but the debounce causes init lag
             this.$el.addClass("active dark");
 
             if (document.body.style.webkitFilter !== undefined) { // Detect webkit filters
