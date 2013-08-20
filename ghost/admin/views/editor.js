@@ -90,7 +90,7 @@
         },
 
         toggleStatus: function () {
-            var view = this,
+            var self = this,
                 keys = Object.keys(this.statusMap),
                 model = this.model,
                 prevStatus = this.model.get('status'),
@@ -112,10 +112,10 @@
                     message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
                     status: 'passive'
                 });
-            }, function (response) {
+            }, function (xhr) {
                 var status = keys[newIndex];
                 // Show a notification about the error
-                view.reportSaveError(response, model, status);
+                self.reportSaveError(xhr, model, status);
                 // Set the button text back to previous
                 model.set({ status: prevStatus });
             });
@@ -136,10 +136,9 @@
 
         handleStatus: function (e) {
             if (e) { e.preventDefault(); }
-            var view = this,
-                status = $(e.currentTarget).attr('data-set-status');
+            var status = $(e.currentTarget).attr('data-set-status');
 
-            view.setActiveStatus(status, this.statusMap[status]);
+            this.setActiveStatus(status, this.statusMap[status]);
 
             // Dismiss the popup menu
             $('body').find('.overlay:visible').fadeOut();
@@ -147,8 +146,8 @@
 
         updatePost: function (e) {
             if (e) { e.preventDefault(); }
-            var view = this,
-                model = view.model,
+            var self = this,
+                model = this.model,
                 $currentTarget = $(e.currentTarget),
                 status = $currentTarget.attr('data-status'),
                 prevStatus = model.get('status');
@@ -168,7 +167,7 @@
                 });
             }
 
-            view.savePost({
+            this.savePost({
                 status: status
             }).then(function () {
                 Ghost.notifications.addItem({
@@ -176,15 +175,10 @@
                     message: ['Your post "', model.get('title'), '" has been ', status, '.'].join(''),
                     status: 'passive'
                 });
-            }, function (request) {
-                var message = view.getRequestErrorMessage(request) || model.validationError;
-
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: message,
-                    status: 'passive'
-                });
-
+            }, function (xhr) {
+                // Show a notification about the error
+                self.reportSaveError(xhr, model, status);
+                // Set the button text back to previous
                 model.set({ status: prevStatus });
             });
         },
@@ -214,7 +208,7 @@
 
             if (response) {
                 // Get message from response
-                message = this.getErrorMessageFromResponse(response);
+                message = Ghost.Views.Utils.getRequestErrorMessage(response);
             } else if (model.validationError) {
                 // Grab a validation error
                 message += "; " + model.validationError;
@@ -228,9 +222,7 @@
         },
 
         render: function () {
-            var status = this.model.get('status');
-
-            this.setActiveStatus(status, this.statusMap[status]);
+            this.$('.js-post-button').text(this.statusMap[this.model.get('status')]);
         }
 
     });
@@ -337,19 +329,21 @@
         // Currently gets called on every key press.
         // Also trigger word count update
         renderPreview: function () {
-            var view = this,
+            var self = this,
                 preview = document.getElementsByClassName('rendered-markdown')[0];
             preview.innerHTML = this.converter.makeHtml(this.editor.getValue());
-            view.$('.js-drop-zone').upload({editor: true});
+            this.$('.js-drop-zone').upload({editor: true});
             Countable.once(preview, function (counter) {
-                view.$('.entry-word-count').text($.pluralize(counter.words, 'word'));
-                view.$('.entry-character-count').text($.pluralize(counter.characters, 'character'));
-                view.$('.entry-paragraph-count').text($.pluralize(counter.paragraphs, 'paragraph'));
+                self.$('.entry-word-count').text($.pluralize(counter.words, 'word'));
+                self.$('.entry-character-count').text($.pluralize(counter.characters, 'character'));
+                self.$('.entry-paragraph-count').text($.pluralize(counter.paragraphs, 'paragraph'));
             });
         },
 
         // Markdown converter & markdown shortcut initialization.
         initMarkdown: function () {
+            var self = this;
+
             this.converter = new Showdown.converter({extensions: ['ghostdown']});
             this.editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
                 mode: 'markdown',
@@ -359,24 +353,22 @@
                 dragDrop: false
             });
 
-            var view = this;
-
             // Inject modal for HTML to be viewed in
             shortcut.add("Ctrl+Alt+C", function () {
-                view.showHTML();
+                self.showHTML();
             });
             shortcut.add("Ctrl+Alt+C", function () {
-                view.showHTML();
+                self.showHTML();
             });
 
             _.each(MarkdownShortcuts, function (combo) {
                 shortcut.add(combo.key, function () {
-                    return view.editor.addMarkdown({style: combo.style});
+                    return self.editor.addMarkdown({style: combo.style});
                 });
             });
 
             this.editor.on('change', function () {
-                view.renderPreview();
+                self.renderPreview();
             });
         },
 

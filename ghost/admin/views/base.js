@@ -73,7 +73,10 @@
                 this.removeSubviews();
             }
             return Backbone.View.prototype.remove.apply(this, arguments);
-        },
+        }
+    });
+
+    Ghost.Views.Utils = {
 
         // Used in API request fail handlers to parse a standard api error
         // response json for the message to display
@@ -115,7 +118,7 @@
             }
             return vars;
         }
-    });
+    };
 
     /**
      * This is the view to generate the markup for the individual

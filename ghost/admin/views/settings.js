@@ -95,15 +95,22 @@
                 checkboxClass: 'icheckbox_ghost'
             });
         },
-        saveSuccess: function () {
+        saveSuccess: function (model, response, options) {
+            // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
                 message: 'Saved',
                 status: 'passive'
             });
         },
-        saveError: function (message) {
-            message = message || 'Something went wrong, not saved :(';
+        saveError: function (model, xhr) {
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                status: 'passive'
+            });
+        },
+        validationError: function (message) {
             Ghost.notifications.addItem({
                 type: 'error',
                 message: message,
@@ -210,12 +217,12 @@
                 ne2Password = this.$('#user-new-password-verification').val();
 
             if (newPassword !== ne2Password) {
-                this.saveError('The passwords do not match');
+                this.validationError('Your new passwords do not match');
                 return;
             }
 
-            if (newPassword.length < 7) {
-                this.saveError('The password is not long enough. Have at least 7 characters');
+            if (newPassword.length < 8) {
+                this.validationError('Your password is not long enough. It must be at least 8 chars long.');
                 return;
             }
 
@@ -234,14 +241,12 @@
                         status: 'passive',
                         id: 'success-98'
                     });
-                    self.$('#user-password-old').val('');
-                    self.$('#user-password-new').val('');
-                    self.$('#user-new-password-verification').val('');
+                    self.$('#user-password-old, #user-password-new, #user-new-password-verification').val('');
                 },
-                error: function (obj, string, status) {
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: 'Invalid username or password',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }
