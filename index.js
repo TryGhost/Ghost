@@ -14,7 +14,6 @@ var express = require('express'),
     admin = require('./core/server/controllers/admin'),
     frontend = require('./core/server/controllers/frontend'),
     api = require('./core/server/api'),
-    flash = require('connect-flash'),
     Ghost = require('./core/ghost'),
     I18n = require('./core/shared/lang/i18n'),
     filters = require('./core/server/filters'),
@@ -39,14 +38,37 @@ v.error = function () {
 function auth(req, res, next) {
     if (!req.session.user) {
         var path = req.path.replace(/^\/ghost\/?/gi, ''),
-            redirect = '';
+            redirect = '',
+            msg;
 
         if (path !== '') {
-            req.flash('warn', "Please login");
+            msg = {
+                type: 'error',
+                message: 'Please Log In',
+                status: 'passive',
+                id: 'failedauth'
+            };
+            // let's only add the notification once
+            if (!_.contains(_.pluck(ghost.notifications, 'id'), 'failedauth')) {
+                ghost.notifications.push(msg);
+            }
             redirect = '?r=' + encodeURIComponent(path);
         }
         return res.redirect('/ghost/login/' + redirect);
     }
+
+    next();
+}
+
+
+// While we're here, let's clean up on aisle 5
+// That being ghost.notifications, and let's remove the passives from there
+// plus the local messages, as the have already been added at this point
+// otherwise they'd appear one too many times
+function cleanNotifications(req, res, next) {
+    ghost.notifications = _.reject(ghost.notifications, function (notification) {
+        return notification.status === 'passive';
+    });
     next();
 }
 
@@ -165,7 +187,6 @@ ghost.app().configure(function () {
     ghost.app().use(express.cookieParser('try-ghost'));
     ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
     ghost.app().use(ghost.initTheme(ghost.app()));
-    ghost.app().use(flash());
 
     if (process.env.NODE_ENV !== "development") {
         ghost.app().use(express.logger());
@@ -187,6 +208,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
     // post init config
     ghost.app().use(ghostLocals);
+    // because science
+    ghost.app().use(cleanNotifications);
 
 
     // ## Routing
