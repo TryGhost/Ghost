@@ -23,18 +23,31 @@
      * Center an element to the window vertically and centrally
      * @returns {*}
      */
-    $.fn.center = function () {
-        this.css({
-            'position': 'fixed',
-            'left': '50%',
-            'top': '50%'
+    $.fn.center = function (options) {
+        var $window = $(window),
+            config = $.extend({
+                animate        : true,
+                successTrigger : 'centered'
+            }, options);
+
+        return this.each(function () {
+            var $this = $(this);
+            $this.css({
+                'position': 'absolute'
+            });
+            if (config.animate) {
+                $this.animate({
+                    'left': ($window.width() / 2) - $this.outerWidth() / 2 + 'px',
+                    'top': ($window.height() / 2) - $this.outerHeight() / 2 + 'px'
+                });
+            } else {
+                $this.css({
+                    'left': ($window.width() / 2) - $this.outerWidth() / 2 + 'px',
+                    'top': ($window.height() / 2) - $this.outerHeight() / 2 + 'px'
+                });
+            }
+            $(window).trigger(config.successTrigger);
         });
-        this.css({
-            'margin-left': -this.outerWidth() / 2 + 'px',
-            'margin-top': -this.outerHeight() / 2 + 'px'
-        });
-        $(window).trigger('centered');
-        return this;
     };
 
     $.fn.selectText = function () {
