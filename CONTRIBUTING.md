@@ -86,6 +86,7 @@ For more in depth information please read the official [Ghost Coding Standards](
 ### HTML & CSS
 
 - Two spaces for HTML indentation. Never tabs.
+- Four spaces for SASS indentation. Never tabs.
 - Double quotes only, never single quotes.
 - Use tags and elements appropriate for an HTML5 doctype (e.g., self-closing tags)
 - Adhere to the [Recess CSS property order](http://markdotto.com/2011/11/29/css-property-order/).
