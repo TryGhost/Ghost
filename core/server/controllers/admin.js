@@ -95,7 +95,8 @@ adminControllers = {
     'auth': function (req, res) {
         api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
             req.session.user = user.id;
-            res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
+            res.json(200, {redirect: req.body.redirect ? '/ghost/'
+                + decodeURIComponent(req.body.redirect) : '/ghost/'});
         }, function (error) {
             res.send(401, error.message);
         });
@@ -143,7 +144,17 @@ adminControllers = {
     },
     'logout': function (req, res) {
         delete req.session.user;
-        req.flash('success', "You were successfully logged out");
+        var msg = {
+            type: 'success',
+            message: 'You were successfully logged out',
+            status: 'passive',
+            id: 'successlogout'
+        };
+        // let's only add the notification once
+        if (!_.contains(_.pluck(ghost.notifications, 'id'), 'successlogout')) {
+            ghost.notifications.push(msg);
+        }
+
         res.redirect('/ghost/login/');
     },
     'index': function (req, res) {
