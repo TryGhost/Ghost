@@ -23,7 +23,7 @@
         initialize: function (options) {
             this.render();
             this.menu = this.$('.settings-menu');
-            this.showContent(options.pane || 'general');
+            this.showContent(options.pane || 'general', false);
         },
 
         models: {},
@@ -36,10 +36,10 @@
             e.preventDefault();
             var item = $(e.currentTarget),
                 id = item.find('a').attr('href').substring(1);
-            this.showContent(id);
+            this.showContent(id, true);
         },
 
-        showContent: function (id) {
+        showContent: function (id, useTransition) {
             var self = this,
                 model;
 
@@ -50,6 +50,7 @@
             _.result(this.pane, 'destroy');
             this.setActive(id);
             this.pane = new Settings[id]({ el: '.settings-content'});
+            this.pane.useTransition = useTransition;
 
             if (!this.models.hasOwnProperty(this.pane.options.modelType)) {
                 model = this.models[this.pane.options.modelType] = new Ghost.Models[this.pane.options.modelType]();
@@ -85,7 +86,6 @@
             this.$el.removeClass('active');
             this.undelegateEvents();
         },
-
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
@@ -109,6 +109,16 @@
                 message: message,
                 status: 'passive'
             });
+        },
+        beforeTransition: function () {
+            if (this.useTransition) {
+                this.$el.hide();
+            }
+        },
+        afterTransition: function () {
+            if (this.useTransition) {
+                this.$el.fadeIn(250);
+            }
         }
     });
 
@@ -138,12 +148,14 @@
         templateName: 'settings/general',
 
         beforeRender: function () {
+            this.beforeTransition();
             var settings = this.model.toJSON();
             this.$('#blog-title').val(settings.title);
             this.$('#email-address').val(settings.email);
         },
 
         afterRender: function () {
+            this.afterTransition();
             this.$('.js-drop-zone').upload();
             Settings.Pane.prototype.afterRender.call(this);
         }
@@ -167,8 +179,12 @@
         templateName: 'settings/content',
 
         beforeRender: function () {
+            this.beforeTransition();
             var settings = this.model.toJSON();
             this.$('#blog-description').val(settings.description);
+        },
+        afterRender: function () {
+            this.afterTransition();
         }
     });
 
@@ -251,6 +267,7 @@
         templateName: 'settings/user-profile',
 
         beforeRender: function () {
+            this.beforeTransition();
             var user = this.model.toJSON();
             this.$('#user-name').val(user.full_name);
             this.$('#user-email').val(user.email_address);
@@ -259,6 +276,9 @@
             this.$('#user-bio').val(user.bio);
             this.$('#user-profile-picture').attr('src', user.profile_picture);
             this.$('#user-cover-picture').attr('src', user.cover_picture);
+        },
+        afterRender: function () {
+            this.afterTransition();
         }
     });
 
