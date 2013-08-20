@@ -214,8 +214,8 @@
                 return;
             }
 
-            if (newPassword.length < 8) {
-                this.saveError('The password is not long enough. Have at least 8 characters');
+            if (newPassword.length < 7) {
+                this.saveError('The password is not long enough. Have at least 7 characters');
                 return;
             }
 

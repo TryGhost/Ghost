@@ -92,8 +92,8 @@ function signupValidate(req, res, next) {
         res.json(401, {error: "Please check your email address. It does not seem to be valid."});
         return;
     }
-    if (!v.check(password).len(8)) {
-        res.json(401, {error: 'Your password is not long enough. It must be at least 8 chars long.'});
+    if (!v.check(password).len(7)) {
+        res.json(401, {error: 'Your password is not long enough. It must be at least 7 chars long.'});
         return;
     }
     next();
