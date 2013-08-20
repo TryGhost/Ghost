@@ -27,7 +27,8 @@
         "colors": "0.6.1",
         "semver": "2.1.0",
         "fs-extra": "0.6.3",
-        "downsize": "0.0.2"
+        "downsize": "0.0.2",
+        "validator": "1.4.0"
     },
     "devDependencies": {
         "grunt": "~0.4.1",

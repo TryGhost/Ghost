@@ -102,10 +102,11 @@
             });
 
         },
-        saveError: function () {
+        saveError: function (message) {
+            message = message || 'Something went wrong, not saved :(';
             Ghost.notifications.addItem({
                 type: 'error',
-                message: 'Something went wrong, not saved :(',
+                message: message,
                 status: 'passive'
             });
         }
@@ -208,8 +209,13 @@
                 newPassword = this.$('#user-password-new').val(),
                 ne2Password = this.$('#user-new-password-verification').val();
 
-            if (newPassword !== ne2Password || newPassword.length < 6 || oldPassword.length < 6) {
-                this.saveError();
+            if (newPassword !== ne2Password) {
+                this.saveError('The passwords do not match');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                this.saveError('The password is not long enough. Have at least 8 characters');
                 return;
             }
 

@@ -20,11 +20,16 @@ var express = require('express'),
     filters = require('./core/server/filters'),
     helpers = require('./core/server/helpers'),
     packageInfo = require('./package.json'),
+    Validator = require('validator').Validator,
+    v = new Validator(),
 
 // Variables
     loading = when.defer(),
     ghost = new Ghost();
 
+v.error = function () {
+    return false;
+};
 
 // ##Custom Middleware
 
@@ -41,6 +46,33 @@ function auth(req, res, next) {
             redirect = '?r=' + encodeURIComponent(path);
         }
         return res.redirect('/ghost/login/' + redirect);
+    }
+    next();
+}
+
+
+/**
+ * Validation middleware
+ * Checks on signup whether email is actually a valid email address
+ * and if password is at least 8 characters long
+ *
+ * To change validation rules, see https://github.com/chriso/node-validator
+ *
+ * @author  javorszky
+ * @issue   https://github.com/TryGhost/Ghost/issues/374
+ */
+function signupValidate(req, res, next) {
+    var email = req.body.email,
+        password = req.body.password;
+
+
+    if (!v.check(email).isEmail()) {
+        res.json(401, {error: "Please check your email address. It does not seem to be valid."});
+        return;
+    }
+    if (!v.check(password).len(8)) {
+        res.json(401, {error: 'Your password is not long enough. It must be at least 8 chars long.'});
+        return;
     }
     next();
 }
@@ -185,8 +217,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get(/^\/logout\/?$/, admin.logout);
     ghost.app().get('/ghost/login/', admin.login);
     ghost.app().get('/ghost/signup/', admin.signup);
-    ghost.app().post('/ghost/login/', admin.auth);
-    ghost.app().post('/ghost/signup/', admin.doRegister);
+    ghost.app().post('/ghost/login/', signupValidate, admin.auth);
+    ghost.app().post('/ghost/signup/', signupValidate, admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
     ghost.app().get('/ghost/editor', auth, admin.editor);
