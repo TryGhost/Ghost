@@ -13,12 +13,20 @@ var User,
     Role = require('./role').Role,
     Permission = require('./permission').Permission;
 
-
-
 UserRole = GhostBookshelf.Model.extend({
     tableName: 'roles_users'
 });
 
+
+function validatePasswordLength(password) {
+    try {
+        GhostBookshelf.validator.check(password, "Your password is not long enough. It must be at least 8 chars long.").len(8);
+    } catch (error) {
+        return when.reject(error);
+    }
+
+    return when.resolve();
+}
 
 User = GhostBookshelf.Model.extend({
 
@@ -30,6 +38,19 @@ User = GhostBookshelf.Model.extend({
         return {
             uuid: uuid.v4()
         };
+    },
+
+    initialize: function () {
+        this.on('saving', this.validate, this);
+    },
+
+    validate: function () {
+        GhostBookshelf.validator.check(this.get('email_address'), "Please check your email address. It does not seem to be valid.").isEmail();
+        GhostBookshelf.validator.check(this.get('bio'), "Your bio is too long. Please keep it to 200 chars.").len(0, 200);
+        if (this.get('url') && this.get('url').length > 0) {
+            GhostBookshelf.validator.check(this.get('url'), "Your website is not a valid URL.").isUrl();
+        }
+        return true;
     },
 
     posts: function () {
@@ -63,12 +84,14 @@ User = GhostBookshelf.Model.extend({
          * @param  {object} user
          * @author javorszky
          */
-        return this.forge().fetch().then(function (user) {
+        return validatePasswordLength(userData.password).then(function () {
+            return self.forge().fetch();
+        }).then(function (user) {
             // Check if user exists
             if (user) {
                 return when.reject(new Error('A user is already registered. Only one user for now!'));
             }
-
+        }).then(function () {
             // Hash the provided password with bcrypt
             return nodefn.call(bcrypt.hash, _user.password, null, null);
         }).then(function (hash) {
@@ -113,7 +136,7 @@ User = GhostBookshelf.Model.extend({
         }).fetch({require: true}).then(function (user) {
             return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                 if (!matched) {
-                    return when.reject(new Error('Passwords do not match'));
+                    return when.reject(new Error('Your password is incorrect'));
                 }
                 return user;
             }, errors.logAndThrowError);
@@ -128,22 +151,23 @@ User = GhostBookshelf.Model.extend({
      *
      */
     changePassword: function (_userdata) {
-        var userid = _userdata.currentUser,
+        var self = this,
+            userid = _userdata.currentUser,
             oldPassword = _userdata.oldpw,
             newPassword = _userdata.newpw,
             ne2Password = _userdata.ne2pw;
 
         if (newPassword !== ne2Password) {
-            return when.reject(new Error('Passwords aren\'t the same'));
+            return when.reject(new Error('Your new passwords do not match'));
         }
 
-        return this.forge({
-            id: userid
-        }).fetch({require: true}).then(function (user) {
+        return validatePasswordLength(newPassword).then(function () {
+            return self.forge({id: userid}).fetch({require: true});
+        }).then(function (user) {
             return nodefn.call(bcrypt.compare, oldPassword, user.get('password'))
                 .then(function (matched) {
                     if (!matched) {
-                        return when.reject(new Error('Passwords do not match'));
+                        return when.reject(new Error('Your password is incorrect'));
                     }
                     return nodefn.call(bcrypt.hash, newPassword, null, null).then(function (hash) {
                         user.save({password: hash});
@@ -151,6 +175,7 @@ User = GhostBookshelf.Model.extend({
                     });
                 });
         });
+
     },
 
     effectivePermissions: function (id) {

@@ -124,10 +124,10 @@ adminControllers = {
             oldpw: req.body.password,
             newpw: req.body.newpassword,
             ne2pw: req.body.ne2password
-        }).then(function (user) {
+        }).then(function () {
             res.json(200, {msg: 'Password changed successfully'});
         }, function (error) {
-            res.send(401);
+            res.send(401, {error: error.message});
         });
 
     },

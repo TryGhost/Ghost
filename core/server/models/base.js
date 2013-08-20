@@ -1,11 +1,14 @@
 var GhostBookshelf,
     Bookshelf = require('bookshelf'),
     _ = require('underscore'),
-    config = require('../../../config');
+    config = require('../../../config'),
+    Validator = require('validator').Validator;
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
 // others' if they're using the library outside of ghost.
 GhostBookshelf = Bookshelf.Initialize('ghost', config.env[process.env.NODE_ENV || 'development'].database);
+
+GhostBookshelf.validator = new Validator();
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
@@ -89,7 +92,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
     /**
      * Naive create
-     * @param editedObj
+     * @param newObj
      * @param options (optional)
      */
     add: function (newObj, options) {

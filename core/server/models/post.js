@@ -24,14 +24,18 @@ Post = GhostBookshelf.Model.extend({
     },
 
     initialize: function () {
+        this.on('saving', this.validate, this);
         this.on('creating', this.creating, this);
         this.on('saving', this.saving, this);
     },
 
+    validate: function () {
+        GhostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
+
+        return true;
+    },
+
     saving: function () {
-        if (!this.get('title')) {
-            throw new Error('Post title cannot be blank');
-        }
         this.set('content', converter.makeHtml(this.get('content_raw')));
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
@@ -45,6 +49,7 @@ Post = GhostBookshelf.Model.extend({
     },
 
     creating: function () {
+        // set any dynamic default properties
         var self = this;
         if (!this.get('created_by')) {
             this.set('created_by', 1);
