@@ -85,8 +85,11 @@
             this.$el.removeClass('active');
             this.undelegateEvents();
         },
-
+        beforeRender: function () {
+            this.$el.hide();
+        },
         afterRender: function () {
+            this.$el.fadeIn(300);
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
 
@@ -138,15 +141,17 @@
         templateName: 'settings/general',
 
         beforeRender: function () {
+            this.$el.hide();
             var settings = this.model.toJSON();
             this.$('#blog-title').val(settings.title);
             this.$('#email-address').val(settings.email);
         },
 
         afterRender: function () {
+            this.$el.fadeIn(300);
             this.$('.js-drop-zone').upload();
             Settings.Pane.prototype.afterRender.call(this);
-        }
+        },
     });
 
     // ### Content settings
@@ -167,8 +172,13 @@
         templateName: 'settings/content',
 
         beforeRender: function () {
+            this.$el.hide();
             var settings = this.model.toJSON();
             this.$('#blog-description').val(settings.description);
+        },
+        
+        afterRender: function () {
+            this.$el.fadeIn(300);
         }
     });
 
@@ -251,6 +261,7 @@
         templateName: 'settings/user-profile',
 
         beforeRender: function () {
+            this.$el.hide();
             var user = this.model.toJSON();
             this.$('#user-name').val(user.full_name);
             this.$('#user-email').val(user.email_address);
@@ -259,6 +270,10 @@
             this.$('#user-bio').val(user.bio);
             this.$('#user-profile-picture').attr('src', user.profile_picture);
             this.$('#user-cover-picture').attr('src', user.cover_picture);
+        },
+        
+        afterRender: function () {
+            this.$el.fadeIn(300);
         }
     });
 
