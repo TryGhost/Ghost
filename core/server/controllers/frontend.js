@@ -14,6 +14,12 @@ frontendControllers = {
     'homepage': function (req, res) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+
+        // No negative pages
+        if (pageParam < 1) {
+            return res.redirect("/page/1/");
+        }
+
         api.posts.browse({page: pageParam}).then(function (page) {
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.pages) {
