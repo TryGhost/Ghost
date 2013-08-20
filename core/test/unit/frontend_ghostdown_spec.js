@@ -21,7 +21,7 @@ describe("Ghostdown showdown extensions", function () {
 
     it("should accurately detect images in markdown", function () {
         
-        [   "!image[image and another,/ image](http://dsurl stuff)",
+        [   "![image and another,/ image](http://dsurl stuff)",
             "![image and another,/ image]",
             "![]()",
             "![]" ]
