@@ -9,7 +9,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 1. **Search for existing issues** - The most important step! Help us keep duplicate issues to a minimum by checking to see if someone has already reported your problem or requested your idea.
 2. **Describe your issue in detail** - Help us help you. Before opening any issue, please read the [Issue Guidelines](https://github.com/necolas/issue-guidelines), written by [Nicolas Gallagher](https://github.com/necolas/). Include operating system and version, browser and version, version of Ghost, customized or vanilla build, etc. where appropriate. Also include steps to reproduce the bug.
-3. **Include a screencast if relevant** - Is your issue about a design or front end feature or bug? The most helpful thing in the world is if we can *see* what you're talking about. Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your github issue. Kapow.
+3. **Include a screencast if relevant** - Is your issue about a design or front end feature or bug? The most helpful thing in the world is if we can *see* what you're talking about. Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your Github issue. Kapow.
 
 
 ## Working on Ghost Core
@@ -42,7 +42,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
 6. run `grunt init` from the root - this installs Bourbon, compiles SASS and compiles Handlebars templates
 
-Frontend can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
+Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
 
 Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically
 
@@ -53,16 +53,16 @@ Whist developing you may wish to use **grunt watch** to watch for changes to han
 
 Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
 
-**For Mac users:** The easiest way to do this is to download/install XCode from the App Store (free). This will automatically install all the tools you need - you don't need to open the app.
+**For Mac users:** The easiest way to do this is to download/install xCode from the App Store (free). This will automatically install all the tools you need - you don't need to open the app.
 
 **For Everyone else:** if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled SQLite3 package for your OS. We have created some of these [here](https://github.com/developmentseed/node-sqlite3/issues/106).
 
-The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the SQLite3 package, replace it with the files you downloaded from github. Be sure that all the SQLite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
+The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the SQLite3 package, replace it with the files you downloaded from Github. Be sure that all the SQLite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
 
 
 ### Compiling CSS & JavaScript
 
-A SASS compiler is required to work with the CSS in this project. You can either do this by running `grunt` from the commandline - or by using a 3rd party app. We recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+A SASS compiler is required to work with the CSS in this project. You can either do this by running `grunt` from the command line - or by using a 3rd party app. We recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
 
 
 ## Coding standards
@@ -75,10 +75,10 @@ Good, clear and consistent code styles are pivotal in the success of any softwar
 * Use strict mode
 * Protect the global scope
 * Indent with 4 spaces
-* Max line lenght 120
+* Max line length 120
 * Use unix line endings
 * Document as you go - we are using groc and jsdoc formats
-* Write tests, unit tests are in nodeunit, functional using casperjs
+* Write tests, unit tests are witten in Mocha using spec style, functional tests use Casper.js
 
 For more in depth information please read the official [Ghost Coding Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
 
