@@ -95,7 +95,7 @@ Post = GhostBookshelf.Model.extend({
             };
 
         // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+        slug = title.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
         // Replace dots and spaces with a dash
                     .replace(/(\s|\.)/g, '-')
         // Convert 2 or more dashes into a single dash
