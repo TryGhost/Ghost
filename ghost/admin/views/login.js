@@ -46,6 +46,7 @@
             event.preventDefault();
             var email = this.$el.find('.email').val(),
                 password = this.$el.find('.password').val(),
+                redirect = this.getUrlVariables().r,
                 self = this;
 
             $.ajax({
@@ -53,7 +54,8 @@
                 type: 'POST',
                 data: {
                     email: email,
-                    password: password
+                    password: password,
+                    redirect: redirect
                 },
                 success: function (msg) {
                     window.location.href = msg.redirect;
