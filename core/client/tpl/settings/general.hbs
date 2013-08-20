@@ -5,18 +5,18 @@
     </section>
 </header>
 <section class="content">
-    <form id="settings-general">
+    <form id="settings-general" novalidate="novalidate">
         <fieldset>
             <div class="form-group">
                 <label><strong>Blog Title</strong></label>
-                <input id="blog-title" name="general[title]" type="text" value="{{title}}" />
+                <input id="blog-title" name="general[title]" type="text" value="{{title}}">
                 <p>How your blog name appears on the site</p>
             </div>
 
             <div class="form-group">
                 <label><strong>Blog Logo</strong></label>
                 <section class="js-drop-zone">
-                    <img id="logo" class="js-upload-target" src="{{logo}}"{{#unless logo}} style="display: none"{{/unless}} alt="logo"/>
+                    <img id="logo" class="js-upload-target" src="{{logo}}"{{#unless logo}} style="display: none"{{/unless}} alt="logo">
                     <input data-url="upload" class="js-fileupload" type="file" name="uploadimage">
                 </section>
                 <p>Display a logo on your site in place of blog title</p>
@@ -25,7 +25,7 @@
             <div class="form-group">
                 <label><strong>Blog Icon</strong></label>
                 <section class="js-drop-zone">
-                <img id="icon" class="js-upload-target" src="{{icon}}"{{#unless icon}} style="display: none"{{/unless}} style="display: none" alt="icon"/>
+                <img id="icon" class="js-upload-target" src="{{icon}}"{{#unless icon}} style="display: none"{{/unless}} style="display: none" alt="icon">
                     <input data-url="upload" class="js-fileupload" type="file" name="uploadimage">
                 </section>
                 <p>The icon for your blog, used in your browser tab and elsewhere</p>
@@ -33,10 +33,10 @@
 
             <div class="form-group">
                 <label for="email-address"><strong>Email Address</strong></label>
-                <input id="email-address" name="general[email-address]" type="text" value="{{email}}" />
+                <input id="email-address" name="general[email-address]" type="email" value="{{email}}">
                 <p>Address to use for <a href="#">admin notifications</a></p>
                 <label class="checkbox">
-                    <input type="checkbox" value="1" name="general[public-email]" /> Show my email address on my public profile
+                    <input type="checkbox" value="1" name="general[public-email]"> Show my email address on my public profile
                 </label>
             </div>
 
