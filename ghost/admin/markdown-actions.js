@@ -15,7 +15,7 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, md, cursor, line, word, converter;
+            var text = this.elem.getSelection(), pass = true, md, cursor, line, word, letterCount, converter;
             switch (this.style) {
             case "h1":
                 cursor = this.elem.getCursor();
@@ -93,13 +93,18 @@
                 break;
             case "copyHTML":
                 converter = new Showdown.converter();
-                md = converter.makeHtml(text);
+                if (text) {
+                    md = converter.makeHtml(text);
+                } else {
+                    md = converter.makeHtml(this.elem.getValue());
+                }
+
                 $(".modal-copyToHTML-content").text(md).selectText();
                 $(".js-modal").center();
                 pass = false;
                 break;
             case "list":
-                md = text.replace(/^/gm, "* ");
+                md = text.replace(/^(\s*)(\w\W*)/gm, "$1* $2");
                 this.elem.replaceSelection(md, "end");
                 pass = false;
                 break;
@@ -113,6 +118,11 @@
             }
             if (pass && md) {
                 this.elem.replaceSelection(md, "end");
+                if (!text) {
+                    letterCount = md.length;
+                    cursor = this.elem.getCursor();
+                    this.elem.setCursor({line: cursor.line, ch: cursor.ch - (letterCount / 2)});
+                }
             }
         }
     };
