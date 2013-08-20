@@ -163,6 +163,10 @@ adminControllers = {
         if (req.params.id !== undefined) {
             api.posts.read({id: parseInt(req.params.id, 10)})
                 .then(function (post) {
+                    if (!post) {
+                        return res.sendfile(path.join(__dirname, '..', 'views', 'static', '404.html'));
+                    }
+
                     res.render('editor', {
                         bodyClass: 'editor',
                         adminNav: setSelected(adminNavbar, 'content'),

@@ -4,7 +4,8 @@
 
 /*global require, module */
 
-var Ghost = require('../../ghost'),
+var path = require('path'),
+    Ghost = require('../../ghost'),
     api = require('../api'),
 
     ghost = new Ghost(),
@@ -34,6 +35,10 @@ frontendControllers = {
     },
     'single': function (req, res) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
+            if (!post) {
+                return res.sendfile(path.join(__dirname, '..', 'views', 'static', '404.html'));
+            }
+
             ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
                 res.render('post', {post: post});
             });
