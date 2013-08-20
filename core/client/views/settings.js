@@ -86,7 +86,11 @@
             this.$el.removeClass('active');
             this.undelegateEvents();
         },
-
+        render: function () {
+            this.$el.hide();
+            Ghost.View.prototype.render.call(this);
+            this.$el.fadeIn(300);
+        },
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
