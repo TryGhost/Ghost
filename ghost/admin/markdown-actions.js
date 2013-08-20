@@ -140,7 +140,7 @@
             strike: "~~$1~~",
             code: "`$1`",
             link: "[$1](http://)",
-            image: "!image[$1](http://)",
+            image: "![$1](http://)",
             blockquote: "> $1"
         }
     };
