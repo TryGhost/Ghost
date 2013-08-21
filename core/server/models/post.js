@@ -8,6 +8,7 @@ var Post,
     github = require('../../shared/vendor/showdown/extensions/github'),
     converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
+    Tag = require('./tag').Tag,
     GhostBookshelf = require('./base');
 
 Post = GhostBookshelf.Model.extend({
@@ -32,6 +33,7 @@ Post = GhostBookshelf.Model.extend({
 
     initialize: function () {
         this.on('creating', this.creating, this);
+        this.on('saving', this.updateTags, this);
         this.on('saving', this.saving, this);
         this.on('saving', this.validate, this);
     },
@@ -57,7 +59,9 @@ Post = GhostBookshelf.Model.extend({
         }
 
         this.set('updated_by', 1);
+
         // refactoring of ghost required in order to make these details available here
+
     },
 
     creating: function () {
@@ -134,12 +138,77 @@ Post = GhostBookshelf.Model.extend({
         return checkIfSlugExists(slug);
     },
 
+    updateTags: function () {
+        var self = this,
+            tagOperations = [],
+            newTags = this.get('tags'),
+            tagsToDetach,
+            existingTagIDs,
+            tagsToCreateAndAdd,
+            tagsToAddByID,
+            fetchOperation;
+
+        if (!newTags) {
+            return;
+        }
+
+        fetchOperation = Post.forge({id: this.id}).fetch({withRelated: ['tags']});
+        return fetchOperation.then(function (thisModelWithTags) {
+            var existingTags = thisModelWithTags.related('tags').models;
+
+            tagsToDetach = existingTags.filter(function (existingTag) {
+                var tagStillRemains = newTags.some(function (newTag) {
+                    return newTag.id === existingTag.id;
+                });
+
+                return !tagStillRemains;
+            });
+            if (tagsToDetach.length > 0) {
+                tagOperations.push(self.tags().detach(tagsToDetach));
+            }
+
+            // Detect any tags that have been added by ID
+            existingTagIDs = existingTags.map(function (existingTag) {
+                return existingTag.id;
+            });
+
+            tagsToAddByID = newTags.filter(function (newTag) {
+                return existingTagIDs.indexOf(newTag.id) === -1;
+            });
+
+            if (tagsToAddByID.length > 0) {
+                tagsToAddByID = _.pluck(tagsToAddByID, 'id');
+                tagOperations.push(self.tags().attach(tagsToAddByID));
+            }
+
+            // Detect any tags that have been added, but don't already exist in the database 
+            tagsToCreateAndAdd = newTags.filter(function (newTag) {
+                return newTag.id === null || newTag.id === undefined;
+            });
+            tagsToCreateAndAdd.forEach(function (tagToCreateAndAdd) {
+                var createAndAddOperation = Tag.add({name: tagToCreateAndAdd.name}).then(function (createdTag) {
+                    return self.tags().attach(createdTag.id);
+                });
+
+                tagOperations.push(createAndAddOperation);
+            });
+
+            return when.all(tagOperations);
+        });
+    },
+
+
+    // Relations
     user: function () {
         return this.belongsTo(User, 'created_by');
     },
 
     author: function () {
         return this.belongsTo(User, 'author_id');
+    },
+
+    tags: function () {
+        return this.belongsToMany(Tag);
     }
 
 }, {
@@ -148,7 +217,7 @@ Post = GhostBookshelf.Model.extend({
     // Extends base model findAll to eager-fetch author and user relationships.
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = [ "author", "user" ];
+        options.withRelated = [ "author", "user", "tags" ];
         return GhostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -156,7 +225,7 @@ Post = GhostBookshelf.Model.extend({
     // Extends base model findOne to eager-fetch author and user relationships.
     findOne: function (args, options) {
         options = options || {};
-        options.withRelated = [ "author", "user" ];
+        options.withRelated = [ "author", "user", "tags" ];
         return GhostBookshelf.Model.findOne.call(this, args, options);
     },
 
@@ -210,7 +279,7 @@ Post = GhostBookshelf.Model.extend({
             postCollection.query('where', opts.where);
         }
 
-        opts.withRelated = [ "author", "user" ];
+        opts.withRelated = [ "author", "user", "tags" ];
 
         // Set the limit & offset for the query, fetching
         // with the opts (to specify any eager relations, etc.)

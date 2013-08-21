@@ -26,6 +26,20 @@
             if (_.isEmpty(attrs.title)) {
                 return 'You must specify a title for the post.';
             }
+        },
+
+        addTag: function (tagToAdd) {
+            var tags = this.get('tags') || [];
+            tags.push(tagToAdd);
+            this.set('tags', tags);
+        },
+
+        removeTag: function (tagToRemove) {
+            var tags = this.get('tags') || [];
+            tags = _.reject(tags, function (tag) {
+                return tag.id === tagToRemove.id || tag.name === tagToRemove.name;
+            });
+            this.set('tags', tags);
         }
     });
 
