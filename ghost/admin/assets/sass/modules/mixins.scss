@@ -4,8 +4,9 @@
  *
  * Table of Contents:
  *
- * Compass Shit
- * Compass Plugins
+ * Bourbon
+ * Breakpoint
+ * Typography
  * Colors
  * Gradients
  * Typography
@@ -15,7 +16,7 @@
 
 
 /* =============================================================================
-   Bourbon Imports
+   Bourbon 
    ============================================================================= */
 
 // Bourbon - http://bourbon.io/
@@ -26,7 +27,7 @@ $default-transition-duration: 0.3s;
 
 
 /* =============================================================================
-   Plugins
+   Breakpoint
    ============================================================================= */
 
 // Breakpoint - http://breakpoint-sass.com/
@@ -49,6 +50,15 @@ $letterbox: max-height 600px, max-height 600px;
 
 // Pixel Densities
 $retina: 2 device-pixel-ratio;
+
+
+/* =============================================================================
+   Typography
+   ============================================================================= */
+
+$font-family: 'Open Sans', sans-serif;
+$font-family-serif: serif;
+$font-family-mono: Inconsolata, monospace;
 
 
 /* =============================================================================
