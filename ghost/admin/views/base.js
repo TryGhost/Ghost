@@ -153,7 +153,7 @@
         initialize: function () {
             var self = this;
             this.render();
-            Backbone.history.on('route', function () {
+            Ghost.on('urlchange', function () {
                 self.clearEverything();
             });
         },
