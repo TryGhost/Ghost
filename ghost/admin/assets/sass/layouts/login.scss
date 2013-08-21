@@ -19,8 +19,7 @@
     }
 
     main { 
-        top: 15px;
-        @include breakpoint($mobile) { top: 0; }
+        top: 0;
     }
 }//.ghost-login
 
