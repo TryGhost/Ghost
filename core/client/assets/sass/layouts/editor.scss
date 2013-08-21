@@ -256,10 +256,8 @@
             padding: 60px 40px 40px 40px;
             overflow: auto;
 
-            // Breaking for long words in preview region
+            // Break long words to new line
             word-break: break-word;
-            word-break: break-all;
-            -webkit-hyphens: auto;
             hyphens: auto;
 
             // Tweak padding for smaller screens
