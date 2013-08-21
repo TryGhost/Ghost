@@ -62,6 +62,10 @@
    Global Styles
    ========================================================================== */
 
+html {
+    font: normal 81.2%/1.65 "Open Sans", sans-serif;
+}
+
 body {
     width:100%;
     color: $darkgrey;
@@ -96,6 +100,9 @@ article aside {
 h1, h2, h3,
 h4, h5, h6 {
     color: $darkgrey;
+    text-rendering: optimizeLegibility;
+    line-height: 1;
+    margin-top: 0;
 }
 
 h2 {
@@ -248,6 +255,7 @@ mark {
 code, tt {
     font-family: $font-family-mono;
     font-size: 0.85em;
+    white-space: pre;
     background: lighten($lightbrown, 2%);
     border: 1px solid darken($lightbrown, 8%);
     border-radius: 2px;
@@ -263,11 +271,14 @@ pre {
     padding: 10px;
     font-family: $font-family-mono;
     font-size: 0.9em;
+    white-space: pre;
     overflow: auto;
     border-radius: 3px;
 
     code, tt {
         font-size: inherit;
+        white-space: -moz-pre-wrap;
+        white-space: pre-wrap;
         background: transparent;
         border: none;
         padding: 0;
