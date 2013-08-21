@@ -240,7 +240,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get(/^\/logout\/?$/, admin.logout);
     ghost.app().get('/ghost/login/', admin.login);
     ghost.app().get('/ghost/signup/', admin.signup);
-    ghost.app().post('/ghost/login/', signupValidate, admin.auth);
+    ghost.app().post('/ghost/login/', admin.auth);
     ghost.app().post('/ghost/signup/', signupValidate, admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
