@@ -2,7 +2,7 @@
  * These styles control elements specific to the post editor screen
  * used for publishing content with Ghost.
  *
- * Table of Contents:
+ * Table of Contents: 
  *
  * Editor / Preview
  * Post Preview Content
@@ -21,10 +21,10 @@
     // The main post title
     .entry-title {
         @extend %box;
-        height: 35px;
-        padding: 10px 15px;
-        margin-bottom: 15px;
-        position:relative;
+        height: 53px;
+        padding: 2px 15px;
+        margin-bottom: 5px;
+        position: relative;
 
         @include breakpoint($mobile) {
             box-shadow: none;
@@ -33,10 +33,12 @@
         input {
             border: 0;
             margin: 0;
-            padding:0;
-            font-size: 2em;
-            font-weight: 300;
+            padding: 0;
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: -1px;
             width: 100%;
+            background: transparent;
             &:focus {
                 outline: 0;
             }
@@ -50,8 +52,8 @@
     }
 
     // The two content panel wrappers, positioned left/right
-    .entry-markdown { left:0; border-right:$lightbrown 2px solid; }
-    .entry-preview { right:0; border-left:$lightbrown 2px solid; }
+    .entry-markdown { left: 0; border-right: $lightbrown 2px solid; }
+    .entry-preview { right: 0; border-left: $lightbrown 2px solid; }
 
     // The visual styles for both panels
     .entry-markdown, .entry-preview {
@@ -59,8 +61,8 @@
         width: 50%;
         padding: 15px;
         position: absolute;
-        bottom:40px; // height of the publish bar
-        top:59px; // height of the post title + margin
+        bottom: 40px; // height of the publish bar
+        top: 61px; // height of the post title + margin
         background: #fff;
         box-shadow: $shadow;
 
@@ -70,15 +72,15 @@
 
         // Convert all content areas to small boxes
         @include breakpoint($netbook) {
-            top:109px;
-            left:0;
-            right:0;
-            width:100%;
-            border:none;
-            z-index:100;
-            min-height:380px;
+            top: 109px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            border: none;
+            z-index: 100;
+            min-height: 380px;
             .markdown, .entry-preview-content {
-                height:50px;
+                height: 50px;
                 overflow: hidden;
             }
         }
@@ -88,19 +90,19 @@
             // Turn headers into tabs which act as links
             // both headers set to grey/inactive colour
             @include breakpoint($netbook) {
-                cursor:pointer;
-                width:50%;
-                border-right:$lightbrown 2px solid;
-                color:#fff;
+                cursor: pointer;
+                width: 50%;
+                border-right: $lightbrown 2px solid;
+                color: #fff;
                 font-weight: normal;
-                background:$brown;
-                position:absolute;
-                top:-40px;
-                left:0;
+                background: $brown;
+                position: absolute;
+                top: -40px;
+                left: 0;
                 box-shadow: rgba(0,0,0,0.1) 0 -2px 3px inset;
 
                 a {
-                    color:#fff;
+                    color: #fff;
                 }
             }
 
@@ -113,7 +115,7 @@
                 top: -5px;
                 right: -5px;
                 @include icon($i-question, '', lighten($brown, 15%));
-                float:right;
+                float: right;
                 padding: 5px;
 
                 &:hover {
@@ -122,7 +124,7 @@
             }
 
             .entry-word-count {
-                float:right;
+                float: right;
             }
 
         }
@@ -135,16 +137,16 @@
         // Restore the normal height of the .active tab (inactive tab stays small, hidden behind)
         &.active .markdown,
         &.active .entry-preview-content {
-            height:auto;
+            height: auto;
             overflow: auto;
         }
 
         // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
         &.active header {
             @include breakpoint($netbook) {
-                cursor:auto;
+                cursor: auto;
                 color: $brown;
-                background:#fff;
+                background: #fff;
                 box-shadow: none;
                 a {
                     color: $brown;
@@ -171,11 +173,11 @@
             max-width: 100%;
             margin: 0;
             padding: 0;
-            position:absolute;
+            position: absolute;
             top: 0;
-            right:0;
-            bottom:0;
-            left:0;
+            right: 0;
+            bottom: 0;
+            left: 0;
 
             &:focus {
                 outline: 0;
@@ -184,15 +186,15 @@
 
         .CodeMirror {
             height: auto;
-            position:absolute;
-            top:0;
-            left:0;
-            right:0;
-            bottom:0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             font-family: $font-family-mono;
-            font-size:1.1em;
-            line-height:1.2em;
-            color: lighten($darkgrey, 30%);
+            font-size: 1.4em;
+            line-height: 1.3em;
+            color: lighten($darkgrey, 10%);
 
             .CodeMirror-focused,
             .CodeMirror-selected {
@@ -219,20 +221,28 @@
         }
 
         .cm-header {
-            color:#000;
+            color: #000;
             font-size: 1.4em;
             line-height: 1.4em;
+            font-weight: bold;
+        }
+
+        .cm-variable-2,
+        .cm-variable-3,
+        .cm-keyword {
+            color: lighten($darkgrey, 10%);
         }
 
         .cm-string,
+        .cm-strong,
         .cm-link,
         .cm-comment,
         .cm-quote,
-        .cm-variable-2,
-        .cm-variable-3,
-        .cm-keyword,
         .cm-number,
-        .cm-atom {color:#000;}
+        .cm-atom {
+            color: #000;
+            font-weight: bold;
+        }
 
     }
 
@@ -240,25 +250,21 @@
         // Align the tab of entry-preview on the right
         .floatingheader {
             @include breakpoint($netbook) {
-                right:0;
-                left:auto;
-                border-right:none;
-                border-left:$lightbrown 2px solid;
+                right: 0;
+                left: auto;
+                border-right: none;
+                border-left: $lightbrown 2px solid;
             }
         }
 
         .entry-preview-content {
-            position:absolute;
-            top:0;
-            right:0;
-            bottom:0;
-            left:0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
             padding: 60px 40px 40px 40px;
             overflow: auto;
-
-            // Break long words to new line
-            word-break: break-word;
-            hyphens: auto;
 
             // Tweak padding for smaller screens
             @include breakpoint($netbook) {padding-top: 20px;}
@@ -276,7 +282,7 @@
 
             &::before,
             &::after {
-                @include breakpoint($netbook) {display:none;}
+                @include breakpoint($netbook) {display: none;}
             }
         }
         .CodeMirror-scroll,
@@ -298,7 +304,7 @@
 // TODO: These should just be defaults, overridden by editor.hbs in theme dir
 .entry-preview-content,
 .content-preview-content {
-    font-size:1.15em;
+    font-size: 1.4em;
     line-height: 1.5em;
 
     a {
@@ -308,7 +314,7 @@
     p {
         margin: 1.2em 0 1.6em;
         &:first-child {
-            margin-top:0;
+            margin-top: 0;
         }
     }
     h1 {
@@ -359,16 +365,16 @@
 
 body.zen {
     background: lighten($lightbrown, 3%);
-    #usermenu {display:none;}
+    #usermenu {display: none;}
     #global-header, #publish-bar {
         opacity: 0;
-        height:0;
+        height: 0;
         overflow: hidden;
         @include transition(all 0.5s ease-out);
     }
 
     main {top: 15px;@include transition(all 0.5s ease-out);}
-    .entry-markdown, .entry-preview {bottom:0;@include transition(all 0.5s ease-out);}
+    .entry-markdown, .entry-preview {bottom: 0;@include transition(all 0.5s ease-out);}
 
 }
 
@@ -379,18 +385,18 @@ body.zen {
 
 #publish-bar {
     @include box-sizing(border-box);
-    height:40px;
+    height: 40px;
     padding: 0;
     color: $midgrey;
     background: darken($darkgrey, 4%);
     position: fixed;
     bottom: 0;
-    left:0;
-    right:0;
-    z-index:900;
+    left: 0;
+    right: 0;
+    z-index: 900;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
 
-    @include breakpoint($netbook) {font-weight:normal;}
+    @include breakpoint($netbook) {font-weight: normal;}
 
     button {
         min-height: 30px;
@@ -398,21 +404,21 @@ body.zen {
         line-height: 12px;
         padding: 0 10px;
         margin-top: 5px;
-        border-top:rgba(255,255,255,0.4) 1px solid;
+        border-top: rgba(255,255,255,0.4) 1px solid;
     }
 
     .button-link { border-top: none; }
 
     .options {
-        width:30px;
+        width: 30px;
         min-height: 30px;
         height: 30px;
-        margin-top:5px;
+        margin-top: 5px;
         box-shadow: rgba(255,255,255,0.4) 0 1px 0 inset;
 
         &.up:hover {
             @include icon($i-chevron-down) {
-                margin-top:-5px;
+                margin-top: -5px;
                 @include transform(rotate(540deg));
                 @include transition(transform 0.6s ease);
             };
@@ -439,23 +445,23 @@ body.zen {
 
 #entry-categories {
     position: absolute;
-    top:0;
-    left:0;
+    top: 0;
+    left: 0;
     right: 165px;
-    bottom:0;
+    bottom: 0;
     text-transform: none;
     padding: 10px 0 0 0;
 }
 
 .category-label {
     display: block;
-    float:left;
+    float: left;
     @include icon($i-tag);
-    padding:1px 8px 0 8px;
+    padding: 1px 8px 0 8px;
     @include transition;
 
     &:hover {
-        cursor:pointer;
+        cursor: pointer;
         color: $lightgrey;
     }
 }
@@ -467,13 +473,13 @@ body.zen {
     background: transparent;
     border: none;
 
-    &:focus {outline:none;}
+    &:focus {outline: none;}
 }
 
 .category {
     @include icon-after($i-x, 8px, $darkgrey) {
-        margin-left:4px;
-        vertical-align:5%;
+        margin-left: 4px;
+        vertical-align: 5%;
         text-shadow: rgba(255,255,255,0.15) 0 1px 0;
         @include transition;
     }
@@ -484,7 +490,7 @@ body.zen {
     color: $lightgrey;
     background: lighten($grey, 15%);
     border-radius: $rounded;
-    box-shadow:
+    box-shadow: 
         rgba(255,255,255,0.2) 0 1px 0 inset,
         #000 0 1px 3px;
 
@@ -501,7 +507,7 @@ body.zen {
 
   li.selected{
     background: $blue;
-    box-shadow:
+    box-shadow: 
         rgba(255,255,255,0.2) 0 1px 0 inset,
         rgba(0,0,0,0.5) 0 1px 5px;
   }
@@ -514,9 +520,9 @@ body.zen {
 }
 
 #entry-settings {
-    @include icon($i-settings, 1.1em){vertical-align:0;};
+    @include icon($i-settings, 1.1em){vertical-align: 0;};
     @include box-sizing(border-box);
-    display:inline-block;
+    display: inline-block;
     padding: 0 10px;
     line-height: 1.8em;
     color: $midgrey;
@@ -529,19 +535,19 @@ body.zen {
 
 #entry-settings-menu {
     position: absolute;
-    bottom:50px;
-    right:-5px;
+    bottom: 50px;
+    right: -5px;
 }
 
 #entry-actions {
-    margin-right:6px;
+    margin-right: 6px;
     position: relative;
 }
 
 #entry-actions-menu {
     position: absolute;
-    bottom:50px;
-    right:-5px;
+    bottom: 50px;
+    right: -5px;
 }
 
 /* =============================================================================
