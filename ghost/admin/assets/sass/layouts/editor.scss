@@ -452,7 +452,7 @@ body.zen {
     }
 }
 
-#entry-categories {
+#entry-tags {
     position: absolute;
     top: 0;
     left: 0;
@@ -462,7 +462,7 @@ body.zen {
     padding: 10px 0 0 0;
 }
 
-.category-label {
+.tag-label {
     display: block;
     float: left;
     @include icon($i-tag);
@@ -475,7 +475,7 @@ body.zen {
     }
 }
 
-.category-input {
+.tag-input {
     display: inline-block;
     color: $lightgrey;
     font-weight: 300;
@@ -485,7 +485,7 @@ body.zen {
     &:focus {outline: none;}
 }
 
-.category {
+.tag {
     @include icon-after($i-x, 8px, $darkgrey) {
         margin-left: 4px;
         vertical-align: 5%;
@@ -502,6 +502,8 @@ body.zen {
     box-shadow: 
         rgba(255,255,255,0.2) 0 1px 0 inset,
         #000 0 1px 3px;
+
+    @include user-select(none);
 
     &:hover {
         cursor: pointer;
@@ -521,11 +523,16 @@ body.zen {
         rgba(0,0,0,0.5) 0 1px 5px;
   }
 
+  li a {
+      padding-left: 25px;
+  }
+
   mark{
     background: none;
     color: white;
     font-weight: bold;
   }
+
 }
 
 #entry-settings {

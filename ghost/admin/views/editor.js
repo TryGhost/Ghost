@@ -5,7 +5,6 @@
     "use strict";
 
     var PublishBar,
-        TagWidget,
         ActionsWidget,
         MarkdownShortcuts = [
             {'key': 'Ctrl+B', 'style': 'bold'},
@@ -40,18 +39,12 @@
     PublishBar = Ghost.View.extend({
 
         initialize: function () {
-            this.addSubview(new TagWidget({el: this.$('#entry-categories'), model: this.model})).render();
+            this.addSubview(new Ghost.View.EditorTagWidget({el: this.$('#entry-tags'), model: this.model})).render();
             this.addSubview(new ActionsWidget({el: this.$('#entry-actions'), model: this.model})).render();
         },
 
         render: function () { return this; }
 
-    });
-
-    // The Tag UI area associated with a post
-    // ----------------------------------------
-    TagWidget = Ghost.View.extend({
-        render: function () { return this; }
     });
 
     // The Publish, Queue, Publish Now buttons
@@ -166,6 +159,8 @@
                     status: 'passive'
                 });
             }
+
+            this.model.trigger('willSave');
 
             this.savePost({
                 status: status
