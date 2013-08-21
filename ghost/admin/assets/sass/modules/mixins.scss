@@ -9,7 +9,6 @@
  * Typography
  * Colors
  * Gradients
- * Typography
  * Global Styles
  *
  */
@@ -59,6 +58,17 @@ $retina: 2 device-pixel-ratio;
 $font-family: 'Open Sans', sans-serif;
 $font-family-serif: serif;
 $font-family-mono: Inconsolata, monospace;
+
+@mixin baseline {
+    margin: 1.6em 0;
+}
+
+//Does this really need to be a mixin?
+@mixin hidden {
+    text-indent: -9999px;
+    visibility: hidden;
+    display: none;
+}
 
 
 /* =============================================================================
@@ -129,22 +139,6 @@ $green: #9FBB58;
         background-image:         linear-gradient(to top, $color2, $color1);
     }
 
-}
-
-
-/* =============================================================================
-   Typography
-   ============================================================================= */
-
-@mixin baseline {
-    margin: 1.6em 0;
-}
-
-//Does this really need to be a mixin?
-@mixin hidden {
-    text-indent: -9999px;
-    visibility: hidden;
-    display: none;
 }
 
 
