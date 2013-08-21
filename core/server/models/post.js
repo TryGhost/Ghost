@@ -26,6 +26,8 @@ Post = GhostBookshelf.Model.extend({
     initialize: function () {
         this.on('creating', this.creating, this);
         this.on('saving', this.saving, this);
+        this.on('saved', this.saved, this);
+        this.on('destroyed', this.destroyed, this);
     },
 
     saving: function () {
@@ -42,6 +44,14 @@ Post = GhostBookshelf.Model.extend({
 
         this.set('updated_by', 1);
         // refactoring of ghost required in order to make these details available here
+    },
+
+    saved: function() {
+        console.log('save');
+    },
+
+    destroyed: function() {
+        console.log('destroy');
     },
 
     creating: function () {
@@ -144,8 +154,6 @@ Post = GhostBookshelf.Model.extend({
      * @params opts
      */
     findPage: function (opts) {
-        var postCollection;
-
         // Allow findPage(n)
         if (_.isString(opts) || _.isNumber(opts)) {
             opts = {page: opts};
@@ -158,6 +166,21 @@ Post = GhostBookshelf.Model.extend({
             status: 'published',
             orderBy: ['published_at', 'DESC']
         }, opts);
+
+        //If we have a query parameter do a search for posts that match before fetching pages
+        if(opts.q) {
+            var context = this;
+            return GhostBookshelf.Knex.Raw("SELECT id FROM posts_search WHERE posts_search MATCH '" + opts.q + "'")
+                .then(function(resp) {
+                    return context.fetchPages(opts, _.pluck(resp, 'id'));
+                }, errors.logAndThrowError);
+        } else {
+            return this.fetchPages(opts, []);
+        }
+    },
+
+    fetchPages : function(opts, ids) {
+        var postCollection;
 
         postCollection = Posts.forge();
 
@@ -173,49 +196,55 @@ Post = GhostBookshelf.Model.extend({
             postCollection.query('where', opts.where);
         }
 
+        if (ids.length > 0) {
+            postCollection.query('whereIn', 'id', ids);
+        }
+
+        //CG: Next step is to build an IN as part of the WHERE clause for the IDs if any
+
         // Set the limit & offset for the query, fetching
         // with the opts (to specify any eager relations, etc.)
         // Omitting the `page`, `limit`, `where` just to be sure
         // aren't used for other purposes.
         return postCollection
-            .query('limit', opts.limit)
-            .query('offset', opts.limit * (opts.page - 1))
-            .query('orderBy', opts.orderBy[0], opts.orderBy[1])
-            .fetch(_.omit(opts, 'page', 'limit', 'where', 'status', 'orderBy'))
-            .then(function (collection) {
-                var qb;
+          .query('limit', opts.limit)
+          .query('offset', opts.limit * (opts.page - 1))
+          .query('orderBy', opts.orderBy[0], opts.orderBy[1])
+          .fetch(_.omit(opts, 'page', 'limit', 'where', 'status', 'orderBy'))
+          .then(function (collection) {
+              var qb;
 
-                // After we're done, we need to figure out what
-                // the limits are for the pagination values.
-                qb = GhostBookshelf.Knex(_.result(collection, 'tableName'));
+              // After we're done, we need to figure out what
+              // the limits are for the pagination values.
+              qb = GhostBookshelf.Knex(_.result(collection, 'tableName'));
 
-                if (opts.where) {
-                    qb.where(opts.where);
-                }
+              if (opts.where) {
+                  qb.where(opts.where);
+              }
 
-                return qb.count(_.result(collection, 'idAttribute')).then(function (resp) {
-                    var totalPosts = resp[0].aggregate,
-                        data = {
-                            posts: collection.toJSON(),
-                            page: opts.page,
-                            limit: opts.limit,
-                            pages: Math.ceil(totalPosts / opts.limit),
-                            total: totalPosts
-                        };
+              return qb.count(_.result(collection, 'idAttribute')).then(function (resp) {
+                  var totalPosts = resp[0].aggregate,
+                    data = {
+                        posts: collection.toJSON(),
+                        page: opts.page,
+                        limit: opts.limit,
+                        pages: Math.ceil(totalPosts / opts.limit),
+                        total: totalPosts
+                    };
 
-                    if (data.pages > 1) {
-                        if (data.page === 1) {
-                            data.next = data.page + 1;
-                        } else if (data.page === data.pages) {
-                            data.prev = data.page - 1;
-                        } else {
-                            data.next = data.page + 1;
-                            data.prev = data.page - 1;
-                        }
-                    }
-                    return data;
-                }, errors.logAndThrowError);
-            }, errors.logAndThrowError);
+                  if (data.pages > 1) {
+                      if (data.page === 1) {
+                          data.next = data.page + 1;
+                      } else if (data.page === data.pages) {
+                          data.prev = data.page - 1;
+                      } else {
+                          data.next = data.page + 1;
+                          data.prev = data.page - 1;
+                      }
+                  }
+                  return data;
+              }, errors.logAndThrowError);
+          }, errors.logAndThrowError);
     },
 
     permissable: function (postModelOrId, userId, action_type, userPermissions) {
