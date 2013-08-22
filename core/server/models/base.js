@@ -35,8 +35,8 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
             return attrs;
         }
 
-        _.each(relations, function (key) {
-            attrs[key] = relations[key].toJSON();
+        _.each(relations, function (relation, key) {
+            attrs[key] = relation.toJSON ? relation.toJSON() : relation;
         });
 
         return attrs;
