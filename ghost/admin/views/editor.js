@@ -64,9 +64,11 @@
         },
 
         statusMap: {
-            'draft' : 'Save Draft',
-            'published': 'Update Post',
-            'scheduled' : 'Save Schedued Post'
+            'draft': 'Save Draft',
+            'published': 'Publish Now',
+            'scheduled': 'Save Schedued Post',
+            'queue': 'Add to Queue',
+            'publish-on': 'Publish on...'
         },
 
         initialize: function () {
@@ -119,54 +121,59 @@
             });
         },
 
+        setActiveStatus: function setActiveStatus(status, displayText) {
+            // Set the publish button's action
+            $('.js-post-button')
+                .attr('data-status', status)
+                .text(displayText);
+
+            // Set the active action in the popup
+            $('.splitbutton-save .editor-options li')
+                .removeClass('active')
+                .filter(['li[data-set-status="', status, '"]'].join(''))
+                    .addClass('active');
+        },
+
         handleStatus: function (e) {
-            e.preventDefault();
+            if (e) { e.preventDefault(); }
             var view = this,
-                status = $(e.currentTarget).attr('data-set-status'),
-                prevStatus = this.model.get('status'),
-                model = this.model;
+                status = $(e.currentTarget).attr('data-set-status');
+
+            view.setActiveStatus(status, this.statusMap[status]);
+
+            // Dismiss the popup menu
+            $('body').find('.overlay:visible').fadeOut();
+        },
+
+        updatePost: function (e) {
+            if (e) { e.preventDefault(); }
+            var view = this,
+                model = view.model,
+                $currentTarget = $(e.currentTarget),
+                status = $currentTarget.attr('data-status'),
+                prevStatus = model.get('status');
 
             if (status === 'publish-on') {
-                Ghost.notifications.addItem({
+                return Ghost.notifications.addItem({
                     type: 'alert',
                     message: 'Scheduled publishing not supported yet.',
                     status: 'passive'
                 });
             }
             if (status === 'queue') {
-                Ghost.notifications.addItem({
+                return Ghost.notifications.addItem({
                     type: 'alert',
                     message: 'Scheduled publishing not supported yet.',
                     status: 'passive'
                 });
             }
 
-            this.savePost({
+            view.savePost({
                 status: status
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: 'Your post: ' + model.get('title') + ' has been ' + status,
-                    status: 'passive'
-                });
-            }, function (response) {
-                // Show a notification about the error
-                view.reportSaveError(response, model, status);
-                // Set the button text back to previous
-                model.set({ status: prevStatus });
-            });
-        },
-
-        updatePost: function (e) {
-            if (e) {
-                e.preventDefault();
-            }
-            var view = this,
-                model = this.model;
-            this.savePost().then(function () {
-                Ghost.notifications.addItem({
-                    type: 'success',
-                    message: 'Your post was saved as ' + model.get('status'),
+                    message: ['Your post "', model.get('title'), '" has been ', status, '.'].join(''),
                     status: 'passive'
                 });
             }, function (request) {
@@ -177,6 +184,8 @@
                     message: message,
                     status: 'passive'
                 });
+
+                model.set({ status: prevStatus });
             });
         },
 
@@ -219,7 +228,9 @@
         },
 
         render: function () {
-            this.$('.js-post-button').text(this.statusMap[this.model.get('status')]);
+            var status = this.model.get('status');
+
+            this.setActiveStatus(status, this.statusMap[status]);
         }
 
     });
