@@ -89,6 +89,32 @@ coreHelpers = function (ghost) {
         );
     });
 
+
+    ghost.registerThemeHelper('bodyclass', function (options) {
+        var classes = [];
+        if (!this.path || this.path === '/' || this.path === '') {
+            classes.push('home');
+        } else {
+            classes.push('post');
+        }
+
+        return ghost.doFilter('bodyclass', classes, function (classes) {
+            var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(classString.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('postclass', function (options) {
+        var classes = ['post'];
+
+        // TODO: add tag names once we have them
+        return ghost.doFilter('postclass', classes, function (classes) {
+            var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(classString.trim());
+        });
+    });
+
+
     /**
      * [ description]
      *

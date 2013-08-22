@@ -116,8 +116,43 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             rendered.string.should.equal(expected);
         });
+    });
 
+    describe('Bodyclass Helper', function () {
+        it('has loaded bodyclass helper', function () {
+            should.exist(handlebars.helpers.bodyclass);
+        });
 
+        it('can render class string', function () {
+            var rendered = handlebars.helpers.bodyclass.call({});
+            should.exist(rendered);
+
+            rendered.string.should.equal('home');
+        });
+
+        it('can render class string for context', function () {
+            var rendered1 = handlebars.helpers.bodyclass.call({path: '/'}),
+                rendered2 = handlebars.helpers.bodyclass.call({path: '/a-post-title'});
+
+            should.exist(rendered1);
+            should.exist(rendered2);
+
+            rendered1.string.should.equal('home');
+            rendered2.string.should.equal('post');
+        });
+    });
+
+    describe('Postclass Helper', function () {
+        it('has loaded postclass helper', function () {
+            should.exist(handlebars.helpers.postclass);
+        });
+
+        it('can render class string', function () {
+            var rendered = handlebars.helpers.postclass.call({});
+            should.exist(rendered);
+
+            rendered.string.should.equal('post');
+        });
     });
 
     describe('Navigation Helper', function () {
