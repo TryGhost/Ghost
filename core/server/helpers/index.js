@@ -17,7 +17,7 @@ coreHelpers = function (ghost) {
      * @param  {*} options
      * @return {Object} A Moment time / date object
      */
-    ghost.registerThemeHelper('dateFormat', function (context, options) {
+    ghost.registerThemeHelper('date', function (context, options) {
         var f = options.hash.format || "MMM Do, YYYY",
             timeago = options.hash.timeago,
             date;
@@ -168,10 +168,10 @@ coreHelpers = function (ghost) {
     });
 
     // ### Pagination Helper
-    // `{{paginate}}`
+    // `{{pagination}}`
     // Outputs previous and next buttons, along with info about the current page
     paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
-        ghost.registerThemeHelper('paginate', function (options) {
+        ghost.registerThemeHelper('pagination', function (options) {
             if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
                 errors.logAndThrowError('pagination data is not an object or is a function');
                 return;

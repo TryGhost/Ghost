@@ -2,7 +2,7 @@
 */
 (function () {
     "use strict";
-    Handlebars.registerHelper('dateFormat', function (context, block) {
+    Handlebars.registerHelper('date', function (context, block) {
         var f = block.hash.format || "MMM Do, YYYY",
             timeago = block.hash.timeago,
             date;
