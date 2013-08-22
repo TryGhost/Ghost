@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url */
 
-casper.test.begin("Settings screen is correct", 12, function suite(test) {
+casper.test.begin("Settings screen is correct", 19, function suite(test) {
 
     casper.test.filename = "settings_test.png";
 
@@ -23,6 +23,7 @@ casper.test.begin("Settings screen is correct", 12, function suite(test) {
         }, "loaded content is general screen");
     });
 
+    // test the publishing / content tab
     casper.thenClick('.settings-menu .publishing', function then() {
         test.assertEval(function testGeneralIsNotActive() {
             return !document.querySelector('.settings-menu .general').classList.contains('active');
@@ -32,10 +33,84 @@ casper.test.begin("Settings screen is correct", 12, function suite(test) {
         }, "content tab is marked active");
         test.assertEval(function testContentIsContent() {
             return document.querySelector('.settings-content').id === 'content';
-        }, "loaded content is contentß screen");
+        }, "loaded content is content screen");
+    });
+
+    // test the user tab
+    casper.thenClick('.settings-menu .users', function then() {
+        test.assertEval(function testGeneralIsNotActive() {
+            return !document.querySelector('.settings-menu .general').classList.contains('active');
+        }, "general tab is not marked active");
+        test.assertEval(function testContentIsNotActive() {
+            return !document.querySelector('.settings-menu .publishing').classList.contains('active');
+        }, "content tab is marked active");
+        test.assertEval(function testUserIsActive() {
+            return document.querySelector('.settings-menu .users').classList.contains('active');
+        }, "user tab is marked active");
+        test.assertEval(function testContentIsUser() {
+            return document.querySelector('.settings-content').id === 'user';
+        }, "loaded content is user screen");
+    });
+
+    function handleUserRequest(requestData, request) {
+        // make sure we only get requests from the user pane
+        if (requestData.url.indexOf('settings/') !== -1) {
+            casper.test.fail("Saving the user pane triggered another settings pane to save");
+        }
+    }
+
+    function handleSettingsRequest(requestData, request) {
+        // make sure we only get requests from the user pane
+        if (requestData.url.indexOf('users/') !== -1) {
+            casper.test.fail("Saving a settings pane triggered the user pane to save");
+        }
+    }
+
+    casper.then(function listenForRequests() {
+        casper.on('resource.requested', handleUserRequest);
+    });
+
+    casper.thenClick('#user .button-save').waitFor(function successNotification() {
+        return this.evaluate(function () {
+            return document.querySelectorAll('.js-bb-notification section').length > 0;
+        });
+    }, function doneWaiting() {
+
+    }, function waitTimeout() {
+        casper.test.fail("Saving the user pane did not result in a notification");
+    });
+
+    casper.then(function checkUserWasSaved() {
+        casper.removeListener('resource.requested', handleUserRequest);
+        test.assertExists('.notification-success', 'got success notification');
+    });
+
+    casper.thenClick('#main-menu .settings a').then(function testOpeningSettingsTwice() {
+        casper.on('resource.requested', handleSettingsRequest);
+        test.assertEval(function testUserIsActive() {
+            return document.querySelector('.settings-menu .general').classList.contains('active');
+        }, "general tab is marked active");
+
+    });
+
+    casper.thenClick('#general .button-save').waitFor(function successNotification() {
+        return this.evaluate(function () {
+            return document.querySelectorAll('.js-bb-notification section').length > 0;
+        });
+    }, function doneWaiting() {
+
+    }, function waitTimeout() {
+        casper.test.fail("Saving the general pane did not result in a notification");
+    });
+
+    casper.then(function checkSettingsWereSaved() {
+        casper.removeListener('resource.requested', handleSettingsRequest);
+        test.assertExists('.notification-success', 'got success notification');
     });
 
     casper.run(function () {
+        casper.removeListener('resource.requested', handleUserRequest);
+        casper.removeListener('resource.requested', handleSettingsRequest);
         test.done();
     });
 });

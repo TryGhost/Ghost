@@ -20,6 +20,8 @@
         router: null
     };
 
+    _.extend(Ghost, Backbone.Events);
+
     Ghost.init = function () {
         Ghost.router = new Ghost.Router();
 
