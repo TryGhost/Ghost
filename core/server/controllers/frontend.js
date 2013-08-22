@@ -21,9 +21,17 @@ frontendControllers = {
         }
 
         api.posts.browse({page: pageParam}).then(function (page) {
+            var maxPage = page.pages;
+
+            // A bit of a hack for situations with no content.
+            if (maxPage === 0) {
+                maxPage = 1;
+                page.pages = 1;
+            }
+
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.pages) {
-                return res.redirect("/page/" + (page.pages) + "/");
+            if (pageParam > maxPage) {
+                return res.redirect("/page/" + maxPage + "/");
             }
 
             // Render the page of posts
