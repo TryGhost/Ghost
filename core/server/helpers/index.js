@@ -57,6 +57,38 @@ coreHelpers = function (ghost) {
     });
 
 
+    // ### Excerpt Helper
+    //
+    // *Usage example:*
+    // `{{excerpt}}`
+    // `{{excerpt words=50}}`
+    // `{{excerpt characters=256}}`
+    //
+    // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
+    //
+    // Defaults to words=50
+    //
+    // **returns** SafeString truncated, HTML-free content.
+    //
+    ghost.registerThemeHelper('excerpt', function (options) {
+        var truncateOptions = (options || {}).hash || {},
+            excerpt;
+
+        truncateOptions = _.pick(truncateOptions, ["words", "characters"]);
+
+        /*jslint regexp:true */
+        excerpt = String(this.content).replace(/<\/?[^>]+>/gi, "");
+        /*jslint regexp:false */
+
+        if (!truncateOptions.words && !truncateOptions.characters) {
+            truncateOptions.words = 50;
+        }
+
+        return new hbs.handlebars.SafeString(
+            downsize(excerpt, truncateOptions)
+        );
+    });
+
     /**
      * [ description]
      *
