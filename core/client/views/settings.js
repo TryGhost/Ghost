@@ -43,7 +43,8 @@
             var self = this,
                 model;
 
-            Backbone.history.navigate('/settings/' + id, {trigger: true});
+            Ghost.router.navigate('/settings/' + id);
+            Ghost.trigger('urlchange');
             if (this.pane && id === this.pane.el.id) {
                 return;
             }
@@ -100,7 +101,6 @@
                 message: 'Saved',
                 status: 'passive'
             });
-
         },
         saveError: function (message) {
             message = message || 'Something went wrong, not saved :(';
