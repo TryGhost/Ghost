@@ -61,6 +61,65 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('Excerpt Helper', function () {
+
+        it('has loaded excerpt helper', function () {
+            should.exist(handlebars.helpers.excerpt);
+        });
+
+        it('can render excerpt', function () {
+            var content = "Hello World",
+                rendered = handlebars.helpers.excerpt.call({content: content});
+
+            should.exist(rendered);
+            rendered.string.should.equal(content);
+        });
+
+        it('does not output HTML', function () {
+            var content = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:'
+                        + '<img src=b alt=\"c\"> those who <img src="@" onclick="javascript:alert(\'hello\');">'
+                        + "understand trinary</p>, those who don't <div style='' class=~/'-,._?!|#>and"
+                        + "< test > those<<< test >>> who mistake it &lt;for&gt; binary.",
+                expected = "There are 10 types of people in the world: those who understand trinary, those who don't "
+                         + "and those>> who mistake it &lt;for&gt; binary.",
+                rendered = handlebars.helpers.excerpt.call({content: content});
+
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+
+        });
+
+        it('can truncate content by word', function () {
+            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+                expected = "Hello World",
+                rendered = (
+                    handlebars.helpers.excerpt.call(
+                        {content: content},
+                        {"hash": {"words": 2}}
+                    )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
+
+        it('can truncate content by character', function () {
+            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+                expected = "Hello Wo",
+                rendered = (
+                    handlebars.helpers.excerpt.call(
+                        {content: content},
+                        {"hash": {"characters": 8}}
+                    )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
+
+
+    });
+
     describe('Navigation Helper', function () {
 
         it('has loaded nav helper', function () {
