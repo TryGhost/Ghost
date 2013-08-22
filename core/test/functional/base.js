@@ -31,6 +31,10 @@ var host = casper.cli.options.host || 'localhost',
         email: email,
         password: password
     },
+    falseUser = {
+        email: email,
+        password: 'letmethrough'
+    },
     testPost = {
         title: "Bacon ipsum dolor sit amet",
         content: "I am a test post.\n#I have some small content"
