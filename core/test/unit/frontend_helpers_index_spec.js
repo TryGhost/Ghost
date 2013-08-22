@@ -99,14 +99,14 @@ describe('Core Helpers', function () {
     });
 
     describe("Pagination helper", function () {
-        it('has loaded paginate helper', function () {
-            should.exist(handlebars.helpers.paginate);
+        it('has loaded pagination helper', function () {
+            should.exist(handlebars.helpers.pagination);
         });
 
         it('can render single page with no pagination necessary', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.paginate.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
+                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
                 should.exist(rendered);
                 rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 1<span class="extended"> of 1</span></div>\n    \n</nav>');
                 done();
@@ -116,7 +116,7 @@ describe('Core Helpers', function () {
         it('can render first page of many with older posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.paginate.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
+                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
                 rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/2/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 1<span class="extended"> of 3</span></div>\n    \n</nav>');
                 done();
@@ -126,7 +126,7 @@ describe('Core Helpers', function () {
         it('can render middle pages of many with older and newer posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.paginate.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
+                rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
                 rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/3/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 2<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/1/">← Newer Posts</a></div>\n    \n</nav>');
                 done();
@@ -136,7 +136,7 @@ describe('Core Helpers', function () {
         it('can render last page of many with newer posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.paginate.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
+                rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
                 rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 3<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/2/">← Newer Posts</a></div>\n    \n</nav>');
                 done();
@@ -147,7 +147,7 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 var runErrorTest = function (data) {
                     return function () {
-                        handlebars.helpers.paginate.call(data);
+                        handlebars.helpers.pagination.call(data);
                     };
                 };
 
