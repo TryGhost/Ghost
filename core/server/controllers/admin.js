@@ -13,7 +13,8 @@ var Ghost = require('../../ghost'),
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
     adminNavbar,
-    adminControllers;
+    adminControllers,
+    loginSecurity = [];
 
  // TODO: combine path/navClass to single "slug(?)" variable with no prefix
 adminNavbar = {
@@ -42,6 +43,7 @@ adminNavbar = {
         path: '/settings/'
     }
 };
+
 
 // TODO: make this a util or helper
 function setSelected(list, name) {
@@ -93,13 +95,28 @@ adminControllers = {
         });
     },
     'auth': function (req, res) {
-        api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-            req.session.user = user.id;
-            res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                + decodeURIComponent(req.body.redirect) : '/ghost/'});
-        }, function (error) {
-            res.json(401, {error: error.message});
+        var currentTime = process.hrtime()[0],
+            denied = '';
+        loginSecurity = _.filter(loginSecurity, function (ipTime) {
+            return (ipTime.time + 2 > currentTime);
         });
+        denied = _.find(loginSecurity, function (ipTime) {
+            return (ipTime.ip === req.connection.remoteAddress);
+        });
+
+        if (!denied) {
+            loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
+            api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
+                req.session.user = user.id;
+                res.json(200, {redirect: req.body.redirect ? '/ghost/'
+                    + decodeURIComponent(req.body.redirect) : '/ghost/'});
+            }, function (error) {
+                res.json(401, {error: error.message});
+            });
+        } else {
+            res.json(401, {error: 'Slow down, there are way too many login attempts!'});
+        }
+
     },
     changepw: function (req, res) {
         api.users.changePassword({
