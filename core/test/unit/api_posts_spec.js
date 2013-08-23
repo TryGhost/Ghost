@@ -6,7 +6,8 @@ var _ = require("underscore"),
 
 describe('Post Model', function () {
 
-    var PostModel = Models.Post;
+    var PostModel = Models.Post,
+        UserModel = Models.User;
 
     beforeEach(function (done) {
         helpers.resetData().then(function () {
@@ -42,6 +43,65 @@ describe('Post Model', function () {
 
             done();
         }).then(null, done);
+    });
+
+    it('can findAll, returning author and user data', function (done) {
+        var firstPost,
+            userData = {
+                password: 'testpass1',
+                email_address: "test@test1.com",
+                full_name: "Mr Biscuits"
+            };
+
+        helpers.resetData().then(function () {
+            UserModel.add(userData).then(function (createdUser) {
+
+                PostModel.findAll({}).then(function (results) {
+                    should.exist(results);
+                    results.length.should.be.above(0);
+                    firstPost = results.models[0].toJSON();
+
+                    firstPost.author.should.be.a("object");
+                    firstPost.user.should.be.a("object");
+                    firstPost.author.full_name.should.equal("Mr Biscuits");
+                    firstPost.user.full_name.should.equal("Mr Biscuits");
+
+                    return true;
+
+                }).then(null, done);
+
+                done();
+            }).then(null, done);
+        });
+    });
+
+    it('can findOne, returning author and user data', function (done) {
+        var firstPost,
+            userData = {
+                password: 'testpass1',
+                email_address: "test@test1.com",
+                full_name: "Mr Biscuits"
+            };
+
+        helpers.resetData().then(function () {
+            UserModel.add(userData).then(function (createdUser) {
+
+                PostModel.findOne({}).then(function (result) {
+                    should.exist(result);
+                    firstPost = result.toJSON();
+
+                    firstPost.author.should.be.a("object");
+                    firstPost.user.should.be.a("object");
+                    firstPost.author.full_name.should.equal("Mr Biscuits");
+                    firstPost.user.full_name.should.equal("Mr Biscuits");
+
+                    return true;
+
+                }).then(null, done);
+
+                done();
+            }).then(null, done);
+        });
     });
 
     it('can edit', function (done) {

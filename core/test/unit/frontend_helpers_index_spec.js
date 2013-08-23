@@ -60,6 +60,28 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p>Hello <strong>Wo</strong></p>");
         });
     });
+    
+    describe('Author Helper', function () {
+        
+        it('has loaded author helper', function () {
+            should.exist(handlebars.helpers.author);
+        });
+        
+        it("Returns the full name of the author from the context",function() {
+            var content = {"author":{"full_name":"abc123"}},
+                result = handlebars.helpers.author.call(content);
+
+            String(result).should.equal("abc123");
+        });
+        
+        it("Returns a blank string where author data is missing",function() {
+            var content = {"author":null},
+                result = handlebars.helpers.author.call(content);
+
+            String(result).should.equal("");
+        });
+        
+    });
 
     describe('Navigation Helper', function () {
 

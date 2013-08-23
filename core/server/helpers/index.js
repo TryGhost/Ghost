@@ -29,6 +29,19 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+
+    // ### Author Helper
+    // 
+    // *Usage example:*
+    // `{{author}}`
+    // 
+    // Returns the full name of the author of a given post, or a blank string
+    // if the author could not be determined.
+    //
+    ghost.registerThemeHelper('author', function (context, options) {
+        return this.author ? this.author.full_name : "";
+    });
+
     // ### Content Helper
     // 
     // *Usage example:*
