@@ -61,6 +61,16 @@ function auth(req, res, next) {
 }
 
 
+// Check if we're logged in, and if so, redirect people back to dashboard
+// Login and signup forms in particular
+function redirectToDashboard(req, res, next) {
+    if (req.session.user) {
+        return res.redirect('/ghost/');
+    }
+
+    next();
+}
+
 // While we're here, let's clean up on aisle 5
 // That being ghost.notifications, and let's remove the passives from there
 // plus the local messages, as the have already been added at this point
@@ -238,8 +248,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     // ### Admin routes
     /* TODO: put these somewhere in admin */
     ghost.app().get(/^\/logout\/?$/, admin.logout);
-    ghost.app().get('/ghost/login/', admin.login);
-    ghost.app().get('/ghost/signup/', admin.signup);
+    ghost.app().get('/ghost/login/', redirectToDashboard, admin.login);
+    ghost.app().get('/ghost/signup/', redirectToDashboard, admin.signup);
     ghost.app().post('/ghost/login/', admin.auth);
     ghost.app().post('/ghost/signup/', signupValidate, admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);
