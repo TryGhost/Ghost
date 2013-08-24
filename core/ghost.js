@@ -16,6 +16,7 @@ var config = require('./../config'),
     plugins = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
     permissions = require('./server/permissions'),
+    uuid = require('node-uuid'),
 
 // Variables
     appRoot = path.resolve(__dirname, '../'),
@@ -83,6 +84,9 @@ Ghost = function () {
         // Holds the available plugins
         instance.availablePlugins = {};
 
+        // Holds the dbhash (mainly used for cookie secret)
+        instance.dbHash = undefined;
+
         app = express();
         polyglot = new Polyglot();
 
@@ -133,6 +137,20 @@ Ghost.prototype.init = function () {
     }).then(function () {
         // Initialize the permissions actions and objects
         return permissions.init();
+    }).then(function () {
+        // get the settings and whatnot
+        return when(models.Settings.read('dbHash')).then(function (dbhash) {
+            // we already ran this, chill
+            self.dbHash = dbhash.attributes.value;
+            return dbhash.attributes.value;
+        }).otherwise(function (error) {
+            // this is where all the "first run" functionality should go
+            var dbhash = uuid.v4();
+            return when(models.Settings.add({key: 'dbHash', value: dbhash})).then(function (returned) {
+                self.dbHash = dbhash;
+                return dbhash;
+            });
+        });
     }, errors.logAndThrowError);
 };
 
