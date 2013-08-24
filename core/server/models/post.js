@@ -109,6 +109,10 @@ Post = GhostBookshelf.Model.extend({
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
             .test(slug) ? slug + '-post' : slug;
 
+        //if slug is empty after trimming use "post"
+        if (!slug) {
+            slug = "post";
+        }
         // Test for duplicate slugs.
         return checkIfSlugExists(slug);
     },
