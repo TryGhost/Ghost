@@ -5,7 +5,7 @@ casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
 
     casper.start(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertEquals(this.getCurrentUrl(), url + "ghost/login/", "Ghost requires login");
+        test.assertEquals(this.getCurrentUrl(), url + "ghost/signin/", "Ghost requires login");
     }).viewport(1280, 1024);
 
     casper.run(function () {
@@ -13,12 +13,24 @@ casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
     });
 });
 
+casper.test.begin('Redirects to signin', 2, function suite(test) {
+    casper.test.filename = 'login_redirect_test.png';
+
+    casper.start(url + 'ghost/login/', function testRedirect(response) {
+        test.assertEqual(response.status, 200, 'Response status should be 200.');
+        test.assert(/\/signin\/$/.test(response.url), 'Should be redirected to /signin/. Actual response url: ' + response.url + '.');
+    });
+
+    casper.run(function () {
+        test.done();
+    });
+});
 
 casper.test.begin("Can login to Ghost", 3, function suite(test) {
 
     casper.test.filename = "login_test.png";
 
-    casper.start(url + "ghost/login/", function testTitle() {
+    casper.start(url + "ghost/signin/", function testTitle() {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
@@ -50,7 +62,7 @@ casper.test.begin("Can't spam it", 2, function suite(test) {
 
     casper.test.filename = "login_test.png";
 
-    casper.start(url + "ghost/login/", function testTitle() {
+    casper.start(url + "ghost/signin/", function testTitle() {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 

@@ -44,7 +44,7 @@ function auth(req, res, next) {
         if (path !== '') {
             msg = {
                 type: 'error',
-                message: 'Please Log In',
+                message: 'Please Sign In',
                 status: 'passive',
                 id: 'failedauth'
             };
@@ -54,7 +54,7 @@ function auth(req, res, next) {
             }
             redirect = '?r=' + encodeURIComponent(path);
         }
-        return res.redirect('/ghost/login/' + redirect);
+        return res.redirect('/ghost/signin/' + redirect);
     }
 
     next();
@@ -114,7 +114,7 @@ function signupValidate(req, res, next) {
 function authAPI(req, res, next) {
     if (!req.session.user) {
         // TODO: standardize error format/codes/messages
-        var err = { code: 42, message: 'Please login' };
+        var err = { code: 42, message: 'Please sign in' };
         res.json(401, { error: err });
         return;
     }
@@ -247,10 +247,16 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
-    ghost.app().get(/^\/logout\/?$/, admin.logout);
-    ghost.app().get('/ghost/login/', redirectToDashboard, admin.login);
+    ghost.app().get(/^\/logout\/?$/, function redirect(req, res) {
+        res.redirect(301, '/signout/');
+    });
+    ghost.app().get(/^\/signout\/?$/, admin.logout);
+    ghost.app().get('/ghost/login/', function redirect(req, res) {
+        res.redirect(301, '/ghost/signin/');
+    });
+    ghost.app().get('/ghost/signin/', redirectToDashboard, admin.login);
     ghost.app().get('/ghost/signup/', redirectToDashboard, admin.signup);
-    ghost.app().post('/ghost/login/', admin.auth);
+    ghost.app().post('/ghost/signin/', admin.auth);
     ghost.app().post('/ghost/signup/', signupValidate, admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
@@ -262,7 +268,7 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().post('/ghost/debug/db/import/', auth, admin.debug['import']);
     ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     ghost.app().post('/ghost/upload', admin.uploader);
-    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
     ghost.app().get('/ghost/', auth, admin.index);

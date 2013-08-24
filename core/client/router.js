@@ -14,7 +14,7 @@
             'debug/'           : 'debug',
             'register/'        : 'register',
             'signup/'          : 'signup',
-            'login/'           : 'login'
+            'signin/'          : 'login'
         },
 
         signup: function () {
