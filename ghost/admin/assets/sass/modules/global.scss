@@ -71,8 +71,6 @@ body {
     color: $darkgrey;
     font-weight: 300;
     background: $lightbrown;
-    word-break: break-word;
-    hyphens: auto;
     @include breakpoint($mobile) { background: #fff; }
 }
 

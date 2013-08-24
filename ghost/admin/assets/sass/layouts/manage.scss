@@ -181,6 +181,8 @@
         top:0; 
         right:0; 
         border-left:$lightbrown 2px solid;
+        word-break: break-word;
+        hyphens: auto;
         background: #fff;
         box-shadow: $shadow;
         @include breakpoint($tablet) {
