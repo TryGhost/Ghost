@@ -63,7 +63,7 @@ function auth(req, res, next) {
 
 // While we're here, let's clean up on aisle 5
 // That being ghost.notifications, and let's remove the passives from there
-// plus the local messages, as the have already been added at this point
+// plus the local messages, as they have already been added at this point
 // otherwise they'd appear one too many times
 function cleanNotifications(req, res, next) {
     ghost.notifications = _.reject(ghost.notifications, function (notification) {
@@ -177,40 +177,37 @@ function disableCachedResult(req, res, next) {
     next();
 }
 
-// ##Configuration
-ghost.app().configure(function () {
-    ghost.app().use(isGhostAdmin);
-    ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-    ghost.app().use(I18n.load(ghost));
-    ghost.app().use(express.bodyParser({}));
-    ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
-    ghost.app().use(express.cookieParser('try-ghost'));
-    ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
-    ghost.app().use(ghost.initTheme(ghost.app()));
-
-    if (process.env.NODE_ENV !== "development") {
-        ghost.app().use(express.logger());
-        ghost.app().use(express.errorHandler({ dumpExceptions: false, showStack: false }));
-    }
-});
-
-// Development only configuration
-ghost.app().configure("development", function () {
-    ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    ghost.app().use(express.logger('dev'));
-});
-
-
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
 when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
 
+    // ##Configuration
+    ghost.app().configure(function () {
+        ghost.app().use(isGhostAdmin);
+        ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
+        ghost.app().use(I18n.load(ghost));
+        ghost.app().use(express.bodyParser({}));
+        ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
+        ghost.app().use(express.cookieParser(ghost.dbHash));
+        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+        ghost.app().use(ghost.initTheme(ghost.app()));
+        if (process.env.NODE_ENV !== "development") {
+            ghost.app().use(express.logger());
+            ghost.app().use(express.errorHandler({ dumpExceptions: false, showStack: false }));
+        }
+    });
+
+    // Development only configuration
+    ghost.app().configure("development", function () {
+        ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        ghost.app().use(express.logger('dev'));
+    });
+
     // post init config
     ghost.app().use(ghostLocals);
-    // because science
+    // So on every request we actually clean out reduntant passive notifications from the server side
     ghost.app().use(cleanNotifications);
-
 
     // ## Routing
 
