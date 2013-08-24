@@ -42,18 +42,15 @@ sampleUserRole = function (i) {
 };
 
 helpers = {
-    resetData: function () {
 
-        return this.clearData().then(function () {
-            return migration.init();
-        });
+    initData: function (done) {
+        return migration.init();
     },
 
     clearData: function () {
         // we must always try to delete all tables
         return migration.migrateDownFromVersion(migration.currentVersion);
     },
-
 
     insertMorePosts: function () {
         var lang, status, posts, promises = [], i, j;
@@ -69,6 +66,7 @@ helpers = {
         }
         return when.all(promises);
     },
+
     insertDefaultUser: function () {
 
         var users = [],
@@ -82,6 +80,7 @@ helpers = {
 
         return when.all(u_promises);
     }
+
 };
 
 module.exports = helpers;

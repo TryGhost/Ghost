@@ -9,10 +9,32 @@ var _ = require("underscore"),
 describe('Post Model', function () {
 
     var PostModel = Models.Post,
-        UserModel = Models.User;
+        UserModel = Models.User,
+        userData = {
+            password: 'testpass1',
+            email_address: "test@test1.com",
+            full_name: "Mr Biscuits"
+        };
+
+    before(function (done) {
+        helpers.clearData().then(function () {
+            done();
+        }, done);
+    });
 
     beforeEach(function (done) {
-        helpers.resetData().then(function () {
+        this.timeout(5000);
+        helpers.initData()
+            .then(function () {
+                return UserModel.add(userData);
+            })
+            .then(function () {
+                done();
+            }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });
@@ -48,62 +70,36 @@ describe('Post Model', function () {
     });
 
     it('can findAll, returning author and user data', function (done) {
-        var firstPost,
-            userData = {
-                password: 'testpass1',
-                email_address: "test@test1.com",
-                full_name: "Mr Biscuits"
-            };
+        var firstPost;
 
-        helpers.resetData().then(function () {
-            UserModel.add(userData).then(function (createdUser) {
+        PostModel.findAll({}).then(function (results) {
+            should.exist(results);
+            results.length.should.be.above(0);
+            firstPost = results.models[0].toJSON();
 
-                PostModel.findAll({}).then(function (results) {
-                    should.exist(results);
-                    results.length.should.be.above(0);
-                    firstPost = results.models[0].toJSON();
+            firstPost.author.should.be.a("object");
+            firstPost.user.should.be.a("object");
+            firstPost.author.full_name.should.equal("Mr Biscuits");
+            firstPost.user.full_name.should.equal("Mr Biscuits");
 
-                    firstPost.author.should.be.a("object");
-                    firstPost.user.should.be.a("object");
-                    firstPost.author.full_name.should.equal("Mr Biscuits");
-                    firstPost.user.full_name.should.equal("Mr Biscuits");
-
-                    return true;
-
-                }).then(null, done);
-
-                done();
-            }).then(null, done);
-        });
+            done();
+        }, done);
     });
 
     it('can findOne, returning author and user data', function (done) {
-        var firstPost,
-            userData = {
-                password: 'testpass1',
-                email_address: "test@test1.com",
-                full_name: "Mr Biscuits"
-            };
+        var firstPost;
 
-        helpers.resetData().then(function () {
-            UserModel.add(userData).then(function (createdUser) {
+        PostModel.findOne({}).then(function (result) {
+            should.exist(result);
+            firstPost = result.toJSON();
 
-                PostModel.findOne({}).then(function (result) {
-                    should.exist(result);
-                    firstPost = result.toJSON();
+            firstPost.author.should.be.a("object");
+            firstPost.user.should.be.a("object");
+            firstPost.author.full_name.should.equal("Mr Biscuits");
+            firstPost.user.full_name.should.equal("Mr Biscuits");
 
-                    firstPost.author.should.be.a("object");
-                    firstPost.user.should.be.a("object");
-                    firstPost.author.full_name.should.equal("Mr Biscuits");
-                    firstPost.user.full_name.should.equal("Mr Biscuits");
-
-                    return true;
-
-                }).then(null, done);
-
-                done();
-            }).then(null, done);
-        });
+            done();
+        }, done);
     });
 
     it('can edit', function (done) {
@@ -172,7 +168,9 @@ describe('Post Model', function () {
                 content_raw: 'Test Content 1'
             };
 
-        // Create 12 posts with the sametitle
+        this.timeout(5000); // this is a patch to ensure it doesn't timeout.
+
+        // Create 12 posts with the same title
         sequence(_.times(12, function (i) {
             return function () {
                 return PostModel.add({
@@ -241,7 +239,7 @@ describe('Post Model', function () {
     });
 
     it('can fetch a paginated set, with various options', function (done) {
-        this.timeout(5000);
+        this.timeout(10000); // this is a patch to ensure it doesn't timeout.
 
         helpers.insertMorePosts().then(function () {
 

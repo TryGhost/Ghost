@@ -12,7 +12,20 @@ var _ = require("underscore"),
 describe('Plugins', function () {
 
     before(function (done) {
-        helpers.resetData().then(function () {
+        helpers.clearData().then(function () {
+            done();
+        }, done);
+    });
+
+    beforeEach(function (done) {
+        this.timeout(5000);
+        helpers.initData().then(function () {
+            done();
+        }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });

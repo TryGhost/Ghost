@@ -224,7 +224,8 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
                 should.exist(rendered);
-                rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 1<span class="extended"> of 1</span></div>\n    \n</nav>');
+                // strip out carriage returns and compare.
+                rendered.string.replace(/\r/g, '').should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 1<span class="extended"> of 1</span></div>\n    \n</nav>');
                 done();
             }).then(null, done);
         });
@@ -234,7 +235,8 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/2/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 1<span class="extended"> of 3</span></div>\n    \n</nav>');
+                // strip out carriage returns and compare.
+                rendered.string.replace(/\r/g, '').should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/2/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 1<span class="extended"> of 3</span></div>\n    \n</nav>');
                 done();
             }).then(null, done);
         });
@@ -244,7 +246,8 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/3/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 2<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/1/">← Newer Posts</a></div>\n    \n</nav>');
+                // strip out carriage returns and compare.
+                rendered.string.replace(/\r/g, '').should.equal('\n<nav id="pagination" role="pagination">\n    \n        <div class="previous-page"><a href="/page/3/">Older Posts →</a></div>\n    \n    <div class="page-number">Page 2<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/1/">← Newer Posts</a></div>\n    \n</nav>');
                 done();
             }).then(null, done);
         });
@@ -254,7 +257,8 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                rendered.string.should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 3<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/2/">← Newer Posts</a></div>\n    \n</nav>');
+                // strip out carriage returns and compare.
+                rendered.string.replace(/\r/g, '').should.equal('\n<nav id="pagination" role="pagination">\n    \n    <div class="page-number">Page 3<span class="extended"> of 3</span></div>\n    \n        <div class="next-page"><a href="/page/2/">← Newer Posts</a></div>\n    \n</nav>');
                 done();
             }).then(null, done);
         });
