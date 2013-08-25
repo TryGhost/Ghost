@@ -177,6 +177,30 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('ghost_head Helper', function () {
+        it('has loaded ghost_head helper', function () {
+            should.exist(handlebars.helpers.ghost_head);
+        });
+
+        it('returns meta tag string', function () {
+            var rendered = handlebars.helpers.ghost_head.call({version: "0.3"});
+            should.exist(rendered);
+            rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />');
+        });
+    });
+
+    describe('ghost_foot Helper', function () {
+        it('has loaded ghost_foot helper', function () {
+            should.exist(handlebars.helpers.ghost_foot);
+        });
+
+        it('returns meta tag string', function () {
+            var rendered = handlebars.helpers.ghost_foot.call();
+            should.exist(rendered);
+            rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.js"></script>');
+        });
+    });
+
     describe('Navigation Helper', function () {
 
         it('has loaded nav helper', function () {
