@@ -284,6 +284,12 @@ coreHelpers = function (ghost) {
         });
     });
 
+    ghost.registerThemeHelper('helperMissing', function (arg) {
+        if (arguments.length === 2) {
+            return undefined;
+        }
+        errors.logError("Missing helper: '" + arg + "'");
+    });
     // Return once the template-driven helpers have loaded
     return when.join(
         navHelper,
