@@ -34,6 +34,11 @@ User = GhostBookshelf.Model.extend({
 
     hasTimestamps: true,
 
+    permittedAttributes: [
+        'id', 'uuid', 'full_name', 'password', 'email_address', 'profile_picture', 'cover_picture', 'bio', 'url', 'location',
+        'created_at', 'created_by', 'updated_at', 'updated_by'
+    ],
+
     defaults: function () {
         return {
             uuid: uuid.v4()
@@ -41,6 +46,7 @@ User = GhostBookshelf.Model.extend({
     },
 
     initialize: function () {
+        this.on('saving', this.saving, this);
         this.on('saving', this.validate, this);
     },
 
@@ -51,6 +57,13 @@ User = GhostBookshelf.Model.extend({
             GhostBookshelf.validator.check(this.get('url'), "Your website is not a valid URL.").isUrl();
         }
         return true;
+    },
+
+    saving: function () {
+        // Deal with the related data here
+
+        // Remove any properties which don't belong on the post model
+        this.attributes = this.pick(this.permittedAttributes);
     },
 
     posts: function () {

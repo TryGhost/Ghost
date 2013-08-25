@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url, testPost */
 
-casper.test.begin("Ghost editor is correct", 8, function suite(test) {
+casper.test.begin("Ghost editor is correct", 10, function suite(test) {
 
     casper.test.filename = "editor_test.png";
 
@@ -18,6 +18,12 @@ casper.test.begin("Ghost editor is correct", 8, function suite(test) {
         }
     }
 
+    // test saving with no data
+    casper.thenClick('.button-save').wait(500, function doneWait() {
+        test.assertExists('.notification-error', 'got error notification');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    });
+
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
         casper.writeContentToCodeMirror(testPost.content);
@@ -30,11 +36,7 @@ casper.test.begin("Ghost editor is correct", 8, function suite(test) {
         casper.on('resource.received', handleResource);
     });
 
-    casper.thenClick('.button-save').wait(1000, function doneWait() {
-        this.echo("I've waited for another 1 seconds.");
-    });
-
-    casper.then(function checkPostWasCreated() {
+    casper.thenClick('.button-save').waitForResource(/posts/, function checkPostWasCreated() {
         var urlRegExp = new RegExp("^" + url + "ghost\/editor\/[0-9]*");
         test.assertUrlMatch(urlRegExp, 'got an id on our URL');
         test.assertExists('.notification-success', 'got success notification');

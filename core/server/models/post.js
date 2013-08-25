@@ -13,6 +13,12 @@ Post = GhostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    permittedAttributes: [
+        'id', 'uuid', 'title', 'slug', 'content_raw', 'content', 'meta_title', 'meta_description', 'meta_keywords',
+        'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
+        'published_at', 'published_by'
+    ],
+
     hasTimestamps: true,
 
     defaults: function () {
@@ -24,9 +30,9 @@ Post = GhostBookshelf.Model.extend({
     },
 
     initialize: function () {
-        this.on('saving', this.validate, this);
         this.on('creating', this.creating, this);
         this.on('saving', this.saving, this);
+        this.on('saving', this.validate, this);
     },
 
     validate: function () {
@@ -36,6 +42,11 @@ Post = GhostBookshelf.Model.extend({
     },
 
     saving: function () {
+        // Deal with the related data here
+
+        // Remove any properties which don't belong on the post model
+        this.attributes = this.pick(this.permittedAttributes);
+
         this.set('content', converter.makeHtml(this.get('content_raw')));
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
