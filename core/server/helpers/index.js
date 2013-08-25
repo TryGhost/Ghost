@@ -103,7 +103,7 @@ coreHelpers = function (ghost) {
     });
 
 
-    ghost.registerThemeHelper('bodyclass', function (options) {
+    ghost.registerThemeHelper('body_class', function (options) {
         var classes = [];
         if (!this.path || this.path === '/' || this.path === '') {
             classes.push('home-template');
@@ -111,17 +111,17 @@ coreHelpers = function (ghost) {
             classes.push('post-template');
         }
 
-        return ghost.doFilter('bodyclass', classes, function (classes) {
+        return ghost.doFilter('body_class', classes, function (classes) {
             var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
             return new hbs.handlebars.SafeString(classString.trim());
         });
     });
 
-    ghost.registerThemeHelper('postclass', function (options) {
+    ghost.registerThemeHelper('post_class', function (options) {
         var classes = ['post'];
 
         // TODO: add tag names once we have them
-        return ghost.doFilter('postclass', classes, function (classes) {
+        return ghost.doFilter('post_class', classes, function (classes) {
             var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
             return new hbs.handlebars.SafeString(classString.trim());
         });

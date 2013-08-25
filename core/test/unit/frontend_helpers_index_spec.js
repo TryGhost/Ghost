@@ -140,21 +140,21 @@ describe('Core Helpers', function () {
         });
     });
 
-    describe('Bodyclass Helper', function () {
-        it('has loaded bodyclass helper', function () {
-            should.exist(handlebars.helpers.bodyclass);
+    describe('body_class Helper', function () {
+        it('has loaded body_class helper', function () {
+            should.exist(handlebars.helpers.body_class);
         });
 
         it('can render class string', function () {
-            var rendered = handlebars.helpers.bodyclass.call({});
+            var rendered = handlebars.helpers.body_class.call({});
             should.exist(rendered);
 
             rendered.string.should.equal('home-template');
         });
 
         it('can render class string for context', function () {
-            var rendered1 = handlebars.helpers.bodyclass.call({path: '/'}),
-                rendered2 = handlebars.helpers.bodyclass.call({path: '/a-post-title'});
+            var rendered1 = handlebars.helpers.body_class.call({path: '/'}),
+                rendered2 = handlebars.helpers.body_class.call({path: '/a-post-title'});
 
             should.exist(rendered1);
             should.exist(rendered2);
@@ -164,13 +164,13 @@ describe('Core Helpers', function () {
         });
     });
 
-    describe('Postclass Helper', function () {
+    describe('post_class Helper', function () {
         it('has loaded postclass helper', function () {
-            should.exist(handlebars.helpers.postclass);
+            should.exist(handlebars.helpers.post_class);
         });
 
         it('can render class string', function () {
-            var rendered = handlebars.helpers.postclass.call({});
+            var rendered = handlebars.helpers.post_class.call({});
             should.exist(rendered);
 
             rendered.string.should.equal('post');
