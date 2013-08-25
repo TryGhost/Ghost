@@ -176,6 +176,10 @@ var path = require('path'),
                     src: ['core/test/unit/**/api*_spec.js']
                 },
 
+                frontend: {
+                    src: ['core/test/unit/**/frontend*_spec.js']
+                },
+
                 perm: {
                     src: ['core/test/unit/**/permissions_spec.js']
                 },

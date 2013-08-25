@@ -13,12 +13,27 @@ var _ = require("underscore"),
 
 describe('permissions', function () {
 
+    before(function (done) {
+        helpers.clearData()
+            .then(function () {
+                done();
+            }, done);
+    });
+
     beforeEach(function (done) {
-        helpers.resetData().then(function () {
-            return helpers.insertDefaultUser();
-        }).then(function () {
-            done();
-        }, done);
+        this.timeout(5000);
+        helpers.initData()
+            .then(helpers.insertDefaultUser)
+            .then(function () {
+                done();
+            }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData()
+            .then(function () {
+                done();
+            }, done);
     });
 
     var testPerms = [
