@@ -3,7 +3,7 @@ var _ = require('underscore'),
     should = require('should'),
     helpers = require('./helpers'),
     errors = require('../../server/errorHandling'),
-    Models = require('../../server/models');
+    Models = require('../../server/models'),
     when = require('when');
 
 describe('User Model', function run() {
@@ -39,7 +39,7 @@ describe('User Model', function run() {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
-                createdUser.attributes.email_address.should.eql(userData.email_address, "email address corred");
+                createdUser.attributes.email_address.should.eql(userData.email_address, "email address correct");
 
                 done();
             }).then(null, done);

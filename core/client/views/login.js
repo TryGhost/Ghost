@@ -52,8 +52,7 @@
             event.preventDefault();
             var email = this.$el.find('.email').val(),
                 password = this.$el.find('.password').val(),
-                redirect = this.getUrlVariables().r,
-                self = this;
+                redirect = Ghost.Views.Utils.getUrlVariables().r;
 
             $.ajax({
                 url: '/ghost/signin/',
@@ -66,10 +65,10 @@
                 success: function (msg) {
                     window.location.href = msg.redirect;
                 },
-                error: function (obj, string, status) {
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: self.getRequestErrorMessage(obj),
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }
@@ -88,8 +87,7 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val(),
-                self = this;
+                password = this.$el.find('.password').val();
 
             $.ajax({
                 url: '/ghost/signup/',
@@ -101,10 +99,10 @@
                 success: function (msg) {
                     window.location.href = msg.redirect;
                 },
-                error: function (obj, string, status) {
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: self.getRequestErrorMessage(obj),
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }

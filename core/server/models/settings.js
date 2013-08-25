@@ -8,13 +8,36 @@ var Settings,
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
 Settings = GhostBookshelf.Model.extend({
+
     tableName: 'settings',
+
     hasTimestamps: true,
+
+    permittedAttributes: ['id', 'uuid', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'update_by'],
+
     defaults: function () {
         return {
             uuid: uuid.v4(),
             type: 'general'
         };
+    },
+
+    initialize: function () {
+        this.on('saving', this.saving, this);
+        this.on('saving', this.validate, this);
+    },
+
+    validate: function () {
+        // TODO: validate value, check type is one of the allowed values etc
+        GhostBookshelf.validator.check(this.get('key'), "Setting key cannot be blank").notEmpty();
+        GhostBookshelf.validator.check(this.get('type'), "Setting type cannot be blank").notEmpty();
+    },
+
+    saving: function () {
+        // Deal with the related data here
+
+        // Remove any properties which don't belong on the post model
+        this.attributes = this.pick(this.permittedAttributes);
     }
 }, {
     read: function (_key) {

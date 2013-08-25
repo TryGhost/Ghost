@@ -37,6 +37,7 @@ casper.test.begin("Can login to Ghost", 3, function suite(test) {
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
+
             return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
@@ -62,7 +63,7 @@ casper.test.begin("Can't spam it", 2, function suite(test) {
 
     casper.test.filename = "login_test.png";
 
-    casper.start(url + "ghost/signin/", function testTitle() {
+    casper.start(url + "ghost/login/", function testTitle() {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
