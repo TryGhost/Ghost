@@ -56,7 +56,7 @@
                 self = this;
 
             $.ajax({
-                url: '/ghost/login/',
+                url: '/ghost/signin/',
                 type: 'POST',
                 data: {
                     email: email,
