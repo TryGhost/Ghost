@@ -149,7 +149,7 @@ describe('Core Helpers', function () {
             var rendered = handlebars.helpers.bodyclass.call({});
             should.exist(rendered);
 
-            rendered.string.should.equal('home');
+            rendered.string.should.equal('home-template');
         });
 
         it('can render class string for context', function () {
@@ -159,8 +159,8 @@ describe('Core Helpers', function () {
             should.exist(rendered1);
             should.exist(rendered2);
 
-            rendered1.string.should.equal('home');
-            rendered2.string.should.equal('post');
+            rendered1.string.should.equal('home-template');
+            rendered2.string.should.equal('post-template');
         });
     });
 
