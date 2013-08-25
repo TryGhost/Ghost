@@ -127,7 +127,25 @@ coreHelpers = function (ghost) {
         });
     });
 
+    ghost.registerThemeHelper('ghost_head', function (options) {
+        var head = [];
+        head.push('<meta name="generator" content="Ghost ' + this.version + '" />');
 
+        return ghost.doFilter('ghost_head', head, function (head) {
+            var headString = _.reduce(head, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(headString.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('ghost_foot', function (options) {
+        var foot = [];
+        foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
+
+        return ghost.doFilter('ghost_foot', foot, function (foot) {
+            var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(footString.trim());
+        });
+    });
     /**
      * [ description]
      *
