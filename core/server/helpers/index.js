@@ -106,9 +106,9 @@ coreHelpers = function (ghost) {
     ghost.registerThemeHelper('bodyclass', function (options) {
         var classes = [];
         if (!this.path || this.path === '/' || this.path === '') {
-            classes.push('home');
+            classes.push('home-template');
         } else {
-            classes.push('post');
+            classes.push('post-template');
         }
 
         return ghost.doFilter('bodyclass', classes, function (classes) {
