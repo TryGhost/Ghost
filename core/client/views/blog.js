@@ -72,9 +72,9 @@
         },
 
         removeItem: function () {
-            var view = this;
+            var self = this;
             $.when(this.$el.slideUp()).then(function () {
-                view.remove();
+                self.remove();
             });
         },
 

@@ -114,3 +114,43 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
         test.done();
     });
 });
+
+casper.test.begin("User settings screen validates email", 6, function suite(test) {
+    var email, brokenEmail;
+
+    casper.test.filename = "user_settings_test.png";
+
+    casper.start(url + "ghost/settings/user", function testTitleAndUrl() {
+        test.assertTitle("", "Ghost admin has no title");
+        test.assertEquals(this.getCurrentUrl(), url + "ghost/settings/user", "Ghost doesn't require login this time");
+    }).viewport(1280, 1024);
+
+    casper.then(function setEmailToInvalid() {
+        email = casper.getElementInfo('#user-email').attributes.value;
+        brokenEmail = email.replace('.', '-');
+
+        casper.fillSelectors('.user-details-container', {
+            '#user-email':   brokenEmail
+        }, false);
+    });
+
+    casper.thenClick('#user .button-save').waitForResource('/users/', function () {
+        test.assertExists('.notification-error', 'got error notification');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    });
+
+    casper.then(function resetEmailToValid() {
+        casper.fillSelectors('.user-details-container', {
+            '#user-email':   email
+        }, false);
+    });
+
+    casper.thenClick('#user .button-save').waitForResource('/users/', function () {
+        test.assertExists('.notification-success', 'got success notification');
+        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
+    });
+
+    casper.run(function () {
+        test.done();
+    });
+});
