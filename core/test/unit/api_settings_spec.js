@@ -8,8 +8,21 @@ describe('Settings Model', function () {
 
     var SettingsModel = Models.Settings;
 
+    before(function (done) {
+        helpers.clearData().then(function () {
+            done();
+        }, done);
+    });
+
     beforeEach(function (done) {
-        helpers.resetData().then(function () {
+        this.timeout(5000);
+        helpers.initData().then(function () {
+            done();
+        }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });
