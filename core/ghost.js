@@ -111,7 +111,7 @@ Ghost = function () {
                     'appRoot':          appRoot,
                     'themePath':        themePath,
                     'pluginPath':       pluginPath,
-                    'activeTheme':      path.join(themePath, config.activeTheme),
+                    'activeTheme':      path.join(appRoot, !instance.settingsCache ? "" : instance.settingsCache.activeTheme),
                     'adminViews':       path.join(appRoot, '/core/server/views/'),
                     'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
                     'lang':             path.join(appRoot, '/core/shared/lang/'),

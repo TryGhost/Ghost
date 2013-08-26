@@ -13,9 +13,6 @@ config.forceI18n = true;
 
 // ## Themes & Plugins
 
-// Current active theme
-config.activeTheme = 'casper';
-
 // Current active plugins
 config.activePlugins = [
     'FancyFirstChar'
