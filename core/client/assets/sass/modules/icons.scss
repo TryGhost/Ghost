@@ -38,8 +38,7 @@
  * actually unreal. - bit.ly/TJwPPo
  */
 
-%icon:before, 
-%icon:after {
+@mixin icon-before-after {
     font-family: "Icons";
     font-weight: normal;
     font-style: normal;
@@ -52,7 +51,7 @@
 }
 
 @mixin icon($char, $size: '', $color: '') {
-    @extend %icon;
+    @include icon-before-after;
 
     &:before {
         content: '#{$char}';
@@ -76,7 +75,7 @@
  */
 
 @mixin icon-after($char, $size: '', $color: '') {
-    @extend %icon;
+    @include icon-before-after;
 
     &:after {
         content: '#{$char}';
