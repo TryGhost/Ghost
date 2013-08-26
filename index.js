@@ -81,8 +81,7 @@ function cleanNotifications(req, res, next) {
 function authAPI(req, res, next) {
     if (!req.session.user) {
         // TODO: standardize error format/codes/messages
-        var err = { code: 42, message: 'Please sign in' };
-        res.json(401, { error: err });
+        res.json(401, { error: 'Please sign in' });
         return;
     }
 
