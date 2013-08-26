@@ -4,7 +4,9 @@ var _ = require('underscore'),
     when = require('when'),
     hbs = require('express-hbs'),
     errors = require('../errorHandling'),
+    models = require('../models'),
     coreHelpers;
+
 
 coreHelpers = function (ghost) {
     var navHelper,
@@ -29,6 +31,12 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    ghost.registerThemeHelper('url', function (context, options) {
+        if (models.isPost(this)) {
+            return "/" + this.slug;
+        }
+        return '';
+    });
 
     // ### Author Helper
     // 
