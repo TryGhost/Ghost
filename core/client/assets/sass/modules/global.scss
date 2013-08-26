@@ -296,8 +296,8 @@ kbd {
     font-weight: bold;
     background: #f4f4f4;
     border-radius: 4px;
-    box-shadow: 
-        0 1px 0 rgba(0, 0, 0, 0.2), 
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
         0 1px 0 0 #fff inset;
 }
 
@@ -747,7 +747,7 @@ nav {
 
         &:hover {
             background: $blue;
-            box-shadow: 
+            box-shadow:
                 rgba(255,255,255,0.2) 0 1px 0 inset,
                 rgba(0,0,0,0.5) 0 1px 5px;
         }
@@ -840,7 +840,7 @@ nav {
     padding: 10px 43px 10px 57px;
     margin: 0 0 15px 0;
     color: rgba(255,255,255,0.9);
-    background: $orange;
+    background: $blue;
     position:relative;
     box-shadow: $shadow;
 
@@ -891,7 +891,14 @@ nav {
     background: $red;
 }
 
-.notification-alert {
+
+.notification-warn {
+    @extend %notification;
+    @include icon($i-info);
+    background: $orange;
+}
+
+.notification-info {
     @extend %notification;
     @include icon($i-info);
     background: $blue;
@@ -1075,7 +1082,7 @@ main {
 .scrolling {
 
     .floatingheader {
-        box-shadow: 
+        box-shadow:
             rgba(0,0,0,0.02) 0 1px 2px,
             rgba(255, 255, 255, 0.5) 0 -1px 0 inset;
 
@@ -1280,7 +1287,7 @@ main {
         @include transition(all 0.15s ease-in-out);
 
         &:hover {
-            box-shadow: 
+            box-shadow:
                 rgba(0,0,0,0.05) 5px 0 0 inset,
                 rgba(0,0,0,0.05) -5px 0 0 inset,
                 rgba(0,0,0,0.05) 0 5px 0 inset,
