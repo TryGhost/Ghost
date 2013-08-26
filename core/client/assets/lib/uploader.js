@@ -54,7 +54,6 @@
                     done: function (e, data) {
                         function showImage(width, height) {
                             $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
-                            $dropzone.find('.fileupload-loading').removeClass('fileupload-loading');
                             $dropzone.css({"height": "auto"});
                             if (!$dropzone.find('a.js-edit-image')[0]) {
                                 $link.css({"opacity": 100});
@@ -78,8 +77,9 @@
 
                         function failedImageUpload() {
                             $progress.find('.js-upload-progress-bar').addClass('fail');
-                            $dropzone.find('div.js-fail').animate({"opacity": 100}, 1500);
-                            $dropzone.find('button.js-fail').animate({"opacity": 100}, 1500).on('click', function () {
+
+                            $dropzone.find('div.js-fail, button.js-fail').css({"margin": "0 auto"}).fadeIn(250);
+                            $dropzone.find('button.js-fail').on('click', function () {
                                 $dropzone.css({minHeight: 0});
                                 if (source !== undefined && !$dropzone.find('a.js-return-image')[0]) {
                                     console.log("source:", source);
@@ -121,10 +121,10 @@
                     $dropzone.append('<div class="description">Add image</div>');
                 }
                 if (!$dropzone.find('div.js-fail')[0]) {
-                    $dropzone.append('<div class="js-fail failed" style="opacity: 0">Something went wrong :(</div>');
+                    $dropzone.append('<div class="js-fail failed" style="display: none">Something went wrong :(</div>');
                 }
                 if (!$dropzone.find('button.js-fail')[0]) {
-                    $dropzone.append('<button class="js-fail button-add" style="opacity: 0">Try Again</button>');
+                    $dropzone.append('<button class="js-fail button-add" style="display: none">Try Again</button>');
                 }
                 if (!$dropzone.find('a.image-url')[0]) {
                     $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');
@@ -135,7 +135,7 @@
             },
 
             removeExtras: function () {
-                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
+                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail, img.fileupload-loading')
                     .remove();
             },
 
