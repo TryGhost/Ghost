@@ -22,8 +22,14 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
         this.echo("I've waited for 1 seconds.");
     });
 
-    casper.thenClick('.button-save').waitForResource(/posts/, function then() {
-        test.assertExists('.notification-success', 'got success notification');
+    casper.thenClick('.button-save');
+
+    casper.waitForResource(/posts/);
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     casper.thenOpen(url + 'ghost/content/', function then() {
@@ -42,8 +48,14 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
         test.assertUrlMatch(/editor/, "Ghost doesn't require login this time");
     });
 
-    casper.thenClick('.button-save').waitForResource(/posts/, function then() {
-        test.assertExists('.notification-success', 'got success notification');
+    casper.thenClick('.button-save');
+
+    casper.waitForResource(/posts/);
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     casper.run(function () {

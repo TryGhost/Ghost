@@ -4,5 +4,16 @@ node_js:
   - "0.10"
 git:
   submodules: false
-before_script:
+before_install:
+  - gem update --system
+  - gem install sass bourbon
   - npm install -g grunt-cli
+  - git clone git://github.com/n1k0/casperjs.git ~/casperjs
+  - cd ~/casperjs
+  - git checkout tags/1.1-beta1
+  - export PATH=$PATH:`pwd`/bin
+  - cd -
+before_script:
+  - phantomjs --version
+  - casperjs --version
+  - grunt init

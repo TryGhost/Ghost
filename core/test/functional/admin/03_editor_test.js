@@ -64,7 +64,7 @@ casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
     }).viewport(1280, 1024);
 
     casper.then(function testImage() {
-        casper.writeContentToCodeMirror("![some text]()");
+        casper.writeContentToCodeMirror("![sometext]()");
     });
 
     // We must wait after sending keys to CodeMirror
@@ -77,9 +77,9 @@ casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
 
         test.assertEvalEquals(function () {
             return document.querySelector('.CodeMirror-wrap textarea').value;
-        }, "![some text]()", 'Editor value is correct');
+        }, "![sometext]()", 'Editor value is correct');
 
-        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'Add image of some text', 'Editor value is correct');
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'Add image of sometext', 'Editor value is correct');
     });
 
     casper.run(function () {

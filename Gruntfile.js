@@ -6,6 +6,8 @@ var path = require('path'),
     spawn = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
+    config = require('./config'),
+    _ = require('underscore'),
     configureGrunt = function (grunt) {
 
         // load all grunt tasks
@@ -343,6 +345,34 @@ var path = require('path'),
             cfg.buildType = type;
         });
 
+        grunt.registerTask('spawn-casperjs', function () {
+            var done = this.async(),
+                options = ['host', 'noPort', 'port', 'email', 'password'],
+                args = ['test', 'admin/', '--includes=base.js', '--direct', '--log-level=debug'];
+
+            // Forward parameters from grunt to casperjs
+            _.each(options, function processOption(option) {
+                if (grunt.option(option)) {
+                    args.push('--' + option + '=' + grunt.option(option));
+                }
+            });
+
+            grunt.util.spawn({
+                cmd: 'casperjs',
+                args: args,
+                opts: {
+                    cwd: path.resolve('core/test/functional'),
+                    stdio: 'inherit'
+                }
+            }, function (error, result, code) {
+                if (error) {
+                    grunt.fail.fatal(result.stdout);
+                }
+                grunt.log.writeln(result.stdout);
+                done();
+            });
+        });
+
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
@@ -356,8 +386,11 @@ var path = require('path'),
         // Run migrations tests only
         grunt.registerTask("test-m", ["mochacli:migrate"]);
 
+        // Run casperjs tests only
+        grunt.registerTask('test-functional', ['express', 'spawn-casperjs']);
+
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "mochacli:all"]);
+        grunt.registerTask("validate", ["jslint", "mochacli:all", "test-functional"]);
 
         // Generate Docs
         grunt.registerTask("docs", ["groc"]);
