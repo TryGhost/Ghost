@@ -201,6 +201,25 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('url Helper', function () {
+        it('has loaded url helper', function () {
+            should.exist(handlebars.helpers.url);
+        });
+
+        it('if context is post, returns a the slug with a prefix slash', function () {
+            var rendered = handlebars.helpers.url.call({content: 'content', content_raw: "ff", title: "title", slug: "slug"});
+            should.exist(rendered);
+            rendered.should.equal('/slug');
+        });
+
+        it('it should return empty string if not a post', function () {
+            handlebars.helpers.url.call({content_raw: "ff", title: "title", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({content: 'content', title: "title", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({content: 'content', content_raw: "ff", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({content: 'content', content_raw: "ff", title: "title"}).should.equal('');
+        });
+    });
+
     describe('Navigation Helper', function () {
 
         it('has loaded nav helper', function () {
