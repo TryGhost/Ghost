@@ -2,24 +2,24 @@
 (function ($) {
     "use strict";
 
-    var UploadUi,
-        $progress =  $('<div />', {
-            "class" : "js-upload-progress progress progress-success active",
-            "style": "opacity:0",
-            "role": "progressbar",
-            "aria-valuemin": "0",
-            "aria-valuemax": "100"
-        }).append($("<div />", {
-            "class": "js-upload-progress-bar bar",
-            "style": "width:0%"
-        }));
+    var UploadUi;
+
 
     UploadUi = function ($dropzone, settings) {
         var source,
             $link = $('<a class="js-edit-image image-edit" href="#" >' +
                 '<img src="/public/assets/img/add-image.png" width="16" height="16" alt="add, edit"></a>'),
             $back = $('<a class="js-return-image image-edit" href="#" >' +
-                '<img src="/public/assets/img/return-image.png" width="16" height="16" alt="add, edit"></a>');
+                '<img src="/public/assets/img/return-image.png" width="16" height="16" alt="add, edit"></a>'),
+            $progress =  $('<div />', {
+                "class" : "js-upload-progress progress progress-success active",
+                "role": "progressbar",
+                "aria-valuemin": "0",
+                "aria-valuemax": "100"
+            }).append($("<div />", {
+                    "class": "js-upload-progress-bar bar",
+                    "style": "width:0%"
+                }));
 
         $.extend(this, {
             bindFileUpload: function () {
@@ -31,7 +31,7 @@
                         $progress.find('.js-upload-progress-bar').removeClass('fail');
                         $dropzone.trigger('uploadstart');
                         $dropzone.find('a.js-return-image').remove();
-                        $dropzone.find('span.media, div.description, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
+                        $dropzone.find('span.media, div.description, a.image-url, a.image-webcam')
                             .animate({opacity: 0}, 250, function () {
                                 $dropzone.find('div.description').hide().css({"opacity": 100});
                                 if (settings.progressbar) {
@@ -50,7 +50,20 @@
                             $progress.find('.js-upload-progress-bar').css('width', progress + '%');
                         }
                     },
-
+                    fail: function (e, data) {
+                        $dropzone.find('.js-upload-progress-bar').addClass('fail');
+                        $dropzone.find('div.js-fail, button.js-fail').fadeIn(1500);
+                        $dropzone.find('button.js-fail').on('click', function () {
+                            $dropzone.css({minHeight: 0});
+                            if (source !== undefined && !$dropzone.find('a.js-return-image')[0]) {
+                                $back.css({"opacity": 100});
+                                $dropzone.find('.js-upload-target').after($back);
+                            }
+                            $dropzone.find('div.description').show();
+                            self.removeExtras();
+                            self.init();
+                        });
+                    },
                     done: function (e, data) {
                         function showImage(width, height) {
                             $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
@@ -76,37 +89,17 @@
                             });
                         }
 
-                        function failedImageUpload() {
-                            $progress.find('.js-upload-progress-bar').addClass('fail');
-                            $dropzone.find('div.js-fail').animate({"opacity": 100}, 1500);
-                            $dropzone.find('button.js-fail').animate({"opacity": 100}, 1500).on('click', function () {
-                                $dropzone.css({minHeight: 0});
-                                if (source !== undefined && !$dropzone.find('a.js-return-image')[0]) {
-                                    console.log("source:", source);
-                                    $back.css({"opacity": 100});
-                                    $dropzone.find('.js-upload-target').after($back);
-                                }
-                                $dropzone.find('div.description').show();
-                                self.removeExtras();
-                                self.init();
-                            });
-                        }
-
                         function preLoadImage() {
                             var $img = $dropzone.find('img.js-upload-target')
                                 .attr({'src': '', "width": 'auto', "height": 'auto'});
-                            if (data.result === "Invalid filetype") {
-                                $dropzone.trigger("uploadfailed", [data.result]);
-                                failedImageUpload();
-                            } else {
-                                $progress.animate({opacity: 0}, 250, function () {
-                                    $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/public/img/loadingcat.gif" />');
-                                    if (!settings.editor) {$progress.find('.fileupload-loading').css({"top": "56px"}); }
-                                });
-                                $dropzone.trigger("uploadsuccess", [data.result]);
-                                $img.one('load', function () { animateDropzone($img); })
-                                    .attr('src', data.result);
-                            }
+
+                            $progress.animate({"opacity": 0}, 250, function () {
+                                $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/public/img/loadingcat.gif" />');
+                                if (!settings.editor) {$progress.find('.fileupload-loading').css({"top": "56px"}); }
+                            });
+                            $dropzone.trigger("uploadsuccess", [data.result]);
+                            $img.one('load', function () { animateDropzone($img); })
+                                .attr('src', data.result);
                         }
                         preLoadImage();
                     }
@@ -121,10 +114,10 @@
                     $dropzone.append('<div class="description">Add image</div>');
                 }
                 if (!$dropzone.find('div.js-fail')[0]) {
-                    $dropzone.append('<div class="js-fail failed" style="opacity: 0">Something went wrong :(</div>');
+                    $dropzone.append('<div class="js-fail failed" style="display: none">Something went wrong :(</div>');
                 }
                 if (!$dropzone.find('button.js-fail')[0]) {
-                    $dropzone.append('<button class="js-fail button-add" style="opacity: 0">Try Again</button>');
+                    $dropzone.append('<button class="js-fail button-add" style="display: none">Try Again</button>');
                 }
                 if (!$dropzone.find('a.image-url')[0]) {
                     $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');
@@ -135,8 +128,7 @@
             },
 
             removeExtras: function () {
-                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail')
-                    .remove();
+                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail').remove();
             },
 
             initWithDropzone: function () {
