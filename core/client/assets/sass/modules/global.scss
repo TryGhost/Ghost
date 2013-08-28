@@ -10,6 +10,8 @@
  * Global Navigation
  * Mobile Navigation
  * Drop-down / Pop-up Menu
+ * Notifications
+ * Modals
  * Main Elements
  * Floating Headers
  * Image Uploader
@@ -915,7 +917,8 @@ nav {
         left: 0;
         right: 0;
         z-index: 999;
-        @include transition(background 300ms ease);
+        @include transition(all 0.15s linear 0s);
+        @include transform(translateZ(0));
 
         &.dark {
             background: rgba(0,0,0,0.4);
@@ -934,7 +937,7 @@ nav {
 }
 
 body.blur > *:not(#modal-container) {
-    @include transition(all 300ms ease);
+    @include transition(all 0.15s linear 0s);
     -webkit-filter: blur(2px);
        -moz-filter: blur(2px);
         -ms-filter: blur(2px);
@@ -955,8 +958,13 @@ body.blur > *:not(#modal-container) {
     overflow:auto;
     z-index: 1001;
 
-    &.fadeIn {
-        @include animation(fadeIn 0.3s linear 1);
+    &.fade {
+        opacity: 0;
+        @include transition(opacity 0.2s linear 0s);
+
+        &.in {
+            opacity: 1;
+        }
     }
 }
 

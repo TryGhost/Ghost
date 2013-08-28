@@ -177,7 +177,7 @@
                         },
                         type: "action",
                         style: "wide",
-                        animation: 'fadeIn'
+                        animation: 'fade'
                     },
                     content: {
                         template: 'blank',

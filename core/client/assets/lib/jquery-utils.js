@@ -50,6 +50,39 @@
         });
     };
 
+    // ## getTransformProperty
+    // This returns the transition duration for an element, good for calling things after a transition has finished.
+    // **Original**: [https://gist.github.com/mandelbro/4067903](https://gist.github.com/mandelbro/4067903)
+    // **returns:** the elements transition duration
+    $.fn.transitionDuration = function () {
+        var $this = $(this);
+
+        // check the main transition duration property
+        if ($this.css('transition-duration')) {
+            return Math.round(parseFloat(this.css('transition-duration')) * 1000);
+        }
+
+        // check the vendor transition duration properties
+        if (this.css('-webkit-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-webkit-transtion-duration')) * 1000);
+        }
+
+        if (this.css('-ms-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-ms-transtion-duration')) * 1000);
+        }
+        
+        if (this.css('-moz-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-moz-transtion-duration')) * 1000);
+        }
+
+        if (this.css('-o-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-o-transtion-duration')) * 1000);
+        }
+
+        // if we're here, then no transition duration was found, return 0
+        return 0;
+    };
+
     $.fn.selectText = function () {
         var elem = this[0],
             range,
