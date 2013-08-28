@@ -82,7 +82,12 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
 
     casper.then(function checkUserWasSaved() {
         casper.removeListener('resource.requested', handleUserRequest);
-        test.assertExists('.notification-success', 'got success notification');
+    });
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     casper.thenClick('#main-menu .settings a').then(function testOpeningSettingsTwice() {
@@ -105,7 +110,12 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
 
     casper.then(function checkSettingsWereSaved() {
         casper.removeListener('resource.requested', handleSettingsRequest);
-        test.assertExists('.notification-success', 'got success notification');
+    });
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     casper.run(function () {
@@ -130,24 +140,36 @@ casper.test.begin("User settings screen validates email", 6, function suite(test
         brokenEmail = email.replace('.', '-');
 
         casper.fillSelectors('.user-details-container', {
-            '#user-email':   brokenEmail
+            '#user-email': brokenEmail
         }, false);
     });
 
-    casper.thenClick('#user .button-save').waitForResource('/users/', function () {
-        test.assertExists('.notification-error', 'got error notification');
+    casper.thenClick('#user .button-save');
+
+    casper.waitForResource('/users/');
+
+    casper.waitForSelector('.notification-error', function onSuccess() {
+        test.assert(true, 'Got error notification');
         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'No error notification :(');
     });
 
     casper.then(function resetEmailToValid() {
         casper.fillSelectors('.user-details-container', {
-            '#user-email':   email
+            '#user-email': email
         }, false);
     });
 
-    casper.thenClick('#user .button-save').waitForResource('/users/', function () {
-        test.assertExists('.notification-success', 'got success notification');
+    casper.thenClick('#user .button-save');
+
+    casper.waitForResource('/users/');
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
         test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     casper.run(function () {
