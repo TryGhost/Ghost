@@ -24,7 +24,7 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {
-        this.fill("#register", falseUser, true);
+        this.fill("#register", user, true);
     });
 
     casper.waitForSelectorTextChange('.notification-error', function (text) {
