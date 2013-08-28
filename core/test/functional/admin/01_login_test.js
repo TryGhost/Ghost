@@ -24,8 +24,7 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {
-        checkUrl = true;
-        this.fill("#register", user, true);
+        this.fill("#register", falseUser, true);
     });
 
     casper.waitForSelectorTextChange('.notification-error', function (text) {
@@ -34,7 +33,7 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
         test.pass('Already registered!');
     }, function () {
         test.assertUrlMatch(/\/ghost\/$/, 'If we\'re not already registered, we should be logged in.');
-        test.pass('Successfully registered.')
+        test.pass('Successfully registered.');
     }, 2000);
 
     casper.run(function () {
