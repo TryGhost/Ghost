@@ -1,12 +1,11 @@
 /*globals casper, __utils__, url */
 
 casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
-
-    casper.test.filename = "dashboard_test.png";
+    test.filename = "dashboard_test.png";
 
     casper.start(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertEquals(this.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");
+        test.assertUrlMatch(/ghost\/$/, "Ghost doesn't require login this time");
         test.assertExists(".ghost-logo", "Ghost is present");
     }).viewport(1280, 1024);
 
@@ -30,8 +29,7 @@ casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
 });
 
 casper.test.begin("Ghost dashboard interactions are correct", 2, function suite(test) {
-
-    casper.test.filename = "dashboard_interactions_test.png";
+    test.filename = "dashboard_interactions_test.png";
 
     casper.start(url + "ghost", function testTitleAndUrl() {
         test.assertExists(".widget-time", "Time widget is present");

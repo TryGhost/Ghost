@@ -1,12 +1,11 @@
 /*globals casper, __utils__, url */
 
 casper.test.begin("Settings screen is correct", 19, function suite(test) {
-
-    casper.test.filename = "settings_test.png";
+    test.filename = "settings_test.png";
 
     casper.start(url + "ghost/settings", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertEquals(this.getCurrentUrl(), url + "ghost/settings/general", "Ghost doesn't require login this time");
+        test.assertUrlMatch(/ghost\/settings\/general$/, "Ghost doesn't require login this time");
     }).viewport(1280, 1024);
 
     casper.then(function testViews() {
@@ -24,7 +23,8 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
     });
 
     // test the publishing / content tab
-    casper.thenClick('.settings-menu .publishing', function then() {
+    casper.thenClick('.settings-menu .publishing');
+    casper.waitForSelector('#content', function then() {
         test.assertEval(function testGeneralIsNotActive() {
             return !document.querySelector('.settings-menu .general').classList.contains('active');
         }, "general tab is not marked active");
@@ -34,10 +34,13 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
         test.assertEval(function testContentIsContent() {
             return document.querySelector('.settings-content').id === 'content';
         }, "loaded content is content screen");
+    }, function onTimeOut() {
+        test.fail('Content screen failed to load');
     });
 
     // test the user tab
-    casper.thenClick('.settings-menu .users', function then() {
+    casper.thenClick('.settings-menu .users');
+    casper.waitForSelector('#user', function then() {
         test.assertEval(function testGeneralIsNotActive() {
             return !document.querySelector('.settings-menu .general').classList.contains('active');
         }, "general tab is not marked active");
@@ -50,6 +53,8 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
         test.assertEval(function testContentIsUser() {
             return document.querySelector('.settings-content').id === 'user';
         }, "loaded content is user screen");
+    }, function onTimeOut() {
+        test.fail('User screen failed to load');
     });
 
     function handleUserRequest(requestData, request) {
@@ -70,7 +75,8 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
         casper.on('resource.requested', handleUserRequest);
     });
 
-    casper.thenClick('#user .button-save').waitFor(function successNotification() {
+    casper.thenClick('#user .button-save');
+    casper.waitFor(function successNotification() {
         return this.evaluate(function () {
             return document.querySelectorAll('.js-bb-notification section').length > 0;
         });
@@ -128,11 +134,11 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
 casper.test.begin("User settings screen validates email", 6, function suite(test) {
     var email, brokenEmail;
 
-    casper.test.filename = "user_settings_test.png";
+    test.filename = "user_settings_test.png";
 
     casper.start(url + "ghost/settings/user", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertEquals(this.getCurrentUrl(), url + "ghost/settings/user", "Ghost doesn't require login this time");
+        test.assertUrlMatch(/ghost\/settings\/user$/, "Ghost doesn't require login this time");
     }).viewport(1280, 1024);
 
     casper.then(function setEmailToInvalid() {
@@ -163,7 +169,7 @@ casper.test.begin("User settings screen validates email", 6, function suite(test
 
     casper.thenClick('#user .button-save');
 
-    casper.waitForResource('/users/');
+    casper.waitForResource(/users/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
         test.assert(true, 'Got success notification');

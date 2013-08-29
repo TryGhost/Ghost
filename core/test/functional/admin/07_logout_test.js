@@ -4,8 +4,7 @@
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
 casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
-
-    casper.test.filename = "logout_test.png";
+    test.filename = "logout_test.png";
 
     casper.start(url + "ghost/", function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");
@@ -20,7 +19,6 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
     });
 
     casper.thenClick('.usermenu-signout a');
-
     casper.waitForResource(/signin/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
@@ -36,8 +34,7 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
 
 // has to be done after signing out
 casper.test.begin("Can't spam signin", 3, function suite(test) {
-
-    casper.test.filename = "spam_test.png";
+    test.filename = "spam_test.png";
 
     casper.start(url + "ghost/signin/", function testTitle() {
         test.assertTitle("", "Ghost admin has no title");
@@ -70,8 +67,7 @@ casper.test.begin("Can't spam signin", 3, function suite(test) {
 });
 
 casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
-
-    casper.test.filename = "signup_test.png";
+    test.filename = "signup_test.png";
 
     casper.start(url + "ghost/signup/", function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/signup/", "Reached signup page");
@@ -83,7 +79,6 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
 
     // should now throw a short password error
     casper.waitForResource(/signup/);
-
     casper.waitForSelector('.notification-error', function onSuccess() {
         test.assert(true, 'Got error notification');
         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
@@ -97,7 +92,6 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
 
     // should now throw a 1 user only error
     casper.waitForResource(/signup/);
-
     casper.waitForSelector('.notification-error', function onSuccess() {
         test.assert(true, 'Got error notification');
         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
