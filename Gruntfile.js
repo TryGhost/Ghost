@@ -183,8 +183,16 @@ var path = require('path'),
                     src: ['core/test/unit/**/api*_spec.js']
                 },
 
-                frontend: {
-                    src: ['core/test/unit/**/frontend*_spec.js']
+                client: {
+                    src: ['core/test/unit/**/client*_spec.js']
+                },
+
+                server: {
+                    src: ['core/test/unit/**/server*_spec.js']
+                },
+
+                shared: {
+                    src: ['core/test/unit/**/shared*_spec.js']
                 },
 
                 perm: {

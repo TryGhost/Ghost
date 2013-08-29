@@ -5,6 +5,20 @@
   MT("plainText",
      "foo");
 
+  // Don't style single trailing space
+  MT("trailingSpace1",
+     "foo ");
+
+  // Two or more trailing spaces should be styled with line break character
+  MT("trailingSpace2",
+     "foo[trailing-space-a  ][trailing-space-new-line  ]");
+
+  MT("trailingSpace3",
+     "foo[trailing-space-a  ][trailing-space-b  ][trailing-space-new-line  ]");
+
+  MT("trailingSpace4",
+     "foo[trailing-space-a  ][trailing-space-b  ][trailing-space-a  ][trailing-space-new-line  ]");
+
   // Code blocks using 4 spaces (regardless of CodeMirror.tabSize value)
   MT("codeBlocksUsing4Spaces",
      "    [comment foo]");
@@ -533,8 +547,14 @@
   MT("linkWeb",
      "[link <http://example.com/>] foo");
 
+  MT("linkWebDouble",
+     "[link <http://example.com/>] foo [link <http://example.com/>]");
+
   MT("linkEmail",
      "[link <user@example.com>] foo");
+
+  MT("linkEmailDouble",
+     "[link <user@example.com>] foo [link <user@example.com>]");
 
   MT("emAsterisk",
      "[em *foo*] bar");
