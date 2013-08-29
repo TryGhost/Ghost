@@ -7,15 +7,33 @@ Visit the project's website at [http://tryghost.org](http://tryghost.org)!
 
 ## Getting Started
 
+There are two main ways to get started with Ghost:
+
+1. Working from a VIP Release - these are pre-built zip packages found on vip.tryghost.org. Installation instructions are below.
+2. Working from the GitHub repo - instructions can be found in [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
+
 ### Installing from a VIP Release
 
-*Please Note:* VIP Releases are pre-built packages, GitHub releases (tags) are not. To install from a GitHub release you need to follow instructions 2-5 from the [Working on Ghost Core](#working-on-ghost-core) section.
+*Please Note:* VIP Releases are pre-built packages, GitHub releases (tags) are not. To install from GitHub you need to follow the [contributing guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md).
 
-1.  Once you've downloaded one of the release packages, unzip it, and place the directory wherever you would like to run the code
+1.  Once you've downloaded one of the VIP packages, unzip it, and place the directory wherever you would like to run the code
 2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.js and index.js are)
 3.  run `npm install` to install the node dependencies (if you get errors to do with SQLite, please see the SQLite3 instructions below this list)
 4.  To start ghost, run `npm start`
 5.  Visit `http://localhost:2368/` in your web browser
+
+
+### Updating with the latest changes
+
+**Warning:** The Ghost file system contains your database and config. Be sure to back these up first.
+
+1. Make a backup of your data!
+2. Update the files by pasting new files over the top of old ones. If prompted by your OS or FTP client to 'merge' or 'replace' always choose merge.
+3. Run npm install
+4. Run npm update
+5. Restart the application
+6. Log out and log back in again.
+
 
 ### SQLite3 Install Instructions
 
@@ -37,18 +55,8 @@ Once you have the Ghost server up and running, you should be able to navigate to
 2.  Enter your user details (careful here: There is no password reset yet!)
 3.  Return to the login screen and use those details to log in.
 
-
 Note - this is still very alpha. Not everything works yet.
 
-
-### Updating with the latest changes
-
-Pulling down the latest changes from master will often require more than just a pull, you may also need to do one or more of the following:
-
- * `npm install` - fetch any new dependencies
- * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run `grunt init` to install bourbon)
- * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 
 ## Versioning
@@ -69,7 +77,7 @@ Constructed with the following guidelines:
 
 ## Reporting Bugs and Contributing Code
 
-Want to report a bug, request a feature, or help us build Ghost? Check out our in dept guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get!
+Want to report a bug, request a feature, or help us build Ghost? Check out our in depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get!
 
 ## Community
 

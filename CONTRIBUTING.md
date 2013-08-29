@@ -18,9 +18,10 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 **Pre-requisites:**
 
-* node 0.10 or 0.11
+* node > 0.10 and < 0.11.4
 * ruby and the gems 'sass' and 'bourbon'
-* if you want to build the docs, python and pygments
+* for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
+* for building docs:, python and pygments
 
 
 ## Key Branches & Tags
@@ -30,8 +31,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 - **[releases](https://github.com/TryGhost/Ghost/releases)** are used to contain stable tagged versions of Ghost.
 
 
-
-### Setup Instructions
+### Installation / Setup Instructions
 
 1. Clone the git repo
 2. cd into the project folder
@@ -44,7 +44,17 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
 
-Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically
+Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically, see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
+
+
+### Updating with the latest changes
+
+Pulling down the latest changes from master will often require more than just a pull, you may also need to do one or more of the following:
+
+ * `npm install` - fetch any new dependencies
+ * `git submodule update` - fetch the latest changes to Casper (the default theme)
+ * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run `grunt init` to install bourbon)
+ * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 
 ### SQLite3 Install Instructions
@@ -78,7 +88,7 @@ Good, clear and consistent code styles are pivotal in the success of any softwar
 * Max line length 120
 * Use unix line endings
 * Document as you go - we are using groc and jsdoc formats
-* Write tests, unit tests are witten in Mocha using spec style, functional tests use Casper.js
+* Write tests, unit tests are written in Mocha using spec style, functional tests use Casper.js
 
 For more in depth information please read the official [Ghost Coding Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
 
@@ -115,14 +125,17 @@ Use the interactive rebase to edit your history. Unless you have good reason to 
 
 ### Check it passes the tests
 
-Run `grunt validate` to check that your work passes JSLint and the server-side mocha unit tests. If this fails, your PR will throw an error when submitted.
-
-Our functional tests are not yet hooked up to grunt validate, but details on how to run them can be found in `core/test/functional/base.js` if you're making changes to the UI it's worth running these.
+Run `grunt validate` to check that your work passes JSLint, the server-side mocha unit tests, and functional tests written in casperjs. If this fails, your PR will throw an error when submitted.
 
 ### Need Help?
 
 If you're not completely clear on how to submit / update / *do* Pull Requests, please check out our in depth [Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost.
 
+## Grunt Toolkit
+
+Ghost uses Grunt heavily to automate useful tasks such as building assets, testing, live reloading/watching etc etc
+
+[Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) are a worthwhile read for any would-be contributor.
 
 ## Contributor License Agreement
 
@@ -130,6 +143,6 @@ By contributing your code to Ghost you grant the Ghost Foundation a non-exclusiv
 
 You confirm that you are able to grant us these rights. You represent that You are legally entitled to grant the above license. If Your employer has rights to intellectual property that You create, You represent that You have received permission to make the Contributions on behalf of that employer, or that Your employer has waived such rights for the Contributions.
 
-You represent that the Contributions are Your original works of authorship, and to Your knowledge, no other person claims, or has the right to claim, any right in any invention or patent related to the Contributions. You also represent that You are not legally obligated, whether by entering into an agreement or otherwise, in any way that conflicts with the terms of this license. 
+You represent that the Contributions are Your original works of authorship, and to Your knowledge, no other person claims, or has the right to claim, any right in any invention or patent related to the Contributions. You also represent that You are not legally obligated, whether by entering into an agreement or otherwise, in any way that conflicts with the terms of this license.
 
 The Ghost Foundation acknowledges that, except as explicitly described in this Agreement, any Contribution which you provide is on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
