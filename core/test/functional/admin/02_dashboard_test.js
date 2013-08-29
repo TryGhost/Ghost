@@ -7,7 +7,7 @@ casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
     casper.start(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
         test.assertEquals(this.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");
-        test.assertExists("#ghost", "Ghost is present");
+        test.assertExists(".ghost-logo", "Ghost is present");
     }).viewport(1280, 1024);
 
     casper.then(function testMenus() {

@@ -383,23 +383,24 @@ nav {
 /* ==========================================================================
    Main Navigation
    ========================================================================== */
-#global-header { /* Added because the code editor was breaking for the title "Ghost" - this also happens on TryGhost */
-    #ghost {
-        @include icon($i-ghost);
-        display: block;
-        float:left;
-        height:40px;
-        padding:12px 15px;
-        color: lighten($grey, 10%);
-        @include box-sizing(border-box);
-        &:hover {text-decoration:none;}
-    }
 
-    #ghost:hover {
-        color: $lightgrey;
-        background:darken($darkgrey, 2%);
-    }
+.ghost-logo {
+    @include icon($i-ghost);
+    display: block;
+    float:left;
+    height:40px;
+    padding:12px 15px;
+    color: lighten($grey, 10%);
+    @include box-sizing(border-box);
+    
+    &:hover {text-decoration:none;}
 }
+
+.ghost-logo:hover {
+    color: $lightgrey;
+    background:darken($darkgrey, 2%);
+}
+
 
 
 .navbar {
@@ -581,7 +582,7 @@ nav {
 #global-header {
     @include breakpoint(650px) {
 
-        #ghost {
+        .ghost-logo {
             @include icon($i-menu, 14px);
             height:40px;
             width: 40px;
