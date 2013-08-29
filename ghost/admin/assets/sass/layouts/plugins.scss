@@ -22,13 +22,13 @@
     }
 
     .button-update-all {
-        @include icon($i-power, 1em, #FFC125){ // TODO: Need lightening icon
+        @include icon($i-lightning, 1em, #FFC125) {
             margin-right: 5px;
         };
     }
 
     .button-cancel {
-        @include icon($i-x, 1em, #FFFFFF){
+        @include icon($i-x, 1em, #fff) {
             margin-right: 5px;
         };
     }
@@ -168,7 +168,7 @@
             }
 
         }
-        
+
         .plugin-settings-icon {
             display: block;
             margin-top: 9px;
