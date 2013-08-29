@@ -238,6 +238,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
+    ghost.app().get('/rss/', frontend.rss);
+    ghost.app().get('/rss/:page/', frontend.rss);
     ghost.app().get('/:slug', frontend.single);
     ghost.app().get('/', frontend.homepage);
     ghost.app().get('/page/:page/', frontend.homepage);
