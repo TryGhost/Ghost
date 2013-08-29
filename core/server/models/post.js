@@ -5,7 +5,8 @@ var Post,
     when = require('when'),
     errors = require('../errorHandling'),
     Showdown = require('showdown'),
-    converter = new Showdown.converter(),
+    github = require('../../shared/vendor/showdown/extensions/github'),
+    converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
     GhostBookshelf = require('./base');
 
