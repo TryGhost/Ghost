@@ -79,6 +79,11 @@ var path = require('path'),
                     options: {
                         //output: "Express server listening on address:.*$"
                     }
+                },
+                test: {
+                    options: {
+                        node_env: 'testing'
+                    }
                 }
             },
 
@@ -348,7 +353,7 @@ var path = require('path'),
         grunt.registerTask('spawn-casperjs', function () {
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
-                args = ['test', 'admin/', '--includes=base.js', '--direct', '--log-level=debug'];
+                args = ['test', 'admin/', '--includes=base.js', '--direct', '--log-level=debug', '--fail-fast'];
 
             // Forward parameters from grunt to casperjs
             _.each(options, function processOption(option) {
@@ -387,7 +392,7 @@ var path = require('path'),
         grunt.registerTask("test-m", ["mochacli:migrate"]);
 
         // Run casperjs tests only
-        grunt.registerTask('test-functional', ['express', 'spawn-casperjs']);
+        grunt.registerTask('test-functional', ['express:test', 'spawn-casperjs']);
 
         // Run tests and lint code
         grunt.registerTask("validate", ["jslint", "mochacli:all", "test-functional"]);
