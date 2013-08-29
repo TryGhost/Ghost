@@ -832,6 +832,9 @@ nav {
 /* ==========================================================================
    Notifications
    ========================================================================== */
+.js-bb-notification {
+    @include transform(translateZ(0));
+}
 
 %notification, .notification {
     @include box-sizing(border-box);
@@ -843,6 +846,7 @@ nav {
     background: $blue;
     position:relative;
     box-shadow: $shadow;
+    @include transform(translateZ(0));
 
     @include icon($i-notification) {
         position: absolute;
