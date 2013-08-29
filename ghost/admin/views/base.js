@@ -174,44 +174,89 @@
             }, this);
         },
         renderItem: function (item) {
-            var itemView = new Ghost.Views.Notification({ model: item });
-            this.$el.html(itemView.render().el);
+            var itemView = new Ghost.Views.Notification({ model: item }),
+                height,
+                self = this;
+            this.$el.html(itemView.render().el).css({height: 0});
+            height = this.$('.js-notification').hide().outerHeight(true);
+            this.$el.animate({height: height}, 250, function () {
+                $(this).css({height: "auto"});
+                self.$('.js-notification').fadeIn(250);
+            });
         },
         addItem: function (item) {
             this.model.push(item);
             this.renderItem(item);
         },
         clearEverything: function () {
-            this.$el.find('.js-notification.notification-passive').fadeOut(200,  function () { $(this).remove(); });
+            var height = this.$('.js-notification').outerHeight(true),
+                self = this;
+            this.$el.css({height: height});
+            this.$el.find('.js-notification.notification-passive').fadeOut(250,  function () {
+                $(this).remove();
+                self.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                });
+            });
         },
         removeItem: function (e) {
             e.preventDefault();
-            var self = e.currentTarget;
+            var self = e.currentTarget,
+                bbSelf = this;
             if (self.className.indexOf('notification-persistent') !== -1) {
                 $.ajax({
                     type: "DELETE",
                     url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
-                    $(e.currentTarget).remove();
+                    bbSelf.$el.slideUp(250, function () {
+                        $(this).show().css({height: "auto"});
+                        $(self).remove();
+                    });
                 });
             } else {
-                $(e.currentTarget).remove();
+                this.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                    $(self).remove();
+                });
             }
 
         },
         closePassive: function (e) {
-            $(e.currentTarget).parent().fadeOut(200,  function () { $(this).remove(); });
+            var height = this.$('.js-notification').outerHeight(true),
+                self = this;
+            this.$el.css({height: height});
+            $(e.currentTarget).parent().fadeOut(250,  function () {
+                $(this).remove();
+                self.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                });
+            });
         },
         closePersistent: function (e) {
-            var self = e.currentTarget;
+            var self = e.currentTarget,
+                bbSelf = this;
             $.ajax({
                 type: "DELETE",
                 url: '/api/v0.1/notifications/' + $(self).data('id')
             }).done(function (result) {
-                if ($(self).parent().parent().hasClass('js-bb-notification')) {
-                    $(self).parent().parent().fadeOut(200, function () { $(self).remove(); });
+                var height = bbSelf.$('.js-notification').outerHeight(true),
+                    $parent = $(self).parent();
+                bbSelf.$el.css({height: height});
+
+                if ($parent.parent().hasClass('js-bb-notification')) {
+                    $parent.parent().fadeOut(200,  function () {
+                        $(this).remove();
+                        bbSelf.$el.slideUp(250, function () {
+                            $(this).show().css({height: "auto"});
+                        });
+                    });
                 } else {
-                    $(self).parent().fadeOut(200, function () { $(self).remove(); });
+                    $parent.fadeOut(200,  function () {
+                        $(this).remove();
+                        bbSelf.$el.slideUp(250, function () {
+                            $(this).show().css({height: "auto"});
+                        });
+                    });
                 }
             });
         }
