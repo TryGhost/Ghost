@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, JST, shortcut */
+/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut */
 (function () {
     "use strict";
 
@@ -264,6 +264,10 @@
                 $("body").addClass("blur");
             }
 
+            if (this.model.options.animation) {
+                this.animate(this.$el.children(".js-modal"));
+            }
+
             var self = this;
             $(window).on('resize', self.resize);
 
@@ -289,17 +293,37 @@
                 e.stopPropagation();
             }
 
-            var self = this;
-            this.$el.removeClass('dark');
-            $('.js-modal').fadeOut(300, function () {
-                $(this).remove();
+            var self = this,
+                $jsModal = $('.js-modal'),
+                removeModalDelay = $jsModal.transitionDuration(),
+                removeBackgroundDelay = self.$el.transitionDuration();
+
+            $jsModal.removeClass('in');
+
+            if (!this.model.options.animation) {
+                removeModalDelay = removeBackgroundDelay = 0;
+            }
+
+            setTimeout(function () {
+
                 if (document.body.style.filter !== undefined) {
                     $("body").removeClass("blur");
                 }
-                self.remove();
-                self.$el.removeClass('active');
-            });
+                self.$el.removeClass('dark');
 
+                setTimeout(function () {
+                    self.remove();
+                    self.$el.removeClass('active');
+                }, removeBackgroundDelay);
+            }, removeModalDelay);
+
+        },
+        // #### animate
+        // Animates the animation
+        animate: function (target) {
+            setTimeout(function () {
+                target.addClass('in');
+            }, target.transitionDuration());
         }
     });
 

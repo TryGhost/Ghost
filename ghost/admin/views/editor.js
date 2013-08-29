@@ -315,7 +315,7 @@
                         close: true,
                         type: "info",
                         style: "wide",
-                        animation: 'fadeIn'
+                        animation: 'fade'
                     },
                     content: {
                         template: 'markdown',
@@ -379,7 +379,7 @@
                         close: true,
                         type: "info",
                         style: "wide",
-                        animation: 'fadeIn'
+                        animation: 'fade'
                     },
                     content: {
                         template: 'copyToHTML',
