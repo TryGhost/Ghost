@@ -11,10 +11,7 @@ config.defaultLang = 'en';
 // Force i18n to be on
 config.forceI18n = true;
 
-// ## Themes & Plugins
-
-// Current active theme
-config.activeTheme = 'casper';
+// ## Plugins
 
 // Current active plugins
 config.activePlugins = [
