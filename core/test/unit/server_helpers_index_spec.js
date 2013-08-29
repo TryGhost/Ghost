@@ -31,7 +31,7 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             rendered.string.should.equal(content);
         });
-        
+
         it('can truncate content by word', function () {
             var content = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
@@ -45,7 +45,7 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             rendered.string.should.equal("<p>Hello <strong>World</strong></p>");
         });
-        
+
         it('can truncate content by character', function () {
             var content = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
@@ -60,27 +60,27 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p>Hello <strong>Wo</strong></p>");
         });
     });
-    
+
     describe('Author Helper', function () {
-        
+
         it('has loaded author helper', function () {
             should.exist(handlebars.helpers.author);
         });
-        
+
         it("Returns the full name of the author from the context",function() {
             var content = {"author":{"full_name":"abc123"}},
                 result = handlebars.helpers.author.call(content);
 
             String(result).should.equal("abc123");
         });
-        
+
         it("Returns a blank string where author data is missing",function() {
             var content = {"author":null},
                 result = handlebars.helpers.author.call(content);
 
             String(result).should.equal("");
         });
-        
+
     });
 
     describe('Excerpt Helper', function () {
@@ -258,6 +258,11 @@ describe('Core Helpers', function () {
     });
 
     describe("Pagination helper", function () {
+        var paginationRegex = /class="pagination"/,
+            newerRegex = /class="newer-posts"/,
+            olderRegex = /class="older-posts"/,
+            pageRegex = /class="page-number"/;
+
         it('has loaded pagination helper', function () {
             should.exist(handlebars.helpers.pagination);
         });
@@ -268,7 +273,11 @@ describe('Core Helpers', function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
                 should.exist(rendered);
                 // strip out carriage returns and compare.
-                rendered.string.replace(/\r/g, '').should.equal('\n<nav class="pagination" role="pagination">\n    \n    <div class="page-number">Page 1<span class="extended"> of 1</span></div>\n    \n</nav>');
+                rendered.string.should.match(paginationRegex);
+                rendered.string.should.match(pageRegex);
+                rendered.string.should.match(/Page 1 of 1/);
+                rendered.string.should.not.match(newerRegex);
+                rendered.string.should.not.match(olderRegex);
                 done();
             }).then(null, done);
         });
@@ -278,8 +287,12 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                // strip out carriage returns and compare.
-                rendered.string.replace(/\r/g, '').should.equal('\n<nav class="pagination" role="pagination">\n    \n        <a class="newer-posts" href="/page/2/">&larr; Newer Posts</a>\n    \n    <span class="page-number">Page 1 of 3</span>\n    \n</nav>');
+
+                rendered.string.should.match(paginationRegex);
+                rendered.string.should.match(pageRegex);
+                rendered.string.should.match(olderRegex);
+                rendered.string.should.match(/Page 1 of 3/);
+                rendered.string.should.not.match(newerRegex);
                 done();
             }).then(null, done);
         });
@@ -289,8 +302,13 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                // strip out carriage returns and compare.
-                rendered.string.replace(/\r/g, '').should.equal('\n<nav class="pagination" role="pagination">\n    \n        <a class="newer-posts" href="/page/1/">&larr; Newer Posts</a>\n    \n    <span class="page-number">Page 2 of 3</span>\n    \n        <a class="older-posts" href="/page/3/">Older Posts &rarr;</a>\n    \n</nav>');
+
+                rendered.string.should.match(paginationRegex);
+                rendered.string.should.match(pageRegex);
+                rendered.string.should.match(olderRegex);
+                rendered.string.should.match(newerRegex);
+                rendered.string.should.match(/Page 2 of 3/);
+
                 done();
             }).then(null, done);
         });
@@ -300,8 +318,13 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
-                // strip out carriage returns and compare.
-                rendered.string.replace(/\r/g, '').should.equal('\n<nav class="pagination" role="pagination">\n    \n    <span class="page-number">Page 3 of 3</span>\n    \n        <a class="older-posts" href="/page/2/">Older Posts &rarr;</a>\n    \n</nav>');
+
+                rendered.string.should.match(paginationRegex);
+                rendered.string.should.match(pageRegex);
+                rendered.string.should.match(newerRegex);
+                rendered.string.should.match(/Page 3 of 3/);
+                rendered.string.should.not.match(olderRegex);
+
                 done();
             }).then(null, done);
         });
