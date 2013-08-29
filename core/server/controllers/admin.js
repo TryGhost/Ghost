@@ -84,7 +84,7 @@ adminControllers = {
         if (ext === ".jpg" || ext === ".png" || ext === ".gif") {
             renameFile();
         } else {
-            res.send("Invalid filetype");
+            res.send(404, "Invalid filetype");
         }
     },
     'login': function (req, res) {
