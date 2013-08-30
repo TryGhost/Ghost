@@ -50,6 +50,15 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="activeTheme"><strong>Theme</strong></label>
+                <select id="activeTheme" name="general[activeTheme]">
+                    {{#each availableThemes}}
+                        <option value="{{ name }}" {{#if active}}selected{{/if}}>{{ name }}</option>
+                    {{/each}}
+                </select>
+            </div>
+
         </fieldset>
 
         <hr />
