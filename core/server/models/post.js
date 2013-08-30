@@ -50,6 +50,8 @@ Post = GhostBookshelf.Model.extend({
 
         this.set('content', converter.makeHtml(this.get('content_raw')));
 
+        this.set('title', this.get('title').trim());
+
         if (this.hasChanged('status') && this.get('status') === 'published') {
             this.set('published_at', new Date());
             // This will need to go elsewhere in the API layer.
