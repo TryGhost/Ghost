@@ -289,7 +289,8 @@
         },
 
         events: {
-            'click .markdown-help': 'showHelp'
+            'click .markdown-help': 'showHelp',
+            'blur #entry-title': 'trimTitle'
         },
 
         syncScroll: _.debounce(function (e) {
@@ -323,6 +324,16 @@
                     }
                 }
             }));
+        },
+
+        trimTitle: function () {
+            var $title = $('#entry-title'),
+                rawTitle = $title.val(),
+                trimmedTitle = $.trim(rawTitle);
+
+            if (rawTitle !== trimmedTitle) {
+                $title.val(trimmedTitle);
+            }
         },
 
         // This updates the editor preview panel.
