@@ -132,3 +132,28 @@ casper.test.begin("Word count and plurality", 4, function suite(test) {
         test.done();
     });
 });
+
+casper.test.begin('Title Trimming', function suite(test) {
+    var untrimmedTitle = '  test title  ',
+        trimmedTitle = 'test title';
+
+    test.filename = 'editor_title_trimming_test.png';
+
+    casper.start(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+    }).viewport(1280, 1024);
+
+    casper.then(function populateTitle() {
+        casper.sendKeys('#entry-title', untrimmedTitle);
+
+        test.assertEvalEquals(function () {
+
+            return $('#entry-title').val();
+            
+        }, trimmedTitle, 'Entry title should match expected value.');
+    });
+
+    casper.run(function () {
+        test.done();
+    });
+});

@@ -162,6 +162,28 @@ describe('Post Model', function () {
 
     });
 
+    it('can trim title', function (done) {
+        var untrimmedCreateTitle = '  test trimmed create title  ',
+            untrimmedUpdateTitle = '  test trimmed update title  ',
+            newPost = {
+                title: untrimmedCreateTitle,
+                content_raw: 'Test Content'
+            };
+
+        PostModel.add(newPost).then(function (createdPost) {
+            return new PostModel({ id: createdPost.id }).fetch();
+        }).then(function (createdPost) {
+            should.exist(createdPost);
+            createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
+
+            return createdPost.save({ title: untrimmedUpdateTitle });
+        }).then(function (updatedPost) {
+            updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
+
+            done();
+        }).otherwise(done);
+    });
+
     it('can generate a non conflicting slug', function (done) {
         var newPost = {
                 title: 'Test Title',
