@@ -251,11 +251,6 @@
                 $('body').toggleClass('fullscreen');
             });
 
-            $('.options.up').on('click', function (e) {
-                e.stopPropagation();
-                $(this).next("ul").fadeToggle(200);
-            });
-
             this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
 
             // Shadow on Markdown if scrolled
