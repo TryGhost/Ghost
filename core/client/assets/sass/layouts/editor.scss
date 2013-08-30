@@ -418,20 +418,6 @@ body.zen {
         height: 30px;
         margin-top: 5px;
         box-shadow: rgba(255,255,255,0.4) 0 1px 0 inset;
-
-        &.up:hover {
-            @include icon($i-chevron-down) {
-                margin-top: -5px;
-                @include transform(rotate(540deg));
-                /* Transition properties are split out due to a defect in 
-                    the vendor prefixing of transform transitions.
-                    See: http://github.com/thoughtbot/bourbon/pull/86
-                    */
-                @include transition-property(transform);
-                @include transition-duration(0.6s);
-                @include transition-timing-function(ease);
-            };
-        }
     }
 
     .splitbutton-save{
