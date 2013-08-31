@@ -181,8 +181,6 @@
         top:0; 
         right:0; 
         border-left:$lightbrown 2px solid;
-        word-break: break-word;
-        hyphens: auto;
         background: #fff;
         box-shadow: $shadow;
         @include breakpoint($tablet) {
@@ -218,6 +216,8 @@
             left:0;
             overflow: auto;
             padding: 80px 40px;
+            word-break: break-word;
+            hyphens: auto;
             
             .wrapper {
                 max-width: 700px;
