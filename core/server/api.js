@@ -141,6 +141,10 @@ users = {
     changePassword: function changePassword(userData) {
         // **returns:** on success, returns a promise for the resulting user in a json object
         return dataProvider.User.changePassword(userData);
+    },
+
+    forgottenPassword: function forgottenPassword(email) {
+        return dataProvider.User.forgottenPassword(email);
     }
 };
 

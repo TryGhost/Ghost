@@ -115,11 +115,11 @@ User = GhostBookshelf.Model.extend({
         }).then(function (addedUser) {
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
-
             // Add this user to the admin role (assumes admin = role_id: 1)
             return UserRole.add({role_id: 1, user_id: addedUser.id});
         }).then(function (addedUserRole) {
             // Return the added user as expected
+
             return when.resolve(userData);
         });
 
@@ -168,7 +168,9 @@ User = GhostBookshelf.Model.extend({
             userid = _userdata.currentUser,
             oldPassword = _userdata.oldpw,
             newPassword = _userdata.newpw,
-            ne2Password = _userdata.ne2pw;
+            ne2Password = _userdata.ne2pw,
+            user = null;
+
 
         if (newPassword !== ne2Password) {
             return when.reject(new Error('Your new passwords do not match'));
@@ -176,19 +178,34 @@ User = GhostBookshelf.Model.extend({
 
         return validatePasswordLength(newPassword).then(function () {
             return self.forge({id: userid}).fetch({require: true});
-        }).then(function (user) {
-            return nodefn.call(bcrypt.compare, oldPassword, user.get('password'))
-                .then(function (matched) {
-                    if (!matched) {
-                        return when.reject(new Error('Your password is incorrect'));
-                    }
-                    return nodefn.call(bcrypt.hash, newPassword, null, null).then(function (hash) {
-                        user.save({password: hash});
-                        return user;
-                    });
-                });
-        });
+        }).then(function (_user) {
+            user = _user;
+            return nodefn.call(bcrypt.compare, oldPassword, user.get('password'));
+        }).then(function (matched) {
+            if (!matched) {
+                return when.reject(new Error('Your password is incorrect'));
+            }
+            return nodefn.call(bcrypt.hash, newPassword, null, null);
+        }).then(function (hash) {
+            user.save({password: hash});
 
+            return user;
+        });
+    },
+
+    forgottenPassword: function (email) {
+        var newPassword = Math.random().toString(36).slice(2, 12), // This is magick
+            user = null;
+
+        return this.forge({email_address: email}).fetch({require: true}).then(function (_user) {
+            user = _user;
+            return nodefn.call(bcrypt.hash, newPassword, null, null);
+        }).then(function (hash) {
+            user.save({password: hash});
+            return { user: user, newPassword: newPassword };
+        }, function (error) {
+            return when.reject(new Error('There is no user by that email address. Check again.'));
+        });
     },
 
     effectivePermissions: function (id) {

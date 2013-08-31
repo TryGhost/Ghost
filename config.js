@@ -21,6 +21,19 @@ config.activePlugins = [
     'FancyFirstChar'
 ];
 
+
+config.mail = {
+    transport: 'sendgrid',
+    host: 'smtp.sendgrid.net',
+    options: {
+        service: 'Sendgrid',
+        auth: {
+            user: '', // Super secret username
+            pass: ''  // Super secret password
+        }
+    }
+};
+
 // ## Default Navigation Items
 // Add new objects here to extend the menu output by {{nav}}
 config.nav = [

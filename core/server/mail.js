@@ -98,7 +98,7 @@ GhostMailer.prototype.send = function (message) {
 
     var settings = this.ghost.settings(),
         from = 'ghost-mailer@' + url.parse(settings.url).hostname,
-        to = settings.email,
+        to = message.to || settings.email,
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 
     message = _.extend(message, {
@@ -110,10 +110,13 @@ GhostMailer.prototype.send = function (message) {
     return sendMail(message);
 };
 
-GhostMailer.prototype.sendWelcomeMessage = function () {
+GhostMailer.prototype.sendWelcomeMessage = function (opts) {
     var adminURL = this.ghost.settings().url + "/ghost";
 
+    opts = opts || {};
+    opts.email = opts.email || this.ghost.settings().email;
     return this.send({
+        to: opts.email,
         subject: "Welcome to Ghost",
         html: "<p><strong>Hello!</strong></p>" +
             "<p>Welcome to the Ghost platform.</p>" +
