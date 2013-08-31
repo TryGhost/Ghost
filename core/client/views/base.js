@@ -281,11 +281,11 @@
             } else {
                 // Initiate functions for buttons here so models don't get tied up.
                 this.acceptModal = function () {
-                    this.model.options.confirm.accept.func();
+                    this.model.options.confirm.accept.func.call(this);
                     self.removeElement();
                 };
                 this.rejectModal = function () {
-                    this.model.options.confirm.reject.func();
+                    this.model.options.confirm.reject.func.call(this);
                     self.removeElement();
                 };
                 shortcut.remove("ESC");
@@ -308,11 +308,12 @@
             if (document.body.style.webkitFilter !== undefined) { // Detect webkit filters
                 $("body").addClass("blur");
             }
-
+            if (_.isFunction(this.model.options.afterRender)) {
+                this.model.options.afterRender.call(this);
+            }
             if (this.model.options.animation) {
                 this.animate(this.$el.children(".js-modal"));
             }
-
             var self = this;
             $(window).on('resize', self.resize);
 
