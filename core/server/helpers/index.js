@@ -50,6 +50,29 @@ coreHelpers = function (ghost) {
         return this.author ? this.author.full_name : "";
     });
 
+    // ### Tags Helper
+    //
+    // *Usage example:*
+    // `{{tags}}`
+    // `{{tags separator=" - "}}`
+    //
+    // Returns a string of the tags on the post.
+    // By default, tags are separated by commas.
+    //
+    // Note that the standard {{#each tags}} implementation is unaffected by this helper
+    // and can be used for more complex templates.
+    ghost.registerThemeHelper('tags', function (options) {
+        var separator = ", ",
+            tagNames;
+
+        if (typeof options.hash.separator === "string") {
+            separator = options.hash.separator;
+        }
+
+        tagNames = _.pluck(this.tags, 'name');
+        return tagNames.join(separator);
+    });
+
     // ### Content Helper
     // 
     // *Usage example:*
@@ -128,7 +151,10 @@ coreHelpers = function (ghost) {
     ghost.registerThemeHelper('post_class', function (options) {
         var classes = ['post'];
 
-        // TODO: add tag names once we have them
+        if (this.tags) {
+            classes = classes.concat(this.tags.map(function (tag) { return "tag-" + tag.name; }));
+        }
+
         return ghost.doFilter('post_class', classes, function (classes) {
             var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
             return new hbs.handlebars.SafeString(classString.trim());

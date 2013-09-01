@@ -12,6 +12,7 @@ var Ghost = require('../ghost'),
     dataProvider = ghost.dataProvider,
     posts,
     users,
+    tags,
     notifications,
     settings,
     requestHandler,
@@ -141,6 +142,16 @@ users = {
     changePassword: function changePassword(userData) {
         // **returns:** on success, returns a promise for the resulting user in a json object
         return dataProvider.User.changePassword(userData);
+    }
+};
+
+tags = {
+    // #### All
+
+    // **takes:** Nothing yet
+    all: function browse() {
+        // **returns:** a promise for all tags which have previously been used in a json object
+        return dataProvider.Tag.findAll();
     }
 };
 
@@ -306,6 +317,7 @@ cachedSettingsRequestHandler = function (apiMethod) {
 // Public API
 module.exports.posts = posts;
 module.exports.users = users;
+module.exports.tags = tags;
 module.exports.notifications = notifications;
 module.exports.settings = settings;
 module.exports.requestHandler = requestHandler;
