@@ -63,29 +63,34 @@
                     }
 
                     // filter out def urls
-                    text = text.replace(/^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/gim,
+                    // from Marked https://github.com/chjj/marked/blob/master/lib/marked.js#L24
+                    text = text.replace(/^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/gmi,
                         function (x) {
                             var hash = hashId();
                             extractions[hash] = x;
                             return "{gfm-js-extract-ref-url-" + hash + "}";
                         });
 
-                    // taken from https://gist.github.com/jorilallo/1283095#L158
-                    text = text.replace(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g, function (wholeMatch, matchIndex) {
-                        var left = text.slice(0, matchIndex), right = text.slice(matchIndex),
-                            href;
-                        if (left.match(/<[^>]+$/) && right.match(/^[^>]*>/)) {
-                            return wholeMatch;
-                        }
-                        href = wholeMatch.replace(/^http:\/\/github.com\//, "https://github.com/");
-                        return "<a href='" + href + "'>" + wholeMatch + "</a>";
-                    });
+                    // match a URL
+                    // adapted from https://gist.github.com/jorilallo/1283095#L158
+                    // and http://blog.stevenlevithan.com/archives/mimic-lookbehind-javascript
+                    text = text.replace(/(\]\(|\]|\[|<a[^\>]*?\>)?https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/gmi,
+                        function (wholeMatch, lookBehind, matchIndex) {
+                            // Check we are not inside an HTML tag
+                            var left = text.slice(0, matchIndex), right = text.slice(matchIndex);
+                            if ((left.match(/<[^>]+$/) && right.match(/^[^>]*>/)) || lookBehind) {
+                                return wholeMatch;
+                            }
+                            // If we have a matching lookBehind, this is a failure, else wrap the match in <a> tag
+                            return lookBehind ? wholeMatch : "<a href='" + wholeMatch + "'>" + wholeMatch + "</a>";
+                        });
 
-                    text = text.replace(/[a-z0-9_\-+=.]+@[a-z0-9\-]+(\.[a-z0-9-]+)+/ig, function (wholeMatch) {
+                    // match emil
+                    text = text.replace(/[a-z0-9_\-+=.]+@[a-z0-9\-]+(\.[a-z0-9-]+)+/gmi, function (wholeMatch) {
                         return "<a href='mailto:" + wholeMatch + "'>" + wholeMatch + "</a>";
                     });
 
-                    text = text.replace(/\{gfm-js-extract-ref-url-([0-9]+)\}/gm, function (x, y) {
+                    text = text.replace(/\{gfm-js-extract-ref-url-([0-9]+)\}/gi, function (x, y) {
                         return "\n\n" + extractions[y];
                     });
 

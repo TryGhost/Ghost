@@ -136,12 +136,43 @@ describe("Showdown client side converter", function () {
         });
     });
 
-    it("should auto-link URL", function () {
+    it("should auto-link URL in text with markdown syntax", function () {
         var testPhrases = [
-                {input: "http://google.co.uk", output: /^<p><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/},
+                {
+                    input: "http://google.co.uk",
+                    output: /^<p><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/
+                },
                 {
                     input: "https://atest.com/fizz/buzz?baz=fizzbuzz",
                     output: /^<p><a href=\'https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz\'>https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a><\/p>$/
+                },
+                {
+                    input: "Some [ text (http://www.google.co.uk) some other text",
+                    output: /^<p>Some \[ text \(<a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a>\) some other text<\/p>$/
+                },
+                {
+                    input: ">http://google.co.uk",
+                    output: /^<blockquote>\n  <p><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                },
+                {
+                    input: "> http://google.co.uk",
+                    output: /^<blockquote>\n  <p><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                },
+                {
+                    input: "<>>> http://google.co.uk",
+                    output: /^<p>&lt;>>> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/
+                },
+                {
+                    input: "<strong>http://google.co.uk",
+                    output: /^<p><strong><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/
+                },
+                {
+                    input: "# http://google.co.uk",
+                    output: /^<h1 id="ahrefhttpgooglecoukhttpgooglecouka"><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/h1>$/
+                },
+                {
+                    input: "* http://google.co.uk",
+                    output: /^<ul>\n<li><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/li>\n<\/ul>$/
                 }
             ],
             processedMarkup;
@@ -159,7 +190,6 @@ describe("Showdown client side converter", function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
-    // Fails
     it("should convert reference format URL", function () {
         var testPhrases = [
                 {
@@ -169,6 +199,10 @@ describe("Showdown client side converter", function () {
                 {
                     input: "[Google][1]\n\n[1]: http://google.co.uk \"some text\"",
                     output: /^<p><a href="http:\/\/google.co.uk" title="some text">Google<\/a><\/p>$/
+                },
+                {
+                    input: "[http://google.co.uk]: http://google.co.uk\n\n[Hello][http://google.co.uk]",
+                    output: /^<p><a href="http:\/\/google.co.uk">Hello<\/a><\/p>$/
                 }
             ],
             processedMarkup;
@@ -188,6 +222,10 @@ describe("Showdown client side converter", function () {
                 {
                     input: "![Google][1]\n\n[1]: http://dsurl.stuff/something.jpg \"some text\"",
                     output: /^<section.*?<img.*?src="http:\/\/dsurl.stuff\/something.jpg"\/>.*?<\/section>$/
+                },
+                {
+                    input: "[http://www.google.co.uk]: http://www.google.co.uk\n\n![Hello][http://www.google.co.uk]",
+                    output: /^<section.*?<img.*?src="http:\/\/www.google.co.uk"\/>.*?<\/section>$/
                 }
             ],
             processedMarkup;
@@ -198,19 +236,70 @@ describe("Showdown client side converter", function () {
         });
     });
 
-    it("should NOT auto-link reference URL", function () {
-        var testPhrase = {input: "[1]: http://google.co.uk", output: /^$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+    it("should NOT auto-link URL in HTML", function () {
+        var testPhrases = [
+                {
+                    input: '<img src="http://placekitten.com/50">',
+                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\"><\/p>$/
+                },
+                {
+                    input: '<img src="http://placekitten.com/50" />',
+                    output: /^<p><img src=\"http:\/\/placekitten.com\/50\" \/><\/p>$/
+                },
+                {
+                    input: '<script type="text/javascript" src="http://google.co.uk"></script>',
+                    output: /^<script type=\"text\/javascript\" src=\"http:\/\/google.co.uk\"><\/script>$/
+                },
+                {
+                    input: '<a href="http://facebook.com">http://google.co.uk</a>',
+                    output: /^<p><a href=\"http:\/\/facebook.com\">http:\/\/google.co.uk<\/a><\/p>$/
+                },
+                {
+                    input: '<a href="http://facebook.com">test</a> http://google.co.uk',
+                    output: /^<p><a href=\"http:\/\/facebook.com\">test<\/a> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/
+                }
+            ],
+            processedMarkup;
 
-        processedMarkup.should.match(testPhrase.output);
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
     });
 
+    it("should not display anything for reference URL", function () {
+        var testPhrases = [
+                {
+                    input: "[1]: http://www.google.co.uk",
+                    output: /^$/
+                },
+                {
+                    input: "[http://www.google.co.uk]: http://www.google.co.uk",
+                    output: /^$/
+                },
+                {
+                    input: "[1]: http://dsurl.stuff/something.jpg",
+                    output: /^$/
+                },
+                {
+                    input: "[1]:http://www.google.co.uk",
+                    output: /^$/
+                },
+                {
+                    input: " [1]:http://www.google.co.uk",
+                    output: /^$/
+                },
+                {
+                    input: "",
+                    output: /^$/
+                }
+            ],
+            processedMarkup;
 
-    it("should NOT auto-link image reference URL", function () {
-        var testPhrase = {input: "[1]: http://dsurl.stuff/something.jpg", output: /^$/},
+        testPhrases.forEach(function (testPhrase) {
             processedMarkup = converter.makeHtml(testPhrase.input);
-
-        processedMarkup.should.match(testPhrase.output);
+            processedMarkup.should.match(testPhrase.output);
+        });
     });
 
     it("should show placeholder for image markdown", function () {
@@ -276,8 +365,41 @@ describe("Showdown client side converter", function () {
         });
     });
 
-    it("should NOT auto-link image URL", function () {
+//    it("should NOT auto-link URL in image", function () {
+//        var testPhrases = [
+//                {
+//                    input: "![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)",
+//                    output: /^<section.*?((?!<a href=\'http:\/\/google.co.uk\/kitten.jpg\').)*<\/section>$/
+//                },
+//                {
+//                    input:  "![image stuff](http://dsurl.stuff/something)",
+//                    output: /^<section.*?((?!<a href=\'http:\/\/dsurl.stuff\/something\').)*<\/section>$/
+
+//    });
+//
+
+    it("should correctly output link and image markdown without autolinks", function () {
         var testPhrases = [
+                {
+                    input: "[1](http://google.co.uk)",
+                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>$/
+                },
+                {
+                    input: "  [1](http://google.co.uk)",
+                    output: /^<p><a href="http:\/\/google.co.uk">1<\/a><\/p>$/
+                },
+                {
+                    input: "[http://google.co.uk](http://google.co.uk)",
+                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                },
+                {
+                    input: "[http://google.co.uk][id]\n\n[id]: http://google.co.uk",
+                    output: /^<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                },
+                {
+                    input: "![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)",
+                    output: /^<section.*?((?!<a href=\'http:\/\/google.co.uk\/kitten.jpg\').)*<\/section>$/
+                },
                 {
                     input:  "![image stuff](http://dsurl.stuff/something)",
                     output: /^<section.*?((?!<a href=\'http:\/\/dsurl.stuff\/something\').)*<\/section>$/
@@ -290,5 +412,4 @@ describe("Showdown client side converter", function () {
             processedMarkup.should.match(testPhrase.output);
         });
     });
-
 });
