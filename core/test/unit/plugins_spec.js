@@ -5,7 +5,9 @@ var _ = require("underscore"),
     sinon = require('sinon'),
     errors = require('../../server/errorHandling'),
     helpers = require('./helpers'),
-    plugins = require('../../server/plugins'),
+    Ghost = require('../../ghost'),
+    ghost = new Ghost(),
+    plugins = require('../../server/plugins')(ghost),
     GhostPlugin = plugins.GhostPlugin,
     loader = require('../../server/plugins/loader');
 
@@ -106,7 +108,7 @@ describe('Plugins', function () {
             installSpy.called.should.equal(true);
             activateSpy.called.should.equal(true);
 
-            var api = require("../../server/api");
+            var api   = require("../../server/api")(ghost);
 
             return api.settings.read("installedPlugins").then(function (setting) {
                 should.exist(setting);
