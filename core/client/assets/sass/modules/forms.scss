@@ -280,10 +280,26 @@ input[type="reset"] {
             right: 50%;
             margin-top: -3px;
             margin-right: -5px;
-            @include transition(transform 0.3s ease, margin-top 0.3s ease);
+            @include transition(margin-top 0.3s ease);
+            /* Transition of transform properties are split out due to a 
+                defect in the vendor prefixing of transform transitions.
+                See: http://github.com/thoughtbot/bourbon/pull/86 */
+            @include transition-property(transform);
+            @include transition-duration(0.3);
+            @include transition-timing-function(ease);
         };
 
-        // Spin the arrow on hover
+        // Keep the arrow spun when the associated menu is open
+        &.active:before {
+            @include transform(rotate(360deg));
+        }
+
+        &.up.active:before {
+            margin-top:-4px;
+            @include transform(rotate(540deg));
+        }
+
+        // Spin the arrow on hover and while menu is open
         &:hover {
             box-shadow: none;
             background: #f8f8f8;
@@ -297,7 +313,9 @@ input[type="reset"] {
             @include icon($i-chevron-down) {
                 margin-top:-4px;
                 @include transform(rotate(540deg));
-                @include transition(transform 0.6s ease);
+                @include transition-property(transform);
+                @include transition-duration(0.6);
+                @include transition-timing-function(ease);
             };
         }
     }
@@ -322,7 +340,7 @@ input[type="reset"] {
     @extend %splitbutton;
     .options {
         background: darken($blue, 5%);
-        &:hover {background: darken($blue, 10%);}
+        &:hover, &.active {background: darken($blue, 10%);}
     }
 }
 

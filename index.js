@@ -12,7 +12,6 @@ var express = require('express'),
     semver = require("semver"),
     errors = require('./core/server/errorHandling'),
     admin = require('./core/server/controllers/admin'),
-    frontend = require('./core/server/controllers/frontend'),
     api = require('./core/server/api'),
     Ghost = require('./core/ghost'),
     I18n = require('./core/shared/lang/i18n'),
@@ -116,7 +115,7 @@ function ghostLocals(req, res, next) {
             next();
         });
     } else {
-        api.users.read({id: req.session.user}).then(function (currentUser) {
+        ghost.api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 // pass the admin flash messages, settings and paths
                 messages: ghost.notifications,
@@ -190,22 +189,22 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     // ### API routes
     /* TODO: auth should be public auth not user auth */
     // #### Posts
-    ghost.app().get('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
-    ghost.app().post('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
-    ghost.app().get('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
-    ghost.app().put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
-    ghost.app().del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+    ghost.app().get('/api/v0.1/posts', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.posts.browse));
+    ghost.app().post('/api/v0.1/posts', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.posts.add));
+    ghost.app().get('/api/v0.1/posts/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.posts.read));
+    ghost.app().put('/api/v0.1/posts/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.posts.edit));
+    ghost.app().del('/api/v0.1/posts/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.posts.destroy));
     // #### Settings
-    ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
-    ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
-    ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
+    ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, ghost.api.cachedSettingsRequestHandler(ghost.api.settings.browse));
+    ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, ghost.api.cachedSettingsRequestHandler(ghost.api.settings.read));
+    ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, ghost.api.cachedSettingsRequestHandler(ghost.api.settings.edit));
     // #### Users
-    ghost.app().get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
-    ghost.app().get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));
-    ghost.app().put('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    ghost.app().get('/api/v0.1/users', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.users.browse));
+    ghost.app().get('/api/v0.1/users/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.users.read));
+    ghost.app().put('/api/v0.1/users/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.users.edit));
     // #### Notifications
-    ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
-    ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
+    ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.notifications.destroy));
+    ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, ghost.api.requestHandler(ghost.api.notifications.add));
 
 
     // ### Admin routes
@@ -213,36 +212,36 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get(/^\/logout\/?$/, function redirect(req, res) {
         res.redirect(301, '/signout/');
     });
-    ghost.app().get(/^\/signout\/?$/, admin.logout);
+    ghost.app().get(/^\/signout\/?$/, ghost.admin.logout);
     ghost.app().get('/ghost/login/', function redirect(req, res) {
         res.redirect(301, '/ghost/signin/');
     });
-    ghost.app().get('/ghost/signin/', redirectToDashboard, admin.login);
-    ghost.app().get('/ghost/signup/', redirectToDashboard, admin.signup);
-    ghost.app().post('/ghost/signin/', admin.auth);
-    ghost.app().post('/ghost/signup/', admin.doRegister);
-    ghost.app().post('/ghost/changepw/', auth, admin.changepw);
-    ghost.app().get('/ghost/editor/:id', auth, admin.editor);
-    ghost.app().get('/ghost/editor', auth, admin.editor);
-    ghost.app().get('/ghost/content', auth, admin.content);
-    ghost.app().get('/ghost/settings*', auth, admin.settings);
-    ghost.app().get('/ghost/debug/', auth, admin.debug.index);
-    ghost.app().get('/ghost/debug/db/export/', auth, admin.debug['export']);
-    ghost.app().post('/ghost/debug/db/import/', auth, admin.debug['import']);
-    ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
-    ghost.app().post('/ghost/upload', admin.uploader);
+    ghost.app().get('/ghost/signin/', redirectToDashboard, ghost.admin.login);
+    ghost.app().get('/ghost/signup/', redirectToDashboard, ghost.admin.signup);
+    ghost.app().post('/ghost/signin/', ghost.admin.auth);
+    ghost.app().post('/ghost/signup/', ghost.admin.doRegister);
+    ghost.app().post('/ghost/changepw/', auth, ghost.admin.changepw);
+    ghost.app().get('/ghost/editor/:id', auth, ghost.admin.editor);
+    ghost.app().get('/ghost/editor', auth, ghost.admin.editor);
+    ghost.app().get('/ghost/content', auth, ghost.admin.content);
+    ghost.app().get('/ghost/settings*', auth, ghost.admin.settings);
+    ghost.app().get('/ghost/debug/', auth, ghost.admin.debug.index);
+    ghost.app().get('/ghost/debug/db/export/', auth, ghost.admin.debug['export']);
+    ghost.app().post('/ghost/debug/db/import/', auth, ghost.admin.debug['import']);
+    ghost.app().get('/ghost/debug/db/reset/', auth, ghost.admin.debug.reset);
+    ghost.app().post('/ghost/upload', ghost.admin.uploader);
     ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
-    ghost.app().get('/ghost/', auth, admin.index);
+    ghost.app().get('/ghost/', auth, ghost.admin.index);
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
-    ghost.app().get('/rss/', frontend.rss);
-    ghost.app().get('/rss/:page/', frontend.rss);
-    ghost.app().get('/:slug', frontend.single);
-    ghost.app().get('/', frontend.homepage);
-    ghost.app().get('/page/:page/', frontend.homepage);
+    ghost.app().get('/rss/', ghost.frontend.rss);
+    ghost.app().get('/rss/:page/', ghost.frontend.rss);
+    ghost.app().get('/:slug', ghost.frontend.single);
+    ghost.app().get('/', ghost.frontend.homepage);
+    ghost.app().get('/page/:page/', ghost.frontend.homepage);
 
 
     // ## Start Ghost App

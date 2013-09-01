@@ -13,7 +13,6 @@ var config = require('./../config'),
     _ = require('underscore'),
     Polyglot = require('node-polyglot'),
     models = require('./server/models'),
-    plugins = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
     permissions = require('./server/permissions'),
     uuid = require('node-uuid'),
@@ -121,6 +120,12 @@ Ghost = function () {
             }
         });
     }
+
+    this.api      = require('./server/api')(this);
+    this.frontend = require('./server/controllers/frontend')(this);
+    this.admin    = require('./server/controllers/admin')(this);
+    this.plugins  = require('./server/plugins')(this);
+
     return instance;
 };
 
@@ -277,7 +282,7 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
 
     var self = this;
 
-    return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
+    return this.plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
         // Extend the loadedPlugins onto the available plugins
         _.extend(self.availablePlugins, loadedPlugins);
     }, errors.logAndThrowError);

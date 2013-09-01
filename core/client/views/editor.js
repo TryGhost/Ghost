@@ -251,11 +251,6 @@
                 $('body').toggleClass('fullscreen');
             });
 
-            $('.options.up').on('click', function (e) {
-                e.stopPropagation();
-                $(this).next("ul").fadeToggle(200);
-            });
-
             this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
 
             // Shadow on Markdown if scrolled
@@ -289,7 +284,8 @@
         },
 
         events: {
-            'click .markdown-help': 'showHelp'
+            'click .markdown-help': 'showHelp',
+            'blur #entry-title': 'trimTitle'
         },
 
         syncScroll: _.debounce(function (e) {
@@ -323,6 +319,16 @@
                     }
                 }
             }));
+        },
+
+        trimTitle: function () {
+            var $title = $('#entry-title'),
+                rawTitle = $title.val(),
+                trimmedTitle = $.trim(rawTitle);
+
+            if (rawTitle !== trimmedTitle) {
+                $title.val(trimmedTitle);
+            }
         },
 
         // This updates the editor preview panel.
