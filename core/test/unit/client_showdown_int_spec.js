@@ -223,6 +223,7 @@ describe("Showdown client side converter", function () {
         });
     });
 
+    /* No ref-style for now
     it("should convert reference format image", function () {
         var testPhrases = [
                 {
@@ -245,6 +246,7 @@ describe("Showdown client side converter", function () {
             processedMarkup.should.match(testPhrase.output);
         });
     });
+    */
 
     it("should NOT auto-link URL in HTML", function () {
         var testPhrases = [
@@ -352,6 +354,7 @@ describe("Showdown client side converter", function () {
         });
     });
 
+    /* No ref-style for now
     it("should have placeholder with image if image reference is present", function () {
         var testPhrases = [
                 {
@@ -374,19 +377,7 @@ describe("Showdown client side converter", function () {
             }
         });
     });
-
-//    it("should NOT auto-link URL in image", function () {
-//        var testPhrases = [
-//                {
-//                    input: "![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)",
-//                    output: /^<section.*?((?!<a href=\'http:\/\/google.co.uk\/kitten.jpg\').)*<\/section>$/
-//                },
-//                {
-//                    input:  "![image stuff](http://dsurl.stuff/something)",
-//                    output: /^<section.*?((?!<a href=\'http:\/\/dsurl.stuff\/something\').)*<\/section>$/
-
-//    });
-//
+    */
 
     it("should correctly output link and image markdown without autolinks", function () {
         var testPhrases = [

@@ -20,6 +20,7 @@
                 type    : 'lang',
                 filter  : function (text) {
                     var extractions = {},
+                        imageMarkdownRegex = /^(?:\{(.*?)\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
                         hashID = 0;
 
                     function hashId() {
@@ -32,6 +33,11 @@
                         extractions[hash] = x;
                         return "{gfm-js-extract-pre-" + hash + "}";
                     }, 'm');
+
+                    // better URL support, but no title support
+                    text = text.replace(imageMarkdownRegex, function (match, key, alt, src) {
+                        return '<img src="' + src + '" alt="' + alt + '" />';
+                    });
 
                     //prevent foo_bar and foo_bar_baz from ending up with an italic word in the middle
                     text = text.replace(/(^(?! {4}|\t)\w+_\w+_\w[\w_]*)/gm, function (x) {

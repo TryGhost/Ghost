@@ -36,11 +36,13 @@ describe("Ghostdown showdown extensions", function () {
             "![image and another,/ image]",
             "![image and another,/ image]()",
             "![image and another,/ image](http://dsurl.stuff)",
-            "![](http://dsurl.stuff)",
+            "![](http://dsurl.stuff)"
+            /* No ref-style for now
             "![][]",
             "![image and another,/ image][stuff]",
             "![][stuff]",
             "![image and another,/ image][]"
+            */
         ]
             .forEach(function (imageMarkup) {
                 var processedMarkup =
@@ -56,9 +58,11 @@ describe("Ghostdown showdown extensions", function () {
     it("should correctly include an image", function () {
         [
             "![image and another,/ image](http://dsurl.stuff)",
-            "![](http://dsurl.stuff)",
+            "![](http://dsurl.stuff)"
+            /* No ref-style for now
             "![image and another,/ image][test]\n\n[test]: http://dsurl.stuff",
             "![][test]\n\n[test]: http://dsurl.stuff"
+            */
         ]
             .forEach(function (imageMarkup) {
                 var processedMarkup =
