@@ -60,7 +60,7 @@
 
         events: {
             'click [data-set-status]': 'handleStatus',
-            'click .js-post-button': 'updatePost'
+            'click .js-post-button': 'handlePostButton'
         },
 
         statusMap: {
@@ -144,13 +144,21 @@
             $('body').find('.overlay:visible').fadeOut();
         },
 
-        updatePost: function (e) {
-            if (e) { e.preventDefault(); }
+        handlePostButton: function (e) {
+            e.preventDefault();
+
+            var status = $(e.currentTarget).attr("data-status");
+
+            this.updatePost(status);
+        },
+
+        updatePost: function (status) {
             var self = this,
                 model = this.model,
-                $currentTarget = $(e.currentTarget),
-                status = $currentTarget.attr('data-status'),
                 prevStatus = model.get('status');
+
+            // Default to same status if not passed in
+            status = status || prevStatus;
 
             if (status === 'publish-on') {
                 return Ghost.notifications.addItem({
