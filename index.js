@@ -221,6 +221,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     });
     ghost.app().get('/ghost/signin/', redirectToDashboard, admin.login);
     ghost.app().get('/ghost/signup/', redirectToDashboard, admin.signup);
+    ghost.app().get('/ghost/forgotten/', redirectToDashboard, admin.forgotten);
+    ghost.app().post('/ghost/forgotten/', admin.resetPassword);
     ghost.app().post('/ghost/signin/', admin.auth);
     ghost.app().post('/ghost/signup/', admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);

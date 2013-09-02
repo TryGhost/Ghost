@@ -14,7 +14,8 @@
             'debug/'           : 'debug',
             'register/'        : 'register',
             'signup/'          : 'signup',
-            'signin/'          : 'login'
+            'signin/'          : 'login',
+            'forgotten/'       : 'forgotten'
         },
 
         signup: function () {
@@ -23,6 +24,10 @@
 
         login: function () {
             Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-container' });
+        },
+
+        forgotten: function () {
+            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-login-container' });
         },
 
         blog: function () {

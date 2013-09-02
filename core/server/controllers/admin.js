@@ -88,7 +88,7 @@ adminControllers = {
         }
     },
     'login': function (req, res) {
-        res.render('login', {
+        res.render('signup', {
             bodyClass: 'ghost-login',
             hideNavbar: true,
             adminNav: setSelected(adminNavbar, 'login')
@@ -138,6 +138,7 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
+
     'doRegister': function (req, res) {
         var email = req.body.email,
             password = req.body.password;
@@ -146,6 +147,9 @@ adminControllers = {
             email_address: email,
             password: password
         }).then(function (user) {
+
+            ghost.mail.sendWelcomeMessage({email: user.attributes.email_address});
+
             if (req.session.user === undefined) {
                 req.session.user = user.id;
             }
@@ -154,6 +158,43 @@ adminControllers = {
             res.json(401, {error: error.message});
         });
 
+    },
+
+    'forgotten': function (req, res) {
+        res.render('signup', {
+            bodyClass: 'ghost-forgotten',
+            hideNavbar: true,
+            adminNav: setSelected(adminNavbar, 'login')
+        });
+    },
+
+    'resetPassword': function (req, res) {
+        var email = req.body.email;
+
+        api.users.forgottenPassword(email).then(function (user) {
+            var message = {
+                    to: email,
+                    subject: 'Your new password',
+                    html: "<p><strong>Hello!</strong></p>" +
+                        "<p>You've reset your password. Here's the new one: " + user.newPassword + "</p>"
+                },
+                notification = {
+                    type: 'success',
+                    message: 'Your password was changed successfully. Check your email for details.',
+                    status: 'passive',
+                    id: 'successresetpw'
+                };
+
+            ghost.mail.send(message);
+            // let's only add the notification once
+            if (!_.contains(_.pluck(ghost.notifications, 'id'), 'successresetpw')) {
+                ghost.notifications.push(notification);
+            }
+
+            res.json(200, {redirect: '/ghost/login/'});
+        }, function (error) {
+            res.json(401, {error: error.message});
+        });
     },
     'logout': function (req, res) {
         delete req.session.user;

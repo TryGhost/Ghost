@@ -109,4 +109,38 @@
             });
         }
     });
+
+    Ghost.Views.Forgotten = Ghost.SimpleFormView.extend({
+
+        templateName: "forgotten",
+
+        events: {
+            'submit #forgotten': 'submitHandler'
+        },
+
+        submitHandler: function (event) {
+            event.preventDefault();
+
+            var email = this.$el.find('.email').val();
+
+            $.ajax({
+                url: '/ghost/forgotten/',
+                type: 'POST',
+                data: {
+                    email: email
+                },
+                success: function (msg) {
+
+                    window.location.href = msg.redirect;
+                },
+                error: function (xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+        }
+    });
 }());
