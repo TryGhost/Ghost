@@ -1,0 +1,47 @@
+[
+    {
+        "key":          "title",
+        "value":        "Ghost",
+        "type":         "blog"
+    },
+    {
+        "key":          "description",
+        "value":        "Just a blogging platform.",
+        "type":         "blog"
+    },
+    {
+        "key":          "email",
+        "value":        "ghost@example.com",
+        "type":         "general"
+    },
+    {
+        "key":          "activePlugins",
+        "value":        "",
+        "type":         "general"
+    },
+    {
+        "key":          "activeTheme",
+        "value":        "content/themes/casper",
+        "type":         "general"
+    },
+    {
+        "key":          "currentVersion",
+        "value":        "002",
+        "type":         "core"
+    },
+    {
+        "key":          "installedPlugins",
+        "value":        "[]",
+        "type":         "core"
+    },
+    {
+        "key":          "logo",
+        "value":        "",
+        "type":         "blog"
+    },
+    {
+        "key":          "icon",
+        "value":        "",
+        "type":         "blog"
+    }
+]
