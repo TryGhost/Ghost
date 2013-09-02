@@ -46,12 +46,67 @@ describe("Github showdown extensions", function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
-    it("should auto-link URL", function () {
+    it("should auto-link URL in text with markdown syntax", function () {
         var testPhrases = [
-                {input: "http://google.co.uk", output: /^<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/},
+                {
+                    input: "http://google.co.uk",
+                    output: /^<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
                 {
                     input: "https://atest.com/fizz/buzz?baz=fizzbuzz",
                     output: /^<a href=\'https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz\'>https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a>$/
+                },
+                {
+                    input: "Some text http://www.google.co.uk some other text",
+                    output: /^Some text <a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a> some other text$/
+                },
+                {
+                    input: "Some [ text http://www.google.co.uk some other text",
+                    output: /^Some \[ text <a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a> some other text$/
+                },
+                {
+                    input: "Some [ text (http://www.google.co.uk) some other text",
+                    output: /^Some \[ text \(<a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a>\) some other text$/
+                },
+                {
+                    input: "  http://google.co.uk  ",
+                    output: /^  <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>  $/
+                },
+                {
+                    input: ">http://google.co.uk",
+                    output: /^><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "> http://google.co.uk",
+                    output: /^> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "<>>> http://google.co.uk",
+                    output: /^<>>> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "<>>>http://google.co.uk",
+                    output: /^<>>><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "<some text>>>http://google.co.uk",
+                    output: /^<some text>>><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "<strong>http://google.co.uk",
+                    output: /^<strong><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "# http://google.co.uk",
+                    output: /^# <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "#http://google.co.uk",
+                    output: /^#<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: "* http://google.co.uk",
+                    output: /^\* <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
                 }
             ],
             processedMarkup;
@@ -69,17 +124,129 @@ describe("Github showdown extensions", function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it("should NOT auto-link URL in HTML", function () {
+        var testPhrases = [
+                {
+                    input: '<img src="http://placekitten.com/50">',
+                    output: /^<img src=\"http:\/\/placekitten.com\/50\">$/
+                },
+                {
+                    input: '<img src="http://placekitten.com/50" />',
+                    output: /^<img src=\"http:\/\/placekitten.com\/50\" \/>$/
+                },
+                {
+                    input: '<script type="text/javascript" src="http://google.co.uk"></script>',
+                    output: /^<script type=\"text\/javascript\" src=\"http:\/\/google.co.uk\"><\/script>$/
+                },
+                {
+                    input: '<a href="http://facebook.com">http://google.co.uk</a>',
+                    output: /^<a href=\"http:\/\/facebook.com\">http:\/\/google.co.uk<\/a>$/
+                },
+                {
+                    input: '<a href="http://facebook.com">test</a> http://google.co.uk',
+                    output: /^<a href=\"http:\/\/facebook.com\">test<\/a> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                }
+            ],
+            processedMarkup;
+
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
     it("should NOT auto-link reference URL", function () {
-        var testPhrase = {input: "[1]: http://google.co.uk", output: /^\n\n\[1\]: http:\/\/google.co.uk$/},
-            processedMarkup = _ConvertPhrase(testPhrase.input);
+        var testPhrases = [
+                {
+                    input: "[1]: http://www.google.co.uk",
+                    output: /^\n\n\[1\]: http:\/\/www.google.co.uk$/
+                },
+                {
+                    input: "[http://www.google.co.uk]: http://www.google.co.uk",
+                    output: /^\n\n\[http:\/\/www.google.co.uk]: http:\/\/www.google.co.uk$/
+                },
+                {
+                    input: "[1]: http://dsurl.stuff/something.jpg",
+                    output: /^\n\n\[1\]: http:\/\/dsurl.stuff\/something.jpg$/
+                },
+                {
+                    input: "[1]:http://www.google.co.uk",
+                    output: /^\n\n\[1\]:http:\/\/www.google.co.uk$/
+                },
+                {
+                    input: " [1]:http://www.google.co.uk",
+                    output: /^\n\n \[1\]:http:\/\/www.google.co.uk$/
+                },
+                {
+                    input: "[http://www.google.co.uk]: http://www.google.co.uk",
+                    output: /^\n\n\[http:\/\/www.google.co.uk\]: http:\/\/www.google.co.uk$/
+                }
+            ],
+            processedMarkup;
 
-        processedMarkup.should.match(testPhrase.output);
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
     });
 
-    it("should NOT auto-link image URL", function () {
-        var testPhrase = {input: "[1]: http://dsurl.stuff/something.jpg", output: /^\n\n\[1\]: http:\/\/dsurl.stuff\/something.jpg$/},
-            processedMarkup = _ConvertPhrase(testPhrase.input);
+    it("should NOT auto-link URL in link or image markdown", function () {
+        var testPhrases = [
+                {
+                    input: "[1](http://google.co.uk)",
+                    output: /^\[1\]\(http:\/\/google.co.uk\)$/
+                },
+                {
+                    input: "  [1](http://google.co.uk)",
+                    output: /^  \[1\]\(http:\/\/google.co.uk\)$/
+                },
+                {
+                    input: "[http://google.co.uk](http://google.co.uk)",
+                    output: /^\[http:\/\/google.co.uk\]\(http:\/\/google.co.uk\)$/
+                },
+                {
+                    input: "[http://google.co.uk][id]",
+                    output: /^\[http:\/\/google.co.uk\]\[id\]$/
+                },
+                {
+                    input: "![1](http://google.co.uk/kitten.jpg)",
+                    output: /^!\[1\]\(http:\/\/google.co.uk\/kitten.jpg\)$/
+                },
+                {
+                    input: "  ![1](http://google.co.uk/kitten.jpg)",
+                    output: /^  !\[1\]\(http:\/\/google.co.uk\/kitten.jpg\)$/
+                },
+                {
+                    input: "![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)",
+                    output: /^!\[http:\/\/google.co.uk\/kitten.jpg\]\(http:\/\/google.co.uk\/kitten.jpg\)$/
+                }
+            ],
+            processedMarkup;
 
-        processedMarkup.should.match(testPhrase.output);
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
     });
+
+     // behaviour if you add a gap between [] and ()
+    it("should auto-link if markdown is invalid", function () {
+        var testPhrases = [
+                {
+                    input: "[1] (http://google.co.uk)",
+                    output: /^\[1\] \(<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>\)$/
+                },
+                {
+                    input: "![1] (http://google.co.uk/kitten.jpg)",
+                    output: /^!\[1\] \(<a href=\'http:\/\/google.co.uk\/kitten.jpg\'>http:\/\/google.co.uk\/kitten.jpg<\/a>\)$/
+                }
+            ],
+            processedMarkup;
+
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
 });
