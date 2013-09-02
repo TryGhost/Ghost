@@ -145,6 +145,8 @@ Ghost.prototype.init = function () {
         instance.getPaths(),
         instance.mail.init(self)
     ).then(function () {
+        return models.Settings.populateDefaults();
+    }).then(function () {
         return self.initPlugins();
     }).then(function () {
         // Initialize the settings cache
