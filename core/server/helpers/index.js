@@ -44,11 +44,25 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    // ### URL helper
+    //
+    // *Usage example:*
+    // `{{url}}`
+    // `{{url absolute}}`
+    //
+    // Returns the URL for the current object context
+    // i.e. If inside a post context will return post permalink
+    // absolute flag outputs absolute URL, else URL is relative
     ghost.registerThemeHelper('url', function (context, options) {
-        if (models.isPost(this)) {
-            return "/" + this.slug;
+        var output = '';
+
+        if (options && options.absolute) {
+            output += ghost.config().env[process.NODE_ENV].url;
         }
-        return '';
+        if (models.isPost(this)) {
+            output += "/" + this.slug;
+        }
+        return output;
     });
 
     // ### Author Helper
