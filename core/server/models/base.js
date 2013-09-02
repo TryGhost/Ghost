@@ -39,7 +39,9 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
         }
 
         _.each(relations, function (relation, key) {
-            attrs[key] = relation.toJSON ? relation.toJSON() : relation;
+            if (key.substring(0, 7) !== "_pivot_") {
+                attrs[key] = relation.toJSON ? relation.toJSON() : relation;
+            }
         });
 
         return attrs;

@@ -5,7 +5,7 @@
     "admin.navbar.settings": "Settings",
 
     "__SECTION__": "icons",
-    "icon.category.label": "Category",
+    "icon.tag.label": "Tag",
     "icon.faq.label": "?",
     "icon.faq.markdown.title": "What is Markdown?",
     "icon.full_screen.label": "Full Screen",
