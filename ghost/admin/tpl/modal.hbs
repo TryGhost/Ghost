@@ -1,12 +1,12 @@
 <aside class="modal-background"></aside>
 <article class="modal{{#if options.type}}-{{options.type}}{{/if}} {{#if options.style}}modal-style-{{options.style}}{{/if}}  {{options.animation}} js-modal">
-    <header class="modal-header"><h1>{{content.title}}</h1>{{#if options.close}}<a class="close" href="#"><span class="hidden">Close</span></a>{{/if}}</header>
+    {{#if content.title}}<header class="modal-header"><h1>{{content.title}}</h1>{{#if options.close}}<a class="close" href="#"><span class="hidden">Close</span></a>{{/if}}</header>{{/if}}
     <section class="modal-content">
     </section>
     {{#if options.confirm}}
     <footer class="modal-footer">
-        <button class="button-add js-button-accept">{{options.confirm.accept.text}}</button>
-        <button class="button-delete js-button-reject">{{options.confirm.reject.text}}</button>
+        <button class="js-button-accept {{#if options.confirm.accept.buttonClass}}{{options.confirm.accept.buttonClass}}{{else}}button-add{{/if}}">{{options.confirm.accept.text}}</button>
+        <button class="js-button-reject {{#if options.confirm.reject.buttonClass}}{{options.confirm.reject.buttonClass}}{{else}}button-delete{{/if}}">{{options.confirm.reject.text}}</button>
     </footer>
     {{/if}}
 </article>
