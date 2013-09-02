@@ -136,7 +136,9 @@ coreHelpers = function (ghost) {
 
     ghost.registerThemeHelper('body_class', function (options) {
         var classes = [];
-        if (!this.path || this.path === '/' || this.path === '') {
+        if (_.isString(this.path) && this.path.match(/\/page/)) {
+            classes.push('archive-template');
+        } else if (!this.path || this.path === '/' || this.path === '') {
             classes.push('home-template');
         } else {
             classes.push('post-template');

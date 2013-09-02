@@ -154,13 +154,16 @@ describe('Core Helpers', function () {
 
         it('can render class string for context', function () {
             var rendered1 = handlebars.helpers.body_class.call({path: '/'}),
-                rendered2 = handlebars.helpers.body_class.call({path: '/a-post-title'});
+                rendered2 = handlebars.helpers.body_class.call({path: '/a-post-title'}),
+                rendered3 = handlebars.helpers.body_class.call({path: '/page/4'});
 
             should.exist(rendered1);
             should.exist(rendered2);
+            should.exist(rendered3);
 
             rendered1.string.should.equal('home-template');
             rendered2.string.should.equal('post-template');
+            rendered3.string.should.equal('archive-template');
         });
     });
 
