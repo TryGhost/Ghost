@@ -18,6 +18,9 @@ config.activePlugins = [
     'FancyFirstChar'
 ];
 
+// The url to use when providing links to the site; like RSS and email.
+config.siteUrl = 'http://127.0.0.1';
+
 // ## Default Navigation Items
 // Add new objects here to extend the menu output by {{nav}}
 config.nav = [
