@@ -1,62 +1,59 @@
-[
-    {
-        "key":          "title",
-        "value":        "Ghost",
-        "type":         "blog"
+{
+    "blog": {
+        "title": {
+            "default": "Ghost"
+        },
+        "description": {
+            "default": "Just a blogging platform."
+        },
+        "logo": {
+            "default": ""
+        },
+        "cover": {
+            "default": ""
+        },
+        "defaultLang": {
+            "default": "en",
+            "validations": {
+                "notNull": true
+            }
+        },
+        "postsPerPage": {
+            "default": "6",
+            "validations": {
+                "notNull": true,
+                "isNumeric": true
+            }
+        },
+        "forceI18n": {
+            "default": "true",
+            "validations": {
+                "notNull": true,
+                "isIn": ["true", "false"]
+            }
+        }
     },
-    {
-        "key":          "description",
-        "value":        "Just a blogging platform.",
-        "type":         "blog"
+    "general": {
+        "email": {
+            "default": "ghost@example.com",
+            "validations": {
+                "notNull": true,
+                "isEmail": true
+            }
+        },
+        "activePlugins": {
+            "default": ""
+        },
+        "activeTheme": {
+            "default": "casper"
+        }
     },
-    {
-        "key":          "email",
-        "value":        "ghost@example.com",
-        "type":         "general"
-    },
-    {
-        "key":          "activePlugins",
-        "value":        "",
-        "type":         "general"
-    },
-    {
-        "key":          "activeTheme",
-        "value":        "casper",
-        "type":         "general"
-    },
-    {
-        "key":          "currentVersion",
-        "value":        "002",
-        "type":         "core"
-    },
-    {
-        "key":          "installedPlugins",
-        "value":        "[]",
-        "type":         "core"
-    },
-    {
-        "key":          "logo",
-        "value":        "",
-        "type":         "blog"
-    },
-    {
-        "key":          "cover",
-        "value":        "",
-        "type":         "blog"
-    },
-    {
-        "key":          "defaultLang",
-        "value":        "en",
-        "type":         "blog"
-    },
-    {
-        "key":          "forceI18n",
-        "value":        true,
-        "type":         "blog"
-    },
-    {
-        "key":          "postsPerPage",
-        "value":        "6",
-        "type":         "blog"
+    "core": {
+        "currentVersion": {
+            "default": "000"
+        },
+        "installedPlugins": {
+            "default": "[]"
+        }
     }
-]
+}

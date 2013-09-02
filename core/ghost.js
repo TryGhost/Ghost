@@ -145,6 +145,9 @@ Ghost.prototype.init = function () {
     ).then(function () {
         return models.Settings.populateDefaults();
     }).then(function () {
+        // Initialize plugins
+        return self.initPlugins();
+    }).then(function () {
         // Initialize the settings cache
         return self.updateSettingsCache();
     }).then(function () {
