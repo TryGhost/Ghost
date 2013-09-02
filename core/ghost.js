@@ -97,6 +97,18 @@ Ghost = function () {
             // there's no management here to be sure this has loaded
             settings: function () { return instance.settingsCache; },
             dataProvider: models,
+            blogGlobals:  function () {
+                /* this is a bit of a hack until we have a better way to combine settings and config
+                 * this data is what becomes globally available to themes */
+                return {
+                    url: instance.config().env[process.env.NODE_ENV].url,
+                    title: instance.settings().title,
+                    description: instance.settings().description,
+                    logo: instance.settings().logo,
+                    /* urg.. need to fix paths */
+                    themedir: path.join('/content/themes', instance.paths().activeTheme,  instance.settingsCache.activeTheme)
+                };
+            },
             statuses: function () { return statuses; },
             polyglot: function () { return polyglot; },
             getPaths: function () {
@@ -296,26 +308,28 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
 
 // Initialise Theme or admin
 Ghost.prototype.initTheme = function (app) {
-    var self = this;
+    var self = this,
+        hbsOptions;
     return function initTheme(req, res, next) {
         app.set('view engine', 'hbs');
         // return the correct mime type for woff files
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         if (!res.isAdmin) {
+
+            // self.globals is a hack til we have a better way of getting combined settings & config
+            hbsOptions = {templateOptions: {data: {blog: self.blogGlobals()}}};
+
             if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme)) {
                 // Throw an error if the theme is not available...
                 // TODO: move this to happen on app start
                 errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme + ' is missing.');
             } else if (self.themeDirectories[self.settings().activeTheme].hasOwnProperty('partials')) {
                 // Check that the theme has a partials directory before trying to use it
-                app.engine('hbs', hbs.express3(
-                    {partialsDir: path.join(self.paths().activeTheme, 'partials')}
-                ));
-            } else {
-                // No partial dir, so no need to configure it
-                app.engine('hbs', hbs.express3());
+                hbsOptions.partialsDir = path.join(self.paths().activeTheme, 'partials');
             }
+
+            app.engine('hbs', hbs.express3(hbsOptions));
 
             app.set('views', self.paths().activeTheme);
         } else {

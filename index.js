@@ -108,10 +108,8 @@ function ghostLocals(req, res, next) {
     if (!res.isAdmin) {
         // filter the navigation items
         ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
-            // pass the theme navigation items and settings
-            _.extend(res.locals, navData, {
-                settings: ghost.settings()
-            });
+            // pass the theme navigation items, settings get configured as globals
+            _.extend(res.locals, navData);
 
             next();
         });

@@ -20,9 +20,22 @@ coreHelpers = function (ghost) {
      * @return {Object} A Moment time / date object
      */
     ghost.registerThemeHelper('date', function (context, options) {
+        if (!options && context.hasOwnProperty('hash')) {
+            options = context;
+            context = undefined;
+
+            // set to published_at by default, if it's available
+            // otherwise, this will print the current date
+            if (this.published_at) {
+                context = this.published_at;
+            }
+        }
+
         var f = options.hash.format || "MMM Do, YYYY",
             timeago = options.hash.timeago,
             date;
+
+
         if (timeago) {
             date = moment(context).fromNow();
         } else {
@@ -31,11 +44,25 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    // ### URL helper
+    //
+    // *Usage example:*
+    // `{{url}}`
+    // `{{url absolute}}`
+    //
+    // Returns the URL for the current object context
+    // i.e. If inside a post context will return post permalink
+    // absolute flag outputs absolute URL, else URL is relative
     ghost.registerThemeHelper('url', function (context, options) {
-        if (models.isPost(this)) {
-            return "/" + this.slug;
+        var output = '';
+
+        if (options && options.absolute) {
+            output += ghost.config().env[process.NODE_ENV].url;
         }
-        return '';
+        if (models.isPost(this)) {
+            output += "/" + this.slug;
+        }
+        return output;
     });
 
     // ### Author Helper
