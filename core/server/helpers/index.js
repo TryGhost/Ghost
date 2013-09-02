@@ -166,9 +166,10 @@ coreHelpers = function (ghost) {
     ghost.registerThemeHelper('ghost_head', function (options) {
         var head = [];
         head.push('<meta name="generator" content="Ghost ' + this.version + '" />');
+        head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
 
         return ghost.doFilter('ghost_head', head, function (head) {
-            var headString = _.reduce(head, function (memo, item) { return memo + ' ' + item; }, '');
+            var headString = _.reduce(head, function (memo, item) { return memo + "\n" + item; }, '');
             return new hbs.handlebars.SafeString(headString.trim());
         });
     });
