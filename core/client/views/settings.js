@@ -9,11 +9,26 @@
     Ghost.Views.Settings = Ghost.View.extend({
         initialize: function (options) {
             $(".settings-content").removeClass('active');
-            this.addSubview(new Settings.Sidebar({
+
+            this.sidebar = new Settings.Sidebar({
                 el: '.settings-sidebar',
                 pane: options.pane,
                 model: this.model
-            }));
+            });
+
+            this.addSubview(this.sidebar);
+
+            this.listenTo(Ghost.router, "route:settings", this.changePane);
+        },
+
+        changePane: function (pane) {
+            if (!pane) {
+                // Can happen when trying to load /settings with no pane specified
+                // let the router navigate itself to /settings/general
+                return;
+            }
+
+            this.sidebar.showContent(pane);
         }
     });
 
@@ -23,7 +38,7 @@
         initialize: function (options) {
             this.render();
             this.menu = this.$('.settings-menu');
-            this.showContent(options.pane || 'general');
+            this.showContent(options.pane);
         },
 
         models: {},
@@ -36,6 +51,7 @@
             e.preventDefault();
             var item = $(e.currentTarget),
                 id = item.find('a').attr('href').substring(1);
+
             this.showContent(id);
         },
 
