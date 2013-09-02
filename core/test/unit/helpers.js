@@ -4,6 +4,7 @@ process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
 var knex = require('../../server/models/base').Knex,
     when = require('when'),
     migration = require("../../server/data/migration/"),
+    Settings = require('../../server/models/settings').Settings,
     helpers,
     samplePost,
     sampleUser,
@@ -44,7 +45,9 @@ sampleUserRole = function (i) {
 helpers = {
 
     initData: function (done) {
-        return migration.init();
+        return migration.init().then(function () {
+           return Settings.populateDefaults();
+        });
     },
 
     clearData: function () {
