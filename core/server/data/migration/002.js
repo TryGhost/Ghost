@@ -58,14 +58,6 @@ up = function () {
         })
 
     ]).then(function () {
-
-        // Once we create all of the initial tables, bootstrap any of the data
-        return when.all([
-            knex('settings').insert(fixtures.settings)
-        ]);
-
-    }).then(function () {
-
         // Lastly, update the current version settings to reflect this version
         return knex('settings')
             .where('key', 'currentVersion')
@@ -84,6 +76,7 @@ down = function () {
             knex.Schema.dropTableIfExists("posts_custom_data")
         ]);
     });
+    // Should we also drop the currentVersion?
 };
 
 exports.up = up;

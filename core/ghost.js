@@ -128,7 +128,9 @@ Ghost = function () {
 Ghost.prototype.init = function () {
     var self = this;
 
-    return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+    return models.Settings.populateDefaults().then(function () {
+        return when.join(instance.dataProvider.init(), instance.getPaths());
+    }).then(function () {
         // Initialize plugins
         return self.initPlugins();
     }).then(function () {
