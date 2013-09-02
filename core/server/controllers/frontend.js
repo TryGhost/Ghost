@@ -50,7 +50,7 @@ frontendControllers = {
     },
     'rss': function (req, res) {
         // Initialize RSS
-        var siteUrl = ghost.config().siteUrl,
+        var siteUrl = ghost.config().env[process.env.NODE_ENV].url,
             feed = new RSS({
                 title: ghost.settings().title,
                 description: ghost.settings().description,
