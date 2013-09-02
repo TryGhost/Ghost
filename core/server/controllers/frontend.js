@@ -50,17 +50,17 @@ frontendControllers = {
     },
     'rss': function (req, res) {
         // Initialize RSS
-        var feed = new RSS({
-            title: ghost.settings().title,
-            description: ghost.settings().description,
-            generator: 'Ghost v' + ghost.settings().currentVersion,
-            author: ghost.settings().author,
-            feed_url: ghost.settings().url + '/rss/',
-            site_url: ghost.settings().url,
-            ttl: '60'
-        }),
-
-        // Parse the page number
+        var siteUrl = ghost.config().siteUrl,
+            feed = new RSS({
+                title: ghost.settings().title,
+                description: ghost.settings().description,
+                generator: 'Ghost v' + ghost.settings().currentVersion,
+                author: ghost.settings().author,
+                feed_url: siteUrl + '/rss/',
+                site_url: siteUrl,
+                ttl: '60'
+            }),
+            // Parse the page number
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
 
         // No negative pages
@@ -87,7 +87,7 @@ frontendControllers = {
                     var item = {
                         title:  post.title,
                         guid: post.uuid,
-                        url: ghost.settings().url + '/' + post.slug + '/',
+                        url: siteUrl + '/' + post.slug + '/',
                         date: post.published_at
                     };
 
