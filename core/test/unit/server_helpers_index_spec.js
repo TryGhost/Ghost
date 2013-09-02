@@ -188,7 +188,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string', function () {
             var rendered = handlebars.helpers.ghost_head.call({version: "0.3"});
             should.exist(rendered);
-            rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />');
+            rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
         });
     });
 
