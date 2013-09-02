@@ -45,6 +45,20 @@ User = GhostBookshelf.Model.extend({
         };
     },
 
+    parse: function (attrs) {
+        // temporary alias of name for full_name (will get changed in the schema)
+        if (attrs.full_name && !attrs.name) {
+            attrs.name = attrs.full_name;
+        }
+
+        // temporary alias of website for url (will get changed in the schema)
+        if (attrs.url && !attrs.website) {
+            attrs.website = attrs.url;
+        }
+
+        return attrs;
+    },
+
     initialize: function () {
         this.on('saving', this.saving, this);
         this.on('saving', this.validate, this);
