@@ -1,62 +1,67 @@
-[
-    {
-        "key":          "title",
-        "value":        "Ghost",
-        "type":         "blog"
+{
+    "title": {
+        "default": "Ghost",
+        "type": "blog"
     },
-    {
-        "key":          "description",
-        "value":        "Just a blogging platform.",
-        "type":         "blog"
+    "description": {
+        "default": "Just a blogging platform.",
+        "type": "blog"
     },
-    {
-        "key":          "email",
-        "value":        "ghost@example.com",
-        "type":         "general"
+    "logo": {
+        "default": "",
+        "type": "blog"
     },
-    {
-        "key":          "activePlugins",
-        "value":        "",
-        "type":         "general"
+    "cover": {
+        "default": "",
+        "type": "blog"
     },
-    {
-        "key":          "activeTheme",
-        "value":        "casper",
-        "type":         "general"
+    "defaultLang": {
+        "default": "en",
+        "type": "blog",
+        "validations": {
+            "notNull": true
+        }
     },
-    {
-        "key":          "currentVersion",
-        "value":        "002",
-        "type":         "core"
+    "postsPerPage": {
+        "default": "6",
+        "type": "blog",
+        "validations": {
+            "notNull": true,
+            "isNumeric": true
+        }
     },
-    {
-        "key":          "installedPlugins",
-        "value":        "[]",
-        "type":         "core"
+    "forceI18n": {
+        "default": "true",
+        "type": "blog",
+        "validations": {
+            "notNull": true,
+            "isIn": ["true", "false"]
+        }
     },
-    {
-        "key":          "logo",
-        "value":        "",
-        "type":         "blog"
+
+    "email": {
+        "default": "ghost@example.com",
+        "type": "general",
+        "validations": {
+            "notNull": true,
+            "isEmail": true
+        }
     },
-    {
-        "key":          "cover",
-        "value":        "",
-        "type":         "blog"
+    "activePlugins": {
+        "default": "",
+        "type": "general"
     },
-    {
-        "key":          "defaultLang",
-        "value":        "en",
-        "type":         "blog"
+    "activeTheme": {
+        "default": "casper",
+        "type": "general"
     },
-    {
-        "key":          "forceI18n",
-        "value":        true,
-        "type":         "blog"
+
+    "currentVersion": {
+        "default": "000",
+        "type": "core"
     },
-    {
-        "key":          "postsPerPage",
-        "value":        "6",
-        "type":         "blog"
+    "installedPlugins": {
+        "default": "[]",
+        "type": "core"
     }
-]
+}
