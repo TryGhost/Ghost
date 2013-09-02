@@ -15,6 +15,7 @@ var Ghost = require('../ghost'),
     tags,
     notifications,
     settings,
+    themes,
     requestHandler,
     cachedSettingsRequestHandler,
     settingsObject,
@@ -258,6 +259,39 @@ settings = {
     }
 };
 
+// ## Themes
+
+themes = {
+    // #### Browse
+
+    // **takes:** options object
+    browse: function browse() {
+         // **returns:** a promise for a themes json object
+        return when(ghost.paths().availableThemes).then(function (themes) {
+            var themeKeys = Object.keys(themes),
+                res = [],
+                i,
+                activeTheme = ghost.paths().activeTheme.substring(ghost.paths().activeTheme.lastIndexOf('/') + 1),
+                item;
+
+            for (i = 0; i < themeKeys.length; i += 1) {
+                //do not include hidden files
+                if (themeKeys[i].indexOf('.') !== 0) {
+                    item = {};
+                    item.name = themeKeys[i];
+                    item.details = themes[themeKeys[i]];
+                    if (themeKeys[i] === activeTheme) {
+                        item.active = true;
+                    }
+                    res.push(item);
+                }
+            }
+            return res;
+        });
+    }
+};
+
+
 // ## Request Handlers
 
 // ### requestHandler
@@ -320,5 +354,6 @@ module.exports.users = users;
 module.exports.tags = tags;
 module.exports.notifications = notifications;
 module.exports.settings = settings;
+module.exports.themes = themes;
 module.exports.requestHandler = requestHandler;
 module.exports.cachedSettingsRequestHandler = cachedSettingsRequestHandler;

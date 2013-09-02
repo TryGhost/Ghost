@@ -4,7 +4,7 @@
 
     // Set the url manually and id to '0' to force PUT requests
     Ghost.Models.Settings = Backbone.Model.extend({
-        url: '/api/v0.1/settings/',
+        url: Ghost.settings.apiRoot + '/settings',
         id: "0",
         defaults: {
             title: 'My Blog',
