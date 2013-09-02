@@ -303,9 +303,20 @@ Ghost.prototype.initTheme = function (app) {
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         if (!res.isAdmin) {
-            app.engine('hbs', hbs.express3(
-                {partialsDir: path.join(self.paths().activeTheme, 'partials')}
-            ));
+            if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme)) {
+                // Throw an error if the theme is not available...
+                // TODO: move this to happen on app start
+                errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme + ' is missing.');
+            } else if (self.themeDirectories[self.settings().activeTheme].hasOwnProperty('partials')) {
+                // Check that the theme has a partials directory before trying to use it
+                app.engine('hbs', hbs.express3(
+                    {partialsDir: path.join(self.paths().activeTheme, 'partials')}
+                ));
+            } else {
+                // No partial dir, so no need to configure it
+                app.engine('hbs', hbs.express3());
+            }
+
             app.set('views', self.paths().activeTheme);
         } else {
             app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
