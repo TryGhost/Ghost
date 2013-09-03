@@ -241,6 +241,8 @@ settings = {
     edit: function edit(key, value) {
         // Check for passing a collection of settings first
         if (_.isObject(key)) {
+            //edit is only allowed for existing settings
+            key = _.pick(settings,_.keys(dataProvider.Settings.browse()));
             key = settingsCollection(key);
 
             return dataProvider.Settings.edit(key).then(settingsObject, errors.logAndThrowError);

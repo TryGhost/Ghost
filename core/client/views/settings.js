@@ -155,7 +155,6 @@
         },
 
         saveSettings: function () {
-            this.model.unset('availableThemes');
             this.model.save({
                 title: this.$('#blog-title').val(),
                 email: this.$('#email-address').val(),
