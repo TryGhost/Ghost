@@ -38,6 +38,15 @@
         },
 
         settings: function (pane) {
+            if (!pane) {
+                // Redirect to settings/general if no pane supplied
+                this.navigate('/settings/general', {
+                    trigger: true,
+                    replace: true
+                });
+                return;
+            }
+
             // only update the currentView if we don't already have a Settings view
             if (!Ghost.currentView || !(Ghost.currentView instanceof Ghost.Views.Settings)) {
                 Ghost.currentView = new Ghost.Views.Settings({ el: '#main', pane: pane });
