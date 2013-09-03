@@ -105,9 +105,7 @@ Ghost = function () {
                     url: instance.config().env[process.env.NODE_ENV].url,
                     title: instance.settings().title,
                     description: instance.settings().description,
-                    logo: instance.settings().logo,
-                    /* urg.. need to fix paths */
-                    themedir: path.join('/content/themes', instance.paths().activeTheme,  instance.settingsCache.activeTheme)
+                    logo: instance.settings().logo
                 };
             },
             statuses: function () { return statuses; },
