@@ -7,6 +7,7 @@ var _ = require('underscore'),
     initialVersion = "001",
     // This currentVersion string should always be the current version of Ghost,
     // we could probably load it from the config file.
+    // - Will be possible after default-settings.json restructure
     currentVersion = "002";
 
 function getCurrentVersion() {
