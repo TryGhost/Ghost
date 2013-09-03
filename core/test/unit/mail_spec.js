@@ -128,7 +128,7 @@ describe("Mail", function () {
         fakeConfig.mail = {};
         ghost.mail.detectSendmail.restore();
         ghost.mail.isWindows.restore();
-        sandbox.stub(ghost.mail, 'isWindows', function(){ return false });
+        sandbox.stub(ghost.mail, 'isWindows', function(){ return true });
         ghost.mail.init(ghost).then(function(){
             should.not.exist(ghost.mail.transport);
             done();
