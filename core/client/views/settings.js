@@ -155,6 +155,7 @@
         },
 
         saveSettings: function () {
+            var themes = this.model.get('availableThemes');
             this.model.unset('availableThemes');
             this.model.save({
                 title: this.$('#blog-title').val(),
@@ -166,6 +167,7 @@
                 success: this.saveSuccess,
                 error: this.saveError
             });
+            this.model.set({availableThemes: themes});
         },
 
         templateName: 'settings/general',
@@ -189,12 +191,15 @@
             'click .button-save': 'saveSettings'
         },
         saveSettings: function () {
+            var themes = this.model.get('availableThemes');
+            this.model.unset('availableThemes');
             this.model.save({
                 description: this.$('#blog-description').val()
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
             });
+            this.model.set({availableThemes: themes});
         },
 
         templateName: 'settings/content',
