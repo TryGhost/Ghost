@@ -18,7 +18,7 @@ GhostMailer.prototype.init = function (ghost) {
     this.api = require('./api');
 
     var self = this,
-        config = ghost.config();
+        config = ghost.config().env[process.env.NODE_ENV];
 
     if (config.mail && config.mail.transport && config.mail.options) {
         this.createTransport(config);

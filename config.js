@@ -19,18 +19,6 @@ config.activePlugins = [
 ];
 
 
-config.mail = {
-    transport: 'sendgrid',
-    host: 'smtp.sendgrid.net',
-    options: {
-        service: 'Sendgrid',
-        auth: {
-            user: '', // Super secret username
-            pass: ''  // Super secret password
-        }
-    }
-};
-
 // ## Default Navigation Items
 // Add new objects here to extend the menu output by {{nav}}
 config.nav = [
@@ -90,7 +78,19 @@ config.env = {
             port: '2368'
         },
         // The url to use when providing links to the site; like RSS and email.
-        url: 'http://127.0.0.1:2368'
+        url: 'http://127.0.0.1:2368',
+        // Example mail config
+        mail: {
+            transport: 'sendgrid',
+            host: 'smtp.sendgrid.net',
+            options: {
+                service: 'Sendgrid',
+                auth: {
+                    user: '', // Super secret username
+                    pass: ''  // Super secret password
+                }
+            }
+        }
     },
 
     staging: {

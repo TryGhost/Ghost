@@ -75,7 +75,7 @@ describe("Mail", function () {
     });
 
     it('should setup SMTP transport on initialization', function (done) {
-        fakeConfig.mail = SMTP;
+        fakeConfig.env[process.env.NODE_ENV].mail = SMTP;
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SMTP');
@@ -85,7 +85,7 @@ describe("Mail", function () {
     });
 
     it('should setup sendmail transport on initialization', function (done) {
-        fakeConfig.mail = SENDMAIL;
+        fakeConfig.env[process.env.NODE_ENV].mail = SENDMAIL;
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
@@ -95,7 +95,7 @@ describe("Mail", function () {
     });
 
     it('should fallback to sendmail if no config set', function (done) {
-        fakeConfig.mail = null;
+        fakeConfig.env[process.env.NODE_ENV].mail = null;
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
@@ -105,7 +105,7 @@ describe("Mail", function () {
     });
 
     it('should fallback to sendmail if config is empty', function (done) {
-        fakeConfig.mail = {};
+        fakeConfig.env[process.env.NODE_ENV].mail = {};
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
@@ -115,7 +115,7 @@ describe("Mail", function () {
     });
 
     it('should disable transport if config is empty & sendmail not found', function (done) {
-        fakeConfig.mail = {};
+        fakeConfig.env[process.env.NODE_ENV].mail = {};
         ghost.mail.detectSendmail.restore();
         sandbox.stub(ghost.mail, "detectSendmail", when.reject);
         ghost.mail.init(ghost).then(function(){
@@ -125,7 +125,7 @@ describe("Mail", function () {
     });
 
     it('should disable transport if config is empty & platform is win32', function (done) {
-        fakeConfig.mail = {};
+        fakeConfig.env[process.env.NODE_ENV].mail = {};
         ghost.mail.detectSendmail.restore();
         ghost.mail.isWindows.restore();
         sandbox.stub(ghost.mail, 'isWindows', function(){ return true });
