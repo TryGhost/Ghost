@@ -1015,13 +1015,12 @@ body.blur > *:not(#modal-container) {
 }
 
 .modal-content {
-    padding: 20px;
+    padding: 0 20px;
 }
 
 .modal-footer {
     padding: 20px;
     padding-top: 0;
-    text-align: center;
 }
 
 .modal-style-wide {
@@ -1176,17 +1175,6 @@ main {
         padding-left:5px;
     }
 
-    .image-edit {
-        line-height: 12px;
-        padding: 10px;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        text-decoration: none;
-    }
-
     .image-webcam {
         @include icon($i-camera, 12px);
         line-height: 12px;
@@ -1251,7 +1239,7 @@ main {
     @include box-sizing(border-box);
     @include baseline;
     position: relative;
-    overflow:hidden;
+    overflow: hidden;
     height: auto;
     color: $brown;
 
@@ -1260,16 +1248,31 @@ main {
         left: 9999px;
         opacity: 0;
     }
-    .image-edit {
-
-        line-height: 12px;
-        padding: 10px;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
+    a {
+        z-index: 10000;
+        color: $brown;
         text-decoration: none;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+    img {
+        max-width: 100%;
+    }
+    .image-cancel {
+        @include icon($i-x, 16px);
+        position: absolute;
+        color: white;
+        text-shadow: rgba(0,0,0,0.5) 0 0 1px;
+        top: 10px;
+        right: 10px;
+        text-decoration: none;
+
+        &:hover {
+            cursor: pointer;
+            color: white;
+        }
     }
 }
 
