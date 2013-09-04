@@ -256,23 +256,9 @@
 
             this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
 
-            // Shadow on Markdown if scrolled
-            this.$('.CodeMirror-scroll').on('scroll', function (e) {
-                if ($('.CodeMirror-scroll').scrollTop() > 10) {
-                    $('.entry-markdown').addClass('scrolling');
-                } else {
-                    $('.entry-markdown').removeClass('scrolling');
-                }
-            });
+            this.$('.CodeMirror-scroll').scrollClass({target: '.entry-markdown', offset: 10});
+            this.$('.entry-preview-content').scrollClass({target: '.entry-preview', offset: 10});
 
-            // Shadow on Preview if scrolled
-            this.$('.entry-preview-content').on('scroll', function (e) {
-                if ($('.entry-preview-content').scrollTop() > 10) {
-                    $('.entry-preview').addClass('scrolling');
-                } else {
-                    $('.entry-preview').removeClass('scrolling');
-                }
-            });
 
             // Zen writing mode shortcut
             shortcut.add("Alt+Shift+Z", function () {
