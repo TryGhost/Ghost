@@ -148,8 +148,6 @@ adminControllers = {
             password: password
         }).then(function (user) {
 
-            ghost.mail.sendWelcomeMessage({email: user.attributes.email_address});
-
             if (req.session.user === undefined) {
                 req.session.user = user.id;
             }
@@ -177,39 +175,37 @@ adminControllers = {
                     subject: 'Your new password',
                     html: "<p><strong>Hello!</strong></p>" +
                         "<p>You've reset your password. Here's the new one: " + user.newPassword + "</p>"
-                },
-                notification = {
-                    type: 'success',
-                    message: 'Your password was changed successfully. Check your email for details.',
-                    status: 'passive',
-                    id: 'successresetpw'
                 };
 
-            ghost.mail.send(message);
-            // let's only add the notification once
-            if (!_.contains(_.pluck(ghost.notifications, 'id'), 'successresetpw')) {
-                ghost.notifications.push(notification);
-            }
+            return ghost.mail.send(message);
+        }).then(function success() {
+            var notification = {
+                type: 'success',
+                message: 'Your password was changed successfully. Check your email for details.',
+                status: 'passive',
+                id: 'successresetpw'
+            };
 
-            res.json(200, {redirect: '/ghost/login/'});
-        }, function (error) {
+            return api.notifications.add(notification).then(function () {
+                res.json(200, {redirect: '/ghost/signin/'});
+            });
+
+        }, function failure(error) {
             res.json(401, {error: error.message});
-        });
+        }).otherwise(errors.logAndThrowError);
     },
     'logout': function (req, res) {
         delete req.session.user;
-        var msg = {
+        var notification = {
             type: 'success',
             message: 'You were successfully signed out',
             status: 'passive',
             id: 'successlogout'
         };
-        // let's only add the notification once
-        if (!_.contains(_.pluck(ghost.notifications, 'id'), 'successlogout')) {
-            ghost.notifications.push(msg);
-        }
 
-        res.redirect('/ghost/signin/');
+        return api.notifications.add(notification).then(function () {
+            res.redirect('/ghost/signin/');
+        });
     },
     'index': function (req, res) {
         res.render('dashboard', {

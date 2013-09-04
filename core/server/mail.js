@@ -90,15 +90,14 @@ GhostMailer.prototype.emailDisabled = function () {
 // Sends an e-mail message enforcing `to` (blog owner) and `from` fields
 GhostMailer.prototype.send = function (message) {
     if (!this.transport) {
-        return when.reject(new Error('No e-mail transport configured.'));
+        return when.reject(new Error('Email Error: No e-mail transport configured.'));
     }
     if (!(message && message.subject && message.html)) {
-        return when.reject(new Error('Incomplete message data.'));
+        return when.reject(new Error('Email Error: Incomplete message data.'));
     }
 
-    var settings = this.ghost.settings(),
-        from = 'ghost-mailer@' + url.parse(settings.url).hostname,
-        to = message.to || settings.email,
+    var from = 'ghost-mailer@' + url.parse(this.ghost.config().env[process.env.NODE_ENV].url).hostname,
+        to = message.to || this.ghost.settings().email,
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 
     message = _.extend(message, {
@@ -107,20 +106,10 @@ GhostMailer.prototype.send = function (message) {
         generateTextFromHTML: true
     });
 
-    return sendMail(message);
-};
-
-GhostMailer.prototype.sendWelcomeMessage = function (opts) {
-    var adminURL = this.ghost.settings().url + "/ghost";
-
-    opts = opts || {};
-    opts.email = opts.email || this.ghost.settings().email;
-    return this.send({
-        to: opts.email,
-        subject: "Welcome to Ghost",
-        html: "<p><strong>Hello!</strong></p>" +
-            "<p>Welcome to the Ghost platform.</p>" +
-            "<p>Your dashboard is ready at <a href=\"" + adminURL + "\">" + adminURL + "</a>"
+    return sendMail(message).otherwise(function (error) {
+        // Proxy the error message so we can add 'Email Error:' to the beginning to make it clearer.
+        error =  _.isString(error) ? 'Email Error:' + error : (_.isObject(error) ? 'Email Error: ' + error.message : 'Email Error: Unknown Email Error');
+        return when.reject(new Error(error));
     });
 };
 
