@@ -29,6 +29,13 @@ describe("Showdown client side converter", function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it("should not create italic words between lines", function () {
+        var testPhrase = {input: "foo_bar\nbar_foo", output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},
+            processedMarkup = converter.makeHtml(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it("should not touch underscores in code blocks", function () {
         var testPhrase = {input: "    foo_bar_baz", output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
             processedMarkup = converter.makeHtml(testPhrase.input);

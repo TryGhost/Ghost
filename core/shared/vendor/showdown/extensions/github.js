@@ -33,8 +33,9 @@
                         return "{gfm-js-extract-pre-" + hash + "}";
                     }, 'm');
 
-                    // prevent foo_bar_baz from ending up with an italic word in the middle
-                    text = text.replace(/(^(?! {4}|\t)\w+_\w+_\w[\w_]*)/gm, function (x) {
+
+                    //prevent foo_bar and foo_bar_baz from ending up with an italic word in the middle
+                    text = text.replace(/(^(?! {4}|\t)\w+_\w[\w_]*)/gm, function (x) {
                         return x.replace(/_/gm, '\\_');
                     });
 
