@@ -172,6 +172,10 @@
             margin-left: 15px;
         }
 
+        img {
+            max-width: 100%;
+        }
+
         display: none;
         &.active {display:block;}
 

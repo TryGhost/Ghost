@@ -15,19 +15,22 @@
 
             <div class="form-group">
                 <label><strong>Blog Logo</strong></label>
-                <section class="js-drop-zone">
-                    <img id="logo" class="js-upload-target" src="{{logo}}"{{#unless logo}} style="display: none"{{/unless}} alt="logo">
-                    <input data-url="upload" class="js-fileupload" type="file" name="uploadimage">
-                </section>
+                {{#if logo}}
+                    <a class="js-modal-logo"><img src="{{logo}}" alt="logo"></a>
+                {{else}}
+                    <a class="button-add js-modal-logo" href="#">Upload Image</a>
+                {{/if}}
                 <p>Display a logo on your site in place of blog title</p>
             </div>
 
             <div class="form-group">
                 <label><strong>Blog Icon</strong></label>
-                <section class="js-drop-zone">
-                <img id="icon" class="js-upload-target" src="{{icon}}"{{#unless icon}} style="display: none"{{/unless}} style="display: none" alt="icon">
-                    <input data-url="upload" class="js-fileupload" type="file" name="uploadimage">
-                </section>
+                {{#if icon}}
+                    <a class="js-modal-icon"><img src="{{icon}}" alt="icon"></a>
+                {{else}}
+                    <a class="button-add js-modal-icon" href="#">Upload Image</a>
+                {{/if}}
+
                 <p>The icon for your blog, used in your browser tab and elsewhere</p>
             </div>
 
