@@ -151,7 +151,9 @@
         id: "general",
 
         events: {
-            'click .button-save': 'saveSettings'
+            'click .button-save': 'saveSettings',
+            'click .js-modal-logo': 'showLogo',
+            'click .js-modal-icon': 'showIcon'
         },
 
         saveSettings: function () {
@@ -169,7 +171,58 @@
             });
             this.model.set({availableThemes: themes});
         },
-
+        showLogo: function () {
+            var settings = this.model.toJSON();
+            this.showUpload('#logo', 'logo', settings.logo);
+        },
+        showIcon: function () {
+            var settings = this.model.toJSON();
+            this.showUpload('#icon', 'icon', settings.icon);
+        },
+        showUpload: function (id, key, src) {
+            var self = this;
+            this.addSubview(new Ghost.Views.Modal({
+                model: {
+                    options: {
+                        close: false,
+                        type: "action",
+                        style: "wide",
+                        animation: 'fadeIn',
+                        afterRender: function () {
+                            this.$('.js-drop-zone').upload();
+                        },
+                        confirm: {
+                            accept: {
+                                func: function () { // The function called on acceptance
+                                    var data = {};
+                                    data[key] = this.$('.js-upload-target').attr('src');
+                                    self.model.save(data, {
+                                        success: self.saveSuccess,
+                                        error: self.saveError
+                                    });
+                                    self.render();
+                                    return true;
+                                },
+                                buttonClass: "button-save right",
+                                text: "Save" // The accept button text
+                            },
+                            reject: {
+                                func: function () { // The function called on rejection
+                                    return true;
+                                },
+                                buttonClass: true,
+                                text: "Cancel" // The reject button text
+                            }
+                        },
+                        id: id,
+                        src: src
+                    },
+                    content: {
+                        template: 'uploadImage'
+                    }
+                }
+            }));
+        },
         templateName: 'settings/general',
 
         beforeRender: function () {
