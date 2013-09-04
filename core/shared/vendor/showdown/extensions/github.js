@@ -38,6 +38,13 @@
                         return x.replace(/_/gm, '\\_');
                     });
 
+                    // Replace showdown's implementation of emphasis
+                    // <em>
+                    // requires a negative lookbehind for \n before the final * to prevent breaking lists
+                    text = text.replace(/\b(\\)?_((?:__|[\s\S])+?)_\b|\*((?:\*\*|[\s\S])+?)(\n)?\*(?!\*)/g, function (match, escaped, m1, m2, newline) {
+                        return escaped || newline ? match : m1 ? "<em>" + m1 + "</em>" : "<em>" + m2 + "</em>";
+                    });
+
                     // in very clear cases, let newlines become <br /> tags
                     text = text.replace(/^[\w\<][^\n]*\n+/gm, function (x) {
                         return x.match(/\n{2}/) ? x : x.trim() + "  \n";
