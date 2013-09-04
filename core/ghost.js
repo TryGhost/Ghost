@@ -43,7 +43,7 @@ defaults = {
 
 // ## Article Statuses
 /**
- * A list of atricle status types
+ * A list of article status types
  * @type {Object}
  */
 statuses = {
