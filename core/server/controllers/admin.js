@@ -215,15 +215,10 @@ adminControllers = {
     },
     'editor': function (req, res) {
         if (req.params.id !== undefined) {
-            api.posts.read({id: parseInt(req.params.id, 10)})
-                .then(function (post) {
-                    res.render('editor', {
-                        bodyClass: 'editor',
-                        adminNav: setSelected(adminNavbar, 'content'),
-                        title: post.get('title'),
-                        content: post.get('content')
-                    });
-                });
+            res.render('editor', {
+                bodyClass: 'editor',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
         } else {
             res.render('editor', {
                 bodyClass: 'editor',
@@ -232,24 +227,16 @@ adminControllers = {
         }
     },
     'content': function (req, res) {
-        api.posts.browse({status: req.params.status || 'all'})
-            .then(function (page) {
-                res.render('content', {
-                    bodyClass: 'manage',
-                    adminNav: setSelected(adminNavbar, 'content'),
-                    posts: page.posts
-                });
-            });
+        res.render('content', {
+            bodyClass: 'manage',
+            adminNav: setSelected(adminNavbar, 'content')
+        });
     },
     'settings': function (req, res) {
-        api.settings.browse()
-            .then(function (settings) {
-                res.render('settings', {
-                    bodyClass: 'settings',
-                    adminNav: setSelected(adminNavbar, 'settings'),
-                    settings: settings
-                });
-            });
+        res.render('settings', {
+            bodyClass: 'settings',
+            adminNav: setSelected(adminNavbar, 'settings')
+        });
     },
     'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
         index: function (req, res) {
