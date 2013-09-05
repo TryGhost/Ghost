@@ -15,7 +15,7 @@
         <fieldset class="user-details-top">
             <figure class="user-avatar-image">
                 <img id="user-profile-picture" src="{{#if profile_picture}}{{profile_picture}}{{else}}/shared/img/default-user-profile-picture.jpg{{/if}}" title="{{full_name}}"/>
-                <button class="button-change-avatar">Update Avatar</button>
+                <button class="button-change-avatar">Edit Picture</button>
             </figure>
             <label>
                 <input type="url" value="{{full_name}}" id="user-name" placeholder="Joe Bloggs" autocapitalize="off" autocorrect="off">
@@ -57,7 +57,6 @@
             <div class="form-group">
                 <label><strong>Old Password</strong></label>
                 <input type="password" id="user-password-old">
-                <p><a href="#" >Forgot your password?</a></p>
             </div>
 
             <div class="form-group">
@@ -69,7 +68,9 @@
                 <label><strong>Verify Password</strong></label>
                 <input type="password" id="user-new-password-verification">
             </div>
-            <button class="button-change-password">Change Password</button>
+            <div class="form-group">
+                <button class="button-delete">Change Password</button>
+            </div>
 
         </fieldset>
 
