@@ -40,11 +40,20 @@
     @import "layouts/editor";
     /* The write/edit post screen. */
 
-    @import "layouts/settings";
-    /* The settings screen. */
-
     @import "layouts/login";
-    /* The settings screen. */
+    /* The login screen. */
 
     @import "layouts/errors";
     /* The error screens. */
+
+  /* ==========================================================================
+   Settings Layouts - Styles for the individual settings panes, grouped by pane.
+   ========================================================================== */
+    @import "layouts/settings";
+    /* The settings screen. */
+
+        @import "layouts/users";
+        /* The users pane. */
+
+        @import "layouts/plugins";
+        /* The plugins pane. */
