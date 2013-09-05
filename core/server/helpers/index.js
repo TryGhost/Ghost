@@ -4,7 +4,9 @@ var _ = require('underscore'),
     when = require('when'),
     hbs = require('express-hbs'),
     errors = require('../errorHandling'),
+    models = require('../models'),
     coreHelpers;
+
 
 coreHelpers = function (ghost) {
     var navHelper,
@@ -17,16 +19,85 @@ coreHelpers = function (ghost) {
      * @param  {*} options
      * @return {Object} A Moment time / date object
      */
-    ghost.registerThemeHelper('dateFormat', function (context, options) {
+    ghost.registerThemeHelper('date', function (context, options) {
+        if (!options && context.hasOwnProperty('hash')) {
+            options = context;
+            context = undefined;
+
+            // set to published_at by default, if it's available
+            // otherwise, this will print the current date
+            if (this.published_at) {
+                context = this.published_at;
+            }
+        }
+
         var f = options.hash.format || "MMM Do, YYYY",
             timeago = options.hash.timeago,
             date;
+
+
         if (timeago) {
             date = moment(context).fromNow();
         } else {
             date = moment(context).format(f);
         }
         return date;
+    });
+
+    // ### URL helper
+    //
+    // *Usage example:*
+    // `{{url}}`
+    // `{{url absolute}}`
+    //
+    // Returns the URL for the current object context
+    // i.e. If inside a post context will return post permalink
+    // absolute flag outputs absolute URL, else URL is relative
+    ghost.registerThemeHelper('url', function (context, options) {
+        var output = '';
+
+        if (options && options.absolute) {
+            output += ghost.config().env[process.NODE_ENV].url;
+        }
+        if (models.isPost(this)) {
+            output += "/" + this.slug;
+        }
+        return output;
+    });
+
+    // ### Author Helper
+    // 
+    // *Usage example:*
+    // `{{author}}`
+    // 
+    // Returns the full name of the author of a given post, or a blank string
+    // if the author could not be determined.
+    //
+    ghost.registerThemeHelper('author', function (context, options) {
+        return this.author ? this.author.full_name : "";
+    });
+
+    // ### Tags Helper
+    //
+    // *Usage example:*
+    // `{{tags}}`
+    // `{{tags separator=" - "}}`
+    //
+    // Returns a string of the tags on the post.
+    // By default, tags are separated by commas.
+    //
+    // Note that the standard {{#each tags}} implementation is unaffected by this helper
+    // and can be used for more complex templates.
+    ghost.registerThemeHelper('tags', function (options) {
+        var separator = ", ",
+            tagNames;
+
+        if (typeof options.hash.separator === "string") {
+            separator = options.hash.separator;
+        }
+
+        tagNames = _.pluck(this.tags, 'name');
+        return tagNames.join(separator);
     });
 
     // ### Content Helper
@@ -57,6 +128,88 @@ coreHelpers = function (ghost) {
     });
 
 
+    // ### Excerpt Helper
+    //
+    // *Usage example:*
+    // `{{excerpt}}`
+    // `{{excerpt words=50}}`
+    // `{{excerpt characters=256}}`
+    //
+    // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
+    //
+    // Defaults to words=50
+    //
+    // **returns** SafeString truncated, HTML-free content.
+    //
+    ghost.registerThemeHelper('excerpt', function (options) {
+        var truncateOptions = (options || {}).hash || {},
+            excerpt;
+
+        truncateOptions = _.pick(truncateOptions, ["words", "characters"]);
+
+        /*jslint regexp:true */
+        excerpt = String(this.content).replace(/<\/?[^>]+>/gi, "");
+        /*jslint regexp:false */
+
+        if (!truncateOptions.words && !truncateOptions.characters) {
+            truncateOptions.words = 50;
+        }
+
+        return new hbs.handlebars.SafeString(
+            downsize(excerpt, truncateOptions)
+        );
+    });
+
+
+    ghost.registerThemeHelper('body_class', function (options) {
+        var classes = [];
+        if (_.isString(this.path) && this.path.match(/\/page/)) {
+            classes.push('archive-template');
+        } else if (!this.path || this.path === '/' || this.path === '') {
+            classes.push('home-template');
+        } else {
+            classes.push('post-template');
+        }
+
+        return ghost.doFilter('body_class', classes, function (classes) {
+            var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(classString.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('post_class', function (options) {
+        var classes = ['post'];
+
+        if (this.tags) {
+            classes = classes.concat(this.tags.map(function (tag) { return "tag-" + tag.name; }));
+        }
+
+        return ghost.doFilter('post_class', classes, function (classes) {
+            var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(classString.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('ghost_head', function (options) {
+        var head = [];
+        head.push('<meta name="generator" content="Ghost ' + this.version + '" />');
+        head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+
+        return ghost.doFilter('ghost_head', head, function (head) {
+            var headString = _.reduce(head, function (memo, item) { return memo + "\n" + item; }, '');
+            return new hbs.handlebars.SafeString(headString.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('ghost_foot', function (options) {
+        var foot = [];
+        foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
+
+        return ghost.doFilter('ghost_foot', foot, function (foot) {
+            var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(footString.trim());
+        });
+    });
     /**
      * [ description]
      *
@@ -168,10 +321,10 @@ coreHelpers = function (ghost) {
     });
 
     // ### Pagination Helper
-    // `{{paginate}}`
+    // `{{pagination}}`
     // Outputs previous and next buttons, along with info about the current page
     paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
-        ghost.registerThemeHelper('paginate', function (options) {
+        ghost.registerThemeHelper('pagination', function (options) {
             if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
                 errors.logAndThrowError('pagination data is not an object or is a function');
                 return;
@@ -195,6 +348,12 @@ coreHelpers = function (ghost) {
         });
     });
 
+    ghost.registerThemeHelper('helperMissing', function (arg) {
+        if (arguments.length === 2) {
+            return undefined;
+        }
+        errors.logError("Missing helper: '" + arg + "'");
+    });
     // Return once the template-driven helpers have loaded
     return when.join(
         navHelper,

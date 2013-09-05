@@ -25,11 +25,15 @@ var host = casper.cli.options.host || 'localhost',
     noPort = casper.cli.options.noPort || false,
     port = casper.cli.options.port || '2368',
     email = casper.cli.options.email || 'ghost@tryghost.org',
-    password = casper.cli.options.password || 'Sl1m3r',
+    password = casper.cli.options.password || 'Sl1m3rson',
     url = "http://" + host + (noPort ? '/' : ":" + port + "/"),
     user = {
         email: email,
         password: password
+    },
+    falseUser = {
+        email: email,
+        password: 'letmethrough'
     },
     testPost = {
         title: "Bacon ipsum dolor sit amet",
@@ -47,6 +51,22 @@ casper.writeContentToCodeMirror = function (content) {
     return this;
 };
 
+
+// ## Debugging
+// output all errors to the console
+casper.on('remote.message', function (msg) {
+    casper.echo('GOT CONSOLE LOG: ' + msg);
+});
+
+casper.on('error', function (msg, trace) {
+    casper.echo('GOT ERROR, ' + msg);
+});
+
+casper.on("page.error", function (msg, trace) {
+    this.echo("GOT PAGE ERROR: " + msg, "ERROR");
+});
+
+// on failure, grab a screenshot
 casper.test.on("fail", function captureFailure() {
     var filename = casper.test.filename || "casper_test_fail.png";
     casper.capture(new Date().getTime() + '_' + filename);

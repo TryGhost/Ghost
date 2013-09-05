@@ -12,8 +12,7 @@
     "engineStrict": true,
     "dependencies": {
         "express": "3.3.4",
-        "express-hbs": "0.2.0",
-        "connect-flash": "0.1.1",
+        "express-hbs": "0.2.1",
         "node-polyglot": "0.2.1",
         "moment": "2.1.0",
         "underscore": "1.5.1",
@@ -28,7 +27,10 @@
         "colors": "0.6.1",
         "semver": "2.1.0",
         "fs-extra": "0.6.3",
-        "downsize": "0.0.2"
+        "downsize": "0.0.2",
+        "validator": "1.4.0",
+        "rss": "0.2.0",
+        "nodemailer": "~0.5.2"
     },
     "devDependencies": {
         "grunt": "~0.4.1",
@@ -42,6 +44,9 @@
         "grunt-contrib-compress": "~0.5.2",
         "grunt-groc": "~0.3.0",
         "grunt-mocha-cli": "~1.0.6",
+        "grunt-express-server": "~0.4.2",
+        "grunt-open": "~0.2.2",
+        "matchdep": "~0.1.2",
         "sinon": "~1.7.3",
         "should": "~1.2.2",
         "mocha": "~1.12.0"

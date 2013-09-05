@@ -5,7 +5,7 @@
 (function () {
     "use strict";
 
-    // UTILS
+    // ## UTILS
 
     /**
      * Allows to check contents of each element exactly
@@ -23,18 +23,92 @@
      * Center an element to the window vertically and centrally
      * @returns {*}
      */
-    $.fn.center = function () {
-        this.css({
-            'position': 'fixed',
-            'left': '50%',
-            'top': '50%'
+    $.fn.center = function (options) {
+        var $window = $(window),
+            config = $.extend({
+                animate        : true,
+                successTrigger : 'centered'
+            }, options);
+
+        return this.each(function () {
+            var $this = $(this);
+            $this.css({
+                'position': 'absolute'
+            });
+            if (config.animate) {
+                $this.animate({
+                    'left': ($window.width() / 2) - $this.outerWidth() / 2 + 'px',
+                    'top': ($window.height() / 2) - $this.outerHeight() / 2 + 'px'
+                });
+            } else {
+                $this.css({
+                    'left': ($window.width() / 2) - $this.outerWidth() / 2 + 'px',
+                    'top': ($window.height() / 2) - $this.outerHeight() / 2 + 'px'
+                });
+            }
+            $(window).trigger(config.successTrigger);
         });
-        this.css({
-            'margin-left': -this.outerWidth() / 2 + 'px',
-            'margin-top': -this.outerHeight() / 2 + 'px'
+    };
+
+    // ## getTransformProperty
+    // This returns the transition duration for an element, good for calling things after a transition has finished.
+    // **Original**: [https://gist.github.com/mandelbro/4067903](https://gist.github.com/mandelbro/4067903)
+    // **returns:** the elements transition duration
+    $.fn.transitionDuration = function () {
+        var $this = $(this);
+
+        // check the main transition duration property
+        if ($this.css('transition-duration')) {
+            return Math.round(parseFloat(this.css('transition-duration')) * 1000);
+        }
+
+        // check the vendor transition duration properties
+        if (this.css('-webkit-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-webkit-transtion-duration')) * 1000);
+        }
+
+        if (this.css('-ms-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-ms-transtion-duration')) * 1000);
+        }
+        
+        if (this.css('-moz-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-moz-transtion-duration')) * 1000);
+        }
+
+        if (this.css('-o-transtion-duration')) {
+            return Math.round(parseFloat(this.css('-o-transtion-duration')) * 1000);
+        }
+
+        // if we're here, then no transition duration was found, return 0
+        return 0;
+    };
+
+    // ## scrollShadow
+    // This adds a 'scroll' class to the targeted element when the element is scrolled
+    // **target:** The element in which the class is applied. Defaults to scrolled element.
+    // **class-name:** The class which is applied.
+    // **offset:** How far the user has to scroll before the class is applied.
+    $.fn.scrollClass = function (options) {
+        var config = $.extend({
+                'target'     : '',
+                'class-name' : 'scrolling',
+                'offset'     : 1
+            }, options);
+
+        return this.each(function () {
+            var $this = $(this),
+                $target = $this;
+            if (config.target) {
+                $target = $(config.target);
+            }
+            $this.scroll(function () {
+                if ($this.scrollTop() > config.offset) {
+                    $target.addClass(config['class-name']);
+                } else {
+                    $target.removeClass(config['class-name']);
+                }
+            });
         });
-        $(window).trigger('centered');
-        return this;
     };
 
     $.fn.selectText = function () {
@@ -80,7 +154,9 @@
         return this;
     };
 
-    $('.overlay').hideAway(); // TODO: Move to a more sensible global file.
+    // ## GLOBALS
+
+    $('.overlay').hideAway();
 
     /**
      * Adds appropriate inflection for pluralizing the singular form of a word when appropriate.

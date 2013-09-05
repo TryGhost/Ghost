@@ -8,7 +8,8 @@ var _ = require("underscore"),
     exporter = require('../../server/data/export'),
     Exporter001 = require('../../server/data/export/001'),
     Exporter002 = require('../../server/data/export/002'),
-    errors = require('../../server/errorHandling');
+    errors = require('../../server/errorHandling'),
+    Settings = require('../../server/models/settings').Settings;
 
 describe("Export", function () {
 
@@ -43,6 +44,8 @@ describe("Export", function () {
             // initialise database to version 001 - confusingly we have to set the max version to be one higher
             // than the migration version we want
             migration.migrateUpFromVersion('001', '002').then(function () {
+                return Settings.populateDefaults();
+            }).then(function () {
                 return exporter("001");
             }).then(function (exportData) {
                 var tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles', 'settings'];
@@ -88,6 +91,8 @@ describe("Export", function () {
             // initialise database to version 001 - confusingly we have to set the max version to be one higher
             // than the migration version we want
             migration.migrateUpFromVersion('001', '003').then(function () {
+                return Settings.populateDefaults();
+            }).then(function () {
                 return exporter("002");
             }).then(function (exportData) {
                 var tables = [

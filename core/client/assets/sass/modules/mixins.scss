@@ -4,18 +4,18 @@
  *
  * Table of Contents:
  *
- * Compass Shit
- * Compass Plugins
+ * Bourbon
+ * Breakpoint
+ * Typography
  * Colors
  * Gradients
- * Typography
  * Global Styles
  *
  */
 
 
 /* =============================================================================
-   Bourbon Imports
+   Bourbon 
    ============================================================================= */
 
 // Bourbon - http://bourbon.io/
@@ -26,7 +26,7 @@ $default-transition-duration: 0.3s;
 
 
 /* =============================================================================
-   Plugins
+   Breakpoint
    ============================================================================= */
 
 // Breakpoint - http://breakpoint-sass.com/
@@ -49,6 +49,26 @@ $letterbox: max-height 600px, max-height 600px;
 
 // Pixel Densities
 $retina: 2 device-pixel-ratio;
+
+
+/* =============================================================================
+   Typography
+   ============================================================================= */
+
+$font-family: 'Open Sans', sans-serif;
+$font-family-serif: serif;
+$font-family-mono: Inconsolata, monospace;
+
+@mixin baseline {
+    margin: 1.6em 0;
+}
+
+//Does this really need to be a mixin?
+@mixin hidden {
+    text-indent: -9999px;
+    visibility: hidden;
+    display: none;
+}
 
 
 /* =============================================================================
@@ -85,19 +105,19 @@ $green: #9FBB58;
 
 @mixin gradient($color1: #aaa, $color2: none) {
 
-  @if $color2 == 'none' {
-    background-color: lighten($color1, 10%);
-    background-image: -webkit-linear-gradient(bottom, $color1, lighten($color1, 10%));
-    background-image:    -moz-linear-gradient(bottom, $color1, lighten($color1, 10%));
-    background-image:     -ms-linear-gradient(bottom, $color1, lighten($color1, 10%));
-    background-image:         linear-gradient(bottom, $color1, lighten($color1, 10%));
-  } @else {
-    background-color: $color2;
-    background-image: -webkit-linear-gradient(bottom, $color1, $color2);
-    background-image:    -moz-linear-gradient(bottom, $color1, $color2);
-    background-image:     -ms-linear-gradient(bottom, $color1, $color2);
-    background-image:         linear-gradient(to top, $color1, $color2);
-  }
+    @if $color2 == 'none' {
+        background-color: lighten($color1, 10%);
+        background-image: -webkit-linear-gradient(bottom, $color1, lighten($color1, 10%));
+        background-image:    -moz-linear-gradient(bottom, $color1, lighten($color1, 10%));
+        background-image:     -ms-linear-gradient(bottom, $color1, lighten($color1, 10%));
+        background-image:         linear-gradient(bottom, $color1, lighten($color1, 10%));
+    } @else {
+        background-color: $color2;
+        background-image: -webkit-linear-gradient(bottom, $color1, $color2);
+        background-image:    -moz-linear-gradient(bottom, $color1, $color2);
+        background-image:     -ms-linear-gradient(bottom, $color1, $color2);
+        background-image:         linear-gradient(to top, $color1, $color2);
+    }
 
 }
 
@@ -105,36 +125,20 @@ $green: #9FBB58;
 
 @mixin inversegradient($color1: #aaa, $color2: none) {
 
-  @if $color2 == 'none' {
-    background-color: $color1;
-    background-image: -webkit-linear-gradient(bottom, lighten($color1, 10%), $color1);
-    background-image:    -moz-linear-gradient(bottom, lighten($color1, 10%), $color1);
-    background-image:     -ms-linear-gradient(bottom, lighten($color1, 10%), $color1);
-    background-image:         linear-gradient(bottom, lighten($color1, 10%), $color1);
-  } @else {
-    background-color: $color1;
-    background-image: -webkit-linear-gradient(bottom, $color2, $color1);
-    background-image:    -moz-linear-gradient(bottom, $color2, $color1);
-    background-image:     -ms-linear-gradient(bottom, $color2, $color1);
-    background-image:         linear-gradient(to top, $color2, $color1);
-  }
+    @if $color2 == 'none' {
+        background-color: $color1;
+        background-image: -webkit-linear-gradient(bottom, lighten($color1, 10%), $color1);
+        background-image:    -moz-linear-gradient(bottom, lighten($color1, 10%), $color1);
+        background-image:     -ms-linear-gradient(bottom, lighten($color1, 10%), $color1);
+        background-image:         linear-gradient(bottom, lighten($color1, 10%), $color1);
+    } @else {
+        background-color: $color1;
+        background-image: -webkit-linear-gradient(bottom, $color2, $color1);
+        background-image:    -moz-linear-gradient(bottom, $color2, $color1);
+        background-image:     -ms-linear-gradient(bottom, $color2, $color1);
+        background-image:         linear-gradient(to top, $color2, $color1);
+    }
 
-}
-
-
-/* =============================================================================
-   Typography
-   ============================================================================= */
-
-@mixin baseline {
-    margin: 1.6em 0;
-}
-
-//Does this really need to be a mixin?
-@mixin hidden {
-  text-indent: -9999px;
-  visibility: hidden;
-  display: none;
 }
 
 
@@ -143,41 +147,41 @@ $green: #9FBB58;
    ============================================================================= */
 
 %box, .box {
-  padding: 15px;
-  margin-bottom: 15px;
-  background: #fff;
-  position: relative;
-  box-shadow: $shadow;
-
-  header {
-    height:14px;
-    border-bottom: 1px solid $lightbrown;
-    padding-bottom: 15px;
+    padding: 15px;
     margin-bottom: 15px;
-    text-transform: uppercase;
-    font-size:0.85em;
-    color: $brown;
-  }
+    background: #fff;
+    position: relative;
+    box-shadow: $shadow;
 
-  footer {
-    height:14px;
-    border-top: 1px solid $lightbrown;
-    padding-top: 10px;
-    margin-top:15px;
-    text-transform: uppercase;
-    font-size:0.85em;
-    color: $brown;
-  }
-
-  header a,
-  footer a {
-    color:$brown;
-
-    &:hover {
-      color:$darkgrey;
-      text-decoration: none;
+    header {
+        height:14px;
+        border-bottom: 1px solid $lightbrown;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        font-size:0.85em;
+        color: $brown;
     }
-  }
+
+    footer {
+        height:14px;
+        border-top: 1px solid $lightbrown;
+        padding-top: 10px;
+        margin-top:15px;
+        text-transform: uppercase;
+        font-size:0.85em;
+        color: $brown;
+    }
+
+    header a,
+    footer a {
+        color:$brown;
+
+        &:hover {
+            color:$darkgrey;
+            text-decoration: none;
+        }
+    }
 }
 
 /* =============================================================================

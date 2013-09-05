@@ -19,6 +19,10 @@
         position: relative;
         height: 100%;
         width: 100%;
+
+        @include breakpoint($tablet) {
+            overflow-x: hidden;
+        }
     }
     .content-list {
         @include box-sizing(border-box);
@@ -32,9 +36,6 @@
         background: #fff;
         box-shadow: $shadow;
 
-        @include breakpoint(900px) {
-            width:300px;
-        }
         @include breakpoint($tablet) {
             width:auto;
             right:0;
@@ -182,9 +183,11 @@
         border-left:$lightbrown 2px solid;
         background: #fff;
         box-shadow: $shadow;
-        @include breakpoint(900px) {
+        @include breakpoint($tablet) {
             width: auto;
-            left: 300px;
+            left: 100%;
+            right: -100%;
+            margin-left: 15px;
         }
 
         .unfeatured {
@@ -213,6 +216,8 @@
             left:0;
             overflow: auto;
             padding: 80px 40px;
+            word-break: break-word;
+            hyphens: auto;
             
             .wrapper {
                 max-width: 700px;

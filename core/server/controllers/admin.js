@@ -13,7 +13,8 @@ var Ghost = require('../../ghost'),
     ghost = new Ghost(),
     dataProvider = ghost.dataProvider,
     adminNavbar,
-    adminControllers;
+    adminControllers,
+    loginSecurity = [];
 
  // TODO: combine path/navClass to single "slug(?)" variable with no prefix
 adminNavbar = {
@@ -42,6 +43,7 @@ adminNavbar = {
         path: '/settings/'
     }
 };
+
 
 // TODO: make this a util or helper
 function setSelected(list, name) {
@@ -82,34 +84,50 @@ adminControllers = {
         if (ext === ".jpg" || ext === ".png" || ext === ".gif") {
             renameFile();
         } else {
-            res.send("Invalid filetype");
+            res.send(404, "Invalid filetype");
         }
     },
     'login': function (req, res) {
-        res.render('login', {
+        res.render('signup', {
             bodyClass: 'ghost-login',
             hideNavbar: true,
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
     'auth': function (req, res) {
-        api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-            req.session.user = "ghostadmin";
-            res.json(200, {redirect: req.query.r ? '/ghost/' + req.query.r : '/ghost/'});
-        }, function (error) {
-            res.send(401);
+        var currentTime = process.hrtime()[0],
+            denied = '';
+        loginSecurity = _.filter(loginSecurity, function (ipTime) {
+            return (ipTime.time + 2 > currentTime);
         });
+        denied = _.find(loginSecurity, function (ipTime) {
+            return (ipTime.ip === req.connection.remoteAddress);
+        });
+
+        if (!denied) {
+            loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
+            api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
+                req.session.user = user.id;
+                res.json(200, {redirect: req.body.redirect ? '/ghost/'
+                    + decodeURIComponent(req.body.redirect) : '/ghost/'});
+            }, function (error) {
+                res.json(401, {error: error.message});
+            });
+        } else {
+            res.json(401, {error: 'Slow down, there are way too many login attempts!'});
+        }
+
     },
     changepw: function (req, res) {
         api.users.changePassword({
-            email: req.body.email,
+            currentUser: req.session.user,
             oldpw: req.body.password,
             newpw: req.body.newpassword,
             ne2pw: req.body.ne2password
-        }).then(function (user) {
+        }).then(function () {
             res.json(200, {msg: 'Password changed successfully'});
         }, function (error) {
-            res.send(401);
+            res.send(401, {error: error.message});
         });
 
     },
@@ -120,27 +138,74 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
+
     'doRegister': function (req, res) {
         var email = req.body.email,
             password = req.body.password;
 
-        if (email !== '' && password.length > 5) {
-            api.users.add({
-                email_address: email,
-                password: password
-            }).then(function (user) {
-                res.json(200, {redirect: '/ghost/login/'});
-            }, function (error) {
-                res.json(401, {message: error.message});
+        api.users.add({
+            email_address: email,
+            password: password
+        }).then(function (user) {
+
+            if (req.session.user === undefined) {
+                req.session.user = user.id;
+            }
+            res.json(200, {redirect: '/ghost/'});
+        }, function (error) {
+            res.json(401, {error: error.message});
+        });
+
+    },
+
+    'forgotten': function (req, res) {
+        res.render('signup', {
+            bodyClass: 'ghost-forgotten',
+            hideNavbar: true,
+            adminNav: setSelected(adminNavbar, 'login')
+        });
+    },
+
+    'resetPassword': function (req, res) {
+        var email = req.body.email;
+
+        api.users.forgottenPassword(email).then(function (user) {
+            var message = {
+                    to: email,
+                    subject: 'Your new password',
+                    html: "<p><strong>Hello!</strong></p>" +
+                        "<p>You've reset your password. Here's the new one: " + user.newPassword + "</p>"
+                };
+
+            return ghost.mail.send(message);
+        }).then(function success() {
+            var notification = {
+                type: 'success',
+                message: 'Your password was changed successfully. Check your email for details.',
+                status: 'passive',
+                id: 'successresetpw'
+            };
+
+            return api.notifications.add(notification).then(function () {
+                res.json(200, {redirect: '/ghost/signin/'});
             });
-        } else {
-            res.json(400, {message: 'The password is too short. Have at least 6 characters in there'});
-        }
+
+        }, function failure(error) {
+            res.json(401, {error: error.message});
+        }).otherwise(errors.logAndThrowError);
     },
     'logout': function (req, res) {
         delete req.session.user;
-        req.flash('success', "You were successfully logged out");
-        res.redirect('/ghost/login/');
+        var notification = {
+            type: 'success',
+            message: 'You were successfully signed out',
+            status: 'passive',
+            id: 'successlogout'
+        };
+
+        return api.notifications.add(notification).then(function () {
+            res.redirect('/ghost/signin/');
+        });
     },
     'index': function (req, res) {
         res.render('dashboard', {
@@ -150,15 +215,10 @@ adminControllers = {
     },
     'editor': function (req, res) {
         if (req.params.id !== undefined) {
-            api.posts.read({id: parseInt(req.params.id, 10)})
-                .then(function (post) {
-                    res.render('editor', {
-                        bodyClass: 'editor',
-                        adminNav: setSelected(adminNavbar, 'content'),
-                        title: post.get('title'),
-                        content: post.get('content')
-                    });
-                });
+            res.render('editor', {
+                bodyClass: 'editor',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
         } else {
             res.render('editor', {
                 bodyClass: 'editor',
@@ -167,24 +227,16 @@ adminControllers = {
         }
     },
     'content': function (req, res) {
-        api.posts.browse({status: req.params.status || 'all'})
-            .then(function (page) {
-                res.render('content', {
-                    bodyClass: 'manage',
-                    adminNav: setSelected(adminNavbar, 'content'),
-                    posts: page.posts
-                });
-            });
+        res.render('content', {
+            bodyClass: 'manage',
+            adminNav: setSelected(adminNavbar, 'content')
+        });
     },
     'settings': function (req, res) {
-        api.settings.browse()
-            .then(function (settings) {
-                res.render('settings', {
-                    bodyClass: 'settings',
-                    adminNav: setSelected(adminNavbar, 'settings'),
-                    settings: settings
-                });
-            });
+        res.render('settings', {
+            bodyClass: 'settings',
+            adminNav: setSelected(adminNavbar, 'settings')
+        });
     },
     'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
         index: function (req, res) {
@@ -282,7 +334,7 @@ adminControllers = {
 
                     return api.notifications.add(notification).then(function () {
                         delete req.session.user;
-                        res.redirect('/ghost/login/');
+                        res.redirect('/ghost/signin/');
                     });
 
                 }, function importFailure(error) {

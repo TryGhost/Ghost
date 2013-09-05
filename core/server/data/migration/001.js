@@ -101,7 +101,7 @@ up = function () {
             // knex('roles_users').insert(fixtures.roles_users),
             knex('permissions').insert(fixtures.permissions),
             knex('permissions_roles').insert(fixtures.permissions_roles),
-            knex('settings').insert(fixtures.settings)
+            knex('settings').insert({ key: 'currentVersion', 'value': '001', type: 'core' })
         ]);
 
     });

@@ -1,12 +1,11 @@
 /*globals casper, __utils__, url, testPost */
 
 casper.test.begin("Content screen is correct", 9, function suite(test) {
-
-    casper.test.filename = "content_test.png";
+    test.filename = "content_test.png";
 
     casper.start(url + "ghost/content/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertEquals(this.getCurrentUrl(), url + "ghost/content/", "Ghost doesn't require login this time");
+        test.assertUrlMatch(/ghost\/content\/$/, "Ghost doesn't require login this time");
     }).viewport(1280, 1024);
 
     casper.then(function testViews() {

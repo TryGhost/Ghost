@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, JST, shortcut */
+/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut */
 (function () {
     "use strict";
 
@@ -54,13 +54,14 @@
         // by `addSubview`, which will in-turn remove any
         // children of those views, and so on.
         removeSubviews: function () {
-            var i, l, children = this.subviews;
+            var children = this.subviews;
+
             if (!children) {
                 return this;
             }
-            for (i = 0, l = children.length; i < l; i += 1) {
-                children[i].remove();
-            }
+
+            _(children).invoke("remove");
+
             this.subviews = [];
             return this;
         },
@@ -73,8 +74,51 @@
             }
             return Backbone.View.prototype.remove.apply(this, arguments);
         }
-
     });
+
+    Ghost.Views.Utils = {
+
+        // Used in API request fail handlers to parse a standard api error
+        // response json for the message to display
+        getRequestErrorMessage: function (request) {
+            var message;
+
+            // Can't really continue without a request
+            if (!request) {
+                return null;
+            }
+
+            // Seems like a sensible default
+            message = request.statusText;
+
+            // If a non 200 response
+            if (request.status !== 200) {
+                try {
+                    // Try to parse out the error, or default to "Unknown"
+                    message =  request.responseJSON.error || "Unknown Error";
+                } catch (e) {
+                    message = "The server returned an error (" + (request.status || "?") + ").";
+                }
+            }
+
+            return message;
+        },
+
+        // Getting URL vars
+        getUrlVariables: function () {
+            var vars = [],
+                hash,
+                hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'),
+                i;
+
+            for (i = 0; i < hashes.length; i += 1) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+    };
 
     /**
      * This is the view to generate the markup for the individual
@@ -110,7 +154,11 @@
     Ghost.Views.NotificationCollection = Ghost.View.extend({
         el: '#flashbar',
         initialize: function () {
+            var self = this;
             this.render();
+            Ghost.on('urlchange', function () {
+                self.clearEverything();
+            });
         },
         events: {
             'animationend .js-notification': 'removeItem',
@@ -126,139 +174,213 @@
             }, this);
         },
         renderItem: function (item) {
-            var itemView = new Ghost.Views.Notification({ model: item });
-            this.$el.html(itemView.render().el);
+            var itemView = new Ghost.Views.Notification({ model: item }),
+                height,
+                self = this;
+            this.$el.html(itemView.render().el).css({height: 0});
+            height = this.$('.js-notification').hide().outerHeight(true);
+            this.$el.animate({height: height}, 250, function () {
+                $(this).css({height: "auto"});
+                self.$('.js-notification').fadeIn(250);
+            });
         },
         addItem: function (item) {
             this.model.push(item);
             this.renderItem(item);
         },
+        clearEverything: function () {
+            var height = this.$('.js-notification').outerHeight(true),
+                self = this;
+            this.$el.css({height: height});
+            this.$el.find('.js-notification.notification-passive').fadeOut(250,  function () {
+                $(this).remove();
+                self.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                });
+            });
+        },
         removeItem: function (e) {
             e.preventDefault();
-            var self = e.currentTarget;
+            var self = e.currentTarget,
+                bbSelf = this;
             if (self.className.indexOf('notification-persistent') !== -1) {
                 $.ajax({
                     type: "DELETE",
                     url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
-                    $(e.currentTarget).remove();
+                    bbSelf.$el.slideUp(250, function () {
+                        $(this).show().css({height: "auto"});
+                        $(self).remove();
+                    });
                 });
             } else {
-                $(e.currentTarget).remove();
+                this.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                    $(self).remove();
+                });
             }
 
         },
         closePassive: function (e) {
-            $(e.currentTarget).parent().fadeOut(200,  function () { $(this).remove(); });
+            var height = this.$('.js-notification').outerHeight(true),
+                self = this;
+            this.$el.css({height: height});
+            $(e.currentTarget).parent().fadeOut(250,  function () {
+                $(this).remove();
+                self.$el.slideUp(250, function () {
+                    $(this).show().css({height: "auto"});
+                });
+            });
         },
         closePersistent: function (e) {
-            var self = e.currentTarget;
+            var self = e.currentTarget,
+                bbSelf = this;
             $.ajax({
                 type: "DELETE",
                 url: '/api/v0.1/notifications/' + $(self).data('id')
             }).done(function (result) {
-                if ($(self).parent().parent().hasClass('js-bb-notification')) {
-                    $(self).parent().parent().fadeOut(200, function () { $(self).remove(); });
+                var height = bbSelf.$('.js-notification').outerHeight(true),
+                    $parent = $(self).parent();
+                bbSelf.$el.css({height: height});
+
+                if ($parent.parent().hasClass('js-bb-notification')) {
+                    $parent.parent().fadeOut(200,  function () {
+                        $(this).remove();
+                        bbSelf.$el.slideUp(250, function () {
+                            $(this).show().css({height: "auto"});
+                        });
+                    });
                 } else {
-                    $(self).parent().fadeOut(200, function () { $(self).remove(); });
+                    $parent.fadeOut(200,  function () {
+                        $(this).remove();
+                        bbSelf.$el.slideUp(250, function () {
+                            $(this).show().css({height: "auto"});
+                        });
+                    });
                 }
             });
         }
     });
 
-    /**
-     * This is the view to generate the markup for the individual
-     * modal. Will be included into #modals.
-     *
-     *
-     *
-     * Types can be
-     * -   (empty)
-     *
-     */
+    // ## Modals
     Ghost.Views.Modal = Ghost.View.extend({
         el: '#modal-container',
         templateName: 'modal',
         className: 'js-bb-modal',
+        // Render and manages modal dismissal
         initialize: function () {
             this.render();
             var self = this;
             if (!this.model.options.confirm) {
                 shortcut.add("ESC", function () {
-                    self.removeItem();
+                    self.removeElement();
                 });
                 $(document).on('click', '.modal-background', function (e) {
-                    self.removeItem(e);
+                    self.removeElement(e);
                 });
             } else {
                 // Initiate functions for buttons here so models don't get tied up.
                 this.acceptModal = function () {
-                    this.model.options.confirm.accept.func();
-                    self.removeItem();
+                    this.model.options.confirm.accept.func.call(this);
+                    self.removeElement();
                 };
                 this.rejectModal = function () {
-                    this.model.options.confirm.reject.func();
-                    self.removeItem();
+                    this.model.options.confirm.reject.func.call(this);
+                    self.removeElement();
                 };
                 shortcut.remove("ESC");
                 $(document).off('click', '.modal-background');
             }
         },
-        template: function (data) {
-            return JST[this.templateName](data);
+        templateData: function () {
+            return this.model;
         },
         events: {
-            'click .close': 'removeItem',
+            'click .close': 'removeElement',
             'click .js-button-accept': 'acceptModal',
             'click .js-button-reject': 'rejectModal'
         },
-        render: function () {
-            this.$el.html(this.template(this.model));
+        afterRender: function () {
             this.$(".modal-content").html(this.addSubview(new Ghost.Views.Modal.ContentView({model: this.model})).render().el);
-            this.$el.children(".js-modal").center();
-            this.$el.addClass("active");
+            this.$el.children(".js-modal").center({animate: false}).css("max-height", $(window).height() - 120); // same as resize(), but the debounce causes init lag
+            this.$el.addClass("active dark");
+
             if (document.body.style.webkitFilter !== undefined) { // Detect webkit filters
                 $("body").addClass("blur");
-            } else {
-                this.$el.addClass("dark");
             }
-            return this;
+            if (_.isFunction(this.model.options.afterRender)) {
+                this.model.options.afterRender.call(this);
+            }
+            if (this.model.options.animation) {
+                this.animate(this.$el.children(".js-modal"));
+            }
+            var self = this;
+            $(window).on('resize', self.resize);
+
         },
+        // #### resize
+        // Center and resize modal based on window height
+        resize: _.debounce(function () {
+            $(".js-modal").center().css("max-height", $(window).height() - 120);
+        }, 50),
+        // #### remove
+        // Removes Backbone attachments from modals
         remove: function () {
             this.undelegateEvents();
             this.$el.empty();
             this.stopListening();
             return this;
         },
-        removeItem: function (e) {
+        // #### removeElement
+        // Visually removes the modal from the user interface
+        removeElement: function (e) {
             if (e) {
                 e.preventDefault();
                 e.stopPropagation();
             }
-            $('.js-modal').fadeOut(300, function () {
-                $(this).remove();
-                $("#modal-container").removeClass('active dark');
+
+            var self = this,
+                $jsModal = $('.js-modal'),
+                removeModalDelay = $jsModal.transitionDuration(),
+                removeBackgroundDelay = self.$el.transitionDuration();
+
+            $jsModal.removeClass('in');
+
+            if (!this.model.options.animation) {
+                removeModalDelay = removeBackgroundDelay = 0;
+            }
+
+            setTimeout(function () {
+
                 if (document.body.style.filter !== undefined) {
                     $("body").removeClass("blur");
                 }
-            });
-            this.remove();
+                self.$el.removeClass('dark');
+
+                setTimeout(function () {
+                    self.remove();
+                    self.$el.removeClass('active');
+                }, removeBackgroundDelay);
+            }, removeModalDelay);
+
+        },
+        // #### animate
+        // Animates the animation
+        animate: function (target) {
+            setTimeout(function () {
+                target.addClass('in');
+            }, target.transitionDuration());
         }
     });
 
-    /**
-     * Modal Content
-     * @type {*}
-     */
+    // ## Modal Content
     Ghost.Views.Modal.ContentView = Ghost.View.extend({
 
         template: function (data) {
             return JST['modals/' + this.model.content.template](data);
         },
-
-        render: function () {
-            this.$el.html(this.template(this.model));
-            return this;
+        templateData: function () {
+            return this.model;
         }
 
     });

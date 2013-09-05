@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone */
+/*global window, document, Ghost, $, _, Backbone, Countable */
 (function () {
     "use strict";
 
@@ -9,11 +9,26 @@
     Ghost.Views.Settings = Ghost.View.extend({
         initialize: function (options) {
             $(".settings-content").removeClass('active');
-            this.addSubview(new Settings.Sidebar({
+
+            this.sidebar = new Settings.Sidebar({
                 el: '.settings-sidebar',
                 pane: options.pane,
                 model: this.model
-            }));
+            });
+
+            this.addSubview(this.sidebar);
+
+            this.listenTo(Ghost.router, "route:settings", this.changePane);
+        },
+
+        changePane: function (pane) {
+            if (!pane) {
+                // Can happen when trying to load /settings with no pane specified
+                // let the router navigate itself to /settings/general
+                return;
+            }
+
+            this.sidebar.showContent(pane);
         }
     });
 
@@ -23,7 +38,7 @@
         initialize: function (options) {
             this.render();
             this.menu = this.$('.settings-menu');
-            this.showContent(options.pane || 'general');
+            this.showContent(options.pane);
         },
 
         models: {},
@@ -36,14 +51,17 @@
             e.preventDefault();
             var item = $(e.currentTarget),
                 id = item.find('a').attr('href').substring(1);
+
             this.showContent(id);
         },
 
         showContent: function (id) {
             var self = this,
-                model;
+                model,
+                themes;
 
-            Backbone.history.navigate('/settings/' + id);
+            Ghost.router.navigate('/settings/' + id);
+            Ghost.trigger('urlchange');
             if (this.pane && id === this.pane.el.id) {
                 return;
             }
@@ -52,9 +70,13 @@
             this.pane = new Settings[id]({ el: '.settings-content'});
 
             if (!this.models.hasOwnProperty(this.pane.options.modelType)) {
+                themes = this.models.Themes = new Ghost.Models.Themes();
                 model = this.models[this.pane.options.modelType] = new Ghost.Models[this.pane.options.modelType]();
-                model.fetch().then(function () {
-                    self.renderPane(model);
+                themes.fetch().then(function () {
+                    model.fetch().then(function () {
+                        model.set({availableThemes: themes.toJSON()});
+                        self.renderPane(model);
+                    });
                 });
             } else {
                 model = this.models[this.pane.options.modelType];
@@ -85,7 +107,11 @@
             this.$el.removeClass('active');
             this.undelegateEvents();
         },
-
+        render: function () {
+            this.$el.hide();
+            Ghost.View.prototype.render.call(this);
+            this.$el.fadeIn(300);
+        },
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
@@ -94,18 +120,25 @@
                 checkboxClass: 'icheckbox_ghost'
             });
         },
-        saveSuccess: function () {
+        saveSuccess: function (model, response, options) {
+            // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
                 message: 'Saved',
                 status: 'passive'
             });
-
         },
-        saveError: function () {
+        saveError: function (model, xhr) {
             Ghost.notifications.addItem({
                 type: 'error',
-                message: 'Something went wrong, not saved :(',
+                message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                status: 'passive'
+            });
+        },
+        validationError: function (message) {
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: message,
                 status: 'passive'
             });
         }
@@ -118,22 +151,78 @@
         id: "general",
 
         events: {
-            'click .button-save': 'saveSettings'
+            'click .button-save': 'saveSettings',
+            'click .js-modal-logo': 'showLogo',
+            'click .js-modal-icon': 'showIcon'
         },
 
         saveSettings: function () {
+            var themes = this.model.get('availableThemes');
+            this.model.unset('availableThemes');
             this.model.save({
                 title: this.$('#blog-title').val(),
                 email: this.$('#email-address').val(),
                 logo: this.$('#logo').attr("src"),
-                icon: this.$('#icon').attr("src")
-
+                icon: this.$('#icon').attr("src"),
+                activeTheme: this.$('#activeTheme').val()
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
             });
+            this.model.set({availableThemes: themes});
         },
-
+        showLogo: function () {
+            var settings = this.model.toJSON();
+            this.showUpload('#logo', 'logo', settings.logo);
+        },
+        showIcon: function () {
+            var settings = this.model.toJSON();
+            this.showUpload('#icon', 'icon', settings.icon);
+        },
+        showUpload: function (id, key, src) {
+            var self = this;
+            this.addSubview(new Ghost.Views.Modal({
+                model: {
+                    options: {
+                        close: false,
+                        type: "action",
+                        style: "wide",
+                        animation: 'fadeIn',
+                        afterRender: function () {
+                            this.$('.js-drop-zone').upload();
+                        },
+                        confirm: {
+                            accept: {
+                                func: function () { // The function called on acceptance
+                                    var data = {};
+                                    data[key] = this.$('.js-upload-target').attr('src');
+                                    self.model.save(data, {
+                                        success: self.saveSuccess,
+                                        error: self.saveError
+                                    });
+                                    self.render();
+                                    return true;
+                                },
+                                buttonClass: "button-save right",
+                                text: "Save" // The accept button text
+                            },
+                            reject: {
+                                func: function () { // The function called on rejection
+                                    return true;
+                                },
+                                buttonClass: true,
+                                text: "Cancel" // The reject button text
+                            }
+                        },
+                        id: id,
+                        src: src
+                    },
+                    content: {
+                        template: 'uploadImage'
+                    }
+                }
+            }));
+        },
         templateName: 'settings/general',
 
         beforeRender: function () {
@@ -155,12 +244,15 @@
             'click .button-save': 'saveSettings'
         },
         saveSettings: function () {
+            var themes = this.model.get('availableThemes');
+            this.model.unset('availableThemes');
             this.model.save({
                 description: this.$('#blog-description').val()
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
             });
+            this.model.set({availableThemes: themes});
         },
 
         templateName: 'settings/content',
@@ -184,6 +276,7 @@
             'click .button-change-password': 'changePassword'
         },
 
+
         saveUser: function () {
             this.model.save({
                 'full_name':        this.$('#user-name').val(),
@@ -203,13 +296,17 @@
             event.preventDefault();
 
             var self = this,
-                email = this.$('#user-email').val(),
                 oldPassword = this.$('#user-password-old').val(),
                 newPassword = this.$('#user-password-new').val(),
                 ne2Password = this.$('#user-new-password-verification').val();
 
-            if (newPassword !== ne2Password || newPassword.length < 6 || oldPassword.length < 6) {
-                this.saveError();
+            if (newPassword !== ne2Password) {
+                this.validationError('Your new passwords do not match');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                this.validationError('Your password is not long enough. It must be at least 8 chars long.');
                 return;
             }
 
@@ -217,7 +314,6 @@
                 url: '/ghost/changepw/',
                 type: 'POST',
                 data: {
-                    email: email,
                     password: oldPassword,
                     newpassword: newPassword,
                     ne2password: ne2Password
@@ -229,14 +325,12 @@
                         status: 'passive',
                         id: 'success-98'
                     });
-                    self.$('#user-password-old').val('');
-                    self.$('#user-password-new').val('');
-                    self.$('#user-new-password-verification').val('');
+                    self.$('#user-password-old, #user-password-new, #user-new-password-verification').val('');
                 },
-                error: function (obj, string, status) {
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: 'Invalid username or password',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }
@@ -254,6 +348,22 @@
             this.$('#user-bio').val(user.bio);
             this.$('#user-profile-picture').attr('src', user.profile_picture);
             this.$('#user-cover-picture').attr('src', user.cover_picture);
+        },
+
+        afterRender: function () {
+            var self = this;
+            Countable.live(document.getElementById('user-bio'), function (counter) {
+                if (counter.all > 180) {
+                    self.$('.bio-container .word-count').css({color: "#e25440"});
+                } else {
+                    self.$('.bio-container .word-count').css({color: "#9E9D95"});
+                }
+
+                self.$('.bio-container .word-count').text(200 - counter.all);
+
+            });
+
+            Settings.Pane.prototype.afterRender.call(this);
         }
     });
 

@@ -10,6 +10,8 @@
  * Global Navigation
  * Mobile Navigation
  * Drop-down / Pop-up Menu
+ * Notifications
+ * Modals
  * Main Elements
  * Floating Headers
  * Image Uploader
@@ -62,6 +64,10 @@
    Global Styles
    ========================================================================== */
 
+html {
+    font: normal 81.2%/1.65 "Open Sans", sans-serif;
+}
+
 body {
     width:100%;
     color: $darkgrey;
@@ -96,6 +102,9 @@ article aside {
 h1, h2, h3,
 h4, h5, h6 {
     color: $darkgrey;
+    text-rendering: optimizeLegibility;
+    line-height: 1;
+    margin-top: 0;
 }
 
 h2 {
@@ -167,11 +176,6 @@ p, ul, ol { @include baseline; }
 ol ol, ul ul,
 ul ol, ol ul {
     margin: 0.4em 0;
-}
-
-p + p,
-aside + p {
-    text-indent: 1.5em;
 }
 
 a {
@@ -253,6 +257,7 @@ mark {
 code, tt {
     font-family: $font-family-mono;
     font-size: 0.85em;
+    white-space: pre;
     background: lighten($lightbrown, 2%);
     border: 1px solid darken($lightbrown, 8%);
     border-radius: 2px;
@@ -268,11 +273,14 @@ pre {
     padding: 10px;
     font-family: $font-family-mono;
     font-size: 0.9em;
+    white-space: pre;
     overflow: auto;
     border-radius: 3px;
 
     code, tt {
         font-size: inherit;
+        white-space: -moz-pre-wrap;
+        white-space: pre-wrap;
         background: transparent;
         border: none;
         padding: 0;
@@ -290,8 +298,8 @@ kbd {
     font-weight: bold;
     background: #f4f4f4;
     border-radius: 4px;
-    box-shadow: 
-        0 1px 0 rgba(0, 0, 0, 0.2), 
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
         0 1px 0 0 #fff inset;
 }
 
@@ -375,23 +383,24 @@ nav {
 /* ==========================================================================
    Main Navigation
    ========================================================================== */
-#global-header { /* Added because the code editor was breaking for the title "Ghost" - this also happens on TryGhost */
-    #ghost {
-        @include icon($i-ghost);
-        display: block;
-        float:left;
-        height:40px;
-        padding:12px 15px;
-        color: lighten($grey, 10%);
-        @include box-sizing(border-box);
-        &:hover {text-decoration:none;}
-    }
 
-    #ghost:hover {
-        color: $lightgrey;
-        background:darken($darkgrey, 2%);
-    }
+.ghost-logo {
+    @include icon($i-ghost);
+    display: block;
+    float:left;
+    height:40px;
+    padding:12px 15px;
+    color: lighten($grey, 10%);
+    @include box-sizing(border-box);
+    
+    &:hover {text-decoration:none;}
 }
+
+.ghost-logo:hover {
+    color: $lightgrey;
+    background:darken($darkgrey, 2%);
+}
+
 
 
 .navbar {
@@ -573,7 +582,7 @@ nav {
 #global-header {
     @include breakpoint(650px) {
 
-        #ghost {
+        .ghost-logo {
             @include icon($i-menu, 14px);
             height:40px;
             width: 40px;
@@ -741,7 +750,7 @@ nav {
 
         &:hover {
             background: $blue;
-            box-shadow: 
+            box-shadow:
                 rgba(255,255,255,0.2) 0 1px 0 inset,
                 rgba(0,0,0,0.5) 0 1px 5px;
         }
@@ -826,6 +835,9 @@ nav {
 /* ==========================================================================
    Notifications
    ========================================================================== */
+.js-bb-notification {
+    @include transform(translateZ(0));
+}
 
 %notification, .notification {
     @include box-sizing(border-box);
@@ -834,9 +846,10 @@ nav {
     padding: 10px 43px 10px 57px;
     margin: 0 0 15px 0;
     color: rgba(255,255,255,0.9);
-    background: $orange;
+    background: $blue;
     position:relative;
     box-shadow: $shadow;
+    @include transform(translateZ(0));
 
     @include icon($i-notification) {
         position: absolute;
@@ -885,7 +898,14 @@ nav {
     background: $red;
 }
 
-.notification-alert {
+
+.notification-warn {
+    @extend %notification;
+    @include icon($i-info);
+    background: $orange;
+}
+
+.notification-info {
     @extend %notification;
     @include icon($i-info);
     background: $blue;
@@ -902,6 +922,8 @@ nav {
         left: 0;
         right: 0;
         z-index: 999;
+        @include transition(all 0.15s linear 0s);
+        @include transform(translateZ(0));
 
         &.dark {
             background: rgba(0,0,0,0.4);
@@ -920,8 +942,14 @@ nav {
 }
 
 body.blur > *:not(#modal-container) {
+    @include transition(all 0.15s linear 0s);
     -webkit-filter: blur(2px);
-    filter: blur(2px); // Not used yet
+       -moz-filter: blur(2px);
+        -ms-filter: blur(2px);
+         -o-filter: blur(2px);
+    filter: blur(2px);
+    @include transform(translateZ(0));
+
 }
 
 %modal, .modal {
@@ -935,8 +963,13 @@ body.blur > *:not(#modal-container) {
     overflow:auto;
     z-index: 1001;
 
-    &.fadeIn {
-        @include animation(fadeIn 0.3s linear 1);
+    &.fade {
+        opacity: 0;
+        @include transition(opacity 0.2s linear 0s);
+
+        &.in {
+            opacity: 1;
+        }
     }
 }
 
@@ -982,13 +1015,12 @@ body.blur > *:not(#modal-container) {
 }
 
 .modal-content {
-    padding: 20px;
+    padding: 0 20px;
 }
 
 .modal-footer {
     padding: 20px;
     padding-top: 0;
-    text-align: center;
 }
 
 .modal-style-wide {
@@ -1062,7 +1094,7 @@ main {
 .scrolling {
 
     .floatingheader {
-        box-shadow: 
+        box-shadow:
             rgba(0,0,0,0.02) 0 1px 2px,
             rgba(255, 255, 255, 0.5) 0 -1px 0 inset;
 
@@ -1135,15 +1167,12 @@ main {
         color: $brown;
         text-decoration: none;
     }
-    .image-edit {
-        line-height: 12px;
-        padding: 10px;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        text-decoration: none;
+    .button-add {
+        display: inline-block;
+        position:relative;
+        z-index: 700;
+        color: #fff;
+        padding-left:5px;
     }
 
     .image-webcam {
@@ -1156,7 +1185,6 @@ main {
         right: 0;
         color: $brown;
         text-decoration: none;
-
     }
 
     input {
@@ -1192,16 +1220,26 @@ main {
         background-size: contain;
     }
 
+    .failed {
+        position: relative;
+        top: -40px;
+        font-size: 16px;
+    }
     .bar {
         height: 12px;
         background: $blue;
+
+        &.fail {
+            background: $red;
+        }
     }
 }
+
 .pre-image-uploader {
     @include box-sizing(border-box);
     @include baseline;
     position: relative;
-    overflow:hidden;
+    overflow: hidden;
     height: auto;
     color: $brown;
 
@@ -1210,48 +1248,34 @@ main {
         left: 9999px;
         opacity: 0;
     }
-    .image-edit {
-
-        line-height: 12px;
-        padding: 10px;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
+    a {
+        z-index: 10000;
+        color: $brown;
         text-decoration: none;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+    img {
+        max-width: 100%;
+    }
+    .image-cancel {
+        @include icon($i-x, 16px);
+        position: absolute;
+        color: white;
+        text-shadow: rgba(0,0,0,0.5) 0 0 1px;
+        top: 10px;
+        right: 10px;
+        text-decoration: none;
+
+        &:hover {
+            cursor: pointer;
+            color: white;
+        }
     }
 }
 
-
-
-
-
-//.progress {
-//    position: relative;
-//    top: -39px;
-//    margin:  auto;
-//    margin-bottom: -12px;
-//    display: block;
-//    overflow: hidden;
-//    @include linear-gradient(to bottom, #f5f5f5, #f9f9f9);
-//    border-radius: 12px;
-//    box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
-//}
-//
-//.fileupload-loading {
-//    display: block;
-//    top: 50%;
-//    width: 35px;
-//    height: 28px;
-//    margin: -28px auto 0;
-//    background-size: contain;
-//}
-//
-//.bar {
-//    height: 12px;
-//    background: $blue;
-//}
 
 /* ==========================================================================
    Misc
@@ -1279,7 +1303,7 @@ main {
         @include transition(all 0.15s ease-in-out);
 
         &:hover {
-            box-shadow: 
+            box-shadow:
                 rgba(0,0,0,0.05) 5px 0 0 inset,
                 rgba(0,0,0,0.05) -5px 0 0 inset,
                 rgba(0,0,0,0.05) 0 5px 0 inset,

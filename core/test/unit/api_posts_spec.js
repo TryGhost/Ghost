@@ -1,15 +1,40 @@
 /*globals describe, beforeEach, it */
 var _ = require("underscore"),
+    when = require('when'),
+    sequence = require('when/sequence'),
     should = require('should'),
     helpers = require('./helpers'),
     Models = require('../../server/models');
 
 describe('Post Model', function () {
 
-    var PostModel = Models.Post;
+    var PostModel = Models.Post,
+        UserModel = Models.User,
+        userData = {
+            password: 'testpass1',
+            email_address: "test@test1.com",
+            full_name: "Mr Biscuits"
+        };
+
+    before(function (done) {
+        helpers.clearData().then(function () {
+            done();
+        }, done);
+    });
 
     beforeEach(function (done) {
-        helpers.resetData().then(function () {
+        this.timeout(5000);
+        helpers.initData()
+            .then(function () {
+                return UserModel.add(userData);
+            })
+            .then(function () {
+                done();
+            }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });
@@ -42,6 +67,39 @@ describe('Post Model', function () {
 
             done();
         }).then(null, done);
+    });
+
+    it('can findAll, returning author and user data', function (done) {
+        var firstPost;
+
+        PostModel.findAll({}).then(function (results) {
+            should.exist(results);
+            results.length.should.be.above(0);
+            firstPost = results.models[0].toJSON();
+
+            firstPost.author.should.be.a("object");
+            firstPost.user.should.be.a("object");
+            firstPost.author.full_name.should.equal("Mr Biscuits");
+            firstPost.user.full_name.should.equal("Mr Biscuits");
+
+            done();
+        }, done);
+    });
+
+    it('can findOne, returning author and user data', function (done) {
+        var firstPost;
+
+        PostModel.findOne({}).then(function (result) {
+            should.exist(result);
+            firstPost = result.toJSON();
+
+            firstPost.author.should.be.a("object");
+            firstPost.user.should.be.a("object");
+            firstPost.author.full_name.should.equal("Mr Biscuits");
+            firstPost.user.full_name.should.equal("Mr Biscuits");
+
+            done();
+        }, done);
     });
 
     it('can edit', function (done) {
@@ -104,25 +162,64 @@ describe('Post Model', function () {
 
     });
 
+    it('can trim title', function (done) {
+        var untrimmedCreateTitle = '  test trimmed create title  ',
+            untrimmedUpdateTitle = '  test trimmed update title  ',
+            newPost = {
+                title: untrimmedCreateTitle,
+                content_raw: 'Test Content'
+            };
+
+        PostModel.add(newPost).then(function (createdPost) {
+            return new PostModel({ id: createdPost.id }).fetch();
+        }).then(function (createdPost) {
+            should.exist(createdPost);
+            createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
+
+            return createdPost.save({ title: untrimmedUpdateTitle });
+        }).then(function (updatedPost) {
+            updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
+
+            done();
+        }).otherwise(done);
+    });
+
     it('can generate a non conflicting slug', function (done) {
         var newPost = {
                 title: 'Test Title',
                 content_raw: 'Test Content 1'
             };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        this.timeout(5000); // this is a patch to ensure it doesn't timeout.
 
-            createdPost.get('slug').should.equal('test-title');
+        // Create 12 posts with the same title
+        sequence(_.times(12, function (i) {
+            return function () {
+                return PostModel.add({
+                    title: "Test Title",
+                    content_raw: "Test Content " + (i+1)
+                });
+            };
+        })).then(function (createdPosts) {
+            // Should have created 12 posts
+            createdPosts.length.should.equal(12);
 
-            newPost.content_raw = 'Test Content 2';
-            return PostModel.add(newPost);
-        }).then(function (secondPost) {
+            // Should have unique slugs and contents
+            _(createdPosts).each(function (post, i) {
+                var num = i + 1;
 
-            secondPost.get('slug').should.equal('test-title-2');
-            secondPost.get('content_raw').should.equal("Test Content 2");
+                // First one has normal title
+                if (num === 1) {
+                    post.get('slug').should.equal('test-title');
+                    return;
+                }
+                
+                post.get('slug').should.equal('test-title-' + num);
+                post.get('content_raw').should.equal('Test Content ' + num);
+            });
 
             done();
-        }).then(null, done);
+        }).otherwise(done);
     });
 
 
@@ -164,7 +261,7 @@ describe('Post Model', function () {
     });
 
     it('can fetch a paginated set, with various options', function (done) {
-        this.timeout(5000);
+        this.timeout(10000); // this is a patch to ensure it doesn't timeout.
 
         helpers.insertMorePosts().then(function () {
 

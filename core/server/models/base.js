@@ -2,11 +2,14 @@ var GhostBookshelf,
     Bookshelf = require('bookshelf'),
     moment = require('moment'),
     _ = require('underscore'),
-    config = require('../../../config');
+    config = require('../../../config'),
+    Validator = require('validator').Validator;
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
 // others' if they're using the library outside of ghost.
 GhostBookshelf = Bookshelf.Initialize('ghost', config.env[process.env.NODE_ENV || 'development'].database);
+
+GhostBookshelf.validator = new Validator();
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
@@ -36,8 +39,10 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
             return attrs;
         }
 
-        _.each(relations, function (key) {
-            attrs[key] = relations[key].toJSON();
+        _.each(relations, function (relation, key) {
+            if (key.substring(0, 7) !== "_pivot_") {
+                attrs[key] = relation.toJSON ? relation.toJSON() : relation;
+            }
         });
 
         return attrs;
@@ -80,7 +85,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
     edit: function (editedObj, options) {
         options = options || {};
         return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            return foundObj.set(editedObj).save();
+            return foundObj.save(editedObj);
         });
     },
 
@@ -90,7 +95,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
     /**
      * Naive create
-     * @param editedObj
+     * @param newObj
      * @param options (optional)
      */
     add: function (newObj, options) {

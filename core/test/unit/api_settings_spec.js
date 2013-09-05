@@ -2,177 +2,233 @@
 var _ = require("underscore"),
     should = require('should'),
     helpers = require('./helpers'),
-    Models = require('../../server/models');
+    Models = require('../../server/models'),
+    knex = require('../../server/models/base').Knex;
 
 describe('Settings Model', function () {
 
     var SettingsModel = Models.Settings;
 
-    beforeEach(function (done) {
-        helpers.resetData().then(function () {
+    before(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });
 
-    it('can browse', function (done) {
-        SettingsModel.browse().then(function (results) {
-
-            should.exist(results);
-
-            results.length.should.be.above(0);
-
+    beforeEach(function (done) {
+        this.timeout(5000);
+        helpers.initData().then(function () {
             done();
-        }).then(null, done);
+        }, done);
     });
 
-    it('can read', function (done) {
-        var firstSetting;
-
-        SettingsModel.browse().then(function (results) {
-
-            should.exist(results);
-
-            results.length.should.be.above(0);
-
-            firstSetting = results.models[0];
-
-            return SettingsModel.read(firstSetting.attributes.key);
-
-        }).then(function (found) {
-
-            should.exist(found);
-
-            found.attributes.value.should.equal(firstSetting.attributes.value);
-
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
-
-        }).then(null, done);
+        }, done);
     });
 
-    it('can edit single', function (done) {
-        var firstSetting;
+    describe('API', function () {
 
-        SettingsModel.browse().then(function (results) {
+        it('can browse', function (done) {
+            SettingsModel.browse().then(function (results) {
 
-            should.exist(results);
+                should.exist(results);
 
-            results.length.should.be.above(0);
+                results.length.should.be.above(0);
 
-            firstSetting = results.models[0];
+                done();
+            }).then(null, done);
+        });
 
-            // The edit method has been modified to take an object of
-            // key/value pairs
-            firstSetting.set('value', 'new value');
+        it('can read', function (done) {
+            var firstSetting;
 
-            return SettingsModel.edit(firstSetting);
+            SettingsModel.browse().then(function (results) {
 
-        }).then(function (edited) {
+                should.exist(results);
 
-            should.exist(edited);
+                results.length.should.be.above(0);
 
-            edited.length.should.equal(1);
+                firstSetting = results.models[0];
 
-            edited = edited[0];
+                return SettingsModel.read(firstSetting.attributes.key);
 
-            edited.attributes.key.should.equal(firstSetting.attributes.key);
-            edited.attributes.value.should.equal('new value');
+            }).then(function (found) {
 
-            done();
+                should.exist(found);
 
-        }).then(null, done);
+                found.attributes.value.should.equal(firstSetting.attributes.value);
+
+                done();
+
+            }).then(null, done);
+        });
+
+        it('can edit single', function (done) {
+            var firstSetting;
+
+            SettingsModel.browse().then(function (results) {
+
+                should.exist(results);
+
+                results.length.should.be.above(0);
+
+                firstSetting = results.models[0];
+
+                // The edit method has been modified to take an object of
+                // key/value pairs
+                firstSetting.set('value', 'new value');
+
+                return SettingsModel.edit(firstSetting);
+
+            }).then(function (edited) {
+
+                should.exist(edited);
+
+                edited.length.should.equal(1);
+
+                edited = edited[0];
+
+                edited.attributes.key.should.equal(firstSetting.attributes.key);
+                edited.attributes.value.should.equal('new value');
+
+                done();
+
+            }).then(null, done);
+        });
+
+        it('can edit multiple', function (done) {
+            var model1,
+                model2,
+                editedModel;
+
+            SettingsModel.browse().then(function (results) {
+
+                should.exist(results);
+
+                results.length.should.be.above(0);
+
+                model1 = results.models[0];
+                model2 = results.models[1];
+
+                // The edit method has been modified to take an object of
+                // key/value pairs
+                model1.set('value', 'new value1');
+                model2.set('value', 'new value2');
+
+                return SettingsModel.edit([model1, model2]);
+
+            }).then(function (edited) {
+
+                should.exist(edited);
+
+                edited.length.should.equal(2);
+
+                editedModel = edited[0];
+
+                editedModel.attributes.key.should.equal(model1.attributes.key);
+                editedModel.attributes.value.should.equal('new value1');
+
+                editedModel = edited[1];
+
+                editedModel.attributes.key.should.equal(model2.attributes.key);
+                editedModel.attributes.value.should.equal('new value2');
+
+                done();
+
+            }).then(null, done);
+        });
+
+        it('can add', function (done) {
+            var newSetting = {
+                key: 'TestSetting1',
+                value: 'Test Content 1'
+            };
+
+            SettingsModel.add(newSetting).then(function (createdSetting) {
+
+                should.exist(createdSetting);
+                createdSetting.has('uuid').should.equal(true);
+                createdSetting.attributes.key.should.equal(newSetting.key, "key is correct");
+                createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
+                createdSetting.attributes.type.should.equal("general");
+
+                done();
+            }).then(null, done);
+        });
+
+        it('can delete', function (done) {
+            var firstSettingId;
+
+            SettingsModel.browse().then(function (results) {
+
+                should.exist(results);
+
+                results.length.should.be.above(0);
+
+                firstSettingId = results.models[0].id;
+
+                return SettingsModel.destroy(firstSettingId);
+
+            }).then(function () {
+
+                return SettingsModel.browse();
+
+            }).then(function (newResults) {
+
+                var ids, hasDeletedId;
+
+                ids = _.pluck(newResults.models, "id");
+
+                hasDeletedId = _.any(ids, function (id) {
+                    return id === firstSettingId;
+                });
+
+                hasDeletedId.should.equal(false);
+
+                done();
+
+            }).then(null, done);
+        });
     });
 
-    it('can edit multiple', function (done) {
-        var model1,
-            model2,
-            editedModel;
+    describe('populating defaults from settings.json', function (done) {
 
-        SettingsModel.browse().then(function (results) {
-
-            should.exist(results);
-
-            results.length.should.be.above(0);
-
-            model1 = results.models[0];
-            model2 = results.models[1];
-
-            // The edit method has been modified to take an object of
-            // key/value pairs
-            model1.set('value', 'new value1');
-            model2.set('value', 'new value2');
-
-            return SettingsModel.edit([model1, model2]);
-
-        }).then(function (edited) {
-
-            should.exist(edited);
-
-            edited.length.should.equal(2);
-
-            editedModel = edited[0];
-
-            editedModel.attributes.key.should.equal(model1.attributes.key);
-            editedModel.attributes.value.should.equal('new value1');
-
-            editedModel = edited[1];
-
-            editedModel.attributes.key.should.equal(model2.attributes.key);
-            editedModel.attributes.value.should.equal('new value2');
-
-            done();
-
-        }).then(null, done);
-    });
-
-    it('can add', function (done) {
-        var newSetting = {
-            key: 'TestSetting1',
-            value: 'Test Content 1'
-        };
-
-        SettingsModel.add(newSetting).then(function (createdSetting) {
-
-            should.exist(createdSetting);
-            createdSetting.has('uuid').should.equal(true);
-            createdSetting.attributes.key.should.equal(newSetting.key, "key is correct");
-            createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
-            createdSetting.attributes.type.should.equal("general");
-
-            done();
-        }).then(null, done);
-    });
-
-    it('can delete', function (done) {
-        var firstSettingId;
-
-        SettingsModel.browse().then(function (results) {
-
-            should.exist(results);
-
-            results.length.should.be.above(0);
-
-            firstSettingId = results.models[0].id;
-
-            return SettingsModel.destroy(firstSettingId);
-
-        }).then(function () {
-
-            return SettingsModel.browse();
-
-        }).then(function (newResults) {
-
-            var ids, hasDeletedId;
-
-            ids = _.pluck(newResults.models, "id");
-
-            hasDeletedId = _.any(ids, function (id) {
-                return id === firstSettingId;
+        beforeEach(function (done) {
+            knex('settings').truncate().then(function () {
+                done();
             });
+        });
 
-            hasDeletedId.should.equal(false);
+        it('populates any unset settings from the JSON defaults', function (done) {
+            SettingsModel.findAll().then(function (allSettings) {
+                console.log(allSettings.models)
+                allSettings.length.should.equal(0);
+                return SettingsModel.populateDefaults();
+            }).then(function () {
+                return SettingsModel.findAll();
+            }).then(function (allSettings) {
+                allSettings.length.should.be.above(0);
+                return SettingsModel.read('description');
+            }).then(function (descriptionSetting) {
+                // Testing against the actual value in default-settings.json feels icky,
+                // but it's easier to fix the test if that ever changes than to mock out that behaviour
+                descriptionSetting.get('value').should.equal('Just a blogging platform.');
+                done();
+            }).then(null, done);
+        });
 
-            done();
-
-        }).then(null, done);
+        it('doesn\'t overwrite any existing settings', function (done) {
+            SettingsModel.edit({key: 'description', value: 'Adam\'s Blog'}).then(function () {
+                return SettingsModel.populateDefaults();
+            }).then(function () {
+                return SettingsModel.read('description');
+            }).then(function (descriptionSetting) {
+                descriptionSetting.get('value').should.equal('Adam\'s Blog');
+                done();
+            }).then(null, done);
+        });
     });
+
 });

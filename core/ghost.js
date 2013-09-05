@@ -12,9 +12,12 @@ var config = require('./../config'),
     nodefn = require('when/node/function'),
     _ = require('underscore'),
     Polyglot = require('node-polyglot'),
+    Mailer = require('./server/mail'),
     models = require('./server/models'),
     plugins = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
+    permissions = require('./server/permissions'),
+    uuid = require('node-uuid'),
 
 // Variables
     appRoot = path.resolve(__dirname, '../'),
@@ -40,7 +43,7 @@ defaults = {
 
 // ## Article Statuses
 /**
- * A list of atricle status types
+ * A list of article status types
  * @type {Object}
  */
 statuses = {
@@ -82,6 +85,9 @@ Ghost = function () {
         // Holds the available plugins
         instance.availablePlugins = {};
 
+        // Holds the dbhash (mainly used for cookie secret)
+        instance.dbHash = undefined;
+
         app = express();
         polyglot = new Polyglot();
 
@@ -92,8 +98,19 @@ Ghost = function () {
             // there's no management here to be sure this has loaded
             settings: function () { return instance.settingsCache; },
             dataProvider: models,
+            blogGlobals:  function () {
+                /* this is a bit of a hack until we have a better way to combine settings and config
+                 * this data is what becomes globally available to themes */
+                return {
+                    url: instance.config().env[process.env.NODE_ENV].url,
+                    title: instance.settings().title,
+                    description: instance.settings().description,
+                    logo: instance.settings().logo
+                };
+            },
             statuses: function () { return statuses; },
             polyglot: function () { return polyglot; },
+            mail: new Mailer(),
             getPaths: function () {
                 return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
                     instance.themeDirectories = paths[0];
@@ -106,7 +123,7 @@ Ghost = function () {
                     'appRoot':          appRoot,
                     'themePath':        themePath,
                     'pluginPath':       pluginPath,
-                    'activeTheme':      path.join(themePath, config.activeTheme),
+                    'activeTheme':      path.join(themePath, !instance.settingsCache ? "" : instance.settingsCache.activeTheme),
                     'adminViews':       path.join(appRoot, '/core/server/views/'),
                     'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
                     'lang':             path.join(appRoot, '/core/shared/lang/'),
@@ -123,10 +140,34 @@ Ghost = function () {
 Ghost.prototype.init = function () {
     var self = this;
 
-    return when.join(instance.dataProvider.init(), instance.getPaths()).then(function () {
+    return when.join(
+        instance.dataProvider.init(),
+        instance.getPaths(),
+        instance.mail.init(self)
+    ).then(function () {
+        return models.Settings.populateDefaults();
+    }).then(function () {
         return self.initPlugins();
-    }, errors.logAndThrowError).then(function () {
+    }).then(function () {
+        // Initialize the settings cache
         return self.updateSettingsCache();
+    }).then(function () {
+        // Initialize the permissions actions and objects
+        return permissions.init();
+    }).then(function () {
+        // get the settings and whatnot
+        return when(models.Settings.read('dbHash')).then(function (dbhash) {
+            // we already ran this, chill
+            self.dbHash = dbhash.attributes.value;
+            return dbhash.attributes.value;
+        }).otherwise(function (error) {
+            // this is where all the "first run" functionality should go
+            var dbhash = uuid.v4();
+            return when(models.Settings.add({key: 'dbHash', value: dbhash})).then(function (returned) {
+                self.dbHash = dbhash;
+                return dbhash;
+            });
+        });
     }, errors.logAndThrowError);
 };
 
@@ -144,6 +185,17 @@ Ghost.prototype.updateSettingsCache = function (settings) {
             var settings = {};
             _.map(result.models, function (member) {
                 if (!settings.hasOwnProperty(member.attributes.key)) {
+                    if (member.attributes.key === 'activeTheme') {
+                        member.attributes.value = member.attributes.value.substring(member.attributes.value.lastIndexOf('/') + 1);
+                        var settingsThemePath = path.join(themePath, member.attributes.value);
+                        fs.exists(settingsThemePath, function (exists) {
+                            if (!exists) {
+                                member.attributes.value = "casper";
+                            }
+                            settings[member.attributes.key] = member.attributes.value;
+                        });
+                        return;
+                    }
                     settings[member.attributes.key] = member.attributes.value;
                 }
             });
@@ -261,26 +313,38 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
 
 // Initialise Theme or admin
 Ghost.prototype.initTheme = function (app) {
-    var self = this;
+    var self = this,
+        hbsOptions;
     return function initTheme(req, res, next) {
         app.set('view engine', 'hbs');
         // return the correct mime type for woff files
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         if (!res.isAdmin) {
-            app.engine('hbs', hbs.express3(
-                {partialsDir: path.join(self.paths().activeTheme, 'partials')}
-            ));
+
+            // self.globals is a hack til we have a better way of getting combined settings & config
+            hbsOptions = {templateOptions: {data: {blog: self.blogGlobals()}}};
+
+            if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme)) {
+                // Throw an error if the theme is not available...
+                // TODO: move this to happen on app start
+                errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme + ' is missing.');
+            } else if (self.themeDirectories[self.settings().activeTheme].hasOwnProperty('partials')) {
+                // Check that the theme has a partials directory before trying to use it
+                hbsOptions.partialsDir = path.join(self.paths().activeTheme, 'partials');
+            }
+
+            app.engine('hbs', hbs.express3(hbsOptions));
+
             app.set('views', self.paths().activeTheme);
         } else {
             app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
             app.set('views', self.paths().adminViews);
             app.use('/public', express['static'](path.join(__dirname, '/client/assets')));
             app.use('/public', express['static'](path.join(__dirname, '/client')));
-            app.use('/shared', express['static'](path.join(__dirname, '/shared/')));
-
         }
         app.use(express['static'](self.paths().activeTheme));
+        app.use('/shared', express['static'](path.join(__dirname, '/shared')));
         app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
         next();
     };

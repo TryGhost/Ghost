@@ -14,7 +14,6 @@ var express = require('express'),
     admin = require('./core/server/controllers/admin'),
     frontend = require('./core/server/controllers/frontend'),
     api = require('./core/server/api'),
-    flash = require('connect-flash'),
     Ghost = require('./core/ghost'),
     I18n = require('./core/shared/lang/i18n'),
     filters = require('./core/server/filters'),
@@ -25,7 +24,6 @@ var express = require('express'),
     loading = when.defer(),
     ghost = new Ghost();
 
-
 // ##Custom Middleware
 
 // ### Auth Middleware
@@ -34,16 +32,47 @@ var express = require('express'),
 function auth(req, res, next) {
     if (!req.session.user) {
         var path = req.path.replace(/^\/ghost\/?/gi, ''),
-            redirect = '';
+            redirect = '',
+            msg;
 
         if (path !== '') {
-            req.flash('warn', "Please login");
+            msg = {
+                type: 'error',
+                message: 'Please Sign In',
+                status: 'passive',
+                id: 'failedauth'
+            };
+            // let's only add the notification once
+            if (!_.contains(_.pluck(ghost.notifications, 'id'), 'failedauth')) {
+                ghost.notifications.push(msg);
+            }
             redirect = '?r=' + encodeURIComponent(path);
         }
-
-        return res.redirect('/ghost/login/' + redirect);
+        return res.redirect('/ghost/signin/' + redirect);
     }
 
+    next();
+}
+
+
+// Check if we're logged in, and if so, redirect people back to dashboard
+// Login and signup forms in particular
+function redirectToDashboard(req, res, next) {
+    if (req.session.user) {
+        return res.redirect('/ghost/');
+    }
+
+    next();
+}
+
+// While we're here, let's clean up on aisle 5
+// That being ghost.notifications, and let's remove the passives from there
+// plus the local messages, as they have already been added at this point
+// otherwise they'd appear one too many times
+function cleanNotifications(req, res, next) {
+    ghost.notifications = _.reject(ghost.notifications, function (notification) {
+        return notification.status === 'passive';
+    });
     next();
 }
 
@@ -52,8 +81,7 @@ function auth(req, res, next) {
 function authAPI(req, res, next) {
     if (!req.session.user) {
         // TODO: standardize error format/codes/messages
-        var err = { code: 42, message: 'Please login' };
-        res.json(401, { error: err });
+        res.json(401, { error: 'Please sign in' });
         return;
     }
 
@@ -80,23 +108,35 @@ function ghostLocals(req, res, next) {
     if (!res.isAdmin) {
         // filter the navigation items
         ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
-            // pass the theme navigation items and settings
-            _.extend(res.locals, navData, {
-                settings: ghost.settings()
-            });
+            // pass the theme navigation items, settings get configured as globals
+            _.extend(res.locals, navData);
 
             next();
         });
     } else {
-        _.extend(res.locals,  {
-            // pass the admin flash messages, settings and paths
-            messages: ghost.notifications,
-            settings: ghost.settings(),
-            availableThemes: ghost.paths().availableThemes,
-            availablePlugins: ghost.paths().availablePlugins
+        api.users.read({id: req.session.user}).then(function (currentUser) {
+            _.extend(res.locals,  {
+                // pass the admin flash messages, settings and paths
+                messages: ghost.notifications,
+                settings: ghost.settings(),
+                availableThemes: ghost.paths().availableThemes,
+                availablePlugins: ghost.paths().availablePlugins,
+                currentUser: {
+                    name: currentUser.attributes.full_name,
+                    profile: currentUser.attributes.profile_picture
+                }
+            });
+            next();
+        }).otherwise(function () {
+            _.extend(res.locals,  {
+                // pass the admin flash messages, settings and paths
+                messages: ghost.notifications,
+                settings: ghost.settings(),
+                availableThemes: ghost.paths().availableThemes,
+                availablePlugins: ghost.paths().availablePlugins
+            });
+            next();
         });
-
-        next();
     }
 }
 
@@ -111,39 +151,37 @@ function disableCachedResult(req, res, next) {
     next();
 }
 
-// ##Configuration
-ghost.app().configure(function () {
-    ghost.app().use(isGhostAdmin);
-    ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
-    ghost.app().use(I18n.load(ghost));
-    ghost.app().use(express.bodyParser({}));
-    ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
-    ghost.app().use(express.cookieParser('try-ghost'));
-    ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
-    ghost.app().use(ghost.initTheme(ghost.app()));
-    ghost.app().use(flash());
-
-    if (process.env.NODE_ENV !== "development") {
-        ghost.app().use(express.logger());
-        ghost.app().use(express.errorHandler({ dumpExceptions: false, showStack: false }));
-    }
-});
-
-// Development only configuration
-ghost.app().configure("development", function () {
-    ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    ghost.app().use(express.logger('dev'));
-});
-
-
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
 when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
 
+    // ##Configuration
+    ghost.app().configure(function () {
+        ghost.app().use(isGhostAdmin);
+        ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
+        ghost.app().use(I18n.load(ghost));
+        ghost.app().use(express.bodyParser({}));
+        ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
+        ghost.app().use(express.cookieParser(ghost.dbHash));
+        ghost.app().use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+        ghost.app().use(ghost.initTheme(ghost.app()));
+        if (process.env.NODE_ENV !== "development") {
+            ghost.app().use(express.logger());
+            ghost.app().use(express.errorHandler({ dumpExceptions: false, showStack: false }));
+        }
+    });
+
+    // Development only configuration
+    ghost.app().configure("development", function () {
+        ghost.app().use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+        ghost.app().use(express.logger('dev'));
+    });
+
     // post init config
     ghost.app().use(ghostLocals);
-
+    // So on every request we actually clean out reduntant passive notifications from the server side
+    ghost.app().use(cleanNotifications);
 
     // ## Routing
 
@@ -159,10 +197,14 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
     ghost.app().get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
     ghost.app().put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
+    // #### Themes
+    ghost.app().get('/api/v0.1/themes', authAPI, disableCachedResult, api.requestHandler(api.themes.browse));
     // #### Users
     ghost.app().get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
     ghost.app().get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));
     ghost.app().put('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    // #### Tags
+    ghost.app().get('/api/v0.1/tags', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
     // #### Notifications
     ghost.app().del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
     ghost.app().post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
@@ -170,10 +212,18 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
-    ghost.app().get(/^\/logout\/?$/, admin.logout);
-    ghost.app().get('/ghost/login/', admin.login);
-    ghost.app().get('/ghost/signup/', admin.signup);
-    ghost.app().post('/ghost/login/', admin.auth);
+    ghost.app().get(/^\/logout\/?$/, function redirect(req, res) {
+        res.redirect(301, '/signout/');
+    });
+    ghost.app().get(/^\/signout\/?$/, admin.logout);
+    ghost.app().get('/ghost/login/', function redirect(req, res) {
+        res.redirect(301, '/ghost/signin/');
+    });
+    ghost.app().get('/ghost/signin/', redirectToDashboard, admin.login);
+    ghost.app().get('/ghost/signup/', redirectToDashboard, admin.signup);
+    ghost.app().get('/ghost/forgotten/', redirectToDashboard, admin.forgotten);
+    ghost.app().post('/ghost/forgotten/', admin.resetPassword);
+    ghost.app().post('/ghost/signin/', admin.auth);
     ghost.app().post('/ghost/signup/', admin.doRegister);
     ghost.app().post('/ghost/changepw/', auth, admin.changepw);
     ghost.app().get('/ghost/editor/:id', auth, admin.editor);
@@ -185,13 +235,15 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
     ghost.app().post('/ghost/debug/db/import/', auth, admin.debug['import']);
     ghost.app().get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     ghost.app().post('/ghost/upload', admin.uploader);
-    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|login)\/?)/, auth, function (req, res) {
+    ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
     ghost.app().get('/ghost/', auth, admin.index);
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
+    ghost.app().get('/rss/', frontend.rss);
+    ghost.app().get('/rss/:page/', frontend.rss);
     ghost.app().get('/:slug', frontend.single);
     ghost.app().get('/', frontend.homepage);
     ghost.app().get('/page/:page/', frontend.homepage);
@@ -199,8 +251,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
     // ## Start Ghost App
     ghost.app().listen(
-        ghost.config().env[process.env.NODE_ENV || 'development'].url.port,
-        ghost.config().env[process.env.NODE_ENV || 'development'].url.host,
+        ghost.config().env[process.env.NODE_ENV].server.port,
+        ghost.config().env[process.env.NODE_ENV].server.host,
         function () {
 
             // Tell users if their node version is not supported, and exit
@@ -225,8 +277,8 @@ when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(
 
             // Startup message
             console.log("Express server listening on address:",
-                ghost.config().env[process.env.NODE_ENV || 'development'].url.host + ':'
-                    + ghost.config().env[process.env.NODE_ENV || 'development'].url.port);
+                ghost.config().env[process.env.NODE_ENV].server.host + ':'
+                    + ghost.config().env[process.env.NODE_ENV].server.port);
 
             // Let everyone know we have finished loading
             loading.resolve();

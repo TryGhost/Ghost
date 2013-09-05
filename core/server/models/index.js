@@ -6,6 +6,7 @@ module.exports = {
     Role: require('./role').Role,
     Permission: require('./permission').Permission,
     Settings: require('./settings').Settings,
+    Tag: require('./tag').Tag,
     init: function () {
         return migrations.init();
     },
@@ -13,5 +14,9 @@ module.exports = {
         return migrations.reset().then(function () {
             return migrations.init();
         });
+    },
+    isPost: function (jsonData) {
+        return jsonData.hasOwnProperty("content") && jsonData.hasOwnProperty("content_raw")
+            && jsonData.hasOwnProperty("title") && jsonData.hasOwnProperty("slug");
     }
 };

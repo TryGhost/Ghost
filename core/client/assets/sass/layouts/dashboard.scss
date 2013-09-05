@@ -36,73 +36,78 @@
     padding-bottom: 15px;
 }
 
-%widget, .widget  {
-  width: 340px;
-  height: 300px;
-  float:left;
-  position:relative;
-  background-color:#fff;
-  box-shadow: $shadow;
+%widget, .widget {
+    width: 340px;
+    height: 300px;
+    float:left;
+    position:relative;
+    background-color:#fff;
+    box-shadow: $shadow;
 
-  .widget-content {
-    @include box-sizing(border-box);
-    margin-bottom: 40px;
-    padding: 20px;
-  }
-
-  .widget-footer, .widget-header {
-    @include box-sizing(border-box);
-    width: 100%;
-    height: 40px;
-    font-size: 1.2em;
-    color: $midbrown;
-    border-top: 1px solid $lightbrown;
-
-    .widget-title {
-      display: inline-block;
-      padding-top: 7px;
-      padding-left: 15px;
-      vertical-align: middle;
-      text-transform: uppercase;
+    @include breakpoint($mobile) {
+        width: 100%;
     }
-  }
 
-  .widget-settings-toggle {
-    @include box-sizing(border-box);
-    display: block;
-    height: 39px;
-    width: 46px;
-    float: right;
-    padding: 7px 14px;
-    border-left: 1px solid $lightbrown;
-    cursor: pointer;
-    @include icon($i-settings, 1em);
-  }
+    .widget-content {
+        @include box-sizing(border-box);
+        margin-bottom: 40px;
+        padding: 20px;
+    }
 
-  .widget-footer {
-    position: absolute;
-    bottom: 0;
-  }
-}
+    .widget-footer, .widget-header {
+        @include box-sizing(border-box);
+        width: 100%;
+        height: 40px;
+        font-size: 1.2em;
+        color: $midbrown;
+        border-top: 1px solid $lightbrown;
+
+        .widget-title {
+            display: inline-block;
+            padding-top: 7px;
+            padding-left: 15px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+    }
+
+    .widget-settings-toggle {
+        @include box-sizing(border-box);
+        display: block;
+        height: 39px;
+        width: 46px;
+        float: right;
+        padding: 7px 14px;
+        border-left: 1px solid $lightbrown;
+        cursor: pointer;
+        @include icon($i-settings, 1em);
+    }
+
+    .widget-footer {
+        position: absolute;
+        bottom: 0;
+    }
+
+} //%widget, .widget
 
 .ui-draggable-dragging {
-  z-index: 9999; // Keep dragged Widget ontop
+    z-index: 9999; // Keep dragged widget on top
 }
 
 /* ==========================================================================
    Widget Sizes
    ========================================================================== */
 
-.widget-1x2  {
+.widget-1x2 {
   height: 610px;
 }
 
-.widget-2x2  {
+.widget-2x2 {
   width: 690px;
   height: 610px;
 }
 
-.widget-2x1  {
+.widget-2x1 {
   width: 690px;
 }
 
@@ -116,54 +121,54 @@
    ========================================================================== */
 
 %widget-number, .widget-number {
-  @extend %widget;
+    @extend %widget;
 
-  .widget-content {
-    .info {
-      margin-top: 30px;
-
-      .count {
-        display: block;
-        font-size: 5em;
-        line-height: 1em;
-        font-weight: 400;
-        color: $darkgrey;
-      }
-
-      .sub {
-        font-size: 2em;
-        color: #9b9b9b;
-
-        mark {
-          background-color: transparent;
-          font-weight: bold;
-
-          &.up {
-            color: $green;
-          }
-          &.down {
-            color: $red;
-          }
-        }
-      }
-    }
-  } // .widget-content
-
-  &.widget-2x2  {
     .widget-content {
-      .info {
-        margin-top: 100px;
+        .info {
+            margin-top: 30px;
 
-        .count {
-          font-size: 9em;
-        }
+            .count {
+                display: block;
+                font-size: 5em;
+                line-height: 1em;
+                font-weight: 400;
+                color: $darkgrey;
+            }
 
-        .sub {
-          font-size: 2.5em;
+            .sub {
+                font-size: 2em;
+                color: #9b9b9b;
+
+                mark {
+                    background-color: transparent;
+                    font-weight: bold;
+
+                    &.up {
+                        color: $green;
+                    }
+                    &.down {
+                        color: $red;
+                    }
+                }
+            }
         }
-      }
+    } // .widget-content
+
+    &.widget-2x2 {
+        .widget-content {
+            .info {
+                margin-top: 100px;
+
+                .count {
+                    font-size: 9em;
+                }
+
+                .sub {
+                    font-size: 2.5em;
+                }
+            }
+        }
     }
-  }
 } // %widget-number, .widget-number
 
 /* ==========================================================================
@@ -171,114 +176,114 @@
    ========================================================================== */
 
 .widget-settings {
-  @extend %widget;
-  background-color: #2d3032;
+    @extend %widget;
+    background-color: #2d3032;
 
-  .widget-header {
-    height: 40px;
-    border-top: none;
-    border-bottom: 1px solid #4a4a4a;
-    color: $midgrey;
-  }
-
-  .widget-content {
-    padding: 0;
-  }
-
-  label {
-    width:100%;
-    height: 40px;
-    display: block;
-    border-bottom: 1px solid #4a4a4a;
-    font-size: 1.2em;
-  }
-
-  .title {
-    @include box-sizing(border-box);
-    display: inline-block;
-    width: 100px;
-    height: 100%;
-    padding: 8px;
-    color: #E3EDF2;
-    text-transform: uppercase;
-    text-align: right;
-  }
-
-  input[type="text"] {
-    @include box-sizing(border-box);
-    height: 100%;
-    padding: 8px;
-    color: $midgrey;
-    text-transform: none;
-    background: none;
-    border: none;
-    border-left: 1px solid #4a4a4a;
-  }
-
-  .widget-footer, .widget-header {
-    border-color: #4a4a4a;
-  }
-
-  .widget-size-options {
-    display: inline-block;
-    height: 100%;
-    padding-top: 10px;
-    padding-left: 10px;
-
-    .size-options-container {
-      @include box-sizing(border-box);
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      padding: 3px;
-      cursor: pointer;
-
+    .widget-header {
+        height: 40px;
+        border-top: none;
+        border-bottom: 1px solid #4a4a4a;
+        color: $midgrey;
     }
 
-    .mini-widget {
-      background: $midgrey;
-      margin: 1px;
-      float: left;
-
-      &.active {
-        background: #ffffff;
-      }
+    .widget-content {
+        padding: 0;
     }
 
-    .size-1x1 {
-      width: 5px;
-      height: 5px;
-    }
-    .size-2x1 {
-      width: 12px;
-      height: 5px;
-    }
-    .size-1x2 {
-      width: 5px;
-      height: 12px;
-    }
-    .size-2x2 {
-      width: 12px;
-      height: 12px;
+    label {
+        width:100%;
+        height: 40px;
+        display: block;
+        border-bottom: 1px solid #4a4a4a;
+        font-size: 1.2em;
     }
 
-    .active {
-      background: #171819;
+    .title {
+        @include box-sizing(border-box);
+        display: inline-block;
+        width: 100px;
+        height: 100%;
+        padding: 8px;
+        color: #E3EDF2;
+        text-transform: uppercase;
+        text-align: right;
     }
-  } // .widget-size-options
 
-  .widget-settings-toggle {
-    border-color: #4a4a4a;
+    input[type="text"] {
+        @include box-sizing(border-box);
+        height: 100%;
+        padding: 8px;
+        color: $midgrey;
+        text-transform: none;
+        background: none;
+        border: none;
+        border-left: 1px solid #4a4a4a;
+    }
 
-    &.close {
-      @include icon($i-x, 1em);
+    .widget-footer, .widget-header {
+        border-color: #4a4a4a;
     }
-    &.done {
-      background-color: $green;
-      color: rgba(255,255,255,0.7);
-      @include icon($i-check, 1em);
+
+    .widget-size-options {
+        display: inline-block;
+        height: 100%;
+        padding-top: 10px;
+        padding-left: 10px;
+
+        .size-options-container {
+            @include box-sizing(border-box);
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            padding: 3px;
+            cursor: pointer;
+        }
+
+        .mini-widget {
+            background: $midgrey;
+            margin: 1px;
+            float: left;
+
+            &.active {
+                background: #ffffff;
+            }
+        }
+
+        .size-1x1 {
+            width: 5px;
+            height: 5px;
+        }
+        .size-2x1 {
+            width: 12px;
+            height: 5px;
+        }
+        .size-1x2 {
+            width: 5px;
+            height: 12px;
+        }
+        .size-2x2 {
+            width: 12px;
+            height: 12px;
+        }
+
+        .active {
+            background: #171819;
+        }
+
+    } // .widget-size-options
+
+    .widget-settings-toggle {
+        border-color: #4a4a4a;
+
+        &.close {
+            @include icon($i-x, 1em);
+        }
+        &.done {
+            background-color: $green;
+            color: rgba(255,255,255,0.7);
+            @include icon($i-check, 1em);
+        }
     }
-  }
 
 
 } // .widget-settings
@@ -291,77 +296,78 @@
    Clock / Date
    ========================================================================== */
 
-.widget-time  {
-  @extend %widget;
+.widget-time {
+    @extend %widget;
 
-  .summary {
-    margin-bottom: 30px;
-    font-size: 1.4em;
-    color: #9b9b9b;
+    .summary {
+        margin-bottom: 30px;
+        font-size: 1.4em;
+        color: #9b9b9b;
 
-    .day {
-      float: left;
-    }
-    .weather {
-      float: right;
-      @include icon-after($i-weather-sun);
-    }
+        .day {
+            float: left;
+        }
+        .weather {
+            float: right;
+            @include icon-after($i-weather-sun);
+        }
 
-  }
-
-  time {
-    margin-top: 30px;
-
-    .clock {
-      display: block;
-      font-size: 5em;
-      line-height: 1em;
-      font-weight: 400;
-      color: $darkgrey;
     }
 
-    .date {
-      font-size: 2em;
-      color: #9b9b9b;
+    time {
+        margin-top: 30px;
+
+        .clock {
+            display: block;
+            font-size: 5em;
+            line-height: 1em;
+            font-weight: 400;
+            color: $darkgrey;
+        }
+
+        .date {
+            font-size: 2em;
+            color: #9b9b9b;
+        }
     }
-  }
+
 } // .widget-time
 
 /* ==========================================================================
    Ghost Image
    ========================================================================== */
 
-.widget-image  {
-  @extend %widget;
+.widget-image {
+    @extend %widget;
 
-  .widget-content {
-    height: 100%;
-    background-image: url(../img/dash/Image@2x.png);
-    background-size: 100% 100%;
-  }
-
-  .widget-footer {
-    margin-top: -40px;
-    opacity: 0;
-    background: #ffffff;
-    @include transition(opacity 200ms linear);
-  }
-
-  &:hover {
-    .widget-footer {
-      opacity: 1;
+    .widget-content {
+        height: 100%;
+        background-image: url(../img/dash/Image@2x.png);
+        background-size: 100% 100%;
     }
-  }
 
-  &.widget-settings {
-      .widget-content {
-          background-image: none;
-      }
-      .widget-footer {
-          background: inherit;
-          opacity: 1;
-      }
-  }
+    .widget-footer {
+        margin-top: -40px;
+        opacity: 0;
+        background: #ffffff;
+        @include transition(opacity 200ms linear);
+    }
+
+    &:hover {
+        .widget-footer {
+            opacity: 1;
+        }
+    }
+
+    &.widget-settings {
+        .widget-content {
+            background-image: none;
+        }
+        .widget-footer {
+            background: inherit;
+            opacity: 1;
+        }
+    }
 
 } // .widget-image
 
@@ -369,127 +375,128 @@
    Unique Visitors
    ========================================================================== */
 
-.widget-stats  {
-  @extend %widget-number;
+.widget-stats {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Facebook Likes
    ========================================================================== */
 
-.widget-facebook  {
-  @extend %widget-number;
+.widget-facebook {
+    @extend %widget-number;
 
-  .info {
-    .faces {
-      display: block;
-      width: 100%;
-      height: 30px;
-      margin-top: 25px;
-      background-image: url("../img/dash/Facebook_Images@2x.png");
-      background-size: 100% 100%;
+    .info {
+        .faces {
+            display: block;
+            width: 100%;
+            height: 30px;
+            margin-top: 25px;
+            background-image: url("../img/dash/Facebook_Images@2x.png");
+            background-size: 100% 100%;
+        }
     }
-  }
 }
 
 /* ==========================================================================
    Google Plus
    ========================================================================== */
 
-.widget-gplus  {
-  @extend %widget-number;
+.widget-gplus {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Twitter
    ========================================================================== */
 
-.widget-twitter  {
-  @extend %widget;
+.widget-twitter {
+    @extend %widget;
 }
 
 /* ==========================================================================
    Campaign Monitor
    ========================================================================== */
 
-.widget-campaignmonitor  {
-  @extend %widget-number;
+.widget-campaignmonitor {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Upcoming Posts
    ========================================================================== */
 
-.widget-posts  {
-  @extend %widget;
-  position: relative;
-
-  .chart  {
-    @include box-sizing(border-box);
-    width: 250px;
-    height: 250px;
+.widget-posts {
+    @extend %widget;
     position: relative;
-    z-index: 1;
-    margin: 0 auto;
-    background: #242628;
-    border: #efefef 54px solid;
-    border-radius: 250px;
 
-    .sheen { // Bourbon gradient mixin not appropriate for this use-case.
-      width: 71px;
-      height: 142px;
-      position: absolute;
-      top: 0;
-      background-image: -webkit-gradient(linear, left bottom, right top, from(rgba(251, 255, 242, 0.00)), to(rgba(254, 253, 255, 1.00)));
-      background-image: -webkit-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
-      background-image: -moz-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
-      background-image: -o-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
-      background-image: -ms-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
-      background-image: linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
-      filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1,StartColorStr='#fbfff2', EndColorStr='#fefdff');
-      border-radius: 71px 0 0 71px;
-      @include transform(rotate(45deg));
-      @include transform-origin(100% 50%);
-      opacity: 0.05;
+    .chart {
+        @include box-sizing(border-box);
+        width: 250px;
+        height: 250px;
+        position: relative;
+        z-index: 1;
+        margin: 0 auto;
+        background: #242628;
+        border: #efefef 54px solid;
+        border-radius: 250px;
+
+        .sheen {
+            width: 71px;
+            height: 142px;
+            position: absolute;
+            top: 0;
+            background-image: -webkit-gradient(linear, left bottom, right top, from(rgba(251, 255, 242, 0.00)), to(rgba(254, 253, 255, 1.00)));
+            background-image: -webkit-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+            background-image: -moz-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+            background-image: -o-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+            background-image: -ms-linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+            background-image: linear-gradient(left bottom, rgba(251, 255, 242, 0.00), rgba(254, 253, 255, 1.00));
+            filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1,StartColorStr='#fbfff2', EndColorStr='#fefdff');
+            border-radius: 71px 0 0 71px;
+            @include transform(rotate(45deg));
+            @include transform-origin(100% 50%);
+            opacity: 0.05;
+        }
+
+        #poststats {
+            position: relative;
+            top:-54px;
+            left: -54px;
+        }
+
+        .data {
+            position: absolute;
+            top: 5px;
+            color: $midgrey;
+            font-size: 13px;
+            list-style: none;
+
+            .ready {
+                font-size: 18px;
+                vertical-align: -5%;
+                margin-right: 5px;
+                color: $green;
+            }
+
+            .pending {
+                font-size: 18px;
+                vertical-align: -5%;
+                margin-right: 5px;
+                color: #f9e15d;
+            }
+
+            .draft {
+                font-size: 18px;
+                vertical-align: -5%;
+                margin-right: 5px;
+                color: $red;
+            }
+
+        }
+
     }
 
-    #poststats  {
-      position: relative;
-      top:-54px;
-      left: -54px;
-    }
-
-    .data  {
-      position: absolute;
-      top: 5px;
-      color: $midgrey;
-      font-size: 13px;
-      list-style: none;
-
-      .ready  {
-        font-size: 18px;
-        vertical-align: -5%;
-        margin-right: 5px;
-        color: $green;
-      }
-
-      .pending  {
-        font-size: 18px;
-        vertical-align: -5%;
-        margin-right: 5px;
-        color: #f9e15d;
-      }
-
-      .draft  {
-        font-size: 18px;
-        vertical-align: -5%;
-        margin-right: 5px;
-        color: $red;
-      }
-
-    }
-
-  }
 } // .widget-posts
 
 /* ==========================================================================
@@ -497,84 +504,85 @@
    ========================================================================== */
 
 .widget-popular {
-  @extend %widget;
-  background: none;
+    @extend %widget;
+    background: none;
 
-  .widget-content {
-    padding: 0;
-  }
-
-  .nav {
-    list-style: none;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  .tab {
-    @include box-sizing(border-box);
-    display: inline-block;
-    height: 35px;
-    margin: 0;
-    margin-top: 5px;
-    padding: 5px 15px 0;
-    float: left;
-    vertical-align: bottom;
-    background: #CDCCC5;
-    border-left: 1px solid $midbrown;
-
-    &:first-child {
-      border: none;
+    .widget-content {
+        padding: 0;
     }
 
-    &.active {
-      height: 40px;
-      margin: 0;
-      padding-top: 10px;
-      background: #ffffff;
+    .nav {
+        list-style: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
-    a {
-      vertical-align: middle;
-      display: inline-block;
-      color: #8D8C85;
+    .tab {
+        @include box-sizing(border-box);
+        display: inline-block;
+        height: 35px;
+        margin: 0;
+        margin-top: 5px;
+        padding: 5px 15px 0;
+        float: left;
+        vertical-align: bottom;
+        background: #CDCCC5;
+        border-left: 1px solid $midbrown;
+
+        &:first-child {
+            border: none;
+        }
+
+        &.active {
+            height: 40px;
+            margin: 0;
+            padding-top: 10px;
+            background: #ffffff;
+        }
+
+        a {
+            vertical-align: middle;
+            display: inline-block;
+            color: #8D8C85;
+        }
     }
-  }
 
-  .post-list {
-    max-height: 538px; // For overflow, dont way to make dynamic
-    background: #ffffff;
-    overflow: auto;
-  }
+    .post-list {
+        max-height: 538px; // TODO: What the fuck is this? : For overflow, dont way to make dynamic
+        background: #ffffff;
+        overflow: auto;
+    }
 
-  .post-item {
-    @include box-sizing(border-box);
-    display: block;
-    min-height: 80px;
-    width: 100%;
-    padding: 20px;
-    border-bottom: 1px solid $lightbrown;
-  }
+    .post-item {
+        @include box-sizing(border-box);
+        display: block;
+        min-height: 80px;
+        width: 100%;
+        padding: 20px;
+        border-bottom: 1px solid $lightbrown;
+    }
 
-  .post-title {
-    font-size: 1.25em;
-    font-weight: normal;
-  }
+    .post-title {
+        font-size: 1.25em;
+        font-weight: normal;
+    }
 
-  .post-date {
-    @include icon($i-calendar);
-    margin-right: 20px;
-    color: $brown;
-  }
+    .post-date {
+        @include icon($i-calendar);
+        margin-right: 20px;
+        color: $brown;
+    }
 
-  .post-count {
-    @include icon($i-stats);
-    color: $brown;
-  }
+    .post-count {
+        @include icon($i-stats);
+        color: $brown;
+    }
 
-  .widget-footer {
-    background: #ffffff;
-  }
+    .widget-footer {
+        background: #ffffff;
+    }
+
 } // .widget-popular
 
 /* ==========================================================================
@@ -582,7 +590,7 @@
    ========================================================================== */
 
 .widget-postsWeek {
-  @extend %widget;
+    @extend %widget;
 }
 
 /* ==========================================================================
@@ -590,30 +598,31 @@
    ========================================================================== */
 
 .widget-instagram {
-  @extend %widget;
-  overflow: hidden;
+    @extend %widget;
+    overflow: hidden;
 
-  .widget-content {
-    padding: 0;
-  }
-
-  .photo {
-    height: 100%;
-    width: 100%;
-  }
-
-  .widget-footer {
-    background: rgba(0,0,0,0.4);
-    border: none;
-
-    .widget-title {
-      color: #fff;
+    .widget-content {
+        padding: 0;
     }
-  }
 
-  .widget-settings-toggle {
-    border: none;
-  }
+    .photo {
+        height: 100%;
+        width: 100%;
+    }
+
+    .widget-footer {
+        background: rgba(0,0,0,0.4);
+        border: none;
+
+        .widget-title {
+            color: #fff;
+        }
+    }
+
+    .widget-settings-toggle {
+        border: none;
+    }
+
 } // .widget-instagram
 
 /* ==========================================================================
@@ -621,78 +630,78 @@
    ========================================================================== */
 
 .widget-rss {
-  @extend %widget;
+    @extend %widget;
 }
 
 /* ==========================================================================
    Klout
    ========================================================================== */
 
-.widget-klout  {
-  @extend %widget-number;
+.widget-klout {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Bounce Rate
    ========================================================================== */
 
-.widget-bounce  {
-  @extend %widget-number;
+.widget-bounce {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Average Time On Site
    ========================================================================== */
 
-.widget-avgTime  {
-  @extend %widget-number;
+.widget-avgTime {
+    @extend %widget-number;
 }
 
 /* ==========================================================================
    Last.Fm
    ========================================================================== */
 
-.widget-lastfm  {
-  @extend %widget;
-  overflow: hidden;
+.widget-lastfm {
+    @extend %widget;
+    overflow: hidden;
 
-  .widget-content {
-    padding: 0;
-  }
-
-  .cover {
-    height: 100%;
-    width: 100%;
-  }
-
-  .banner {
-    @include box-sizing(border-box);
-    display: block;
-    width: 100%;
-    padding: 20px;
-    position: absolute;
-    top: 80px;
-    background: rgba(0,0,0,0.7);
-
-    .song-artist, .song-title {
-      display: block;
-      color: #ffffff;
+    .widget-content {
+        padding: 0;
     }
 
-    .song-artist {
-      font-size: 2em;
-      font-weight: bold;
-      line-height: 1em;
+    .cover {
+        height: 100%;
+        width: 100%;
     }
 
-    .song-title {
-      font-size: 1.2em;
-    }
-  }
+    .banner {
+        @include box-sizing(border-box);
+        display: block;
+        width: 100%;
+        padding: 20px;
+        position: absolute;
+        top: 80px;
+        background: rgba(0,0,0,0.7);
 
-  .widget-footer {
-    background: #ffffff;
-  }
+        .song-artist, .song-title {
+            display: block;
+            color: #ffffff;
+        }
+
+        .song-artist {
+            font-size: 2em;
+            font-weight: bold;
+            line-height: 1em;
+        }
+
+        .song-title {
+            font-size: 1.2em;
+        }
+    }
+
+    .widget-footer {
+        background: #ffffff;
+    }
 
 } // .widget-lastfm
 
@@ -701,34 +710,35 @@
    ========================================================================== */
 
 .widget-ideas {
-  @extend %widget;
+    @extend %widget;
 
-  .widget-content {
-    padding: 0;
-  }
-  .idea-title {
-    @include box-sizing(border-box);
-    display: block;
-    width: 100%;
-    height: 80px;
-    margin-bottom: 10px;
-    padding: 20px;
-    font-size: 2em;
-    border: none;
-    border-bottom: 1px solid $lightbrown;
-  }
-  .idea-content {
-    @include box-sizing(border-box);
-    width: 100%;
-    padding: 20px;
-    font-size: 1.2em;
-    border: none;
-    resize: none;
-  }
+    .widget-content {
+        padding: 0;
+    }
+    .idea-title {
+        @include box-sizing(border-box);
+        display: block;
+        width: 100%;
+        height: 80px;
+        margin-bottom: 10px;
+        padding: 20px;
+        font-size: 2em;
+        border: none;
+        border-bottom: 1px solid $lightbrown;
+    }
+    .idea-content {
+        @include box-sizing(border-box);
+        width: 100%;
+        padding: 20px;
+        font-size: 1.2em;
+        border: none;
+        resize: none;
+    }
 
-  .idea-title:focus, .idea-content:focus {
-    outline: none;
-  }
+    .idea-title:focus, .idea-content:focus {
+        outline: none;
+    }
+
 } // .widget-ideas
 
 /* ==========================================================================
@@ -736,68 +746,70 @@
    ========================================================================== */
 
 .widget-tweets {
-  @extend %widget;
+    @extend %widget;
 
-  .twitter-display-image {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-    display: inline-block;
-    float: left;
-    border-radius: 15px;
+    .twitter-display-image {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        display: inline-block;
+        float: left;
+        border-radius: 15px;
 
-    img {
-      width: 100%;
-      height: 100%;
-      border-radius: 15px;
-    }
-  }
-
-  .twitter-name {
-    font-weight: bold;
-    font-size: 1.5em;
-    margin-right: 5px;
-  }
-
-  .twitter-handle {
-    color: $midbrown;
-    font-size: 1.2em;
-  }
-
-  .latest-tweet {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    font-size: 1.5em;
-
-    a {
-      color: $orange;
-      font-weight: bold;
-    }
-  }
-
-  .tweet-time {
-    color: $midbrown;
-  }
-  .twitter-functions {
-    float: right;
-    font-size: 1.2em;
-
-    a:hover {
-      text-decoration: none;
+        img {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+        }
     }
 
-    .reply {
-      @include icon($i-reply, '', $midbrown);
-      margin-right: 5px;
+    .twitter-name {
+        font-weight: bold;
+        font-size: 1.5em;
+        margin-right: 5px;
     }
-    .retweet {
-      @include icon($i-repost, '', $midbrown);
-      margin-right: 5px;
+
+    .twitter-handle {
+        color: $midbrown;
+        font-size: 1.2em;
     }
-    .favourite {
-      @include icon($i-unfeatured, '', $midbrown);
+
+    .latest-tweet {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+
+        a {
+          color: $orange;
+          font-weight: bold;
+        }
     }
-  }
+
+    .tweet-time {
+        color: $midbrown;
+    }
+
+    .twitter-functions {
+        float: right;
+        font-size: 1.2em;
+
+        a:hover {
+            text-decoration: none;
+        }
+
+        .reply {
+            @include icon($i-reply, '', $midbrown);
+            margin-right: 5px;
+        }
+        .retweet {
+            @include icon($i-repost, '', $midbrown);
+            margin-right: 5px;
+        }
+        .favourite {
+            @include icon($i-unfeatured, '', $midbrown);
+        }
+    }
+
 } // .widget-tweets
 
 /* ==========================================================================
@@ -805,261 +817,5 @@
    ========================================================================== */
 
 .widget-backups {
-  @extend %widget;
+    @extend %widget;
 }
-
-/*
-
-.dashboard-controls  {
-	@extend %box;
-	padding:0 15px;
-
-	.text  {
-		padding:12px 0;
-	}
-}
-
-.controls-nav  {
-	float:left;
-	margin-left:20px;
-	ul  {
-		border-left: $lightgrey 1px solid;
-
-		li  {
-			margin: 0;
-			border-right: 1px solid $lightgrey;
-
-			a  {
-				padding: 12px 15px;
-				color: $grey;
-
-				span  {
-					color: $darkgrey;
-				}
-
-				&:hover  {
-					color: $darkgrey;
-					text-decoration: none;
-				}
-			}
-		}
-	}
-}
-
-.widget-stats  {
-	span  {
-		display: block;
-		font-size: 1.6em;
-		line-height: 1.2em;
-		color: $grey;
-		margin-bottom: 15px;
-		strong  {
-			font-size: 1.2em;
-		}
-	}
-	span:first-child  {
-		font-size: 5.4em;
-		line-height: 1.4em;
-		color: #000;
-		margin-bottom: 0;
-	}
-}
-
-@media only screen and (min-width: 1200px)  {
-	.span4 .vert2  {
-		.widget-stats  {
-			span  {
-				font-size: 2.6em;
-				strong  {
-					font-size: 1.2em;
-				}
-			}
-			span:first-child  {
-				font-size: 12.4em;
-			}
-		}
-	}
-}
-
-// Time & Date Box
-.time-date  {
-	.time  {
-		font-size: 7.4em;
-		line-height: 0.7em;
-		border-bottom: 1px solid $lightgrey;
-		span  {
-			font-size: 0.2em;
-			color: $grey;
-			text-transform: uppercase;
-			font-style: normal;
-		}
-		@media only screen and (min-width: 1400px)  {
-			span  {
-				font-size: 0.3em;
-			}
-		}
-	}
-	.date  {
-		font-size: 2.2em;
-		line-height: 1em;
-		font-weight: bold;
-		color: #000;
-		padding: 15px 0;
-		span  {
-			font-size: 0.7em;
-			font-weight: normal;
-			display: block;
-			line-height: 1em;
-			color: $grey;
-		}
-	}
-}
-
-// Post Statuses Box
-.post-statuses  {
-	.status-levels  {
-		width: 30%;
-		div  {
-			text-indent: -9999px;
-		}
-	}
-	.status-text  {
-		width: 70%;
-		text-transform: uppercase;
-		font-size: 1.2em;
-		color: $grey;
-		div  {
-			background: none;
-			padding: 15px 0;
-		}
-		strong  {
-			font-size: 1.6em;
-			width: 60px;
-			padding-right: 5px;
-			text-align: right;
-			display: inline-block;
-		}
-	}
-	.scheduled  {
-		background: $green;
-		strong  {
-			color: $green;
-		}
-	}
-	.pending  {
-		background: #fcd039;
-		strong  {
-			color: #fcd039;
-		}
-	}
-	.draft  {
-		background: $red;
-		strong  {
-			color: $red;
-		}
-	}
-}
-
-.todays-traffic  {
-	ul  {
-		li  {
-			position: relative;
-			padding: 10px;
-			margin-bottom: 1px;
-			div  {
-				position: relative;
-				z-index: 99;
-			}
-		}
-		li:before  {
-			content: '';
-			position: absolute;
-			height: 34px;
-			top: 0;
-			left: 0;
-			z-index: 20;
-		}
-		li:nth-child(1):before  {
-			background: $blue;
-			width: 80%;
-		}
-		li:nth-child(2):before  {
-			background: lighten($blue, 3%);
-			width: 60%;
-		}
-		li:nth-child(3):before  {
-			background: lighten($blue, 6%);
-			width: 40%;
-		}
-		li:nth-child(4):before  {
-			background: lighten($blue, 10%);
-			width: 20%;
-		}
-	}
-}
-
-.table  {
-	width: 100%;
-	display: block;
-	margin-bottom: 10px;
-	thead, tbody, tr  {
-		display: block;
-	}
-	@media only screen and (min-width: 400px)  {
-		thead  {
-			display: none;
-		}
-	}
-	tbody  {
-		tr  {
-			background: $lightbrown;
-			margin-top: 5px;
-			display: block;
-			position: relative;
-			&:first-child  {
-				margin-top: 0;
-			}
-		}
-		@media only screen and (min-width: 1200px)  {
-			tr  {
-				padding: 0 10px 0 40px;
-				margin-top: 15px;
-			}
-		}
-		td  {
-			padding: 10px;
-			text-align: right;
-			color: $grey;
-			strong  {
-				color: #000;
-			}
-			span  {
-				display: none;
-			}
-			@media only screen and (min-width: 500px)  {
-				span  {
-					display: inline;
-				}
-			}
-			.callout  {
-				color: $green;
-			}
-			&:first-child  {
-				text-align: left;
-			}
-		}
-	}
-	.user-img  {
-		position: absolute;
-		top: 0;
-		left: 0;
-		display: none;
-	}
-	@media only screen and (min-width: 1200px)  {
-		.user-img  {
-			display: block;
-		}
-	}
-
-}
-*/

@@ -24,7 +24,13 @@
         },
 
         centerOnResize: _.debounce(function (e) {
-            $(".js-login-container").center();
+            var container = $(".js-login-container");
+            container.css({
+                'position': 'relative'
+            }).animate({
+                'top': Math.round($(window).height() / 2) - container.outerHeight() / 2 + 'px'
+            });
+            $(window).trigger("centered");
         }, 100),
 
         remove: function () {
@@ -45,22 +51,24 @@
         submitHandler: function (event) {
             event.preventDefault();
             var email = this.$el.find('.email').val(),
-                password = this.$el.find('.password').val();
+                password = this.$el.find('.password').val(),
+                redirect = Ghost.Views.Utils.getUrlVariables().r;
 
             $.ajax({
-                url: '/ghost/login/',
+                url: '/ghost/signin/',
                 type: 'POST',
                 data: {
                     email: email,
-                    password: password
+                    password: password,
+                    redirect: redirect
                 },
                 success: function (msg) {
                     window.location.href = msg.redirect;
                 },
-                error: function (obj, string, status) {
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: 'Invalid username or password',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }
@@ -91,11 +99,44 @@
                 success: function (msg) {
                     window.location.href = msg.redirect;
                 },
-                error: function (obj, string, status) {
-                    var msgobj = $.parseJSON(obj.responseText);
+                error: function (xhr) {
                     Ghost.notifications.addItem({
                         type: 'error',
-                        message: msgobj.message,
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+        }
+    });
+
+    Ghost.Views.Forgotten = Ghost.SimpleFormView.extend({
+
+        templateName: "forgotten",
+
+        events: {
+            'submit #forgotten': 'submitHandler'
+        },
+
+        submitHandler: function (event) {
+            event.preventDefault();
+
+            var email = this.$el.find('.email').val();
+
+            $.ajax({
+                url: '/ghost/forgotten/',
+                type: 'POST',
+                data: {
+                    email: email
+                },
+                success: function (msg) {
+
+                    window.location.href = msg.redirect;
+                },
+                error: function (xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
                         status: 'passive'
                     });
                 }

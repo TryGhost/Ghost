@@ -25,65 +25,6 @@ module.exports = {
         }
     ],
 
-    settings: [
-        {
-            "uuid":         uuid.v4(),
-            "key":          "url",
-            "value":        "http://localhost:2368",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "blog"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "title",
-            "value":        "Ghost",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "blog"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "description",
-            "value":        "Just a blogging platform.",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "blog"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "email",
-            "value":        "ghost@example.com",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "general"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "activePlugins",
-            "value":        "",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "general"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "activeTheme",
-            "value":        "content/themes/casper",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "general"
-        },
-        {
-            "uuid":         uuid.v4(),
-            "key":          "currentVersion",
-            "value":        "001",
-            "created_by":    1,
-            "updated_by":    1,
-            "type":         "core"
-        }
-    ],
-
     roles: [
         {
             "id": 1,

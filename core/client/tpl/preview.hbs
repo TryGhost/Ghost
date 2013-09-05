@@ -5,7 +5,7 @@
     {{! TODO: JavaScript toggle featured/unfeatured}}
     <span class="status">{{#if published}}Published{{else}}Written{{/if}}</span>
     <span class="normal">by</span>
-    <span class="author">Joe Bloggs</span>
+    <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email_address}}{{/if}}</span>
     <section class="post-controls">
         <a class="post-edit" href="#"><span class="hidden">Edit Post</span></a>
         <a class="post-settings" href="#" data-toggle=".menu-drop-right"><span class="hidden">Post Settings</span></a>
@@ -15,5 +15,5 @@
     </section>
 </header>
 <section class="content-preview-content">
-    <div class="wrapper">{{{content}}}</div>
+    <div class="wrapper"><h1>{{{title}}}</h1>{{{content}}}</div>
 </section>

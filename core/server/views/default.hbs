@@ -11,7 +11,7 @@
         <meta name="author" content="">
         <meta name="HandheldFriendly" content="True">
         <meta name="MobileOptimized" content="320">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
         <meta name="apple-mobile-web-app-capable" content="yes" />
 
         <link rel="shortcut icon" href="/favicon.ico">
@@ -28,7 +28,7 @@
 
         <main role="main" id="main">
             <aside id="flashbar">
-                {{> flashes}}
+                {{> notifications}}
             </aside>
 
             {{{body}}}
@@ -52,34 +52,41 @@
         <script src="/shared/vendor/jquery/jquery.fileupload.js"></script>
 
         <script src="/public/vendor/codemirror/codemirror.js"></script>
+        <script src="/public/vendor/codemirror/addon/mode/overlay.js"></script>
         <script src="/public/vendor/codemirror/mode/markdown/markdown.js"></script>
+        <script src="/public/vendor/codemirror/mode/gfm/gfm.js"></script>
         <script src="/public/vendor/showdown/showdown.js"></script>
         <script src="/public/vendor/showdown/extensions/ghostdown.js"></script>
+        <script src="/shared/vendor/showdown/extensions/github.js"></script>
         <script src="/public/vendor/shortcuts.js"></script>
         <script src="/public/vendor/countable.js"></script>
         <script src="/public/vendor/to-title-case.js"></script>
         <script src="/public/vendor/packery.pkgd.min.js"></script>
+        <script src="/public/vendor/jquery.hammer.min.js"></script>
 
         <script src="/public/init.js"></script>
 
         <script src="/public/assets/lib/uploader.js"></script>
 
         <script src="/public/tpl/hbs-tpl.js"></script>
+        <script src="/public/mobile-interactions.js"></script>
         <script src="/public/toggle.js"></script>
         <script src="/public/markdown-actions.js"></script>
-        <script src="/public/tagui.js"></script>
         <script src="/public/helpers/index.js"></script>
 
         <!-- // require '/public/models/*' -->
         <script src="/public/models/post.js"></script>
         <script src="/public/models/user.js"></script>
+        <script src="/public/models/tag.js"></script>
         <script src="/public/models/widget.js"></script>
         <script src="/public/models/settings.js"></script>
+        <script src="/public/models/themes.js"></script>
         <!-- // require '/public/views/*' -->
         <script src="/public/views/base.js"></script>
         <script src="/public/views/dashboard.js"></script>
         <script src="/public/views/blog.js"></script>
         <script src="/public/views/editor.js"></script>
+        <script src="/public/views/editor-tag-widget.js"></script>
         <script src="/public/views/login.js"></script>
         <script src="/public/views/settings.js"></script>
         <script src="/public/views/debug.js"></script>

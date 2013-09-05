@@ -6,7 +6,12 @@ var path = require('path'),
     spawn = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
+    config = require('./config'),
+    _ = require('underscore'),
     configureGrunt = function (grunt) {
+
+        // load all grunt tasks
+        require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
         var cfg = {
             // Common paths to be used by tasks
@@ -23,6 +28,72 @@ var path = require('path'),
             },
             buildType: 'Build',
             pkg: grunt.file.readJSON('package.json'),
+
+            // Watch files and livereload in the browser during development
+            watch: {
+                handlebars: {
+                    files: ['core/client/tpl/**/*.hbs'],
+                    tasks: ['handlebars']
+                },
+                sass: {
+                    files: ['<%= paths.adminAssets %>/sass/**/*'],
+                    tasks: ['sass:admin']
+                },
+                livereload: {
+                    files: [
+                        // Theme CSS
+                        'content/themes/casper/css/*.css',
+                        // Theme JS
+                        'content/themes/casper/js/*.js',
+                        // Admin CSS
+                        '<%= paths.adminAssets %>/css/*.css',
+                        // Admin JS
+                        'core/client/*.js',
+                        'core/client/helpers/*.js',
+                        'core/client/models/*.js',
+                        'core/client/tpl/*.js',
+                        'core/client/views/*.js'
+                    ],
+                    options: {
+                        livereload: true
+                    }
+                },
+                express: {
+                    // Restart any time client or server js files change
+                    files:  ['core/server/**/*.js'],
+                    tasks:  ['express:dev'],
+                    options: {
+                        //Without this option specified express won't be reloaded
+                        nospawn: true
+                    }
+                }
+            },
+
+            // Start our server in development
+            express: {
+                options: {
+                    script: "index.js"
+                },
+
+                dev: {
+                    options: {
+                        //output: "Express server listening on address:.*$"
+                    }
+                },
+                test: {
+                    options: {
+                        node_env: 'testing'
+                    }
+                }
+            },
+
+            // Open the site in a browser
+            open: {
+                server: {
+                    // TODO: Load this port from config?
+                    path: 'http://127.0.0.1:2368'
+                }
+            },
 
             // JSLint all the things!
             jslint: {
@@ -112,6 +183,18 @@ var path = require('path'),
                     src: ['core/test/unit/**/api*_spec.js']
                 },
 
+                client: {
+                    src: ['core/test/unit/**/client*_spec.js']
+                },
+
+                server: {
+                    src: ['core/test/unit/**/server*_spec.js']
+                },
+
+                shared: {
+                    src: ['core/test/unit/**/shared*_spec.js']
+                },
+
                 perm: {
                     src: ['core/test/unit/**/permissions_spec.js']
                 },
@@ -172,17 +255,6 @@ var path = require('path'),
                             "!core/client/tpl/**/*.js"
                         ]
                     }
-                }
-            },
-
-            watch: {
-                handlebars: {
-                    files: 'core/client/tpl/**/*.hbs',
-                    tasks: ['handlebars']
-                },
-                sass: {
-                    files: '<%= paths.adminAssets %>/sass/**/*',
-                    tasks: ['sass:admin']
                 }
             },
 
@@ -277,18 +349,6 @@ var path = require('path'),
 
         grunt.initConfig(cfg);
 
-        grunt.loadNpmTasks("grunt-jslint");
-        grunt.loadNpmTasks("grunt-mocha-cli");
-        grunt.loadNpmTasks("grunt-shell");
-        grunt.loadNpmTasks("grunt-bump");
-
-        grunt.loadNpmTasks("grunt-contrib-compress");
-        grunt.loadNpmTasks("grunt-contrib-copy");
-        grunt.loadNpmTasks("grunt-contrib-watch");
-        grunt.loadNpmTasks("grunt-contrib-sass");
-        grunt.loadNpmTasks("grunt-contrib-handlebars");
-        grunt.loadNpmTasks('grunt-groc');
-
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
             cfg.pkg = grunt.file.readJSON('package.json');
@@ -296,6 +356,34 @@ var path = require('path'),
 
         grunt.registerTask('setCurrentBuildType', function (type) {
             cfg.buildType = type;
+        });
+
+        grunt.registerTask('spawn-casperjs', function () {
+            var done = this.async(),
+                options = ['host', 'noPort', 'port', 'email', 'password'],
+                args = ['test', 'admin/', '--includes=base.js', '--direct', '--log-level=debug', '--port=2369'];
+
+            // Forward parameters from grunt to casperjs
+            _.each(options, function processOption(option) {
+                if (grunt.option(option)) {
+                    args.push('--' + option + '=' + grunt.option(option));
+                }
+            });
+
+            grunt.util.spawn({
+                cmd: 'casperjs',
+                args: args,
+                opts: {
+                    cwd: path.resolve('core/test/functional'),
+                    stdio: 'inherit'
+                }
+            }, function (error, result, code) {
+                if (error) {
+                    grunt.fail.fatal(result.stdout);
+                }
+                grunt.log.writeln(result.stdout);
+                done();
+            });
         });
 
         // Prepare the project for development
@@ -311,8 +399,11 @@ var path = require('path'),
         // Run migrations tests only
         grunt.registerTask("test-m", ["mochacli:migrate"]);
 
+        // Run casperjs tests only
+        grunt.registerTask('test-functional', ['express:test', 'spawn-casperjs']);
+
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "mochacli:all"]);
+        grunt.registerTask("validate", ["jslint", "mochacli:all", "test-functional"]);
 
         // Generate Docs
         grunt.registerTask("docs", ["groc"]);
@@ -599,6 +690,14 @@ var path = require('path'),
             "changelog",
             "copy:build",
             "compress:build"
+        ]);
+
+        // Dev Mode; watch files and restart server on changes
+        grunt.registerTask("dev", [
+            "default",
+            "express:dev",
+            "open",
+            "watch"
         ]);
 
         // When you just say "grunt"

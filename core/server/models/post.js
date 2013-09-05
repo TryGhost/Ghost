@@ -5,14 +5,22 @@ var Post,
     when = require('when'),
     errors = require('../errorHandling'),
     Showdown = require('showdown'),
-    converter = new Showdown.converter(),
+    github = require('../../shared/vendor/showdown/extensions/github'),
+    converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
     config = require('../../../config'),
+    Tag = require('./tag').Tag,
     GhostBookshelf = require('./base');
 
 Post = GhostBookshelf.Model.extend({
 
     tableName: 'posts',
+
+    permittedAttributes: [
+        'id', 'uuid', 'title', 'slug', 'content_raw', 'content', 'meta_title', 'meta_description', 'meta_keywords',
+        'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
+        'published_at', 'published_by'
+    ],
 
     hasTimestamps: true,
 
@@ -26,14 +34,26 @@ Post = GhostBookshelf.Model.extend({
 
     initialize: function () {
         this.on('creating', this.creating, this);
+        this.on('saving', this.updateTags, this);
         this.on('saving', this.saving, this);
+        this.on('saving', this.validate, this);
+    },
+
+    validate: function () {
+        GhostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
+
+        return true;
     },
 
     saving: function () {
-        if (!this.get('title')) {
-            throw new Error('Post title cannot be blank');
-        }
+        // Deal with the related data here
+
+        // Remove any properties which don't belong on the post model
+        this.attributes = this.pick(this.permittedAttributes);
+
         this.set('content', converter.makeHtml(this.get('content_raw')));
+
+        this.set('title', this.get('title').trim());
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             this.set('published_at', new Date());
@@ -42,10 +62,13 @@ Post = GhostBookshelf.Model.extend({
         }
 
         this.set('updated_by', 1);
+
         // refactoring of ghost required in order to make these details available here
+
     },
 
     creating: function () {
+        // set any dynamic default properties
         var self = this;
         if (!this.get('created_by')) {
             this.set('created_by', 1);
@@ -72,20 +95,31 @@ Post = GhostBookshelf.Model.extend({
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
                 return Post.read({slug: slugToFind}).then(function (found) {
+                    var trimSpace;
+
                     if (!found) {
                         return when.resolve(slugToFind);
                     }
 
                     slugTryCount += 1;
 
-                    // TODO: Bug out (when.reject) if over 10 tries or something?
+                    // If this is the first time through, add the hyphen
+                    if (slugTryCount === 2) {
+                        slugToFind += '-';
+                    } else {
+                        // Otherwise, trim the number off the end
+                        trimSpace = -(String(slugTryCount - 1).length);
+                        slugToFind = slugToFind.slice(0, trimSpace);
+                    }
 
-                    return checkIfSlugExists(slugToFind + '-' + slugTryCount);
+                    slugToFind += slugTryCount;
+
+                    return checkIfSlugExists(slugToFind);
                 });
             };
 
         // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = title.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+        slug = title.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
         // Replace dots and spaces with a dash
                     .replace(/(\s|\.)/g, '-')
         // Convert 2 or more dashes into a single dash
@@ -99,19 +133,104 @@ Post = GhostBookshelf.Model.extend({
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
             .test(slug) ? slug + '-post' : slug;
 
+        //if slug is empty after trimming use "post"
+        if (!slug) {
+            slug = "post";
+        }
         // Test for duplicate slugs.
         return checkIfSlugExists(slug);
     },
 
+    updateTags: function () {
+        var self = this,
+            tagOperations = [],
+            newTags = this.get('tags'),
+            tagsToDetach,
+            existingTagIDs,
+            tagsToCreateAndAdd,
+            tagsToAddByID,
+            fetchOperation;
+
+        if (!newTags) {
+            return;
+        }
+
+        fetchOperation = Post.forge({id: this.id}).fetch({withRelated: ['tags']});
+        return fetchOperation.then(function (thisModelWithTags) {
+            var existingTags = thisModelWithTags.related('tags').models;
+
+            tagsToDetach = existingTags.filter(function (existingTag) {
+                var tagStillRemains = newTags.some(function (newTag) {
+                    return newTag.id === existingTag.id;
+                });
+
+                return !tagStillRemains;
+            });
+            if (tagsToDetach.length > 0) {
+                tagOperations.push(self.tags().detach(tagsToDetach));
+            }
+
+            // Detect any tags that have been added by ID
+            existingTagIDs = existingTags.map(function (existingTag) {
+                return existingTag.id;
+            });
+
+            tagsToAddByID = newTags.filter(function (newTag) {
+                return existingTagIDs.indexOf(newTag.id) === -1;
+            });
+
+            if (tagsToAddByID.length > 0) {
+                tagsToAddByID = _.pluck(tagsToAddByID, 'id');
+                tagOperations.push(self.tags().attach(tagsToAddByID));
+            }
+
+            // Detect any tags that have been added, but don't already exist in the database
+            tagsToCreateAndAdd = newTags.filter(function (newTag) {
+                return newTag.id === null || newTag.id === undefined;
+            });
+            tagsToCreateAndAdd.forEach(function (tagToCreateAndAdd) {
+                var createAndAddOperation = Tag.add({name: tagToCreateAndAdd.name}).then(function (createdTag) {
+                    return self.tags().attach(createdTag.id);
+                });
+
+                tagOperations.push(createAndAddOperation);
+            });
+
+            return when.all(tagOperations);
+        });
+    },
+
+
+    // Relations
     user: function () {
         return this.belongsTo(User, 'created_by');
     },
 
     author: function () {
         return this.belongsTo(User, 'author_id');
+    },
+
+    tags: function () {
+        return this.belongsToMany(Tag);
     }
 
 }, {
+
+    // #### findAll
+    // Extends base model findAll to eager-fetch author and user relationships.
+    findAll:  function (options) {
+        options = options || {};
+        options.withRelated = [ "author", "user", "tags" ];
+        return GhostBookshelf.Model.findAll.call(this, options);
+    },
+
+    // #### findOne
+    // Extends base model findOne to eager-fetch author and user relationships.
+    findOne: function (args, options) {
+        options = options || {};
+        options.withRelated = [ "author", "user", "tags" ];
+        return GhostBookshelf.Model.findOne.call(this, args, options);
+    },
 
      // #### findPage
      // Find results by page - returns an object containing the
@@ -162,6 +281,8 @@ Post = GhostBookshelf.Model.extend({
         if (opts.where) {
             postCollection.query('where', opts.where);
         }
+
+        opts.withRelated = [ "author", "user", "tags" ];
 
         // Set the limit & offset for the query, fetching
         // with the opts (to specify any eager relations, etc.)
@@ -221,20 +342,30 @@ Post = GhostBookshelf.Model.extend({
             }, errors.logAndThrowError);
         }
 
-        // TODO: This logic is temporary, will probably need to be updated
-
+        // Check if any permissions apply for this user and post.
         hasPermission = _.any(userPermissions, function (perm) {
-            if (perm.get('object_type') !== 'post') {
+            // Check for matching action type and object type
+            if (perm.get('action_type') !== action_type ||
+                    perm.get('object_type') !== 'post') {
                 return false;
             }
 
-            // True, if no object_id specified, or it matches
+            // If asking whether we can create posts,
+            // and we have a create posts permission then go ahead and say yes
+            if (action_type === 'create' && perm.get('action_type') === action_type) {
+                return true;
+            }
+
+            // Check for either no object id or a matching one
             return !perm.get('object_id') || perm.get('object_id') === postModel.id;
         });
 
         // If this is the author of the post, allow it.
-        hasPermission = hasPermission || userId === postModel.get('author_id');
+        // Moved below the permissions checks because there may not be a postModel
+        // in the case like canThis(user).create.post()
+        hasPermission = hasPermission || (postModel && userId === postModel.get('author_id'));
 
+        // Resolve if we have appropriate permissions
         if (hasPermission) {
             return when.resolve();
         }

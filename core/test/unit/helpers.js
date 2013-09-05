@@ -4,6 +4,7 @@ process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
 var knex = require('../../server/models/base').Knex,
     when = require('when'),
     migration = require("../../server/data/migration/"),
+    Settings = require('../../server/models/settings').Settings,
     helpers,
     samplePost,
     sampleUser,
@@ -42,10 +43,10 @@ sampleUserRole = function (i) {
 };
 
 helpers = {
-    resetData: function () {
 
-        return this.clearData().then(function () {
-            return migration.init();
+    initData: function (done) {
+        return migration.init().then(function () {
+           return Settings.populateDefaults();
         });
     },
 
@@ -53,7 +54,6 @@ helpers = {
         // we must always try to delete all tables
         return migration.migrateDownFromVersion(migration.currentVersion);
     },
-
 
     insertMorePosts: function () {
         var lang, status, posts, promises = [], i, j;
@@ -69,6 +69,7 @@ helpers = {
         }
         return when.all(promises);
     },
+
     insertDefaultUser: function () {
 
         var users = [],
@@ -82,6 +83,7 @@ helpers = {
 
         return when.all(u_promises);
     }
+
 };
 
 module.exports = helpers;

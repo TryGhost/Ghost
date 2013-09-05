@@ -1,4 +1,4 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, beforeEach, before, it*/
 var _ = require("underscore"),
     when = require('when'),
     should = require('should'),
@@ -7,12 +7,25 @@ var _ = require("underscore"),
     helpers = require('./helpers'),
     plugins = require('../../server/plugins'),
     GhostPlugin = plugins.GhostPlugin,
-    loader = require('../../server/plugins/loader')
+    loader = require('../../server/plugins/loader');
 
 describe('Plugins', function () {
 
     before(function (done) {
-        helpers.resetData().then(function () {
+        helpers.clearData().then(function () {
+            done();
+        }, done);
+    });
+
+    beforeEach(function (done) {
+        this.timeout(5000);
+        helpers.initData().then(function () {
+            done();
+        }, done);
+    });
+
+    afterEach(function (done) {
+        helpers.clearData().then(function () {
             done();
         }, done);
     });
@@ -55,13 +68,13 @@ describe('Plugins', function () {
                 unregisterMock = sinon.stub(fakeGhost, "unregisterFilter");
 
             loader.installPluginByName("FancyFirstChar", fakeGhost).then(function (loadedPlugin) {
-                
+
                 should.exist(loadedPlugin);
-                
+
                 installMock.called.should.equal(true);
 
                 loadedPlugin.activate(fakeGhost);
-                
+
                 // Registers the filter
                 registerMock.called.should.equal(true);
 
@@ -98,7 +111,7 @@ describe('Plugins', function () {
             return api.settings.read("installedPlugins").then(function (setting) {
                 should.exist(setting);
 
-                setting.value.should.equal('["FancyFirstChar"]')
+                setting.value.should.equal('["FancyFirstChar"]');
 
                 done();
             });
