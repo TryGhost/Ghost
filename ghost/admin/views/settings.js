@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone */
+/*global window, document, Ghost, $, _, Backbone, Countable */
 (function () {
     "use strict";
 
@@ -348,6 +348,22 @@
             this.$('#user-bio').val(user.bio);
             this.$('#user-profile-picture').attr('src', user.profile_picture);
             this.$('#user-cover-picture').attr('src', user.cover_picture);
+        },
+
+        afterRender: function () {
+            var self = this;
+            Countable.live(document.getElementById('user-bio'), function (counter) {
+                if (counter.all > 180) {
+                    self.$('.bio-container .word-count').css({color: "#e25440"});
+                } else {
+                    self.$('.bio-container .word-count').css({color: "#9E9D95"});
+                }
+
+                self.$('.bio-container .word-count').text(200 - counter.all);
+
+            });
+
+            Settings.Pane.prototype.afterRender.call(this);
         }
     });
 
