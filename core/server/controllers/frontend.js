@@ -14,14 +14,24 @@ var Ghost = require('../../ghost'),
 frontendControllers = {
     'homepage': function (req, res) {
         // Parse the page number
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            postsPerPage = parseInt(ghost.settings().postsPerPage, 10),
+            options = {};
 
         // No negative pages
-        if (pageParam < 1) {
+        if (isNaN(pageParam) || pageParam < 1) {
+            //redirect to 404 page?
             return res.redirect("/page/1/");
         }
+        options.page = pageParam;
 
-        api.posts.browse({page: pageParam}).then(function (page) {
+        // No negative posts per page, must be number
+        if (!isNaN(postsPerPage) && postsPerPage > 0) {
+            options.limit = postsPerPage;
+        }
+
+        api.posts.browse(options).then(function (page) {
+
             var maxPage = page.pages;
 
             // A bit of a hack for situations with no content.
