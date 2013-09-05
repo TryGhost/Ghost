@@ -83,6 +83,34 @@
         return 0;
     };
 
+    // ## scrollShadow
+    // This adds a 'scroll' class to the targeted element when the element is scrolled
+    // **target:** The element in which the class is applied. Defaults to scrolled element.
+    // **class-name:** The class which is applied.
+    // **offset:** How far the user has to scroll before the class is applied.
+    $.fn.scrollClass = function (options) {
+        var config = $.extend({
+                'target'     : '',
+                'class-name' : 'scrolling',
+                'offset'     : 1
+            }, options);
+
+        return this.each(function () {
+            var $this = $(this),
+                $target = $this;
+            if (config.target) {
+                $target = $(config.target);
+            }
+            $this.scroll(function () {
+                if ($this.scrollTop() > config.offset) {
+                    $target.addClass(config['class-name']);
+                } else {
+                    $target.removeClass(config['class-name']);
+                }
+            });
+        });
+    };
+
     $.fn.selectText = function () {
         var elem = this[0],
             range,

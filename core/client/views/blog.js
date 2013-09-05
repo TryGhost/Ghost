@@ -4,16 +4,7 @@
 
     var ContentList,
         ContentItem,
-        PreviewContainer,
-
-        // Add shadow during scrolling
-        scrollShadow = function (target, e) {
-            if ($(e.currentTarget).scrollTop() > 10) {
-                $(target).addClass('scrolling');
-            } else {
-                $(target).removeClass('scrolling');
-            }
-        };
+        PreviewContainer;
 
     // Base view
     // ----------
@@ -34,7 +25,7 @@
         },
 
         initialize: function (options) {
-            this.$('.content-list-content').on('scroll', _.bind(scrollShadow, null, '.content-list'));
+            this.$('.content-list-content').scrollClass({target: '.content-list', offset: 10});
             this.listenTo(this.collection, 'remove', this.showNext);
         },
 
@@ -129,7 +120,6 @@
 
         initialize: function (options) {
             this.listenTo(Backbone, 'blog:activeItem', this.setActivePreview);
-            this.$('.content-preview-content').on('scroll', _.bind(scrollShadow, null, '.content-preview'));
         },
 
         setActivePreview: function (id) {
@@ -201,6 +191,7 @@
                 this.model = this.collection.get(this.activeId);
                 this.$el.html(this.template(this.templateData()));
             }
+            this.$('.content-preview-content').scrollClass({target: '.content-preview', offset: 10});
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');
             });
