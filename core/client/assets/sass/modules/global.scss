@@ -971,6 +971,14 @@ body.blur > *:not(#modal-container) {
             opacity: 1;
         }
     }
+
+    button {
+        min-width: 100px;
+    }
+
+    @include breakpoint($mobile) {
+        width: 100%;
+    }
 }
 
 .modal-info {
@@ -979,6 +987,10 @@ body.blur > *:not(#modal-container) {
 
 .modal-action {
     @extend %modal;
+
+    .modal-footer {
+        margin-top: 20px;
+    }
 }
 
 .modal-header {
@@ -1024,10 +1036,16 @@ body.blur > *:not(#modal-container) {
 }
 
 .modal-style-wide {
-    @extend %modal;
     width: 550px;
+
+    @include breakpoint($mobile) {
+        width: 100%;
+    }
 }
 
+.modal-style-centered {
+    text-align: center;
+}
 /* ==========================================================================
    Main Elements
    ========================================================================== */
