@@ -971,6 +971,10 @@ body.blur > *:not(#modal-container) {
             opacity: 1;
         }
     }
+
+    @include breakpoint($mobile) {
+        width: 100%;
+    }
 }
 
 .modal-info {
@@ -1029,6 +1033,10 @@ body.blur > *:not(#modal-container) {
 
 .modal-style-wide {
     width: 550px;
+
+    @include breakpoint($mobile) {
+        width: 100%;
+    }
 }
 
 .modal-style-centered {
