@@ -166,7 +166,7 @@
                             }
                         },
                         type: "action",
-                        style: "wide",
+                        style: ["wide", "centered"],
                         animation: 'fade'
                     },
                     content: {

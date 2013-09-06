@@ -186,7 +186,7 @@
                     options: {
                         close: false,
                         type: "action",
-                        style: "wide",
+                        style: ["wide"],
                         animation: 'fadeIn',
                         afterRender: function () {
                             this.$('.js-drop-zone').upload();

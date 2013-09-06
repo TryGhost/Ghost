@@ -300,7 +300,7 @@
                     options: {
                         close: true,
                         type: "info",
-                        style: "wide",
+                        style: ["wide"],
                         animation: 'fade'
                     },
                     content: {
@@ -374,7 +374,7 @@
                     options: {
                         close: true,
                         type: "info",
-                        style: "wide",
+                        style: ["wide"],
                         animation: 'fade'
                     },
                     content: {
