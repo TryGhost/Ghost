@@ -18,7 +18,12 @@ frontendControllers = {
 
         // No negative pages
         if (pageParam < 1) {
-            return res.redirect("/page/1/");
+            return res.redirect('/');
+        }
+
+        // Redirect '/page/1/' to '/' for all teh good SEO
+        if (pageParam === 1 && req.route.path === '/page/:page/') {
+            return res.redirect('/');
         }
 
         api.posts.browse({page: pageParam}).then(function (page) {
@@ -32,7 +37,7 @@ frontendControllers = {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > maxPage) {
-                return res.redirect("/page/" + maxPage + "/");
+                return res.redirect(maxPage === 1 ? '/' : ('/page/' + maxPage + '/'));
             }
 
             // Render the page of posts

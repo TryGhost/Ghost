@@ -44,6 +44,18 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    // ### Page URL Helper
+    // 
+    // *Usage example:*
+    // `{{pageUrl 2}}`
+    // 
+    // Returns the URL for the page specified in the current object
+    // context.
+    //
+    ghost.registerThemeHelper('pageUrl', function (context, block) {
+        return context === 1 ? '/' : ('/page/' + context + '/');
+    });
+
     // ### URL helper
     //
     // *Usage example:*
