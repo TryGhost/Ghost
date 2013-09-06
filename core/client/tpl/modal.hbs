@@ -1,5 +1,5 @@
 <aside class="modal-background"></aside>
-<article class="modal{{#if options.type}}-{{options.type}}{{/if}} {{#if options.style}}modal-style-{{options.style}}{{/if}}  {{options.animation}} js-modal">
+<article class="modal{{#if options.type}}-{{options.type}}{{/if}} {{#if options.style}}{{#each options.style}}modal-style-{{this}} {{/each}}{{/if}}{{options.animation}} js-modal">
     {{#if content.title}}<header class="modal-header"><h1>{{content.title}}</h1>{{#if options.close}}<a class="close" href="#"><span class="hidden">Close</span></a>{{/if}}</header>{{/if}}
     <section class="modal-content">
     </section>
