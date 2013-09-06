@@ -187,7 +187,7 @@
                         close: false,
                         type: "action",
                         style: ["wide"],
-                        animation: 'fadeIn',
+                        animation: 'fade',
                         afterRender: function () {
                             this.$('.js-drop-zone').upload();
                         },
