@@ -8,7 +8,7 @@ var fs = require('fs'),
 I18n = function (ghost) {
 
     // TODO: validate
-    var lang = ghost.config().defaultLang,
+    var lang = ghost.settings().defaultLang,
         path = ghost.paths().lang,
         langFilePath = path + lang + '.json';
 

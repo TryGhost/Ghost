@@ -45,9 +45,18 @@
         "type":         "blog"
     },
     {
+        "key":          "defaultLang",
+        "value":        "en",
+        "type":         "blog"
+    },
+    {
+        "key":          "forceI18n",
+        "value":        true,
+        "type":         "blog"
+    },
+    {
         "key":          "postsPerPage",
         "value":        "6",
         "type":         "blog"
     }
-
 ]
