@@ -164,7 +164,8 @@
                 email: this.$('#email-address').val(),
                 logo: this.$('#logo').attr("src"),
                 icon: this.$('#icon').attr("src"),
-                activeTheme: this.$('#activeTheme').val()
+                activeTheme: this.$('#activeTheme').val(),
+                postsPerPage: this.$('#postsPerPage').val()
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
