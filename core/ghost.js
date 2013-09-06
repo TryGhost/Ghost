@@ -61,8 +61,7 @@ statuses = {
  * @constructor
  */
 Ghost = function () {
-    var app,
-        polyglot;
+    var polyglot;
 
     if (!instance) {
         instance = this;
@@ -88,11 +87,9 @@ Ghost = function () {
         // Holds the dbhash (mainly used for cookie secret)
         instance.dbHash = undefined;
 
-        app = express();
         polyglot = new Polyglot();
 
         _.extend(instance, {
-            app: function () { return app; },
             config: function () { return config[process.env.NODE_ENV]; },
 
             // there's no management here to be sure this has loaded
