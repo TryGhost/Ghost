@@ -147,10 +147,10 @@ Ghost.prototype.init = function () {
     ).then(function () {
         return models.Settings.populateDefaults();
     }).then(function () {
-        return self.initPlugins();
-    }).then(function () {
         // Initialize the settings cache
         return self.updateSettingsCache();
+    }).then(function () {
+        return self.initPlugins();
     }).then(function () {
         // Initialize the permissions actions and objects
         return permissions.init();
@@ -301,7 +301,7 @@ Ghost.prototype.doFilter = function (name, args, callback) {
 
 // Initialise plugins.  Will load from config.activePlugins by default
 Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    pluginsToLoad = pluginsToLoad || config.activePlugins;
+    pluginsToLoad = pluginsToLoad || models.Settings.activePlugins;
 
     var self = this;
 

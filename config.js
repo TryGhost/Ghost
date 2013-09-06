@@ -3,22 +3,6 @@
 var path = require('path'),
     config  = {};
 
-// ## Admin settings
-
-// Default language
-config.defaultLang = 'en';
-
-// Force i18n to be on
-config.forceI18n = true;
-
-// ## Plugins
-
-// Current active plugins
-config.activePlugins = [
-    'FancyFirstChar'
-];
-
-
 // ## Default Navigation Items
 // Add new objects here to extend the menu output by {{nav}}
 config.nav = [
