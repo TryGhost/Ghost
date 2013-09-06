@@ -1,10 +1,13 @@
 /*globals describe, beforeEach, it*/
-var should = require('should'),
+var testUtils = require('./testUtils'),
+    should = require('should'),
     sinon = require('sinon'),
     when = require('when'),
     _ = require('underscore'),
-    handlebars = require('express-hbs').handlebars,
     path = require('path'),
+
+    // Stuff we are testing
+    handlebars = require('express-hbs').handlebars,
     helpers = require('../../server/helpers'),
     Ghost = require('../../ghost');
 
@@ -209,13 +212,32 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.url);
         });
 
-        it('if context is post, returns a the slug with a prefix slash', function () {
+        it('should return a the slug with a prefix slash if the context is a post', function () {
             var rendered = handlebars.helpers.url.call({content: 'content', content_raw: "ff", title: "title", slug: "slug"});
             should.exist(rendered);
             rendered.should.equal('/slug');
         });
 
-        it('it should return empty string if not a post', function () {
+        it('should output an absolute URL if the option is present', function () {
+            var configStub = sinon.stub(ghost, "config", function () {
+                    return {env: {
+                        testing: { url: 'http://testurl.com' },
+                        travis: { url: 'http://testurl.com' }
+                    }};
+                }),
+
+                rendered = handlebars.helpers.url.call(
+                    {content: 'content', content_raw: "ff", title: "title", slug: "slug"},
+                    {hash: { absolute: 'true'}}
+                );
+
+            should.exist(rendered);
+            rendered.should.equal('http://testurl.com/slug');
+
+            configStub.restore();
+        });
+
+        it('should return empty string if not a post', function () {
             handlebars.helpers.url.call({content_raw: "ff", title: "title", slug: "slug"}).should.equal('');
             handlebars.helpers.url.call({content: 'content', title: "title", slug: "slug"}).should.equal('');
             handlebars.helpers.url.call({content: 'content', content_raw: "ff", slug: "slug"}).should.equal('');

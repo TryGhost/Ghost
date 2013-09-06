@@ -5,7 +5,7 @@ var knex = require('../../server/models/base').Knex,
     when = require('when'),
     migration = require("../../server/data/migration/"),
     Settings = require('../../server/models/settings').Settings,
-    helpers,
+    testUtils,
     samplePost,
     sampleUser,
     sampleUserRole;
@@ -42,11 +42,11 @@ sampleUserRole = function (i) {
     };
 };
 
-helpers = {
+testUtils = {
 
     initData: function (done) {
         return migration.init().then(function () {
-           return Settings.populateDefaults();
+            return Settings.populateDefaults();
         });
     },
 
@@ -86,4 +86,4 @@ helpers = {
 
 };
 
-module.exports = helpers;
+module.exports = testUtils;

@@ -1,9 +1,11 @@
-/*globals describe, beforeEach, it */
-var _ = require("underscore"),
+/*globals describe, before, beforeEach, afterEach, it */
+var testUtils = require('./testUtils'),
+    _ = require("underscore"),
     when = require('when'),
     sequence = require('when/sequence'),
     should = require('should'),
-    helpers = require('./helpers'),
+
+    // Stuff we are testing
     Models = require('../../server/models');
 
 describe('Tag Model', function () {
@@ -11,23 +13,22 @@ describe('Tag Model', function () {
     var TagModel = Models.Tag;
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData()
-            .then(function () {
-            })
+        testUtils.initData()
+            .then(function () {})
             .then(function () {
                 done();
             }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
@@ -86,7 +87,7 @@ describe('Tag Model', function () {
             }).then(function (postWithoutTag) {
                 postWithoutTag.related('tags').should.be.empty;
                 done();
-            }).then(null, done); 
+            }).then(null, done);
         });
 
         describe('setting tags from an array on update', function () {
@@ -94,12 +95,12 @@ describe('Tag Model', function () {
             // It can be assumed that any remaining tags in the update data are newly added.
             // Create new tags if needed, and attach them to the Post
 
-            function seedTags (tagNames) {
+            function seedTags(tagNames) {
                 var createOperations = [
                     PostModel.add({title: 'title', content_raw: 'content'})
                 ];
 
-                var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}) });
+                var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}); });
                 createOperations = createOperations.concat(tagModels);
 
 
@@ -109,7 +110,7 @@ describe('Tag Model', function () {
 
                     attachOperations = [];
                     for (var i = 1; i < models.length; i++) {
-                        attachOperations.push(postModel.tags().attach(models[i]))
+                        attachOperations.push(postModel.tags().attach(models[i]));
                     };
 
                     return when.all(attachOperations).then(function () {
@@ -125,11 +126,11 @@ describe('Tag Model', function () {
 
                 seedTags(seededTagNames).then(function (postModel) {
                     // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var existingTagData = seededTagNames.map(function (tagName, i) { return {id: i+1, name: tagName} });
+                    var existingTagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
                     postModel.set('tags', existingTagData);
                     return postModel.save();
                 }).then(function (postModel) {
-                    var tagNames = postModel.related('tags').models.map(function (t) { return t.attributes.name });
+                    var tagNames = postModel.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.should.eql(seededTagNames);
 
                     return TagModel.findAll();
@@ -145,8 +146,8 @@ describe('Tag Model', function () {
                 var seededTagNames = ['tag1', 'tag2', 'tag3'];
 
                 seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}                    
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i+1, name: tagName} });
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
 
                     // remove the second tag, and save
                     tagData.splice(1, 1);
@@ -154,7 +155,7 @@ describe('Tag Model', function () {
                 }).then(function (postModel) {
                     return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
-                    var tagNames = reloadedPost.related('tags').models.map( function (t) { return t.attributes.name });
+                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.should.eql(['tag1', 'tag3']);
 
                     done();
@@ -167,10 +168,10 @@ describe('Tag Model', function () {
 
                 seedTags(seededTagNames).then(function (_postModel) {
                     postModel = _postModel;
-                    return TagModel.add({name: 'tag3'})
-                }).then(function() {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}                    
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i+1, name: tagName} });
+                    return TagModel.add({name: 'tag3'});
+                }).then(function () {
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
 
                     // add the additional tag, and save
                     tagData.push({id: 3, name: 'tag3'});
@@ -179,7 +180,7 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map( function (t) { return t.attributes.name });
+                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
                     tagNames.should.eql(['tag1', 'tag2', 'tag3']);
                     tagModels[2].id.should.eql(3); // make sure it hasn't just added a new tag with the same name
 
@@ -191,8 +192,8 @@ describe('Tag Model', function () {
                 var seededTagNames = ['tag1', 'tag2'];
 
                 seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}                    
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i+1, name: tagName} });
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
 
                     // add the additional tag, and save
                     tagData.push({id: null, name: 'tag3'});
@@ -200,7 +201,7 @@ describe('Tag Model', function () {
                 }).then(function (postModel) {
                     return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
-                    var tagNames = reloadedPost.related('tags').models.map( function (t) { return t.attributes.name });
+                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.should.eql(['tag1', 'tag2', 'tag3']);
 
                     done();

@@ -1,7 +1,9 @@
-/*globals describe, beforeEach, it*/
-var _ = require("underscore"),
+/*globals describe, before, beforeEach, afterEach, it*/
+var testUtils = require('./testUtils'),
     should = require('should'),
-    helpers = require('./helpers'),
+    _ = require("underscore"),
+
+    // Stuff we are testing
     Models = require('../../server/models'),
     knex = require('../../server/models/base').Knex;
 
@@ -10,20 +12,20 @@ describe('Settings Model', function () {
     var SettingsModel = Models.Settings;
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData().then(function () {
+        testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });

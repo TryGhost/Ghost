@@ -6,8 +6,11 @@
  */
 
 /*globals describe, it */
-var gdPath = "../../client/assets/vendor/showdown/extensions/ghostdown.js",
+var testUtils = require('./testUtils'),
     should = require('should'),
+
+    // Stuff we are testing
+    gdPath = "../../client/assets/vendor/showdown/extensions/ghostdown.js",
     ghostdown = require(gdPath);
 
 describe("Ghostdown showdown extensions", function () {

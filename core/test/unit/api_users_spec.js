@@ -1,22 +1,25 @@
-/*globals describe, beforeEach, it*/
-var _ = require('underscore'),
+/*globals describe, before, beforeEach, afterEach, it*/
+var testUtils = require('./testUtils'),
     should = require('should'),
-    helpers = require('./helpers'),
+    when = require('when'),
+    _ = require('underscore'),
     errors = require('../../server/errorHandling'),
-    Models = require('../../server/models'),
-    when = require('when');
+
+    // Stuff we are testing
+    Models = require('../../server/models');
+
 
 describe('User Model', function run() {
     var UserModel = Models.User;
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
@@ -24,7 +27,7 @@ describe('User Model', function run() {
     describe('Registration', function runRegistration() {
         beforeEach(function (done) {
             this.timeout(5000);
-            helpers.initData().then(function () {
+            testUtils.initData().then(function () {
                 done();
             }, done);
         });
@@ -50,9 +53,9 @@ describe('User Model', function run() {
 
         beforeEach(function (done) {
             this.timeout(5000);
-            helpers.initData()
+            testUtils.initData()
                 .then(function () {
-                    return when(helpers.insertDefaultUser());
+                    return when(testUtils.insertDefaultUser());
                 })
                 .then(function () {
                     done();
@@ -65,7 +68,7 @@ describe('User Model', function run() {
                 email_address: "test3@test1.com"
             };
 
-            return helpers.insertDefaultUser().then(function () {
+            return testUtils.insertDefaultUser().then(function () {
                 UserModel.add(userData).then(done, function (failure) {
                     failure.message.should.eql('A user is already registered. Only one user for now!');
                     done();
@@ -180,5 +183,5 @@ describe('User Model', function run() {
             }).then(null, done);
         });
     });
-    
+
 });

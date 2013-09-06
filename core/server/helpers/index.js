@@ -53,23 +53,25 @@ coreHelpers = function (ghost) {
     // Returns the URL for the current object context
     // i.e. If inside a post context will return post permalink
     // absolute flag outputs absolute URL, else URL is relative
-    ghost.registerThemeHelper('url', function (context, options) {
+    ghost.registerThemeHelper('url', function (options) {
         var output = '';
 
-        if (options && options.absolute) {
-            output += ghost.config().env[process.NODE_ENV].url;
+        if (options && options.hash.absolute) {
+            output += ghost.config().env[process.env.NODE_ENV].url;
         }
+
         if (models.isPost(this)) {
             output += "/" + this.slug;
         }
+
         return output;
     });
 
     // ### Author Helper
-    // 
+    //
     // *Usage example:*
     // `{{author}}`
-    // 
+    //
     // Returns the full name of the author of a given post, or a blank string
     // if the author could not be determined.
     //
@@ -101,17 +103,17 @@ coreHelpers = function (ghost) {
     });
 
     // ### Content Helper
-    // 
+    //
     // *Usage example:*
     // `{{content}}`
     // `{{content words=20}}`
     // `{{content characters=256}}`
-    // 
+    //
     // Turns content html into a safestring so that the user doesn't have to
     // escape it or tell handlebars to leave it alone with a triple-brace.
-    // 
+    //
     // Enables tag-safe truncation of content by characters or words.
-    // 
+    //
     // **returns** SafeString content html, complete or truncated.
     //
     ghost.registerThemeHelper('content', function (options) {

@@ -1,7 +1,9 @@
-/*globals describe, it, beforeEach */
-var should = require('should'),
-    helpers = require('./helpers'),
+/*globals describe, it, before, beforeEach, afterEach */
+var testUtils = require('./testUtils'),
+    should = require('should'),
     errors = require('../../server/errorHandling'),
+
+    // Stuff we are testing
     Models = require('../../server/models');
 
 describe("Role Model", function () {
@@ -11,20 +13,20 @@ describe("Role Model", function () {
     should.exist(RoleModel);
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData().then(function () {
+        testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
@@ -105,20 +107,20 @@ describe("Permission Model", function () {
     should.exist(PermissionModel);
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData().then(function () {
+        testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });

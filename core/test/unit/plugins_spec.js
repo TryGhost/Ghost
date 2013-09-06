@@ -1,10 +1,12 @@
-/*globals describe, beforeEach, before, it*/
-var _ = require("underscore"),
-    when = require('when'),
+/*globals describe, beforeEach, afterEach,  before, it*/
+var testUtils = require('./testUtils'),
     should = require('should'),
     sinon = require('sinon'),
+    _ = require("underscore"),
+    when = require('when'),
     errors = require('../../server/errorHandling'),
-    helpers = require('./helpers'),
+
+    // Stuff we are testing
     plugins = require('../../server/plugins'),
     GhostPlugin = plugins.GhostPlugin,
     loader = require('../../server/plugins/loader');
@@ -12,20 +14,20 @@ var _ = require("underscore"),
 describe('Plugins', function () {
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData().then(function () {
+        testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });

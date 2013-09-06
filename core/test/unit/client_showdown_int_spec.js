@@ -5,12 +5,14 @@
  */
 
 /*globals describe, it */
-var Showdown = require('showdown'),
+var testUtils = require('./testUtils'),
+    should = require('should'),
+
+    // Stuff we are testing
+    Showdown = require('showdown'),
     github = require('../../shared/vendor/showdown/extensions/github'),
     ghostdown = require('../../client/assets/vendor/showdown/extensions/ghostdown'),
-    converter = new Showdown.converter({extensions: [ghostdown, github]}),
-
-    should = require('should');
+    converter = new Showdown.converter({extensions: [ghostdown, github]});
 
 describe("Showdown client side converter", function () {
 

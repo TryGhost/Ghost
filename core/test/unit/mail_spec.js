@@ -1,8 +1,13 @@
-var cp = require('child_process'),
-    _ = require("underscore"),
-    when = require('when'),
-    sinon = require('sinon'),
+/*globals describe, beforeEach, afterEach, it*/
+var testUtils = require('./testUtils'),
     should = require('should'),
+    sinon = require('sinon'),
+    when = require('when'),
+
+    _ = require("underscore"),
+    cp = require('child_process'),
+
+    // Stuff we are testing
     Ghost = require('../../ghost'),
     defaultConfig = require('../../../config'),
     SMTP,

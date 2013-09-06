@@ -1,7 +1,10 @@
 /*globals describe, beforeEach, it*/
-var should = require('should'),
+var testUtils = require('./testUtils'),
+    should = require('should'),
     when = require('when'),
     sinon = require('sinon'),
+
+    // Stuff we are testing
     errors = require('../../server/errorHandling'),
     // storing current environment
     currentEnv = process.env.NODE_ENV;

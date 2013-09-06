@@ -1,10 +1,12 @@
-/*globals describe, beforeEach, it*/
-var _ = require("underscore"),
-    when = require('when'),
+/*globals describe, before, beforeEach, afterEach, it*/
+var testUtils = require('./testUtils'),
     should = require('should'),
     sinon = require('sinon'),
+    when = require('when'),
+    _ = require("underscore"),
     errors = require('../../server/errorHandling'),
-    helpers = require('./helpers'),
+
+    // Stuff we are testing
     permissions = require('../../server/permissions'),
     Models = require('../../server/models'),
     UserProvider = Models.User,
@@ -14,7 +16,7 @@ var _ = require("underscore"),
 describe('permissions', function () {
 
     before(function (done) {
-        helpers.clearData()
+        testUtils.clearData()
             .then(function () {
                 done();
             }, done);
@@ -22,15 +24,15 @@ describe('permissions', function () {
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData()
-            .then(helpers.insertDefaultUser)
+        testUtils.initData()
+            .then(testUtils.insertDefaultUser)
             .then(function () {
                 done();
             }, done);
     });
 
     afterEach(function (done) {
-        helpers.clearData()
+        testUtils.clearData()
             .then(function () {
                 done();
             }, done);

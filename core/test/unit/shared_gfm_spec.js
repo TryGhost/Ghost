@@ -4,8 +4,11 @@
  */
 
 /*globals describe, it */
-var ghPath = "../../shared/vendor/showdown/extensions/github.js",
+var testUtils = require('./testUtils'),
     should = require('should'),
+
+    // Stuff we are testing
+    ghPath = "../../shared/vendor/showdown/extensions/github.js",
     github = require(ghPath);
 
 function _ExecuteExtension(ext, text) {

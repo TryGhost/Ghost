@@ -1,14 +1,16 @@
 /*globals describe, beforeEach, it*/
-var _ = require("underscore"),
+var testUtils = require('./testUtils'),
     should = require('should'),
-    when = require('when'),
     sinon = require('sinon'),
-    helpers = require('./helpers'),
+    when = require('when'),
+    _ = require("underscore"),
+    errors = require('../../server/errorHandling'),
+
+    // Stuff we are testing
     migration = require('../../server/data/migration'),
     exporter = require('../../server/data/export'),
     Exporter001 = require('../../server/data/export/001'),
     Exporter002 = require('../../server/data/export/002'),
-    errors = require('../../server/errorHandling'),
     Settings = require('../../server/models/settings').Settings;
 
 describe("Export", function () {
@@ -17,7 +19,7 @@ describe("Export", function () {
 
     beforeEach(function (done) {
         // clear database... we need to initialise it manually for each test
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });

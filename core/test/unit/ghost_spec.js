@@ -1,9 +1,12 @@
 /*globals describe, beforeEach, it*/
-var should = require('should'),
-    when = require('when'),
+var testUtils = require('./testUtils'),
+    should = require('should'),
     sinon = require('sinon'),
+    when = require('when'),
     path = require('path'),
     _ = require('underscore'),
+
+    // Stuff we are testing
     Ghost = require('../../ghost');
 
 describe("Ghost API", function () {
@@ -133,7 +136,7 @@ describe("Ghost API", function () {
 
             templateFn().should.equal('<h1>HelloWorld</h1>');
 
-            
+
 
             done();
         }).then(null, done);

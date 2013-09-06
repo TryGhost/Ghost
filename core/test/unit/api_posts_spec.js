@@ -1,9 +1,11 @@
-/*globals describe, beforeEach, it */
-var _ = require("underscore"),
+/*globals describe, before, beforeEach, afterEach, it */
+var testUtils = require('./testUtils'),
+    should = require('should'),
+    _ = require("underscore"),
     when = require('when'),
     sequence = require('when/sequence'),
-    should = require('should'),
-    helpers = require('./helpers'),
+
+    // Stuff we are testing
     Models = require('../../server/models');
 
 describe('Post Model', function () {
@@ -17,14 +19,14 @@ describe('Post Model', function () {
         };
 
     before(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
 
     beforeEach(function (done) {
         this.timeout(5000);
-        helpers.initData()
+        testUtils.initData()
             .then(function () {
                 return UserModel.add(userData);
             })
@@ -34,7 +36,7 @@ describe('Post Model', function () {
     });
 
     afterEach(function (done) {
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
@@ -213,7 +215,7 @@ describe('Post Model', function () {
                     post.get('slug').should.equal('test-title');
                     return;
                 }
-                
+
                 post.get('slug').should.equal('test-title-' + num);
                 post.get('content_raw').should.equal('Test Content ' + num);
             });
@@ -263,7 +265,7 @@ describe('Post Model', function () {
     it('can fetch a paginated set, with various options', function (done) {
         this.timeout(10000); // this is a patch to ensure it doesn't timeout.
 
-        helpers.insertMorePosts().then(function () {
+        testUtils.insertMorePosts().then(function () {
 
             return PostModel.findPage({page: 2});
         }).then(function (paginationResult) {

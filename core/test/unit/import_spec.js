@@ -1,16 +1,18 @@
 /*globals describe, beforeEach, it*/
-var _ = require("underscore"),
+var testUtils = require('./testUtils'),
     should = require('should'),
-    when = require('when'),
     sinon = require('sinon'),
+    when = require('when'),
+    _ = require("underscore"),
+    errors = require('../../server/errorHandling'),
+
+    // Stuff we are testing
     knex = require("../../server/models/base").Knex,
-    helpers = require('./helpers'),
     migration = require('../../server/data/migration'),
     exporter = require('../../server/data/export'),
     importer = require('../../server/data/import'),
     Importer001 = require('../../server/data/import/001'),
     Importer002 = require('../../server/data/import/002'),
-    errors = require('../../server/errorHandling'),
     Settings = require('../../server/models/settings').Settings;
 
 describe("Import", function () {
@@ -20,7 +22,7 @@ describe("Import", function () {
 
     beforeEach(function (done) {
         // clear database... we need to initialise it manually for each test
-        helpers.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }, done);
     });
