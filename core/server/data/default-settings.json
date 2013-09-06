@@ -43,5 +43,11 @@
         "key":          "icon",
         "value":        "",
         "type":         "blog"
+    },
+    {
+        "key":          "postsPerPage",
+        "value":        "6",
+        "type":         "blog"
     }
+
 ]
