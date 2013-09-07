@@ -9,9 +9,12 @@ var testUtils = require('./testUtils'),
     // Stuff we are testing
     plugins = require('../../server/plugins'),
     GhostPlugin = plugins.GhostPlugin,
-    loader = require('../../server/plugins/loader');
+    loader = require('../../server/plugins/loader'),
+    FancyFirstChar = require('../../../content/plugins/FancyFirstChar');
 
 describe('Plugins', function () {
+
+    var sandbox;
 
     before(function (done) {
         testUtils.clearData().then(function () {
@@ -21,12 +24,16 @@ describe('Plugins', function () {
 
     beforeEach(function (done) {
         this.timeout(5000);
+        sandbox = sinon.sandbox.create();
+
         testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
+        sandbox.restore();
+
         testUtils.clearData().then(function () {
             done();
         }, done);
@@ -95,8 +102,8 @@ describe('Plugins', function () {
     it("can initialize an array of plugins", function (done) {
 
         var fakeGhost = {
-                registerFilter: function () { return; },
-                unregisterFilter: function () { return; }
+                registerFilter: sandbox.stub(),
+                unregisterFilter: sandbox.stub()
             },
             installSpy = sinon.spy(loader, "installPluginByName"),
             activateSpy = sinon.spy(loader, "activatePluginByName");
@@ -118,6 +125,109 @@ describe('Plugins', function () {
                 done();
             });
         }, done);
+    });
+
+    describe("FancyFirstChar", function () {
+
+        it("has install and uninstall handlers", function () {
+            should.exist(FancyFirstChar.install);
+            should.exist(FancyFirstChar.uninstall);
+        });
+
+        it("activates and deactivates properly", function () {
+            var fakeGhost = {
+                    registerFilter: sandbox.stub(),
+                    unregisterFilter: sandbox.stub()
+                };
+
+            FancyFirstChar.activate(fakeGhost);
+
+            fakeGhost.registerFilter.called.should.equal(true);
+
+            FancyFirstChar.deactivate(fakeGhost);
+
+            fakeGhost.unregisterFilter.called.should.equal(true);
+        });
+
+        it("fancifies simple text", function () {
+            var original = "Some text to fancify",
+                expect = '<span class="fancyChar">S</span>ome text to fancify',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("fancifies in single tag", function () {
+            var original = "<p>Some text to fancify</p>",
+                expect = '<p><span class="fancyChar">S</span>ome text to fancify</p>',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("fancifies in nested tag", function () {
+            var original = "<p><strong>Some text</strong> to fancify</p>",
+                expect = '<p><strong><span class="fancyChar">S</span>ome text</strong> to fancify</p>',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("fancifies in nested nested tag", function () {
+            var original = "<p><strong><em>Some</em> text</strong> to fancify</p>",
+                expect = '<p><strong><em><span class="fancyChar">S</span>ome</em> text</strong> to fancify</p>',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("fancifies with tags before first text", function () {
+            var original = "<div class='someSpecialDiv'><img src='/kitty.jpg' alt='Kitteh' title='Kitteh'></div><p><strong>Some text</strong> to fancify</p>",
+                expect = "<div class='someSpecialDiv'><img src='/kitty.jpg' alt='Kitteh' title='Kitteh'></div><p><strong><span class=\"fancyChar\">S</span>ome text</strong> to fancify</p>",
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("does nothing if no text found", function () {
+            var original = "<div class='someSpecialDiv'><img src='/kitty.jpg' alt='Kitteh' title='Kitteh'></div>",
+                expect = "<div class='someSpecialDiv'><img src='/kitty.jpg' alt='Kitteh' title='Kitteh'></div>",
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("skips leading white space", function () {
+            var original = "\n\t  <p>Some text to fancify</p>",
+                expect = '\n\t  <p><span class="fancyChar">S</span>ome text to fancify</p>',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
+
+        it("skips white space in inner tags", function () {
+            var original = "\n\t  <p>\n\t\t Some text to fancify</p>",
+                expect = '\n\t  <p>\n\t\t <span class="fancyChar">S</span>ome text to fancify</p>',
+                result;
+
+            result = FancyFirstChar.fancify(original);
+
+            result.should.equal(expect);
+        });
     });
 
 });

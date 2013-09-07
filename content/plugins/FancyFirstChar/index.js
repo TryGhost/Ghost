@@ -1,16 +1,55 @@
 var util = require('util'),
     _ = require('underscore'),
-    fancifyPlugin;
+    fancifyPlugin,
+    whiteSpace = [
+        '',
+        ' ',
+        '\t',
+        '\n',
+        '\r'
+    ];
 
 fancifyPlugin = {
 
     // Fancify a single post body
     fancify: function (originalContent) {
         var newContent,
-            firstCharIndex = 0;
+            firstCharIndex = 0,
+            firstChar,
+            getIndexOfNextCharacter = function (beginFrom) {
+                var currIndex = beginFrom,
+                    nextChar;
+                    
+                nextChar = originalContent.substr(currIndex, 1);
+                while (_.contains(whiteSpace, nextChar) && currIndex !== originalContent.length) {
+                    currIndex += 1;
+                    nextChar = originalContent.substr(currIndex, 1);    
+                }
 
-        if (originalContent.substr(0, 1) === '<') {
-            firstCharIndex = originalContent.indexOf('>') + 1;
+                return currIndex;
+            },
+            getAfterNextClosingTag = function (beginFrom) {
+                return originalContent.indexOf('>', beginFrom) + 1;
+            };
+        
+        // Skip any leading white space until we get a character
+        firstCharIndex = getIndexOfNextCharacter(firstCharIndex);
+
+        firstChar = originalContent.substr(firstCharIndex, 1);
+        while (firstChar === '<') {
+            // Get after the close of the tag
+            firstCharIndex = getAfterNextClosingTag(firstCharIndex);
+
+            // Skip any white space until we get a character
+            firstCharIndex = getIndexOfNextCharacter(firstCharIndex);
+
+            // Grab the character
+            firstChar = originalContent.substr(firstCharIndex, 1);
+        }
+
+        // Do nothing if we found no characters
+        if (firstCharIndex === originalContent.length) {
+            return originalContent;
         }
 
         newContent = originalContent.substr(0, firstCharIndex);
