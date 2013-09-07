@@ -136,7 +136,7 @@
         style: null,
         syntax: {
             bold: "**$1**",
-            italic: "_$1_",
+            italic: "*$1*",
             strike: "~~$1~~",
             code: "`$1`",
             link: "[$1](http://)",
