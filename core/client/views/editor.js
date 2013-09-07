@@ -301,7 +301,12 @@
                         close: true,
                         type: "info",
                         style: ["wide"],
-                        animation: 'fade'
+                        animation: 'fade',
+                        afterRender: function () {
+                            if (navigator.userAgent.indexOf('Mac OS X') !== -1) {
+                                this.$(".modal-content").html(this.$(".modal-content").html().replace(/Ctrl/g, '&#8984;'));
+                            }
+                        }
                     },
                     content: {
                         template: 'markdown',
