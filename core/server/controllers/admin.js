@@ -53,19 +53,40 @@ function setSelected(list, name) {
     return list;
 }
 
+// TODO: this could be a separate module
+function getUniqueFileName(dir, name, ext, i, done) {
+    var filename,
+        append = '';
+
+    if (i) {
+        append = '-' + i;
+    }
+
+    filename = path.join(dir, name + append + ext);
+    fs.exists(filename, function (exists) {
+        if (exists) {
+            setImmediate(function () {
+                i = i + 1;
+                return getUniqueFileName(dir, name, ext, i, done);
+            });
+        } else {
+            return done(filename);
+        }
+    });
+}
+
 adminControllers = {
     'uploader': function (req, res) {
+
         var currentDate = moment(),
             month = currentDate.format("MMM"),
             year =  currentDate.format("YYYY"),
             tmp_path = req.files.uploadimage.path,
             dir = path.join('content/images', year, month),
-            target_path = path.join(dir, req.files.uploadimage.name),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-        // the src for the image must be in URI format, not a file system path, which in Windows uses \
-            src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
+            basename = path.basename(req.files.uploadimage.name, ext);
 
-        function renameFile() {
+        function renameFile(target_path) {
             // adds directories recursively
             fs.mkdirs(dir, function (err) {
                 if (err) {
@@ -75,6 +96,9 @@ adminControllers = {
                         if (err) {
                             errors.logError(err);
                         } else {
+                            // TODO: should delete temp file at tmp_path. Or just move the file instead of copy.
+                            // the src for the image must be in URI format, not a file system path, which in Windows uses \
+                            var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
                             res.send(src);
                         }
                     });
@@ -82,8 +106,11 @@ adminControllers = {
             });
         }
 
+        // TODO: is it better to use file type eg. image/png?
         if (ext === ".jpg" || ext === ".png" || ext === ".gif") {
-            renameFile();
+            getUniqueFileName(dir, basename, ext, null, function (filename) {
+                renameFile(filename);
+            });
         } else {
             res.send(404, "Invalid filetype");
         }
