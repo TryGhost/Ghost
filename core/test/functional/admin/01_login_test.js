@@ -20,7 +20,7 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {
@@ -90,11 +90,13 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
         return this.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
 
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {
         this.fill("#login", falseUser, true);
+    }, function onTimeout() {
+        test.fail('Sign in form didn\'t fade in.');
     });
 
     casper.wait(200, function doneWait() {
@@ -108,6 +110,10 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'Spamming the login did not result in an error notification');
     });
+
+    // This test causes the spam notification
+    // add a wait to ensure future tests don't get tripped up by this.
+    casper.wait(1000);
 
     casper.run(function () {
         test.done();

@@ -43,7 +43,7 @@ casper.test.begin("Can't spam signin", 3, function suite(test) {
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {
