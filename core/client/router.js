@@ -19,15 +19,15 @@
         },
 
         signup: function () {
-            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-login-container' });
+            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-login-box' });
         },
 
         login: function () {
-            Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-container' });
+            Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-box' });
         },
 
         forgotten: function () {
-            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-login-container' });
+            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-login-box' });
         },
 
         blog: function () {

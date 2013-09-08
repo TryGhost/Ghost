@@ -6,37 +6,9 @@
     Ghost.SimpleFormView = Ghost.View.extend({
         initialize: function () {
             this.render();
-            $(window).trigger('resize');
-        },
-
-        afterRender: function () {
-            var self = this;
-
-            $(window).on('resize', self.centerOnResize);
-
-            $(window).one('centered', self.fadeInAndFocus);
-        },
-
-        fadeInAndFocus: function () {
-            $(".js-login-container").fadeIn(750, function () {
+            $(".js-login-box").fadeIn(500, function () {
                 $("[name='email']").focus();
             });
-        },
-
-        centerOnResize: _.debounce(function (e) {
-            var container = $(".js-login-container");
-            container.css({
-                'position': 'relative'
-            }).animate({
-                'top': Math.round($(window).height() / 2) - container.outerHeight() / 2 + 'px'
-            });
-            $(window).trigger("centered");
-        }, 100),
-
-        remove: function () {
-            var self = this;
-            $(window).off('resize', self.centerOnResize);
-            $(window).off('centered', self.fadeInAndFocus);
         }
     });
 
