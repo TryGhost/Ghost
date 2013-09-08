@@ -15,7 +15,7 @@ casper.test.begin('Ensure Session is Killed', 1, function suite(test) {
 casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
     test.filename = 'login_user_registered_test.png';
 
-    casper.start(url + 'ghost/signup/');
+    casper.start(url + 'ghost/signup/').viewport(1280, 1024);
 
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
@@ -124,7 +124,7 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
     casper.waitFor(function checkOpaque() {
         return casper.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });
     }, function then() {

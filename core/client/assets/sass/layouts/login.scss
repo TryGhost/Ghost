@@ -18,16 +18,14 @@
         background: $darkgrey;
     }
 
-    main { 
-        top: 0;
-    }
 }//.ghost-login
 
 .login-box {
     max-width: 530px;
+    height: 90%;
     margin: 0 auto;
     padding: 0;
-    display: none;
+    display: table;
 
     @include breakpoint(630px) {
         max-width: 264px;
@@ -39,6 +37,8 @@
     @include box-sizing(border-box);
     max-width: 530px;
     color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
 
     @include breakpoint(630px) {
         max-width: 264px;
