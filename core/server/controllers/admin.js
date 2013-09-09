@@ -62,7 +62,8 @@ adminControllers = {
             dir = path.join('content/images', year, month),
             target_path = path.join(dir, req.files.uploadimage.name),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            src = path.join('/', target_path);
+        // the src for the image must be in URI format, not a file system path, which in Windows uses \
+            src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
         function renameFile() {
             // adds directories recursively
