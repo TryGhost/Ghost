@@ -59,7 +59,7 @@
                     done: function (e, data) {
                         function showImage(width, height) {
                             $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
-                            $dropzone.find('.fileupload-loading').removeClass('fileupload-loading');
+                            $dropzone.find('.fileupload-loading').remove();
                             $dropzone.css({"height": "auto"});
                             $dropzone.delay(250).animate({opacity: 100}, 1000, function () {
                                 self.init();
