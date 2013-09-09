@@ -59,7 +59,6 @@
         statusMap: {
             'draft': 'Save Draft',
             'published': 'Publish Now',
-            'scheduled': 'Save Schedued Post',
             'queue': 'Add to Queue',
             'publish-on': 'Publish on...'
         },
@@ -67,9 +66,15 @@
         notificationMap: {
             'draft': 'has been saved as a draft',
             'published': 'has been published',
-            'scheduled': 'has been scheduled',
             'queue': 'has been added to the queue',
-            'publish-on': 'will be published'
+            'publish-on': 'has been scheduled'
+        },
+
+        errorMap: {
+            'draft': 'could not be saved as a draft',
+            'published': 'could not be published',
+            'queue': 'could not be added to the queue',
+            'publish-on': 'could not be scheduled'
         },
 
         initialize: function () {
@@ -114,7 +119,7 @@
                     status: 'passive'
                 });
             }, function (xhr) {
-                var status = keys[newIndex];
+                var status = this.errorMap[newIndex];
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
                 // Set the button text back to previous
@@ -156,23 +161,22 @@
         updatePost: function (status) {
             var self = this,
                 model = this.model,
-                prevStatus = model.get('status'),
-                notificationMap = this.notificationMap;
+                prevStatus = model.get('status');
 
             // Default to same status if not passed in
             status = status || prevStatus;
 
             if (status === 'publish-on') {
                 return Ghost.notifications.addItem({
-                    type: 'alert',
-                    message: 'Scheduled publishing not supported yet.',
+                    type: 'error',
+                    message: 'Scheduled publishing is not supported yet.',
                     status: 'passive'
                 });
             }
             if (status === 'queue') {
                 return Ghost.notifications.addItem({
-                    type: 'alert',
-                    message: 'Scheduled publishing not supported yet.',
+                    type: 'error',
+                    message: 'Scheduled publishing is not supported yet.',
                     status: 'passive'
                 });
             }
@@ -184,12 +188,12 @@
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: ['Your post ', notificationMap[status], '.'].join(''),
+                    message: ['Your post ', this.notificationMap[status], '.'].join(''),
                     status: 'passive'
                 });
             }, function (xhr) {
                 // Show a notification about the error
-                self.reportSaveError(xhr, model, status);
+                self.reportSaveError(xhr, model, this.errorMap[status]);
                 // Set the button text back to previous
                 model.set({ status: prevStatus });
             });
@@ -215,15 +219,14 @@
         },
 
         reportSaveError: function (response, model, status) {
-            var title = model.get('title') || '[Untitled]',
-                message = 'Your post: ' + title + ' has not been ' + status;
+            var message = 'Your post ' + status + '.';
 
             if (response) {
                 // Get message from response
                 message = Ghost.Views.Utils.getRequestErrorMessage(response);
             } else if (model.validationError) {
                 // Grab a validation error
-                message += "; " + model.validationError;
+                message += " " + model.validationError;
             }
 
             Ghost.notifications.addItem({
