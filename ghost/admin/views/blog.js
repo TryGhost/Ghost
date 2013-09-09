@@ -131,8 +131,7 @@
 
         deletePost: function (e) {
             e.preventDefault();
-            var self = this,
-                title = self.model.get('title');
+            var self = this;
             this.addSubview(new Ghost.Views.Modal({
                 model: {
                     options: {
@@ -145,13 +144,13 @@
                                     }).then(function () {
                                         Ghost.notifications.addItem({
                                             type: 'success',
-                                            message: 'Your post: ' + title + ' has been deleted',
+                                            message: 'Your post has been deleted.',
                                             status: 'passive'
                                         });
                                     }, function () {
                                         Ghost.notifications.addItem({
                                             type: 'error',
-                                            message: 'Your post: ' + title + ' has not been deleted.',
+                                            message: 'Your post could not be deleted. Please try again.',
                                             status: 'passive'
                                         });
                                     });
