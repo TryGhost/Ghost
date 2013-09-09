@@ -3,18 +3,6 @@
 var path = require('path'),
     config  = {};
 
-// ## Default Navigation Items
-// Add new objects here to extend the menu output by {{nav}}
-config.nav = [
-    {
-        // Title is the text shown for this nav item
-        title: 'Home',
-        // Url can be a relative path, or external URL
-        url: '/'
-    }
-    // new items go here
-];
-
 // ## Environment
 // **Warning:** Only change the settings below here if you are sure of what you are doing!
 config.env = {

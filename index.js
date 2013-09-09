@@ -16,7 +16,6 @@ var express = require('express'),
     api = require('./core/server/api'),
     Ghost = require('./core/ghost'),
     I18n = require('./core/shared/lang/i18n'),
-    filters = require('./core/server/filters'),
     helpers = require('./core/server/helpers'),
     packageInfo = require('./package.json'),
 
@@ -105,15 +104,7 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
 
-    if (!res.isAdmin) {
-        // filter the navigation items
-        ghost.doFilter('ghostNavItems', {path: req.path, navItems: []}, function (navData) {
-            // pass the theme navigation items, settings get configured as globals
-            _.extend(res.locals, navData);
-
-            next();
-        });
-    } else {
+    if (res.isAdmin) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 // pass the admin flash messages, settings and paths
@@ -137,6 +128,8 @@ function ghostLocals(req, res, next) {
             });
             next();
         });
+    } else {
+        next();
     }
 }
 
@@ -154,7 +147,7 @@ function disableCachedResult(req, res, next) {
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
-when.all([ghost.init(), filters.loadCoreFilters(ghost), helpers.loadCoreHelpers(ghost)]).then(function () {
+when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
     // ##Configuration
     ghost.app().configure(function () {

@@ -9,8 +9,7 @@ var _ = require('underscore'),
 
 
 coreHelpers = function (ghost) {
-    var navHelper,
-        paginationHelper;
+    var paginationHelper;
 
     /**
      * [ description]
@@ -309,19 +308,6 @@ coreHelpers = function (ghost) {
     // ## Template driven helpers
     // Template driven helpers require that their template is loaded before they can be registered.
 
-    // ###Nav Helper
-    // `{{nav}}`
-    // Outputs a navigation menu built from items in config.js
-    navHelper = ghost.loadTemplate('nav').then(function (templateFn) {
-        ghost.registerThemeHelper('nav', function (options) {
-            if (!_.isObject(this.navItems) || _.isFunction(this.navItems)) {
-                errors.logAndThrowError('navItems data is not an object or is a function');
-                return;
-            }
-            return new hbs.handlebars.SafeString(templateFn({links: this.navItems}));
-        });
-    });
-
     // ### Pagination Helper
     // `{{pagination}}`
     // Outputs previous and next buttons, along with info about the current page
@@ -358,7 +344,6 @@ coreHelpers = function (ghost) {
     });
     // Return once the template-driven helpers have loaded
     return when.join(
-        navHelper,
         paginationHelper
     );
 };
