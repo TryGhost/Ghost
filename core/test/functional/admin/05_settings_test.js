@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url */
 
-casper.test.begin("Settings screen is correct", 19, function suite(test) {
+casper.test.begin("Settings screen is correct", 15, function suite(test) {
     test.filename = "settings_test.png";
 
     casper.start(url + "ghost/settings", function testTitleAndUrl() {
@@ -22,31 +22,12 @@ casper.test.begin("Settings screen is correct", 19, function suite(test) {
         }, "loaded content is general screen");
     });
 
-    // test the publishing / content tab
-    casper.thenClick('.settings-menu .publishing');
-    casper.waitForSelector('#content', function then() {
-        test.assertEval(function testGeneralIsNotActive() {
-            return !document.querySelector('.settings-menu .general').classList.contains('active');
-        }, "general tab is not marked active");
-        test.assertEval(function testContentIsActive() {
-            return document.querySelector('.settings-menu .publishing').classList.contains('active');
-        }, "content tab is marked active");
-        test.assertEval(function testContentIsContent() {
-            return document.querySelector('.settings-content').id === 'content';
-        }, "loaded content is content screen");
-    }, function onTimeOut() {
-        test.fail('Content screen failed to load');
-    });
-
     // test the user tab
     casper.thenClick('.settings-menu .users');
     casper.waitForSelector('#user', function then() {
         test.assertEval(function testGeneralIsNotActive() {
             return !document.querySelector('.settings-menu .general').classList.contains('active');
         }, "general tab is not marked active");
-        test.assertEval(function testContentIsNotActive() {
-            return !document.querySelector('.settings-menu .publishing').classList.contains('active');
-        }, "content tab is marked active");
         test.assertEval(function testUserIsActive() {
             return document.querySelector('.settings-menu .users').classList.contains('active');
         }, "user tab is marked active");
