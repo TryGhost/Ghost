@@ -160,12 +160,13 @@
             var themes = this.model.get('availableThemes');
             this.model.unset('availableThemes');
             this.model.save({
+                id: 0, //workaround to use put
                 title: this.$('#blog-title').val(),
+                description: $('#blog-description').val(),
+                logo: this.$('#blog-logo').attr("src"),
                 email: this.$('#email-address').val(),
-                logo: this.$('#logo').attr("src"),
-                icon: this.$('#icon').attr("src"),
-                activeTheme: this.$('#activeTheme').val(),
-                postsPerPage: this.$('#postsPerPage').val()
+                postsPerPage: this.$('#postsPerPage').val(),
+                activeTheme: this.$('#activeTheme').val()
             }, {
                 success: this.saveSuccess,
                 error: this.saveError
@@ -202,12 +203,6 @@
         },
         templateName: 'settings/general',
 
-        beforeRender: function () {
-            var settings = this.model.toJSON();
-            this.$('#blog-title').val(settings.title);
-            this.$('#email-address').val(settings.email);
-        },
-
         afterRender: function () {
             this.$('.js-drop-zone').upload();
             Settings.Pane.prototype.afterRender.call(this);
@@ -232,12 +227,8 @@
             this.model.set({availableThemes: themes});
         },
 
-        templateName: 'settings/content',
+        templateName: 'settings/content'
 
-        beforeRender: function () {
-            var settings = this.model.toJSON();
-            this.$('#blog-description').val(settings.description);
-        }
     });
 
     // ### User profile
@@ -346,17 +337,6 @@
         },
 
         templateName: 'settings/user-profile',
-
-        beforeRender: function () {
-            var user = this.model.toJSON();
-            this.$('#user-name').val(user.full_name);
-            this.$('#user-email').val(user.email_address);
-            this.$('#user-location').val(user.location);
-            this.$('#user-website').val(user.url);
-            this.$('#user-bio').val(user.bio);
-            this.$('#user-profile-picture').attr('src', user.profile_picture);
-            this.$('#user-cover-picture').attr('src', user.cover_picture);
-        },
 
         afterRender: function () {
             var self = this;

@@ -14,9 +14,15 @@
             </div>
 
             <div class="form-group">
+                <label for="blog-description"><strong>Blog Description</strong></label>
+                <textarea id="blog-description">{{description}}</textarea>
+                <p>Display a short description below the blog title</p>
+            </div>
+
+            <div class="form-group">
                 <label><strong>Blog Logo</strong></label>
                 {{#if logo}}
-                    <a class="js-modal-logo"><img src="{{logo}}" alt="logo"></a>
+                    <a class="js-modal-logo"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
                 {{else}}
                     <a class="button-add js-modal-logo" href="#">Upload Image</a>
                 {{/if}}
@@ -24,33 +30,15 @@
             </div>
 
             <div class="form-group">
-                <label><strong>Blog Icon</strong></label>
-                {{#if icon}}
-                    <a class="js-modal-icon"><img src="{{icon}}" alt="icon"></a>
-                {{else}}
-                    <a class="button-add js-modal-icon" href="#">Upload Image</a>
-                {{/if}}
-
-                <p>The icon for your blog, used in your browser tab and elsewhere</p>
-            </div>
-
-            <div class="form-group">
                 <label for="email-address"><strong>Email Address</strong></label>
                 <input id="email-address" name="general[email-address]" type="email" value="{{email}}">
                 <p>Address to use for <a href="#">admin notifications</a></p>
-                <label class="checkbox">
-                    <input type="checkbox" value="1" name="general[public-email]"> Show my email address on my public profile
-                </label>
             </div>
-
+            
             <div class="form-group">
-                <label for="url-structure"><strong>URL Structure</strong></label>
-                <select id="url-structure" name="general[urlstructure]">
-                    <option value="post-name">Simple Post Name</option>
-                    <option value="date-based">Date Based</option>
-                    <option value="number based">Number Based</option>
-                    <option value="custom">Custom...</option>
-                </select>
+                <label for="postsPerPage"><strong>Posts per page</strong></label>
+                <input id="postsPerPage" name="general[postsPerPage]" type="number" value="{{postsPerPage}}">
+                <p>Number of posts per page displayed</p>
             </div>
 
             <div class="form-group">
@@ -60,24 +48,10 @@
                         <option value="{{name}}" {{#if active}}selected{{/if}}>{{name}}</option>
                     {{/each}}
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="postsPerPage"><strong>Posts per page</strong></label>
-                <input id="postsPerPage" name="general[postsPerPage]" type="number" value="{{postsPerPage}}">
-                <p>Number of posts per page displayed</p>
+                <p>Select a theme for your blog</p>
             </div>
 
         </fieldset>
 
-        <hr />
-
-        <fieldset>
-            <div class="form-group">
-                <label for="timezone"><strong>Time Zone</strong></label>
-                <select id="timezone" name="general[timezone]">
-                    <option value="1">Vienna (UTC+1)</option>
-                </select>
-            </div>
-        </fieldset>
     </form>
 </section>
