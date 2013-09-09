@@ -21,9 +21,14 @@ frontendControllers = {
         // No negative pages
         if (isNaN(pageParam) || pageParam < 1) {
             //redirect to 404 page?
-            return res.redirect("/page/1/");
+            return res.redirect("/");
         }
         options.page = pageParam;
+
+        // Redirect '/page/1/' to '/' for all teh good SEO
+        if (pageParam === 1 && req.route.path === '/page/:page/') {
+            return res.redirect('/');
+        }
 
         // No negative posts per page, must be number
         if (!isNaN(postsPerPage) && postsPerPage > 0) {
@@ -42,7 +47,7 @@ frontendControllers = {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > maxPage) {
-                return res.redirect("/page/" + maxPage + "/");
+                return res.redirect(maxPage === 1 ? '/' : ('/page/' + maxPage + '/'));
             }
 
             // Render the page of posts

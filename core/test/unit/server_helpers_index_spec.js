@@ -245,6 +245,18 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('Page Url Helper', function () {
+        it('has loaded pageUrl helper', function () {
+            should.exist(handlebars.helpers.pageUrl);
+        });
+
+        it('can return a valid url', function () {
+            handlebars.helpers.pageUrl(1).should.equal('/');
+            handlebars.helpers.pageUrl(2).should.equal('/page/2/');
+            handlebars.helpers.pageUrl(50).should.equal('/page/50/');
+        });
+    });
+
     describe("Pagination helper", function () {
         var paginationRegex = /class="pagination"/,
             newerRegex = /class="newer-posts"/,
