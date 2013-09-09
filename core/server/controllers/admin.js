@@ -140,10 +140,12 @@ adminControllers = {
     },
 
     'doRegister': function (req, res) {
-        var email = req.body.email,
+        var name = req.body.name,
+            email = req.body.email,
             password = req.body.password;
 
         api.users.add({
+            full_name: name,
             email_address: email,
             password: password
         }).then(function (user) {

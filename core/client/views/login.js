@@ -53,18 +53,20 @@
         templateName: "signup",
 
         events: {
-            'submit #register': 'submitHandler'
+            'submit #signup': 'submitHandler'
         },
 
         submitHandler: function (event) {
             event.preventDefault();
-            var email = this.$el.find('.email').val(),
+            var name = this.$el.find('.name').val(),
+                email = this.$el.find('.email').val(),
                 password = this.$el.find('.password').val();
 
             $.ajax({
                 url: '/ghost/signup/',
                 type: 'POST',
                 data: {
+                    name: name,
                     email: email,
                     password: password
                 },
