@@ -56,6 +56,21 @@ User = GhostBookshelf.Model.extend({
             attrs.website = attrs.url;
         }
 
+        // temporary alias of email for email_address (will get changed in the schema)
+        if (attrs.email_address && !attrs.email) {
+            attrs.email = attrs.email_address;
+        }
+
+        // temporary alias of image for profile_picture (will get changed in the schema)
+        if (attrs.profile_picture && !attrs.image) {
+            attrs.image = attrs.profile_picture;
+        }
+
+        // temporary alias of cover for cover_picture (will get changed in the schema)
+        if (attrs.cover_picture && !attrs.cover) {
+            attrs.cover = attrs.cover_picture;
+        }
+
         return attrs;
     },
 
