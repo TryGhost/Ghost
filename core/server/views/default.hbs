@@ -18,7 +18,8 @@
         <meta http-equiv="cleartype" content="on">
 
         <link rel="stylesheet" type='text/css' href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
-        <link rel="stylesheet" href="/public/css/screen.css">
+        <link rel="stylesheet" href="{{assetPath "/public/assets/css/screen"}}">
+
         {{{block "pageStyles"}}}
     </head>
     <body class="{{bodyClass}}">
@@ -36,61 +37,21 @@
 
         <aside id="modal-container">
         </aside>
+        
+        <!-- Shared Vendor Files -->
+        <script src="{{assetPath '/shared/vendor/vendor'}}"></script>
+        <!-- Client Vendor Files -->
+        <script src="{{assetPath '/public/assets/vendor/vendor'}}"></script>
 
-        <script src="/shared/vendor/jquery/jquery.js"></script>
-        <script src="/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js"></script>
-        <script src="/public/lib/jquery-utils.js"></script>
-        <script src="/shared/vendor/underscore.js"></script>
-        <script src="/shared/vendor/backbone/backbone.js"></script>
-        <script src="/shared/vendor/handlebars/handlebars-runtime.js"></script>
-        <script src="/shared/vendor/moment.js"></script>
+        <!-- 
+        TODO: This file is weird because it has to come after the showdown library reference, but I can't figure out 
+        how to reference it in the /shared/vendor/vendor file 
+        -->
+        <script src="{{assetPath '/shared/vendor/showdown/extensions/github'}}"></script>
 
-        <script src="/public/vendor/icheck/jquery.icheck.min.js"></script>
-
-        <script src="/shared/vendor/jquery/jquery.ui.widget.js"></script>
-        <script src="/shared/vendor/jquery/jquery.iframe-transport.js"></script>
-        <script src="/shared/vendor/jquery/jquery.fileupload.js"></script>
-
-        <script src="/public/vendor/codemirror/codemirror.js"></script>
-        <script src="/public/vendor/codemirror/addon/mode/overlay.js"></script>
-        <script src="/public/vendor/codemirror/mode/markdown/markdown.js"></script>
-        <script src="/public/vendor/codemirror/mode/gfm/gfm.js"></script>
-        <script src="/public/vendor/showdown/showdown.js"></script>
-        <script src="/public/vendor/showdown/extensions/ghostdown.js"></script>
-        <script src="/shared/vendor/showdown/extensions/github.js"></script>
-        <script src="/public/vendor/shortcuts.js"></script>
-        <script src="/public/vendor/countable.js"></script>
-        <script src="/public/vendor/to-title-case.js"></script>
-        <script src="/public/vendor/packery.pkgd.min.js"></script>
-        <script src="/public/vendor/jquery.hammer.min.js"></script>
-
-        <script src="/public/init.js"></script>
-
-        <script src="/public/assets/lib/uploader.js"></script>
-
-        <script src="/public/tpl/hbs-tpl.js"></script>
-        <script src="/public/mobile-interactions.js"></script>
-        <script src="/public/toggle.js"></script>
-        <script src="/public/markdown-actions.js"></script>
-        <script src="/public/helpers/index.js"></script>
-
-        <!-- // require '/public/models/*' -->
-        <script src="/public/models/post.js"></script>
-        <script src="/public/models/user.js"></script>
-        <script src="/public/models/tag.js"></script>
-        <script src="/public/models/widget.js"></script>
-        <script src="/public/models/settings.js"></script>
-        <script src="/public/models/themes.js"></script>
-        <!-- // require '/public/views/*' -->
-        <script src="/public/views/base.js"></script>
-        <script src="/public/views/dashboard.js"></script>
-        <script src="/public/views/blog.js"></script>
-        <script src="/public/views/editor.js"></script>
-        <script src="/public/views/editor-tag-widget.js"></script>
-        <script src="/public/views/login.js"></script>
-        <script src="/public/views/settings.js"></script>
-        <script src="/public/views/debug.js"></script>
-        <script src="/public/router.js"></script>
+        <!-- Main Ghost Files -->
+        <script src="{{assetPath '/public/main'}}"></script>
+        
         {{{block "bodyScripts"}}}
         <script>
             Ghost.init();

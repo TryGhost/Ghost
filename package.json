@@ -29,7 +29,8 @@
         "downsize": "0.0.2",
         "validator": "1.4.0",
         "rss": "0.2.0",
-        "nodemailer": "~0.5.2"
+        "nodemailer": "~0.5.2",
+        "mincer": "~0.5.7"
     },
     "devDependencies": {
         "grunt": "~0.4.1",

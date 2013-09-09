@@ -5,6 +5,7 @@
 var config = require('./../config'),
     when = require('when'),
     express = require('express'),
+    Mincer = require("mincer"),
     errors = require('./server/errorHandling'),
     fs = require('fs'),
     path = require('path'),
@@ -311,14 +312,66 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
     }, errors.logAndThrowError);
 };
 
+// Initialize assets (hashing, concating and minifying)
+Ghost.prototype.initAssets = function (app) {
+    var publicEnvironment,
+        sharedEnvironment;
+
+    function getAssetPath(pathName) {
+        var parts = pathName.split('/'),
+            begin = 0,
+            root,
+            logicalPath,
+            environ,
+            asset;
+
+        // Skip leading blanks if pathName starts with /
+        if (parts[begin] === '') {
+            begin += 1;
+        }
+
+        root = parts[begin];
+        logicalPath = parts.slice(begin + 1).join('/');
+
+        environ = root === "shared" ? sharedEnvironment : publicEnvironment;
+
+        asset = environ.findAsset(logicalPath);
+
+        return asset ? '/' + root + '/' + asset.digestPath : pathName;
+    }
+
+    // Public assets (client folder)
+    publicEnvironment = new Mincer.Environment();
+    publicEnvironment.appendPath(path.join(__dirname, 'client'));
+    app.use("/public", Mincer.createServer(publicEnvironment));
+
+    // Shared assets (shared folder)
+    sharedEnvironment = new Mincer.Environment();
+    sharedEnvironment.appendPath(path.join(__dirname, 'shared'));
+    app.use('/shared', Mincer.createServer(sharedEnvironment));
+
+    // Register the view helper for getting hashed asset paths
+    hbs.registerHelper("assetPath", function (name) {
+        return getAssetPath(name);
+    });
+
+    // Left over static assets from initTheme
+    // return the correct mime type for woff files
+    app.set('view engine', 'hbs');
+    express['static'].mime.define({'application/font-woff': ['woff']});
+    app.use(express['static'](this.paths().activeTheme));
+    app.use('/content/images', express['static'](path.join(__dirname, '../content/images')));
+};
+
 // Initialise Theme or admin
 Ghost.prototype.initTheme = function (app) {
     var self = this,
         hbsOptions;
+
+    // Initialize our various asset directories
+    this.initAssets(app);
+
     return function initTheme(req, res, next) {
-        app.set('view engine', 'hbs');
-        // return the correct mime type for woff files
-        express['static'].mime.define({'application/font-woff': ['woff']});
 
         if (!res.isAdmin) {
 
@@ -339,13 +392,10 @@ Ghost.prototype.initTheme = function (app) {
             app.set('views', self.paths().activeTheme);
         } else {
             app.engine('hbs', hbs.express3({partialsDir: self.paths().adminViews + 'partials'}));
+
             app.set('views', self.paths().adminViews);
-            app.use('/public', express['static'](path.join(__dirname, '/client/assets')));
-            app.use('/public', express['static'](path.join(__dirname, '/client')));
         }
-        app.use(express['static'](self.paths().activeTheme));
-        app.use('/shared', express['static'](path.join(__dirname, '/shared')));
-        app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
+
         next();
     };
 };
