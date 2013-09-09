@@ -153,7 +153,7 @@
         events: {
             'click .button-save': 'saveSettings',
             'click .js-modal-logo': 'showLogo',
-            'click .js-modal-icon': 'showIcon'
+            'click .js-modal-cover': 'showCover'
         },
 
         saveSettings: function () {
@@ -164,6 +164,7 @@
                 title: this.$('#blog-title').val(),
                 description: $('#blog-description').val(),
                 logo: this.$('#blog-logo').attr("src"),
+                cover: this.$('#blog-cover').attr("src"),
                 email: this.$('#email-address').val(),
                 postsPerPage: this.$('#postsPerPage').val(),
                 activeTheme: this.$('#activeTheme').val()
@@ -177,9 +178,9 @@
             var settings = this.model.toJSON();
             this.showUpload('#logo', 'logo', settings.logo);
         },
-        showIcon: function () {
+        showCover: function () {
             var settings = this.model.toJSON();
-            this.showUpload('#icon', 'icon', settings.icon);
+            this.showUpload('#cover', 'cover', settings.icon);
         },
         showUpload: function (id, key, src) {
             var self = this, upload = new Ghost.Models.uploadModal({'id': id, 'key': key, 'src': src, 'accept': {
@@ -207,28 +208,6 @@
             this.$('.js-drop-zone').upload();
             Settings.Pane.prototype.afterRender.call(this);
         }
-    });
-
-    // ### Content settings
-    Settings.content = Settings.Pane.extend({
-        id: 'content',
-        events: {
-            'click .button-save': 'saveSettings'
-        },
-        saveSettings: function () {
-            var themes = this.model.get('availableThemes');
-            this.model.unset('availableThemes');
-            this.model.save({
-                description: this.$('#blog-description').val()
-            }, {
-                success: this.saveSuccess,
-                error: this.saveError
-            });
-            this.model.set({availableThemes: themes});
-        },
-
-        templateName: 'settings/content'
-
     });
 
     // ### User profile
