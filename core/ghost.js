@@ -105,7 +105,8 @@ Ghost = function () {
                     url: instance.config().env[process.env.NODE_ENV].url,
                     title: instance.settings().title,
                     description: instance.settings().description,
-                    logo: instance.settings().logo
+                    logo: instance.settings().logo,
+                    cover: instance.settings().cover
                 };
             },
             statuses: function () { return statuses; },

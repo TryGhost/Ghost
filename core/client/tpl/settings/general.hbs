@@ -30,11 +30,21 @@
             </div>
 
             <div class="form-group">
+                <label><strong>Blog Cover</strong></label>
+                {{#if logo}}
+                    <a class="js-modal-cover"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
+                {{else}}
+                    <a class="button-add js-modal-cover" href="#">Upload Image</a>
+                {{/if}}
+                <p>Display a cover photo on your site</p>
+            </div>
+
+            <div class="form-group">
                 <label for="email-address"><strong>Email Address</strong></label>
                 <input id="email-address" name="general[email-address]" type="email" value="{{email}}">
                 <p>Address to use for <a href="#">admin notifications</a></p>
             </div>
-            
+
             <div class="form-group">
                 <label for="postsPerPage"><strong>Posts per page</strong></label>
                 <input id="postsPerPage" name="general[postsPerPage]" type="number" value="{{postsPerPage}}">
