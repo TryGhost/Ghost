@@ -152,7 +152,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     // ##Configuration
     ghost.app().configure(function () {
         ghost.app().use(isGhostAdmin);
-        ghost.app().use(express.favicon(__dirname + '/content/images/favicon.ico'));
+        ghost.app().use(express.favicon(__dirname + '/core/shared/favicon.ico'));
         ghost.app().use(I18n.load(ghost));
         ghost.app().use(express.bodyParser({}));
         ghost.app().use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
