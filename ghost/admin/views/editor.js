@@ -76,8 +76,13 @@
         },
 
         notificationMap: {
-            'draft': 'saved as a draft',
-            'published': 'published'
+            'draft': 'has been saved as a draft',
+            'published': 'has been published'
+        },
+
+        errorMap: {
+            'draft': 'could not be saved as a draft',
+            'published': 'could not be published'
         },
 
         initialize: function () {
@@ -119,7 +124,7 @@
                     status: 'passive'
                 });
             }, function (xhr) {
-                var status = keys[newIndex];
+                var status = this.errorMap[newIndex];
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
             });
@@ -174,20 +179,17 @@
         updatePost: function (status) {
             var self = this,
                 model = this.model,
-                prevStatus = model.get('status'),
-                notificationMap = this.notificationMap;
+                prevStatus = model.get('status');
 
             // Default to same status if not passed in
             status = status || prevStatus;
-
-            model.trigger('willSave');
 
             this.savePost({
                 status: status
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: ['Your post has been ', notificationMap[status], '.'].join(''),
+                    message: ['Your post ', this.notificationMap[status], '.'].join(''),
                     status: 'passive'
                 });
                 // Refresh publish button and all relevant controls with updated status.
@@ -198,7 +200,7 @@
                 // Set appropriate button status
                 self.setActiveStatus(status, self.statusMap[status], prevStatus);
                 // Show a notification about the error
-                self.reportSaveError(xhr, model, status);
+                self.reportSaveError(xhr, model, self.errorMap[status]);
             });
         },
 
@@ -206,8 +208,6 @@
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
-
-
 
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
@@ -224,16 +224,14 @@
         },
 
         reportSaveError: function (response, model, status) {
-            var title = model.get('title') || '[Untitled]',
-                notificationStatus = this.notificationMap[status],
-                message = 'Your post: ' + title + ' has not been ' + notificationStatus;
+            var message = 'Your post ' + status + '.';
 
             if (response) {
                 // Get message from response
                 message = Ghost.Views.Utils.getRequestErrorMessage(response);
             } else if (model.validationError) {
                 // Grab a validation error
-                message += "; " + model.validationError;
+                message += " " + model.validationError;
             }
 
             Ghost.notifications.addItem({
