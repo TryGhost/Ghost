@@ -74,7 +74,7 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
     }).viewport(1280, 1024);
 
     casper.then(function signupWithShortPassword() {
-        this.fill("#register", {email: email, password: 'test'}, true);
+        this.fill("#signup", {email: email, password: 'test'}, true);
     });
 
     // should now throw a short password error
@@ -87,7 +87,7 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
     });
 
     casper.then(function signupWithLongPassword() {
-        this.fill("#register", {email: email, password: 'testing1234'}, true);
+        this.fill("#signup", {email: email, password: 'testing1234'}, true);
     });
 
     // should now throw a 1 user only error

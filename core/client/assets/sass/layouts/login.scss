@@ -3,14 +3,18 @@
  *
  * Table of Contents:
  * 
+ * 0. General
+ * 1. Login
+ * 2. Signup
  *
  */
 
 /* =============================================================================
-   Login
+   0. General
    ============================================================================= */
 
-.ghost-login {
+.ghost-login,
+.ghost-forgotten {
     color: $midgrey;
     background: $darkgrey;
 
@@ -36,6 +40,11 @@
         text-align: center;
     }
 }
+
+
+/* =============================================================================
+   1. Login
+   ============================================================================= */
 
 #login {
     @include box-sizing(border-box);
@@ -160,3 +169,156 @@
 }
 
 
+/* =============================================================================
+   2. Signup
+   ============================================================================= */
+
+#signup {
+    @include box-sizing(border-box);
+    max-width: 280px;
+    color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
+
+    @include breakpoint(630px) {
+        max-width: 264px;
+    }
+
+    div { // Yes. Really.
+        position:relative;
+        margin:0 0 1em 0;
+        background: lighten($darkgrey, 10%);
+        float: left;
+        display: table;
+    }
+
+    input {
+        margin:0;
+        padding: 8px 10px;
+        position: relative;
+        border: none;
+        color: #fff;
+        font-size: 1.1em;
+        font-weight: 200;
+        background: transparent;
+        box-shadow: none;
+        @include transition(background ease 0.25s);
+
+        @include breakpoint(630px) {
+            @include transition(none);
+            max-width: 244px;
+        }
+
+        &:focus { 
+           background: lighten($darkgrey, 15%); 
+        }
+
+    }
+
+    .name-wrap {
+        position:relative;
+        border-radius: 2px;
+
+        .name {
+            border-radius: 2px;
+        }
+    }
+
+    .email-wrap {
+        position:relative;
+        border-radius: 2px;
+
+        .email {
+            border-radius: 2px;
+        }
+    }
+
+    .password-wrap {
+        position:relative;
+        border-radius: 2px;
+
+        .password {
+            border-radius: 2px;
+        }
+    }
+
+    button {
+        @include box-sizing(border-box);
+        width: 100%;
+        height: 36px;
+        margin: 0 0 1em 0;
+        padding: 0.5em 1.37em;
+        min-height: 30px;
+        min-width: 80px;
+        box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
+    }
+
+}
+
+
+/* =============================================================================
+   3. Forgotten
+   ============================================================================= */
+
+#forgotten {
+    @include box-sizing(border-box);
+    max-width: 280px;
+    color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
+
+    @include breakpoint(630px) {
+        max-width: 264px;
+    }
+
+    div { // Yes. Really.
+        position:relative;
+        margin:0 0 1em 0;
+        background: lighten($darkgrey, 10%);
+        float: left;
+    }
+
+    input {
+        margin:0;
+        padding: 8px 10px;
+        position: relative;
+        border: none;
+        color: #fff;
+        font-size: 1.1em;
+        font-weight: 200;
+        background: transparent;
+        box-shadow: none;
+        @include transition(background ease 0.25s);
+
+        @include breakpoint(630px) {
+            @include transition(none);
+            max-width: 244px;
+        }
+        
+        &:focus { 
+            background: lighten($darkgrey, 15%); 
+        }
+
+    }
+
+    .email-wrap {
+        position:relative;
+        border-radius: 2px;
+
+        .email {
+            border-radius: 2px;
+        }
+    }
+
+    button {
+        @include box-sizing(border-box);
+        width: 100%;
+        height: 36px;
+        margin: 0 0 1em 0;
+        padding: 0.5em 1.37em;
+        min-height: 30px;
+        min-width: 80px;
+        box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
+    }
+
+}
