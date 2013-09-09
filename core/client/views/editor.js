@@ -64,6 +64,14 @@
             'publish-on': 'Publish on...'
         },
 
+        notificationMap: {
+            'draft': 'has been saved as a draft',
+            'published': 'has been published',
+            'scheduled': 'has been scheduled',
+            'queue': 'has been added to the queue',
+            'publish-on': 'will be published'
+        },
+
         initialize: function () {
             var self = this;
             // Toggle publish
@@ -102,7 +110,7 @@
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: 'Your post: ' + model.get('title') + ' has been ' + keys[newIndex],
+                    message: 'Your post ' + this.notificationMap[newIndex] + '.',
                     status: 'passive'
                 });
             }, function (xhr) {
@@ -148,7 +156,8 @@
         updatePost: function (status) {
             var self = this,
                 model = this.model,
-                prevStatus = model.get('status');
+                prevStatus = model.get('status'),
+                notificationMap = this.notificationMap;
 
             // Default to same status if not passed in
             status = status || prevStatus;
@@ -175,7 +184,7 @@
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: ['Your post "', model.get('title'), '" has been ', status, '.'].join(''),
+                    message: ['Your post ', notificationMap[status], '.'].join(''),
                     status: 'passive'
                 });
             }, function (xhr) {
