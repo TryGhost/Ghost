@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url */
 
-casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
+casper.test.begin("Ghost dashboard is correct", 12, function suite(test) {
     test.filename = "dashboard_test.png";
 
     casper.start(url + "ghost", function testTitleAndUrl() {
@@ -19,7 +19,6 @@ casper.test.begin("Ghost dashboard is correct", 13, function suite(test) {
         test.assertExists("#usermenu", "User menu is present");
         test.assertSelectorHasText("#usermenu .usermenu-profile a", "Your Profile");
         test.assertSelectorHasText("#usermenu .usermenu-help a", "Help / Support");
-        test.assertSelectorHasText("#usermenu .usermenu-shortcuts a", "Keyboard Shortcuts");
         test.assertSelectorHasText("#usermenu .usermenu-signout a", "Sign Out");
     });
 
