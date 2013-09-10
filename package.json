@@ -17,7 +17,7 @@
         "moment": "2.1.0",
         "underscore": "1.5.1",
         "showdown": "0.3.1",
-        "sqlite3": "2.1.14",
+        "sqlite3": "2.1.16",
         "bookshelf": "0.2.4",
         "knex": "0.1.8",
         "when": "2.2.1",
