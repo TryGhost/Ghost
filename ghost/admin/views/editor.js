@@ -1,6 +1,6 @@
 // # Article Editor
 
-/*global window, document, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable, JST */
+/*global window, document, setTimeout, navigator, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable, JST */
 (function () {
     "use strict";
 
@@ -284,7 +284,8 @@
 
         events: {
             'click .markdown-help': 'showHelp',
-            'blur #entry-title': 'trimTitle'
+            'blur #entry-title': 'trimTitle',
+            'orientationchange': 'orientationChange'
         },
 
         syncScroll: _.debounce(function (e) {
@@ -327,6 +328,18 @@
 
             if (rawTitle !== trimmedTitle) {
                 $title.val(trimmedTitle);
+            }
+        },
+
+        // This is a hack to remove iOS6 white space on orientation change bug
+        // See: http://cl.ly/RGx9
+        orientationChange: function () {
+            if (/iPhone/.test(navigator.userAgent) && !/Opera Mini/.test(navigator.userAgent)) {
+                var focusedElement = document.activeElement,
+                    s = document.documentElement.style;
+                focusedElement.blur();
+                s.display = 'none';
+                setTimeout(function () { s.display = 'block'; focusedElement.focus(); }, 0);
             }
         },
 
