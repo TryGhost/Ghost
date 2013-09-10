@@ -3,7 +3,7 @@
  * used for configuring your Ghost install.
  *
  * Table of Contents:
- * 
+ *
  * Settings
  *
  */
@@ -232,7 +232,8 @@
             left:0;
             bottom:0;
             padding:40px;
-            overflow:auto;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
 
             &.no-padding {
                 padding: 0;
@@ -240,6 +241,7 @@
 
             @include breakpoint($netbook) { padding-left:15px; }
             @include breakpoint($letterbox) { top: 0; }
+            @include breakpoint(550px) { padding: 0 15px 40px; }
         }
 
     }//.settings-content
