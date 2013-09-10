@@ -122,11 +122,15 @@
             });
         },
 
-        setActiveStatus: function setActiveStatus(status, displayText) {
+        setActiveStatus: function (status, displayText) {
             // Set the publish button's action
             $('.js-post-button')
                 .attr('data-status', status)
                 .text(displayText);
+
+            // Remove the animated popup arrow
+            $('.splitbutton-save > a')
+                .removeClass('active');
 
             // Set the active action in the popup
             $('.splitbutton-save .editor-options li')
@@ -234,7 +238,10 @@
         },
 
         render: function () {
-            this.$('.js-post-button').text(this.statusMap[this.model.get('status')]);
+            var status = this.model.get('status');
+
+            // Default the selected publish option to the current status of the post.
+            this.setActiveStatus(status, this.statusMap[status]);
         }
 
     });
