@@ -33,10 +33,22 @@
                         return "{gfm-js-extract-pre-" + hash + "}";
                     }, 'm');
 
+                    // Replace showdown's implementation of bold
+                     // <strong> must go first:
+                    text = text.replace(/__([\s\S]+?)__(?!_)|\*\*([\s\S]+?)\*\*(?!\*)/g, function (match, m1, m2) {
+                        return m1 ? "<strong>" + m1 + "</strong>" :  "<strong>" + m2 + "</strong>";
+                    });
 
                     //prevent foo_bar and foo_bar_baz from ending up with an italic word in the middle
-                    text = text.replace(/(^(?! {4}|\t)\w+_\w[\w_]*)/gm, function (x) {
+                    text = text.replace(/(^(?! {4}|\t)\w+_\w+_\w[\w_]*)/gm, function (x) {
                         return x.replace(/_/gm, '\\_');
+                    });
+
+                    // Replace showdown's implementation of emphasis
+                    // <em>
+                    // requires a negative lookbehind for \n before the final * to prevent breaking lists
+                    text = text.replace(/\b(\\)?_((?:__|[\s\S])+?)_\b|\*((?:\*\*|[\s\S])+?)(\n)?\*(?!\*)/g, function (match, escaped, m1, m2, newline) {
+                        return escaped || newline ? match : m1 ? "<em>" + m1 + "</em>" : "<em>" + m2 + "</em>";
                     });
 
                     // in very clear cases, let newlines become <br /> tags
