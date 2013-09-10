@@ -86,7 +86,8 @@ describe("Export", function () {
     });
 
     describe("002", function () {
-
+        this.timeout(5000);
+        
         should.exist(Exporter001);
 
         it("exports data", function (done) {
