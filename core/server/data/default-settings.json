@@ -40,7 +40,7 @@
         "type":         "blog"
     },
     {
-        "key":          "icon",
+        "key":          "cover",
         "value":        "",
         "type":         "blog"
     },
