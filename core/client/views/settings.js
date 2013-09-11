@@ -160,7 +160,6 @@
             var themes = this.model.get('availableThemes');
             this.model.unset('availableThemes');
             this.model.save({
-                id: 0, //workaround to use put
                 title: this.$('#blog-title').val(),
                 description: $('#blog-description').val(),
                 logo: this.$('#blog-logo').attr("src"),
@@ -185,12 +184,16 @@
         showUpload: function (id, key, src) {
             var self = this, upload = new Ghost.Models.uploadModal({'id': id, 'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
-                    var data = {};
+                    var data = {},
+                        themes;
                     data[key] = this.$('.js-upload-target').attr('src');
+                    themes = self.model.get('availableThemes');
+                    self.model.unset('availableThemes');
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
                     });
+                    self.model.set({availableThemes: themes});
                     self.render();
                     return true;
                 },
