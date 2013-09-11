@@ -244,8 +244,8 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
     // ## Start Ghost App
     ghost.app().listen(
-        ghost.config().env[process.env.NODE_ENV].server.port,
-        ghost.config().env[process.env.NODE_ENV].server.host,
+        ghost.config().server.port,
+        ghost.config().server.host,
         function () {
 
             // Tell users if their node version is not supported, and exit
@@ -270,8 +270,8 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
             // Startup message
             console.log("Express server listening on address:",
-                ghost.config().env[process.env.NODE_ENV].server.host + ':'
-                    + ghost.config().env[process.env.NODE_ENV].server.port);
+                ghost.config().server.host + ':'
+                    + ghost.config().server.port);
 
             // Let everyone know we have finished loading
             loading.resolve();

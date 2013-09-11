@@ -1,11 +1,11 @@
 // # Ghost Configuration
 
 var path = require('path'),
-    config  = {};
+    config = {};
 
 // ## Environment
 // **Warning:** Only change the settings below here if you are sure of what you are doing!
-config.env = {
+config = {
     testing: {
         database: {
             client: 'sqlite3',

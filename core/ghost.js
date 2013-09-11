@@ -93,7 +93,7 @@ Ghost = function () {
 
         _.extend(instance, {
             app: function () { return app; },
-            config: function () { return config; },
+            config: function () { return config[process.env.NODE_ENV]; },
 
             // there's no management here to be sure this has loaded
             settings: function () { return instance.settingsCache; },
@@ -102,7 +102,7 @@ Ghost = function () {
                 /* this is a bit of a hack until we have a better way to combine settings and config
                  * this data is what becomes globally available to themes */
                 return {
-                    url: instance.config().env[process.env.NODE_ENV].url,
+                    url: instance.config().url,
                     title: instance.settings().title,
                     description: instance.settings().description,
                     logo: instance.settings().logo,

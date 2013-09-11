@@ -334,32 +334,4 @@
         }
     });
 
-    // ### User settings
-    Settings.users = Settings.Pane.extend({
-        id: 'users',
-        events: {
-        }
-    });
-
-    // ### Appearance settings
-    Settings.appearance = Settings.Pane.extend({
-        id: 'appearance',
-        events: {
-        }
-    });
-
-    // ### Services settings
-    Settings.services = Settings.Pane.extend({
-        id: 'services',
-        events: {
-        }
-    });
-
-    // ### Plugins settings
-    Settings.plugins = Settings.Pane.extend({
-        id: 'plugins',
-        events: {
-        }
-    });
-
 }());

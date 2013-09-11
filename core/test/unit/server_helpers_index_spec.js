@@ -220,10 +220,7 @@ describe('Core Helpers', function () {
 
         it('should output an absolute URL if the option is present', function () {
             var configStub = sinon.stub(ghost, "config", function () {
-                    return {env: {
-                        testing: { url: 'http://testurl.com' },
-                        travis: { url: 'http://testurl.com' }
-                    }};
+                    return { url: 'http://testurl.com' };
                 }),
 
                 rendered = handlebars.helpers.url.call(
