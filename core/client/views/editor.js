@@ -194,8 +194,6 @@
             }, function (xhr) {
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
-                // Set the button text back to previous
-                model.set({ status: prevStatus });
             });
         },
 
