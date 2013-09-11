@@ -18,7 +18,7 @@ GhostMailer.prototype.init = function (ghost) {
     this.api = require('./api');
 
     var self = this,
-        config = ghost.config().env[process.env.NODE_ENV];
+        config = ghost.config();
 
     if (config.mail && config.mail.transport && config.mail.options) {
         this.createTransport(config);
@@ -96,7 +96,7 @@ GhostMailer.prototype.send = function (message) {
         return when.reject(new Error('Email Error: Incomplete message data.'));
     }
 
-    var from = 'ghost-mailer@' + url.parse(this.ghost.config().env[process.env.NODE_ENV].url).hostname,
+    var from = 'ghost-mailer@' + url.parse(this.ghost.config().hostname),
         to = message.to || this.ghost.settings().email,
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 
