@@ -68,7 +68,7 @@ coreHelpers = function (ghost) {
         var output = '';
 
         if (options && options.hash.absolute) {
-            output += ghost.config().env[process.env.NODE_ENV].url;
+            output += ghost.config().url;
         }
 
         if (models.isPost(this)) {

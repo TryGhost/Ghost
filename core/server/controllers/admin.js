@@ -200,8 +200,8 @@ adminControllers = {
                     html: "<p><strong>Hello!</strong></p>" +
                           "<p>You've reset your password. Here's the new one: " + user.newPassword + "</p>" +
                           "<p>Ghost <br/>" +
-                          '<a href="' + ghost.config().env[process.env.NODE_ENV].url + '">' +
-                           ghost.config().env[process.env.NODE_ENV].url + '</a></p>'
+                          '<a href="' + ghost.config().url + '">' +
+                           ghost.config().url + '</a></p>'
                 };
 
             return ghost.mail.send(message);
