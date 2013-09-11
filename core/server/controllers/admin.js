@@ -167,8 +167,8 @@ adminControllers = {
             password = req.body.password;
 
         api.users.add({
-            full_name: name,
-            email_address: email,
+            name: name,
+            email: email,
             password: password
         }).then(function (user) {
 

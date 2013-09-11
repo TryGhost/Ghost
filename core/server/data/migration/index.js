@@ -95,6 +95,7 @@ module.exports = {
     },
 
     migrateDownFromVersion: function (version) {
+        console.log('version', version);
         var versions = [],
             minVersion = this.getVersionBefore(initialVersion),
             currVersion = version,

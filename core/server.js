@@ -118,8 +118,8 @@ function ghostLocals(req, res, next) {
                 availableThemes: ghost.paths().availableThemes,
                 availablePlugins: ghost.paths().availablePlugins,
                 currentUser: {
-                    name: currentUser.attributes.full_name,
-                    profile: currentUser.attributes.profile_picture
+                    name: currentUser.attributes.name,
+                    profile: currentUser.attributes.image
                 }
             });
             next();

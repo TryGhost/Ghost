@@ -14,8 +14,8 @@ describe('Post Model', function () {
         UserModel = Models.User,
         userData = {
             password: 'testpass1',
-            email_address: "test@test1.com",
-            full_name: "Mr Biscuits"
+            email: "test@test1.com",
+            name: "Mr Biscuits"
         };
 
     before(function (done) {
@@ -81,8 +81,8 @@ describe('Post Model', function () {
 
             firstPost.author.should.be.a("object");
             firstPost.user.should.be.a("object");
-            firstPost.author.full_name.should.equal("Mr Biscuits");
-            firstPost.user.full_name.should.equal("Mr Biscuits");
+            firstPost.author.name.should.equal("Mr Biscuits");
+            firstPost.user.name.should.equal("Mr Biscuits");
 
             done();
         }, done);
@@ -97,8 +97,8 @@ describe('Post Model', function () {
 
             firstPost.author.should.be.a("object");
             firstPost.user.should.be.a("object");
-            firstPost.author.full_name.should.equal("Mr Biscuits");
-            firstPost.user.full_name.should.equal("Mr Biscuits");
+            firstPost.author.name.should.equal("Mr Biscuits");
+            firstPost.user.name.should.equal("Mr Biscuits");
 
             done();
         }, done);
@@ -125,7 +125,7 @@ describe('Post Model', function () {
         var createdPostUpdatedDate,
             newPost = {
                 title: 'Test Title 1',
-                content_raw: 'Test Content 1'
+                markdown: 'Test Content 1'
             };
 
         PostModel.add(newPost).then(function (createdPost) {
@@ -135,9 +135,9 @@ describe('Post Model', function () {
             createdPost.has('uuid').should.equal(true);
             createdPost.get('status').should.equal('draft');
             createdPost.get('title').should.equal(newPost.title, "title is correct");
-            createdPost.get('content_raw').should.equal(newPost.content_raw, "content_raw is correct");
-            createdPost.has('content').should.equal(true);
-            createdPost.get('content').should.equal('<p>' + newPost.content_raw + '</p>');
+            createdPost.get('markdown').should.equal(newPost.markdown, "markdown is correct");
+            createdPost.has('html').should.equal(true);
+            createdPost.get('html').should.equal('<p>' + newPost.markdown + '</p>');
             createdPost.get('slug').should.equal('test-title-1');
             createdPost.get('created_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
@@ -169,7 +169,7 @@ describe('Post Model', function () {
             untrimmedUpdateTitle = '  test trimmed update title  ',
             newPost = {
                 title: untrimmedCreateTitle,
-                content_raw: 'Test Content'
+                markdown: 'Test Content'
             };
 
         PostModel.add(newPost).then(function (createdPost) {
@@ -189,7 +189,7 @@ describe('Post Model', function () {
     it('can generate a non conflicting slug', function (done) {
         var newPost = {
                 title: 'Test Title',
-                content_raw: 'Test Content 1'
+                markdown: 'Test Content 1'
             };
 
         this.timeout(5000); // this is a patch to ensure it doesn't timeout.
@@ -199,7 +199,7 @@ describe('Post Model', function () {
             return function () {
                 return PostModel.add({
                     title: "Test Title",
-                    content_raw: "Test Content " + (i+1)
+                    markdown: "Test Content " + (i+1)
                 });
             };
         })).then(function (createdPosts) {
@@ -217,7 +217,7 @@ describe('Post Model', function () {
                 }
 
                 post.get('slug').should.equal('test-title-' + num);
-                post.get('content_raw').should.equal('Test Content ' + num);
+                post.get('markdown').should.equal('Test Content ' + num);
             });
 
             done();
@@ -228,7 +228,7 @@ describe('Post Model', function () {
     it('can generate slugs without duplicate hyphens', function (done) {
         var newPost = {
             title: 'apprehensive  titles  have  too  many  spaces  ',
-            content_raw: 'Test Content 1'
+            markdown: 'Test Content 1'
         };
 
         PostModel.add(newPost).then(function (createdPost) {

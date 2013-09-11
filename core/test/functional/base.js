@@ -42,7 +42,7 @@ var host = casper.cli.options.host || 'localhost',
     },
     testPost = {
         title: "Bacon ipsum dolor sit amet",
-        content: "I am a test post.\n#I have some small content"
+        html: "I am a test post.\n#I have some small content"
     };
 
 casper.writeContentToCodeMirror = function (content) {

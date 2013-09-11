@@ -44,10 +44,10 @@ coreHelpers = function (ghost) {
     });
 
     // ### Page URL Helper
-    // 
+    //
     // *Usage example:*
     // `{{pageUrl 2}}`
-    // 
+    //
     // Returns the URL for the page specified in the current object
     // context.
     //
@@ -87,7 +87,7 @@ coreHelpers = function (ghost) {
     // if the author could not be determined.
     //
     ghost.registerThemeHelper('author', function (context, options) {
-        return this.author ? this.author.full_name : "";
+        return this.author ? this.author.name : "";
     });
 
     // ### Tags Helper
@@ -133,11 +133,11 @@ coreHelpers = function (ghost) {
 
         if (truncateOptions.words || truncateOptions.characters) {
             return new hbs.handlebars.SafeString(
-                downsize(this.content, truncateOptions)
+                downsize(this.html, truncateOptions)
             );
         }
 
-        return new hbs.handlebars.SafeString(this.content);
+        return new hbs.handlebars.SafeString(this.html);
     });
 
 
@@ -161,7 +161,7 @@ coreHelpers = function (ghost) {
         truncateOptions = _.pick(truncateOptions, ["words", "characters"]);
 
         /*jslint regexp:true */
-        excerpt = String(this.content).replace(/<\/?[^>]+>/gi, "");
+        excerpt = String(this.html).replace(/<\/?[^>]+>/gi, "");
         /*jslint regexp:false */
 
         if (!truncateOptions.words && !truncateOptions.characters) {

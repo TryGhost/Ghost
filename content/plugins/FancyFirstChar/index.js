@@ -19,11 +19,11 @@ fancifyPlugin = {
             getIndexOfNextCharacter = function (beginFrom) {
                 var currIndex = beginFrom,
                     nextChar;
-                    
+
                 nextChar = originalContent.substr(currIndex, 1);
                 while (_.contains(whiteSpace, nextChar) && currIndex !== originalContent.length) {
                     currIndex += 1;
-                    nextChar = originalContent.substr(currIndex, 1);    
+                    nextChar = originalContent.substr(currIndex, 1);
                 }
 
                 return currIndex;
@@ -31,7 +31,7 @@ fancifyPlugin = {
             getAfterNextClosingTag = function (beginFrom) {
                 return originalContent.indexOf('>', beginFrom) + 1;
             };
-        
+
         // Skip any leading white space until we get a character
         firstCharIndex = getIndexOfNextCharacter(firstCharIndex);
 
@@ -67,10 +67,10 @@ fancifyPlugin = {
 
         if (_.isArray(posts)) {
             _.each(posts, function (post) {
-                post.content = self.fancify(post.content);
+                post.html = self.fancify(post.html);
             });
-        } else if (posts.hasOwnProperty('content')) {
-            posts.content = this.fancify(posts.content);
+        } else if (posts.hasOwnProperty('html')) {
+            posts.html = this.fancify(posts.html);
         }
 
         return posts;
@@ -84,7 +84,7 @@ fancifyPlugin = {
 
     },
 
-    // Registers the prePostsRender filter to alter the content.
+    // Registers the prePostsRender filter to alter the html.
     activate: function (ghost) {
         ghost.registerFilter('prePostsRender', this.fancifyPosts);
     },

@@ -51,15 +51,15 @@ describe('permissions', function () {
         ],
         currTestPermId = 1,
         // currTestUserId = 1,
-        // createTestUser = function (email_address) {
-        //     if (!email_address) {
+        // createTestUser = function (email) {
+        //     if (!email) {
         //         currTestUserId += 1;
-        //         email_address = "test" + currTestPermId + "@test.com";
+        //         email = "test" + currTestPermId + "@test.com";
         //     }
 
         //     var newUser = {
         //         id: currTestUserId,
-        //         email_address: email_address,
+        //         email: email,
         //         password: "testing123"
         //     };
 
