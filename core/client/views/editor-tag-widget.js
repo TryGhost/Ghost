@@ -58,48 +58,37 @@
             return this;
         },
 
-        showSuggestions: function ($target, searchTerm) {
+        showSuggestions: function ($target, _searchTerm) {
             this.$suggestions.show();
-            var results = this.findMatchingTags(searchTerm),
+            var searchTerm = _searchTerm.toLowerCase(),
+                matchingTags = this.findMatchingTags(searchTerm),
                 styles = {
                     left: $target.position().left
                 },
                 maxSuggestions = 5, // Limit the suggestions number
-                results_length = results.length,
-                i,
-                suggest;
+                regexTerm = searchTerm.replace(/(\s+)/g, "(<[^>]+>)*$1(<[^>]+>)*"),
+                regexPattern = new RegExp("(" + regexTerm + ")", "i");
 
             this.$suggestions.css(styles);
             this.$suggestions.html("");
 
-            if (results_length < maxSuggestions) {
-                maxSuggestions = results_length;
-            }
-            for (i = 0; i < maxSuggestions; i += 1) {
-                this.$suggestions.append("<li data-tag-id='" + results[i].id + "' data-tag-name='" + results[i].name + "'><a href='#'>" + results[i].name + "</a></li>");
-            }
+            matchingTags = _.first(matchingTags, maxSuggestions);
+            _.each(matchingTags, function (matchingTag) {
+                var highlightedName,
+                    suggestionHTML;
 
-            suggest = $('ul.suggestions li a:contains("' + searchTerm + '")');
-
-            suggest.each(function () {
-                var src_str = $(this).html(),
-                    term = searchTerm,
-                    pattern;
-
-                term = term.replace(/(\s+)/, "(<[^>]+>)*$1(<[^>]+>)*");
-                pattern = new RegExp("(" + term + ")", "i");
-
-                src_str = src_str.replace(pattern, "<mark>$1</mark>");
+                highlightedName = matchingTag.name.replace(regexPattern, "<mark>$1</mark>");
                 /*jslint regexp: true */ // - would like to remove this
-                src_str = src_str.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
+                highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
 
-                $(this).html(src_str);
-            });
+                suggestionHTML = "<li data-tag-id='" + matchingTag.id + "' data-tag-name='" + matchingTag.name + "'><a href='#'>" + highlightedName + "</a></li>";
+                this.$suggestions.append(suggestionHTML);
+            }, this);
         },
 
         handleKeyup: function (e) {
             var $target = $(e.currentTarget),
-                searchTerm = $.trim($target.val()).toLowerCase(),
+                searchTerm = $.trim($target.val()),
                 tag,
                 $selectedSuggestion;
 
