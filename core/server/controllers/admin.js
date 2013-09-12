@@ -110,7 +110,7 @@ adminControllers = {
         }
     },
     'login': function (req, res) {
-        res.render('signup', {
+        res.render('login', {
             bodyClass: 'ghost-login',
             hideNavbar: true,
             adminNav: setSelected(adminNavbar, 'login')
@@ -155,7 +155,7 @@ adminControllers = {
     },
     'signup': function (req, res) {
         res.render('signup', {
-            bodyClass: 'ghost-login',
+            bodyClass: 'ghost-signup',
             hideNavbar: true,
             adminNav: setSelected(adminNavbar, 'login')
         });
@@ -183,7 +183,7 @@ adminControllers = {
     },
 
     'forgotten': function (req, res) {
-        res.render('signup', {
+        res.render('forgotten', {
             bodyClass: 'ghost-forgotten',
             hideNavbar: true,
             adminNav: setSelected(adminNavbar, 'login')
