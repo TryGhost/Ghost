@@ -190,6 +190,12 @@ form {
         background: #f8f8f8;
         text-decoration: none;
     }
+
+    &.large {
+        padding: 1em 1.8em;
+        font-size: 14px;
+        line-height: 16px;
+    }
 }
 
 // This is the default button style
