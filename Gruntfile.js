@@ -6,7 +6,6 @@ var path = require('path'),
     spawn = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
-    config = require('./config'),
     _ = require('underscore'),
     configureGrunt = function (grunt) {
 
@@ -110,9 +109,7 @@ var path = require('path'),
                         // allow unused parameters
                         unparam: true,
                         // don't require use strict pragma
-                        sloppy: true,
-                        // allow bitwise operators
-                        bitwise: true
+                        sloppy: true
                     },
                     files: {
                         src: [
@@ -487,6 +484,7 @@ var path = require('path'),
                 // Using this janky looking integerising-method
                 // because it's faster and doesn't result in NaN, which
                 // breaks sorting
+                /*jslint bitwise: true */
                 return (+b[1] | 0) - (+a[1] | 0);
             }
 
@@ -501,7 +499,7 @@ var path = require('path'),
                         .map(function (tag) {
                             return {
                                 "tag": tag.split(/tags\//).pop().trim(),
-                                "ref": tag.split(/\s+/).shift().trim(),
+                                "ref": tag.split(/\s+/).shift().trim()
                             };
                         })
                         .sort(sortTags);
