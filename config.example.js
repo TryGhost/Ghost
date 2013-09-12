@@ -1,7 +1,7 @@
 // # Ghost Configuration
 
 var path = require('path'),
-    config = {};
+    config;
 
 // ## Environment
 // **Warning:** Only change the settings below here if you are sure of what you are doing!
@@ -10,7 +10,7 @@ config = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/server/data/ghost-test.db')
+                filename: path.join(__dirname, '/content/data/ghost-test.db')
             }
         },
         server: {
@@ -25,7 +25,7 @@ config = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/server/data/ghost-travis.db')
+                filename: path.join(__dirname, '/content/data/ghost-travis.db')
             }
         },
         server: {
@@ -41,7 +41,7 @@ config = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/server/data/ghost-dev.db')
+                filename: path.join(__dirname, '/content/data/ghost-dev.db')
             },
             debug: false
         },
@@ -69,7 +69,7 @@ config = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/server/data/ghost-staging.db')
+                filename: path.join(__dirname, '/content/data/ghost-staging.db')
             },
             debug: false
         },
@@ -85,7 +85,7 @@ config = {
         database: {
             client: 'sqlite3',
             connection: {
-                filename: path.join(__dirname, '/core/server/data/ghost.db')
+                filename: path.join(__dirname, '/content/data/ghost.db')
             },
             debug: false
         },

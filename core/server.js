@@ -265,7 +265,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
             // Startup message
             console.log("Express server listening on address:",
-                ghost.config().envserver.host + ':'
+                ghost.config().server.host + ':'
                     + ghost.config().server.port);
 
             // Let everyone know we have finished loading
