@@ -11,7 +11,8 @@
             'keyup [data-input-behaviour="tag"]': 'handleKeyup',
             'keydown [data-input-behaviour="tag"]': 'handleKeydown',
             'click ul.suggestions li': 'handleSuggestionClick',
-            'click .tags .tag': 'handleTagClick'
+            'click .tags .tag': 'handleTagClick',
+            'click .tag-label': 'mobileTags'
         },
 
         keys: {
@@ -55,7 +56,39 @@
                 $('.tag-blocks').css({'left': tagOffset + 'px'});
             }
 
+            $('.tag-label').on('touchstart', function () {
+                $(this).addClass('touch');
+            });
+
             return this;
+        },
+
+        mobileTags: function () {
+            var mq = window.matchMedia("(max-width: 400px)"),
+                publishBar = $("#publish-bar");
+            if (mq.matches) {
+
+                if (publishBar.hasClass("extended-tags")) {
+                    publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {
+                        $(this).removeClass("extended-tags");
+                        $(".tag-input").blur();
+                    });
+                } else {
+                    publishBar.animate({"top": 0, "height": $(window).height()}, 300, "swing", function () {
+                        $(this).addClass("extended-tags");
+                        $(".tag-input").focus();
+                    });
+                }
+
+                $(".tag-input").one("blur", function () {
+                    if (publishBar.hasClass("extended-tags")) {
+                        publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {
+                            $(this).removeClass("extended-tags");
+                            $(document.activeElement).blur();
+                        });
+                    }
+                });
+            }
         },
 
         showSuggestions: function ($target, _searchTerm) {
@@ -183,6 +216,7 @@
         },
 
         handleTagClick: function (e) {
+            if (e) { e.stopPropagation(); }
             var $tag = $(e.currentTarget),
                 tag = {id: $tag.data('tag-id'), name: $tag.text()};
             $tag.remove();

@@ -398,6 +398,7 @@ body.zen {
     right: 0;
     z-index: 900;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+    @include transform(translateZ(0));
 
     @include breakpoint($netbook) {font-weight: normal;}
 
@@ -440,6 +441,34 @@ body.zen {
     }
 }
 
+.extended-tags { // When the tag bar is exapanded
+    position: static;
+    #entry-tags {
+        &:after {
+            right: 10px;
+        }
+    }
+    .tags {
+        width: 261px;
+    }
+
+    .tag-label, .tag-label.touch {
+        color: #fff;
+    }
+
+    .tag-input {
+        width: 100%;
+        margin-top: 5px;
+        padding-top: 5px;
+        padding-left: 10px;
+        border-top: 1px solid $darkgrey;
+
+    }
+    .right {
+        display: none;
+    }
+}
+
 #entry-tags {
     position: absolute;
     top: 0;
@@ -448,6 +477,38 @@ body.zen {
     bottom: 0;
     text-transform: none;
     padding: 10px 0 0 0;
+
+    @include  breakpoint($mobile) {
+        right: 0;
+
+        &:after, &:before {
+            content: "";
+            position: fixed;
+            top: 10px;
+            right: 128px;
+            width: 20px;
+            height: 26px;
+            @include linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+            z-index: 9999;
+        }
+
+        &:before {
+            right: auto;
+            left: 29px;
+            @include linear-gradient(right, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+        }
+    }
+}
+
+.tags {
+    @include breakpoint($mobile) {
+        position: relative;
+        width: 156px;
+        height: 26px;
+        padding-left: 20px;
+        overflow-x: scroll;
+        @include transition(width 0.2s linear);
+    }
 }
 
 .tag-label {
@@ -460,6 +521,10 @@ body.zen {
     &:hover {
         cursor: pointer;
         color: $lightgrey;
+    }
+
+    &.touch {
+        color: inherit;
     }
 }
 
@@ -497,6 +562,11 @@ body.zen {
         cursor: pointer;
         @include icon-after($i-x, 8px, $lightgrey) {text-shadow: none;}
 
+    }
+
+    @include breakpoint($mobile) {
+        display: inline;
+        float: none;
     }
 }
 
