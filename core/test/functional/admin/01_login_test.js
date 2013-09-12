@@ -17,15 +17,13 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
 
     casper.start(url + 'ghost/signup/').viewport(1280, 1024);
 
-    casper.waitFor(function checkOpaque() {
-        return this.evaluate(function () {
-            var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
-                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
+    casper.waitForOpaque(".signup-box",
+        function then() {
+            this.fill("#signup", newUser, true);
+        },
+        function onTimeout() {
+            test.fail('Sign up form didn\'t fade in.');
         });
-    }, function then() {
-        this.fill("#signup", user, true);
-    });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
         test.assertSelectorHasText('.notification-error', 'already registered');
@@ -86,18 +84,13 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
-    casper.waitFor(function checkOpaque() {
-        return this.evaluate(function () {
-            var loginBox = document.querySelector('.login-box');
-
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
-                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
+    casper.waitForOpaque(".login-box",
+        function then() {
+            this.fill("#login", falseUser, true);
+        },
+        function onTimeout() {
+            test.fail('Sign in form didn\'t fade in.');
         });
-    }, function then() {
-        this.fill("#login", falseUser, true);
-    }, function onTimeout() {
-        test.fail('Sign in form didn\'t fade in.');
-    });
 
     casper.wait(200, function doneWait() {
         this.fill("#login", falseUser, true);
@@ -127,15 +120,10 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
-    casper.waitFor(function checkOpaque() {
-        return casper.evaluate(function () {
-            var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
-                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
+    casper.waitForOpaque(".login-box",
+        function then() {
+            this.fill("#login", user, true);
         });
-    }, function then() {
-        this.fill("#login", user, true);
-    });
 
     casper.waitForResource(/ghost\/$/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/$/, 'We got redirected to the Ghost page');
