@@ -2,17 +2,14 @@
 (function () {
     "use strict";
 
+    Ghost.Views.Login = Ghost.View.extend({
 
-    Ghost.SimpleFormView = Ghost.View.extend({
         initialize: function () {
             this.render();
-            $(".js-login-box").fadeIn(500, function () {
+            $(".js-login-box").css({"opacity": 0}).animate({"opacity": 1}, 500, function () {
                 $("[name='email']").focus();
             });
-        }
-    });
-
-    Ghost.Views.Login = Ghost.SimpleFormView.extend({
+        },
 
         templateName: "login",
 
@@ -48,7 +45,14 @@
         }
     });
 
-    Ghost.Views.Signup = Ghost.SimpleFormView.extend({
+    Ghost.Views.Signup = Ghost.View.extend({
+
+        initialize: function () {
+            this.render();
+            $(".js-signup-box").css({"opacity": 0}).animate({"opacity": 1}, 500, function () {
+                $("[name='name']").focus();
+            });
+        },
 
         templateName: "signup",
 
@@ -62,29 +66,56 @@
                 email = this.$el.find('.email').val(),
                 password = this.$el.find('.password').val();
 
-            $.ajax({
-                url: '/ghost/signup/',
-                type: 'POST',
-                data: {
-                    name: name,
-                    email: email,
-                    password: password
-                },
-                success: function (msg) {
-                    window.location.href = msg.redirect;
-                },
-                error: function (xhr) {
-                    Ghost.notifications.addItem({
-                        type: 'error',
-                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
-                        status: 'passive'
-                    });
-                }
-            });
+            if (!name) {
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: "Please enter a name",
+                    status: 'passive'
+                });
+            } else if (!email) {
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: "Please enter an email",
+                    status: 'passive'
+                });
+            } else if (!password) {
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: "Please enter a password",
+                    status: 'passive'
+                });
+            } else {
+                $.ajax({
+                    url: '/ghost/signup/',
+                    type: 'POST',
+                    data: {
+                        name: name,
+                        email: email,
+                        password: password
+                    },
+                    success: function (msg) {
+                        window.location.href = msg.redirect;
+                    },
+                    error: function (xhr) {
+                        Ghost.notifications.addItem({
+                            type: 'error',
+                            message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                            status: 'passive'
+                        });
+                    }
+                });
+            }
         }
     });
 
-    Ghost.Views.Forgotten = Ghost.SimpleFormView.extend({
+    Ghost.Views.Forgotten = Ghost.View.extend({
+
+        initialize: function () {
+            this.render();
+            $(".js-forgotten-box").css({"opacity": 0}).animate({"opacity": 1}, 500, function () {
+                $("[name='email']").focus();
+            });
+        },
 
         templateName: "forgotten",
 
