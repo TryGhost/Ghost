@@ -1,5 +1,5 @@
 /*
- * These styles control elements specific to the Ghost admin login screen.
+ * These styles control elements specific to the Ghost admin login / signup screens.
  *
  * Table of Contents:
  * 
@@ -14,6 +14,7 @@
    ============================================================================= */
 
 .ghost-login,
+.ghost-signup,
 .ghost-forgotten {
     color: $midgrey;
     background: $darkgrey;
@@ -28,7 +29,9 @@
 
 }//.ghost-login
 
-.login-box {
+.login-box,
+.signup-box,
+.forgotten-box {
     max-width: 530px;
     height: 90%;
     margin: 0 auto;
