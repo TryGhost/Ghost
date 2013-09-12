@@ -64,6 +64,16 @@ function redirectToIndex(req, res, next) {
     next();
 }
 
+function redirectToSignup(req, res, next) {
+    api.users.browse().then(function (users) {
+        if (users.length === 0) {
+            return res.redirect('/ghost/signup/');
+        }
+    });
+
+    next();
+}
+
 // While we're here, let's clean up on aisle 5
 // That being ghost.notifications, and let's remove the passives from there
 // plus the local messages, as they have already been added at this point
@@ -212,7 +222,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     ghost.app().get('/ghost/login/', function redirect(req, res) {
         res.redirect(301, '/ghost/signin/');
     });
-    ghost.app().get('/ghost/signin/', redirectToIndex, admin.login);
+    ghost.app().get('/ghost/signin/', redirectToSignup, redirectToIndex, admin.login);
     ghost.app().get('/ghost/signup/', redirectToIndex, admin.signup);
     ghost.app().get('/ghost/forgotten/', redirectToIndex, admin.forgotten);
     ghost.app().post('/ghost/forgotten/', admin.resetPassword);
@@ -231,7 +241,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     ghost.app().get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
-    ghost.app().get('/ghost/', auth, admin.index);
+    ghost.app().get('/ghost/', redirectToSignup, auth, admin.index);
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
