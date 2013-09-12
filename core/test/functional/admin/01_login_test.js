@@ -4,7 +4,7 @@ casper.test.begin('Ensure Session is Killed', 1, function suite(test) {
     test.filename = 'login_logout_test.png';
 
     casper.start(url + 'logout/', function (response) {
-        test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page');
+        test.assertUrlMatch(/ghost\/sign/, 'We got redirected to signin or signup page');
     });
 
     casper.run(function () {
