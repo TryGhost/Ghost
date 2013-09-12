@@ -140,7 +140,7 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
     casper.waitForResource(/ghost\/$/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/$/, 'We got redirected to the Ghost page');
         test.assertExists("#global-header", "Global admin header is present");
-        test.assertExists(".dashboard", "We're now on the dashboard");
+        test.assertExists(".manage", "We're now on content");
     }, function onTimeOut() {
         test.fail('Failed to load ghost/ resource');
     });

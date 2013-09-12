@@ -1,12 +1,24 @@
 /*globals casper, __utils__, url, testPost */
 
-casper.test.begin("Content screen is correct", 9, function suite(test) {
+casper.test.begin("Content screen is correct", 17, function suite(test) {
     test.filename = "content_test.png";
 
     casper.start(url + "ghost/content/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/content\/$/, "Ghost doesn't require login this time");
     }).viewport(1280, 1024);
+
+    casper.then(function testMenus() {
+        test.assertExists("#main-menu", "Main menu is present");
+        test.assertSelectorHasText("#main-menu .content a", "Content");
+        test.assertSelectorHasText("#main-menu .editor a", "New Post");
+        test.assertSelectorHasText("#main-menu .settings a", "Settings");
+
+        test.assertExists("#usermenu", "User menu is present");
+        test.assertSelectorHasText("#usermenu .usermenu-profile a", "Your Profile");
+        test.assertSelectorHasText("#usermenu .usermenu-help a", "Help / Support");
+        test.assertSelectorHasText("#usermenu .usermenu-signout a", "Sign Out");
+    });
 
     casper.then(function testViews() {
         test.assertExists(".content-view-container", "Content main view is present");
