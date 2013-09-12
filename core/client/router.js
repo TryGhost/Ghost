@@ -19,7 +19,7 @@
         },
 
         signup: function () {
-            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-login-box' });
+            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-signup-box' });
         },
 
         login: function () {
@@ -27,7 +27,7 @@
         },
 
         forgotten: function () {
-            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-login-box' });
+            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-forgotten-box' });
         },
 
         blog: function () {

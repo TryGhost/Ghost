@@ -27,6 +27,11 @@ var host = casper.cli.options.host || 'localhost',
     email = casper.cli.options.email || 'ghost@tryghost.org',
     password = casper.cli.options.password || 'Sl1m3rson',
     url = "http://" + host + (noPort ? '/' : ":" + port + "/"),
+    newUser = {
+        name: "Test User",
+        email: email,
+        password: password
+    },
     user = {
         email: email,
         password: password
@@ -51,6 +56,14 @@ casper.writeContentToCodeMirror = function (content) {
     return this;
 };
 
+casper.waitForOpaque = function (classname, then, timeout) {
+    casper.waitFor(function checkOpaque() {
+        return this.evaluate(function (element) {
+            var target = document.querySelector(element);
+            return window.getComputedStyle(target).getPropertyValue('opacity') === "1";
+        }, classname);
+    }, then, timeout);
+};
 
 // ## Debugging
 // output all errors to the console
