@@ -23,25 +23,33 @@
                 password = this.$el.find('.password').val(),
                 redirect = Ghost.Views.Utils.getUrlVariables().r;
 
-            $.ajax({
-                url: '/ghost/signin/',
-                type: 'POST',
-                data: {
-                    email: email,
-                    password: password,
-                    redirect: redirect
-                },
-                success: function (msg) {
-                    window.location.href = msg.redirect;
-                },
-                error: function (xhr) {
-                    Ghost.notifications.addItem({
-                        type: 'error',
-                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
-                        status: 'passive'
-                    });
-                }
-            });
+            Ghost.Validate._errors = [];
+            Ghost.Validate.check(email).isEmail();
+            Ghost.Validate.check(password, "Password too short").len(5);
+
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
+            } else {
+                $.ajax({
+                    url: '/ghost/signin/',
+                    type: 'POST',
+                    data: {
+                        email: email,
+                        password: password,
+                        redirect: redirect
+                    },
+                    success: function (msg) {
+                        window.location.href = msg.redirect;
+                    },
+                    error: function (xhr) {
+                        Ghost.notifications.addItem({
+                            type: 'error',
+                            message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                            status: 'passive'
+                        });
+                    }
+                });
+            }
         }
     });
 
@@ -66,24 +74,15 @@
                 email = this.$el.find('.email').val(),
                 password = this.$el.find('.password').val();
 
-            if (!name) {
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: "Please enter a name",
-                    status: 'passive'
-                });
-            } else if (!email) {
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: "Please enter an email",
-                    status: 'passive'
-                });
-            } else if (!password) {
-                Ghost.notifications.addItem({
-                    type: 'error',
-                    message: "Please enter a password",
-                    status: 'passive'
-                });
+            // This is needed due to how error handling is done. If this is not here, there will not be a time
+            // when there is no error.
+            Ghost.Validate._errors = [];
+            Ghost.Validate.check(name, "Please enter a name").len(1);
+            Ghost.Validate.check(email, "Please enter a correct email address").isEmail();
+            Ghost.Validate.check(password, "Please enter a password").len(5);
+
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
             } else {
                 $.ajax({
                     url: '/ghost/signup/',
@@ -128,24 +127,31 @@
 
             var email = this.$el.find('.email').val();
 
-            $.ajax({
-                url: '/ghost/forgotten/',
-                type: 'POST',
-                data: {
-                    email: email
-                },
-                success: function (msg) {
+            Ghost.Validate._errors = [];
+            Ghost.Validate.check(email).isEmail();
 
-                    window.location.href = msg.redirect;
-                },
-                error: function (xhr) {
-                    Ghost.notifications.addItem({
-                        type: 'error',
-                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
-                        status: 'passive'
-                    });
-                }
-            });
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
+            } else {
+                $.ajax({
+                    url: '/ghost/forgotten/',
+                    type: 'POST',
+                    data: {
+                        email: email
+                    },
+                    success: function (msg) {
+
+                        window.location.href = msg.redirect;
+                    },
+                    error: function (xhr) {
+                        Ghost.notifications.addItem({
+                            type: 'error',
+                            message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                            status: 'passive'
+                        });
+                    }
+                });
+            }
         }
     });
 }());

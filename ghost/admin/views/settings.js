@@ -157,21 +157,45 @@
         },
 
         saveSettings: function () {
-            var themes = this.model.get('availableThemes');
-            this.model.unset('availableThemes');
-            this.model.save({
-                title: this.$('#blog-title').val(),
-                description: $('#blog-description').val(),
-                logo: this.$('#blog-logo').attr("src"),
-                cover: this.$('#blog-cover').attr("src"),
-                email: this.$('#email-address').val(),
-                postsPerPage: this.$('#postsPerPage').val(),
-                activeTheme: this.$('#activeTheme').val()
-            }, {
-                success: this.saveSuccess,
-                error: this.saveError
-            });
-            this.model.set({availableThemes: themes});
+            var themes = this.model.get('availableThemes'),
+                title = this.$('#blog-title').val(),
+                description = this.$('#blog-description').val(),
+                email = this.$('#email-address').val(),
+                postsPerPage = this.$('#postsPerPage').val();
+
+            Ghost.Validate._errors = [];
+            Ghost.Validate
+                .check(title, {message: "Title is too long", el: $('#blog-title')})
+                .len(0, 150);
+            Ghost.Validate
+                .check(description, {message: "Description is too long", el: $('#blog-description')})
+                .len(0, 200);
+            Ghost.Validate
+                .check(email, {message: "Please supply a valid email address", el: $('#email-address')})
+                .isEmail().len(0, 254);
+            Ghost.Validate
+                .check(postsPerPage, {message: "Please use a number", el: $('postsPerPage')})
+                .isInt();
+
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
+            } else {
+
+                this.model.unset('availableThemes');
+                this.model.save({
+                    title: title,
+                    description: description,
+                    logo: this.$('#blog-logo').attr("src"),
+                    cover: this.$('#blog-cover').attr("src"),
+                    email: email,
+                    postsPerPage: postsPerPage,
+                    activeTheme: this.$('#activeTheme').val()
+                }, {
+                    success: this.saveSuccess,
+                    error: this.saveError
+                });
+                this.model.set({availableThemes: themes});
+            }
         },
         showLogo: function () {
             var settings = this.model.toJSON();
@@ -259,63 +283,92 @@
 
 
         saveUser: function () {
-            this.model.save({
-                'full_name':        this.$('#user-name').val(),
-                'email_address':    this.$('#user-email').val(),
-                'location':         this.$('#user-location').val(),
-                'url':              this.$('#user-website').val(),
-                'bio':              this.$('#user-bio').val(),
-                'profile_picture':  this.$('#user-profile-picture').attr('src'),
-                'cover_picture':    this.$('#user-cover-picture').attr('src')
-            }, {
-                success: this.saveSuccess,
-                error: this.saveError
-            });
+            var userName = this.$('#user-name').val(),
+                userEmail = this.$('#user-email').val(),
+                userLocation = this.$('#user-location').val(),
+                userWebsite = this.$('#user-website').val(),
+                userBio = this.$('#user-bio').val();
+
+            Ghost.Validate._errors = [];
+            Ghost.Validate
+                .check(userName, {message: "Name is too long", el: $('#user-name')})
+                .len(0, 150);
+            Ghost.Validate
+                .check(userBio, {message: "Bio is too long", el: $('#user-bio')})
+                .len(0, 200);
+            Ghost.Validate
+                .check(userEmail, {message: "Please supply a valid email address", el: $('#user-email')})
+                .isEmail();
+            Ghost.Validate
+                .check(userLocation, {message: "Location is too long", el: $('#user-location')})
+                .len(0, 150);
+            if (userWebsite.length > 0) {
+                Ghost.Validate
+                    .check(userWebsite, {message: "Please use a valid url", el: $('#user-website')})
+                    .isUrl()
+                    .len(0, 2000);
+            }
+
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
+            } else {
+
+                this.model.save({
+                    'full_name':        userName,
+                    'email_address':    userEmail,
+                    'location':         userLocation,
+                    'url':              userWebsite,
+                    'bio':              userBio,
+                    'profile_picture':  this.$('#user-profile-picture').attr('src'),
+                    'cover_picture':    this.$('#user-cover-picture').attr('src')
+                }, {
+                    success: this.saveSuccess,
+                    error: this.saveError
+                });
+            }
         },
 
         changePassword: function (event) {
             event.preventDefault();
-
             var self = this,
                 oldPassword = this.$('#user-password-old').val(),
                 newPassword = this.$('#user-password-new').val(),
                 ne2Password = this.$('#user-new-password-verification').val();
 
-            if (newPassword !== ne2Password) {
-                this.validationError('Your new passwords do not match');
-                return;
-            }
+            Ghost.Validate._errors = [];
+            Ghost.Validate.check(newPassword, {message: 'Your new passwords do not match'}).equals(ne2Password);
+            Ghost.Validate.check(newPassword, {message: 'Your password is not long enough. It must be at least 8 chars long.'}).len(8);
 
-            if (newPassword.length < 8) {
-                this.validationError('Your password is not long enough. It must be at least 8 chars long.');
-                return;
-            }
+            if (Ghost.Validate._errors.length > 0) {
+                Ghost.Validate.handleErrors();
+            } else {
 
-            $.ajax({
-                url: '/ghost/changepw/',
-                type: 'POST',
-                data: {
-                    password: oldPassword,
-                    newpassword: newPassword,
-                    ne2password: ne2Password
-                },
-                success: function (msg) {
-                    Ghost.notifications.addItem({
-                        type: 'success',
-                        message: msg.msg,
-                        status: 'passive',
-                        id: 'success-98'
-                    });
-                    self.$('#user-password-old, #user-password-new, #user-new-password-verification').val('');
-                },
-                error: function (xhr) {
-                    Ghost.notifications.addItem({
-                        type: 'error',
-                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
-                        status: 'passive'
-                    });
-                }
-            });
+                $.ajax({
+                    url: '/ghost/changepw/',
+                    type: 'POST',
+                    data: {
+                        password: oldPassword,
+                        newpassword: newPassword,
+                        ne2password: ne2Password
+                    },
+                    success: function (msg) {
+                        Ghost.notifications.addItem({
+                            type: 'success',
+                            message: msg.msg,
+                            status: 'passive',
+                            id: 'success-98'
+                        });
+                        self.$('#user-password-old, #user-password-new, #user-new-password-verification').val('');
+                    },
+                    error: function (xhr) {
+                        Ghost.notifications.addItem({
+                            type: 'error',
+                            message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                            status: 'passive'
+                        });
+                    }
+                });
+            }
         },
 
         templateName: 'settings/user-profile',
