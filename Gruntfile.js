@@ -693,7 +693,7 @@ var path = require('path'),
         grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);
 
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "mochacli:all", "test-functional"]);
+        grunt.registerTask("validate", ["jslint", "test-unit", "test-functional"]);
 
         // Generate Docs
         grunt.registerTask("docs", ["groc"]);
