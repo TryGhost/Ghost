@@ -9,6 +9,7 @@ var Post,
     converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
     Tag = require('./tag').Tag,
+    Tags = require('./tag').Tags,
     GhostBookshelf = require('./base');
 
 Post = GhostBookshelf.Model.extend({
@@ -141,13 +142,8 @@ Post = GhostBookshelf.Model.extend({
     },
 
     updateTags: function (newTags) {
-        var self = this,
-            tagOperations = [],
-            tagsToDetach,
-            existingTagIDs,
-            tagsToCreateAndAdd,
-            tagsToAddByID,
-            fetchOperation;
+        var self = this;
+
 
         if (newTags === this) {
             newTags = this.get('tags');
@@ -157,51 +153,56 @@ Post = GhostBookshelf.Model.extend({
             return;
         }
 
-        fetchOperation = Post.forge({id: this.id}).fetch({withRelated: ['tags']});
-        return fetchOperation.then(function (thisModelWithTags) {
-            var existingTags = thisModelWithTags.related('tags').models;
+        return Post.forge({id: this.id}).fetch({withRelated: ['tags']}).then(function (thisPostWithTags) {
+            var existingTags = thisPostWithTags.related('tags').toJSON(),
+                tagOperations = [],
+                tagsToDetach = [],
+                tagsToAttach = [];
 
-            tagsToDetach = existingTags.filter(function (existingTag) {
-                var tagStillRemains = newTags.some(function (newTag) {
-                    return newTag.id === existingTag.id;
-                });
-
-                return !tagStillRemains;
+            // First find any tags which have been removed
+            _.each(existingTags, function (existingTag) {
+                if (!_.some(newTags, function (newTag) { return newTag.name === existingTag.name; })) {
+                    tagsToDetach.push(existingTag.id);
+                }
             });
+
             if (tagsToDetach.length > 0) {
                 tagOperations.push(self.tags().detach(tagsToDetach));
             }
 
-            // Detect any tags that have been added by ID
-            existingTagIDs = existingTags.map(function (existingTag) {
-                return existingTag.id;
+            // Next check if new tags are all exactly the same as what is set on the model
+            _.each(newTags, function (newTag) {
+                if (!_.some(existingTags, function (existingTag) { return newTag.name === existingTag.name; })) {
+                    // newTag isn't on this post yet
+                    tagsToAttach.push(newTag);
+                }
             });
 
-            tagsToAddByID = newTags.filter(function (newTag) {
-                return existingTagIDs.indexOf(newTag.id) === -1;
-            });
+            if (tagsToAttach) {
+                return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch().then(function (matchingTags) {
+                    _.each(matchingTags.toJSON(), function (matchingTag) {
+                        tagOperations.push(self.tags().attach(matchingTag.id));
+                        tagsToAttach = _.reject(tagsToAttach, function (tagToAttach) {
+                            return tagToAttach.name === matchingTag.name;
+                        });
+                    });
 
-            if (tagsToAddByID.length > 0) {
-                tagsToAddByID = _.pluck(tagsToAddByID, 'id');
-                tagOperations.push(self.tags().attach(tagsToAddByID));
-            }
+                    _.each(tagsToAttach, function (tagToCreateAndAttach) {
+                        var createAndAttachOperation = Tag.add({name: tagToCreateAndAttach.name}).then(function (createdTag) {
+                            return self.tags().attach(createdTag.id, createdTag.name);
+                        });
 
-            // Detect any tags that have been added, but don't already exist in the database 
-            tagsToCreateAndAdd = newTags.filter(function (newTag) {
-                return newTag.id === null || newTag.id === undefined;
-            });
-            tagsToCreateAndAdd.forEach(function (tagToCreateAndAdd) {
-                var createAndAddOperation = Tag.add({name: tagToCreateAndAdd.name}).then(function (createdTag) {
-                    return self.tags().attach(createdTag.id);
+
+                        tagOperations.push(createAndAttachOperation);
+                    });
+
+                    return when.all(tagOperations);
                 });
-
-                tagOperations.push(createAndAddOperation);
-            });
+            }
 
             return when.all(tagOperations);
         });
     },
-
 
     // Relations
     user: function () {
