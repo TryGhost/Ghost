@@ -114,7 +114,6 @@
         activeId: null,
 
         events: {
-            'click .post-controls .delete' : 'deletePost',
             'click .post-controls .post-edit' : 'editPost'
         },
 
@@ -127,53 +126,6 @@
                 this.activeId = id;
                 this.render();
             }
-        },
-
-        deletePost: function (e) {
-            e.preventDefault();
-            var self = this;
-            this.addSubview(new Ghost.Views.Modal({
-                model: {
-                    options: {
-                        close: false,
-                        confirm: {
-                            accept: {
-                                func: function () {
-                                    self.model.destroy({
-                                        wait: true
-                                    }).then(function () {
-                                        Ghost.notifications.addItem({
-                                            type: 'success',
-                                            message: 'Your post has been deleted.',
-                                            status: 'passive'
-                                        });
-                                    }, function () {
-                                        Ghost.notifications.addItem({
-                                            type: 'error',
-                                            message: 'Your post could not be deleted. Please try again.',
-                                            status: 'passive'
-                                        });
-                                    });
-                                },
-                                text: "Yes"
-                            },
-                            reject: {
-                                func: function () {
-                                    return true;
-                                },
-                                text: "No"
-                            }
-                        },
-                        type: "action",
-                        style: ["wide", "centered"],
-                        animation: 'fade'
-                    },
-                    content: {
-                        template: 'blank',
-                        title: 'Are you sure you want to delete this post?'
-                    }
-                }
-            }));
         },
 
         editPost: function (e) {
@@ -194,6 +146,11 @@
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');
             });
+
+            if (this.model !== 'undefined') {
+                this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
+            }
+
             Ghost.temporary.initToggles(this.$el);
             return this;
         }

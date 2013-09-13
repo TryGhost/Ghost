@@ -232,7 +232,7 @@
             ul {
                 position: absolute;
                 top:15px;
-                right:-15px;
+                right:-10px;
             }
         }
         
@@ -240,11 +240,6 @@
             @include icon($i-edit, 14px);
             margin-right:7px;
             padding: 5px;
-        }
-        .post-settings {
-            @include icon($i-settings, 14px);
-            padding: 5px;
-            margin-right: -5px;
         }
 
         img {
