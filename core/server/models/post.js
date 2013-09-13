@@ -140,17 +140,20 @@ Post = GhostBookshelf.Model.extend({
         return checkIfSlugExists(slug);
     },
 
-    updateTags: function () {
+    updateTags: function (newTags) {
         var self = this,
             tagOperations = [],
-            newTags = this.get('tags'),
             tagsToDetach,
             existingTagIDs,
             tagsToCreateAndAdd,
             tagsToAddByID,
             fetchOperation;
 
-        if (!newTags) {
+        if (newTags === this) {
+            newTags = this.get('tags');
+        }
+
+        if (!newTags || !this.id) {
             return;
         }
 
@@ -371,6 +374,13 @@ Post = GhostBookshelf.Model.extend({
 
         // Otherwise, you shall not pass.
         return when.reject();
+    },
+
+    add: function (newPostData, options) {
+        return GhostBookshelf.Model.add.call(this, newPostData, options).tap(function (post) {
+            // associated models can't be created until the post has an ID, so run this after
+            return post.updateTags(newPostData.tags);
+        });
     }
 
 });

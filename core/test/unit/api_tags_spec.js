@@ -207,6 +207,19 @@ describe('Tag Model', function () {
                     done();
                 }).then(null, done);
             });
+
+
+            it('can add a tag to a post on creation', function (done) {
+                var newPost = {title: 'Test Title 1', content_raw: 'Test Content 1', tags: ['test_tag_1']};
+
+                PostModel.add(newPost).then(function (createdPost) {
+                    return PostModel.read({id: createdPost.id}, { withRelated: ['tags']});
+                }).then(function (postWithTag) {
+                    postWithTag.related('tags').length.should.equal(1);
+                    done();
+                }).then(null, done);
+
+            });
         });
 
     });
