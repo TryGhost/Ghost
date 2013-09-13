@@ -1,7 +1,5 @@
 var User,
     Users,
-    UserRole,
-// UserRoles,
     _ = require('underscore'),
     uuid = require('node-uuid'),
     when = require('when'),
@@ -12,10 +10,6 @@ var User,
     GhostBookshelf = require('./base'),
     Role = require('./role').Role,
     Permission = require('./permission').Permission;
-
-UserRole = GhostBookshelf.Model.extend({
-    tableName: 'roles_users'
-});
 
 
 function validatePasswordLength(password) {
@@ -145,7 +139,7 @@ User = GhostBookshelf.Model.extend({
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
             // Add this user to the admin role (assumes admin = role_id: 1)
-            return UserRole.add({role_id: 1, user_id: addedUser.id});
+            return userData.roles().attach(1);
         }).then(function (addedUserRole) {
             // Return the added user as expected
 
