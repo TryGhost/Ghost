@@ -1,10 +1,12 @@
 /*globals describe, beforeEach, it*/
-var admin = require('../../server/controllers/admin'),
-    fs = require('fs-extra'),
+var testUtils = require('./testUtils'),
     should = require('should'),
     sinon = require('sinon'),
-    when = require('when');
+    when = require('when'),
+    fs = require('fs-extra'),
 
+    // Stuff we are testing
+    admin = require('../../server/controllers/admin');
 describe('Admin Controller', function() {
     describe('uploader', function() {
 
@@ -36,7 +38,7 @@ describe('Admin Controller', function() {
             });
         });
 
-        
+
         describe('valid file', function() {
 
             var clock;
@@ -56,7 +58,7 @@ describe('Admin Controller', function() {
             });
 
             it('can upload jpg', function(done) {
-                clock = sinon.useFakeTimers(42); 
+                clock = sinon.useFakeTimers(42);
                 sinon.stub(res, 'send', function(data) {
                     data.should.not.equal(404);
                     return done();
@@ -67,7 +69,7 @@ describe('Admin Controller', function() {
 
             it('can upload png', function(done) {
                 req.files.uploadimage.name = "IMAGE.png";
-                clock = sinon.useFakeTimers(42); 
+                clock = sinon.useFakeTimers(42);
                 sinon.stub(res, 'send', function(data) {
                     data.should.not.equal(404);
                     return done();
@@ -78,7 +80,7 @@ describe('Admin Controller', function() {
 
             it('can upload gif', function(done) {
                 req.files.uploadimage.name = "IMAGE.gif";
-                clock = sinon.useFakeTimers(42); 
+                clock = sinon.useFakeTimers(42);
                 sinon.stub(res, 'send', function(data) {
                     data.should.not.equal(404);
                     return done();
