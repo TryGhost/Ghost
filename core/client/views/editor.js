@@ -41,6 +41,7 @@
         initialize: function () {
             this.addSubview(new Ghost.View.EditorTagWidget({el: this.$('#entry-tags'), model: this.model})).render();
             this.addSubview(new ActionsWidget({el: this.$('#entry-actions'), model: this.model})).render();
+            this.addSubview(new Ghost.View.PostSettings({el: $('#entry-controls'), model: this.model})).render();
         },
 
         render: function () { return this; }

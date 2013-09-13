@@ -100,7 +100,7 @@ describe('Admin Controller', function() {
             });
 
             it('should send correct path to image when today is in Jan 2014', function(done) {
-                clock = sinon.useFakeTimers(1388534400000); // Wed Jan 01 2014 00:00:00 GMT+0000 (GMT)
+                clock = sinon.useFakeTimers(1388707200000); // Wed Jan 03 2014 00:00:00 GMT+0000 (GMT)
                 sinon.stub(res, 'send', function(data) {
                     data.should.equal('/content/images/2014/Jan/IMAGE.jpg');
                     return done();

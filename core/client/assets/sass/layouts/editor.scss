@@ -521,7 +521,15 @@ body.zen {
 
 }
 
-#entry-settings {
+#entry-controls {
+    @include box-sizing(border-box);
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    z-index: 1;
+}
+
+.entry-settings {
     @include icon($i-settings, 1.1em){vertical-align: 0;};
     @include box-sizing(border-box);
     display: inline-block;
@@ -535,9 +543,9 @@ body.zen {
     }
 }
 
-#entry-settings-menu {
+.entry-settings-menu {
     position: absolute;
-    bottom: 50px;
+    bottom: 40px;
     right: -5px;
 }
 
