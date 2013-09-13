@@ -47,6 +47,7 @@ Post = GhostBookshelf.Model.extend({
 
     saving: function () {
         // Deal with the related data here
+        var self = this;
 
         // Remove any properties which don't belong on the post model
         this.attributes = this.pick(this.permittedAttributes);
@@ -54,6 +55,14 @@ Post = GhostBookshelf.Model.extend({
         this.set('content', converter.makeHtml(this.get('content_raw')));
 
         this.set('title', this.get('title').trim());
+
+        if (this.hasChanged('slug')) {
+            // Pass the new slug through the generator to strip illegal characters, detect duplicates
+            return this.generateSlug(this.get('slug'))
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             this.set('published_at', new Date());
