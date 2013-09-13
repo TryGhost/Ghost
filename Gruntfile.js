@@ -3,10 +3,12 @@ var path = require('path'),
     semver = require("semver"),
     fs = require("fs"),
     path = require("path"),
+    _ = require('underscore'),
     spawn = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
-    _ = require('underscore'),
+    configLoader = require('./core/config-loader.js'),
+
     configureGrunt = function (grunt) {
 
         // load all grunt tasks
@@ -351,6 +353,13 @@ var path = require('path'),
             process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
         });
 
+        grunt.registerTask('loadConfig', function () {
+            var done = this.async();
+            configLoader.loadConfig().then(function () {
+                done();
+            });
+        });
+
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
             cfg.pkg = grunt.file.readJSON('package.json');
@@ -681,13 +690,12 @@ var path = require('path'),
             "watch"
         ]);
 
-
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
 
-         // Run unit tests
-        grunt.registerTask("test-unit", ['setTestEnv', "mochacli:all"]);
+        // Run unit tests
+        grunt.registerTask("test-unit", ['setTestEnv', 'loadConfig', "mochacli:all"]);
 
         // Run casperjs tests only
         grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);
