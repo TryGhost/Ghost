@@ -831,6 +831,59 @@ nav {
     @extend %menu-right;
 }
 
+/* ==========================================================================
+   Post Settings
+   ========================================================================== */
+
+.post-setting {
+    min-width: 260px;
+    border-bottom: 1px solid #35393b;
+
+    &:first-child {
+        margin-top: -6px;
+    }
+
+    input {
+        width: 100%;
+        background: none;
+        border: none;
+        color: #e2edf2;
+        line-height: 1.68em;
+    }
+}
+
+.post-setting-label {
+    float: left;
+    width: 26%;
+    text-align: right;
+    padding: 10px 2%;
+    border-right: 1px solid #35393b;
+}
+
+.post-setting-field {
+    float: left;
+    width: 64%;
+    padding: 8px 2%;
+
+    input:focus {
+        outline: none;
+    }
+}
+
+.post-settings {
+    @include icon($i-settings, 14px);
+    padding: 5px;
+    /* margin-right: -5px;*/
+}
+
+.post-setting-calendar {
+    @include icon-after($i-calendar, 18px);
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    margin-top: -25px; /* This doesn't work in FF */
+    right: 10px;
+}
 
 /* ==========================================================================
    Notifications
