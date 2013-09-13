@@ -3,10 +3,12 @@ var path = require('path'),
     semver = require("semver"),
     fs = require("fs"),
     path = require("path"),
+    _ = require('underscore'),
     spawn = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
-    _ = require('underscore'),
+    configLoader = require('./core/config-loader.js'),
+
     configureGrunt = function (grunt) {
 
         // load all grunt tasks
@@ -346,6 +348,18 @@ var path = require('path'),
 
         grunt.initConfig(cfg);
 
+        grunt.registerTask('setTestEnv', function () {
+            // Use 'testing' Ghost config; unless we are running on travis (then show queries for debugging)
+            process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
+        });
+
+        grunt.registerTask('loadConfig', function () {
+            var done = this.async();
+            configLoader.loadConfig().then(function () {
+                done();
+            });
+        });
+
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
             cfg.pkg = grunt.file.readJSON('package.json');
@@ -383,27 +397,6 @@ var path = require('path'),
             });
         });
 
-        // Prepare the project for development
-        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
-
-        // Run API tests only
-        grunt.registerTask("test-api", ["mochacli:api"]);
-
-        // Run permisisons tests only
-        grunt.registerTask("test-p", ["mochacli:perm"]);
-
-        // Run migrations tests only
-        grunt.registerTask("test-m", ["mochacli:migrate"]);
-
-        // Run casperjs tests only
-        grunt.registerTask('test-functional', ['express:test', 'spawn-casperjs']);
-
-        // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "mochacli:all", "test-functional"]);
-
-        // Generate Docs
-        grunt.registerTask("docs", ["groc"]);
 
         /* Generate Changelog
          * - Pulls changelog from git, excluding merges.
@@ -697,6 +690,22 @@ var path = require('path'),
             "open",
             "watch"
         ]);
+
+        // Prepare the project for development
+        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
+        grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
+
+        // Run unit tests
+        grunt.registerTask("test-unit", ['setTestEnv', 'loadConfig', "mochacli:all"]);
+
+        // Run casperjs tests only
+        grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);
+
+        // Run tests and lint code
+        grunt.registerTask("validate", ["jslint", "test-unit", "test-functional"]);
+
+        // Generate Docs
+        grunt.registerTask("docs", ["groc"]);
 
         // When you just say "grunt"
         grunt.registerTask("default", ['sass:admin', 'handlebars']);

@@ -1,6 +1,3 @@
-// Use 'testing' Ghost config; unless we are running on travis (then show queries for debugging)
-process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
-
 var knex = require('../../server/models/base').Knex,
     when = require('when'),
     migration = require("../../server/data/migration/"),
