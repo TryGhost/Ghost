@@ -94,6 +94,51 @@ describe("Ghost API", function () {
         });
     });
 
+    it("executes filters that return a promise", function (done) {
+        var filterName = 'testprioritypromise',
+            testFilterHandler1 = sinon.spy(function (args) {
+                return when.promise(function (resolve) {
+                    process.nextTick(function () {
+                        args.filter1 = true;
+
+                        resolve(args);
+                    });
+                });
+            }),
+            testFilterHandler2 = sinon.spy(function (args) {
+                args.filter2 = true;
+
+                return args;
+            }),
+            testFilterHandler3 = sinon.spy(function (args) {
+                return when.promise(function (resolve) {
+                    process.nextTick(function () {
+                        args.filter3 = true;
+
+                        resolve(args);
+                    });
+                });
+            });
+
+        ghost.registerFilter(filterName, 0, testFilterHandler1);
+        ghost.registerFilter(filterName, 2, testFilterHandler2);
+        ghost.registerFilter(filterName, 9, testFilterHandler3);
+
+        ghost.doFilter(filterName, { test: true }, function (newArgs) {
+
+            testFilterHandler1.calledBefore(testFilterHandler2).should.equal(true);
+            testFilterHandler2.calledBefore(testFilterHandler3).should.equal(true);
+
+            testFilterHandler3.called.should.equal(true);
+
+            newArgs.filter1.should.equal(true);
+            newArgs.filter2.should.equal(true);
+            newArgs.filter3.should.equal(true);
+
+            done();
+        });
+    });
+
     it("can compile a template", function (done) {
         var template = path.join(process.cwd(), testTemplatePath, 'test.hbs');
 

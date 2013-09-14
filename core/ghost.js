@@ -31,6 +31,8 @@ var config = require('./../config'),
     defaults,
     statuses;
 
+when.pipeline = require('when/pipeline');
+
 // ## Default values
 /**
  * A hash of default values to use instead of 'magic' numbers/strings.
@@ -273,31 +275,34 @@ Ghost.prototype.unregisterFilter = function (name, priority, fn) {
 
 // Execute filter functions in priority order
 Ghost.prototype.doFilter = function (name, args, callback) {
-    var callbacks = this.filterCallbacks[name];
+    var callbacks = this.filterCallbacks[name],
+        priorityCallbacks = [];
 
     // Bug out early if no callbacks by that name
     if (!callbacks) {
         return callback(args);
     }
 
+    // For each priorityLevel
     _.times(defaults.maxPriority + 1, function (priority) {
-        // Bug out if no handlers on this priority
-        if (!_.isArray(callbacks[priority])) {
-            return;
-        }
-
-        // Call each handler for this priority level
-        _.each(callbacks[priority], function (filterHandler) {
-            try {
-                args = filterHandler(args);
-            } catch (e) {
-                // If a filter causes an error, we log it so that it can be debugged, but do not throw the error
-                errors.logError(e);
+        // Add a function that runs its priority level callbacks in a pipeline
+        priorityCallbacks.push(function (currentArgs) {
+            // Bug out if no handlers on this priority
+            if (!_.isArray(callbacks[priority])) {
+                return when.resolve(currentArgs);
             }
+
+            // Call each handler for this priority level, allowing for promises or values
+            return when.pipeline(callbacks[priority], currentArgs);
         });
     });
 
-    callback(args);
+    when.pipeline(priorityCallbacks, args).then(function (newArgs) {
+        callback(newArgs);
+    }, function (e) {
+        // Log errors but don't throw
+        errors.logError(e);
+    });
 };
 
 // Initialise plugins.  Will load from config.activePlugins by default
