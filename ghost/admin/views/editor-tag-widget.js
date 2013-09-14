@@ -38,7 +38,8 @@
         render: function () {
             var tags = this.model.get('tags'),
                 $tags = $('.tags'),
-                tagOffset;
+                tagOffset,
+                self = this;
 
             $tags.empty();
 
@@ -46,6 +47,7 @@
                 _.forEach(tags, function (tag) {
                     var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
                     $tags.append($tag);
+                    $("[data-tag-id=" + tag.id + "]")[0].scrollIntoView(true);
                 });
             }
 
@@ -55,6 +57,8 @@
                 tagOffset = $('.tag-input').offset().left;
                 $('.tag-blocks').css({'left': tagOffset + 'px'});
             }
+
+            $(window).on('resize', self.resize).trigger('resize');
 
             $('.tag-label').on('touchstart', function () {
                 $(this).addClass('touch');
@@ -224,6 +228,15 @@
             this.model.removeTag(tag);
         },
 
+        resize: _.throttle(function () {
+            var $tags = $('.tags');
+            if ($(window).width() > 400) {
+                $tags.css("max-width", $("#entry-tags").width() - 300);
+            } else {
+                $tags.css("max-width", "inherit");
+            }
+        }, 50),
+
         findMatchingTags: function (searchTerm) {
             var matchingTagModels,
                 self = this;
@@ -251,6 +264,7 @@
         addTag: function (tag) {
             var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
             this.$('.tags').append($tag);
+            $(".tag").last()[0].scrollIntoView(true);
             this.model.addTag(tag);
 
             this.$('.tag-input').val('').focus();
