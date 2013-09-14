@@ -40,6 +40,16 @@ var path = require('path'),
                     files: ['<%= paths.adminAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
                 },
+                concat: {
+                    files: [
+                        'core/client/*.js',
+                        'core/client/helpers/*.js',
+                        'core/client/models/*.js',
+                        'core/client/tpl/*.js',
+                        'core/client/views/*.js'
+                    ],
+                    tasks: ['concat']
+                },
                 livereload: {
                     files: [
                         // Theme CSS
@@ -49,11 +59,7 @@ var path = require('path'),
                         // Admin CSS
                         '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
-                        'core/client/*.js',
-                        'core/client/helpers/*.js',
-                        'core/client/models/*.js',
-                        'core/client/tpl/*.js',
-                        'core/client/views/*.js'
+                        'core/built/scripts/*.js'
                     ],
                     options: {
                         livereload: true
@@ -342,6 +348,122 @@ var path = require('path'),
                     commitMessage: '<%= buildType %> Release %VERSION%',
                     tagMessage: '<%= buildType %> Release %VERSION%',
                     pushTo: "origin build"
+                }
+            },
+
+            concat: {
+                dev: {
+                    files: {
+                        "core/built/scripts/vendor.js": [
+                            "core/shared/vendor/jquery/jquery.js",
+                            "core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js",
+                            "core/client/assets/lib/jquery-utils.js",
+                            "core/client/assets/lib/uploader.js",
+                            "core/shared/vendor/underscore.js",
+                            "core/shared/vendor/backbone/backbone.js",
+                            "core/shared/vendor/handlebars/handlebars-runtime.js",
+                            "core/shared/vendor/moment.js",
+
+                            "core/client/assets/vendor/icheck/jquery.icheck.min.js",
+
+                            "core/shared/vendor/jquery/jquery.ui.widget.js",
+                            "core/shared/vendor/jquery/jquery.iframe-transport.js",
+                            "core/shared/vendor/jquery/jquery.fileupload.js",
+
+                            "core/client/assets/vendor/codemirror/codemirror.js",
+                            "core/client/assets/vendor/codemirror/addon/mode/overlay.js",
+                            "core/client/assets/vendor/codemirror/mode/markdown/markdown.js",
+                            "core/client/assets/vendor/codemirror/mode/gfm/gfm.js",
+                            "core/client/assets/vendor/showdown/showdown.js",
+                            "core/client/assets/vendor/showdown/extensions/ghostdown.js",
+                            "core/shared/vendor/showdown/extensions/github.js",
+                            "core/client/assets/vendor/shortcuts.js",
+                            "core/client/assets/vendor/validator-client.js",
+                            "core/client/assets/vendor/countable.js",
+                            "core/client/assets/vendor/to-title-case.js",
+                            "core/client/assets/vendor/packery.pkgd.min.js",
+                            "core/client/assets/vendor/jquery.hammer.min.js"
+                        ],
+
+                        "core/built/scripts/helpers.js": [
+                            "core/client/init.js",
+
+                            "core/client/mobile-interactions.js",
+                            "core/client/toggle.js",
+                            "core/client/markdown-actions.js",
+                            "core/client/helpers/index.js"
+                        ],
+
+                        "core/built/scripts/templates.js": [
+                            "core/client/tpl/hbs-tpl.js"
+                        ],
+
+                        "core/built/scripts/models.js": [
+                            "core/client/models/**/*.js"
+                        ],
+
+                        "core/built/scripts/views.js": [
+                            "core/client/views/**/*.js",
+                            "core/client/router.js"
+                        ]
+                    }
+                },
+                prod: {
+                    files: {
+                        "core/built/scripts/ghost.js": [
+                            "core/shared/vendor/jquery/jquery.js",
+                            "core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js",
+                            "core/client/assets/lib/jquery-utils.js",
+                            "core/client/assets/lib/uploader.js",
+                            "core/shared/vendor/underscore.js",
+                            "core/shared/vendor/backbone/backbone.js",
+                            "core/shared/vendor/handlebars/handlebars-runtime.js",
+                            "core/shared/vendor/moment.js",
+
+                            "core/client/assets/vendor/icheck/jquery.icheck.min.js",
+
+                            "core/shared/vendor/jquery/jquery.ui.widget.js",
+                            "core/shared/vendor/jquery/jquery.iframe-transport.js",
+                            "core/shared/vendor/jquery/jquery.fileupload.js",
+
+                            "core/client/assets/vendor/codemirror/codemirror.js",
+                            "core/client/assets/vendor/codemirror/addon/mode/overlay.js",
+                            "core/client/assets/vendor/codemirror/mode/markdown/markdown.js",
+                            "core/client/assets/vendor/codemirror/mode/gfm/gfm.js",
+                            "core/client/assets/vendor/showdown/showdown.js",
+                            "core/client/assets/vendor/showdown/extensions/ghostdown.js",
+                            "core/shared/vendor/showdown/extensions/github.js",
+                            "core/client/assets/vendor/shortcuts.js",
+                            "core/client/assets/vendor/validator-client.js",
+                            "core/client/assets/vendor/countable.js",
+                            "core/client/assets/vendor/to-title-case.js",
+                            "core/client/assets/vendor/packery.pkgd.min.js",
+                            "core/client/assets/vendor/jquery.hammer.min.js",
+
+                            "core/client/init.js",
+
+                            "core/client/mobile-interactions.js",
+                            "core/client/toggle.js",
+                            "core/client/markdown-actions.js",
+                            "core/client/helpers/index.js",
+
+                            "core/client/tpl/hbs-tpl.js",
+
+                            "core/client/models/**/*.js",
+
+                            "core/client/views/**/*.js",
+
+                            "core/client/router.js"
+                        ]
+                    }
+                }
+            },
+
+            uglify: {
+                prod: {
+                    files: {
+                        "core/built/scripts/ghost.min.js": "core/built/scripts/ghost.js"
+                    }
                 }
             }
         };
@@ -654,6 +776,8 @@ var path = require('path'),
             "shell:bourbon",
             "sass:admin",
             "handlebars",
+            "concat",
+            "uglify",
             "bump:build",
             "updateCurrentPackageInfo",
             "changelog",
@@ -666,6 +790,8 @@ var path = require('path'),
             "shell:bourbon",
             "sass:admin",
             "handlebars",
+            "concat",
+            "uglify",
             "bump:build",
             "updateCurrentPackageInfo",
             "changelog",
@@ -677,6 +803,8 @@ var path = require('path'),
             "shell:bourbon",
             "sass:admin",
             "handlebars",
+            "concat",
+            "uglify",
             "changelog",
             "copy:build",
             "compress:build"
@@ -692,7 +820,7 @@ var path = require('path'),
 
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask("init", ["shell:bourbon", "sass:admin", 'handlebars']);
+        grunt.registerTask("init", ["shell:bourbon", "default"]);
 
         // Run unit tests
         grunt.registerTask("test-unit", ['setTestEnv', 'loadConfig', "mochacli:all"]);
@@ -706,8 +834,10 @@ var path = require('path'),
         // Generate Docs
         grunt.registerTask("docs", ["groc"]);
 
+        // TODO: Production build task that minifies with uglify:prod
+
         // When you just say "grunt"
-        grunt.registerTask("default", ['sass:admin', 'handlebars']);
+        grunt.registerTask("default", ['sass:admin', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;

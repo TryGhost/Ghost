@@ -2,7 +2,7 @@
 // Defines core methods required to build the application
 
 // Module dependencies
-var config = require('./../config'),
+var config = require('../config'),
     when = require('when'),
     express = require('express'),
     errors = require('./server/errorHandling'),
@@ -340,11 +340,28 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
 // Initialise Theme or admin
 Ghost.prototype.initTheme = function (app) {
     var self = this,
-        hbsOptions;
+        oneYear = 31536000000;
+
+    app.set('view engine', 'hbs');
+    // return the correct mime type for woff files
+    express['static'].mime.define({'application/font-woff': ['woff']});
+
+    // Serve the assets of the current theme
+    app.use(express['static'](self.paths().activeTheme));
+
+    // Serve shared assets and images
+    app.use('/shared', express['static'](path.join(__dirname, '/shared')));
+    app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
+
+    // Serve our built scripts; can't use /scripts here because themes already are
+    app.use("/built/scripts", express['static'](path.join(__dirname, '/built/scripts'), {
+        // Put a maxAge of one year on built scripts
+        maxAge: oneYear
+    }));
+
     return function initTheme(req, res, next) {
-        app.set('view engine', 'hbs');
-        // return the correct mime type for woff files
-        express['static'].mime.define({'application/font-woff': ['woff']});
+
+        var hbsOptions;
 
         if (!res.isAdmin) {
 
@@ -369,9 +386,7 @@ Ghost.prototype.initTheme = function (app) {
             app.use('/public', express['static'](path.join(__dirname, '/client/assets')));
             app.use('/public', express['static'](path.join(__dirname, '/client')));
         }
-        app.use(express['static'](self.paths().activeTheme));
-        app.use('/shared', express['static'](path.join(__dirname, '/shared')));
-        app.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
+
         next();
     };
 };
