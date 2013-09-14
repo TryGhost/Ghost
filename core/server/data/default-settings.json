@@ -21,7 +21,7 @@
     },
     {
         "key":          "activeTheme",
-        "value":        "content/themes/casper",
+        "value":        "casper",
         "type":         "general"
     },
     {
