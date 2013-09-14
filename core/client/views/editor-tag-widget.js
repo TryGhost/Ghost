@@ -231,7 +231,7 @@
         resize: _.throttle(function () {
             var $tags = $('.tags');
             if ($(window).width() > 400) {
-                $tags.css("max-width", $("#entry-tags").width() - 300);
+                $tags.css("max-width", $("#entry-tags").width() - 320);
             } else {
                 $tags.css("max-width", "inherit");
             }
