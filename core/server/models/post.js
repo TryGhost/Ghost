@@ -8,6 +8,7 @@ var Post,
     github = require('../../shared/vendor/showdown/extensions/github'),
     converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
+    config = require('../../../config'),
     Tag = require('./tag').Tag,
     Tags = require('./tag').Tags,
     GhostBookshelf = require('./base');
@@ -27,8 +28,8 @@ Post = GhostBookshelf.Model.extend({
     defaults: function () {
         return {
             uuid: uuid.v4(),
-            status: 'draft'
-            // TODO: language: ghost.config().defaultLang);
+            status: 'draft',
+            language: config.defaultLang
         };
     },
 
