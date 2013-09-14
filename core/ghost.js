@@ -145,13 +145,8 @@ Ghost.prototype.init = function () {
     ).then(function () {
         return models.Settings.populateDefaults();
     }).then(function () {
-        // Initialize plugins
-        return self.initPlugins();
-    }).then(function () {
         // Initialize the settings cache
         return self.updateSettingsCache();
-    }).then(function () {
-        return self.initPlugins();
     }).then(function () {
         // Initialize the permissions actions and objects
         return permissions.init();
@@ -300,13 +295,32 @@ Ghost.prototype.doFilter = function (name, args, callback) {
     callback(args);
 };
 
-// Initialise plugins.  Will load from config.activePlugins by default
-Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    pluginsToLoad = pluginsToLoad || models.Settings.activePlugins;
-
+// Initialise plugins.  Requires an express server, will load from Settings.activePlugins by default
+Ghost.prototype.initPlugins = function (server, pluginsToLoad) {
     var self = this;
 
-    return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
+    if (!_.isArray(pluginsToLoad)) {
+        // Load the default plugins from settings if not passed
+        return models.Settings.read("activePlugins").then(function (activePluginsSetting) {
+            var settingValue = activePluginsSetting.get('value') || '[]';
+
+            try {
+                settingValue = JSON.parse(settingValue) || [];
+            } catch (e) {
+                return when.reject(new Error("Failed to parse activePlugins setting value: " + e.message));
+            }
+
+            // Recursively call ourself again with the active plugins
+            return self.initPlugins(server, settingValue);
+        }, errors.logAndThrowError);
+    }
+
+    // Attaching the server to the ghost instance for plugins
+    self = _.extend(this, {
+        server: server
+    });
+
+    return plugins.init(self, pluginsToLoad).then(function (loadedPlugins) {
         // Extend the loadedPlugins onto the available plugins
         _.extend(self.availablePlugins, loadedPlugins);
     }, errors.logAndThrowError);
