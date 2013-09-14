@@ -109,7 +109,7 @@ Settings = GhostBookshelf.Model.extend({
             _.each(defaultSettings, function (defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                 if (isMissingFromDB) {
-                    defaultSetting.value = defaultSetting.default;
+                    defaultSetting.value = defaultSetting.defaultValue;
                     insertOperations.push(Settings.forge(defaultSetting).save());
                 }
             });
