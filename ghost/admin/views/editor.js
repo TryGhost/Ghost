@@ -199,14 +199,14 @@
         },
 
         savePost: function (data) {
-            // TODO: The content_raw getter here isn't great, shouldn't rely on currentView.
+            // TODO: The markdown getter here isn't great, shouldn't rely on currentView.
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
 
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
-                content_raw: Ghost.currentView.editor.getValue()
+                markdown: Ghost.currentView.editor.getValue()
             }, data));
 
             // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
@@ -255,7 +255,7 @@
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
 
             this.$('#entry-title').val(this.model.get('title'));
-            this.$('#entry-markdown').html(this.model.get('content_raw'));
+            this.$('#entry-markdown').html(this.model.get('markdown'));
 
             this.initMarkdown();
             this.renderPreview();
