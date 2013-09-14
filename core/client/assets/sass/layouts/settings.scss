@@ -208,7 +208,19 @@
             right:40px;
             z-index: 700;
             font-size: 1em;
+
             @include breakpoint($netbook) { right:15px; }
+            @include breakpoint($mobile) {
+                position: fixed;
+                top: 5px;
+                right: 4px;
+
+                button {
+                    min-height: 0;
+                    height: 30px;
+                    padding: 0.5em 1.37em;
+                }
+            }
 
             .button-add {
                 position:relative;

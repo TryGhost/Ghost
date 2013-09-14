@@ -1116,13 +1116,14 @@ body.blur > *:not(#modal-container) {
 
 main {
     position: absolute;
-    bottom: 0;
     top: 55px;
-    left: 15px;
     right: 15px;
+    bottom: 0;
+    left: 15px;
     padding: 0;
 
     @include breakpoint($mobile) {
+        top: 40px;
         left:0;
         right:0;
     }
