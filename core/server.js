@@ -246,40 +246,44 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.get('/', frontend.homepage);
     server.get('/page/:page/', frontend.homepage);
 
+    // Load the plugins with the already configured express server
+    ghost.initPlugins(server).then(function () {
 
-    // ## Start Ghost App
-    server.listen(
-        ghost.config().server.port,
-        ghost.config().server.host,
-        function () {
+        // ## Start Ghost App
+        server.listen(
+            ghost.config().server.port,
+            ghost.config().server.host,
+            function () {
 
-            // Tell users if their node version is not supported, and exit
-            if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+                // Tell users if their node version is not supported, and exit
+                if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+                    console.log(
+                        "\n !!! INVALID NODE VERSION !!!\n".red,
+                        "Ghost requires node version".red,
+                        packageInfo.engines.node.yellow,
+                        "as defined in package.json\n".red
+                    );
+
+                    process.exit(-1);
+                }
+
+                // Alpha warning, reminds users this is not production-ready software (yet)
+                // Remove once software becomes suitably 'ready'
                 console.log(
-                    "\n !!! INVALID NODE VERSION !!!\n".red,
-                    "Ghost requires node version".red,
-                    packageInfo.engines.node.yellow,
-                    "as defined in package.json\n".red
+                    "\n !!! ALPHA SOFTWARE WARNING !!!\n".red,
+                    "Ghost is in the early stages of development.\n".red,
+                    "Expect to see bugs and other issues (but please report them.)\n".red
                 );
 
-                process.exit(-1);
+                // Startup message
+                console.log("Express server listening on address:",
+                    ghost.config().server.host + ':'
+                        + ghost.config().server.port);
+
+                // Let everyone know we have finished loading
+                loading.resolve();
             }
+        );
 
-            // Alpha warning, reminds users this is not production-ready software (yet)
-            // Remove once software becomes suitably 'ready'
-            console.log(
-                "\n !!! ALPHA SOFTWARE WARNING !!!\n".red,
-                "Ghost is in the early stages of development.\n".red,
-                "Expect to see bugs and other issues (but please report them.)\n".red
-            );
-
-            // Startup message
-            console.log("Express server listening on address:",
-                ghost.config().server.host + ':'
-                    + ghost.config().server.port);
-
-            // Let everyone know we have finished loading
-            loading.resolve();
-        }
-    );
+    }, errors.logAndThrowError);
 }, errors.logAndThrowError);

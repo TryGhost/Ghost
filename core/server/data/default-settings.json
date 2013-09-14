@@ -47,7 +47,7 @@
     },
     "theme": {
         "activePlugins": {
-            "default": ""
+            "default": "[]"
         },
         "activeTheme": {
             "default": "casper"
