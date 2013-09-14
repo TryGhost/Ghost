@@ -68,8 +68,8 @@ Importer002.prototype.basicImport = function (data) {
             break;
         case 'settings':
             // for settings we need to update individual settings, and insert any missing ones
-            // the one setting we MUST NOT update is the currentVersion settings
-            var blackList = ['currentVersion'];
+            // the one setting we MUST NOT update is the databaseVersion settings
+            var blackList = ['databaseVersion'];
             if (tableData && tableData.length) {
                 tableData = stripProperties(['id'], tableData);
                 _.each(tableData, function (data) {

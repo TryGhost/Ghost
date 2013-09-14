@@ -1,4 +1,4 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, before, beforeEach, it*/
 var testUtils = require('./testUtils'),
     should = require('should'),
     sinon = require('sinon'),
@@ -11,11 +11,20 @@ var testUtils = require('./testUtils'),
 
 describe("Ghost API", function () {
     var testTemplatePath = 'core/test/unit/fixtures/',
-        themeTemplatePath= 'core/test/unit/fixtures/theme',
+        themeTemplatePath = 'core/test/unit/fixtures/theme',
         ghost;
 
-    beforeEach(function () {
-        ghost = new Ghost();
+    before(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }, done);
+    });
+
+    beforeEach(function (done) {
+        testUtils.initData().then(function () {
+            ghost = new Ghost();
+            done();
+        }, done);
     });
 
     it("is a singleton", function () {

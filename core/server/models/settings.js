@@ -33,21 +33,15 @@ Settings = GhostBookshelf.Model.extend({
 
     tableName: 'settings',
 
-    hasTimestamps: true,
-
     permittedAttributes: ['id', 'uuid', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'update_by'],
 
     defaults: function () {
         return {
             uuid: uuid.v4(),
-            type: 'general'
+            type: 'core'
         };
     },
 
-    initialize: function () {
-        this.on('saving', this.saving, this);
-        this.on('saving', this.validate, this);
-    },
 
     // Validate default settings using the validator module.
     // Each validation's key is a name and its value is an array of options
@@ -79,13 +73,6 @@ Settings = GhostBookshelf.Model.extend({
                 validation[validationName].apply(validation, validationOptions);
             }, this);
         }
-    },
-
-    saving: function () {
-        // Deal with the related data here
-
-        // Remove any properties which don't belong on the model
-        this.attributes = this.pick(this.permittedAttributes);
     }
 }, {
     read: function (_key) {
@@ -122,7 +109,7 @@ Settings = GhostBookshelf.Model.extend({
             _.each(defaultSettings, function (defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                 if (isMissingFromDB) {
-                    defaultSetting.value = defaultSetting.default;
+                    defaultSetting.value = defaultSetting.defaultValue;
                     insertOperations.push(Settings.forge(defaultSetting).save());
                 }
             });

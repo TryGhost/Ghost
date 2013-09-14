@@ -8,6 +8,7 @@ var Post,
     github = require('../../shared/vendor/showdown/extensions/github'),
     converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
+    config = require('../../../config'),
     Tag = require('./tag').Tag,
     Tags = require('./tag').Tags,
     GhostBookshelf = require('./base');
@@ -17,18 +18,15 @@ Post = GhostBookshelf.Model.extend({
     tableName: 'posts',
 
     permittedAttributes: [
-        'id', 'uuid', 'title', 'slug', 'content_raw', 'content', 'meta_title', 'meta_description', 'meta_keywords',
+        'id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
         'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
         'published_at', 'published_by'
     ],
-
-    hasTimestamps: true,
 
     defaults: function () {
         return {
             uuid: uuid.v4(),
             status: 'draft'
-            // TODO: language: ghost.config().defaultLang);
         };
     },
 
@@ -46,23 +44,14 @@ Post = GhostBookshelf.Model.extend({
     },
 
     saving: function () {
-        // Deal with the related data here
         var self = this;
 
         // Remove any properties which don't belong on the post model
         this.attributes = this.pick(this.permittedAttributes);
 
-        this.set('content', converter.makeHtml(this.get('content_raw')));
+        this.set('html', converter.makeHtml(this.get('markdown')));
 
         this.set('title', this.get('title').trim());
-
-        if (this.hasChanged('slug')) {
-            // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return this.generateSlug(this.get('slug'))
-                .then(function (slug) {
-                    self.set({slug: slug});
-                });
-        }
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             this.set('published_at', new Date());
@@ -70,84 +59,34 @@ Post = GhostBookshelf.Model.extend({
             this.set('published_by', 1);
         }
 
-        this.set('updated_by', 1);
+        GhostBookshelf.Model.prototype.saving.call(this);
 
-        // refactoring of ghost required in order to make these details available here
-
-    },
-
-    creating: function () {
-        // set any dynamic default properties
-        var self = this;
-        if (!this.get('created_by')) {
-            this.set('created_by', 1);
-        }
-
-        if (!this.get('author_id')) {
-            this.set('author_id', 1);
-        }
-
-        if (!this.get('slug')) {
-            // Generating a slug requires a db call to look for conflicting slugs
-            return this.generateSlug(this.get('title'))
+        if (this.hasChanged('slug')) {
+            // Pass the new slug through the generator to strip illegal characters, detect duplicates
+            return this.generateSlug(Post, this.get('slug'))
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
         }
     },
 
-    // #### generateSlug
-    // Create a string act as the permalink for a post.
-    generateSlug: function (title) {
-        var slug,
-            slugTryCount = 1,
-            // Look for a post with a matching slug, append an incrementing number if so
-            checkIfSlugExists = function (slugToFind) {
-                return Post.read({slug: slugToFind}).then(function (found) {
-                    var trimSpace;
+    creating: function () {
+        // set any dynamic default properties
+        var self = this;
 
-                    if (!found) {
-                        return when.resolve(slugToFind);
-                    }
-
-                    slugTryCount += 1;
-
-                    // If this is the first time through, add the hyphen
-                    if (slugTryCount === 2) {
-                        slugToFind += '-';
-                    } else {
-                        // Otherwise, trim the number off the end
-                        trimSpace = -(String(slugTryCount - 1).length);
-                        slugToFind = slugToFind.slice(0, trimSpace);
-                    }
-
-                    slugToFind += slugTryCount;
-
-                    return checkIfSlugExists(slugToFind);
-                });
-            };
-
-        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = title.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
-        // Replace dots and spaces with a dash
-                    .replace(/(\s|\.)/g, '-')
-        // Convert 2 or more dashes into a single dash
-                    .replace(/-+/g, '-')
-        // Make the whole thing lowercase
-                    .toLowerCase();
-
-        // Remove trailing hypen
-        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
-        // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts)$/g
-            .test(slug) ? slug + '-post' : slug;
-
-        //if slug is empty after trimming use "post"
-        if (!slug) {
-            slug = "post";
+        if (!this.get('author_id')) {
+            this.set('author_id', 1);
         }
-        // Test for duplicate slugs.
-        return checkIfSlugExists(slug);
+
+        GhostBookshelf.Model.prototype.creating.call(this);
+
+        if (!this.get('slug')) {
+            // Generating a slug requires a db call to look for conflicting slugs
+            return this.generateSlug(Post, this.get('title'))
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
     },
 
     updateTags: function (newTags) {

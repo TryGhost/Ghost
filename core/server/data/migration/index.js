@@ -4,49 +4,105 @@ var _ = require('underscore'),
     series = require('when/sequence'),
     errors = require('../../errorHandling'),
     knex = require('../../models/base').Knex,
-    initialVersion = "001",
-    // This currentVersion string should always be the current version of Ghost,
-    // we could probably load it from the config file.
-    // - Will be possible after default-settings.json restructure
-    currentVersion = "002";
 
-function getCurrentVersion() {
-    return knex.Schema.hasTable('settings').then(function () {
+    defaultSettings = require('../default-settings'),
+    Settings = require('../../models/settings').Settings,
+    fixtures = require('../fixtures'),
+
+    initialVersion = '000',
+    defaultDatabaseVersion;
+
+// Default Database Version
+// The migration version number according to the hardcoded default settings
+// This is the version the database should be at or migrated to
+function getDefaultDatabaseVersion() {
+    if (!defaultDatabaseVersion) {
+        // This be the current version according to the software
+        defaultDatabaseVersion = _.find(defaultSettings.core, function (setting) {
+            return setting.key === 'databaseVersion';
+        }).defaultValue;
+    }
+
+    return defaultDatabaseVersion;
+}
+
+// Database Current Version
+// The migration version number according to the database
+// This is what the database is currently at and may need to be updated
+function getDatabaseVersion() {
+    return knex.Schema.hasTable('settings').then(function (exists) {
         // Check for the current version from the settings table
-        return knex('settings')
-            .where('key', 'currentVersion')
-            .select('value')
-            .then(function (currentVersionSetting) {
-                if (currentVersionSetting && currentVersionSetting.length > 0) {
-                    currentVersionSetting = currentVersionSetting[0].value;
-                } else {
-                    // we didn't get a response we understood, assume initialVersion
-                    currentVersionSetting = initialVersion;
-                }
-                return currentVersionSetting;
-            });
+        if (exists) {
+            // Temporary code to deal with old databases with currentVersion settings
+            // TODO: remove before release
+            return knex('settings')
+                .where('key', 'databaseVersion')
+                .orWhere('key', 'currentVersion')
+                .select('value')
+                .then(function (versions) {
+                    var databaseVersion = _.reduce(versions, function (memo, version) {
+                        return parseInt(version.value, 10) > parseInt(memo, 10) ? version.value : memo;
+                    }, initialVersion);
+
+                    if (!databaseVersion || databaseVersion.length === 0) {
+                        // we didn't get a response we understood, assume initialVersion
+                        databaseVersion = initialVersion;
+                    }
+                    return when.resolve(databaseVersion);
+                });
+        }
+        return when.reject('Settings table does not exist');
     });
+}
+
+function setDatabaseVersion() {
+    return knex('settings')
+        .where('key', 'databaseVersion')
+        .update({ 'value': defaultDatabaseVersion });
 }
 
 
 module.exports = {
-    currentVersion: currentVersion,
     // Check for whether data is needed to be bootstrapped or not
     init: function () {
         var self = this;
 
-        return getCurrentVersion().then(function (currentVersionSetting) {
-            // We are assuming here that the currentVersionSetting will
-            // always be less than the currentVersion value.
-            if (currentVersionSetting === currentVersion) {
+        // There are 4 possibilities:
+        // 1. The database exists and is up-to-date
+        // 2. The database exists but is out of date
+        // 3. The database exists but the currentVersion setting does not or cannot be understood
+        // 4. The database has not yet been created
+        return getDatabaseVersion().then(function (databaseVersion) {
+            var defaultVersion = getDefaultDatabaseVersion();
+
+            if (databaseVersion === defaultVersion) {
+                // 1. The database exists and is up-to-date
                 return when.resolve();
             }
 
-            // Bring the data up to the latest version
-            return self.migrateUpFromVersion(currentVersion);
-        }, function () {
-            // If the settings table doesn't exist, bring everything up from initial version.
-            return self.migrateUpFromVersion(initialVersion);
+            if (databaseVersion < defaultVersion) {
+                // 2. The database exists but is out of date
+                return self.migrateUpFromVersion(databaseVersion);
+            }
+
+            if (databaseVersion > defaultVersion) {
+                // 3. The database exists but the currentVersion setting does not or cannot be understood
+                // In this case we don't understand the version because it is too high
+                errors.logError('Database is not compatible with software version.');
+                process.exit(-3);
+            }
+
+        }, function (err) {
+            if (err === 'Settings table does not exist') {
+                // 4. The database has not yet been created
+                // Bring everything up from initial version.
+                return self.migrateUpFreshDb();
+            }
+
+            // 3. The database exists but the currentVersion setting does not or cannot be understood
+            // In this case the setting was missing or there was some other problem
+            errors.logError('Database is not recognisable.' + err);
+            process.exit(-2);
         });
     },
 
@@ -55,19 +111,33 @@ module.exports = {
     reset: function () {
         var self = this;
 
-        return getCurrentVersion().then(function (currentVersionSetting) {
+        return getDatabaseVersion().then(function (databaseVersion) {
             // bring everything down from the current version
-            return self.migrateDownFromVersion(currentVersionSetting);
+            return self.migrateDownFromVersion(databaseVersion);
         }, function () {
             // If the settings table doesn't exist, bring everything down from initial version.
             return self.migrateDownFromVersion(initialVersion);
         });
     },
 
+    // Only do this if we have no database at all
+    migrateUpFreshDb: function () {
+        var migration = require('./' + initialVersion);
+
+        return migration.up().then(function () {
+            // Load the fixtures
+            return fixtures.populateFixtures();
+
+        }).then(function () {
+            // Initialise the default settings
+            return Settings.populateDefaults();
+        });
+    },
+
     // Migrate from a specific version to the latest
     migrateUpFromVersion: function (version, max) {
         var versions = [],
-            maxVersion = max || this.getVersionAfter(currentVersion),
+            maxVersion = max || this.getVersionAfter(getDefaultDatabaseVersion()),
             currVersion = version,
             tasks = [];
 
@@ -91,11 +161,15 @@ module.exports = {
         });
 
         // Run each migration in series
-        return series(tasks);
+        return series(tasks).then(function () {
+            // Finally update the databases current version
+            return setDatabaseVersion();
+        });
     },
 
     migrateDownFromVersion: function (version) {
-        var versions = [],
+        var self = this,
+            versions = [],
             minVersion = this.getVersionBefore(initialVersion),
             currVersion = version,
             tasks = [];
@@ -114,7 +188,7 @@ module.exports = {
                     return migration.down();
                 } catch (e) {
                     errors.logError(e);
-                    return when.reject(e);
+                    return self.migrateDownFromVersion(initialVersion);
                 }
             };
         });

@@ -1,59 +1,61 @@
 {
+    "core": {
+        "databaseVersion": {
+            "defaultValue": "000"
+        }
+    },
     "blog": {
         "title": {
-            "default": "Ghost"
+            "defaultValue": "Ghost"
         },
         "description": {
-            "default": "Just a blogging platform."
+            "defaultValue": "Just a blogging platform."
+        },
+        "email": {
+            "defaultValue": "ghost@example.com",
+            "validations": {
+                "notNull": true,
+                "isEmail": true
+            }
         },
         "logo": {
-            "default": ""
+            "defaultValue": ""
         },
         "cover": {
-            "default": ""
+            "defaultValue": ""
         },
         "defaultLang": {
-            "default": "en",
+            "defaultValue": "en_US",
             "validations": {
                 "notNull": true
             }
         },
         "postsPerPage": {
-            "default": "6",
+            "defaultValue": "6",
             "validations": {
                 "notNull": true,
                 "isNumeric": true
             }
         },
         "forceI18n": {
-            "default": "true",
+            "defaultValue": "true",
             "validations": {
                 "notNull": true,
                 "isIn": ["true", "false"]
             }
         }
     },
-    "general": {
-        "email": {
-            "default": "ghost@example.com",
-            "validations": {
-                "notNull": true,
-                "isEmail": true
-            }
-        },
+    "theme": {
         "activePlugins": {
-            "default": ""
+            "defaultValue": ""
         },
         "activeTheme": {
-            "default": "casper"
+            "defaultValue": "casper"
         }
     },
-    "core": {
-        "currentVersion": {
-            "default": "000"
-        },
+    "plugin": {
         "installedPlugins": {
-            "default": "[]"
+            "defaultValue": "[]"
         }
     }
 }

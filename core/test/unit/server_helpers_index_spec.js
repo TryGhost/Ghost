@@ -28,19 +28,19 @@ describe('Core Helpers', function () {
         });
 
         it('can render content', function () {
-            var content = "Hello World",
-                rendered = handlebars.helpers.content.call({content: content});
+            var html = "Hello World",
+                rendered = handlebars.helpers.content.call({html: html});
 
             should.exist(rendered);
-            rendered.string.should.equal(content);
+            rendered.string.should.equal(html);
         });
 
-        it('can truncate content by word', function () {
-            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+        it('can truncate html by word', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
                     handlebars.helpers.content
                         .call(
-                            {content: content},
+                            {html: html},
                             {"hash":{"words": 2}}
                         )
                 );
@@ -49,12 +49,12 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p>Hello <strong>World</strong></p>");
         });
 
-        it('can truncate content by character', function () {
-            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+        it('can truncate html by character', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
                     handlebars.helpers.content
                         .call(
-                            {content: content},
+                            {html: html},
                             {"hash":{"characters": 8}}
                         )
                 );
@@ -71,15 +71,15 @@ describe('Core Helpers', function () {
         });
 
         it("Returns the full name of the author from the context",function() {
-            var content = {"author":{"full_name":"abc123"}},
-                result = handlebars.helpers.author.call(content);
+            var data = {"author":{"name":"abc123"}},
+                result = handlebars.helpers.author.call(data);
 
             String(result).should.equal("abc123");
         });
 
         it("Returns a blank string where author data is missing",function() {
-            var content = {"author":null},
-                result = handlebars.helpers.author.call(content);
+            var data = {"author": null},
+                result = handlebars.helpers.author.call(data);
 
             String(result).should.equal("");
         });
@@ -93,33 +93,33 @@ describe('Core Helpers', function () {
         });
 
         it('can render excerpt', function () {
-            var content = "Hello World",
-                rendered = handlebars.helpers.excerpt.call({content: content});
+            var html = "Hello World",
+                rendered = handlebars.helpers.excerpt.call({html: html});
 
             should.exist(rendered);
-            rendered.string.should.equal(content);
+            rendered.string.should.equal(html);
         });
 
         it('does not output HTML', function () {
-            var content = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:'
+            var html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:'
                         + '<img src=b alt=\"c\"> those who <img src="@" onclick="javascript:alert(\'hello\');">'
                         + "understand trinary</p>, those who don't <div style='' class=~/'-,._?!|#>and"
                         + "< test > those<<< test >>> who mistake it &lt;for&gt; binary.",
                 expected = "There are 10 types of people in the world: those who understand trinary, those who don't "
                          + "and those>> who mistake it &lt;for&gt; binary.",
-                rendered = handlebars.helpers.excerpt.call({content: content});
+                rendered = handlebars.helpers.excerpt.call({html: html});
 
             should.exist(rendered);
             rendered.string.should.equal(expected);
 
         });
 
-        it('can truncate content by word', function () {
-            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+        it('can truncate html by word', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 expected = "Hello World",
                 rendered = (
                     handlebars.helpers.excerpt.call(
-                        {content: content},
+                        {html: html},
                         {"hash": {"words": 2}}
                     )
                 );
@@ -128,12 +128,12 @@ describe('Core Helpers', function () {
             rendered.string.should.equal(expected);
         });
 
-        it('can truncate content by character', function () {
-            var content = "<p>Hello <strong>World! It's me!</strong></p>",
+        it('can truncate html by character', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 expected = "Hello Wo",
                 rendered = (
                     handlebars.helpers.excerpt.call(
-                        {content: content},
+                        {html: html},
                         {"hash": {"characters": 8}}
                     )
                 );
@@ -213,7 +213,7 @@ describe('Core Helpers', function () {
         });
 
         it('should return a the slug with a prefix slash if the context is a post', function () {
-            var rendered = handlebars.helpers.url.call({content: 'content', content_raw: "ff", title: "title", slug: "slug"});
+            var rendered = handlebars.helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug"});
             should.exist(rendered);
             rendered.should.equal('/slug');
         });
@@ -224,7 +224,7 @@ describe('Core Helpers', function () {
                 }),
 
                 rendered = handlebars.helpers.url.call(
-                    {content: 'content', content_raw: "ff", title: "title", slug: "slug"},
+                    {html: 'content', markdown: "ff", title: "title", slug: "slug"},
                     {hash: { absolute: 'true'}}
                 );
 
@@ -235,10 +235,10 @@ describe('Core Helpers', function () {
         });
 
         it('should return empty string if not a post', function () {
-            handlebars.helpers.url.call({content_raw: "ff", title: "title", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({content: 'content', title: "title", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({content: 'content', content_raw: "ff", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({content: 'content', content_raw: "ff", title: "title"}).should.equal('');
+            handlebars.helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({html: 'content', title: "title", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).should.equal('');
+            handlebars.helpers.url.call({html: 'content', markdown: "ff", title: "title"}).should.equal('');
         });
     });
 

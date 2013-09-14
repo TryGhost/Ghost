@@ -34,15 +34,16 @@ describe('User Model', function run() {
 
         it('can add first', function (done) {
             var userData = {
+                    name: 'test',
                     password: 'testpass1',
-                    email_address: "test@test1.com"
+                    email: "test@test1.com"
                 };
 
             UserModel.add(userData).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
-                createdUser.attributes.email_address.should.eql(userData.email_address, "email address correct");
+                createdUser.attributes.email.should.eql(userData.email, "email address correct");
 
                 done();
             }).then(null, done);
@@ -64,16 +65,15 @@ describe('User Model', function run() {
 
         it('can\'t add second', function (done) {
             var userData = {
+                name: 'test',
                 password: 'testpass3',
-                email_address: "test3@test1.com"
+                email: "test3@test1.com"
             };
 
-            return testUtils.insertDefaultUser().then(function () {
-                UserModel.add(userData).then(done, function (failure) {
-                    failure.message.should.eql('A user is already registered. Only one user for now!');
-                    done();
-                }).then(null, done);
-            });
+            return UserModel.add(userData).then(done, function (failure) {
+                failure.message.should.eql('A user is already registered. Only one user for now!');
+                done();
+            }).then(null, done);
         });
 
         it('can browse', function (done) {
@@ -99,13 +99,13 @@ describe('User Model', function run() {
 
                 firstUser = results.models[0];
 
-                return UserModel.read({email_address: firstUser.attributes.email_address});
+                return UserModel.read({email: firstUser.attributes.email});
 
             }).then(function (found) {
 
                 should.exist(found);
 
-                found.attributes.full_name.should.equal(firstUser.attributes.full_name);
+                found.attributes.name.should.equal(firstUser.attributes.name);
 
                 done();
 
@@ -124,13 +124,13 @@ describe('User Model', function run() {
 
                 firstUser = results.models[0];
 
-                return UserModel.edit({id: firstUser.id, url: "some.newurl.com"});
+                return UserModel.edit({id: firstUser.id, website: "some.newurl.com"});
 
             }).then(function (edited) {
 
                 should.exist(edited);
 
-                edited.attributes.url.should.equal('some.newurl.com');
+                edited.attributes.website.should.equal('some.newurl.com');
 
                 done();
 

@@ -16,7 +16,7 @@ module.exports = {
         });
     },
     isPost: function (jsonData) {
-        return jsonData.hasOwnProperty("content") && jsonData.hasOwnProperty("content_raw")
+        return jsonData.hasOwnProperty("html") && jsonData.hasOwnProperty("markdown")
             && jsonData.hasOwnProperty("title") && jsonData.hasOwnProperty("slug");
     }
 };

@@ -248,17 +248,17 @@
         events: {
             'click .button-save': 'saveUser',
             'click .button-change-password': 'changePassword',
-            'click .js-modal-cover-picture': 'showCoverPicture',
-            'click .js-modal-profile-picture': 'showProfilePicture'
+            'click .js-modal-cover': 'showCover',
+            'click .js-modal-image': 'showImage'
         },
-        showCoverPicture: function () {
+        showCover: function () {
             var user = this.model.toJSON();
-            this.showUpload('#user-cover-picture', 'cover_picture', user.cover_picture);
+            this.showUpload('#user-cover', 'cover', user.cover);
         },
-        showProfilePicture: function (e) {
+        showImage: function (e) {
             e.preventDefault();
             var user = this.model.toJSON();
-            this.showUpload('#user-profile-picture', 'profile_picture', user.profile_picture);
+            this.showUpload('#user-image', 'image', user.image);
         },
         showUpload: function (id, key, src) {
             var self = this, upload = new Ghost.Models.uploadModal({'id': id, 'key': key, 'src': src, 'accept': {
@@ -314,13 +314,13 @@
             } else {
 
                 this.model.save({
-                    'full_name':        userName,
-                    'email_address':    userEmail,
+                    'name':             userName,
+                    'email':            userEmail,
                     'location':         userLocation,
-                    'url':              userWebsite,
+                    'website':          userWebsite,
                     'bio':              userBio,
-                    'profile_picture':  this.$('#user-profile-picture').attr('src'),
-                    'cover_picture':    this.$('#user-cover-picture').attr('src')
+                    'image':            this.$('#user-image').attr('src'),
+                    'cover':            this.$('#user-cover').attr('src')
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
