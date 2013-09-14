@@ -1,4 +1,4 @@
-/*globals window, $, _, Backbone */
+/*globals window, $, _, Backbone, Validator */
 (function () {
     "use strict";
 
@@ -7,6 +7,7 @@
         Views       : {},
         Collections : {},
         Models      : {},
+        Validate    : new Validator(),
 
         settings: {
             apiRoot: '/api/v0.1'
@@ -33,6 +34,25 @@
             pushState: true,
             hashChange: false,
             root: '/ghost'
+        });
+    };
+
+    Ghost.Validate.error = function (object) {
+        this._errors.push(object);
+
+        return this;
+    };
+
+    Ghost.Validate.handleErrors = function () {
+        _.each(Ghost.Validate._errors, function (errorObj) {
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: errorObj.message,
+                status: 'passive'
+            });
+            if (errorObj.hasOwnProperty('el')) {
+                errorObj.el.addClass('input-error');
+            }
         });
     };
 
