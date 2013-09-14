@@ -5,45 +5,45 @@ var _ = require('underscore'),
     errors = require('../../errorHandling'),
     knex = require('../../models/base').Knex,
     initialVersion = '000',
-    // This currentVersion string should always be the current version of Ghost,
+    // This databaseVersion string should always be the current version of Ghost,
     // we could probably load it from the config file.
     // - Will be possible after default-settings.json restructure
-    currentVersion = '000';
+    databaseVersion = '000';
 
-function getCurrentVersion() {
+function getDatabaseVersion() {
     return knex.Schema.hasTable('settings').then(function () {
-        // Check for the current version from the settings table
+        // Check for the databaseVersion from the settings table
         return knex('settings')
-            .where('key', 'currentVersion')
+            .where('key', 'databaseVersion')
             .select('value')
-            .then(function (currentVersionSetting) {
-                if (currentVersionSetting && currentVersionSetting.length > 0) {
-                    currentVersionSetting = currentVersionSetting[0].value;
+            .then(function (databaseVersionSetting) {
+                if (databaseVersionSetting && databaseVersionSetting.length > 0) {
+                    databaseVersionSetting = databaseVersionSetting[0].value;
                 } else {
                     // we didn't get a response we understood, assume initialVersion
-                    currentVersionSetting = initialVersion;
+                    databaseVersionSetting = initialVersion;
                 }
-                return currentVersionSetting;
+                return databaseVersionSetting;
             });
     });
 }
 
 
 module.exports = {
-    currentVersion: currentVersion,
+    databaseVersion: databaseVersion,
     // Check for whether data is needed to be bootstrapped or not
     init: function () {
         var self = this;
 
-        return getCurrentVersion().then(function (currentVersionSetting) {
-            // We are assuming here that the currentVersionSetting will
-            // always be less than the currentVersion value.
-            if (currentVersionSetting === currentVersion) {
+        return getDatabaseVersion().then(function (databaseVersionSetting) {
+            // We are assuming here that the databaseVersionSetting will
+            // always be less than the databaseVersion value.
+            if (databaseVersionSetting === databaseVersion) {
                 return when.resolve();
             }
 
             // Bring the data up to the latest version
-            return self.migrateUpFromVersion(currentVersion);
+            return self.migrateUpFromVersion(databaseVersion);
         }, function () {
             // If the settings table doesn't exist, bring everything up from initial version.
             return self.migrateUpFromVersion(initialVersion);
@@ -55,9 +55,9 @@ module.exports = {
     reset: function () {
         var self = this;
 
-        return getCurrentVersion().then(function (currentVersionSetting) {
-            // bring everything down from the current version
-            return self.migrateDownFromVersion(currentVersionSetting);
+        return getDatabaseVersion().then(function (databaseVersionSetting) {
+            // bring everything down from the databaseVersion
+            return self.migrateDownFromVersion(databaseVersionSetting);
         }, function () {
             // If the settings table doesn't exist, bring everything down from initial version.
             return self.migrateDownFromVersion(initialVersion);
@@ -67,7 +67,7 @@ module.exports = {
     // Migrate from a specific version to the latest
     migrateUpFromVersion: function (version, max) {
         var versions = [],
-            maxVersion = max || this.getVersionAfter(currentVersion),
+            maxVersion = max || this.getVersionAfter(databaseVersion),
             currVersion = version,
             tasks = [];
 
@@ -95,7 +95,6 @@ module.exports = {
     },
 
     migrateDownFromVersion: function (version) {
-        console.log('version', version);
         var versions = [],
             minVersion = this.getVersionBefore(initialVersion),
             currVersion = version,

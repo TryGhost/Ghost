@@ -1,6 +1,6 @@
 {
     "core": {
-        "currentVersion": {
+        "databaseVersion": {
             "default": "000"
         }
     },

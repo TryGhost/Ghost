@@ -58,7 +58,7 @@ describe("Export", function () {
                 should.exist(exportData.data);
 
                 exportData.meta.version.should.equal("001");
-                _.findWhere(exportData.data.settings, {key: "currentVersion"}).value.should.equal("001");
+                _.findWhere(exportData.data.settings, {key: "databaseVersion"}).value.should.equal("001");
 
                 _.each(tables, function (name) {
                     should.exist(exportData.data[name]);
@@ -87,7 +87,7 @@ describe("Export", function () {
 
     describe("002", function () {
         this.timeout(5000);
-        
+
         should.exist(Exporter001);
 
         it("exports data", function (done) {
@@ -109,7 +109,7 @@ describe("Export", function () {
                 should.exist(exportData.data);
 
                 exportData.meta.version.should.equal("002");
-                _.findWhere(exportData.data.settings, {key: "currentVersion"}).value.should.equal("002");
+                _.findWhere(exportData.data.settings, {key: "databaseVersion"}).value.should.equal("002");
 
                 _.each(tables, function (name) {
                     should.exist(exportData.data[name]);

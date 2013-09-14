@@ -90,7 +90,7 @@ describe("Import", function () {
                 importedData[1].length.should.equal(exportData.data.posts.length);
                 importedData[2].length.should.be.above(0);
 
-                _.findWhere(exportData.data.settings, {key: "currentVersion"}).value.should.equal("001");
+                _.findWhere(exportData.data.settings, {key: "databaseVersion"}).value.should.equal("001");
 
                 done();
             }).then(null, done);
@@ -154,7 +154,7 @@ describe("Import", function () {
                 importedData[1].length.should.equal(exportData.data.posts.length + 1);
                 importedData[2].length.should.be.above(0);
 
-                _.findWhere(importedData[2], {key: "currentVersion"}).value.should.equal("002");
+                _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("002");
 
                 done();
             }).then(null, done);
@@ -193,7 +193,7 @@ describe("Import", function () {
                 importedData[1].length.should.equal(exportData.data.posts.length + 1);
                 importedData[2].length.should.be.above(0);
 
-                _.findWhere(importedData[2], {key: "currentVersion"}).value.should.equal("002");
+                _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("002");
 
                 done();
             }).then(null, done);
