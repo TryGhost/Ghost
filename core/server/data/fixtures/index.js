@@ -1,6 +1,11 @@
-var uuid = require('node-uuid');
+var sequence    = require('when/sequence'),
+    _ = require('underscore'),
+    Post = require('../../models/post').Post,
+    Role = require('../../models/role').Role,
+    Permission = require('../../models/permission').Permission,
+    uuid = require('node-uuid');
 
-module.exports = {
+var fixtures = {
     posts: [
         {
             "uuid":             uuid.v4(),
@@ -14,71 +19,71 @@ module.exports = {
             "status":           "published",
             "language":         "en_US",
             "meta_title":       null,
-            "meta_description": null,
-            "author_id":        1,
-            "created_at":       1373578890610,
-            "created_by":       1,
-            "updated_at":       1373578997173,
-            "updated_by":       1,
-            "published_at":     1373578895817,
-            "published_by":     1
+            "meta_description": null
         }
     ],
 
     roles: [
         {
-            "id": 1,
-            "name": "Administrator",
-            "description": "Administrators"
+            "uuid":             uuid.v4(),
+            "name":             "Administrator",
+            "description":      "Administrators"
         },
         {
-            "id": 2,
-            "name": "Editor",
-            "description": "Editors"
+            "uuid":             uuid.v4(),
+            "name":             "Editor",
+            "description":      "Editors"
         },
         {
-            "id": 3,
-            "name": "Author",
-            "description": "Authors"
+            "uuid":             uuid.v4(),
+            "name":             "Author",
+            "description":      "Authors"
         }
     ],
 
     permissions: [
         {
-            "id": 1,
-            "name": "Edit posts",
-            "action_type": "edit",
-            "object_type": "post"
+            "uuid":             uuid.v4(),
+            "name":             "Edit posts",
+            "action_type":      "edit",
+            "object_type":      "post"
         },
         {
-            "id": 2,
-            "name": "Remove posts",
-            "action_type": "remove",
-            "object_type": "post"
+            "uuid":             uuid.v4(),
+            "name":             "Remove posts",
+            "action_type":      "remove",
+            "object_type":      "post"
         },
         {
-            "id": 3,
-            "name": "Create posts",
-            "action_type": "create",
-            "object_type": "post"
-        }
-    ],
-
-    permissions_roles: [
-        {
-            "id": 1,
-            "permission_id": 1,
-            "role_id": 1
-        },
-        {
-            "id": 2,
-            "permission_id": 2,
-            "role_id": 1
-        },
-        {
-            "id": 3,
-            "permission_id": 3,
-            "role_id": 1
+            "uuid":             uuid.v4(),
+            "name":             "Create posts",
+            "action_type":      "create",
+            "object_type":      "post"
         }
     ]
+};
+
+module.exports = {
+    populateFixtures: function () {
+        var ops = [];
+
+        _.each(fixtures.posts, function (post) {
+            ops.push(function () {return Post.add(post); });
+        });
+        _.each(fixtures.roles, function (role) {
+            ops.push(function () {return Role.add(role); });
+        });
+        _.each(fixtures.permissions, function (permission) {
+            ops.push(function () {return Permission.add(permission); });
+        });
+
+        // finally, grant admins all permissions
+        ops.push(function () {
+            Role.forge({id: 1}).fetch({withRelated: ['permissions']}).then(function (role) {
+                role.permissions().attach([1, 2, 3]);
+            });
+        });
+
+        return sequence(ops);
+    }
 };
