@@ -40,7 +40,7 @@ Settings = GhostBookshelf.Model.extend({
     defaults: function () {
         return {
             uuid: uuid.v4(),
-            type: 'general'
+            type: 'core'
         };
     },
 

@@ -154,7 +154,7 @@ describe('Settings Model', function () {
                 createdSetting.has('uuid').should.equal(true);
                 createdSetting.attributes.key.should.equal(newSetting.key, "key is correct");
                 createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
-                createdSetting.attributes.type.should.equal("general");
+                createdSetting.attributes.type.should.equal("core");
 
                 done();
             }).then(null, done);

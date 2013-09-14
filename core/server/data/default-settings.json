@@ -1,10 +1,22 @@
 {
+    "core": {
+        "currentVersion": {
+            "default": "000"
+        }
+    },
     "blog": {
         "title": {
             "default": "Ghost"
         },
         "description": {
             "default": "Just a blogging platform."
+        },
+        "email": {
+            "default": "ghost@example.com",
+            "validations": {
+                "notNull": true,
+                "isEmail": true
+            }
         },
         "logo": {
             "default": ""
@@ -33,14 +45,7 @@
             }
         }
     },
-    "general": {
-        "email": {
-            "default": "ghost@example.com",
-            "validations": {
-                "notNull": true,
-                "isEmail": true
-            }
-        },
+    "theme": {
         "activePlugins": {
             "default": ""
         },
@@ -48,10 +53,7 @@
             "default": "casper"
         }
     },
-    "core": {
-        "currentVersion": {
-            "default": "000"
-        },
+    "plugin": {
         "installedPlugins": {
             "default": "[]"
         }
