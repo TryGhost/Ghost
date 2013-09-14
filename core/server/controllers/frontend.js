@@ -41,7 +41,6 @@ frontendControllers = {
         }
 
         api.posts.browse(options).then(function (page) {
-
             var maxPage = page.pages;
 
             // A bit of a hack for situations with no content.
@@ -56,7 +55,7 @@ frontendControllers = {
             }
 
             // Render the page of posts
-            ghost.doFilter('prePostsRender', page.posts, function (posts) {
+            ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
                 res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
         }).otherwise(function (err) {
@@ -66,7 +65,7 @@ frontendControllers = {
     'single': function (req, res, next) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
-                ghost.doFilter('prePostsRender', post, function (post) {
+                ghost.doFilter('prePostsRender', post).then(function (post) {
                     res.render('post', {post: post});
                 });
             } else {
@@ -117,7 +116,7 @@ frontendControllers = {
                     return res.redirect('/rss/' + maxPage + '/');
                 }
 
-                ghost.doFilter('prePostsRender', page.posts, function (posts) {
+                ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
                         var item = {
                                 title:  _.escape(post.title),
@@ -148,7 +147,6 @@ frontendControllers = {
             return next(new Error(err));
         });
     }
-
 };
 
 module.exports = frontendControllers;

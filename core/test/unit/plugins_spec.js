@@ -4,13 +4,13 @@ var testUtils = require('./testUtils'),
     sinon = require('sinon'),
     _ = require("underscore"),
     when = require('when'),
+    knex = require('../../server/models/base').Knex,
     errors = require('../../server/errorHandling'),
 
     // Stuff we are testing
     plugins = require('../../server/plugins'),
     GhostPlugin = plugins.GhostPlugin,
     loader = require('../../server/plugins/loader');
-
 describe('Plugins', function () {
 
     var sandbox;
