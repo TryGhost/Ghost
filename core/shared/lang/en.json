@@ -12,7 +12,7 @@
     "icon.settings.label": "Settings",
 
     "__SECTION__": "editor",
-    "editor.entry_title.placeholder": "The Post Title Gets Inserted Up Here",
+    "editor.entry_title.placeholder": "Your Post Title",
     "editor.entry_permalink.label": "Permalink:",
     "editor.entry_permalink.example_url": "http://yoursite.com/",
     "editor.entry_permalink.example_slug": "the-post-title-goes-here",
