@@ -489,7 +489,7 @@ body.zen {
         z-index: 9999;
 
         @include breakpoint($mobile) {
-            right: 128px;
+            right: 176px;
         }
     }
 
@@ -501,23 +501,24 @@ body.zen {
 }
 
 .tags {
-    @include box-sizing(border-box);
     position: relative;
     display: inline-block;
     vertical-align: middle;
     width: auto;
     max-width: 80%;
-    max-width: calc(100% - 300px);
+    max-width: calc(100% - 320px);
     height: 26px;
     padding-left: 20px;
+    padding-bottom: 20px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     @include transition(width 0.2s linear);
 
     @include breakpoint($mobile) {
+        @include box-sizing(border-box);
         display: block;
-        width: 166px;
+        width: 115px;
         max-width: inherit;
     }
 }
