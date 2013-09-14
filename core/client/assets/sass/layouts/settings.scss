@@ -210,7 +210,7 @@
             font-size: 1em;
 
             @include breakpoint($netbook) { right:15px; }
-            @include breakpoint($mobile) {
+            @include breakpoint(650px) {
                 position: fixed;
                 top: 5px;
                 right: 4px;
