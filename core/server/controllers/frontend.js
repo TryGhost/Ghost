@@ -69,7 +69,7 @@ frontendControllers = {
             feed = new RSS({
                 title: ghost.settings().title,
                 description: ghost.settings().description,
-                generator: 'Ghost v' + ghost.settings().currentVersion,
+                generator: 'Ghost v' + res.locals.version,
                 author: ghost.settings().author,
                 feed_url: siteUrl + '/rss/',
                 site_url: siteUrl,
@@ -79,8 +79,12 @@ frontendControllers = {
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
 
         // No negative pages
-        if (pageParam < 1) {
-            return res.redirect("/rss/1/");
+        if (isNaN(pageParam) || pageParam < 1) {
+            return res.redirect("/rss/");
+        }
+
+        if (pageParam === 1 && req.route.path === '/rss/:page/') {
+            return res.redirect('/rss/');
         }
 
         api.posts.browse({page: pageParam}).then(function (page) {
