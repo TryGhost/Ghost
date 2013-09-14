@@ -96,7 +96,7 @@ GhostMailer.prototype.send = function (message) {
         return when.reject(new Error('Email Error: Incomplete message data.'));
     }
 
-    var from = 'ghost-mailer@' + url.parse(this.ghost.config().hostname),
+    var from = 'ghost-mailer@' + url.parse(this.ghost.config().url).hostname,
         to = message.to || this.ghost.settings().email,
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 
