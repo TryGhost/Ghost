@@ -1,10 +1,31 @@
 var Settings,
     GhostBookshelf = require('./base'),
+    validator = GhostBookshelf.validator,
     uuid = require('node-uuid'),
     _ = require('underscore'),
     errors = require('../errorHandling'),
     when = require('when'),
-    defaultSettings = require('../data/default-settings.json');
+    defaultSettings;
+
+// For neatness, the defaults file is split into categories.
+// It's much easier for us to work with it as a single level
+// instead of iterating those categories every time
+function parseDefaultSettings() {
+    var defaultSettingsInCategories = require('../data/default-settings.json'),
+        defaultSettingsFlattened = {};
+
+
+    _.each(defaultSettingsInCategories, function (settings, categoryName) {
+        _.each(settings, function (setting, settingName) {
+            setting.type = categoryName;
+            setting.key = settingName;
+            defaultSettingsFlattened[settingName] = setting;
+        });
+    });
+
+    return defaultSettingsFlattened;
+}
+defaultSettings = parseDefaultSettings();
 
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
@@ -28,10 +49,36 @@ Settings = GhostBookshelf.Model.extend({
         this.on('saving', this.validate, this);
     },
 
+    // Validate default settings using the validator module.
+    // Each validation's key is a name and its value is an array of options
+    // Use true (boolean) if options aren't applicable
+    //
+    // eg:
+    //      validations: { isUrl: true, len: [20, 40] }
+    //
+    // will validate that a setting's length is a URL between 20 and 40 chars,
+    // available validators: https://github.com/chriso/node-validator#list-of-validation-methods
     validate: function () {
-        // TODO: validate value, check type is one of the allowed values etc
-        GhostBookshelf.validator.check(this.get('key'), "Setting key cannot be blank").notEmpty();
-        GhostBookshelf.validator.check(this.get('type'), "Setting type cannot be blank").notEmpty();
+        validator.check(this.get('key'), "Setting key cannot be blank").notEmpty();
+        validator.check(this.get('type'), "Setting type cannot be blank").notEmpty();
+
+        var matchingDefault = defaultSettings[this.get('key')];
+
+        if (matchingDefault && matchingDefault.validations) {
+            _.each(matchingDefault.validations, function (validationOptions, validationName) {
+                var validation = validator.check(this.get('value'));
+
+                if (validationOptions === true) {
+                    validationOptions = null;
+                }
+                if (typeof validationOptions !== 'array') {
+                    validationOptions = [validationOptions];
+                }
+
+                // equivalent of validation.isSomething(option1, option2)
+                validation[validationName].apply(validation, validationOptions);
+            }, this);
+        }
     },
 
     saving: function () {
@@ -72,9 +119,10 @@ Settings = GhostBookshelf.Model.extend({
             var usedKeys = allSettings.models.map(function (setting) { return setting.get('key'); }),
                 insertOperations = [];
 
-            defaultSettings.forEach(function (defaultSetting) {
-                var isMissingFromDB = usedKeys.indexOf(defaultSetting.key) === -1;
+            _.each(defaultSettings, function (defaultSetting, defaultSettingKey) {
+                var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                 if (isMissingFromDB) {
+                    defaultSetting.value = defaultSetting.default;
                     insertOperations.push(Settings.forge(defaultSetting).save());
                 }
             });
