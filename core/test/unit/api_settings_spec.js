@@ -76,7 +76,7 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                firstSetting = results.models[0];
+                firstSetting = results.models[1];
 
                 // The edit method has been modified to take an object of
                 // key/value pairs
@@ -111,8 +111,8 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                model1 = results.models[0];
-                model2 = results.models[1];
+                model1 = results.models[1];
+                model2 = results.models[2];
 
                 // The edit method has been modified to take an object of
                 // key/value pairs

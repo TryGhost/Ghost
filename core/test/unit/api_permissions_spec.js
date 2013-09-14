@@ -161,7 +161,9 @@ describe("Permission Model", function () {
 
     it("can add permissions", function (done) {
         var newPerm = {
-            name: "testperm1"
+            name: "testperm1",
+            object_type: 'test',
+            action_type: 'test'
         };
 
         PermissionModel.add(newPerm).then(function (createdPerm) {

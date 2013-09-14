@@ -21,7 +21,6 @@ describe('Tag Model', function () {
     beforeEach(function (done) {
         this.timeout(5000);
         testUtils.initData()
-            .then(function () {})
             .then(function () {
                 done();
             }, done);
@@ -210,7 +209,7 @@ describe('Tag Model', function () {
 
 
             it('can add a tag to a post on creation', function (done) {
-                var newPost = {title: 'Test Title 1', markdown: 'Test Content 1', tags: ['test_tag_1']};
+                var newPost = {title: 'Test Title 1', markdown: 'Test Content 1', tags: [{name: 'test_tag_1'}]};
 
                 PostModel.add(newPost).then(function (createdPost) {
                     return PostModel.read({id: createdPost.id}, { withRelated: ['tags']});

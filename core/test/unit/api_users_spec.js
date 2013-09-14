@@ -34,6 +34,7 @@ describe('User Model', function run() {
 
         it('can add first', function (done) {
             var userData = {
+                    name: 'test',
                     password: 'testpass1',
                     email: "test@test1.com"
                 };
@@ -64,16 +65,15 @@ describe('User Model', function run() {
 
         it('can\'t add second', function (done) {
             var userData = {
+                name: 'test',
                 password: 'testpass3',
                 email: "test3@test1.com"
             };
 
-            return testUtils.insertDefaultUser().then(function () {
-                UserModel.add(userData).then(done, function (failure) {
-                    failure.message.should.eql('A user is already registered. Only one user for now!');
-                    done();
-                }).then(null, done);
-            });
+            return UserModel.add(userData).then(done, function (failure) {
+                failure.message.should.eql('A user is already registered. Only one user for now!');
+                done();
+            }).then(null, done);
         });
 
         it('can browse', function (done) {
