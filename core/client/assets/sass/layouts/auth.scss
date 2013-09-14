@@ -74,7 +74,7 @@
         clear:both;
         margin:0;
         padding: 8px 0 8px 8px;
-        width: 188px;
+        width: 216px;
         position: relative;
         border: none;
         color: #fff;
@@ -85,7 +85,7 @@
         @include transition(background ease 0.25s);
 
         @include breakpoint(630px) {
-            width:236px;
+            width:264px;
             @include transition(none);
         }
         
@@ -184,7 +184,7 @@
     vertical-align: middle;
 
     @include breakpoint(630px) {
-        max-width: 264px;
+        width: 264px;
     }
 
     div { // Yes. Really.
@@ -197,6 +197,7 @@
 
     input {
         margin:0;
+        width: 280px;
         padding: 8px 10px;
         position: relative;
         border: none;
@@ -209,7 +210,7 @@
 
         @include breakpoint(630px) {
             @include transition(none);
-            max-width: 244px;
+            width: 264px;
         }
 
         &:focus { 

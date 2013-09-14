@@ -65,7 +65,8 @@ form {
     }
 
     input, textarea, select {
-        width: 260px;
+        @include box-sizing(border-box);
+        width: 276px;
         padding: 5px 7px;
         margin: 0;
         outline: 0;
@@ -78,7 +79,6 @@ form {
 
         @include breakpoint(550px) {
             width: 100%;
-            @include box-sizing(border-box);
         }
     }
 
@@ -115,13 +115,13 @@ form {
     }
 
     select {
+        @include box-sizing(border-box);
         width:270px;
         height:30px;
         line-height:30px;
 
         @include breakpoint(550px) {
             width: 100%;
-            @include box-sizing(border-box);
         }
     }
 
