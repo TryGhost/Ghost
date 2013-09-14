@@ -29,7 +29,7 @@ casper.test.begin("Ghost editor is correct", 10, function suite(test) {
 
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
-        casper.writeContentToCodeMirror(testPost.content);
+        casper.writeContentToCodeMirror(testPost.html);
     });
 
     // We must wait after sending keys to CodeMirror
@@ -50,7 +50,7 @@ casper.test.begin("Ghost editor is correct", 10, function suite(test) {
         }, testPost.title, 'Title is correct');
 
         // TODO: make this work - spaces & newlines are problematic
-        // test.assertTextExists(testPost.content, 'Post content exists');
+        // test.assertTextExists(testPost.html, 'Post html exists');
     });
 
     casper.run(function () {
@@ -149,7 +149,7 @@ casper.test.begin('Title Trimming', function suite(test) {
         test.assertEvalEquals(function () {
 
             return $('#entry-title').val();
-            
+
         }, trimmedTitle, 'Entry title should match expected value.');
     });
 

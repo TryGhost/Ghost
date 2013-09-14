@@ -4,7 +4,7 @@ var when = require('when'),
 module.exports = function (version) {
     var exporter;
 
-    if (version > migration.currentVersion) {
+    if (version > migration.databaseVersion) {
         return when.reject("Your data version is ahead of the current Ghost version. Please upgrade in order to export.");
     }
 

@@ -1,6 +1,9 @@
 var GhostBookshelf,
     Bookshelf = require('bookshelf'),
+    when = require('when'),
+    moment = require('moment'),
     _ = require('underscore'),
+    uuid = require('node-uuid'),
     config = require('../../../config'),
     Validator = require('validator').Validator;
 
@@ -14,12 +17,39 @@ GhostBookshelf.validator = new Validator();
 // including some convenience functions as static properties on the model.
 GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
+    hasTimestamps: true,
+
+    defaults: function () {
+        return {
+            uuid: uuid.v4()
+        };
+    },
+
+    initialize: function () {
+        this.on('creating', this.creating, this);
+        this.on('saving', this.saving, this);
+        this.on('saving', this.validate, this);
+    },
+
+    creating: function () {
+        if (!this.get('created_by')) {
+            this.set('created_by', 1);
+        }
+    },
+
+    saving: function () {
+         // Remove any properties which don't belong on the post model
+        this.attributes = this.pick(this.permittedAttributes);
+
+        this.set('updated_by', 1);
+    },
+
     // Base prototype properties will go here
     // Fix problems with dates
     fixDates: function (attrs) {
         _.each(attrs, function (value, key) {
             if (key.substr(-3) === '_at' && value !== null) {
-                attrs[key] = new Date(attrs[key]);
+                attrs[key] = moment(attrs[key]).toDate();
             }
         });
 
@@ -45,6 +75,60 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
         });
 
         return attrs;
+    },
+
+    // #### generateSlug
+    // Create a string act as the permalink for an object.
+    generateSlug: function (Model, base) {
+        var slug,
+            slugTryCount = 1,
+            // Look for a post with a matching slug, append an incrementing number if so
+            checkIfSlugExists = function (slugToFind) {
+                return Model.read({slug: slugToFind}).then(function (found) {
+                    var trimSpace;
+
+                    if (!found) {
+                        return when.resolve(slugToFind);
+                    }
+
+                    slugTryCount += 1;
+
+                    // If this is the first time through, add the hyphen
+                    if (slugTryCount === 2) {
+                        slugToFind += '-';
+                    } else {
+                        // Otherwise, trim the number off the end
+                        trimSpace = -(String(slugTryCount - 1).length);
+                        slugToFind = slugToFind.slice(0, trimSpace);
+                    }
+
+                    slugToFind += slugTryCount;
+
+                    return checkIfSlugExists(slugToFind);
+                });
+            };
+
+        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
+        slug = base.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+            // Replace dots and spaces with a dash
+            .replace(/(\s|\.)/g, '-')
+            // Convert 2 or more dashes into a single dash
+            .replace(/-+/g, '-')
+            // Make the whole thing lowercase
+            .toLowerCase();
+
+        // Remove trailing hypen
+        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
+        // Check the filtered slug doesn't match any of the reserved keywords
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
+            .test(slug) ? slug + '-post' : slug;
+
+        //if slug is empty after trimming use "post"
+        if (!slug) {
+            slug = "post";
+        }
+        // Test for duplicate slugs.
+        return checkIfSlugExists(slug);
     }
 
 }, {

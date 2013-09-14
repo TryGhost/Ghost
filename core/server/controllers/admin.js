@@ -167,8 +167,8 @@ adminControllers = {
             password = req.body.password;
 
         api.users.add({
-            full_name: name,
-            email_address: email,
+            name: name,
+            email: email,
             password: password
         }).then(function (user) {
 
@@ -274,7 +274,7 @@ adminControllers = {
         },
         'export': function (req, res) {
             // Get current version from settings
-            api.settings.read({ key: "currentVersion" })
+            api.settings.read({ key: "databaseVersion" })
                 .then(function (setting) {
                     // Export the current versions data
                     return dataExport(setting.value);
@@ -324,13 +324,13 @@ adminControllers = {
             }
 
             // Get the current version for importing
-            api.settings.read({ key: "currentVersion" })
+            api.settings.read({ key: "databaseVersion" })
                 .then(function (setting) {
                     return when(setting.value);
                 }, function () {
                     return when("001");
                 })
-                .then(function (currentVersion) {
+                .then(function (databaseVersion) {
                     // Read the file contents
                     return nodefn.call(fs.readFile, req.files.importfile.path)
                         .then(function (fileContents) {
@@ -348,7 +348,7 @@ adminControllers = {
                             }
 
                             // Import for the current version
-                            return dataImport(currentVersion, importData);
+                            return dataImport(databaseVersion, importData);
                         });
                 })
                 .then(function importSuccess() {
