@@ -26,67 +26,33 @@ User = GhostBookshelf.Model.extend({
 
     tableName: 'users',
 
-    hasTimestamps: true,
-
     permittedAttributes: [
-        'id', 'uuid', 'full_name', 'password', 'email_address', 'profile_picture', 'cover_picture', 'bio', 'url', 'location',
-        'created_at', 'created_by', 'updated_at', 'updated_by'
+        'id', 'uuid', 'name', 'slug', 'password', 'email', 'image', 'cover', 'bio', 'website', 'location',
+        'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'created_at', 'created_by',
+        'updated_at', 'updated_by'
     ],
 
-    defaults: function () {
-        return {
-            uuid: uuid.v4()
-        };
-    },
-
-    parse: function (attrs) {
-        // temporary alias of name for full_name (will get changed in the schema)
-        if (attrs.full_name && !attrs.name) {
-            attrs.name = attrs.full_name;
-        }
-
-        // temporary alias of website for url (will get changed in the schema)
-        if (attrs.url && !attrs.website) {
-            attrs.website = attrs.url;
-        }
-
-        // temporary alias of email for email_address (will get changed in the schema)
-        if (attrs.email_address && !attrs.email) {
-            attrs.email = attrs.email_address;
-        }
-
-        // temporary alias of image for profile_picture (will get changed in the schema)
-        if (attrs.profile_picture && !attrs.image) {
-            attrs.image = attrs.profile_picture;
-        }
-
-        // temporary alias of cover for cover_picture (will get changed in the schema)
-        if (attrs.cover_picture && !attrs.cover) {
-            attrs.cover = attrs.cover_picture;
-        }
-
-        return attrs;
-    },
-
-    initialize: function () {
-        this.on('saving', this.saving, this);
-        this.on('saving', this.validate, this);
-    },
-
     validate: function () {
-        GhostBookshelf.validator.check(this.get('email_address'), "Please check your email address. It does not seem to be valid.").isEmail();
+        GhostBookshelf.validator.check(this.get('email'), "Please check your email address. It does not seem to be valid.").isEmail();
         GhostBookshelf.validator.check(this.get('bio'), "Your bio is too long. Please keep it to 200 chars.").len(0, 200);
-        if (this.get('url') && this.get('url').length > 0) {
-            GhostBookshelf.validator.check(this.get('url'), "Your website is not a valid URL.").isUrl();
+        if (this.get('website') && this.get('website').length > 0) {
+            GhostBookshelf.validator.check(this.get('website'), "Your website is not a valid URL.").isUrl();
         }
         return true;
     },
 
-    saving: function () {
-        // Deal with the related data here
+    creating: function () {
+        var self = this;
 
-        // Remove any properties which don't belong on the post model
-        this.attributes = this.pick(this.permittedAttributes);
+        GhostBookshelf.Model.prototype.creating.call(this);
+
+        if (!this.get('slug')) {
+            // Generating a slug requires a db call to look for conflicting slugs
+            return this.generateSlug(User, this.get('name'))
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
     },
 
     posts: function () {
@@ -152,7 +118,7 @@ User = GhostBookshelf.Model.extend({
          * @author  javorszky
          */
 
-        // return this.forge({email_address: userData.email_address}).fetch().then(function (user) {
+        // return this.forge({email: userData.email}).fetch().then(function (user) {
         //     if (user !== null) {
         //         return when.reject(new Error('A user with that email address already exists.'));
         //     }
@@ -168,7 +134,7 @@ User = GhostBookshelf.Model.extend({
     // Finds the user by email, and checks the password
     check: function (_userdata) {
         return this.forge({
-            email_address: _userdata.email
+            email: _userdata.email
         }).fetch({require: true}).then(function (user) {
             return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                 if (!matched) {
@@ -220,7 +186,7 @@ User = GhostBookshelf.Model.extend({
         var newPassword = Math.random().toString(36).slice(2, 12), // This is magick
             user = null;
 
-        return this.forge({email_address: email}).fetch({require: true}).then(function (_user) {
+        return this.forge({email: email}).fetch({require: true}).then(function (_user) {
             user = _user;
             return nodefn.call(bcrypt.hash, newPassword, null, null);
         }).then(function (hash) {

@@ -4,11 +4,11 @@ var _ = require('underscore'),
     series = require('when/sequence'),
     errors = require('../../errorHandling'),
     knex = require('../../models/base').Knex,
-    initialVersion = '001',
+    initialVersion = '000',
     // This currentVersion string should always be the current version of Ghost,
     // we could probably load it from the config file.
     // - Will be possible after default-settings.json restructure
-    currentVersion = '003';
+    currentVersion = '000';
 
 function getCurrentVersion() {
     return knex.Schema.hasTable('settings').then(function () {
