@@ -93,17 +93,22 @@ Ghost = function () {
             config: function () { return config[process.env.NODE_ENV]; },
 
             // there's no management here to be sure this has loaded
-            settings: function () { return instance.settingsCache; },
+            settings: function (key) {
+                if (key) {
+                    return instance.settingsCache[key].value;
+                }
+                return instance.settingsCache;
+            },
             dataProvider: models,
             blogGlobals:  function () {
                 /* this is a bit of a hack until we have a better way to combine settings and config
                  * this data is what becomes globally available to themes */
                 return {
                     url: instance.config().url,
-                    title: instance.settings().title.value,
-                    description: instance.settings().description.value,
-                    logo: instance.settings().logo.value,
-                    cover: instance.settings().cover.value
+                    title: instance.settings('title'),
+                    description: instance.settings('description'),
+                    logo: instance.settings('logo'),
+                    cover: instance.settings('cover')
                 };
             },
             statuses: function () { return statuses; },
@@ -196,16 +201,9 @@ Ghost.prototype.readSettingsResult = function (result) {
     return when(_.map(result.models, function (member) {
         if (!settings.hasOwnProperty(member.attributes.key)) {
             var val = {};
-            if (member.attributes.key === 'activeTheme') {
-                member.attributes.value = member.attributes.value.substring(member.attributes.value.lastIndexOf('/') + 1);
-                val.value = member.attributes.value;
-                val.type = member.attributes.type;
-                settings[member.attributes.key] = val;
-            } else {
-                val.value = member.attributes.value;
-                val.type = member.attributes.type;
-                settings[member.attributes.key] = val;
-            }
+            val.value = member.attributes.value;
+            val.type = member.attributes.type;
+            settings[member.attributes.key] = val;
         }
     })).then(function () {
         return when(instance.paths().availableThemes).then(function (themes) {
@@ -353,11 +351,11 @@ Ghost.prototype.initTheme = function (app) {
             // self.globals is a hack til we have a better way of getting combined settings & config
             hbsOptions = {templateOptions: {data: {blog: self.blogGlobals()}}};
 
-            if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme.value)) {
+            if (!self.themeDirectories.hasOwnProperty(self.settings('activeTheme'))) {
                 // Throw an error if the theme is not available...
                 // TODO: move this to happen on app start
-                errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme.value + ' is missing.');
-            } else if (self.themeDirectories[self.settings().activeTheme.value].hasOwnProperty('partials')) {
+                errors.logAndThrowError('The currently active theme ' + self.settings('activeTheme') + ' is missing.');
+            } else if (self.themeDirectories[self.settings('activeTheme')].hasOwnProperty('partials')) {
                 // Check that the theme has a partials directory before trying to use it
                 hbsOptions.partialsDir = path.join(self.paths().activeTheme, 'partials');
             }

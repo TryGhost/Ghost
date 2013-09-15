@@ -96,7 +96,7 @@ GhostMailer.prototype.send = function (message) {
     }
 
     var from = 'ghost-mailer@' + url.parse(this.ghost.config().url).hostname,
-        to = message.to || this.ghost.settings().email.value,
+        to = message.to || this.ghost.settings('email'),
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 
     message = _.extend(message, {
