@@ -242,9 +242,9 @@ var path = require('path'),
                         "out": "./docs/",
                         "glob": [
                             "README.md",
-                            "config.js",
+                            "config.example.js",
                             "index.js",
-                            "core/ghost.js",
+                            "core/*.js",
                             "core/server/**/*.js",
                             "core/shared/**/*.js",
                             "core/client/**/*.js"

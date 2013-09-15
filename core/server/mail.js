@@ -66,7 +66,7 @@ GhostMailer.prototype.usingSendmail = function () {
         message: [
             "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
             "It is recommended that you explicitly configure an e-mail service,",
-            "see <a href=\"https://github.com/TryGhost/Ghost/wiki/\">instructions in the wiki</a>."
+            "See http://docs.ghost.org/mail for instructions"
         ].join(' '),
         status: 'persistent',
         id: 'ghost-mail-fallback'
@@ -78,8 +78,7 @@ GhostMailer.prototype.emailDisabled = function () {
         type: 'warn',
         message: [
             "Ghost is currently unable to send e-mail.",
-            "See <a href=\"https://github.com/TryGhost/Ghost/wiki/\">instructions for configuring",
-            "an e-mail service</a>."
+            "See http://docs.ghost.org/mail for instructions"
         ].join(' '),
         status: 'persistent',
         id: 'ghost-mail-disabled'
