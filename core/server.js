@@ -192,11 +192,9 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
     server.del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
     // #### Settings
-    server.get('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.browse));
-    server.get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.read));
-    server.put('/api/v0.1/settings', authAPI, disableCachedResult, api.cachedSettingsRequestHandler(api.settings.edit));
-    // #### Themes
-    server.get('/api/v0.1/themes', authAPI, disableCachedResult, api.requestHandler(api.themes.browse));
+    server.get('/api/v0.1/settings', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
+    server.get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
+    server.put('/api/v0.1/settings', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
     // #### Users
     server.get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
     server.get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));

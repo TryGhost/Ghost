@@ -15,7 +15,7 @@ frontendControllers = {
     'homepage': function (req, res) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            postsPerPage = parseInt(ghost.settings().postsPerPage, 10),
+            postsPerPage = parseInt(ghost.settings().postsPerPage.value, 10),
             options = {};
 
         // No negative pages
@@ -67,10 +67,10 @@ frontendControllers = {
         // Initialize RSS
         var siteUrl = ghost.config().url,
             feed = new RSS({
-                title: ghost.settings().title,
-                description: ghost.settings().description,
+                title: ghost.settings().title.value,
+                description: ghost.settings().description.value,
                 generator: 'Ghost v' + res.locals.version,
-                author: ghost.settings().author,
+                author: ghost.settings().author.value,
                 feed_url: siteUrl + '/rss/',
                 site_url: siteUrl,
                 ttl: '60'

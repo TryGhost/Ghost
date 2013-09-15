@@ -234,7 +234,7 @@ coreHelpers = function (ghost) {
     ghost.registerThemeHelper('e', function (key, defaultString, options) {
         var output;
 
-        if (ghost.settings().defaultLang === 'en' && _.isEmpty(options.hash) && !ghost.settings().forceI18n) {
+        if (ghost.settings().defaultLang.value === 'en' && _.isEmpty(options.hash) && !ghost.settings().forceI18n.value) {
             output = defaultString;
         } else {
             output = ghost.polyglot().t(key, options.hash);

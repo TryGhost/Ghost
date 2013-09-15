@@ -17,9 +17,9 @@ var Ghost = require('../ghost'),
     settings,
     themes,
     requestHandler,
-    cachedSettingsRequestHandler,
     settingsObject,
-    settingsCollection;
+    settingsCollection,
+    settingsFilter;
 
 // ## Posts
 posts = {
@@ -195,6 +195,16 @@ notifications = {
 // ### Helpers
 // Turn a settings collection into a single object/hashmap
 settingsObject = function (settings) {
+    if (_.isObject(settings)) {
+        return _.reduce(settings, function (res, item, key) {
+            if (_.isArray(item)) {
+                res[key] = item;
+            } else {
+                res[key] = item.value;
+            }
+            return res;
+        }, {});
+    }
     return (settings.toJSON ? settings.toJSON() : settings).reduce(function (res, item) {
         if (item.toJSON) { item = item.toJSON(); }
         if (item.key) { res[item.key] = item.value; }
@@ -208,13 +218,28 @@ settingsCollection = function (settings) {
     });
 };
 
+settingsFilter = function (settings, filter) {
+    return _.object(_.filter(_.pairs(settings), function (setting) {
+        if (filter) {
+            return _.some(filter.split(","), function (f) {
+                return setting[1].type === f;
+            });
+        }
+        return true;
+    }));
+};
+
 settings = {
     // #### Browse
 
     // **takes:** options object
     browse: function browse(options) {
-         // **returns:** a promise for a settings json object
-        return dataProvider.Settings.browse(options).then(settingsObject, errors.logAndThrowError);
+        // **returns:** a promise for a settings json object
+        if (ghost.settings()) {
+            return when(ghost.settings()).then(function (settings) {
+                return settingsObject(settingsFilter(settings, options.type));
+            }, errors.logAndThrowError);
+        }
     },
 
     // #### Read
@@ -225,14 +250,17 @@ settings = {
             options = { key: options };
         }
 
-        // **returns:** a promise for a single key-value pair
-        return dataProvider.Settings.read(options.key).then(function (setting) {
-            if (!setting) {
-                return when.reject("Unable to find setting: " + options.key);
-            }
-
-            return _.pick(setting.toJSON(), 'key', 'value');
-        }, errors.logAndThrowError);
+        if (ghost.settings()) {
+            return when(ghost.settings()[options.key]).then(function (setting) {
+                if (!setting) {
+                    return when.reject("Unable to find setting: " + options.key);
+                }
+                var res = {};
+                res.key = options.key;
+                res.value = setting.value;
+                return res;
+            }, errors.logAndThrowError);
+        }
     },
 
     // #### Edit
@@ -241,60 +269,35 @@ settings = {
     edit: function edit(key, value) {
         // Check for passing a collection of settings first
         if (_.isObject(key)) {
+            //clean data
+            var type = key.type;
+            delete key.type;
+            delete key.availableThemes;
+
             key = settingsCollection(key);
-
-            return dataProvider.Settings.edit(key).then(settingsObject, errors.logAndThrowError);
+            return dataProvider.Settings.edit(key).then(function (result) {
+                result.models = result;
+                return when(ghost.readSettingsResult(result)).then(function (settings) {
+                    ghost.updateSettingsCache(settings);
+                    return settingsObject(settingsFilter(ghost.settings(), type));
+                });
+            }, errors.logAndThrowError);
         }
-
-         // **returns:** a promise for a settings json object
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
                 return when.reject("Unable to find setting: " + key);
             }
-
             if (!_.isString(value)) {
                 value = JSON.stringify(value);
             }
-
             setting.set('value', value);
-
-            return dataProvider.Settings.edit(setting);
-        }, errors.logAndThrowError);
-    }
-};
-
-// ## Themes
-
-themes = {
-    // #### Browse
-
-    // **takes:** options object
-    browse: function browse() {
-         // **returns:** a promise for a themes json object
-        return when(ghost.paths().availableThemes).then(function (themes) {
-            var themeKeys = Object.keys(themes),
-                res = [],
-                i,
-                activeTheme = ghost.paths().activeTheme.substring(ghost.paths().activeTheme.lastIndexOf('/') + 1),
-                item;
-
-            for (i = 0; i < themeKeys.length; i += 1) {
-                //do not include hidden files
-                if (themeKeys[i].indexOf('.') !== 0) {
-                    item = {};
-                    item.name = themeKeys[i];
-                    item.details = themes[themeKeys[i]];
-                    if (themeKeys[i] === activeTheme) {
-                        item.active = true;
-                    }
-                    res.push(item);
-                }
-            }
-            return res;
+            return dataProvider.Settings.edit(setting).then(function (result) {
+                ghost.settings()[_.first(result).attributes.key].value = _.first(result).attributes.value;
+                return settingsObject(ghost.settings());
+            }, errors.logAndThrowError);
         });
     }
 };
-
 
 // ## Request Handlers
 
@@ -317,41 +320,6 @@ requestHandler = function (apiMethod) {
     };
 };
 
-// ### cachedSettingsRequestHandler
-// Special request handler for settings to access the internal cache version of the settings object
-cachedSettingsRequestHandler = function (apiMethod) {
-    if (!ghost.settings()) {
-        return requestHandler(apiMethod);
-    }
-
-    return function (req, res) {
-        var options = _.extend(req.body, req.query, req.params),
-            promise;
-
-        switch (apiMethod.name) {
-        case 'browse':
-            promise = when(ghost.settings());
-            break;
-        case 'read':
-            promise = when(ghost.settings()[options.key]);
-            break;
-        case 'edit':
-            promise = apiMethod(options).then(function (result) {
-                ghost.updateSettingsCache(result);
-                return result;
-            });
-            break;
-        default:
-            errors.logAndThrowError(new Error('Unknown method name for settings API: ' + apiMethod.name));
-        }
-        return promise.then(function (result) {
-            res.json(result || {});
-        }, function (error) {
-            res.json(400, {error: error});
-        });
-    };
-};
-
 // Public API
 module.exports.posts = posts;
 module.exports.users = users;
@@ -360,4 +328,3 @@ module.exports.notifications = notifications;
 module.exports.settings = settings;
 module.exports.themes = themes;
 module.exports.requestHandler = requestHandler;
-module.exports.cachedSettingsRequestHandler = cachedSettingsRequestHandler;

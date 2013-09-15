@@ -46,14 +46,14 @@
         }
     },
     "theme": {
-        "activePlugins": {
-            "defaultValue": ""
-        },
         "activeTheme": {
             "defaultValue": "casper"
         }
     },
     "plugin": {
+        "activePlugins": {
+            "defaultValue": "[]"
+        },
         "installedPlugins": {
             "defaultValue": "[]"
         }
