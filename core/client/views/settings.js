@@ -199,14 +199,14 @@
         },
         showLogo: function () {
             var settings = this.model.toJSON();
-            this.showUpload('#logo', 'logo', settings.logo);
+            this.showUpload('logo', settings.logo);
         },
         showCover: function () {
             var settings = this.model.toJSON();
-            this.showUpload('#cover', 'cover', settings.icon);
+            this.showUpload('cover', settings.cover);
         },
-        showUpload: function (id, key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'id': id, 'key': key, 'src': src, 'accept': {
+        showUpload: function (key, src) {
+            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {},
                         themes;
@@ -253,15 +253,15 @@
         },
         showCover: function () {
             var user = this.model.toJSON();
-            this.showUpload('#user-cover', 'cover', user.cover);
+            this.showUpload('cover', user.cover);
         },
         showImage: function (e) {
             e.preventDefault();
             var user = this.model.toJSON();
-            this.showUpload('#user-image', 'image', user.image);
+            this.showUpload('image', user.image);
         },
-        showUpload: function (id, key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'id': id, 'key': key, 'src': src, 'accept': {
+        showUpload: function (key, src) {
+            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
                     data[key] = this.$('.js-upload-target').attr('src');
