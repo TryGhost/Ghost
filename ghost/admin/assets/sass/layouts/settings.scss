@@ -93,7 +93,7 @@
         overflow: auto;
         @include breakpoint($tablet) { right:0; };
 
-        // Create placeholder the same height as the floating header 
+        // Create placeholder the same height as the floating header
         // to push content down by the same amount
         &:before {
             display: block;
@@ -219,6 +219,7 @@
             background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
 
             @include breakpoint($netbook) { padding-left:15px; }
+            @include breakpoint($tablet) { padding-left:115px; }
             @include breakpoint($letterbox) {
                 height: auto;
                 padding: 5px;
@@ -229,6 +230,22 @@
                 background: transparent;
 
                 .title { display:none; }
+            }
+            @include breakpoint(650px) {
+                padding-left:15px;
+
+                .button-back {
+                    position: fixed;
+                    top: 5px;
+                    left: 14px;
+                    min-height: 0;
+                    height: 30px;
+
+                    &:before {
+                        left: -9px;
+                        border-width: 15px 9px 15px 0;
+                    }
+                }
             }
 
         }//header
@@ -270,15 +287,15 @@
 
         .content {
             position: absolute;
-            top:0; 
+            top:0;
             right:0;
             left:0;
             bottom:0;
             padding:40px;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
-            
-            // Create placeholder the same height as the floating header 
+
+            // Create placeholder the same height as the floating header
             // to push content down by the same amount
             &:before {
                 display: block;
