@@ -20,8 +20,8 @@ form {
 
     fieldset {
         border: none;
-        margin:0 0 3em 0;
-        padding:0;
+        margin: 0 0 3em 0;
+        padding: 0;
     }
 
     legend {
@@ -35,16 +35,16 @@ form {
     }
 
     label {
-        display:block;
+        display: block;
 
         strong {
-            display:inline-block;
+            display: inline-block;
             position: absolute;
-            top:0.5em;
-            left:0;
-            width:120px;
-            font-weight:bold;
-            color:$brown;
+            top: 0.5em;
+            left: 0;
+            width: 120px;
+            font-weight: bold;
+            color: $brown;
             text-align: right;
 
             @include breakpoint(550px) {
@@ -61,7 +61,7 @@ form {
     p {
         color: darken($brown, 5%);
         font-size: 1em;
-        margin:0;
+        margin: 0;
     }
 
     input, textarea, select {
@@ -83,15 +83,15 @@ form {
     }
 
     textarea {
-        width:100%;
-        max-width:340px;
-        min-width:250px;
-        height:auto;
+        width: 100%;
+        max-width: 340px;
+        min-width: 250px;
+        height: auto;
         min-height: 80px;
     }
 
     input, select, textarea {
-        margin-bottom:5px;
+        margin-bottom: 5px;
     }
 
     input[type="text"]:focus,
@@ -108,17 +108,17 @@ form {
     input[type="datetime"]:focus,
     input[type="datetime-local"]:focus,
     textarea:focus {
-        border:$grey 1px solid;
-        background:#fff;
-        outline:none;
-        outline-width:0;
+        border: $brown 1px solid;
+        background: #fff;
+        outline: none;
+        outline-width: 0;
     }
 
     select {
         @include box-sizing(border-box);
-        width:270px;
-        height:30px;
-        line-height:30px;
+        width: 270px;
+        height: 30px;
+        line-height: 30px;
 
         @include breakpoint(550px) {
             width: 100%;
@@ -129,13 +129,13 @@ form {
     .checkbox input[type="checkbox"] {
         float: left;
         width:auto;
-        margin-right:6px;
-        margin-top:4px;
-        font-size:1em;
+        margin-right: 6px;
+        margin-top: 4px;
+        font-size: 1em;
     }
 
     .radio, .checkbox {
-        width:auto;
+        width: auto;
         margin: 5px 0;
         font-weight: normal;
         padding:0.55em 0;
@@ -143,9 +143,9 @@ form {
     }
 
     .form-group {
-        position:relative;
-        margin:1.5em 0;
-        padding-left:140px;
+        position: relative;
+        margin: 1.5em 0;
+        padding-left: 140px;
 
         @include breakpoint(550px) { padding-left: 0; }
     }
