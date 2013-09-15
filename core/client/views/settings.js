@@ -197,11 +197,13 @@
                 this.model.set({availableThemes: themes});
             }
         },
-        showLogo: function () {
+        showLogo: function (e) {
+            e.preventDefault();
             var settings = this.model.toJSON();
             this.showUpload('#logo', 'logo', settings.logo);
         },
-        showCover: function () {
+        showCover: function (e) {
+            e.preventDefault();
             var settings = this.model.toJSON();
             this.showUpload('#cover', 'cover', settings.icon);
         },
@@ -251,7 +253,8 @@
             'click .js-modal-cover': 'showCover',
             'click .js-modal-image': 'showImage'
         },
-        showCover: function () {
+        showCover: function (e) {
+            e.preventDefault();
             var user = this.model.toJSON();
             this.showUpload('#user-cover', 'cover', user.cover);
         },
