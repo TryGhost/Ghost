@@ -254,7 +254,7 @@
             // Add the container view for the Publish Bar
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
 
-            this.$('#entry-title').val(this.model.get('title'));
+            this.$('#entry-title').val(this.model.get('title')).focus();
             this.$('#entry-markdown').html(this.model.get('markdown'));
 
             this.initMarkdown();
