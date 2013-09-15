@@ -21,7 +21,7 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
         this.echo("I've waited for 1 seconds.");
     });
 
-    casper.thenClick('.button-save');
+    casper.thenClick('.js-publish-button');
     casper.waitForResource(/posts/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
@@ -46,7 +46,7 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
         test.assertUrlMatch(/editor/, "Ghost sucessfully loaded the editor page again");
     });
 
-    casper.thenClick('.button-save');
+    casper.thenClick('.js-publish-button');
     casper.waitForResource(/posts/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
