@@ -91,19 +91,20 @@
         .user-meta {
             display: inline-block;
             vertical-align: middle;
-
-            .user-name {
-                margin: 0;
-                margin-top: 0.4em;
-                font-weight: 400;
-                font-size: 1.2em;
-                line-height: 1em;
-            }
-
-            .user-last-seen {
-                line-height: 1em;
-            }
         }
+
+        .user-name {
+            margin: 0;
+            margin-top: 0.4em;
+            font-weight: 400;
+            font-size: 1.2em;
+            line-height: 1em;
+        }
+
+        .user-last-seen {
+            line-height: 1em;
+        }
+        
     }
 
     .user-role {
@@ -122,14 +123,13 @@
     }
 
 /* =============================================================================
-User Profile
-============================================================================= */
+   User Profile
+   ============================================================================= */
 
     .user-profile-header {
         position: relative;
-        width: 100%;
-        height: 300px;
-
+        
+        // Gradient overlay
         &:after {
             content: "";
             position: absolute;
@@ -137,56 +137,58 @@ User Profile
             right: 0;
             bottom: 0;
             height: 110px;
-            @include linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.6) 100%);
+            @include linear-gradient( rgba(0,0,0,0), rgba(0,0,0,0.3) );
         }
     }
 
     .cover-image {
-        position: absolute;
-        top: 0;
-        left: 0;
+        display: block;
+        line-height: 0;
         width: 100%;
-        height: 100%;
-        overflow: hidden;
-
-        img {
-            position: absolute;
-            min-width: 100%;
-            min-height: 100%;
-
-        }
+        height: auto;
     }
 
-    .button-change-cover {
+    .edit-cover-image {
         position: absolute;
         right: 40px;
-        bottom: 40px;
-        background: rgba(0,0,0,0.4);
+        bottom: 38px;
+        background: rgba(0,0,0,0.3);
         border-radius: 0;
-        color: #FFFFFF;
+        color: rgba(255,255,255,0.8);
         z-index: 2;
+        border-radius: $rounded;
+        @include transition(
+            color 0.3s ease,
+            background 0.3s ease
+        );
+        @include breakpoint($netbook) { right: 15px;}
 
         &:hover {
-            background: rgba(0,0,0,0.8);
+            color: #fff;
+            background: rgba(0,0,0,0.5);
         }
     }
 
-    .user-details-container {
+    .user-profile {
         position: relative;
-        top: -90px;
+        top: -100px;
         z-index: 1;
+
+        fieldset {
+            padding: 0 40px;
+        }
     }
 
-    .user-details-top {
+    fieldset.user-details-top {
         margin-bottom: 0;
-        overflow: auto;
+        padding: 10px 0 0 0;
 
         p {
-            color: #FFFFFF;
+            color: #fff;
         }
     }
 
-    .user-avatar-image {
+    .user-image {
         @include box-sizing(border-box);
         position: relative;
         width: 120px;
@@ -195,39 +197,42 @@ User Profile
         margin-left: 40px;
         margin-right: 20px;
         border-radius: 60px;
-        border: 3px solid #FFFFFF;
-        cursor: pointer;
+        border: 5px solid #fff;
         z-index: 2;
 
         img {
-            width: 100%;
-            height: 100%;
-            border-radius: 60px;
-        }
-
-        .button-change-avatar {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 100%;
             display: block;
-            border-radius: 60px;
-            background: rgba(0,0,0,0.5);
-            opacity: 0;
-            color: #FFFFFF;
-            @include transition(opacity 0.3s ease);
+            line-height: 0;
+            border-radius: 100%;
         }
 
         &:hover {
-            .button-change-avatar {
+            .edit-user-image {
                 opacity: 1;
             }
         }
     }
 
+    .edit-user-image {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 100%;
+        background: rgba(0,0,0,0.5);
+        opacity: 0;
+        color: #fff;
+        @include transition(opacity 0.3s ease);
+    }
+
+    #user-name {
+        border-color: #fff;
+    }
+    
     .user-details-bottom {
         padding: 0 40px;
-        margin: 0;
+        margin: -30px 0 0 0;
     }
 
     .bio-container {
@@ -239,7 +244,7 @@ User Profile
     }
 
     .word-count {
-        margin-right: 20px;
+        margin-right: 30px;
         float: right;
         font-weight: bold;
         color: darken($brown, 5%);
