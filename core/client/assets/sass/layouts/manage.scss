@@ -3,7 +3,7 @@
  * used for previewing and reading existing content in Ghost.
  *
  * Table of Contents:
- * 
+ *
  * Manage
  * Preview
  *
@@ -29,9 +29,9 @@
         width: 35%;
         padding: 15px;
         position: absolute;
-        bottom:0; 
+        bottom:0;
         top:0;
-        left:0; 
+        left:0;
         border-right:$lightbrown 2px solid;
         background: #fff;
         box-shadow: $shadow;
@@ -115,13 +115,13 @@
                 position:relative;
 
                 a {
-                    
+
                     display:block;
                     padding:20px 15px;
                     color: $brown;
                     @include breakpoint($mobile) { padding:15px; }
                     @include breakpoint($tablet) { padding-right: 40px; }
-                    
+
                     @include icon-after($i-chevron) {
                         position:absolute;
                         top:50%;
@@ -142,7 +142,7 @@
 
                     border-bottom: lighten($midgrey, 40%) 1px solid;
                     background: lighten($midgrey, 45%);
-                    box-shadow: 
+                    box-shadow:
                         lighten($midgrey, 40%) 0 -1px 0, // top border
                         rgba(0,0,0,0.06) 7px 0 0 inset, // big left border
                         lighten($midgrey, 40%) 1px 0 0 inset; // small left border
@@ -178,8 +178,8 @@
         padding: 15px;
         position: absolute;
         bottom:0;
-        top:0; 
-        right:0; 
+        top:0;
+        right:0;
         border-left:$lightbrown 2px solid;
         background: #fff;
         box-shadow: $shadow;
@@ -188,6 +188,7 @@
             left: 100%;
             right: -100%;
             margin-left: 15px;
+            border:none;
         }
 
         .unfeatured {
@@ -218,7 +219,7 @@
             padding: 80px 40px;
             word-break: break-word;
             hyphens: auto;
-            
+
             .wrapper {
                 max-width: 700px;
                 margin:0 auto;
@@ -235,7 +236,7 @@
                 right:-10px;
             }
         }
-        
+
         .post-edit {
             @include icon($i-edit, 14px);
             margin-right:7px;

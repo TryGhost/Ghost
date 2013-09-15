@@ -392,7 +392,7 @@ nav {
     padding:12px 15px;
     color: lighten($grey, 10%);
     @include box-sizing(border-box);
-    
+
     &:hover {text-decoration:none;}
 }
 
@@ -1162,12 +1162,29 @@ main {
     background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
 
     button, .button {
-        display:inline-block;
+        display: inline-block;
         font-size: 10px;
         min-height: 20px;
         height: 20px;
         padding: 3px 4px;
         vertical-align: top;
+
+        &.button-back {
+            position: relative;
+            top: -2px;
+            left: 3px;
+            display: none;
+            padding: 0 6px 0 3px;
+
+            &:before {
+                left: -8px;
+                border-width: 10px 8px 10px 0;
+            }
+
+            @include breakpoint($tablet) {
+                display: inline-block;
+            }
+        }
     }
 
     a {
