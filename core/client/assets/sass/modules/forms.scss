@@ -315,6 +315,7 @@ input[type="reset"] {
             @include transition-duration(0.3);
             @include transition-timing-function(ease);
         };
+        @include transition(background-color 0.3s linear);
 
         // Keep the arrow spun when the associated menu is open
         &.active:before {
