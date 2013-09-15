@@ -273,15 +273,7 @@ adminControllers = {
             });
         },
         'export': function (req, res) {
-            // Get current version from settings
-            api.settings.read({ key: "databaseVersion" })
-                .then(function (setting) {
-                    // Export the current versions data
-                    return dataExport(setting.value);
-                }, function () {
-                    // If no setting, assume 001
-                    return dataExport("001");
-                })
+            return dataExport()
                 .then(function (exportedData) {
                     // Save the exported data to the file system for download
                     var fileName = path.resolve(__dirname + '/../../server/data/export/exported-' + (new Date().getTime()) + '.json');

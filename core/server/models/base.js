@@ -10,6 +10,7 @@ var GhostBookshelf,
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
 // others' if they're using the library outside of ghost.
 GhostBookshelf = Bookshelf.Initialize('ghost', config[process.env.NODE_ENV || 'development'].database);
+GhostBookshelf.client = config[process.env.NODE_ENV].database.client;
 
 GhostBookshelf.validator = new Validator();
 

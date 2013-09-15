@@ -67,6 +67,7 @@ function setDatabaseVersion() {
 
 
 module.exports = {
+    getDatabaseVersion: getDatabaseVersion,
     // Check for whether data is needed to be bootstrapped or not
     init: function () {
         var self = this;
