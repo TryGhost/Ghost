@@ -60,7 +60,7 @@
                 model,
                 themes;
 
-            Ghost.router.navigate('/settings/' + id);
+            Ghost.router.navigate('/settings/' + id + '/');
             Ghost.trigger('urlchange');
             if (this.pane && id === this.pane.el.id) {
                 return;

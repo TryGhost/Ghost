@@ -1,21 +1,15 @@
 /*globals casper, __utils__, url, testPost */
 
-casper.test.begin("Ghost editor is correct", 10, function suite(test) {
+casper.test.begin("Ghost editor is correct", 9, function suite(test) {
     test.filename = "editor_test.png";
 
-    casper.start(url + "ghost/editor", function testTitleAndUrl() {
+    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/editor$/, "Ghost doesn't require login this time");
+        test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
         test.assertExists(".entry-markdown", "Ghost editor is present");
         test.assertExists(".entry-preview", "Ghost preview is present");
     }).viewport(1280, 1024);
 
-    function handleResource(resource) {
-        if (resource.url === url + 'api/v0.1/posts') {
-            casper.removeListener('resource.received', handleResource);
-            casper.test.assertEquals(resource.status, 200, "Received correct response");
-        }
-    }
 
     // test saving with no data
     casper.thenClick('.button-save');
@@ -35,8 +29,6 @@ casper.test.begin("Ghost editor is correct", 10, function suite(test) {
     // We must wait after sending keys to CodeMirror
     casper.wait(1000, function doneWait() {
         this.echo("I've waited for 1 seconds.");
-        // bind to resource events so we can get the API response
-        casper.on('resource.received', handleResource);
     });
 
     casper.thenClick('.button-save');
@@ -54,7 +46,6 @@ casper.test.begin("Ghost editor is correct", 10, function suite(test) {
     });
 
     casper.run(function () {
-        casper.removeListener('resource.received', handleResource);
         test.done();
     });
 });
@@ -63,7 +54,7 @@ casper.test.begin("Ghost editor is correct", 10, function suite(test) {
 casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
     test.filename = "markdown_test.png";
 
-    casper.start(url + "ghost/editor", function testTitleAndUrl() {
+    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
@@ -94,7 +85,7 @@ casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
 casper.test.begin("Word count and plurality", 4, function suite(test) {
     test.filename = "editor_plurality_test.png";
 
-    casper.start(url + "ghost/editor", function testTitleAndUrl() {
+    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
     }).viewport(1280, 1024);
 

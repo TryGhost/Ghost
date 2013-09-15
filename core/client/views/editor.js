@@ -87,7 +87,7 @@
             });
             this.listenTo(this.model, 'change:status', this.render);
             this.model.on('change:id', function (m) {
-                Backbone.history.navigate('/editor/' + m.id);
+                Backbone.history.navigate('/editor/' + m.id + '/');
             });
         },
 

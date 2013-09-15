@@ -72,7 +72,7 @@ coreHelpers = function (ghost) {
         }
 
         if (models.isPost(this)) {
-            output += "/" + this.slug;
+            output += "/" + this.slug + '/';
         }
 
         return output;

@@ -7,10 +7,8 @@
         routes: {
             ''                 : 'blog',
             'content/'         : 'blog',
-            'settings/'        : 'settings',
-            'settings(/:pane)' : 'settings',
-            'editor/'          : 'editor',
-            'editor(/:id)'     : 'editor',
+            'settings(/:pane)/' : 'settings',
+            'editor(/:id)/'     : 'editor',
             'debug/'           : 'debug',
             'register/'        : 'register',
             'signup/'          : 'signup',
@@ -40,7 +38,7 @@
         settings: function (pane) {
             if (!pane) {
                 // Redirect to settings/general if no pane supplied
-                this.navigate('/settings/general', {
+                this.navigate('/settings/general/', {
                     trigger: true,
                     replace: true
                 });
