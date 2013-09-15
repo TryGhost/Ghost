@@ -259,7 +259,7 @@ Post = GhostBookshelf.Model.extend({
                     var totalPosts = resp[0].aggregate,
                         data = {
                             posts: collection.toJSON(),
-                            page: opts.page,
+                            page: parseInt(opts.page, 10),
                             limit: opts.limit,
                             pages: Math.ceil(totalPosts / opts.limit),
                             total: totalPosts
