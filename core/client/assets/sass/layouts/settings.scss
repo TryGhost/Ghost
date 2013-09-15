@@ -4,7 +4,9 @@
  *
  * Table of Contents:
  *
- * Settings
+ * General
+ * Sidebar
+ * Content
  *
  */
 
@@ -60,11 +62,21 @@
         }
 
         > header {
+            position: relative;
+            z-index: 400;
             height: 17px;
             padding: 30px 15px 30px 40px;
             margin-bottom: 0;
             border-bottom: none;
-            box-shadow: #edece4 0 -1px 0 inset;
+            box-shadow: #edece4 0 -1px 0 inset, #edece4 1px 0 0;
+            //Transparent gradient to make bg fade out as it goes out the top.
+            background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
+            background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+
             @include breakpoint($netbook) {
                 padding-left: 15px;
             };
@@ -74,12 +86,20 @@
     //Main settings-menu styles, apply to every item
     .settings-menu {
         position:absolute;
-        top: 77px; //30px + 17px title + 30px
+        top: 0;
         left:0;
         bottom:0;
         right:-1px;
         overflow: auto;
         @include breakpoint($tablet) { right:0; };
+
+        // Create placeholder the same height as the floating header 
+        // to push content down by the same amount
+        &:before {
+            display: block;
+            content: "";
+            height: 77px; //30px + 17px title + 30px
+        }
 
         ul {
             border-top:none;
@@ -180,6 +200,8 @@
         &.active {display:block;}
 
         > header {
+            position: relative;
+            z-index: 200;
             height: 17px;
             padding: 30px 220px 29px 40px;
             border-bottom:$lightbrown 1px solid;
@@ -188,6 +210,14 @@
             font-weight: normal;
             line-height: inherit;
             color: inherit;
+            //Transparent gradient to make bg fade out as it goes out the top.
+            background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
+            background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+
             @include breakpoint($netbook) { padding-left:15px; }
             @include breakpoint($letterbox) {
                 height: auto;
@@ -196,6 +226,7 @@
                 top:0;
                 right:0;
                 border:none;
+                background: transparent;
 
                 .title { display:none; }
             }
@@ -239,20 +270,28 @@
 
         .content {
             position: absolute;
-            top:77px; //30px + 17px title + 30px
+            top:0; 
             right:0;
             left:0;
             bottom:0;
             padding:40px;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
+            
+            // Create placeholder the same height as the floating header 
+            // to push content down by the same amount
+            &:before {
+                display: block;
+                content: "";
+                height: 77px; //30px + 17px title + 30px
+                @include breakpoint($letterbox) { display: none; }
+            }
 
             &.no-padding {
                 padding: 0;
             }
 
             @include breakpoint($netbook) { padding-left:15px; }
-            @include breakpoint($letterbox) { top: 0; }
             @include breakpoint(550px) { padding: 0 15px 40px; }
         }
 

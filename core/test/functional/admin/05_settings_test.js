@@ -126,7 +126,7 @@ casper.test.begin("User settings screen validates email", 6, function suite(test
         email = casper.getElementInfo('#user-email').attributes.value;
         brokenEmail = email.replace('.', '-');
 
-        casper.fillSelectors('.user-details-container', {
+        casper.fillSelectors('.user-profile', {
             '#user-email': brokenEmail
         }, false);
     });
@@ -143,7 +143,7 @@ casper.test.begin("User settings screen validates email", 6, function suite(test
     });
 
     casper.then(function resetEmailToValid() {
-        casper.fillSelectors('.user-details-container', {
+        casper.fillSelectors('.user-profile', {
             '#user-email': email
         }, false);
     });
