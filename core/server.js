@@ -256,27 +256,54 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
             // Tell users if their node version is not supported, and exit
             if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
                 console.log(
-                    "\n !!! INVALID NODE VERSION !!!\n".red,
-                    "Ghost requires node version".red,
+                    "\nERROR: Unsupported version of Node".red,
+                    "\nGhost needs Node version".red,
                     packageInfo.engines.node.yellow,
-                    "as defined in package.json\n".red
+                    "you are using version".red,
+                    process.versions.node.yellow,
+                    "\nPlease go to http://nodejs.org to get the latest version".green
                 );
 
-                process.exit(-1);
+                process.exit(0);
             }
 
-            // Alpha warning, reminds users this is not production-ready software (yet)
-            // Remove once software becomes suitably 'ready'
-            console.log(
-                "\n !!! ALPHA SOFTWARE WARNING !!!\n".red,
-                "Ghost is in the early stages of development.\n".red,
-                "Expect to see bugs and other issues (but please report them.)\n".red
-            );
+            // Startup & Shutdown messages
+            if (process.env.NODE_ENV === 'production') {
+                console.log(
+                    "Ghost is running...".green,
+                    "\nYour blog is now available on",
+                    ghost.config().url,
+                    "\nCtrl+C to shut down".grey
+                );
 
-            // Startup message
-            console.log("Express server listening on address:",
-                ghost.config().server.host + ':'
-                    + ghost.config().server.port);
+                // ensure that Ghost exits correctly on Ctrl+C
+                process.on('SIGINT', function () {
+                    console.log(
+                        "\nGhost has shut down".red,
+                        "\nYour blog is now offline"
+                    );
+                    process.exit(0);
+                });
+            } else {
+                console.log(
+                    "Ghost is running...".green,
+                    "\nListening on",
+                    ghost.config().server.host + ':' + ghost.config().server.port,
+                    "\nUrl configured as:",
+                    ghost.config().url,
+                    "\nCtrl+C to shut down".grey
+                );
+                // ensure that Ghost exits correctly on Ctrl+C
+                process.on('SIGINT', function () {
+                    console.log(
+                        "\nGhost has shutdown".red,
+                        "\nGhost was running for",
+                        Math.round(process.uptime()),
+                        "seconds"
+                    );
+                    process.exit(0);
+                });
+            }
 
             // Let everyone know we have finished loading
             loading.resolve();

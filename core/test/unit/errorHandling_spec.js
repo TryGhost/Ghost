@@ -5,11 +5,10 @@ var testUtils = require('./testUtils'),
     sinon = require('sinon'),
 
     // Stuff we are testing
+    colors = require("colors"),
     errors = require('../../server/errorHandling'),
     // storing current environment
     currentEnv = process.env.NODE_ENV;
-
-
 
 describe("Error handling", function () {
 
@@ -51,7 +50,7 @@ describe("Error handling", function () {
         errors.logError(err);
 
         // Calls log with message on Error objects
-        logStub.calledWith("Error occurred: ", err.message).should.equal(true);
+        logStub.calledWith("\nERROR:".red, err.message.red).should.equal(true);
 
         logStub.reset();
 
@@ -60,35 +59,11 @@ describe("Error handling", function () {
         errors.logError(err);
 
         // Calls log with string on strings
-        logStub.calledWith("Error occurred: ", err).should.equal(true);
+        logStub.calledWith("\nERROR:".red, err.red).should.equal(true);
 
         logStub.restore();
         process.env.NODE_ENV = currentEnv;
 
-    });
-
-    it("logs promise errors with custom messages", function (done) {
-        var def = when.defer(),
-            prom = def.promise,
-            logStub = sinon.stub(console, "log");
-
-        // give environment a value that will console log
-        process.env.NODE_ENV = "development";
-        prom.then(function () {
-            throw new Error("Ran success handler");
-        }, errors.logErrorWithMessage("test1"));
-
-        prom.otherwise(function () {
-            logStub.calledWith("Error occurred: ", "test1").should.equal(true);
-            logStub.restore();
-
-            done();
-        });
-        prom.ensure(function () {
-            // gives the environment the correct value back
-            process.env.NODE_ENV = currentEnv;
-        });
-        def.reject();
     });
 
     it("logs promise errors and redirects", function (done) {
@@ -107,10 +82,10 @@ describe("Error handling", function () {
         process.env.NODE_ENV = "development";
         prom.then(function () {
             throw new Error("Ran success handler");
-        }, errors.logErrorWithRedirect("test1", "/testurl", req, res));
+        }, errors.logErrorWithRedirect("test1", null, null, "/testurl", req, res));
 
         prom.otherwise(function () {
-            logStub.calledWith("Error occurred: ", "test1").should.equal(true);
+            logStub.calledWith("\nERROR:".red, "test1".red).should.equal(true);
             logStub.restore();
 
             redirectStub.calledWith('/testurl').should.equal(true);

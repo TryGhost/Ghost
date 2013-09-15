@@ -41,6 +41,9 @@ function getDatabaseVersion() {
                 .select('value')
                 .then(function (versions) {
                     var databaseVersion = _.reduce(versions, function (memo, version) {
+                        if (isNaN(version.value)) {
+                            errors.throwError('Database version is not recognised');
+                        }
                         return parseInt(version.value, 10) > parseInt(memo, 10) ? version.value : memo;
                     }, initialVersion);
 
@@ -48,7 +51,8 @@ function getDatabaseVersion() {
                         // we didn't get a response we understood, assume initialVersion
                         databaseVersion = initialVersion;
                     }
-                    return when.resolve(databaseVersion);
+
+                    return databaseVersion;
                 });
         }
         return when.reject('Settings table does not exist');
@@ -88,8 +92,10 @@ module.exports = {
             if (databaseVersion > defaultVersion) {
                 // 3. The database exists but the currentVersion setting does not or cannot be understood
                 // In this case we don't understand the version because it is too high
-                errors.logError('Database is not compatible with software version.');
-                process.exit(-3);
+                errors.logErrorAndExit(
+                    'Your database is not compatible with this version of Ghost',
+                    'You will need to create a new database'
+                );
             }
 
         }, function (err) {
@@ -101,8 +107,7 @@ module.exports = {
 
             // 3. The database exists but the currentVersion setting does not or cannot be understood
             // In this case the setting was missing or there was some other problem
-            errors.logError('Database is not recognisable.' + err);
-            process.exit(-2);
+            errors.logErrorAndExit('There is a problem with the database', err.message || err);
         });
     },
 

@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    colors = require("colors"),
     errors;
 
 /**
@@ -17,35 +18,44 @@ errors = {
         throw err;
     },
 
-    logError: function (err) {
-        err = err || "Unknown";
+    logError: function (err, context, help) {
+        err = err.message || err || "Unknown";
         // TODO: Logging framework hookup
 //        Eventually we'll have better logging which will know about envs
         if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging'
                 || process.env.NODE_ENV === 'production') {
-            console.log("Error occurred: ", err.message || err, err.stack || "");
+
+            console.log("\nERROR:".red, err.red, err.stack || "");
+
+            if (context) {
+                console.log(context);
+            }
+
+            if (help) {
+                console.log(help.green);
+            }
+            // add a new line
+            console.log("");
         }
     },
 
-    logAndThrowError: function (err) {
-        this.logError(err);
-
-        this.throwError(err);
+    logErrorAndExit: function (err, context, help) {
+        this.logError(err, context, help);
+        // Exit with 0 to prevent npm errors as we have our own
+        process.exit(0);
     },
 
-    logErrorWithMessage: function (msg) {
+    logAndThrowError: function (err, context, help) {
+        this.logError(err, context, help);
+
+        this.throwError(err, context, help);
+    },
+
+    logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {
         var self = this;
 
         return function () {
-            self.logError(msg);
-        };
-    },
-
-    logErrorWithRedirect: function (msg, redirectTo, req, res) {
-        var self = this;
-
-        return function () {
-            self.logError(msg);
+            self.logError(msg, context, help);
 
             if (_.isFunction(res.redirect)) {
                 res.redirect(redirectTo);
@@ -55,6 +65,6 @@ errors = {
 };
 
 // Ensure our 'this' context in the functions
-_.bindAll(errors, "throwError", "logError", "logAndThrowError", "logErrorWithMessage", "logErrorWithRedirect");
+_.bindAll(errors, "throwError", "logError", "logAndThrowError", "logErrorWithRedirect");
 
 module.exports = errors;
