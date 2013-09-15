@@ -54,23 +54,24 @@
 
         events: {
             'click [data-set-status]': 'handleStatus',
-            'click .js-post-button': 'handlePostButton'
+            'click .js-publish-button': 'handlePostButton'
         },
 
-        statusMap: {
+        statusMap: null,
+
+        createStatusMap: {
             'draft': 'Save Draft',
-            'published': 'Publish Now',
-            'scheduled': 'Save Schedued Post',
-            'queue': 'Add to Queue',
-            'publish-on': 'Publish on...'
+            'published': 'Publish Now'
+        },
+
+        updateStatusMap: {
+            'draft': 'Unpublish',
+            'published': 'Update Post'
         },
 
         notificationMap: {
-            'draft': 'has been saved as a draft',
-            'published': 'has been published',
-            'scheduled': 'has been scheduled',
-            'queue': 'has been added to the queue',
-            'publish-on': 'will be published'
+            'draft': 'saved as a draft',
+            'published': 'published'
         },
 
         initialize: function () {
@@ -94,66 +95,72 @@
         toggleStatus: function () {
             var self = this,
                 keys = Object.keys(this.statusMap),
-                model = this.model,
-                prevStatus = this.model.get('status'),
+                model = self.model,
+                prevStatus = model.get('status'),
                 currentIndex = keys.indexOf(prevStatus),
                 newIndex;
 
+            newIndex = currentIndex + 1 > keys.length - 1 ? 0 : currentIndex + 1;
 
-            if (keys[currentIndex + 1] === 'scheduled') { // TODO: Remove once scheduled posts work
-                newIndex = currentIndex + 2 > keys.length - 1 ? 0 : currentIndex + 1;
-            } else {
-                newIndex = currentIndex + 1 > keys.length - 1 ? 0 : currentIndex + 1;
-            }
+            this.setActiveStatus(keys[newIndex], this.statusMap[keys[newIndex]], prevStatus);
 
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: 'Your post ' + this.notificationMap[newIndex] + '.',
+                    message: 'Your post has been ' + self.notificationMap[newIndex] + '.',
                     status: 'passive'
                 });
             }, function (xhr) {
                 var status = keys[newIndex];
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
-                // Set the button text back to previous
-                model.set({ status: prevStatus });
             });
         },
 
-        setActiveStatus: function (status, displayText) {
-            // Set the publish button's action
-            $('.js-post-button')
-                .attr('data-status', status)
-                .text(displayText);
+        setActiveStatus: function (newStatus, displayText, currentStatus) {
+            var isPublishing = (newStatus === 'published' && currentStatus !== 'published'),
+                isUnpublishing = (newStatus === 'draft' && currentStatus === 'published'),
+                // Controls when background of button has the splitbutton-delete/button-delete classes applied
+                isImportantStatus = (isPublishing || isUnpublishing);
+
+            $('.js-publish-splitbutton')
+                .removeClass(isImportantStatus ? 'splitbutton-save' : 'splitbutton-delete')
+                .addClass(isImportantStatus ? 'splitbutton-delete' : 'splitbutton-save');
+
+            // Set the publish button's action and proper coloring
+            $('.js-publish-button')
+                .attr('data-status', newStatus)
+                .text(displayText)
+                .removeClass(isImportantStatus ? 'button-save' : 'button-delete')
+                .addClass(isImportantStatus ? 'button-delete' : 'button-save');
 
             // Remove the animated popup arrow
-            $('.splitbutton-save > a')
+            $('.js-publish-splitbutton > a')
                 .removeClass('active');
 
             // Set the active action in the popup
-            $('.splitbutton-save .editor-options li')
+            $('.js-publish-splitbutton .editor-options li')
                 .removeClass('active')
-                .filter(['li[data-set-status="', status, '"]'].join(''))
+                .filter(['li[data-set-status="', newStatus, '"]'].join(''))
                     .addClass('active');
         },
 
         handleStatus: function (e) {
             if (e) { e.preventDefault(); }
-            var status = $(e.currentTarget).attr('data-set-status');
+            var status = $(e.currentTarget).attr('data-set-status'),
+                currentStatus = this.model.get('status');
 
-            this.setActiveStatus(status, this.statusMap[status]);
+            this.setActiveStatus(status, this.statusMap[status], currentStatus);
 
             // Dismiss the popup menu
             $('body').find('.overlay:visible').fadeOut();
         },
 
         handlePostButton: function (e) {
-            e.preventDefault();
-
-            var status = $(e.currentTarget).attr("data-status");
+            if (e) { e.preventDefault(); }
+            var status = $(e.currentTarget).attr('data-status');
 
             this.updatePost(status);
         },
@@ -167,32 +174,23 @@
             // Default to same status if not passed in
             status = status || prevStatus;
 
-            if (status === 'publish-on') {
-                return Ghost.notifications.addItem({
-                    type: 'alert',
-                    message: 'Scheduled publishing not supported yet.',
-                    status: 'passive'
-                });
-            }
-            if (status === 'queue') {
-                return Ghost.notifications.addItem({
-                    type: 'alert',
-                    message: 'Scheduled publishing not supported yet.',
-                    status: 'passive'
-                });
-            }
-
-            this.model.trigger('willSave');
+            model.trigger('willSave');
 
             this.savePost({
                 status: status
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: ['Your post ', notificationMap[status], '.'].join(''),
+                    message: ['Your post has been ', notificationMap[status], '.'].join(''),
                     status: 'passive'
                 });
+                // Refresh publish button and all relevant controls with updated status.
+                self.render();
             }, function (xhr) {
+                // Set the model status back to previous
+                model.set({ status: prevStatus });
+                // Set appropriate button status
+                self.setActiveStatus(status, self.statusMap[status], prevStatus);
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
             });
@@ -219,7 +217,8 @@
 
         reportSaveError: function (response, model, status) {
             var title = model.get('title') || '[Untitled]',
-                message = 'Your post: ' + title + ' has not been ' + status;
+                notificationStatus = this.notificationMap[status],
+                message = 'Your post: ' + title + ' has not been ' + notificationStatus;
 
             if (response) {
                 // Get message from response
@@ -236,11 +235,27 @@
             });
         },
 
+        setStatusLabels: function (statusMap) {
+            _.each(statusMap, function (label, status) {
+                $('li[data-set-status="' + status + '"] > a').text(label);
+            });
+        },
+
         render: function () {
             var status = this.model.get('status');
 
+            // Assume that we're creating a new post
+            if (status !== 'published') {
+                this.statusMap = this.createStatusMap;
+            } else {
+                this.statusMap = this.updateStatusMap;
+            }
+
+            // Populate the publish menu with the appropriate verbiage
+            this.setStatusLabels(this.statusMap);
+
             // Default the selected publish option to the current status of the post.
-            this.setActiveStatus(status, this.statusMap[status]);
+            this.setActiveStatus(status, this.statusMap[status], status);
         }
 
     });
