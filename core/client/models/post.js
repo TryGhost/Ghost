@@ -44,7 +44,7 @@
     });
 
     Ghost.Collections.Posts = Backbone.Collection.extend({
-        url: Ghost.settings.apiRoot + '/posts',
+        url: Ghost.settings.apiRoot + '/posts/',
         model: Ghost.Models.Post,
         parse: function (resp) {
             if (_.isArray(resp.posts)) {

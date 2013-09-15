@@ -6,8 +6,8 @@
 casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(test) {
     test.filename = "flow_test.png";
 
-    casper.start(url + "ghost/editor", function then() {
-        test.assertUrlMatch(/ghost\/editor$/, "Ghost doesn't require login this time");
+    casper.start(url + "ghost/editor/", function then() {
+        test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
     }).viewport(1280, 1024);
 
     // First, create a new draft post

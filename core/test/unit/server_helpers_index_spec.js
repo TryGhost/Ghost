@@ -215,7 +215,7 @@ describe('Core Helpers', function () {
         it('should return a the slug with a prefix slash if the context is a post', function () {
             var rendered = handlebars.helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug"});
             should.exist(rendered);
-            rendered.should.equal('/slug');
+            rendered.should.equal('/slug/');
         });
 
         it('should output an absolute URL if the option is present', function () {
@@ -229,7 +229,7 @@ describe('Core Helpers', function () {
                 );
 
             should.exist(rendered);
-            rendered.should.equal('http://testurl.com/slug');
+            rendered.should.equal('http://testurl.com/slug/');
 
             configStub.restore();
         });
