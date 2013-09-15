@@ -59,7 +59,7 @@
             var self = this,
                 model;
 
-            Ghost.router.navigate('/settings/' + id);
+            Ghost.router.navigate('/settings/' + id + '/');
             Ghost.trigger('urlchange');
             if (this.pane && id === this.pane.el.id) {
                 return;
