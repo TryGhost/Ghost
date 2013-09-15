@@ -45,9 +45,10 @@
 
     Ghost.Validate.handleErrors = function () {
         _.each(Ghost.Validate._errors, function (errorObj) {
+
             Ghost.notifications.addItem({
                 type: 'error',
-                message: errorObj.message,
+                message: errorObj.message || errorObj,
                 status: 'passive'
             });
             if (errorObj.hasOwnProperty('el')) {
