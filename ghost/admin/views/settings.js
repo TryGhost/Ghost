@@ -57,8 +57,7 @@
 
         showContent: function (id) {
             var self = this,
-                model,
-                themes;
+                model;
 
             Ghost.router.navigate('/settings/' + id);
             Ghost.trigger('urlchange');
@@ -70,13 +69,9 @@
             this.pane = new Settings[id]({ el: '.settings-content'});
 
             if (!this.models.hasOwnProperty(this.pane.options.modelType)) {
-                themes = this.models.Themes = new Ghost.Models.Themes();
                 model = this.models[this.pane.options.modelType] = new Ghost.Models[this.pane.options.modelType]();
-                themes.fetch().then(function () {
-                    model.fetch().then(function () {
-                        model.set({availableThemes: themes.toJSON()});
-                        self.renderPane(model);
-                    });
+                model.fetch().then(function () {
+                    self.renderPane(model);
                 });
             } else {
                 model = this.models[this.pane.options.modelType];
@@ -157,8 +152,7 @@
         },
 
         saveSettings: function () {
-            var themes = this.model.get('availableThemes'),
-                title = this.$('#blog-title').val(),
+            var title = this.$('#blog-title').val(),
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
                 postsPerPage = this.$('#postsPerPage').val();
@@ -180,8 +174,6 @@
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
             } else {
-
-                this.model.unset('availableThemes');
                 this.model.save({
                     title: title,
                     description: description,
@@ -194,7 +186,6 @@
                     success: this.saveSuccess,
                     error: this.saveError
                 });
-                this.model.set({availableThemes: themes});
             }
         },
         showLogo: function (e) {
@@ -210,16 +201,12 @@
         showUpload: function (key, src) {
             var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
-                    var data = {},
-                        themes;
+                    var data = {};
                     data[key] = this.$('.js-upload-target').attr('src');
-                    themes = self.model.get('availableThemes');
-                    self.model.unset('availableThemes');
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
                     });
-                    self.model.set({availableThemes: themes});
                     self.render();
                     return true;
                 },
