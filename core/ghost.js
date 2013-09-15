@@ -100,10 +100,10 @@ Ghost = function () {
                  * this data is what becomes globally available to themes */
                 return {
                     url: instance.config().url,
-                    title: instance.settings().title,
-                    description: instance.settings().description,
-                    logo: instance.settings().logo,
-                    cover: instance.settings().cover
+                    title: instance.settings().title.value,
+                    description: instance.settings().description.value,
+                    logo: instance.settings().logo.value,
+                    cover: instance.settings().cover.value
                 };
             },
             statuses: function () { return statuses; },
@@ -121,7 +121,7 @@ Ghost = function () {
                     'appRoot':          appRoot,
                     'themePath':        themePath,
                     'pluginPath':       pluginPath,
-                    'activeTheme':      path.join(themePath, !instance.settingsCache ? "" : instance.settingsCache.activeTheme),
+                    'activeTheme':      path.join(themePath, !instance.settingsCache ? "" : instance.settingsCache.activeTheme.value),
                     'adminViews':       path.join(appRoot, '/core/server/views/'),
                     'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
                     'lang':             path.join(appRoot, '/core/shared/lang/'),
@@ -142,15 +142,14 @@ Ghost.prototype.init = function () {
         instance.dataProvider.init(),
         instance.getPaths(),
         instance.mail.init(self)
+
     ).then(function () {
         return models.Settings.populateDefaults();
-    }).then(function () {
-        // Initialize plugins
-        return self.initPlugins();
     }).then(function () {
         // Initialize the settings cache
         return self.updateSettingsCache();
     }).then(function () {
+        // Initialize plugins
         return self.initPlugins();
     }).then(function () {
         // Initialize the permissions actions and objects
@@ -164,7 +163,7 @@ Ghost.prototype.init = function () {
         }).otherwise(function (error) {
             // this is where all the "first run" functionality should go
             var dbhash = uuid.v4();
-            return when(models.Settings.add({key: 'dbHash', value: dbhash})).then(function (returned) {
+            return when(models.Settings.add({key: 'dbHash', value: dbhash, type: 'core'})).then(function (returned) {
                 self.dbHash = dbhash;
                 return dbhash;
             });
@@ -179,31 +178,60 @@ Ghost.prototype.updateSettingsCache = function (settings) {
     settings = settings || {};
 
     if (!_.isEmpty(settings)) {
-        self.settingsCache = settings;
+        _.map(settings, function (setting, key) {
+            self.settingsCache[key].value = setting.value;
+        });
     } else {
         // TODO: this should use api.browse
-        return models.Settings.findAll().then(function (result) {
-            var settings = {};
-            _.map(result.models, function (member) {
-                if (!settings.hasOwnProperty(member.attributes.key)) {
-                    if (member.attributes.key === 'activeTheme') {
-                        member.attributes.value = member.attributes.value.substring(member.attributes.value.lastIndexOf('/') + 1);
-                        var settingsThemePath = path.join(themePath, member.attributes.value);
-                        fs.exists(settingsThemePath, function (exists) {
-                            if (!exists) {
-                                member.attributes.value = "casper";
-                            }
-                            settings[member.attributes.key] = member.attributes.value;
-                        });
-                        return;
-                    }
-                    settings[member.attributes.key] = member.attributes.value;
-                }
+        return when(models.Settings.findAll()).then(function (result) {
+            return when(self.readSettingsResult(result)).then(function (s) {
+                self.settingsCache = s;
             });
-
-            self.settingsCache = settings;
-        }, errors.logAndThrowError);
+        });
     }
+};
+
+Ghost.prototype.readSettingsResult = function (result) {
+    var settings = {};
+    return when(_.map(result.models, function (member) {
+        if (!settings.hasOwnProperty(member.attributes.key)) {
+            var val = {};
+            if (member.attributes.key === 'activeTheme') {
+                member.attributes.value = member.attributes.value.substring(member.attributes.value.lastIndexOf('/') + 1);
+                val.value = member.attributes.value;
+                val.type = member.attributes.type;
+                settings[member.attributes.key] = val;
+            } else {
+                val.value = member.attributes.value;
+                val.type = member.attributes.type;
+                settings[member.attributes.key] = val;
+            }
+        }
+    })).then(function () {
+        return when(instance.paths().availableThemes).then(function (themes) {
+            var themeKeys = Object.keys(themes),
+                res = [],
+                i,
+                item;
+            for (i = 0; i < themeKeys.length; i += 1) {
+                //do not include hidden files
+                if (themeKeys[i].indexOf('.') !== 0) {
+                    item = {};
+                    item.name = themeKeys[i];
+                    //data about files currently not used
+                    //item.details = themes[themeKeys[i]];
+                    if (themeKeys[i] === settings.activeTheme.value) {
+                        item.active = true;
+                    }
+                    res.push(item);
+                }
+            }
+            settings.availableThemes = {};
+            settings.availableThemes.value = res;
+            settings.availableThemes.type = 'theme';
+            return settings;
+        });
+    });
 };
 
 // ## Template utils
@@ -303,7 +331,6 @@ Ghost.prototype.doFilter = function (name, args, callback) {
 // Initialise plugins.  Will load from config.activePlugins by default
 Ghost.prototype.initPlugins = function (pluginsToLoad) {
     pluginsToLoad = pluginsToLoad || models.Settings.activePlugins;
-
     var self = this;
 
     return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
@@ -326,11 +353,11 @@ Ghost.prototype.initTheme = function (app) {
             // self.globals is a hack til we have a better way of getting combined settings & config
             hbsOptions = {templateOptions: {data: {blog: self.blogGlobals()}}};
 
-            if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme)) {
+            if (!self.themeDirectories.hasOwnProperty(self.settings().activeTheme.value)) {
                 // Throw an error if the theme is not available...
                 // TODO: move this to happen on app start
-                errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme + ' is missing.');
-            } else if (self.themeDirectories[self.settings().activeTheme].hasOwnProperty('partials')) {
+                errors.logAndThrowError('The currently active theme ' + self.settings().activeTheme.value + ' is missing.');
+            } else if (self.themeDirectories[self.settings().activeTheme.value].hasOwnProperty('partials')) {
                 // Check that the theme has a partials directory before trying to use it
                 hbsOptions.partialsDir = path.join(self.paths().activeTheme, 'partials');
             }
