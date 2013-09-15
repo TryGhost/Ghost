@@ -44,8 +44,15 @@
     });
 
     Ghost.Collections.Posts = Backbone.Collection.extend({
+        currentPage: 1,
+        totalPages: 0,
+        totalPosts: 0,
+        nextPage: 0,
+        prevPage: 0,
+
         url: Ghost.settings.apiRoot + '/posts',
         model: Ghost.Models.Post,
+
         parse: function (resp) {
             if (_.isArray(resp.posts)) {
                 this.limit = resp.limit;
