@@ -420,9 +420,11 @@ body.zen {
         box-shadow: rgba(255,255,255,0.4) 0 1px 0 inset;
     }
 
-    .splitbutton-save{
-        .button-save{
-            @include transition(width 0.25s ease);
+    .splitbutton-save, 
+    .splitbutton-delete{
+        .button-save,
+        .button-delete{
+            @include transition(width 0.25s ease, background 0.3s linear);
         }
 
         .editor-options{
