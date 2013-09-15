@@ -168,7 +168,7 @@ form {
 %button {
     @include box-sizing(border-box);
     min-height: 35px;
-    width:auto;
+    width: auto;
     display: inline-block;
     padding: 0.9em 1.37em;
     cursor: pointer;
@@ -189,6 +189,10 @@ form {
         border-color: transparent;
         background: #f8f8f8;
         text-decoration: none;
+    }
+
+    &:active {
+        box-shadow: rgba(0,0,0,0.3) 0 1px 3px inset;
     }
 
     &.large {
