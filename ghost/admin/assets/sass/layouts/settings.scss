@@ -52,7 +52,7 @@
         left:0;
         bottom:0;
         z-index: 700;
-        background: #FFFFFF;
+        background: #fff;
         box-shadow: $lightbrown 1px 0 0;
         @include breakpoint($tablet) {
             width:100%;
@@ -162,7 +162,7 @@
         right:0;
         left:20%;
         bottom:0;
-        background: #FFFFFF;
+        background: #fff;
 
         @include breakpoint($tablet) {
             display: none;
