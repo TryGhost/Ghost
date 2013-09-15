@@ -50,7 +50,7 @@
         nextPage: 0,
         prevPage: 0,
 
-        url: Ghost.settings.apiRoot + '/posts',
+        url: Ghost.settings.apiRoot + '/posts/',
         model: Ghost.Models.Post,
 
         parse: function (resp) {

@@ -301,15 +301,15 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
     server.del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
     // #### Settings
-    server.get('/api/v0.1/settings', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
-    server.get('/api/v0.1/settings/:key', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
-    server.put('/api/v0.1/settings', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
+    server.get('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
+    server.get('/api/v0.1/settings/:key/', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
+    server.put('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
     // #### Users
-    server.get('/api/v0.1/users', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
-    server.get('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.read));
-    server.put('/api/v0.1/users/:id', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    server.get('/api/v0.1/users/', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
+    server.get('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.read));
+    server.put('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
     // #### Tags
-    server.get('/api/v0.1/tags', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
+    server.get('/api/v0.1/tags/', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
     // #### Notifications
     server.del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
     server.post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
@@ -331,9 +331,9 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.post('/ghost/signin/', admin.auth);
     server.post('/ghost/signup/', admin.doRegister);
     server.post('/ghost/changepw/', auth, admin.changepw);
-    server.get('/ghost/editor/:id', auth, admin.editor);
-    server.get('/ghost/editor', auth, admin.editor);
-    server.get('/ghost/content', auth, admin.content);
+    server.get('/ghost/editor(/:id)/', auth, admin.editor);
+    server.get('/ghost/editor/', auth, admin.editor);
+    server.get('/ghost/content/', auth, admin.content);
     server.get('/ghost/settings*', auth, admin.settings);
     server.get('/ghost/debug/', auth, admin.debug.index);
     server.get('/ghost/debug/db/export/', auth, admin.debug['export']);
