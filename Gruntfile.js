@@ -836,6 +836,8 @@ var path = require('path'),
 
         // TODO: Production build task that minifies with uglify:prod
 
+        grunt.registerTask("prod", ['sass:admin', 'handlebars', 'concat', "uglify"]);
+
         // When you just say "grunt"
         grunt.registerTask("default", ['sass:admin', 'handlebars', 'concat']);
     };
