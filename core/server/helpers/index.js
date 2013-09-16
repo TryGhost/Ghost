@@ -3,13 +3,17 @@ var _ = require('underscore'),
     downsize = require('downsize'),
     when = require('when'),
     hbs = require('express-hbs'),
+    packageInfo = require('../../../package.json'),
     errors = require('../errorHandling'),
     models = require('../models'),
     coreHelpers;
 
 
 coreHelpers = function (ghost) {
-    var paginationHelper;
+    var paginationHelper,
+        scriptTemplate = _.template("<script src='/built/scripts/<%= name %>?v=<%= version %>'></script>"),
+        isProduction = process.env.NODE_ENV === "production",
+        version = encodeURIComponent(packageInfo.version);
 
     /**
      * [ description]
@@ -315,6 +319,32 @@ coreHelpers = function (ghost) {
             ret = inverse(this);
         }
         return ret;
+    });
+
+    // A helper for inserting the javascript tags with version hashes
+    ghost.registerThemeHelper("ghostScriptTags", function () {
+        var scriptFiles = [];
+
+        if (isProduction) {
+            scriptFiles.push("ghost.min.js");
+        } else {
+            scriptFiles = [
+                "vendor.js",
+                "helpers.js",
+                "templates.js",
+                "models.js",
+                "views.js"
+            ];
+        }
+
+        scriptFiles = _.map(scriptFiles, function (fileName) {
+            return scriptTemplate({
+                name: fileName,
+                version: version
+            });
+        });
+
+        return scriptFiles.join("");
     });
 
     // ## Template driven helpers

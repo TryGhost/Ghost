@@ -46,3 +46,6 @@ CHANGELOG.md
 /core/test/functional/*.png
 
 config.js
+
+# Built asset files
+/core/built
