@@ -17,30 +17,30 @@
         <section class="content">
             <form id="settings-export">
                 <fieldset>
-                    <label>
-                        <b>Export</b>
+                    <div class="form-group">
+                        <label>Export</label>
                         <a href="/ghost/debug/db/export/" class="button-save">Export</a>
                         <p>Export the blog settings and data.</p>
-                    </label>
+                    </div>
                 </fieldset>
             </form>
             <form id="settings-import" method="post" action="/ghost/debug/db/import/" enctype="multipart/form-data">
                 <fieldset>
-                    <label>
-                        <b>Import</b>
+                    <div class="form-group">
+                        <label>Import</label>
                         <input type="file" class="button-add" name="importfile"></input>
                         <input type="submit" class="button-save" value="Import"></input>
                         <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
-                    </label>
+                    </div>
                 </fieldset>
             </form>
             <form id="settings-resetdb">
                 <fieldset>
-                    <label>
-                        <b>Reset Database</b>
+                    <div class="form-group">
+                        <label>Reset Database</label>
                         <a href="/ghost/debug/db/reset/" class="button-delete">Reset</a>
                         <p>Delete the entire database so you can start again with empty tables</p>
-                    </label>
+                    </div>
                 </fieldset>
             </form>
         </section>
