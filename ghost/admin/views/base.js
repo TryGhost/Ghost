@@ -81,7 +81,8 @@
         // Used in API request fail handlers to parse a standard api error
         // response json for the message to display
         getRequestErrorMessage: function (request) {
-            var message;
+            var message,
+                msgDetail;
 
             // Can't really continue without a request
             if (!request) {
@@ -97,7 +98,8 @@
                     // Try to parse out the error, or default to "Unknown"
                     message =  request.responseJSON.error || "Unknown Error";
                 } catch (e) {
-                    message = "The server returned an error (" + (request.status || "?") + ").";
+                    msgDetail = request.status ? request.status + " - " + request.statusText : "Server was not available";
+                    message = "The server returned an error (" + msgDetail + ").";
                 }
             }
 
