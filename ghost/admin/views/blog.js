@@ -20,6 +20,8 @@
     // -----------------------
     ContentList = Ghost.View.extend({
 
+        isLoading: false,
+
         events: {
             'click .content-list-content'    : 'scrollHandler'
         },
@@ -27,13 +29,65 @@
         initialize: function (options) {
             this.$('.content-list-content').scrollClass({target: '.content-list', offset: 10});
             this.listenTo(this.collection, 'remove', this.showNext);
+            // Can't use backbone event bind (see: http://stackoverflow.com/questions/13480843/backbone-scroll-event-not-firing)
+            this.$('.content-list-content').scroll($.proxy(this.checkScroll, this));
         },
 
         showNext: function () {
+            if (this.isLoading) { return; }
             var id = this.collection.at(0).id;
             if (id) {
                 Backbone.trigger('blog:activeItem', id);
             }
+        },
+
+        reportLoadError: function (response) {
+            var message = 'A problem was encountered while loading more posts';
+
+            if (response) {
+                // Get message from response
+                message += '; ' + Ghost.Views.Utils.getRequestErrorMessage(response);
+            } else {
+                message += '.';
+            }
+
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: message,
+                status: 'passive'
+            });
+        },
+
+        checkScroll: function (event) {
+            var self = this,
+                element = event.target,
+                triggerPoint = 100;
+
+            // If we haven't passed our threshold, exit
+            if (this.isLoading || (element.scrollTop + element.clientHeight + triggerPoint <= element.scrollHeight)) {
+                return;
+            }
+
+            // If we've loaded the max number of pages, exit
+            if (this.collection.currentPage >=  this.collection.totalPages) {
+                return;
+            }
+
+            // Load moar posts!
+            this.isLoading = true;
+
+            this.collection.fetch({
+                data: {
+                    status: 'all',
+                    page: (self.collection.currentPage + 1),
+                    orderBy: ['updated_at', 'DESC']
+                }
+            }).then(function onSuccess(response) {
+                self.render();
+                self.isLoading = false;
+            }, function onError(e) {
+                self.reportLoadError(e);
+            });
         },
 
         render: function () {
