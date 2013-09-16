@@ -33,28 +33,19 @@
    The Icon Element
    ============================================================================= */
 
-/* 
- * Epic dynamic icon element by Eric Eggert, this thing is so fucking cool it's
- * actually unreal. - bit.ly/TJwPPo
- */
-
-%icon:before, 
-%icon:after {
-    font-family: "Icons";
-    font-weight: normal;
-    font-style: normal;
-    vertical-align: -7%;
-    text-transform:none;
-    speak: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
-
-}
-
 @mixin icon($char, $size: '', $color: '') {
-    @extend %icon;
-
     &:before {
+        // Base
+        font-family: "Icons";
+        font-weight: normal;
+        font-style: normal;
+        vertical-align: -7%;
+        text-transform:none;
+        speak: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        
+        //Function
         content: '#{$char}';
         @if $size != '' {
             font-size: $size;
@@ -76,9 +67,18 @@
  */
 
 @mixin icon-after($char, $size: '', $color: '') {
-    @extend %icon;
-
     &:after {
+        // Base
+        font-family: "Icons";
+        font-weight: normal;
+        font-style: normal;
+        vertical-align: -7%;
+        text-transform:none;
+        speak: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+
+        // Function
         content: '#{$char}';
         @if $size != '' {
             font-size: $size;
