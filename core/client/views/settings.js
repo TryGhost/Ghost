@@ -202,7 +202,12 @@
             var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
-                    data[key] = this.$('.js-upload-target').attr('src');
+                    if (this.$('#uploadurl').val()) {
+                        data[key] = this.$('#uploadurl').val();
+                    } else {
+                        data[key] = this.$('.js-upload-target').attr('src');
+                    }
+
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
@@ -254,7 +259,11 @@
             var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
-                    data[key] = this.$('.js-upload-target').attr('src');
+                    if (this.$('#uploadurl').val()) {
+                        data[key] = this.$('#uploadurl').val();
+                    } else {
+                        data[key] = this.$('.js-upload-target').attr('src');
+                    }
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
