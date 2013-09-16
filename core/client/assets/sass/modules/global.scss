@@ -889,7 +889,7 @@ nav {
    Notifications
    ========================================================================== */
 
-#flashbar {
+#notifications {
     @include breakpoint($mobile) {
         position: fixed;
         top: 0;

@@ -124,7 +124,7 @@
 
     /**
      * This is the view to generate the markup for the individual
-     * notification. Will be included into #flashbar.
+     * notification. Will be included into #notifications.
      *
      * States can be
      * - persistent
@@ -154,7 +154,7 @@
      * This handles Notification groups
      */
     Ghost.Views.NotificationCollection = Ghost.View.extend({
-        el: '#flashbar',
+        el: '#notifications',
         initialize: function () {
             var self = this;
             this.render();
