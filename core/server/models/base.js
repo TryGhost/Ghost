@@ -121,7 +121,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
         // Remove trailing hypen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|dashboard|login|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
             .test(slug) ? slug + '-post' : slug;
 
         //if slug is empty after trimming use "post"
