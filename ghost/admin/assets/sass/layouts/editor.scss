@@ -443,6 +443,8 @@ body.zen {
 
 .extended-tags { // When the tag bar is exapanded
     position: static;
+    min-height: 100%;
+    
     #entry-tags {
         &:after {
             right: 10px;
@@ -487,6 +489,7 @@ body.zen {
         height: 26px;
         @include linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
         z-index: 9999;
+        pointer-events: none;
 
         @include breakpoint($mobile) {
             right: 176px;
@@ -512,6 +515,7 @@ body.zen {
     padding-bottom: 20px;
     overflow-x: auto;
     overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     white-space: nowrap;
     @include transition(width 0.2s linear);
 
@@ -520,6 +524,7 @@ body.zen {
         display: block;
         width: 115px;
         max-width: inherit;
+        padding-bottom: 0;
     }
 }
 
