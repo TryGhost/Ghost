@@ -26,7 +26,7 @@
                     url: '/ghost/upload',
                     add: function (e, data) {
                         $progress.find('.js-upload-progress-bar').removeClass('fail');
-                        $dropzone.trigger('uploadstart');
+                        $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
                         $dropzone.find('span.media, div.description, a.image-url, a.image-webcam')
                             .animate({opacity: 0}, 250, function () {
                                 $dropzone.find('div.description').hide().css({"opacity": 100});
@@ -47,6 +47,7 @@
                         }
                     },
                     fail: function (e, data) {
+                        $dropzone.trigger("uploadfailure", [data.result]);
                         $dropzone.find('.js-upload-progress-bar').addClass('fail');
                         $dropzone.find('div.js-fail, button.js-fail').fadeIn(1500);
                         $dropzone.find('button.js-fail').on('click', function () {
@@ -57,6 +58,8 @@
                         });
                     },
                     done: function (e, data) {
+                        $dropzone.trigger("uploadsuccess", [data.result, $dropzone.attr('id')]);
+
                         function showImage(width, height) {
                             $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
                             $dropzone.find('.fileupload-loading').remove();
@@ -85,7 +88,6 @@
                                 $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/public/img/loadingcat.gif" />');
                                 if (!settings.editor) {$progress.find('.fileupload-loading').css({"top": "56px"}); }
                             });
-                            $dropzone.trigger("uploadsuccess", [data.result]);
                             $img.one('load', function () { animateDropzone($img); })
                                 .attr('src', data.result);
                         }

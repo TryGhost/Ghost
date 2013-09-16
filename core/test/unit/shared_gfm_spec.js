@@ -213,7 +213,7 @@ describe("Github showdown extensions", function () {
                 },
                 {
                     input: "![1](http://google.co.uk/kitten.jpg)",
-                    output: /^!\[1\]\(http:\/\/google.co.uk\/kitten.jpg\)$/
+                    output: /^<img src=\"http:\/\/google.co.uk\/kitten.jpg\" alt=\"1\" \/>$/
                 },
                 {
                     input: "  ![1](http://google.co.uk/kitten.jpg)",
@@ -221,7 +221,7 @@ describe("Github showdown extensions", function () {
                 },
                 {
                     input: "![http://google.co.uk/kitten.jpg](http://google.co.uk/kitten.jpg)",
-                    output: /^!\[http:\/\/google.co.uk\/kitten.jpg\]\(http:\/\/google.co.uk\/kitten.jpg\)$/
+                    output: /^<img src=\"http:\/\/google.co.uk\/kitten.jpg\" alt=\"http:\/\/google.co.uk\/kitten.jpg\" \/>$/
                 }
             ],
             processedMarkup;
