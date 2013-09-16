@@ -38,21 +38,22 @@
  * actually unreal. - bit.ly/TJwPPo
  */
 
-%icon:before, 
-%icon:after {
-    font-family: "Icons";
-    font-weight: normal;
-    font-style: normal;
-    vertical-align: -7%;
-    text-transform:none;
-    speak: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
-
+@mixin icon-base() {
+    &:before,
+    &:after {
+        font-family: "Icons";
+        font-weight: normal;
+        font-style: normal;
+        vertical-align: -7%;
+        text-transform:none;
+        speak: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+    }
 }
 
 @mixin icon($char, $size: '', $color: '') {
-    @extend %icon;
+    @include icon-base;
 
     &:before {
         content: '#{$char}';
@@ -76,7 +77,7 @@
  */
 
 @mixin icon-after($char, $size: '', $color: '') {
-    @extend %icon;
+    @include icon-base;
 
     &:after {
         content: '#{$char}';
