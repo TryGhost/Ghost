@@ -48,3 +48,17 @@ casper.test.begin("Content screen is correct", 17, function suite(test) {
         test.done();
     });
 });
+
+casper.test.begin('Infinite scrolling', 1, function suite(test) {
+    test.filename = 'content_infinite_scrolling_test.png';
+
+    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
+
+    casper.start(url + "ghost/content/", function testTitleAndUrl() {
+        test.assertTitle("", "Ghost admin has no title");
+    }).viewport(1280, 1024);
+
+    casper.run(function () {
+        test.done();
+    });
+});
