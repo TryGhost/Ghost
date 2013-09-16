@@ -7,6 +7,7 @@
 var Ghost = require('../../ghost'),
     api = require('../api'),
     RSS = require('rss'),
+    _ = require('underscore'),
 
     ghost = new Ghost(),
     frontendControllers;
@@ -66,58 +67,61 @@ frontendControllers = {
     'rss': function (req, res) {
         // Initialize RSS
         var siteUrl = ghost.config().url,
+            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            feed;
+        //needs refact for multi user to not use first user as default
+        api.users.read({id : 1}).then(function (user) {
             feed = new RSS({
                 title: ghost.settings('title'),
                 description: ghost.settings('description'),
                 generator: 'Ghost v' + res.locals.version,
-                author: ghost.settings('author'),
+                author: user.attributes.name,
                 feed_url: siteUrl + '/rss/',
                 site_url: siteUrl,
                 ttl: '60'
-            }),
-            // Parse the page number
-            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+            });
 
-        // No negative pages
-        if (isNaN(pageParam) || pageParam < 1) {
-            return res.redirect("/rss/");
-        }
-
-        if (pageParam === 1 && req.route.path === '/rss/:page/') {
-            return res.redirect('/rss/');
-        }
-
-        api.posts.browse({page: pageParam}).then(function (page) {
-            var maxPage = page.pages;
-
-            // A bit of a hack for situations with no content.
-            if (maxPage === 0) {
-                maxPage = 1;
-                page.pages = 1;
+            // No negative pages
+            if (isNaN(pageParam) || pageParam < 1) {
+                return res.redirect("/rss/");
             }
 
-            // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > maxPage) {
-                return res.redirect("/rss/" + maxPage + "/");
+            if (pageParam === 1 && req.route.path === '/rss/:page/') {
+                return res.redirect('/rss/');
             }
 
-            ghost.doFilter('prePostsRender', page.posts, function (posts) {
-                posts.forEach(function (post) {
-                    var item = {
-                        title:  post.title,
-                        guid: post.uuid,
-                        url: siteUrl + '/' + post.slug + '/',
-                        date: post.published_at
-                    };
+            api.posts.browse({page: pageParam}).then(function (page) {
+                var maxPage = page.pages;
 
-                    if (post.meta_description !== null) {
-                        item.push({ description: post.meta_description });
-                    }
+                // A bit of a hack for situations with no content.
+                if (maxPage === 0) {
+                    maxPage = 1;
+                    page.pages = 1;
+                }
 
-                    feed.item(item);
+                // If page is greater than number of pages we have, redirect to last page
+                if (pageParam > maxPage) {
+                    return res.redirect("/rss/" + maxPage + "/");
+                }
+
+                ghost.doFilter('prePostsRender', page.posts, function (posts) {
+                    posts.forEach(function (post) {
+                        var item = {
+                            title:  _.escape(post.title),
+                            guid: post.uuid,
+                            url: siteUrl + '/' + post.slug + '/',
+                            date: post.published_at
+                        };
+
+                        if (post.meta_description !== null) {
+                            item.push({ description: post.meta_description });
+                        }
+
+                        feed.item(item);
+                    });
+                    res.set('Content-Type', 'text/xml');
+                    res.send(feed.xml());
                 });
-                res.set('Content-Type', 'text/xml');
-                res.send(feed.xml());
             });
         });
     }
