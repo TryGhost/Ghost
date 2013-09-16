@@ -1235,7 +1235,15 @@ main {
             color: $darkgrey;
         }
     }
-
+    .description {
+        margin-top: 10px;
+        margin-bottom: -40px;
+    }
+    .centre{
+        position: relative;
+        top: 50px;
+        margin-bottom: -6px;
+    }
     .media {
         @include icon($i-image, 60px, darken($lightbrown, 3%)) {
             display:inline-block;
@@ -1273,19 +1281,53 @@ main {
         color: $brown;
         text-decoration: none;
     }
-
-    input {
+    .image-cancel {
+        @include icon($i-x, 16px);
         position: absolute;
-        right: 0;
-        margin: 0;
-        opacity: 0;
-        @include transform-origin(right);
-        @include transform( scale(14));
-        font-size: 23px;
-        direction: ltr;
-        cursor: pointer;
-    }
+        color: white;
+        text-shadow: rgba(0,0,0,0.3) 0 0 3px;
+        top: 10px;
+        right: 10px;
+        text-decoration: none;
 
+        &:hover {
+            cursor: pointer;
+            color: white;
+        }
+    }
+    input {
+        &.main{
+            position: absolute;
+            right: 0;
+            margin: 0;
+            opacity: 0;
+            @include transform-origin(right);
+            @include transform( scale(14));
+            font-size: 23px;
+            direction: ltr;
+            cursor: pointer;
+            &.right {
+                position: relative;
+                right: 9999px;
+            }
+        }
+        &.url{
+            font: -webkit-small-control;
+            box-sizing: border-box;
+            width: 276px;
+            padding: 5px 7px;
+            margin: 0;
+            margin-top: -10px;
+            margin-bottom: -1px; outline: 0;
+            font-size: 1.1em;
+            line-height: 1.4em;
+            background: #fff;
+            border: #e3e1d5 1px solid;
+            border-radius: 4px;
+            -webkit-transition: all 0.15s ease-in-out;
+            -moz-transition: all 0.15s ease-in-out;
+        }
+    }
     .progress {
         position: relative;
         top: -22px;
@@ -1321,7 +1363,6 @@ main {
         }
     }
 }
-
 .pre-image-uploader {
     @include box-sizing(border-box);
     @include baseline;
