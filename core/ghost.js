@@ -41,19 +41,6 @@ defaults = {
     maxPriority: 9
 };
 
-// ## Article Statuses
-/**
- * A list of article status types
- * @type {Object}
- */
-statuses = {
-    'draft': 'draft',
-    'complete': 'complete',
-    'approved': 'approved',
-    'scheduled': 'scheduled',
-    'published': 'published'
-};
-
 // ## Module Methods
 /**
  * @method Ghost
@@ -111,7 +98,6 @@ Ghost = function () {
                     cover: instance.settings('cover')
                 };
             },
-            statuses: function () { return statuses; },
             polyglot: function () { return polyglot; },
             mail: new Mailer(),
             getPaths: function () {

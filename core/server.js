@@ -103,20 +103,19 @@ function isGhostAdmin(req, res, next) {
 
 // ### GhostLocals Middleware
 // Expose the standard locals that every external page should have available,
-// separating between the frontend / theme and the admin
+// separating between the theme and the admin
 function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
 
     if (res.isAdmin) {
+        _.extend(res.locals,  {
+            messages: ghost.notifications
+        });
+
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
-                // pass the admin flash messages, settings and paths
-                messages: ghost.notifications,
-                settings: ghost.settings(),
-                availableThemes: ghost.paths().availableThemes,
-                availablePlugins: ghost.paths().availablePlugins,
                 currentUser: {
                     name: currentUser.attributes.name,
                     profile: currentUser.attributes.image
@@ -124,13 +123,6 @@ function ghostLocals(req, res, next) {
             });
             next();
         }).otherwise(function () {
-            _.extend(res.locals,  {
-                // pass the admin flash messages, settings and paths
-                messages: ghost.notifications,
-                settings: ghost.settings(),
-                availableThemes: ghost.paths().availableThemes,
-                availablePlugins: ghost.paths().availablePlugins
-            });
             next();
         });
     } else {
