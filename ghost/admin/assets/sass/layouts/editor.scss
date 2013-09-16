@@ -398,6 +398,7 @@ body.zen {
     right: 0;
     z-index: 900;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+    @include transform(translateZ(0));
 
     @include breakpoint($netbook) {font-weight: normal;}
 
@@ -440,14 +441,91 @@ body.zen {
     }
 }
 
+.extended-tags { // When the tag bar is exapanded
+    position: static;
+    min-height: 100%;
+    
+    #entry-tags {
+        &:after {
+            right: 10px;
+        }
+    }
+    .tags {
+        width: 281px;
+    }
+
+    .tag-label, .tag-label.touch {
+        color: #fff;
+    }
+
+    .tag-input {
+        width: 100%;
+        margin-top: 5px;
+        padding-top: 5px;
+        padding-left: 10px;
+        border-top: 1px solid $darkgrey;
+
+    }
+    .right {
+        display: none;
+    }
+}
+
 #entry-tags {
     position: absolute;
     top: 0;
     left: 0;
-    right: 165px;
+    right: 0;
     bottom: 0;
     text-transform: none;
     padding: 10px 0 0 0;
+
+    &:after, &:before {
+        content: "";
+        position: fixed;
+        top: 10px;
+        right: 270px;
+        width: 20px;
+        height: 26px;
+        @include linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+        z-index: 9999;
+        pointer-events: none;
+
+        @include breakpoint($mobile) {
+            right: 176px;
+        }
+    }
+
+    &:before {
+        right: auto;
+        left: 29px;
+        @include linear-gradient(right, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+    }
+}
+
+.tags {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: auto;
+    max-width: 80%;
+    max-width: calc(100% - 320px);
+    height: 26px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    @include transition(width 0.2s linear);
+
+    @include breakpoint($mobile) {
+        @include box-sizing(border-box);
+        display: block;
+        width: 115px;
+        max-width: inherit;
+        padding-bottom: 0;
+    }
 }
 
 .tag-label {
@@ -461,10 +539,15 @@ body.zen {
         cursor: pointer;
         color: $lightgrey;
     }
+
+    &.touch {
+        color: inherit;
+    }
 }
 
 .tag-input {
     display: inline-block;
+    vertical-align: top;
     color: $lightgrey;
     font-weight: 300;
     background: transparent;
@@ -480,11 +563,11 @@ body.zen {
         text-shadow: rgba(255,255,255,0.15) 0 1px 0;
         @include transition;
     }
-    display: block;
-    float: left;
+    display: inline;
     margin-right: 5px;
     padding: 0 5px;
     color: $lightgrey;
+    white-space: nowrap;
     background: lighten($grey, 15%);
     border-radius: $rounded;
     box-shadow: 
@@ -498,6 +581,7 @@ body.zen {
         @include icon-after($i-x, 8px, $lightgrey) {text-shadow: none;}
 
     }
+
 }
 
 .suggestions {

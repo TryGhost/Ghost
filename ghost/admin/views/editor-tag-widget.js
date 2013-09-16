@@ -1,6 +1,6 @@
 // The Tag UI area associated with a post
 
-/*global window, document, $, _, Backbone, Ghost */
+/*global window, document, setTimeout, $, _, Backbone, Ghost */
 
 (function () {
     "use strict";
@@ -11,7 +11,8 @@
             'keyup [data-input-behaviour="tag"]': 'handleKeyup',
             'keydown [data-input-behaviour="tag"]': 'handleKeydown',
             'click ul.suggestions li': 'handleSuggestionClick',
-            'click .tags .tag': 'handleTagClick'
+            'click .tags .tag': 'handleTagClick',
+            'click .tag-label': 'mobileTags'
         },
 
         keys: {
@@ -37,7 +38,8 @@
         render: function () {
             var tags = this.model.get('tags'),
                 $tags = $('.tags'),
-                tagOffset;
+                tagOffset,
+                self = this;
 
             $tags.empty();
 
@@ -45,6 +47,7 @@
                 _.forEach(tags, function (tag) {
                     var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
                     $tags.append($tag);
+                    $("[data-tag-id=" + tag.id + "]")[0].scrollIntoView(true);
                 });
             }
 
@@ -55,7 +58,46 @@
                 $('.tag-blocks').css({'left': tagOffset + 'px'});
             }
 
+            $(window).on('resize', self.resize).trigger('resize');
+
+            $('.tag-label').on('touchstart', function () {
+                $(this).addClass('touch');
+            });
+
             return this;
+        },
+
+        mobileTags: function () {
+            var mq = window.matchMedia("(max-width: 400px)"),
+                publishBar = $("#publish-bar");
+            if (mq.matches) {
+
+                if (publishBar.hasClass("extended-tags")) {
+                    publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {
+                        $(this).removeClass("extended-tags");
+                        $(".tag-input").blur();
+                    });
+                } else {
+                    publishBar.animate({"top": 0, "height": $(window).height()}, 300, "swing", function () {
+                        $(this).addClass("extended-tags");
+                        $(".tag-input").focus();
+                    });
+                }
+
+                $(".tag-input").one("blur", function (e) {
+
+                    if (publishBar.hasClass("extended-tags") && !$(':hover').last().hasClass("tag")) {
+                        publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {
+                            $(this).removeClass("extended-tags");
+                            $(document.activeElement).blur();
+                            document.documentElement.style.display = "none";
+                            setTimeout(function () { document.documentElement.style.display = 'block'; }, 0);
+                        });
+                    }
+                });
+
+                window.scrollTo(0, 1);
+            }
         },
 
         showSuggestions: function ($target, _searchTerm) {
@@ -186,9 +228,18 @@
             var $tag = $(e.currentTarget),
                 tag = {id: $tag.data('tag-id'), name: $tag.text()};
             $tag.remove();
-
+            window.scrollTo(0, 1);
             this.model.removeTag(tag);
         },
+
+        resize: _.throttle(function () {
+            var $tags = $('.tags');
+            if ($(window).width() > 400) {
+                $tags.css("max-width", $("#entry-tags").width() - 320);
+            } else {
+                $tags.css("max-width", "inherit");
+            }
+        }, 50),
 
         findMatchingTags: function (searchTerm) {
             var matchingTagModels,
@@ -217,6 +268,8 @@
         addTag: function (tag) {
             var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
             this.$('.tags').append($tag);
+            $(".tag").last()[0].scrollIntoView(true);
+            window.scrollTo(0, 1);
             this.model.addTag(tag);
 
             this.$('.tag-input').val('').focus();
