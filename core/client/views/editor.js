@@ -4,8 +4,11 @@
 (function () {
     "use strict";
 
+    /*jslint regexp: true, bitwise: true */
     var PublishBar,
         ActionsWidget,
+        UploadManager,
+        MarkerManager,
         MarkdownShortcuts = [
             {'key': 'Ctrl+B', 'style': 'bold'},
             {'key': 'Meta+B', 'style': 'bold'},
@@ -31,7 +34,10 @@
             {'key': 'Ctrl+L', 'style': 'list'},
             {'key': 'Ctrl+Alt+C', 'style': 'copyHTML'},
             {'key': 'Meta+Alt+C', 'style': 'copyHTML'}
-        ];
+        ],
+        imageMarkdownRegex = /^(?:\{<(.*?)>\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
+        markerRegex = /\{<([\w\W]*?)>\}/;
+    /*jslint regexp: false, bitwise: false */
 
     // The publish bar associated with a post, which has the TagWidget and
     // Save button and options and such.
@@ -197,14 +203,16 @@
         },
 
         savePost: function (data) {
-            // TODO: The markdown getter here isn't great, shouldn't rely on currentView.
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
 
+
+
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
-                markdown: Ghost.currentView.editor.getValue()
+                // TODO: The content_raw getter here isn't great, shouldn't rely on currentView.
+                markdown: Ghost.currentView.getEditorValue()
             }, data));
 
             // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
@@ -260,7 +268,7 @@
 
     });
 
-    // The entire /editor page's route (TODO: move all views to client side templates)
+    // The entire /editor page's route
     // ----------------------------------------
     Ghost.Views.Editor = Ghost.View.extend({
 
@@ -371,7 +379,9 @@
             var self = this,
                 preview = document.getElementsByClassName('rendered-markdown')[0];
             preview.innerHTML = this.converter.makeHtml(this.editor.getValue());
-            this.$('.js-drop-zone').upload({editor: true});
+
+            this.initUploads();
+
             Countable.once(preview, function (counter) {
                 self.$('.entry-word-count').text($.pluralize(counter.words, 'word'));
                 self.$('.entry-character-count').text($.pluralize(counter.characters, 'character'));
@@ -391,6 +401,7 @@
                 lineWrapping: true,
                 dragDrop: false
             });
+            this.uploadMgr = new UploadManager(this.editor);
 
             // Inject modal for HTML to be viewed in
             shortcut.add("Ctrl+Alt+C", function () {
@@ -406,7 +417,38 @@
                 });
             });
 
+            this.enableEditor();
+        },
+
+        options: {
+            markers: {}
+        },
+
+        getEditorValue: function () {
+            return this.uploadMgr.getEditorValue();
+        },
+
+        initUploads: function () {
+            this.$('.js-drop-zone').upload({editor: true});
+            this.$('.js-drop-zone').on('uploadstart', $.proxy(this.disableEditor, this));
+            this.$('.js-drop-zone').on('uploadstart', this.uploadMgr.handleDownloadStart);
+            this.$('.js-drop-zone').on('uploadfailure', $.proxy(this.enableEditor, this));
+            this.$('.js-drop-zone').on('uploadsuccess', $.proxy(this.enableEditor, this));
+            this.$('.js-drop-zone').on('uploadsuccess', this.uploadMgr.handleDownloadSuccess);
+        },
+
+        enableEditor: function () {
+            var self = this;
+            this.editor.setOption("readOnly", false);
             this.editor.on('change', function () {
+                self.renderPreview();
+            });
+        },
+
+        disableEditor: function () {
+            var self = this;
+            this.editor.setOption("readOnly", "nocursor");
+            this.editor.off('change', function () {
                 self.renderPreview();
             });
         },
@@ -430,5 +472,192 @@
 
         render: function () { return this; }
     });
+
+    MarkerManager = function (editor) {
+        var markers = {},
+            uploadPrefix = 'image_upload',
+            uploadId = 1;
+
+        function addMarker(line, ln) {
+            var marker,
+                magicId = '{<' + uploadId + '>}';
+            editor.setLine(ln, magicId + line.text);
+            marker = editor.markText(
+                {line: ln, ch: 0},
+                {line: ln, ch: (magicId.length)},
+                {collapsed: true}
+            );
+
+            markers[uploadPrefix + '_' + uploadId] = marker;
+            uploadId += 1;
+        }
+
+        function getMarkerRegexForId(id) {
+            id = id.replace('image_upload_', '');
+            return new RegExp('\\{<' + id + '>\\}', 'gmi');
+        }
+
+        function stripMarkerFromLine(line) {
+            var markerText = line.text.match(markerRegex),
+                ln = editor.getLineNumber(line);
+
+            if (markerText) {
+                editor.replaceRange('', {line: ln, ch: markerText.index}, {line: ln, ch: markerText.index + markerText[0].length});
+            }
+        }
+
+        function findAndStripMarker(id) {
+            editor.eachLine(function (line) {
+                var markerText = getMarkerRegexForId(id).exec(line.text),
+                    ln;
+
+                if (markerText) {
+                    ln = editor.getLineNumber(line);
+                    editor.replaceRange('', {line: ln, ch: markerText.index}, {line: ln, ch: markerText.index + markerText[0].length});
+                }
+            });
+        }
+
+        function removeMarker(id, marker, line) {
+            delete markers[id];
+            marker.clear();
+
+            if (line) {
+                stripMarkerFromLine(line);
+            } else {
+                findAndStripMarker(id);
+            }
+        }
+
+        function checkMarkers() {
+            _.each(markers, function (marker, id) {
+                var line;
+                marker = markers[id];
+                if (marker.find()) {
+                    line = editor.getLineHandle(marker.find().from.line);
+                    if (!line.text.match(imageMarkdownRegex)) {
+                        removeMarker(id, marker, line);
+                    }
+                } else {
+                    removeMarker(id, marker);
+                }
+            });
+        }
+
+        function initMarkers(line) {
+            var isImage = line.text.match(imageMarkdownRegex),
+                hasMarker = line.text.match(markerRegex);
+
+            if (isImage && !hasMarker) {
+                addMarker(line, editor.getLineNumber(line));
+            }
+        }
+
+        // public api
+        _.extend(this, {
+            markers: markers,
+            checkMarkers: checkMarkers,
+            addMarker: addMarker,
+            stripMarkerFromLine: stripMarkerFromLine,
+            getMarkerRegexForId: getMarkerRegexForId
+        });
+
+        // Initialise
+        editor.eachLine(initMarkers);
+    };
+
+    UploadManager = function (editor) {
+        var markerMgr = new MarkerManager(editor);
+
+        function findLine(result_id) {
+            // try to find the right line to replace
+            if (markerMgr.markers.hasOwnProperty(result_id) && markerMgr.markers[result_id].find()) {
+                return editor.getLineHandle(markerMgr.markers[result_id].find().from.line);
+            }
+
+            return false;
+        }
+
+        function checkLine(ln, mode) {
+            var line = editor.getLineHandle(ln),
+                isImage = line.text.match(imageMarkdownRegex),
+                hasMarker;
+
+            // We care if it is an image
+            if (isImage) {
+                hasMarker = line.text.match(markerRegex);
+
+                if (hasMarker && mode === 'paste') {
+                    // this could be a duplicate, and won't be a real marker
+                    markerMgr.stripMarkerFromLine(line);
+                }
+
+                if (!hasMarker) {
+                    markerMgr.addMarker(line, ln);
+                }
+            }
+            // TODO: hasMarker but no image?
+        }
+
+        function handleDownloadStart(e) {
+            /*jslint regexp: true, bitwise: true */
+            var line = findLine($(e.currentTarget).attr('id')),
+                lineNumber = editor.getLineNumber(line),
+                match = line.text.match(/\([^\n]*\)?/),
+                replacement = '(http://)';
+            /*jslint regexp: false, bitwise: false */
+
+            if (match) {
+                // simple case, we have the parenthesis
+                editor.setSelection({line: lineNumber, ch: match.index + 1}, {line: lineNumber, ch: match.index + match[0].length - 1});
+            } else {
+                match = line.text.match(/\]/);
+                if (match) {
+                    editor.replaceRange(
+                        replacement,
+                        {line: lineNumber, ch: match.index + 1},
+                        {line: lineNumber, ch: match.index + 1}
+                    );
+                    editor.setSelection(
+                        {line: lineNumber, ch: match.index + 2},
+                        {line: lineNumber, ch: match.index + replacement.length }
+                    );
+                }
+            }
+        }
+
+        function handleDownloadSuccess(e, result_src) {
+            editor.replaceSelection(result_src);
+        }
+
+        function getEditorValue() {
+            var value = editor.getValue();
+
+            _.each(markerMgr.markers, function (marker, id) {
+                value = value.replace(markerMgr.getMarkerRegexForId(id), '');
+            });
+
+            return value;
+        }
+
+        // Public API
+        _.extend(this, {
+            getEditorValue: getEditorValue,
+            handleDownloadStart: handleDownloadStart,
+            handleDownloadSuccess: handleDownloadSuccess
+        });
+
+        // initialise
+        editor.on('change', function (cm, changeObj) {
+            var linesChanged = _.range(changeObj.from.line, changeObj.from.line + changeObj.text.length);
+
+            _.each(linesChanged, function (ln) {
+                checkLine(ln, changeObj.origin);
+            });
+
+            // Is this a line which may have had a marker on it?
+            markerMgr.checkMarkers();
+        });
+    };
 
 }());
