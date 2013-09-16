@@ -1,6 +1,6 @@
 // The Tag UI area associated with a post
 
-/*global window, document, $, _, Backbone, Ghost */
+/*global window, document, setTimeout, $, _, Backbone, Ghost */
 
 (function () {
     "use strict";
@@ -84,14 +84,19 @@
                     });
                 }
 
-                $(".tag-input").one("blur", function () {
-                    if (publishBar.hasClass("extended-tags")) {
+                $(".tag-input").one("blur", function (e) {
+
+                    if (publishBar.hasClass("extended-tags") && !$(':hover').last().hasClass("tag")) {
                         publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {
                             $(this).removeClass("extended-tags");
                             $(document.activeElement).blur();
+                            document.documentElement.style.display = "none";
+                            setTimeout(function () { document.documentElement.style.display = 'block'; }, 0);
                         });
                     }
                 });
+
+                window.scrollTo(0, 1);
             }
         },
 
@@ -220,11 +225,10 @@
         },
 
         handleTagClick: function (e) {
-            if (e) { e.stopPropagation(); }
             var $tag = $(e.currentTarget),
                 tag = {id: $tag.data('tag-id'), name: $tag.text()};
             $tag.remove();
-
+            window.scrollTo(0, 1);
             this.model.removeTag(tag);
         },
 
@@ -265,6 +269,7 @@
             var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
             this.$('.tags').append($tag);
             $(".tag").last()[0].scrollIntoView(true);
+            window.scrollTo(0, 1);
             this.model.addTag(tag);
 
             this.$('.tag-input').val('').focus();
