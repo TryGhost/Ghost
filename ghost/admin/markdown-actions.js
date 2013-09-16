@@ -67,7 +67,11 @@
                 pass = false;
                 break;
             case "image":
+                cursor = this.elem.getCursor();
                 md = this.options.syntax.image.replace('$1', text);
+                if (this.elem.getLine(cursor.line) !== "") {
+                    md = "\n\n" + md;
+                }
                 this.elem.replaceSelection(md, "end");
                 cursor = this.elem.getCursor();
                 this.elem.setSelection({line: cursor.line, ch: cursor.ch - 8}, {line: cursor.line, ch: cursor.ch - 1});
