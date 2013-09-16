@@ -1,6 +1,6 @@
 // The Post Settings Menu available in the content preview screen, as well as the post editor.
 
-/*global window, document, $, _, Backbone, Ghost */
+/*global window, document, $, _, Backbone, Ghost, moment */
 
 (function () {
     "use strict";
@@ -10,17 +10,30 @@
         events: {
             'blur  .post-setting-slug' : 'editSlug',
             'click .post-setting-slug' : 'selectSlug',
+            'blur  .post-setting-date' : 'editDate',
             'click .delete' : 'deletePost'
         },
 
-        render: function () {
-            var slug = this.model ? this.model.get('slug') : '';
-            //var pubDate = this.model.get('published_at');
+        initialize: function () {
+            if (this.model) {
+                this.listenTo(this.model, 'change:status', this.render);
+            }
+        },
 
-            //pubDate = moment(pubDate).format('DD MMM YY');
+        render: function () {
+            var slug = this.model ? this.model.get('slug') : '',
+                pubDate = this.model ? this.model.get('published_at') : 'Not Published',
+                $pubDateEl = $('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
-            //$('.post-setting-date').val(pubDate);
+
+            // Insert the published date, and make it editable if it exists.
+            if (this.model && this.model.get('published_at')) {
+                pubDate = moment(pubDate).format('DD MMM YY');
+                $pubDateEl.removeAttr('disabled');
+            }
+
+            $pubDateEl.val(pubDate);
         },
 
         selectSlug: function (e) {
@@ -55,6 +68,59 @@
                     });
                 }
             });
+        },
+
+        editDate: function (e) {
+            e.preventDefault();
+            var self = this,
+                momentPubDate,
+                errMessage = '',
+                pubDate = self.model.get('published_at'),
+                pubDateEl = e.currentTarget,
+                newPubDate = pubDateEl.value;
+
+            // Ensure the published date has changed
+            if (newPubDate.length === 0 || pubDate === newPubDate) {
+                pubDateEl.value = pubDate === undefined ? 'Not Published' : moment(pubDate).format("DD MMM YY");
+                return;
+            }
+
+            // Validate new Published date
+            momentPubDate = moment(newPubDate, ["DD MMM YY", "DD MMM YYYY", "DD/MM/YY", "DD/MM/YYYY", "DD-MM-YY", "DD-MM-YYYY"]);
+            if (!momentPubDate.isValid()) {
+                errMessage = 'Published Date must be a valid date with format: DD MMM YY (e.g. 6 Dec 14)';
+            }
+
+            if (momentPubDate.diff(new Date(), 'h') > 0) {
+                errMessage = 'Published Date cannot currently be in the future.';
+            }
+
+            if (errMessage.length) {
+                Ghost.notifications.addItem({
+                    type: 'error',
+                    message: errMessage,
+                    status: 'passive'
+                });
+                pubDateEl.value = moment(pubDate).format("DD MMM YY");
+                return;
+            }
+
+            // Save new 'Published' date
+            this.model.save({
+                published_at: momentPubDate.toDate()
+            }, {
+                success : function (model, response, options) {
+                    pubDateEl.value = moment(model.get('published_at')).format("DD MMM YY");
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+
         },
 
         deletePost: function (e) {
