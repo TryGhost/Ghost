@@ -17,7 +17,7 @@
         <fieldset class="user-details-top">
 
             <figure class="user-image">
-                <img id="user-image" src="{{#if image}}{{image}}{{else}}/shared/img/default-user-profile-picture.jpg{{/if}}" title="{{name}}" />
+                <a id="user-image" class="img" {{#if image}}style="background-image: url({{image}});"{{/if}} href="#"><span class="hidden">{{name}}'s Picture</span></a>
                 <button class="edit-user-image js-modal-image">Edit Picture</button>
             </figure>
 
