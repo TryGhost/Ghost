@@ -1200,6 +1200,10 @@ main {
             display: none;
             padding: 0 6px 0 3px;
 
+            &:active {
+                box-shadow: none;
+            }
+
             &:before {
                 left: -8px;
                 border-width: 10px 8px 10px 0;
