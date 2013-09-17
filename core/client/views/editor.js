@@ -293,9 +293,10 @@
                 $('body').toggleClass('fullscreen');
             });
 
-            this.$('.CodeMirror-scroll').on('scroll', this.syncScroll);
+            this.$('#entry-markdown-content-actual .CodeMirror-scroll').on('scroll', this.markdownScrolled.bind(this));
+            this.$('.entry-preview-content').on('scroll', this.previewScrolled.bind(this));
 
-            this.$('.CodeMirror-scroll').scrollClass({target: '.entry-markdown', offset: 10});
+            this.$('#entry-markdown .CodeMirror-scroll').scrollClass({target: '.entry-markdown', offset: 10});
             this.$('.entry-preview-content').scrollClass({target: '.entry-preview', offset: 10});
 
 
@@ -317,21 +318,152 @@
             'orientationchange': 'orientationChange'
         },
 
-        syncScroll: _.debounce(function (e) {
-            var $codeViewport = $(e.target),
-                $previewViewport = $('.entry-preview-content'),
-                $codeContent = $('.CodeMirror-sizer'),
-                $previewContent = $('.rendered-markdown'),
+        // syncScroll: _.debounce(function () {
 
-                // calc position
-                codeHeight = $codeContent.height() - $codeViewport.height(),
-                previewHeight = $previewContent.height() - $previewViewport.height(),
-                ratio = previewHeight / codeHeight,
-                previewPostition = $codeViewport.scrollTop() * ratio;
+        // could use requestAnimationFrame for super smoothness
+        markdownScrolled: function () {
+            if (!this.disableScrollmarkdown) {
+                this.syncScroll('markdown');
+            }
+        },
+        previewScrolled: function () {
+            if (!this.disableScrollpreview) {
+                this.syncScroll('preview');
+            }
+        },
+        recalculateScrollPointsIfNeeded: function () {
+            this.$codeContent = this.$codeContent || this.$('#entry-markdown-content-actual .CodeMirror-sizer');
+            this.$previewContent = this.$previewContent || this.$('.rendered-markdown');
 
-            // apply new scroll
-            $previewViewport.scrollTop(previewPostition);
-        }, 50),
+            var newMarkdownHeight = this.$codeContent.height(),
+                newPreviewHeight = this.$previewContent.height();
+            if (newMarkdownHeight !== this.oldMarkdownHeight || newPreviewHeight !== this.oldPreviewHeight) {
+                this.calculateScrollPoints();
+            }
+
+            this.oldMarkdownHeight = newMarkdownHeight;
+            this.oldPreviewHeight = newPreviewHeight;
+        },
+
+        calculateScrollPoints: function () {
+            var previewScrollPadding = 65, // YUCK.
+                previousSection,
+                section,
+                i;
+
+            this.$previewContent = this.$previewContent || this.$('.rendered-markdown');
+            this.$shadowCodeContent = this.$shadowCodeContent || this.$('#entry-markdown-content-shadow .CodeMirror-sizer');
+
+            this.shadowEditor.setValue(this.editor.getValue());
+            this.$inputScrollPoints = this.$shadowCodeContent.find('.CodeMirror-code > pre > .cm-header');
+            this.$outputScrollPoints = this.$previewContent.find('h1, h2, h3, h4');
+
+            // find positions of 'sections' in the markdown
+            this.inputSections = [{top: 0, index: 0}];
+            previousSection = this.inputSections[0];
+            for (i = 1; i <= this.$inputScrollPoints.length; i += 1) {
+                section = {top: this.$inputScrollPoints[i - 1].parentNode.offsetTop, index: i};
+                previousSection.height = section.top - previousSection.top;
+                this.inputSections.push(section);
+                previousSection = section;
+            }
+            _.last(this.inputSections).height = this.$shadowCodeContent.height() - _.last(this.inputSections).top;
+
+            // find positions of 'sections' in the resulting HTML
+            this.outputSections = [{top: 0, index: 0}];
+            previousSection = this.outputSections[0];
+            for (i = 1; i <= this.$outputScrollPoints.length; i += 1) {
+                section = {top: this.$outputScrollPoints[i - 1].offsetTop - previewScrollPadding, index: i};
+                previousSection.height = section.top - previousSection.top;
+                this.outputSections.push(section);
+                previousSection = section;
+            }
+            _.last(this.outputSections).height = this.$previewContent.height() - _.last(this.outputSections).top;
+        },
+
+        syncScroll: function (scrollingView) {
+            var sourceViewport,
+                sourceSections,
+                sourceContent,
+                destinationViewport,
+                destinationSections,
+                destinationContent,
+                sourceScrollTop,
+                scrolledPercent,
+                scrolledAmountWithViewportAdjustment,
+                sourceSection,
+                destinationSection,
+                distanceThroughSection,
+                scrollPosition,
+                otherPane;
+
+            if (!this.inputSections) {
+                this.calculateScrollPoints();
+            }
+
+            this.$codeViewport = this.$codeViewport || this.$('#entry-markdown-content-actual .CodeMirror-scroll');
+            this.$previewViewport = this.$previewViewport || this.$('.entry-preview-content');
+
+            // to make this bi-directional, we need to define the side being scrolled, and the sirde to be synced
+            if (scrollingView === 'markdown') {
+                sourceViewport = this.$codeViewport;
+                sourceSections = this.inputSections;
+                sourceContent = this.$shadowCodeContent;
+                destinationViewport = this.$previewViewport;
+                destinationSections = this.outputSections;
+                destinationContent = this.$previewContent;
+            } else {
+                sourceViewport = this.$previewViewport;
+                sourceSections = this.outputSections;
+                sourceContent = this.$previewContent;
+                destinationViewport = this.$codeViewport;
+                destinationSections = this.inputSections;
+                destinationContent = this.$shadowCodeContent;
+            }
+
+            sourceScrollTop = sourceViewport.scrollTop();
+
+            // Work out the percentage scrolled, and adjust the focal point of the source viewport to suit.
+            // At the top of the page, the focal point should be at the top. At the bottom it should be at the bottom
+            scrolledPercent = (sourceScrollTop / (sourceContent.height() - sourceViewport.height()));
+            scrolledAmountWithViewportAdjustment = sourceScrollTop + (scrolledPercent * sourceViewport.height());
+
+            // Find the page section in the source viewport that our scroll position falls on
+            sourceSection = _.find(sourceSections, function (section) {
+                return (section.top + section.height) >= scrolledAmountWithViewportAdjustment;
+            });
+            if (!sourceSection) { sourceSection = sourceSections[0]; }
+
+            // Make a note of how far through the section the scroll point is
+            sourceSection.scrollProgress = (scrolledAmountWithViewportAdjustment - sourceSection.top) / sourceSection.height;
+
+            // Take the matching section on the other side, and work out how far to scroll through it
+            destinationSection = destinationSections[sourceSection.index];
+            distanceThroughSection = destinationSection.height * sourceSection.scrollProgress;
+            scrollPosition = destinationSection.top + distanceThroughSection;
+
+            // Adjust for the scroll focal point
+            scrollPosition -= (destinationViewport.height() * (scrollPosition / destinationContent.height()));
+
+            otherPane = scrollingView === 'markdown' ? 'preview' : 'markdown';
+            this.disableScrollEvents(otherPane);
+            destinationViewport.scrollTop(scrollPosition);
+            this.enableScrollEvents(otherPane);
+        },
+
+        disableScrollEvents: function (pane) {
+            this['disableScroll' + pane] = true;
+        },
+        enableScrollEvents: function (pane) {
+            var fnName = 'enableScrollFn' + pane;
+            if (!this[fnName]) {
+                this[fnName] = _.debounce(function () {
+                    this['disableScroll' + pane] = false;
+                }.bind(this), 10);
+            }
+
+            this[fnName]();
+        },
 
         showHelp: function () {
             this.addSubview(new Ghost.Views.Modal({
@@ -387,6 +519,7 @@
                 self.$('.entry-character-count').text($.pluralize(counter.characters, 'character'));
                 self.$('.entry-paragraph-count').text($.pluralize(counter.paragraphs, 'paragraph'));
             });
+            this.syncScroll('markdown');
         },
 
         // Markdown converter & markdown shortcut initialization.
@@ -399,7 +532,8 @@
                 tabMode: 'indent',
                 tabindex: "2",
                 lineWrapping: true,
-                dragDrop: false
+                dragDrop: false,
+                cursorScrollMargin: 100
             });
             this.uploadMgr = new UploadManager(this.editor);
 
@@ -409,7 +543,7 @@
             });
             shortcut.add("Ctrl+Alt+C", function () {
                 self.showHTML();
-            });
+            }); // duplicated?
 
             _.each(MarkdownShortcuts, function (combo) {
                 shortcut.add(combo.key, function () {
@@ -442,6 +576,22 @@
             this.editor.setOption("readOnly", false);
             this.editor.on('change', function () {
                 self.renderPreview();
+                self.recalculateScrollPointsIfNeeded();
+            });
+
+
+            this.shadowEditor = CodeMirror.fromTextArea(document.getElementById('shadow-markdown'), {
+                mode: 'gfm',
+                tabMode: 'indent',
+                tabindex: "2",
+                lineWrapping: true,
+                dragDrop: false,
+                viewportMargin: Infinity,
+                value: this.editor.getValue()
+            });
+            $('#entry-markdown-content-shadow .CodeMirror').css({
+                visibility: 'hidden',
+                'pointer-events': 'none'
             });
         },
 
