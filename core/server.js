@@ -8,6 +8,8 @@ var express = require('express'),
     admin = require('./server/controllers/admin'),
     frontend = require('./server/controllers/frontend'),
     api = require('./server/api'),
+    path = require('path'),
+    hbs = require('express-hbs'),
     Ghost = require('./ghost'),
     I18n = require('./shared/lang/i18n'),
     helpers = require('./server/helpers'),
@@ -92,15 +94,6 @@ function authAPI(req, res, next) {
     next();
 }
 
-// ### GhostAdmin Middleware
-// Uses the URL to detect whether this response should be an admin response
-// This is used to ensure the right content is served, and is not for security purposes
-function isGhostAdmin(req, res, next) {
-    res.isAdmin = /(^\/ghost$|^\/ghost\/)/.test(req.url);
-
-    next();
-}
-
 // ### GhostLocals Middleware
 // Expose the standard locals that every external page should have available,
 // separating between the theme and the admin
@@ -141,37 +134,161 @@ function disableCachedResult(req, res, next) {
     next();
 }
 
+// ### whenEnabled Middleware
+// Selectively use middleware
+// From https://github.com/senchalabs/connect/issues/676#issuecomment-9569658
+function whenEnabled(setting, fn) {
+    return function settingEnabled(req, res, next) {
+        if (server.enabled(setting)) {
+            fn(req, res, next);
+        } else {
+            next();
+        }
+    };
+}
+
+// ### InitViews Middleware
+// Initialise Theme or Admin Views
+function initViews(req, res, next) {
+    var hbsOptions;
+
+    if (!res.isAdmin) {
+        // self.globals is a hack til we have a better way of getting combined settings & config
+        hbsOptions = {templateOptions: {data: {blog: ghost.blogGlobals()}}};
+
+        if (ghost.themeDirectories[ghost.settings('activeTheme')].hasOwnProperty('partials')) {
+            // Check that the theme has a partials directory before trying to use it
+            hbsOptions.partialsDir = path.join(ghost.paths().activeTheme, 'partials');
+        }
+
+        server.engine('hbs', hbs.express3(hbsOptions));
+        server.set('views', ghost.paths().activeTheme);
+    } else {
+        server.engine('hbs', hbs.express3({partialsDir: ghost.paths().adminViews + 'partials'}));
+        server.set('views', ghost.paths().adminViews);
+    }
+
+    next();
+}
+
+// ### Activate Theme
+// Helper for manageAdminAndTheme
+function activateTheme() {
+    var stackLocation = _.indexOf(server.stack, _.find(server.stack, function (stackItem, key) {
+        return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
+    }));
+
+    // clear the view cache
+    server.cache = {};
+    server.disable(server.get('activeTheme'));
+    server.set('activeTheme', ghost.settings('activeTheme'));
+    server.enable(server.get('activeTheme'));
+    if (stackLocation) {
+        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme));
+    }
+}
+
+ // ### ManageAdminAndTheme Middleware
+// Uses the URL to detect whether this response should be an admin response
+// This is used to ensure the right content is served, and is not for security purposes
+function manageAdminAndTheme(req, res, next) {
+    // TODO improve this regex
+    res.isAdmin = /(^\/ghost\/)/.test(req.url);
+    if (res.isAdmin) {
+        server.enable('admin');
+        server.disable(server.get('activeTheme'));
+    } else {
+        server.enable(server.get('activeTheme'));
+        server.disable('admin');
+    }
+
+    // Check if the theme changed
+    if (ghost.settings('activeTheme') !== server.get('activeTheme')) {
+        // Change theme
+        if (!ghost.themeDirectories.hasOwnProperty(ghost.settings('activeTheme'))) {
+            if (!res.isAdmin) {
+                // Throw an error if the theme is not available, but not on the admin UI
+                errors.logAndThrowError('The currently active theme ' + ghost.settings('activeTheme') + ' is missing.');
+            }
+        } else {
+            activateTheme();
+        }
+    }
+
+    next();
+}
+
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
 when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
     // ##Configuration
-    server.configure(function () {
-        server.use(isGhostAdmin);
-        server.use(express.favicon(__dirname + '/shared/favicon.ico'));
-        server.use(I18n.load(ghost));
-        server.use(express.bodyParser({}));
-        server.use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
-        server.use(express.cookieParser(ghost.dbHash));
-        server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
-        server.use(ghost.initTheme(server));
-        if (process.env.NODE_ENV !== "development") {
-            server.use(express.logger());
-            server.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
-        }
-    });
+    var oneYear = 31536000000;
 
-    // Development only configuration
-    server.configure("development", function () {
-        server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+    // Logging configuration
+    if (server.get('env') !== "development") {
+        server.use(express.logger());
+    } else {
         server.use(express.logger('dev'));
-    });
+    }
 
-    // post init config
+    // return the correct mime type for woff filess
+    express['static'].mime.define({'application/font-woff': ['woff']});
+    // Shared static config
+    server.use('/shared', express['static'](path.join(__dirname, '/shared')));
+    server.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
+    // Serve our built scripts; can't use /scripts here because themes already are
+    server.use("/built/scripts", express['static'](path.join(__dirname, '/built/scripts'), {
+        // Put a maxAge of one year on built scripts
+        maxAge: oneYear
+    }));
+
+    // First determine whether we're serving admin or theme content
+    server.use(manageAdminAndTheme);
+
+    // set the view engine
+    server.set('view engine', 'hbs');
+
+    // Admin only config
+    server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
+
+    // Theme only config
+    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
+
+    server.use(express.favicon(__dirname + '/shared/favicon.ico'));
+    // server.use(I18n.load(ghost));
+    server.use(express.bodyParser({}));
+    server.use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
+    server.use(express.cookieParser(ghost.dbHash));
+    server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+
+    // local data
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
     server.use(cleanNotifications);
+
+     // Initialise the views
+    server.use(initViews);
+
+    // process the application routes
+    server.use(server.router);
+
+    // ### Error handling
+    // TODO: replace with proper 400 and 500 error pages
+    // 404's
+    server.use(function error404Handler(req, res, next) {
+        console.log('test', req.url);
+        next();
+        //res.send(404, {message: "Page not found"});
+    });
+
+    // All other errors
+    if (server.get('env') === "production") {
+        server.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
+    } else {
+        server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+    }
 
     // ## Routing
 
@@ -232,9 +349,10 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
     server.get('/rss/', frontend.rss);
     server.get('/rss/:page/', frontend.rss);
+    server.get('/page/:page/', frontend.homepage);
     server.get('/:slug', frontend.single);
     server.get('/', frontend.homepage);
-    server.get('/page/:page/', frontend.homepage);
+
 
 
     // ## Start Ghost App

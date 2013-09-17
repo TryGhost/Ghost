@@ -8,12 +8,14 @@ var Ghost = require('../../ghost'),
     api = require('../api'),
     RSS = require('rss'),
     _ = require('underscore'),
+    errors = require('../errorHandling'),
+    when = require('when'),
 
     ghost = new Ghost(),
     frontendControllers;
 
 frontendControllers = {
-    'homepage': function (req, res) {
+    'homepage': function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             postsPerPage = parseInt(ghost.settings('postsPerPage'), 10),
@@ -55,16 +57,25 @@ frontendControllers = {
             ghost.doFilter('prePostsRender', page.posts, function (posts) {
                 res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
+        }).otherwise(function (err) {
+            return next(new Error(err));
         });
     },
-    'single': function (req, res) {
+    'single': function (req, res, next) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
-            ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
-                res.render('post', {post: post});
-            });
+            if (post) {
+                ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
+                    res.render('post', {post: post});
+                });
+            } else {
+                next();
+            }
+
+        }).otherwise(function (err) {
+            return next(new Error(err));
         });
     },
-    'rss': function (req, res) {
+    'rss': function (req, res, next) {
         // Initialize RSS
         var siteUrl = ghost.config().url,
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
@@ -123,6 +134,8 @@ frontendControllers = {
                     res.send(feed.xml());
                 });
             });
+        }).otherwise(function (err) {
+            return next(new Error(err));
         });
     }
 };
