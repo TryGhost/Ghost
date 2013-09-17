@@ -3,6 +3,6 @@
     "use strict";
 
     Ghost.Collections.Tags = Backbone.Collection.extend({
-        url: Ghost.settings.apiRoot + '/tags'
+        url: Ghost.settings.apiRoot + '/tags/'
     });
 }());

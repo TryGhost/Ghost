@@ -36,7 +36,7 @@
     });
 
     Ghost.Collections.Widgets = Backbone.Collection.extend({
-        // url: Ghost.settings.apiRoot + '/widgets', // What will this be?
+        // url: Ghost.settings.apiRoot + '/widgets/', // What will this be?
         model: Ghost.Models.Widget
     });
 

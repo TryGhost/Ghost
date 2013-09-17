@@ -186,7 +186,7 @@
             e.preventDefault();
             // for now this will disable "open in new tab", but when we have a Router implemented
             // it can go back to being a normal link to '#/ghost/editor/X'
-            window.location = '/ghost/editor/' + this.model.get('id');
+            window.location = '/ghost/editor/' + this.model.get('id') + '/';
         },
 
         templateName: "preview",
