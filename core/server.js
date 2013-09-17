@@ -341,7 +341,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.get('/ghost/debug/db/export/', auth, admin.debug['export']);
     server.post('/ghost/debug/db/import/', auth, admin.debug['import']);
     server.get('/ghost/debug/db/reset/', auth, admin.debug.reset);
-    server.post('/ghost/upload', admin.uploader);
+    server.post('/ghost/upload/', admin.uploader);
     server.get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
@@ -352,7 +352,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.get('/rss/', frontend.rss);
     server.get('/rss/:page/', frontend.rss);
     server.get('/page/:page/', frontend.homepage);
-    server.get('/:slug', frontend.single);
+    server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
 
 
