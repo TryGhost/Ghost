@@ -616,13 +616,14 @@ body.zen {
 }
 
 .entry-settings {
-    @include icon($i-settings, 1.1em){vertical-align: 0;};
+    @include icon($i-settings, 14px);
     @include box-sizing(border-box);
     display: inline-block;
     padding: 0 10px;
-    line-height: 1.8em;
     color: $midgrey;
     @include transition;
+    position: relative;
+    top: 1px;
 
     &:hover {
         color: $lightgrey;
