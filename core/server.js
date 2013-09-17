@@ -277,12 +277,19 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.use(server.router);
 
     // ### Error handling
-    // TODO: replace with proper 400 and 500 error pages
-    // 404's
-    server.use(function error404Handler(req, res, next) {
-        console.log('test', req.url);
-        next();
-        //res.send(404, {message: "Page not found"});
+    // 404 Handler
+    server.use(errors.render404Page);
+
+    // TODO: Handle all application errors (~500)
+    // Just stubbed at this stage!
+    server.use(function error500Handler(err, req, res, next) {
+        if (!err || !(err instanceof Error)) {
+            next();
+        }
+
+        // For the time being, just log and continue.
+        errors.logError(err, "Middleware", "Ghost caught a processing error in the middleware layer.");
+        next(err);
     });
 
     // All other errors
