@@ -23,7 +23,7 @@
                 var self = this;
 
                 $dropzone.find('.js-fileupload').fileupload().fileupload("option", {
-                    url: '/ghost/upload',
+                    url: '/ghost/upload/',
                     add: function (e, data) {
                         $progress.find('.js-upload-progress-bar').removeClass('fail');
                         $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
