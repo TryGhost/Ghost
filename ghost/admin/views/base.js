@@ -178,12 +178,14 @@
         renderItem: function (item) {
             var itemView = new Ghost.Views.Notification({ model: item }),
                 height,
-                self = this;
-            this.$el.html(itemView.render().el).css({height: 0});
-            height = this.$('.js-notification').hide().outerHeight(true);
-            this.$el.animate({height: height}, 250, function () {
-                $(this).css({height: "auto"});
-                self.$('.js-notification').fadeIn(250);
+                $notification = $(itemView.render().el);
+
+            this.$el.append($notification);
+            height = $notification.hide().outerHeight(true);
+            $notification.animate({height: height}, 250, function () {
+                $(this)
+                    .css({height: "auto"})
+                    .fadeIn(250);
             });
         },
         addItem: function (item) {
@@ -216,23 +218,21 @@
                     });
                 });
             } else {
-                this.$el.slideUp(250, function () {
-                    $(this).show().css({height: "auto"});
-                    $(self).remove();
+                $(self).slideUp(250, function () {
+                    $(this)
+                        .show()
+                        .css({height: "auto"})
+                        .remove();
                 });
             }
-
         },
         closePassive: function (e) {
-            var height = this.$('.js-notification').outerHeight(true),
-                self = this;
-            this.$el.css({height: height});
-            $(e.currentTarget).parent().fadeOut(250,  function () {
-                $(this).remove();
-                self.$el.slideUp(250, function () {
-                    $(this).show().css({height: "auto"});
+            $(e.currentTarget)
+                .parent()
+                .fadeOut(250)
+                .slideUp(250, function () {
+                    $(this).remove();
                 });
-            });
         },
         closePersistent: function (e) {
             var self = e.currentTarget,
