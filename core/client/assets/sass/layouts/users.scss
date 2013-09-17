@@ -190,20 +190,27 @@
 
     .user-image {
         @include box-sizing(border-box);
+        display: table;
         position: relative;
         width: 120px;
         height: 120px;
         float: left;
         margin-left: 40px;
         margin-right: 20px;
-        border-radius: 60px;
+        text-align: center;
+        border-radius: 100%;
+        overflow: hidden;
         border: 5px solid #fff;
+        background: $darkgrey;
         z-index: 2;
 
-        img {
+        .img {
             display: block;
-            line-height: 0;
-            border-radius: 100%;
+            width: 100%;
+            height: 100%;
+            background-image: url(/shared/img/default-user-profile-picture.jpg);
+            background-size: cover;
+            background-position: center center;
         }
 
         &:hover {
