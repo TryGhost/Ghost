@@ -382,7 +382,7 @@ var path = require('path'),
                             "core/client/assets/vendor/countable.js",
                             "core/client/assets/vendor/to-title-case.js",
                             "core/client/assets/vendor/packery.pkgd.min.js",
-                            "core/client/assets/vendor/jquery.hammer.min.js"
+                            "core/client/assets/vendor/fastclick.js"
                         ],
 
                         "core/built/scripts/helpers.js": [
@@ -438,7 +438,7 @@ var path = require('path'),
                             "core/client/assets/vendor/countable.js",
                             "core/client/assets/vendor/to-title-case.js",
                             "core/client/assets/vendor/packery.pkgd.min.js",
-                            "core/client/assets/vendor/jquery.hammer.min.js",
+                            "core/client/assets/vendor/fastclick.js",
 
                             "core/client/init.js",
 
