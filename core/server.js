@@ -11,7 +11,6 @@ var express = require('express'),
     path = require('path'),
     hbs = require('express-hbs'),
     Ghost = require('./ghost'),
-    I18n = require('./shared/lang/i18n'),
     helpers = require('./server/helpers'),
     packageInfo = require('../package.json'),
 
@@ -257,7 +256,6 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
 
     server.use(express.favicon(__dirname + '/shared/favicon.ico'));
-    // server.use(I18n.load(ghost));
     server.use(express.bodyParser({}));
     server.use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
     server.use(express.cookieParser(ghost.dbHash));
