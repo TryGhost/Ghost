@@ -218,6 +218,40 @@ coreHelpers = function (ghost) {
         });
     });
 
+    ghost.registerThemeHelper('meta_title', function (options) {
+        var title, blog;
+        blog = ghost.blogGlobals();
+        if (_.isString(this.path)) {
+            if (!this.path || this.path === '/' || this.path === '' || this.path.match(/\/page/)) {
+                blog = ghost.blogGlobals();
+                title = blog.title;
+            } else {
+                title = this.post.title;
+            }
+        }
+
+        return ghost.doFilter('meta_title', title, function (title) {
+            return new hbs.handlebars.SafeString(title.trim());
+        });
+    });
+
+    ghost.registerThemeHelper('meta_description', function (options) {
+        var description, blog;
+        blog = ghost.blogGlobals();
+        if (_.isString(this.path)) {
+            if (!this.path || this.path === '/' || this.path === '' || this.path.match(/\/page/)) {
+                blog = ghost.blogGlobals();
+                description = blog.description;
+            } else {
+                description = '';
+            }
+        }
+
+        return ghost.doFilter('meta_description', description, function (description) {
+            return new hbs.handlebars.SafeString(description.trim());
+        });
+    });
+
     ghost.registerThemeHelper('ghost_foot', function (options) {
         var foot = [];
         foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
