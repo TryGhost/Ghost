@@ -4,10 +4,10 @@
     Ghost.Models.uploadModal = Backbone.Model.extend({
 
         options: {
-            close: false,
+            close: true,
             type: "action",
-            style: "wide",
-            animation: 'fadeIn',
+            style: ["wide"],
+            animation: 'fade',
             afterRender: function () {
                 this.$('.js-drop-zone').upload();
             },

@@ -667,7 +667,9 @@ body.zen {
 /* =============================================================================
    Markdown Help Modal
    ============================================================================= */
-
+.markdown-help-container{
+    padding-bottom: 20px;
+}
 .modal-markdown-help-table {
     margin-top: 0;
 }

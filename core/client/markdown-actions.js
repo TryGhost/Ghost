@@ -104,7 +104,6 @@
                 }
 
                 $(".modal-copyToHTML-content").text(md).selectText();
-                $(".js-modal").center();
                 pass = false;
                 break;
             case "list":
