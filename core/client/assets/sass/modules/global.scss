@@ -1388,6 +1388,9 @@ main {
     }
 }
 
+.modal-content .pre-image-uploader, .modal-content .image-uploader {
+    margin: 20px 0 0 0;
+}
 .pre-image-uploader {
     @include box-sizing(border-box);
     @include baseline;
