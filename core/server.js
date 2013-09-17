@@ -101,6 +101,7 @@ function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
+    res.locals.path = req.path;
 
     if (res.isAdmin) {
         _.extend(res.locals,  {
