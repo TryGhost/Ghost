@@ -78,7 +78,7 @@ adminControllers = {
             tmp_path = req.files.uploadimage.path,
             dir = path.join('content/images', year, month),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            basename = path.basename(req.files.uploadimage.name, ext);
+            basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
 
         function renameFile(target_path) {
             // adds directories recursively
