@@ -50,7 +50,7 @@
                         .attr({'src': '', "width": 'auto', "height": 'auto'});
 
                     $progress.animate({"opacity": 0}, 250, function () {
-                        $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/public/img/loadingcat.gif" />');
+                        $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/ghost/img/loadingcat.gif" />');
                         if (!settings.editor) {$progress.find('.fileupload-loading').css({"top": "56px"}); }
                     });
                     $dropzone.trigger("uploadsuccess", [result]);
