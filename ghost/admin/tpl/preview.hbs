@@ -8,8 +8,8 @@
     <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
     <section class="post-controls">
         <a class="post-edit" href="#"><span class="hidden">Edit Post</span></a>
-        <a class="post-settings" href="#" data-toggle=".menu-drop-right"><span class="hidden">Post Settings</span></a>
-        <ul class="menu-drop-right overlay">
+        <a class="post-settings" href="#" data-toggle=".post-settings-menu"><span class="hidden">Post Settings</span></a>
+        <ul class="post-settings-menu menu-drop-right overlay">
             <li class="post-setting">
                 <div class="post-setting-label">
                     <label for="url">URL</label>
@@ -23,10 +23,10 @@
                     <label for="url">Pub Date</label>
                 </div>
                 <div class="post-setting-field">
-                    <input class="post-setting-date" disabled type="text" value="">
+                    <input class="post-setting-date" type="text" value="">
                 </div>
             </li>
-            <li><a href="#" class="delete">Delete</a></li>
+            <li><a href="#" class="delete hidden">Delete</a></li>
         </ul>
     </section>
 </header>
