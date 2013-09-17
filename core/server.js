@@ -177,7 +177,9 @@ function activateTheme() {
     var stackLocation = _.indexOf(server.stack, _.find(server.stack, function (stackItem, key) {
         return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
     }));
-    server.disable('view cache');
+
+    // clear the view cache
+    server.cache = {};
     server.disable(server.get('activeTheme'));
     server.set('activeTheme', ghost.settings('activeTheme'));
     server.enable(server.get('activeTheme'));
@@ -210,10 +212,6 @@ function manageAdminAndTheme(req, res, next) {
             }
         } else {
             activateTheme();
-        }
-    } else {
-        if (server.env === 'production' && server.disabled('view cache')) {
-            server.enable('view cache');
         }
     }
 
