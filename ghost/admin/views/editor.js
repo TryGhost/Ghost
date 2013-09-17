@@ -93,7 +93,7 @@
                 self.updatePost();
             });
             this.listenTo(this.model, 'change:status', this.render);
-            this.model.on('change:id', function (m) {
+            this.listenTo(this.model, 'change:id', function (m) {
                 Backbone.history.navigate('/editor/' + m.id + '/');
             });
         },

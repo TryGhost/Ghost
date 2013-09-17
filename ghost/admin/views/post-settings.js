@@ -17,6 +17,7 @@
         initialize: function () {
             if (this.model) {
                 this.listenTo(this.model, 'change:status', this.render);
+                this.listenTo(this.model, 'change:published_at', this.render);
             }
         },
 

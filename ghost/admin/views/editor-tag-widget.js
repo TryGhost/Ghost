@@ -32,7 +32,7 @@
                 self.allGhostTags = tagCollection.toJSON();
             });
 
-            this.model.on('willSave', this.completeCurrentTag, this);
+            this.listenTo(this.model, 'willSave', this.completeCurrentTag, this);
         },
 
         render: function () {
