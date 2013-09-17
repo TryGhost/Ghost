@@ -941,6 +941,11 @@ nav {
         &:hover { color: #fff; }
 
     }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+    }
 }
 
 .notification-success {
