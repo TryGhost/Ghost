@@ -4,6 +4,7 @@ var express = require('express'),
     _ = require('underscore'),
     colors = require("colors"),
     semver = require("semver"),
+    slashes = require("connect-slashes"),
     errors = require('./server/errorHandling'),
     admin = require('./server/controllers/admin'),
     frontend = require('./server/controllers/frontend'),
@@ -246,14 +247,14 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     // First determine whether we're serving admin or theme content
     server.use(manageAdminAndTheme);
 
-    // set the view engine
-    server.set('view engine', 'hbs');
-
     // Admin only config
     server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
 
     // Theme only config
     server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
+
+    // Add in all trailing slashes
+    server.use(slashes());
 
     server.use(express.favicon(__dirname + '/shared/favicon.ico'));
     server.use(express.bodyParser({}));
@@ -265,6 +266,9 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
     server.use(cleanNotifications);
+
+     // set the view engine
+    server.set('view engine', 'hbs');
 
      // Initialise the views
     server.use(initViews);
