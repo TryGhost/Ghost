@@ -16,6 +16,7 @@
 
         initialize: function () {
             if (this.model) {
+                this.listenTo(this.model, 'change:id', this.render);
                 this.listenTo(this.model, 'change:status', this.render);
                 this.listenTo(this.model, 'change:published_at', this.render);
             }
@@ -24,14 +25,17 @@
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
-                $pubDateEl = $('.post-setting-date');
+                $pubDateEl = this.$('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
                 pubDate = moment(pubDate).format('DD MMM YY');
-                $pubDateEl.removeAttr('disabled');
+            }
+
+            if (this.model && this.model.get('id')) {
+                this.$('.delete').removeClass('hidden');
             }
 
             $pubDateEl.val(pubDate);
