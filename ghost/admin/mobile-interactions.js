@@ -22,6 +22,16 @@
         }
     });
 
+    // ### Hide content preview
+    Hammer.on("tap", ".manage .content-preview .button-back", function (event) {
+        if (window.matchMedia('(max-width: 800px)').matches) {
+            event.gesture.preventDefault();
+            event.stopPropagation();
+            $(".content-list").animate({right: "0", left: "0", 'margin-right': "0"}, 300);
+            $(".content-preview").animate({right: "-100%", left: "100%", 'margin-left': "15px"}, 300);
+        }
+    });
+
     // ### Show settings options page when swiping left on settings menu link
     Hammer.on("tap", ".settings .settings-menu li", function (event) {
         if (window.matchMedia('(max-width: 800px)').matches) {
@@ -29,13 +39,25 @@
             event.stopPropagation();
             $(".settings-sidebar").animate({right: "100%", left: "-102%", 'margin-right': "15px"}, 300);
             $(".settings-content").animate({right: "0", left: "0", 'margin-left': "0"}, 300);
+            $(".settings-content .button-back, .settings-content .button-save").css("display", "inline-block");
+        }
+    });
+
+    // ### Hide settings options page
+    Hammer.on("tap", ".settings .settings-content .button-back", function (event) {
+        if (window.matchMedia('(max-width: 800px)').matches) {
+            event.gesture.preventDefault();
+            event.stopPropagation();
+            $(".settings-sidebar").animate({right: "0", left: "0", 'margin-right': "0"}, 300);
+            $(".settings-content").animate({right: "-100%", left: "100%", 'margin-left': "15"}, 300);
+            $(".settings-content .button-back, .settings-content .button-save").css("display", "none");
         }
     });
 
     // ### Toggle the sidebar menu
-    $('[data-off-canvas]').on('click', function (e) {
+    $('[data-off-canvas]').on('click', function (event) {
         if (window.matchMedia('(max-width: 650px)').matches) {
-            e.preventDefault();
+            event.preventDefault();
             $('body').toggleClass('off-canvas');
         }
     });
