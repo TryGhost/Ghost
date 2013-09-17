@@ -76,13 +76,13 @@
         },
 
         notificationMap: {
-            'draft': 'has been saved as a draft',
-            'published': 'has been published'
+            'draft': 'Your post has been saved as a draft.',
+            'published': 'Your post has been published.'
         },
 
         errorMap: {
-            'draft': 'could not be saved as a draft',
-            'published': 'could not be published'
+            'draft': 'Your post could not be saved as a draft.',
+            'published': 'Your post could not be published.'
         },
 
         initialize: function () {
@@ -109,22 +109,23 @@
                 model = self.model,
                 prevStatus = model.get('status'),
                 currentIndex = keys.indexOf(prevStatus),
-                newIndex;
+                newIndex,
+                status;
 
             newIndex = currentIndex + 1 > keys.length - 1 ? 0 : currentIndex + 1;
+            status = keys[newIndex];
 
-            this.setActiveStatus(keys[newIndex], this.statusMap[keys[newIndex]], prevStatus);
+            this.setActiveStatus(keys[newIndex], this.statusMap[status], prevStatus);
 
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: 'Your post has been ' + self.notificationMap[newIndex] + '.',
+                    message: self.notificationMap[status],
                     status: 'passive'
                 });
             }, function (xhr) {
-                var status = this.errorMap[newIndex];
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
             });
@@ -189,7 +190,7 @@
             }).then(function () {
                 Ghost.notifications.addItem({
                     type: 'success',
-                    message: ['Your post ', this.notificationMap[status], '.'].join(''),
+                    message: self.notificationMap[status],
                     status: 'passive'
                 });
                 // Refresh publish button and all relevant controls with updated status.
@@ -200,7 +201,7 @@
                 // Set appropriate button status
                 self.setActiveStatus(status, self.statusMap[status], prevStatus);
                 // Show a notification about the error
-                self.reportSaveError(xhr, model, self.errorMap[status]);
+                self.reportSaveError(xhr, model, status);
             });
         },
 
@@ -224,11 +225,11 @@
         },
 
         reportSaveError: function (response, model, status) {
-            var message = 'Your post ' + status + '.';
+            var message = this.errorMap[status];
 
             if (response) {
                 // Get message from response
-                message = Ghost.Views.Utils.getRequestErrorMessage(response);
+                message += " " + Ghost.Views.Utils.getRequestErrorMessage(response);
             } else if (model.validationError) {
                 // Grab a validation error
                 message += " " + model.validationError;
