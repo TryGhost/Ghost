@@ -1,6 +1,6 @@
 // # Ghost Mobile Interactions
 
-/*global window, document, $ */
+/*global window, document, $, FastClick */
 
 (function () {
     "use strict";
