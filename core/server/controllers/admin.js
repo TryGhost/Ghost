@@ -171,12 +171,13 @@ adminControllers = {
             email: email,
             password: password
         }).then(function (user) {
-
-            if (req.session.user === undefined) {
-                req.session.user = user.id;
-            }
-            res.json(200, {redirect: '/ghost/'});
-        }, function (error) {
+            api.settings.edit('email', email).then(function () {
+                if (req.session.user === undefined) {
+                    req.session.user = user.id;
+                }
+                res.json(200, {redirect: '/ghost/'});
+            });
+        }).otherwise(function (error) {
             res.json(401, {error: error.message});
         });
 
