@@ -193,15 +193,7 @@
             this.renderItem(item);
         },
         clearEverything: function () {
-            var height = this.$('.js-notification').outerHeight(true),
-                self = this;
-            this.$el.css({height: height});
-            this.$el.find('.js-notification.notification-passive').fadeOut(250,  function () {
-                $(this).remove();
-                self.$el.slideUp(250, function () {
-                    $(this).show().css({height: "auto"});
-                });
-            });
+            this.$el.find('.js-notification.notification-passive').remove();
         },
         removeItem: function (e) {
             e.preventDefault();
