@@ -10,16 +10,22 @@
 /* =============================================================================
    General
    ============================================================================= */
-
 .error-content {
     max-width: 530px;
     margin: 0 auto;
     padding: 0;
+    display: table;
+    height: 100%;
 
     @include breakpoint(630px) {
         max-width: 264px;
         text-align: center;
     }
+}
+
+.error-details {
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .error-image {
