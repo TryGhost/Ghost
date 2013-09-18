@@ -3,4 +3,4 @@ permalink:    pretty
 port:         4478
 
 # If running locally, simply comment out the line below to make all urls relative
-url:          http://docs.tryghost.org
+url:          http://docs.ghost.org
