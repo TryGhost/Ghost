@@ -625,7 +625,8 @@ body.zen {
     position: relative;
     top: 1px;
 
-    &:hover {
+    &:hover,
+    &.active {
         color: $lightgrey;
     }
 }
