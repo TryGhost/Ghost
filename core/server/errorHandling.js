@@ -7,6 +7,8 @@ var _ = require('underscore'),
     // Paths for views
     appRoot = path.resolve(__dirname, '../'),
     themePath = path.resolve(appRoot + '/content/themes'),
+    adminTemplatePath = path.resolve(appRoot + '/server/views/'),
+    defaultErrorTemplatePath = path.resolve(adminTemplatePath + '/user-error.hbs'),
     userErrorTemplatePath = path.resolve(themePath + '/error.hbs'),
     userErrorTemplateExists;
 
@@ -73,9 +75,9 @@ errors = {
 
     renderErrorPage: function (code, err, req, res, next) {
         // Render the error!
-        function renderErrorInt() {
+        function renderErrorInt(errorView) {
             // TODO: Attach node-polyglot
-            res.render('error', {
+            res.render((errorView || "error"), {
                 message: err.message || err,
                 code: code
             });
@@ -86,16 +88,13 @@ errors = {
         }
 
         // Are we admin? If so, don't worry about the user template
-        if (res.isAdmin) {
+        if (res.isAdmin || userErrorTemplateExists === true) {
             return renderErrorInt();
         }
 
+        // We're not admin and the template doesn't exist. Render the default.
         if (userErrorTemplateExists === false) {
-            return next();
-        }
-
-        if (userErrorTemplateExists === true) {
-            return renderErrorInt();
+            return renderErrorInt(defaultErrorTemplatePath);
         }
 
         // userErrorTemplateExists is undefined, which means we
@@ -113,12 +112,12 @@ errors = {
                 "Add an error.hbs template to the theme for customised errors."
             );
 
-            next();
+            renderErrorInt(defaultErrorTemplatePath);
         });
     },
 
     render404Page: function (req, res, next) {
-        var message = res.isAdmin ? "No Ghost Found" : "Resource Not Found";
+        var message = res.isAdmin ? "No Ghost Found" : "Page Not Found";
         this.renderErrorPage(404, message, req, res, next);
     }
 };
