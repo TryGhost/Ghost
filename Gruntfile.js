@@ -9,6 +9,22 @@ var path = require('path'),
     distDirectory =  path.resolve(process.cwd(), '.dist'),
     configLoader = require('./core/config-loader.js'),
 
+    buildGlob = [
+        '**',
+        '!docs/**',
+        '!node_modules/**',
+        '!content/images/**',
+        '!**/*.db*',
+        '!*.db*',
+        '!.sass*',
+        '!.af*',
+        '!.git*',
+        '!.groc*',
+        '!*.iml',
+        '!config.js',
+        '!.travis.yml'
+    ],
+
     configureGrunt = function (grunt) {
 
         // load all grunt tasks
@@ -267,49 +283,21 @@ var path = require('path'),
                 nightly: {
                     files: [{
                         expand: true,
-                        src: [
-                            '**',
-                            '!node_modules/**',
-                            '!core/server/data/*.db',
-                            '!.sass*',
-                            '!.af*',
-                            '!.git*',
-                            '!.groc*',
-                            '!.travis.yml'
-                        ],
+                        src: buildGlob,
                         dest: "<%= paths.nightlyBuild %>/<%= pkg.version %>/"
                     }]
                 },
                 weekly: {
                     files: [{
                         expand: true,
-                        src: [
-                            '**',
-                            '!node_modules/**',
-                            '!core/server/data/*.db',
-                            '!.sass*',
-                            '!.af*',
-                            '!.git*',
-                            '!.groc*',
-                            '!.travis.yml'
-                        ],
+                        src: buildGlob,
                         dest: "<%= paths.weeklyBuild %>/<%= pkg.version %>/"
                     }]
                 },
                 build: {
                     files: [{
                         expand: true,
-                        src: [
-                            '**',
-                            '!node_modules/**',
-                            '!core/server/data/*.db',
-                            '!.sass*',
-                            '!.af*',
-                            '!.git*',
-                            '!.groc*',
-                            '!.iml*',
-                            '!.travis.yml'
-                        ],
+                        src: buildGlob,
                         dest: "<%= paths.buildBuild %>/"
                     }]
                 }
