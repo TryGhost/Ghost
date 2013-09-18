@@ -316,7 +316,7 @@
             'orientationchange': 'orientationChange'
         },
 
-        syncScroll: _.debounce(function (e) {
+        syncScroll: _.throttle(function (e) {
             var $codeViewport = $(e.target),
                 $previewViewport = $('.entry-preview-content'),
                 $codeContent = $('.CodeMirror-sizer'),
@@ -330,7 +330,7 @@
 
             // apply new scroll
             $previewViewport.scrollTop(previewPostition);
-        }, 50),
+        }, 10),
 
         showHelp: function () {
             this.addSubview(new Ghost.Views.Modal({
