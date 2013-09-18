@@ -234,6 +234,9 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
         server.use(express.logger('dev'));
     }
 
+    // Favicon
+    server.use(express.favicon(__dirname + '/shared/favicon.ico'));
+
     // return the correct mime type for woff filess
     express['static'].mime.define({'application/font-woff': ['woff']});
     // Shared static config
@@ -257,7 +260,6 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     // Add in all trailing slashes
     server.use(slashes());
 
-    server.use(express.favicon(__dirname + '/shared/favicon.ico'));
     server.use(express.bodyParser({}));
     server.use(express.bodyParser({uploadDir: __dirname + '/content/images'}));
     server.use(express.cookieParser(ghost.dbHash));
