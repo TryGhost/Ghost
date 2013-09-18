@@ -1,6 +1,6 @@
 #The Ghost Guide
 
-We've put together a short guide to help you get started with Ghost. This guide will take you through installing Ghost for the first time, getting everything set up, customising your blog, as well as getting started with basic theme and plugin development. The Ghost Guide is available to read online by anyone at [docs.tryghost.org](http://docs.tryghost.org).
+We've put together a short guide to help you get started with Ghost. This guide will take you through installing Ghost for the first time, getting everything set up, customising your blog, as well as getting started with basic theme and plugin development. The Ghost Guide is available to read online by anyone at [docs.ghost.org](http://docs.ghost.org).
 
 ## Running Locally
 
