@@ -120,11 +120,7 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                Ghost.notifications.addItem({
-                    type: 'success',
-                    message: self.notificationMap[status],
-                    status: 'passive'
-                });
+                self.reportSaveSuccess(status);
             }, function (xhr) {
                 // Show a notification about the error
                 self.reportSaveError(xhr, model, status);
@@ -188,11 +184,7 @@
             this.savePost({
                 status: status
             }).then(function () {
-                Ghost.notifications.addItem({
-                    type: 'success',
-                    message: self.notificationMap[status],
-                    status: 'passive'
-                });
+                self.reportSaveSuccess(status);
                 // Refresh publish button and all relevant controls with updated status.
                 self.render();
             }, function (xhr) {
@@ -224,6 +216,15 @@
             return $.Deferred().reject();
         },
 
+        reportSaveSuccess: function (status) {
+            Ghost.notifications.clearEverything();
+            Ghost.notifications.addItem({
+                type: 'success',
+                message: this.notificationMap[status],
+                status: 'passive'
+            });
+        },
+
         reportSaveError: function (response, model, status) {
             var message = this.errorMap[status];
 
@@ -235,6 +236,7 @@
                 message += " " + model.validationError;
             }
 
+            Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',
                 message: message,

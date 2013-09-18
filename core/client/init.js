@@ -44,6 +44,7 @@
     };
 
     Ghost.Validate.handleErrors = function () {
+        Ghost.notifications.clearEverything();
         _.each(Ghost.Validate._errors, function (errorObj) {
 
             Ghost.notifications.addItem({

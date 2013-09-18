@@ -116,6 +116,7 @@
             });
         },
         saveSuccess: function (model, response, options) {
+            Ghost.notifications.clearEverything();
             // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
@@ -124,6 +125,7 @@
             });
         },
         saveError: function (model, xhr) {
+            Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',
                 message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -131,6 +133,7 @@
             });
         },
         validationError: function (message) {
+            Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',
                 message: message,
