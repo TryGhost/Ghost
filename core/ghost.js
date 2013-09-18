@@ -28,8 +28,7 @@ var config = require('../config'),
 
     Ghost,
     instance,
-    defaults,
-    statuses;
+    defaults;
 
 // ## Default values
 /**
@@ -129,24 +128,29 @@ Ghost = function () {
 Ghost.prototype.init = function () {
     var self = this;
 
-    return when.join(
-        instance.dataProvider.init(),
-        instance.getPaths(),
-        instance.mail.init(self)
+    function doFirstRun() {
+        console.log('first run');
+        var firstRunMessage = [
+            "Welcome to Ghost.",
+            "You're running under the <strong>",
+            process.env.NODE_ENV,
+            "</strong>environment.",
 
-    ).then(function () {
-        return models.Settings.populateDefaults();
-    }).then(function () {
-        // Initialize the settings cache
-        return self.updateSettingsCache();
-    }).then(function () {
-        // Initialize plugins
-        return self.initPlugins();
-    }).then(function () {
-        // Initialize the permissions actions and objects
-        return permissions.init();
-    }).then(function () {
-        // get the settings and whatnot
+            "Your URL is set to",
+            "<strong>" + self.config().url + "</strong>.",
+            "See <a href=\"http://docs.ghost.org/\">http://docs.ghost.org</a> for instructions."
+        ];
+
+        self.notifications.push({
+            type: 'info',
+            message: firstRunMessage.join(' '),
+            status: 'persistent',
+            id: 'ghost-first-run'
+        });
+        return when.resolve();
+    }
+
+    function initDbHashAndFirstRun() {
         return when(models.Settings.read('dbHash')).then(function (dbhash) {
             // we already ran this, chill
             self.dbHash = dbhash.attributes.value;
@@ -154,12 +158,38 @@ Ghost.prototype.init = function () {
         }).otherwise(function (error) {
             // this is where all the "first run" functionality should go
             var dbhash = uuid.v4();
-            return when(models.Settings.add({key: 'dbHash', value: dbhash, type: 'core'})).then(function (returned) {
+            return when(models.Settings.add({key: 'dbHash', value: dbhash, type: 'core'})).then(function () {
                 self.dbHash = dbhash;
                 return dbhash;
-            });
+            }).then(doFirstRun);
         });
-    }, errors.logAndThrowError);
+    }
+
+    // ### Initialisation
+    // make sure things are done in order
+    return when.join(
+        // Initialise the models
+        instance.dataProvider.init(),
+        // Calculate paths
+        instance.getPaths(),
+        // Initialise mail after first run
+        instance.mail.init(self)
+    ).then(function () {
+        // Populate any missing default settings
+        return models.Settings.populateDefaults();
+    }).then(function () {
+        // Initialize the settings cache
+        return self.updateSettingsCache();
+    }).then(function () {
+        return when.join(
+            // Check for or initialise a dbHash.
+            initDbHashAndFirstRun(),
+             // Initialize plugins
+            self.initPlugins(),
+            // Initialize the permissions actions and objects
+            permissions.init()
+        );
+    }).otherwise(errors.logAndThrowError);
 };
 
 // Maintain the internal cache of the settings object
