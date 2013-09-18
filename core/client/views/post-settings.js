@@ -112,7 +112,8 @@
 
             // Save new 'Published' date
             this.model.save({
-                published_at: momentPubDate.toDate()
+                // Temp Fix. Set hour to 12 instead of 00 to avoid some TZ issues.
+                published_at: momentPubDate.hour(12).toDate()
             }, {
                 success : function (model, response, options) {
                     pubDateEl.value = moment(model.get('published_at')).format("DD MMM YY");
