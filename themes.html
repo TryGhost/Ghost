@@ -1,0 +1,104 @@
+---
+title: Theming Ghost
+layout: default
+bodyclass: themes
+---
+
+<header class="bs-header">
+    <div class="container">
+        <h1>Installing Ghost &amp; Getting Started</h1>
+        <p>The first steps to setting up your new blog for the first time.</p>
+    </div>
+</header>
+
+<div class="container">
+    <div class="row">
+        <aside id="sidebar" class="col-lg-3">
+            <nav class="bs-sidebar">
+                <ul class="nav bs-sidenav">
+                              
+                  <li class="active">
+                  <a href="#overview">Overview</a>
+                  <ul class="nav">
+                    <li class="active"><a href="#overview-doctype">HTML5 doctype</a></li>
+                    <li class=""><a href="#overview-mobile">Mobile first</a></li>
+                    <li class=""><a href="#overview-responsive-images">Responsive images</a></li>
+                    <li class=""><a href="#overview-type-links">Type and links</a></li>
+                    <li class=""><a href="#overview-normalize">Normalize</a></li>
+                    <li class=""><a href="#overview-container">Container</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+        </aside>
+        <section id="content" class="col-lg-9">
+          <h1>Theming</h1>
+
+          <h2> What is Handlebars?</h2>
+
+          <p><a href="http://handlebarsjs.com/">Handlebars</a> is the Templating language used by Ghost.</p>
+
+          <blockquote><p>Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.</p></blockquote>
+
+          <p>To see the Handlebars Helpers to use in your Ghost theme, go to <a href="#">NEED LINK HERE</a>.</p>
+
+          <h2>The File Structure of a Ghost Theme</h2>
+
+          <p>The recommended file structure is:</p>
+
+          <ul>
+          <li>/css
+
+          <ul>
+          <li>style.css</li>
+          <li>post.css</li>
+          </ul>
+          </li>
+          <li>/fonts</li>
+          <li>/images</li>
+          <li>/js</li>
+          <li>/lib</li>
+          <li>/partials</li>
+          <li>default.hbs</li>
+          <li>index.hbs [required]</li>
+          <li>post.hbs [required]</li>
+          </ul>
+
+
+          <p>For the time being there is no requirement that default.hbs or any of the folders exist. <code>index.hbs</code> and <code>post.hbs</code> are required – Ghost will not work if these two templates are not present. <code>partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code>list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive &amp; tag pages. <code>partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code>pagination.hbs</code> file inside <code>partials</code> will let you specify your own HTML for pagination.</p>
+
+          <h3>default.hbs</h3>
+
+          <p>This is the base template which contains all the boring bits of HTML that have to appear on every page – the <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code> and <code>&lt;body&gt;</code> tags along with the <code>{{ghost_head}}</code> and <code>{{ghost_foot}}</code> helpers, as well as any HTML which makes up a repeated header and footer for the blog.</p>
+
+          <p>The default template contains the handlebars expression <code>{{{body}}}</code> to denote where the content from templates which extend the default template goes.</p>
+
+          <p>Page templates then have <code>{{!&lt; default}}</code> as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where <code>{{{body}}}</code> is defined.</p>
+
+          <h3>index.hbs</h3>
+
+          <p>This is the template for the homepage, and extends <code>default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code>index.hbs</code> defines how each posts should be displayed.</p>
+
+          <p>In Casper (the current default theme), the homepage has a large header which uses <code>@blog</code> global settings to output the blog logo, title and description. This is followed by using the <code>{{#foreach}}</code> helper to output a list of the latest posts.</p>
+
+          <h3>post.hbs</h3>
+
+          <p>This is the template for a single post, which also extends <code>default.hbs</code>.</p>
+
+          <p>In Casper (the current default theme), the single post template has it’s own header, also using <code>@blog</code> global settings and then uses the <code>{{#post}}</code> data accessor to output all of the post details.</p>
+
+          <h2>Creating Your Own Theme</h2>
+
+          <ol>
+          <li>Copy Casper</li>
+          <li>Rename Casper</li>
+          <li><p>Edit Casper</p></li>
+          <li><p>Go to <code>&lt;your URL&gt;/ghost/settings/general/</code>.</p></li>
+          <li>Select your Theme name in the 'Theme' options menu</li>
+          <li>Cick 'Save'.</li>
+          <li>Go to your Blog URL and check the theme as be updated.</li>
+          </ol>
+
+        </section>
+    </div>
+</div>

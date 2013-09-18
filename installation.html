@@ -16,8 +16,8 @@ bodyclass: installation
         <aside id="sidebar" class="col-lg-3">
             <nav class="bs-sidebar">
                 <ul class="nav bs-sidenav">
-                              
-                <li class="active">
+
+                  <li class="active">
                   <a href="#overview">Overview</a>
                   <ul class="nav">
                     <li class="active"><a href="#overview-doctype">HTML5 doctype</a></li>
@@ -28,53 +28,41 @@ bodyclass: installation
                     <li class=""><a href="#overview-container">Container</a></li>
                   </ul>
                 </li>
-                </ul>
+              </ul>
             </nav>
         </aside>
         <section id="content" class="col-lg-9">
-            <div class="bs-docs-section" id="overview">
-                <div class="page-header">
-                  <h1>Overview</h1>
-                </div>
-                <p class="lead">Get the lowdown on the key pieces of Bootstrap's infrastructure, including our approach to better, faster, stronger web development.</p>
+          <h1> Download Node.js</h1>
 
-                <h3 id="overview-doctype">HTML5 doctype required</h3>
-                <p>Bootstrap makes use of certain HTML elements and CSS properties that require the use of the HTML5 doctype. Include it at the beginning of all your projects.</p>
-            <div class="highlight"><pre><code class="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
-            <span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
-              ...
-            <span class="nt">&lt;/html&gt;</span>
-            </code></pre></div>
+          <p>Ghost requires node <code>0.10.*</code> or <code>0.11.*</code> and <code>npm</code>. To get these you go to <a href="http://nodejs.org">http://nodes.org</a> and download your operating system's version of Node.js.</p>
 
-                <h3 id="overview-mobile">Mobile first</h3>
-                <p>With Bootstrap 2, we added optional mobile friendly styles for key aspects of the framework. With Bootstrap 3, we've rewritten the project to be mobile friendly from the start. Instead of adding on optional mobile styles, they're baked right into the core. In fact, <strong>Bootstrap is mobile first</strong>. Mobile first styles can be found throughout the entire library instead of in separate files.</p>
-                <p>To ensure proper rendering and touch zooming, <strong>add the viewport meta tag</strong> to your <code>&lt;head&gt;</code>.</p>
-            <div class="highlight"><pre><code class="html"><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"viewport"</span> <span class="na">content=</span><span class="s">"width=device-width, initial-scale=1.0"</span><span class="nt">&gt;</span>
-            </code></pre></div>
+          <h2>Windows</h2>
 
-                <h3 id="overview-responsive-images">Responsive images</h3>
-                <p>We automatically attempt to scale images to appropriate sizes with a global <code>max-width: 100%;</code> on all <code>&lt;img&gt;</code> elements. If you run into problems (e.g., with Google Maps), be sure to disable this property on a per-case basis.</p>
+          <p>Click on the NodeJS <code>.exe</code> and proceed with the install.</p>
 
-                <h3 id="overview-type-links">Typography and links</h3>
-                <p>Bootstrap sets basic global display, typography, and link styles. Specifically, we:</p>
-                <ul>
-                  <li>Remove <code>margin</code> on the body</li>
-                  <li>Set <code>background-color: white;</code> on the <code>body</code></li>
-                  <li>Use the <code>@font-family-base</code>, <code>@font-size-base</code>, and <code>@line-height-base</code> attributes as our typographic base</li>
-                  <li>Set the global link color via <code>@link-color</code> and apply link underlines only on <code>:hover</code></li>
-                </ul>
-                <p>These styles can be found within <strong>scaffolding.less</strong>.</p>
+          <h2> Mac</h2>
 
-                <h3 id="overview-normalize">Normalize reset</h3>
-                <p>For improved cross-browser rendering, we use <a href="http://necolas.github.com/normalize.css/" target="_blank">Normalize</a>, a project by <a href="http://twitter.com/necolas" target="_blank">Nicolas Gallagher</a> and <a href="http://twitter.com/jon_neal" target="_blank">Jonathan Neal</a>.</p>
+          <p>Click on the NodeJS <code>.dmg</code> and proceed with the install.</p>
 
-                <h3 id="overview-container">Centering with container</h3>
-                <p>Easily center a page's contents by wrapping its contents in a container. Containers set <code>max-width</code> at various media query breakpoints to match our grid system.</p>
-            <div class="highlight"><pre><code class="html"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"container"</span><span class="nt">&gt;</span>
-              ...
-            <span class="nt">&lt;/div&gt;</span>
-            </code></pre></div>
-              </div>
+          <h1> Install NPM</h1>
+
+          <ol>
+          <li>Open Terminal / Command Prompt</li>
+          <li>Navigate to your Ghost directory</li>
+          <li>Then enter <code>npm install</code></li>
+          </ol>
+
+
+          <h1> Setting Up Ghost</h1>
+
+          <h2> Installing Ghost</h2>
+
+          <ol>
+          <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
+          <li><p>This will have launched your Ghost blog, visit one of the folowing URLs to see;</p></li>
+          <li><p>Development: <a href="http://localhost:2368/">http://localhost:2368/</a></p></li>
+          <li>Production: Your URL</li>
+          </ol>
         </section>
     </div>
 </div>
