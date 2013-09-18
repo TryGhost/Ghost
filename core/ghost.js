@@ -129,7 +129,6 @@ Ghost.prototype.init = function () {
     var self = this;
 
     function doFirstRun() {
-        console.log('first run');
         var firstRunMessage = [
             "Welcome to Ghost.",
             "You're running under the <strong>",
