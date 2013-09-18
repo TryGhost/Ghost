@@ -363,8 +363,9 @@ adminControllers = {
                     };
 
                     return api.notifications.add(notification).then(function () {
-                        delete req.session.user;
-                        res.redirect('/ghost/signin/');
+                        // temp no commit
+                        //delete req.session.user;
+                        res.redirect('/ghost/debug/');
                     });
 
                 }, function importFailure(error) {
