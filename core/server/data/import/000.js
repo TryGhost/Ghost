@@ -11,7 +11,9 @@ Importer000 = function () {
     this.version = "000";
 
     this.importFrom = {
-        "000": this.basicImport
+        "000": this.basicImport,
+        "001": this.tempImport,
+        "002": this.tempImport
     };
 };
 
@@ -29,7 +31,7 @@ Importer000.prototype.canImport = function (data) {
         return when.resolve(this.importFrom[data.meta.version]);
     }
 
-    return when.reject("Unsupported version of data");
+    return when.reject("Unsupported version of data: " + data.meta.version);
 };
 
 
