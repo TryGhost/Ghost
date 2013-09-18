@@ -101,7 +101,7 @@ adminControllers = {
         }
 
         // TODO: is it better to use file type eg. image/png?
-        if (ext === ".jpg" || ext === ".png" || ext === ".gif") {
+        if (ext === ".jpg" || ext === ".jpeg"  || ext === ".png" || ext === ".gif") {
             getUniqueFileName(dir, basename, ext, null, function (filename) {
                 renameFile(filename);
             });
