@@ -47,12 +47,14 @@ describe('Admin Controller', function() {
                 req.files.uploadimage.name = "IMAGE.jpg";
                 sinon.stub(fs, 'mkdirs').yields();
                 sinon.stub(fs, 'copy').yields();
+                sinon.stub(fs, 'unlink').yields();
                 sinon.stub(fs, 'exists').yields(false);
             });
 
             afterEach(function() {
                 fs.mkdirs.restore();
                 fs.copy.restore();
+                fs.unlink.restore();
                 fs.exists.restore();
                 clock.restore();
             });
@@ -140,6 +142,17 @@ describe('Admin Controller', function() {
                 });
 
                 return admin.uploader(req, res);
+            });
+
+            it('should not leave temporary file when uploading', function(done) {
+                clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
+                sinon.stub(res, 'send', function(data) {
+                    fs.unlink.calledOnce.should.be.true;
+                    fs.unlink.args[0][0].should.equal('/tmp/TMPFILEID');
+                    return done();
+                });
+
+                admin.uploader(req, res);
             });
         });
     });
