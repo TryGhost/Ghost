@@ -84,19 +84,24 @@ adminControllers = {
             // adds directories recursively
             fs.mkdirs(dir, function (err) {
                 if (err) {
-                    errors.logError(err);
-                } else {
-                    fs.copy(tmp_path, target_path, function (err) {
-                        if (err) {
-                            errors.logError(err);
-                        } else {
-                            // TODO: should delete temp file at tmp_path. Or just move the file instead of copy.
-                            // the src for the image must be in URI format, not a file system path, which in Windows uses \
-                            var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
-                            res.send(src);
-                        }
-                    });
+                    return errors.logError(err);
                 }
+
+                fs.copy(tmp_path, target_path, function (err) {
+                    if (err) {
+                        return errors.logError(err);
+                    }
+
+                    fs.unlink(tmp_path, function (e) {
+                        if (err) {
+                            return errors.logError(err);
+                        }
+
+                        // the src for the image must be in URI format, not a file system path, which in Windows uses \
+                        var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                        return res.send(src);
+                    });
+                });
             });
         }
 
