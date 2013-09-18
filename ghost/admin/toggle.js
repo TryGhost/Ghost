@@ -4,6 +4,16 @@
 (function () {
     "use strict";
 
+    Ghost.temporary.hideToggles = function () {
+        $('[data-toggle]').each(function () {
+            var toggle = $(this).data('toggle');
+            $(this).parent().children(toggle + ':visible').fadeOut();
+        });
+
+        // Toggle active classes on menu headers
+        $("[data-toggle].active").removeClass("active");
+    };
+
     Ghost.temporary.initToggles = function ($el) {
 
         $el.find('[data-toggle]').each(function () {
@@ -14,9 +24,17 @@
         $el.find('[data-toggle]').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            $(this).toggleClass('active');
-            var toggle = $(this).data('toggle');
-            $(this).parent().children(toggle).fadeToggle(200).toggleClass('open');
+            var $this = $(this),
+                toggle = $this.data('toggle'),
+                isAlreadyActive = $this.is('.active');
+
+            // Close all the other open toggle menus
+            Ghost.temporary.hideToggles();
+
+            if (!isAlreadyActive) {
+                $this.toggleClass('active');
+                $(this).parent().children(toggle).toggleClass('open').fadeToggle(200);
+            }
         });
 
     };
