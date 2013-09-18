@@ -9,16 +9,16 @@ Visit the project's website at [http://ghost.org](http://ghost.org)!
 
 There are two main ways to get started with Ghost:
 
-1. Working from a VIP Release - these are pre-built zip packages found on vip.tryghost.org. Installation instructions are below.
+1. Working from a Release - these are pre-built zip packages found on ghost.org. Installation instructions are below.
 2. Working from the GitHub repo - instructions can be found in [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
 
-### Installing from a VIP Release
+### Installing from a Release
 
-*Please Note:* VIP Releases are pre-built packages, GitHub releases (tags) are not. To install from GitHub you need to follow the [contributing guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md).
+*Please Note:* Releases are pre-built packages, GitHub releases (tags) are not. To install from GitHub you need to follow the [contributing guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md).
 
-1.  Once you've downloaded one of the VIP packages, unzip it, and place the directory wherever you would like to run the code
-2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.js and index.js are)
-3.  run `npm install` to install the node dependencies (if you get errors to do with SQLite, please see the SQLite3 instructions below this list)
+1.  Once you've downloaded one of the releases, unzip it, and place the directory wherever you would like to run the code
+2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
+4.  run `npm install --production` to install the node dependencies
 4.  To start ghost, run `npm start`
 5.  Visit `http://localhost:2368/` in your web browser
 
@@ -28,7 +28,7 @@ There are two main ways to get started with Ghost:
 **Warning:** The Ghost file system contains your database and config. Be sure to back these up first.
 
 1. Make a backup of your data!
-2. Update the files by pasting new files over the top of old ones. If prompted by your OS or FTP client to 'merge' or 'replace' always choose merge.
+2. Update the files by pasting new files over the top of old ones. If prompted by your OS or FTP client to 'merge' or 'replace' always choose 'merge'.
 3. Run npm install
 4. Run npm update
 5. Restart the application
@@ -37,7 +37,7 @@ There are two main ways to get started with Ghost:
 
 ### Logging in For The First Time
 
-Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost` from a web browser, where you will be prompted for a login.
+Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted for a login.
 
 1.  Click on the "register new user" link
 2.  Enter your user details (careful here: There is no password reset yet!)
