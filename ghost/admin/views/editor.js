@@ -181,6 +181,8 @@
             // Default to same status if not passed in
             status = status || prevStatus;
 
+            model.trigger('willSave');
+
             this.savePost({
                 status: status
             }).then(function () {
