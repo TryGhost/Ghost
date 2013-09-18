@@ -64,6 +64,11 @@
                 success : function (model, response, options) {
                     // Repopulate slug in case it changed on the server (e.g. 'new-slug-2')
                     slugEl.value = model.get('slug');
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Permalink successfully changed to <strong>" + model.get('slug') + '</strong>.',
+                        status: 'passive'
+                    });
                 },
                 error : function (model, xhr) {
                     Ghost.notifications.addItem({
@@ -117,6 +122,11 @@
             }, {
                 success : function (model, response, options) {
                     pubDateEl.value = moment(model.get('published_at')).format("DD MMM YY");
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Publish date successfully changed to <strong>" + pubDateEl.value + '</strong>.',
+                        status: 'passive'
+                    });
                 },
                 error : function (model, xhr) {
                     Ghost.notifications.addItem({
