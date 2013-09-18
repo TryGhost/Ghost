@@ -20,7 +20,7 @@
         "showdown": "0.3.1",
         "sqlite3": "2.1.16",
         "bookshelf": "0.3.1",
-        "knex": "git+https://github.com/tgriesser/knex.git#66ea8d7",
+        "knex": "0.2.7-alpha",
         "when": "2.2.1",
         "bcrypt-nodejs": "0.0.3",
         "node-uuid": "1.4.0",
