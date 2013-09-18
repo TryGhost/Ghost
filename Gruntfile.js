@@ -263,6 +263,12 @@ var path = require('path'),
                 }
             },
 
+            clean: {
+                build: {
+                    src: ["<%= paths.buildBuild %>/**"]
+                }
+            },
+
             copy: {
                 nightly: {
                     files: [{
@@ -303,6 +309,7 @@ var path = require('path'),
                             '**',
                             '!node_modules/**',
                             '!core/server/data/*.db',
+                            '!config.js',
                             '!.sass*',
                             '!.af*',
                             '!.git*',
@@ -806,6 +813,7 @@ var path = require('path'),
             "concat",
             "uglify",
             "changelog",
+            "clean:build",
             "copy:build",
             "compress:build"
         ]);
