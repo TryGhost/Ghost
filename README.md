@@ -2,7 +2,7 @@
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
-Visit the project's website at [http://tryghost.org](http://tryghost.org)!
+Visit the project's website at [http://ghost.org](http://ghost.org)!
 
 
 ## Getting Started
@@ -35,18 +35,6 @@ There are two main ways to get started with Ghost:
 6. Log out and log back in again.
 
 
-### SQLite3 Install Instructions
-
-*Only needed if you experienced errors in Step 3 above - Skip this otherwise*
-
-Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
-
-**For Mac users:** The easiest way to do this is to download/install XCode from the App Store (free). This will automatically install all the tools you need - you don't need to open the app.
-
-**For Everyone else:** if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled SQLite3 package for your OS. We have created some of these [here](https://github.com/developmentseed/node-sqlite3/issues/106).
-
-The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the SQLite3 package, replace it with the files you downloaded from github. Be sure that all the SQLite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
-
 ### Logging in For The First Time
 
 Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost` from a web browser, where you will be prompted for a login.
@@ -56,7 +44,6 @@ Once you have the Ghost server up and running, you should be able to navigate to
 3.  Return to the login screen and use those details to log in.
 
 Note - this is still very alpha. Not everything works yet.
-
 
 
 ## Versioning
@@ -79,12 +66,13 @@ Constructed with the following guidelines:
 
 Want to report a bug, request a feature, or help us build Ghost? Check out our in depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get!
 
+
 ## Community
 
 Keep track of Ghost development and Ghost community activity.
 
 * Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](http://facebook.com/tryghostapp) and [Google+](https://plus.google.com/114465948129362706086).
-* Read and subscribe to the [The Official Ghost Blog](http://blog.tryghost.org).
+* Read and subscribe to the [The Official Ghost Blog](http://blog.ghost.org).
 * Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel.
 
 
