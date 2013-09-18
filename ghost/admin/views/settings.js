@@ -180,8 +180,6 @@
                 this.model.save({
                     title: title,
                     description: description,
-                    logo: this.$('#blog-logo').attr("src"),
-                    cover: this.$('#blog-cover').attr("src"),
                     email: email,
                     postsPerPage: postsPerPage,
                     activeTheme: this.$('#activeTheme').val()
@@ -320,9 +318,7 @@
                     'email':            userEmail,
                     'location':         userLocation,
                     'website':          userWebsite,
-                    'bio':              userBio,
-                    'image':            this.$('#user-image').attr('src'),
-                    'cover':            this.$('#user-cover').attr('src')
+                    'bio':              userBio
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
