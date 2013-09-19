@@ -285,24 +285,8 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     // 404 Handler
     server.use(errors.render404Page);
 
-    // TODO: Handle all application errors (~500)
-    // Just stubbed at this stage!
-    server.use(function error500Handler(err, req, res, next) {
-        if (!err || !(err instanceof Error)) {
-            next();
-        }
-
-        // For the time being, just log and continue.
-        errors.logError(err, "Middleware", "Ghost caught a processing error in the middleware layer.");
-        next(err);
-    });
-
-    // All other errors
-    if (server.get('env') === "production") {
-        server.use(express.errorHandler({ dumpExceptions: false, showStack: false }));
-    } else {
-        server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    }
+    // 500 Handler
+    server.use(errors.render500Page);
 
     // ## Routing
 
