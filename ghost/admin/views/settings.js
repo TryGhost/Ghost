@@ -171,8 +171,8 @@
                 .check(email, {message: "Please supply a valid email address", el: $('#email-address')})
                 .isEmail().len(0, 254);
             Ghost.Validate
-                .check(postsPerPage, {message: "Please use a number", el: $('postsPerPage')})
-                .isInt();
+                .check(postsPerPage, {message: "Please use a number less than 1000", el: $('postsPerPage')})
+                .isInt().max(1000);
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
