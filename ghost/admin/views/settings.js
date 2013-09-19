@@ -335,7 +335,7 @@
 
             Ghost.Validate._errors = [];
             Ghost.Validate.check(newPassword, {message: 'Your new passwords do not match'}).equals(ne2Password);
-            Ghost.Validate.check(newPassword, {message: 'Your password is not long enough. It must be at least 8 chars long.'}).len(8);
+            Ghost.Validate.check(newPassword, {message: 'Your password is not long enough. It must be at least 8 characters long.'}).len(8);
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
