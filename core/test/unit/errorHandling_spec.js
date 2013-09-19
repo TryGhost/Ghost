@@ -43,7 +43,7 @@ describe("Error handling", function () {
 
     it("logs errors", function () {
         var err = new Error("test1"),
-            logStub = sinon.stub(console, "log");
+            logStub = sinon.stub(console, "error");
 
         // give environment a value that will console log
         process.env.NODE_ENV = "development";
@@ -75,7 +75,7 @@ describe("Error handling", function () {
                     return;
                 }
             },
-            logStub = sinon.stub(console, "log"),
+            logStub = sinon.stub(console, "error"),
             redirectStub = sinon.stub(res, "redirect");
 
         // give environment a value that will console log
