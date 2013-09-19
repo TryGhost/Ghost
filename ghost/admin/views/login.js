@@ -25,7 +25,7 @@
 
             Ghost.Validate._errors = [];
             Ghost.Validate.check(email).isEmail();
-            Ghost.Validate.check(password, "Password too short").len(5);
+            Ghost.Validate.check(password, "Please enter a password").len(0);
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
@@ -79,7 +79,7 @@
             Ghost.Validate._errors = [];
             Ghost.Validate.check(name, "Please enter a name").len(1);
             Ghost.Validate.check(email, "Please enter a correct email address").isEmail();
-            Ghost.Validate.check(password, "Please enter a password").len(5);
+            Ghost.Validate.check(password, "Your password is not long enough. It must be at least 8 characters long.").len(8);
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
