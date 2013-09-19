@@ -77,10 +77,31 @@
     }
 }
 
-/* =============================================================================
-   404
-   ============================================================================= */
+.error-stack {
+    margin: 1em auto;
+    padding: 2em;
+    max-width: 800px;
+    background-color: rgba(255,255,255,0.3);
+}
 
-.error-404 {
-    width: 300px;
+.error-stack-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error-stack-list li {
+    display: block;
+    
+    &::before {
+        color: #BBB;
+        content: "↪︎";
+        display: inline-block;
+        font-size: 1.2em;
+        margin-right: 0.5em;
+    }
+}
+
+.error-stack-function {
+    font-weight: bold;
 }
