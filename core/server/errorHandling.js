@@ -1,3 +1,4 @@
+/*jslint regexp: true */
 var _ = require('underscore'),
     colors = require("colors"),
     fs = require('fs'),
@@ -29,23 +30,30 @@ errors = {
     },
 
     logError: function (err, context, help) {
+        var stack = err ? err.stack : null;
         err = err.message || err || "Unknown";
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
-        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging'
-                || process.env.NODE_ENV === 'production') {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
 
-            console.log("\nERROR:".red, err.red, err.stack || "");
+            console.error("\nERROR:".red, err.red);
 
             if (context) {
-                console.log(context);
+                console.error(context);
             }
 
             if (help) {
-                console.log(help.green);
+                console.error(help.green);
             }
+
             // add a new line
-            console.log("");
+            console.error("");
+
+            if (stack) {
+                console.error(stack, "\n");
+            }
         }
     },
 
@@ -74,17 +82,54 @@ errors = {
     },
 
     renderErrorPage: function (code, err, req, res, next) {
+
+        function parseStack(stack) {
+            if (typeof stack !== "string") {
+                return stack;
+            }
+
+            // TODO: split out line numbers
+            var stackRegex = /\s*at\s*(\w+)?\s*\(([^\)]+)\)\s*/i;
+
+            return (
+                stack
+                    .split(/[\r\n]+/)
+                    .slice(1)
+                    .map(function (line) {
+                        var parts = line.match(stackRegex);
+                        if (!parts) {
+                            return null;
+                        }
+
+                        return {
+                            "function": parts[1],
+                            "at": parts[2]
+                        };
+                    })
+                    .filter(function (line) {
+                        return !!line;
+                    })
+            );
+        }
+
         // Render the error!
         function renderErrorInt(errorView) {
+            var stack = null;
+
+            if (process.env.NODE_ENV !== "production" && err.stack) {
+                stack = parseStack(err.stack);
+            }
+
             // TODO: Attach node-polyglot
             res.render((errorView || "error"), {
                 message: err.message || err,
-                code: code
+                code: code,
+                stack: stack
             });
         }
 
         if (code >= 500) {
-            this.logError(err, "ErrorPage");
+            this.logError(err, "ErrorPage", "Ghost caught a processing error in the middleware layer.");
         }
 
         // Are we admin? If so, don't worry about the user template
@@ -119,6 +164,13 @@ errors = {
     render404Page: function (req, res, next) {
         var message = res.isAdmin ? "No Ghost Found" : "Page Not Found";
         this.renderErrorPage(404, message, req, res, next);
+    },
+
+    render500Page: function (err, req, res, next) {
+        if (!err || !(err instanceof Error)) {
+            next();
+        }
+        errors.renderErrorPage(500, err, req, res, next);
     }
 };
 
@@ -130,7 +182,8 @@ _.bindAll(
     "logAndThrowError",
     "logErrorWithRedirect",
     "renderErrorPage",
-    "render404Page"
+    "render404Page",
+    "render500Page"
 );
 
 module.exports = errors;
