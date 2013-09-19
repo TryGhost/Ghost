@@ -34,7 +34,6 @@ function getDatabaseVersion() {
         // Check for the current version from the settings table
         if (exists) {
             // Temporary code to deal with old databases with currentVersion settings
-            // TODO: remove before release
             return knex('settings')
                 .where('key', 'databaseVersion')
                 .orWhere('key', 'currentVersion')
