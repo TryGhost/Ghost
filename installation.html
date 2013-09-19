@@ -17,52 +17,52 @@ bodyclass: installation
             <nav class="bs-sidebar">
                 <ul class="nav bs-sidenav">
 
-                  <li class="active">
-                  <a href="#overview">Overview</a>
-                  <ul class="nav">
-                    <li class="active"><a href="#overview-doctype">HTML5 doctype</a></li>
-                    <li class=""><a href="#overview-mobile">Mobile first</a></li>
-                    <li class=""><a href="#overview-responsive-images">Responsive images</a></li>
-                    <li class=""><a href="#overview-type-links">Type and links</a></li>
-                    <li class=""><a href="#overview-normalize">Normalize</a></li>
-                    <li class=""><a href="#overview-container">Container</a></li>
-                  </ul>
-                </li>
-              </ul>
+                    <li class="active">
+                        <a href="#overview">Overview</a>
+                        <ul class="nav">
+                            <li class="active"><a href="#install-node">Installing Node.js</a></li>
+                            <li class=""><a href="#install-ghost">Installing Ghost</a></li>
+                            <li class=""><a href="#run-ghost">Running Ghost</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </nav>
         </aside>
         <section id="content" class="col-lg-9">
-          <h1> Download Node.js</h1>
 
-          <p>Ghost requires node <code>0.10.*</code> or <code>0.11.*</code> and <code>npm</code>. To get these you go to <a href="http://nodejs.org">http://nodes.org</a> and download your operating system's version of Node.js.</p>
+            <h1 id="overview">Overview</h1>
 
-          <h2>Windows</h2>
+            <p>Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.</p>
 
-          <p>Click on the NodeJS <code>.exe</code> and proceed with the install.</p>
+            <h1 id="install-node">Installing Node.js</h1>
 
-          <h2> Mac</h2>
+            <p>Ghost requires node <code>0.10.*</code>. To get it visit <a href="http://nodejs.org">http://nodejs.org</a> and press 'install' to download the latest version of Node.js.</p>
 
-          <p>Click on the NodeJS <code>.dmg</code> and proceed with the install.</p>
+            <h2>Windows</h2>
 
-          <h1> Install NPM</h1>
+            <p>The install button will download an <code>.msi</code> installer file. Double click this and follow the instructions to install Node.js as you would any other software.</p>
 
-          <ol>
-          <li>Open Terminal / Command Prompt</li>
-          <li>Navigate to your Ghost directory</li>
-          <li>Then enter <code>npm install</code></li>
-          </ol>
+            <h2>Mac</h2>
+
+            <p>The install button will download a <code>.dmg</code>. Install this as you would any other software.</p>
+
+            <h1 id="install-ghost">Installing Ghost</h1>
+
+            <p>Download the latest version of Ghost from <a href="http://ghost.org">Ghost.org</a>. Unzip the archive to a memorable location.</p>
+
+            <ol>
+                <li>Open Terminal / Command Prompt</li>
+                <li>Navigate to your Ghost directory</li>
+                <li>Then enter <code>npm install --production</code></li>
+            </ol>
 
 
-          <h1> Setting Up Ghost</h1>
+            <h1 id="run-ghost">Running Ghost</h1>
 
-          <h2> Installing Ghost</h2>
-
-          <ol>
-          <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
-          <li><p>This will have launched your Ghost blog, visit one of the folowing URLs to see;</p></li>
-          <li><p>Development: <a href="http://localhost:2368/">http://localhost:2368/</a></p></li>
-          <li>Production: Your URL</li>
-          </ol>
+            <ol>
+                <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
+                <li><p>This will have launched your Ghost blog, visit one  <a href="http://localhost:2368/">http://localhost:2368/</a> to see</p></li>
+            </ol>
         </section>
     </div>
 </div>

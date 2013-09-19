@@ -8,7 +8,7 @@ If you would like to download these docs and run them locally/offline for your o
 
 1. Clone the [Ghost repository](https://github.com/TryGhost/Ghost) and check out the `/gh-pages/` branch
 2. Go to this directory - `cd ~/User/path/to/Ghost`
-3. Edit `config.yml` and comment out the `url:` line
+3. Edit `_config.yml` and comment out the `url:` line
 4. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
 5. Build the docs - `$ jekyll build`
 6. Start the server - `$ jekyll serve`
