@@ -14,7 +14,7 @@ var User,
 
 function validatePasswordLength(password) {
     try {
-        GhostBookshelf.validator.check(password, "Your password is not long enough. It must be at least 8 chars long.").len(8);
+        GhostBookshelf.validator.check(password, "Your password is not long enough. It must be at least 8 characters long.").len(8);
     } catch (error) {
         return when.reject(error);
     }
