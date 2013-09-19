@@ -134,7 +134,7 @@ describe('Tag Model', function () {
 
                     return TagModel.findAll();
                 }).then(function (tagsFromDB) {
-                    tagsFromDB.length.should.eql(seededTagNames.length);
+                    tagsFromDB.length.should.eql(seededTagNames.length + 1);
 
                     done();
                 }).then(null, done);
@@ -181,7 +181,7 @@ describe('Tag Model', function () {
                     var tagModels = reloadedPost.related('tags').models,
                         tagNames = tagModels.map(function (t) { return t.attributes.name; });
                     tagNames.should.eql(['tag1', 'tag2', 'tag3']);
-                    tagModels[2].id.should.eql(3); // make sure it hasn't just added a new tag with the same name
+                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
 
                     done();
                 }).then(null, done);
