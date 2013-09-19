@@ -34,7 +34,8 @@
             "defaultValue": "6",
             "validations": {
                 "notNull": true,
-                "isNumeric": true
+                "isInt": true,
+                "max": 1000
             }
         },
         "forceI18n": {
