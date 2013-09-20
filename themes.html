@@ -2,14 +2,9 @@
 title: Theming Ghost
 layout: default
 bodyclass: themes
+heading: Ghost Themes
+subheading: Get started creating your own themes for Ghost
 ---
-
-<header class="bs-header">
-    <div class="container">
-        <h1>Installing Ghost &amp; Getting Started</h1>
-        <p>The first steps to setting up your new blog for the first time.</p>
-    </div>
-</header>
 
 <div class="container">
     <div class="row">
@@ -18,23 +13,18 @@ bodyclass: themes
                 <ul class="nav bs-sidenav">
 
                     <li class="active">
-                        <a href="#overview">Overview</a>
                         <ul class="nav">
-                            <li class="active"><a href="#overview-doctype">HTML5 doctype</a></li>
-                            <li class=""><a href="#overview-mobile">Mobile first</a></li>
-                            <li class=""><a href="#overview-responsive-images">Responsive images</a></li>
-                            <li class=""><a href="#overview-type-links">Type and links</a></li>
-                            <li class=""><a href="#overview-normalize">Normalize</a></li>
-                            <li class=""><a href="#overview-container">Container</a></li>
+                            <li class="active"><a href="#what-is-handlebars">What is Handlebars?</a></li>
+                            <li><a href="#file-structure">File Structure</a></li>
+                            <li><a href="#create-your-own">Create your own</a></li>
                         </ul>
                     </li>
                 </ul>
             </nav>
         </aside>
         <section id="content" class="col-lg-9">
-            <h1>Theming</h1>
 
-            <h2> What is Handlebars?</h2>
+            <h2>What is Handlebars?</h2>
 
             <p><a href="http://handlebarsjs.com/">Handlebars</a> is the Templating language used by Ghost.</p>
 
@@ -42,7 +32,7 @@ bodyclass: themes
 
             <p>To see the Handlebars Helpers to use in your Ghost theme, go to <a href="#">NEED LINK HERE</a>.</p>
 
-            <h2>The File Structure of a Ghost Theme</h2>
+            <h2 id="file-structure">The File Structure of a Ghost Theme</h2>
 
             <p>The recommended file structure is:</p>
 
@@ -87,7 +77,7 @@ bodyclass: themes
 
             <p>In Casper (the current default theme), the single post template has it’s own header, also using <code>@blog</code> global settings and then uses the <code>{{#post}}</code> data accessor to output all of the post details.</p>
 
-            <h2>Creating Your Own Theme</h2>
+            <h2 id="create-your-own">Creating Your Own Theme</h2>
 
             <ol>
                 <li>Copy Casper</li>
