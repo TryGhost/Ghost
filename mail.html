@@ -13,17 +13,79 @@ heading: Setting up Email
 
                     <li class="active">
                         <ul class="nav">
-                            <li class="active"><a href="#email">Email</a></li>
+                            <li class="active"><a href="#email-config">About</a></li>
+                            <li><a href="#how-to">How to</a></li>
                         </ul>
                     </li>
                 </ul>
             </nav>
         </aside>
         <section id="content" class="col-lg-9">
-            <h1 id="email">Email</h1>
-            <p>Sending email from Node.js is a little bit more complicated than you might be used to. If you see an error message about your email configuration in your Ghost install - you will need to setup an external email provider so that Ghost can send you system emails (for example, if you ever need to reset your password).</p>
-            <p>To do this, sign up for <a href="https://sendgrid.com/user/signup">an account with SendGrid</a> - don't worry - it's free! Once you've got your account details, edit your Ghost config.js to include your SendGrid account details.</p>
-            <p>That's it!</p>
+            <h2 id="email-config">Email Configuration</h2>
+            
+            <h3>Wait what?</h3>
+
+            <p>If you're familiar with PHP land, then you're probably very used to having email just magically work on your hosting platform. Node is a bit different, it's shiny and new and still a little rough around the edges in places.</p>
+
+            <p>But don't fear, setting up your email is a one-time thing and we're here to walk you through it.</p>
+
+            <h3>But why?</h3>
+
+            <p>At the moment, the only thing Ghost uses email for is sending you an email with a new password if you forget yours. It's not much, but don't underestimate how useful that feature is if you ever happen to need it.</p>
+
+            <p>In the future, Ghost will also support setting up email-based subscriptions to your blogs. Emailing new users account details, and other little helpful features that depend on the ability to send mail.</p>
+
+            <h2 id="how-to">Ok, so how do I do it?</h2>
+
+            <p>The first thing you're going to need is an account with an email sending service. We highly recommend Mailgun or Sendgrid. They both have nice free starter accounts which allow you to send more email than all but the most prolific email-subscription based blogs could manage.</p>
+
+
+            <h3>Mailgun</h3>
+
+            <p>Head along to mailgun.org and sign up for an account. You'll need to have an email address on hand, and it will ask you to either provide a domain name, or think up a subdomain. You can change this later, so for now why not register a subdomain similar to the name of the blog you're setting up.</p>
+
+            <p>Verify your email address with Mailgun, and then you'll have access to their lovely control panel. You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your domain on the right hand side… see the little screencast below to help you find your details.</p>
+
+            <img src="http://f.cl.ly/items/2d0f0o3R1O2N2W2A060x/mailgun.gif" alt="Mailgun details" width="816px" />
+
+            <br /><br />
+
+            <p>Right, now you've got everything you need, your mail settings need to look like this:</p>
+
+            <pre>
+mail: {
+    transport: 'SMTP',
+    host: 'smtp.mailgun.org',
+    options: {
+        service: 'Mailgun',
+        auth: {
+            user: '',
+            pass: ''
+         }
+    }
+}
+            </pre>
+
+            <p>Put your 'Login' from mailgun between the quote marks next to 'user' and your 'Password' from mailgun inside the quotes next to 'pass'. If I was configuring mailgun for the 'tryghosttest' account, it would look like this:</p>
+
+            <pre>
+mail: {
+    transport: 'SMTP',
+    host: 'smtp.mailgun.org',
+    options: {
+        service: 'Mailgun',
+        auth: {
+            user: 'postmaster@tryghosttest.mailgun.org',
+            pass: '25ip4bzyjwo1'
+         }
+    }
+}
+            </pre>
+
+            <p>Keep an eye out for all of the colons, quotes and curly brackets. Misplace one of those and you'll find you get weird errors.</p>
+
+            <p>You can reuse your settings for both your development and production environment if you have both.</p>
+
         </section>
     </div>
 </div>
