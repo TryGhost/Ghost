@@ -112,7 +112,7 @@ function ghostLocals(req, res, next) {
             _.extend(res.locals,  {
                 currentUser: {
                     name: currentUser.attributes.name,
-                    profile: currentUser.attributes.image
+                    image: currentUser.attributes.image
                 }
             });
             next();
