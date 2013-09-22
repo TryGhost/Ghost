@@ -15,9 +15,10 @@ subheading: The first steps to setting up your new blog for the first time.
                     <li class="active">
                         <a href="#overview">Overview</a>
                         <ul class="nav">
-                            <li class="active"><a href="#install-node">Installing Node.js</a></li>
-                            <li class=""><a href="#install-ghost">Installing Ghost</a></li>
-                            <li class=""><a href="#run-ghost">Running Ghost</a></li>
+                            <li class="active"><a href="#install-mac">Mac</a></li>
+                            <li class=""><a href="#install-windows">Windows</a></li>
+                            <li class=""><a href="#install-linux">Linux</a></li>
+                            <li class=""><a href="#troubleshooting">Troubleshooting</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -29,41 +30,107 @@ subheading: The first steps to setting up your new blog for the first time.
 
             <p>The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.</p>
 
-            <p>Ghost is built on <a href="http:://nodejs.org">Node</a>, a relatively new technology.</p>
+            <p>Ghost is built on <a href="http:://nodejs.org">Node</a>, and requires version <code>0.10.*</code> (latest stable version).</p>
 
             <p>Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.</p>
 
-            <h2 id="install-node">Installing Node.js</h2>
+            <h2 id="install-mac">Installing on Mac</h2>
 
-            <p>Ghost requires node <code>0.10.*</code> (latest stable version).</p>
+            <p>To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".</p>
 
-            <p>To get it visit <a href="http://nodejs.org">http://nodejs.org</a> and press 'install' to download the latest stable version of Node.js.</p>
+            <h3>Install Node</h3>
 
-            <h3>Windows</h3>
+            <ul>
+                <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, a '.pkg' file will be downloaded</li>
+                <li>Click on the download to open the installer, this is going to install both node and npm.</li>
+                <li>Click through the installer, finally entering your password and clicking 'install software'.</li>
+                <li>Once the installer is complete, go into your open Terminal window and type <code>echo $PATH</code> to check that '/usr/local/bin/' is in your path.</li>
+            </ul>
 
-            <p>The install button will download an <code>.msi</code> installer file. Double click this and follow the instructions to install Node.js as you would any other software.</p>
+            <p><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
 
-            <h3>Mac</h3>
+            <img width="100%" src="http://f.cl.ly/items/1g0s1L0p0K0b3G360a1Z/install-node-mac.gif" />
 
-            <p>The install button will download a <code>.dmg</code>. Install this as you would any other software.</p>
+            <h3>Install and Run Ghost</h3>
 
-            <h2 id="install-ghost">Installing Ghost</h2>
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
+                <li>On the downloads page, press the button to download the latest zip file.</li>
+                <li>Click on the arrow next to the newly downloaded file, and choose 'show in finder'.</li>
+                <li>In finder, double-click on the downloaded zip file to extract it.</li>
+                <li>Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.</li>
+                <li>In the new terminal tab type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1/ghost</code> and create your admin user to login to the Ghost admin.</li>
+                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+            </ul>
 
-            <p>Download the latest version of Ghost from <a href="http://ghost.org">Ghost.org</a>. Unzip the archive to a memorable location.</p>
+            <img width="100%" src="http://f.cl.ly/items/0W22431g241t2G3x3C24/install-ghost-mac.gif" />
 
-            <ol>
-                <li>Open Terminal / Command Prompt</li>
-                <li>Navigate to your Ghost directory</li>
-                <li>Then enter <code>npm install --production</code></li>
-            </ol>
+            <h2 id="install-windows">Installing on Windows</h2>
 
+            <h3>Install Node</h3>
 
-            <h2 id="run-ghost">Running Ghost</h2>
+            <ul>
+                <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, an '.msi' file will be downloaded</li>
+                <li>Click on the download to open the installer, this is going to install both node and npm.</li>
+                <li>Click through the installer.</li>
+                <li>Once the installer is complete, go into your start menu and open the 'Node command prompt'.</li>
+            </ul>
 
-            <ol>
-                <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
-                <li><p>This will have launched your Ghost blog, visit one  <a href="http://localhost:2368/">http://localhost:2368/</a> to see</p></li>
-            </ol>
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
+                <li>On the downloads page, press the button to download the latest zip file.</li>
+                <li>Click on the arrow next to the newly downloaded file, and choose 'show in folder'.</li>
+                <li>When the folder opens, double-click on the downloaded zip file to extract it.</li>
+                <li>In the Node command prompt, type <code>cd ~/Downloads/ghost-#.#.#</code> where the version number is the version you downloaded.</li>
+                <li>In the command prompt type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1/ghost</code> and create your admin user to login to the Ghost admin.</li>
+                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+            </ul>
+
+            <h2 id="install-linux">Installing on Linux</h2>
+
+            <h3>Install Node</h3>
+
+            <ul>
+                <li>Either download the <code>.tar.gz</code> archive from <a href="http://nodejs.org">http://nodejs.org</a>, or you may prefer to follow the instructions on how to <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">install from a package manager</a> instead.</li>
+                <li>Double check that you have Node and npm installed by typing <code>node -v</code> and <code>npm -v</code> into a terminal window</li>
+            </ul>
+
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
+                <li>On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from.</li>
+                <li>In a terminal window, change directory to the root of the extracted Ghost folder.</li>
+                <li>In the terminal type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1/ghost</code> and create your admin user to login to the Ghost admin.</li>
+                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+            </ul>
+
+            <h2 id="troubleshooting">Troubleshooting / FAQ</h2>
+
+            <dl>
+                <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
+                <dd>You can add it by doing the following:
+                    <ul>
+                        <li>In your terminal window type <code>cd ~</code>, this will take you to your home directory</li>
+                        <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
+                        <li>You should see a file called <code>.profile</code> or <code>.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
+                        <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
+                        <li>Add <code>export $PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
+                        <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
+                    </ul>
+                </dd>
+            </dl>
         </section>
     </div>
 </div>
