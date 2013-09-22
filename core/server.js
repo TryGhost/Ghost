@@ -339,7 +339,11 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
     server.post('/ghost/upload/', admin.uploader);
-    server.get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
+    // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
+    server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
+        res.redirect('/ghost/');
+    });
+    server.get(/^\/(ghost$\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
     server.get('/ghost/', redirectToSignup, auth, admin.index);
