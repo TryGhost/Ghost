@@ -11,9 +11,9 @@ var Post,
     config = require('../../../config'),
     Tag = require('./tag').Tag,
     Tags = require('./tag').Tags,
-    GhostBookshelf = require('./base');
+    ghostBookshelf = require('./base');
 
-Post = GhostBookshelf.Model.extend({
+Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
@@ -38,7 +38,7 @@ Post = GhostBookshelf.Model.extend({
     },
 
     validate: function () {
-        GhostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
+        ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
 
         return true;
     },
@@ -61,7 +61,7 @@ Post = GhostBookshelf.Model.extend({
             this.set('published_by', 1);
         }
 
-        GhostBookshelf.Model.prototype.saving.call(this);
+        ghostBookshelf.Model.prototype.saving.call(this);
 
         if (this.hasChanged('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
@@ -80,7 +80,7 @@ Post = GhostBookshelf.Model.extend({
             this.set('author_id', 1);
         }
 
-        GhostBookshelf.Model.prototype.creating.call(this);
+        ghostBookshelf.Model.prototype.creating.call(this);
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
@@ -174,7 +174,7 @@ Post = GhostBookshelf.Model.extend({
     findAll:  function (options) {
         options = options || {};
         options.withRelated = [ 'author', 'user', 'tags' ];
-        return GhostBookshelf.Model.findAll.call(this, options);
+        return ghostBookshelf.Model.findAll.call(this, options);
     },
 
     // #### findOne
@@ -182,7 +182,7 @@ Post = GhostBookshelf.Model.extend({
     findOne: function (args, options) {
         options = options || {};
         options.withRelated = [ 'author', 'user', 'tags' ];
-        return GhostBookshelf.Model.findOne.call(this, args, options);
+        return ghostBookshelf.Model.findOne.call(this, args, options);
     },
 
      // #### findPage
@@ -251,7 +251,7 @@ Post = GhostBookshelf.Model.extend({
 
                 // After we're done, we need to figure out what
                 // the limits are for the pagination values.
-                qb = GhostBookshelf.Knex(_.result(collection, 'tableName'));
+                qb = ghostBookshelf.knex(_.result(collection, 'tableName'));
 
                 if (opts.where) {
                     qb.where(opts.where);
@@ -328,7 +328,7 @@ Post = GhostBookshelf.Model.extend({
     },
 
     add: function (newPostData, options) {
-        return GhostBookshelf.Model.add.call(this, newPostData, options).tap(function (post) {
+        return ghostBookshelf.Model.add.call(this, newPostData, options).tap(function (post) {
             // associated models can't be created until the post has an ID, so run this after
             return post.updateTags(newPostData.tags);
         });
@@ -349,7 +349,7 @@ Post = GhostBookshelf.Model.extend({
 
 });
 
-Posts = GhostBookshelf.Collection.extend({
+Posts = ghostBookshelf.Collection.extend({
 
     model: Post
 

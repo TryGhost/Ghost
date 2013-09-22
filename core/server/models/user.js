@@ -7,14 +7,14 @@ var User,
     nodefn         = require('when/node/function'),
     bcrypt         = require('bcrypt-nodejs'),
     Posts          = require('./post').Posts,
-    GhostBookshelf = require('./base'),
+    ghostBookshelf = require('./base'),
     Role           = require('./role').Role,
     Permission     = require('./permission').Permission;
 
 
 function validatePasswordLength(password) {
     try {
-        GhostBookshelf.validator.check(password, "Your must be at least 8 characters long.").len(8);
+        ghostBookshelf.validator.check(password, "Your must be at least 8 characters long.").len(8);
     } catch (error) {
         return when.reject(error);
     }
@@ -22,7 +22,7 @@ function validatePasswordLength(password) {
     return when.resolve();
 }
 
-User = GhostBookshelf.Model.extend({
+User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
@@ -33,10 +33,10 @@ User = GhostBookshelf.Model.extend({
     ],
 
     validate: function () {
-        GhostBookshelf.validator.check(this.get('email'), "Please enter a valid email address. That one looks a bit dodgy.").isEmail();
-        GhostBookshelf.validator.check(this.get('bio'), "We're not writing a novel here! I'm afraid your bio has to stay under 200 characters.").len(0, 200);
+        ghostBookshelf.validator.check(this.get('email'), "Please enter a valid email address. That one looks a bit dodgy.").isEmail();
+        ghostBookshelf.validator.check(this.get('bio'), "We're not writing a novel here! I'm afraid your bio has to stay under 200 characters.").len(0, 200);
         if (this.get('website') && this.get('website').length > 0) {
-            GhostBookshelf.validator.check(this.get('website'), "Looks like your website is not actually a website. Try again?").isUrl();
+            ghostBookshelf.validator.check(this.get('website'), "Looks like your website is not actually a website. Try again?").isUrl();
         }
         return true;
     },
@@ -44,7 +44,7 @@ User = GhostBookshelf.Model.extend({
     creating: function () {
         var self = this;
 
-        GhostBookshelf.Model.prototype.creating.call(this);
+        ghostBookshelf.Model.prototype.creating.call(this);
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
@@ -63,7 +63,7 @@ User = GhostBookshelf.Model.extend({
         this.set('website', this.sanitize('website'));
         this.set('bio', this.sanitize('bio'));
 
-        return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
+        return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
 
     posts: function () {
@@ -111,7 +111,7 @@ User = GhostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
             // Save the user with the hashed password
-            return GhostBookshelf.Model.add.call(self, userData);
+            return ghostBookshelf.Model.add.call(self, userData);
         }).then(function (addedUser) {
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
@@ -135,8 +135,8 @@ User = GhostBookshelf.Model.extend({
         //     }
         //     return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
         //         userData.password = hash;
-        //         GhostBookshelf.Model.add.call(UserRole, userRoles);
-        //         return GhostBookshelf.Model.add.call(User, userData);
+        //         ghostBookshelf.Model.add.call(UserRole, userRoles);
+        //         return ghostBookshelf.Model.add.call(User, userData);
         //     }, errors.logAndThrowError);
         // }, errors.logAndThrowError);
 
@@ -239,7 +239,7 @@ User = GhostBookshelf.Model.extend({
 
 });
 
-Users = GhostBookshelf.Collection.extend({
+Users = ghostBookshelf.Collection.extend({
     model: User
 });
 
