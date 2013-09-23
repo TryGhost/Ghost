@@ -113,6 +113,8 @@
                 break;
             case "currentDate":
                 md = moment(new Date()).format("D MMMM YYYY");
+                this.elem.replaceSelection(md, "end");
+                pass = false;
                 break;
             default:
                 if (this.options.syntax[this.style]) {
