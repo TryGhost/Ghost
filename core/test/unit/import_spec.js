@@ -7,7 +7,7 @@
 //    errors = require('../../server/errorHandling'),
 //
 //    // Stuff we are testing
-//    knex = require("../../server/models/base").Knex,
+//    knex = require("../../server/models/base").knex,
 //    migration = require('../../server/data/migration'),
 //    exporter = require('../../server/data/export'),
 //    importer = require('../../server/data/import'),
