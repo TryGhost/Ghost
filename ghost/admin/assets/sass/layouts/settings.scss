@@ -70,11 +70,8 @@
             border-bottom: none;
             box-shadow: #edece4 0 -1px 0 inset, #edece4 1px 0 0;
             //Transparent gradient to make bg fade out as it goes out the top.
-            background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
             background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
             background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
-            background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
-            background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
             background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
 
             @include breakpoint($netbook) {
