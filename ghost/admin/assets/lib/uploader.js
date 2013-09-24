@@ -22,8 +22,7 @@
         $.extend(this, {
             complete: function (result) {
                 var self = this;
-
-                $dropzone.trigger("uploadsuccess", [result, $dropzone.attr('id')]);
+                $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
 
                 function showImage(width, height) {
                     $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
