@@ -1,6 +1,6 @@
 var GhostBookshelf = require('./base'),
-    User = require('./user').User,
-    Role = require('./role').Role,
+    User           = require('./user').User,
+    Role           = require('./role').Role,
     Permission,
     Permissions;
 

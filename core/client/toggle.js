@@ -2,7 +2,7 @@
 
 /*global document, $, Ghost */
 (function () {
-    "use strict";
+    'use strict';
 
     Ghost.temporary.hideToggles = function () {
         $('[data-toggle]').each(function () {
@@ -11,7 +11,7 @@
         });
 
         // Toggle active classes on menu headers
-        $("[data-toggle].active").removeClass("active");
+        $('[data-toggle].active').removeClass('active');
     };
 
     Ghost.temporary.initToggles = function ($el) {

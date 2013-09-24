@@ -173,7 +173,7 @@ Post = GhostBookshelf.Model.extend({
     // Extends base model findAll to eager-fetch author and user relationships.
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = [ "author", "user", "tags" ];
+        options.withRelated = [ 'author', 'user', 'tags' ];
         return GhostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -181,7 +181,7 @@ Post = GhostBookshelf.Model.extend({
     // Extends base model findOne to eager-fetch author and user relationships.
     findOne: function (args, options) {
         options = options || {};
-        options.withRelated = [ "author", "user", "tags" ];
+        options.withRelated = [ 'author', 'user', 'tags' ];
         return GhostBookshelf.Model.findOne.call(this, args, options);
     },
 
@@ -235,7 +235,7 @@ Post = GhostBookshelf.Model.extend({
             postCollection.query('where', opts.where);
         }
 
-        opts.withRelated = [ "author", "user", "tags" ];
+        opts.withRelated = [ 'author', 'user', 'tags' ];
 
         // Set the limit & offset for the query, fetching
         // with the opts (to specify any eager relations, etc.)

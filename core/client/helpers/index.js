@@ -1,9 +1,9 @@
 /*globals Handlebars, moment
 */
 (function () {
-    "use strict";
+    'use strict';
     Handlebars.registerHelper('date', function (context, block) {
-        var f = block.hash.format || "MMM Do, YYYY",
+        var f = block.hash.format || 'MMM Do, YYYY',
             timeago = block.hash.timeago,
             date;
         if (timeago) {

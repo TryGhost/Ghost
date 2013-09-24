@@ -1,10 +1,10 @@
-var sequence    = require('when/sequence'),
-    _ = require('underscore'),
-    Post = require('../../models/post').Post,
-    Tag = require('../../models/tag').Tag,
-    Role = require('../../models/role').Role,
+var sequence   = require('when/sequence'),
+    _          = require('underscore'),
+    Post       = require('../../models/post').Post,
+    Tag        = require('../../models/tag').Tag,
+    Role       = require('../../models/role').Role,
     Permission = require('../../models/permission').Permission,
-    uuid = require('node-uuid');
+    uuid       = require('node-uuid');
 
 var fixtures = {
     posts: [

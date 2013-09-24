@@ -1,17 +1,17 @@
 
-var _ = require("underscore"),
-    when = require('when'),
+var _           = require('underscore'),
+    when        = require('when'),
     ghostApi,
-    loader = require("./loader"),
-    GhostPlugin = require("./GhostPlugin");
+    loader      = require('./loader'),
+    GhostPlugin = require('./GhostPlugin');
 
 function getInstalledPlugins() {
     if (!ghostApi) {
         ghostApi = require('../api');
     }
 
-    return ghostApi.settings.read("installedPlugins").then(function (installed) {
-        installed.value = installed.value || "[]";
+    return ghostApi.settings.read('installedPlugins').then(function (installed) {
+        installed.value = installed.value || '[]';
 
         try {
             installed = JSON.parse(installed.value);
@@ -27,7 +27,7 @@ function saveInstalledPlugins(installedPlugins) {
     return getInstalledPlugins().then(function (currentInstalledPlugins) {
         var updatedPluginsInstalled = _.uniq(installedPlugins.concat(currentInstalledPlugins));
 
-        return ghostApi.settings.edit("installedPlugins", updatedPluginsInstalled);
+        return ghostApi.settings.edit('installedPlugins', updatedPluginsInstalled);
     });
 }
 
