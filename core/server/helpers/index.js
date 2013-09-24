@@ -3,6 +3,7 @@ var _ = require('underscore'),
     downsize = require('downsize'),
     when = require('when'),
     hbs = require('express-hbs'),
+    semverutils = require('semver-utils'),
     packageInfo = require('../../../package.json'),
     errors = require('../errorHandling'),
     models = require('../models'),
@@ -208,8 +209,15 @@ coreHelpers = function (ghost) {
     });
 
     ghost.registerThemeHelper('ghost_head', function (options) {
-        var head = [];
-        head.push('<meta name="generator" content="Ghost ' + this.version + '" />');
+        var head = [],
+            v = semverutils.parse(this.version),
+            trimmedVersion = this.version;
+
+        if (v) {
+            trimmedVersion = v.major + '.' + v.minor;
+        }
+
+        head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
 
         return ghost.doFilter('ghost_head', head, function (head) {
