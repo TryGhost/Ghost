@@ -1,6 +1,6 @@
 /*globals window, $, _, Backbone, Validator */
 (function () {
-    "use strict";
+    'use strict';
 
     var Ghost = {
         Layout      : {},
