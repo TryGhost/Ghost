@@ -7,7 +7,7 @@ subheading: The first steps to setting up your new blog for the first time.
 ---
 
 <div class="container">
-    <div class="row">                                                                                                                                          x
+    <div class="row">
         <aside id="sidebar" class="col-lg-3">
             <nav class="bs-sidebar">
                 <ul class="nav bs-sidenav">
@@ -75,25 +75,36 @@ subheading: The first steps to setting up your new blog for the first time.
 
             <ul>
                 <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, an '.msi' file will be downloaded</li>
-                <li>Click on the download to open the installer, this is going to install both node and npm.</li>
-                <li>Click through the installer.</li>
-                <li>Once the installer is complete, go into your start menu and open the 'Node command prompt'.</li>
+                <li>Click on the download to open the installer, this is going to install both Node and npm.</li>
+                <li>Click through the installer, until you get to the screen telling you Node.js is installed.</li>
             </ul>
 
-            <h3>Install and Run Ghost</h3>
+            <img width="100%" src="http://f.cl.ly/items/3N0l3Z1M2Q1G083K0v22/install-node-win.gif" />
+
+            <h3>Download & Extract Ghost</h3>
 
             <ul>
                 <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
                 <li>On the downloads page, press the button to download the latest zip file.</li>
                 <li>Click on the arrow next to the newly downloaded file, and choose 'show in folder'.</li>
-                <li>When the folder opens, double-click on the downloaded zip file to extract it.</li>
-                <li>In the Node command prompt, type <code>cd ~/Downloads/ghost-#.#.#</code> where the version number is the version you downloaded.</li>
-                <li>In the command prompt type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When the folder opens, right click on the downloaded zip file and choose 'Extract all'.</li>
+            </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/1g0I1L0o1r0y143M1Z0P/install-ghost-win.gif" />
+
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'</li>
+                <li>In the Node command prompt, you need to change directory to where you extracted Ghost. Type: <code>cd Downloads/ghost-#.#.#</code> (replace hashes with the version of Ghost you downloaded).</li>
+                <li>Next, in the command prompt type <code>npm install --production</code> (note the two dashes).</li>
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
                 <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
                 <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
             </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/0H0r1A2L061n1x3E3s47/install-ghost-win-2.gif" />
 
             <h2 id="install-linux">Installing on Linux</h2>
 
