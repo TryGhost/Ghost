@@ -1,6 +1,6 @@
 var Tag,
     Tags,
-    Posts = require('./post').Posts,
+    Posts          = require('./post').Posts,
     GhostBookshelf = require('./base');
 
 Tag = GhostBookshelf.Model.extend({

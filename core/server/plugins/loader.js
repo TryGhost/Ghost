@@ -1,7 +1,7 @@
 
-var path = require("path"),
-    _ = require("underscore"),
-    when = require("when"),
+var path = require('path'),
+    _    = require('underscore'),
+    when = require('when'),
     ghostInstance,
     loader;
 
@@ -10,7 +10,7 @@ function getGhostInstance() {
         return ghostInstance;
     }
 
-    var Ghost = require("../../ghost");
+    var Ghost = require('../../ghost');
 
     ghostInstance = new Ghost();
 
