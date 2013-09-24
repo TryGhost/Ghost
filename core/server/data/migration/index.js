@@ -1,15 +1,15 @@
 
-var _ = require('underscore'),
-    when = require('when'),
-    series = require('when/sequence'),
-    errors = require('../../errorHandling'),
-    knex = require('../../models/base').Knex,
+var _               = require('underscore'),
+    when            = require('when'),
+    series          = require('when/sequence'),
+    errors          = require('../../errorHandling'),
+    knex            = require('../../models/base').Knex,
 
     defaultSettings = require('../default-settings'),
-    Settings = require('../../models/settings').Settings,
-    fixtures = require('../fixtures'),
+    Settings        = require('../../models/settings').Settings,
+    fixtures        = require('../fixtures'),
 
-    initialVersion = '000',
+    initialVersion  = '000',
     defaultDatabaseVersion;
 
 // Default Database Version

@@ -1,5 +1,5 @@
-var User = require('./user').User,
-    Permission = require('./permission').Permission,
+var User           = require('./user').User,
+    Permission     = require('./permission').Permission,
     GhostBookshelf = require('./base'),
     Role,
     Roles;

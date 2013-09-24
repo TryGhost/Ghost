@@ -1,8 +1,8 @@
-var cp = require('child_process'),
-    url = require('url'),
-    _ = require('underscore'),
-    when = require('when'),
-    nodefn = require('when/node/function'),
+var cp         = require('child_process'),
+    url        = require('url'),
+    _          = require('underscore'),
+    when       = require('when'),
+    nodefn     = require('when/node/function'),
     nodemailer = require('nodemailer');
 
 function GhostMailer(opts) {

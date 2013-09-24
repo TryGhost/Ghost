@@ -1,13 +1,13 @@
-var path = require('path'),
-    when = require('when'),
-    semver = require("semver"),
-    fs = require("fs"),
-    path = require("path"),
-    _ = require('underscore'),
-    spawn = require("child_process").spawn,
+var path           = require('path'),
+    when           = require('when'),
+    semver         = require('semver'),
+    fs             = require('fs'),
+    path           = require('path'),
+    _              = require('underscore'),
+    spawn          = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
-    distDirectory =  path.resolve(process.cwd(), '.dist'),
-    configLoader = require('./core/config-loader.js'),
+    distDirectory  = path.resolve(process.cwd(), '.dist'),
+    configLoader   = require('./core/config-loader.js'),
 
     buildGlob = [
         '**',
@@ -94,7 +94,7 @@ var path = require('path'),
             // Start our server in development
             express: {
                 options: {
-                    script: "index.js"
+                    script: 'index.js'
                 },
 
                 dev: {
@@ -136,9 +136,9 @@ var path = require('path'),
                     },
                     files: {
                         src: [
-                            "*.js",
-                            "core/*.js",
-                            "core/server/**/*.js"
+                            '*.js',
+                            'core/*.js',
+                            'core/server/**/*.js'
                         ]
                     }
                 },
@@ -156,11 +156,11 @@ var path = require('path'),
                         unparam: true
                     },
                     files: {
-                        src: "core/client/**/*.js"
+                        src: 'core/client/**/*.js'
                     },
                     exclude: [
-                        "core/client/assets/**/*.js",
-                        "core/client/tpl/**/*.js"
+                        'core/client/assets/**/*.js',
+                        'core/client/tpl/**/*.js'
                     ]
                 },
                 shared: {
@@ -180,19 +180,19 @@ var path = require('path'),
                     },
                     files: {
                         src: [
-                            "core/shared/**/*.js"
+                            'core/shared/**/*.js'
                         ]
                     },
                     exclude: [
-                        "core/shared/vendor/**/*.js"
+                        'core/shared/vendor/**/*.js'
                     ]
                 }
             },
 
             mochacli: {
                 options: {
-                    ui: "bdd",
-                    reporter: "spec"
+                    ui: 'bdd',
+                    reporter: 'spec'
                 },
 
                 all: {
@@ -245,14 +245,14 @@ var path = require('path'),
             handlebars: {
                 core: {
                     options: {
-                        namespace: "JST",
+                        namespace: 'JST',
                         processName: function (filename) {
                             filename = filename.replace('core/client/tpl/', '');
                             return filename.replace('.hbs', '');
                         }
                     },
                     files: {
-                        "core/client/tpl/hbs-tpl.js": "core/client/tpl/**/*.hbs"
+                        'core/client/tpl/hbs-tpl.js': 'core/client/tpl/**/*.hbs'
                     }
                 }
             },
@@ -260,19 +260,19 @@ var path = require('path'),
             groc: {
                 docs: {
                     options: {
-                        "out": "./docs/",
-                        "glob": [
-                            "README.md",
-                            "config.example.js",
-                            "index.js",
-                            "core/*.js",
-                            "core/server/**/*.js",
-                            "core/shared/**/*.js",
-                            "core/client/**/*.js"
+                        'out': './docs/',
+                        'glob': [
+                            'README.md',
+                            'config.example.js',
+                            'index.js',
+                            'core/*.js',
+                            'core/server/**/*.js',
+                            'core/shared/**/*.js',
+                            'core/client/**/*.js'
                         ],
-                        "except": [
-                            "!core/**/vendor/**/*.js",
-                            "!core/client/tpl/**/*.js"
+                        'except': [
+                            '!core/**/vendor/**/*.js',
+                            '!core/client/tpl/**/*.js'
                         ]
                     }
                 }
@@ -280,7 +280,7 @@ var path = require('path'),
 
             clean: {
                 build: {
-                    src: ["<%= paths.buildBuild %>/**"]
+                    src: ['<%= paths.buildBuild %>/**']
                 }
             },
 
@@ -289,21 +289,21 @@ var path = require('path'),
                     files: [{
                         expand: true,
                         src: buildGlob,
-                        dest: "<%= paths.nightlyBuild %>/<%= pkg.version %>/"
+                        dest: '<%= paths.nightlyBuild %>/<%= pkg.version %>/'
                     }]
                 },
                 weekly: {
                     files: [{
                         expand: true,
                         src: buildGlob,
-                        dest: "<%= paths.weeklyBuild %>/<%= pkg.version %>/"
+                        dest: '<%= paths.weeklyBuild %>/<%= pkg.version %>/'
                     }]
                 },
                 build: {
                     files: [{
                         expand: true,
                         src: buildGlob,
-                        dest: "<%= paths.buildBuild %>/"
+                        dest: '<%= paths.buildBuild %>/'
                     }]
                 }
             },
@@ -311,27 +311,27 @@ var path = require('path'),
             compress: {
                 nightly: {
                     options: {
-                        archive: "<%= paths.nightlyDist %>/Ghost-Nightly-<%= pkg.version %>.zip"
+                        archive: '<%= paths.nightlyDist %>/Ghost-Nightly-<%= pkg.version %>.zip'
                     },
                     expand: true,
-                    cwd: "<%= paths.nightlyBuild %>/<%= pkg.version %>/",
-                    src: ["**"]
+                    cwd: '<%= paths.nightlyBuild %>/<%= pkg.version %>/',
+                    src: ['**']
                 },
                 weekly: {
                     options: {
-                        archive: "<%= paths.weeklyDist %>/Ghost-Weekly-<%= pkg.version %>.zip"
+                        archive: '<%= paths.weeklyDist %>/Ghost-Weekly-<%= pkg.version %>.zip'
                     },
                     expand: true,
-                    cwd: "<%= paths.weeklyBuild %>/<%= pkg.version %>/",
-                    src: ["**"]
+                    cwd: '<%= paths.weeklyBuild %>/<%= pkg.version %>/',
+                    src: ['**']
                 },
                 build: {
                     options: {
-                        archive: "<%= paths.buildDist %>/Ghost-Build.zip"
+                        archive: '<%= paths.buildDist %>/Ghost-Build.zip'
                     },
                     expand: true,
-                    cwd: "<%= paths.buildBuild %>/",
-                    src: ["**"]
+                    cwd: '<%= paths.buildBuild %>/',
+                    src: ['**']
                 }
             },
 
@@ -340,113 +340,113 @@ var path = require('path'),
                     tagName: '%VERSION%',
                     commitMessage: '<%= buildType %> Release %VERSION%',
                     tagMessage: '<%= buildType %> Release %VERSION%',
-                    pushTo: "origin build"
+                    pushTo: 'origin build'
                 }
             },
 
             concat: {
                 dev: {
                     files: {
-                        "core/built/scripts/vendor.js": [
-                            "core/shared/vendor/jquery/jquery.js",
-                            "core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js",
-                            "core/client/assets/lib/jquery-utils.js",
-                            "core/client/assets/lib/uploader.js",
-                            "core/shared/vendor/underscore.js",
-                            "core/shared/vendor/backbone/backbone.js",
-                            "core/shared/vendor/handlebars/handlebars-runtime.js",
-                            "core/shared/vendor/moment.js",
+                        'core/built/scripts/vendor.js': [
+                            'core/shared/vendor/jquery/jquery.js',
+                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
+                            'core/client/assets/lib/jquery-utils.js',
+                            'core/client/assets/lib/uploader.js',
+                            'core/shared/vendor/underscore.js',
+                            'core/shared/vendor/backbone/backbone.js',
+                            'core/shared/vendor/handlebars/handlebars-runtime.js',
+                            'core/shared/vendor/moment.js',
 
-                            "core/client/assets/vendor/icheck/jquery.icheck.min.js",
+                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
 
-                            "core/shared/vendor/jquery/jquery.ui.widget.js",
-                            "core/shared/vendor/jquery/jquery.iframe-transport.js",
-                            "core/shared/vendor/jquery/jquery.fileupload.js",
+                            'core/shared/vendor/jquery/jquery.ui.widget.js',
+                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
+                            'core/shared/vendor/jquery/jquery.fileupload.js',
 
-                            "core/client/assets/vendor/codemirror/codemirror.js",
-                            "core/client/assets/vendor/codemirror/addon/mode/overlay.js",
-                            "core/client/assets/vendor/codemirror/mode/markdown/markdown.js",
-                            "core/client/assets/vendor/codemirror/mode/gfm/gfm.js",
-                            "core/client/assets/vendor/showdown/showdown.js",
-                            "core/client/assets/vendor/showdown/extensions/ghostdown.js",
-                            "core/shared/vendor/showdown/extensions/github.js",
-                            "core/client/assets/vendor/shortcuts.js",
-                            "core/client/assets/vendor/validator-client.js",
-                            "core/client/assets/vendor/countable.js",
-                            "core/client/assets/vendor/to-title-case.js",
-                            "core/client/assets/vendor/packery.pkgd.min.js",
-                            "core/client/assets/vendor/fastclick.js"
+                            'core/client/assets/vendor/codemirror/codemirror.js',
+                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
+                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
+                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
+                            'core/client/assets/vendor/showdown/showdown.js',
+                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
+                            'core/shared/vendor/showdown/extensions/github.js',
+                            'core/client/assets/vendor/shortcuts.js',
+                            'core/client/assets/vendor/validator-client.js',
+                            'core/client/assets/vendor/countable.js',
+                            'core/client/assets/vendor/to-title-case.js',
+                            'core/client/assets/vendor/packery.pkgd.min.js',
+                            'core/client/assets/vendor/fastclick.js'
                         ],
 
-                        "core/built/scripts/helpers.js": [
-                            "core/client/init.js",
+                        'core/built/scripts/helpers.js': [
+                            'core/client/init.js',
 
-                            "core/client/mobile-interactions.js",
-                            "core/client/toggle.js",
-                            "core/client/markdown-actions.js",
-                            "core/client/helpers/index.js"
+                            'core/client/mobile-interactions.js',
+                            'core/client/toggle.js',
+                            'core/client/markdown-actions.js',
+                            'core/client/helpers/index.js'
                         ],
 
-                        "core/built/scripts/templates.js": [
-                            "core/client/tpl/hbs-tpl.js"
+                        'core/built/scripts/templates.js': [
+                            'core/client/tpl/hbs-tpl.js'
                         ],
 
-                        "core/built/scripts/models.js": [
-                            "core/client/models/**/*.js"
+                        'core/built/scripts/models.js': [
+                            'core/client/models/**/*.js'
                         ],
 
-                        "core/built/scripts/views.js": [
-                            "core/client/views/**/*.js",
-                            "core/client/router.js"
+                        'core/built/scripts/views.js': [
+                            'core/client/views/**/*.js',
+                            'core/client/router.js'
                         ]
                     }
                 },
                 prod: {
                     files: {
-                        "core/built/scripts/ghost.js": [
-                            "core/shared/vendor/jquery/jquery.js",
-                            "core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js",
-                            "core/client/assets/lib/jquery-utils.js",
-                            "core/client/assets/lib/uploader.js",
-                            "core/shared/vendor/underscore.js",
-                            "core/shared/vendor/backbone/backbone.js",
-                            "core/shared/vendor/handlebars/handlebars-runtime.js",
-                            "core/shared/vendor/moment.js",
+                        'core/built/scripts/ghost.js': [
+                            'core/shared/vendor/jquery/jquery.js',
+                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
+                            'core/client/assets/lib/jquery-utils.js',
+                            'core/client/assets/lib/uploader.js',
+                            'core/shared/vendor/underscore.js',
+                            'core/shared/vendor/backbone/backbone.js',
+                            'core/shared/vendor/handlebars/handlebars-runtime.js',
+                            'core/shared/vendor/moment.js',
 
-                            "core/client/assets/vendor/icheck/jquery.icheck.min.js",
+                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
 
-                            "core/shared/vendor/jquery/jquery.ui.widget.js",
-                            "core/shared/vendor/jquery/jquery.iframe-transport.js",
-                            "core/shared/vendor/jquery/jquery.fileupload.js",
+                            'core/shared/vendor/jquery/jquery.ui.widget.js',
+                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
+                            'core/shared/vendor/jquery/jquery.fileupload.js',
 
-                            "core/client/assets/vendor/codemirror/codemirror.js",
-                            "core/client/assets/vendor/codemirror/addon/mode/overlay.js",
-                            "core/client/assets/vendor/codemirror/mode/markdown/markdown.js",
-                            "core/client/assets/vendor/codemirror/mode/gfm/gfm.js",
-                            "core/client/assets/vendor/showdown/showdown.js",
-                            "core/client/assets/vendor/showdown/extensions/ghostdown.js",
-                            "core/shared/vendor/showdown/extensions/github.js",
-                            "core/client/assets/vendor/shortcuts.js",
-                            "core/client/assets/vendor/validator-client.js",
-                            "core/client/assets/vendor/countable.js",
-                            "core/client/assets/vendor/to-title-case.js",
-                            "core/client/assets/vendor/packery.pkgd.min.js",
-                            "core/client/assets/vendor/fastclick.js",
+                            'core/client/assets/vendor/codemirror/codemirror.js',
+                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
+                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
+                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
+                            'core/client/assets/vendor/showdown/showdown.js',
+                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
+                            'core/shared/vendor/showdown/extensions/github.js',
+                            'core/client/assets/vendor/shortcuts.js',
+                            'core/client/assets/vendor/validator-client.js',
+                            'core/client/assets/vendor/countable.js',
+                            'core/client/assets/vendor/to-title-case.js',
+                            'core/client/assets/vendor/packery.pkgd.min.js',
+                            'core/client/assets/vendor/fastclick.js',
 
-                            "core/client/init.js",
+                            'core/client/init.js',
 
-                            "core/client/mobile-interactions.js",
-                            "core/client/toggle.js",
-                            "core/client/markdown-actions.js",
-                            "core/client/helpers/index.js",
+                            'core/client/mobile-interactions.js',
+                            'core/client/toggle.js',
+                            'core/client/markdown-actions.js',
+                            'core/client/helpers/index.js',
 
-                            "core/client/tpl/hbs-tpl.js",
+                            'core/client/tpl/hbs-tpl.js',
 
-                            "core/client/models/**/*.js",
+                            'core/client/models/**/*.js',
 
-                            "core/client/views/**/*.js",
+                            'core/client/views/**/*.js',
 
-                            "core/client/router.js"
+                            'core/client/router.js'
                         ]
                     }
                 }
@@ -455,7 +455,7 @@ var path = require('path'),
             uglify: {
                 prod: {
                     files: {
-                        "core/built/scripts/ghost.min.js": "core/built/scripts/ghost.js"
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
                     }
                 }
             }
@@ -526,17 +526,17 @@ var path = require('path'),
                 depth = depth || 0;
 
                 if (!depth) {
-                    grunt.log.writeln("git " + args.join(" "));
+                    grunt.log.writeln('git ' + args.join(' '));
                 }
 
                 var buffer = [];
-                spawn("git", args, {
+                spawn('git', args, {
                     // We can reasonably assume the gruntfile will be in the root of the repo.
                     cwd : __dirname,
 
-                    stdio : ["ignore", "pipe", process.stderr]
+                    stdio : ['ignore', 'pipe', process.stderr]
 
-                }).on("exit", function (code) {
+                }).on('exit', function (code) {
 
                     // Process exited correctly but we got no output.
                     // Spawn again, but make sure we don't spiral out of control.
@@ -552,7 +552,7 @@ var path = require('path'),
                     }
 
                     if (code === 0) {
-                        return callback(buffer.join(""));
+                        return callback(buffer.join(''));
                     }
 
                     // We failed. Git returned a non-standard exit code.
@@ -560,7 +560,7 @@ var path = require('path'),
                     done(false);
 
                 // Push returned data into the buffer
-                }).stdout.on("data", buffer.push.bind(buffer));
+                }).stdout.on('data', buffer.push.bind(buffer));
             }
 
             // Crazy function for getting around inconsistencies in tagging
@@ -575,14 +575,14 @@ var path = require('path'),
                 // into sort directly. Could be something to think about
                 // in future.
 
-                if (semver.rcompare(a, "0.2.0") < 0 ||
-                        semver.rcompare(b, "0.2.0") < 0) {
+                if (semver.rcompare(a, '0.2.0') < 0 ||
+                        semver.rcompare(b, '0.2.0') < 0) {
 
                     return semver.rcompare(a, b);
                 }
 
-                a = a.split("-");
-                b = b.split("-");
+                a = a.split('-');
+                b = b.split('-');
 
                 if (semver.rcompare(a[0], b[0]) !== 0) {
                     return semver.rcompare(a[0], b[0]);
@@ -597,7 +597,7 @@ var path = require('path'),
 
             // Gets tags in master branch, sorts them with semver,
             function getTags(callback) {
-                git(["show-ref", "--tags"], function (results) {
+                git(['show-ref', '--tags'], function (results) {
                     results = results
                         .split(/\n+/)
                         .filter(function (tag) {
@@ -605,8 +605,8 @@ var path = require('path'),
                         })
                         .map(function (tag) {
                             return {
-                                "tag": tag.split(/tags\//).pop().trim(),
-                                "ref": tag.split(/\s+/).shift().trim()
+                                'tag': tag.split(/tags\//).pop().trim(),
+                                'ref': tag.split(/\s+/).shift().trim()
                             };
                         })
                         .sort(sortTags);
@@ -620,11 +620,11 @@ var path = require('path'),
                 var commits = [],
                     commitRegex =
                         new RegExp(
-                            "\\n*[|\\*\\s]*commit\\s+([a-f0-9]+)" +
-                                "\\n[|\\*\\s]*Author:\\s+([^<\\n]+)<([^>\\n]+)>" +
-                                "\\n[|\\*\\s]*Date:\\s+([^\\n]+)" +
-                                "\\n+[|\\*\\s]*[ ]{4}([^\\n]+)",
-                            "ig"
+                            '\\n*[|\\*\\s]*commit\\s+([a-f0-9]+)' +
+                                '\\n[|\\*\\s]*Author:\\s+([^<\\n]+)<([^>\\n]+)>' +
+                                '\\n[|\\*\\s]*Date:\\s+([^\\n]+)' +
+                                '\\n+[|\\*\\s]*[ ]{4}([^\\n]+)',
+                            'ig'
                         );
 
                 // Using String.prototype.replace as a kind of poor-man's substitute
@@ -641,16 +641,16 @@ var path = require('path'),
                         date =
                             date.replace(
                                 /^(\w+)\s(\w+)\s(\d+)\s([\d\:]+)\s(\d+)\s([\+\-\d]+)$/,
-                                "$1, $2 $3 $5 $4 $6"
+                                '$1, $2 $3 $5 $4 $6'
                             );
 
                         commits.push({
-                            "hash": hash,
-                            "author": author,
-                            "email": email,
-                            "date": date,
-                            "parsedDate": new Date(Date.parse(date)),
-                            "message": message
+                            'hash': hash,
+                            'author': author,
+                            'email': email,
+                            'date': date,
+                            'parsedDate': new Date(Date.parse(date)),
+                            'message': message
                         });
 
                         return null;
@@ -662,8 +662,8 @@ var path = require('path'),
 
             // Gets git log for specified range.
             function getLog(to, from, callback) {
-                var range = from && to ? from + ".." + to : "",
-                    args = [ "log", "master", "--no-color", "--no-merges", "--graph" ];
+                var range = from && to ? from + '..' + to : '',
+                    args = [ 'log', 'master', '--no-color', '--no-merges', '--graph' ];
 
                 if (range) {
                     args.push(range);
@@ -676,12 +676,12 @@ var path = require('path'),
 
             // Run the job
             getTags(function (tags) {
-                var logPath = path.join(__dirname, "CHANGELOG.md"),
+                var logPath = path.join(__dirname, 'CHANGELOG.md'),
                     log = fs.createWriteStream(logPath),
                     commitCache = {};
 
                 function processTag(tag, callback) {
-                    var buffer = "",
+                    var buffer = '',
                         peek = tag[1];
 
                     tag = tag[0];
@@ -699,7 +699,7 @@ var path = require('path'),
                             return callback("");
                         }
 
-                        buffer += "## Release " + tag.tag + "\n";
+                        buffer += '## Release ' + tag.tag + '\n';
 
                         commits = commits
                             .filter(function (commit) {
@@ -707,12 +707,12 @@ var path = require('path'),
                                 // Get rid of jenkins' release tagging commits
                                 // Remove commits we've already spat out
                                 return (
-                                    commit.author !== "TryGhost-Jenkins" &&
+                                    commit.author !== 'TryGhost-Jenkins' &&
                                     !commitCache[commit.hash]
                                 );
                             })
                             .map(function (commit) {
-                                buffer += "\n* " + commit.message + " (_" + commit.author + "_)";
+                                buffer += '\n* ' + commit.message + ' (_' + commit.author + '_)';
                                 commitCache[commit.hash] = true;
                             });
 
@@ -720,12 +720,12 @@ var path = require('path'),
                             buffer += "\nNo changes were made in this build.\n";
                         }
 
-                        callback(buffer + "\n");
+                        callback(buffer + '\n');
                     });
                 }
 
                 // Get two weeks' worth of tags
-                tags.unshift({"tag": "HEAD"});
+                tags.unshift({'tag': 'HEAD'});
 
                 tags =
                     tags
@@ -737,17 +737,17 @@ var path = require('path'),
                         ];
                     });
 
-                log.write("# Ghost Changelog\n\n");
-                log.write("_Showing " + tags.length + " releases._\n");
+                log.write('# Ghost Changelog\n\n');
+                log.write('_Showing ' + tags.length + ' releases._\n');
 
                 when.reduce(tags,
                     function (prev, tag, idx) {
                         return when.promise(function (resolve) {
                             processTag(tag, function (releaseData) {
-                                resolve(prev + "\n" + releaseData);
+                                resolve(prev + '\n' + releaseData);
                             });
                         });
-                    }, "")
+                    }, '')
                     .then(function (reducedChangelog) {
                         log.write(reducedChangelog);
                         log.close();
@@ -765,75 +765,75 @@ var path = require('path'),
          * - Zip files in build folder to dist-folder/#{version} directory
          */
         grunt.registerTask("nightly", [
-            "setCurrentBuildType:Nightly",
-            "shell:bourbon",
-            "sass:admin",
-            "handlebars",
-            "concat",
-            "uglify",
-            "bump:build",
-            "updateCurrentPackageInfo",
-            "changelog",
-            "copy:nightly",
-            "compress:nightly"
+            'setCurrentBuildType:Nightly',
+            'shell:bourbon',
+            'sass:admin',
+            'handlebars',
+            'concat',
+            'uglify',
+            'bump:build',
+            'updateCurrentPackageInfo',
+            'changelog',
+            'copy:nightly',
+            'compress:nightly'
         ]);
 
         grunt.registerTask("weekly", [
-            "setCurrentBuildType:Weekly",
-            "shell:bourbon",
-            "sass:admin",
-            "handlebars",
-            "concat",
-            "uglify",
-            "bump:build",
-            "updateCurrentPackageInfo",
-            "changelog",
-            "copy:weekly",
-            "compress:weekly"
+            'setCurrentBuildType:Weekly',
+            'shell:bourbon',
+            'sass:admin',
+            'handlebars',
+            'concat',
+            'uglify',
+            'bump:build',
+            'updateCurrentPackageInfo',
+            'changelog',
+            'copy:weekly',
+            'compress:weekly'
         ]);
 
-        grunt.registerTask("build", [
-            "shell:bourbon",
-            "sass:admin",
-            "handlebars",
-            "concat",
-            "uglify",
-            "changelog",
-            "clean:build",
-            "copy:build",
-            "compress:build"
+        grunt.registerTask('build', [
+            'shell:bourbon',
+            'sass:admin',
+            'handlebars',
+            'concat',
+            'uglify',
+            'changelog',
+            'clean:build',
+            'copy:build',
+            'compress:build'
         ]);
 
         // Dev Mode; watch files and restart server on changes
-        grunt.registerTask("dev", [
-            "default",
-            "express:dev",
-            "open",
-            "watch"
+        grunt.registerTask('dev', [
+            'default',
+            'express:dev',
+            'open',
+            'watch'
         ]);
 
         // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask("init", ["shell:bourbon", "default"]);
+        grunt.registerTask('init', ['shell:bourbon', 'default']);
 
         // Run unit tests
-        grunt.registerTask("test-unit", ['setTestEnv', 'loadConfig', "mochacli:all"]);
+        grunt.registerTask('test-unit', ['setTestEnv', 'loadConfig', 'mochacli:all']);
 
         // Run casperjs tests only
         grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);
 
         // Run tests and lint code
-        grunt.registerTask("validate", ["jslint", "test-unit", "test-functional"]);
+        grunt.registerTask('validate', ['jslint', 'test-unit', 'test-functional']);
 
         // Generate Docs
-        grunt.registerTask("docs", ["groc"]);
+        grunt.registerTask('docs', ['groc']);
 
         // TODO: Production build task that minifies with uglify:prod
 
-        grunt.registerTask("prod", ['sass:admin', 'handlebars', 'concat', "uglify"]);
+        grunt.registerTask('prod', ['sass:admin', 'handlebars', 'concat', 'uglify']);
 
-        // When you just say "grunt"
-        grunt.registerTask("default", ['sass:admin', 'handlebars', 'concat']);
+        // When you just say 'grunt'
+        grunt.registerTask('default', ['sass:admin', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;

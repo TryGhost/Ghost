@@ -1,7 +1,7 @@
-var when = require('when'),
-    keys = require('when/keys'),
-    fs = require('fs'),
-    path = require('path'),
+var when   = require('when'),
+    keys   = require('when/keys'),
+    fs     = require('fs'),
+    path   = require('path'),
     extend = function (obj, source) {
         var key;
         for (key in source) {

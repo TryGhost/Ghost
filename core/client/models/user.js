@@ -1,6 +1,6 @@
 /*global window, document, Ghost, $, _, Backbone */
 (function () {
-    "use strict";
+    'use strict';
 
     Ghost.Models.User = Backbone.Model.extend({
         url: Ghost.settings.apiRoot + '/users/me/'
