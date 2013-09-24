@@ -208,8 +208,11 @@ coreHelpers = function (ghost) {
     });
 
     ghost.registerThemeHelper('ghost_head', function (options) {
-        var head = [];
-        head.push('<meta name="generator" content="Ghost ' + this.version + '" />');
+        var head = [],
+            majorMinor = /^(\d+\.)?(\d+)/;
+            trimmedVersion = this.version.match(majorMinor)[0];
+
+        head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
 
         return ghost.doFilter('ghost_head', head, function (head) {
