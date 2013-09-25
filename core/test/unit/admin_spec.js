@@ -119,6 +119,11 @@ describe('Admin Controller', function() {
                 fs.exists.withArgs('content/images/2013/Sep/IMAGE.jpg').yields(true);
                 fs.exists.withArgs('content/images/2013/Sep/IMAGE-1.jpg').yields(false);
 
+                // if on windows need to setup with back slashes
+                // doesn't hurt for the test to cope with both
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE.jpg').yields(true);
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-1.jpg').yields(false);
+
                 sinon.stub(res, 'send', function(data) {
                     data.should.equal('/content/images/2013/Sep/IMAGE-1.jpg');
                     return done();
@@ -135,6 +140,13 @@ describe('Admin Controller', function() {
                 fs.exists.withArgs('content/images/2013/Sep/IMAGE-2.jpg').yields(true);
                 fs.exists.withArgs('content/images/2013/Sep/IMAGE-3.jpg').yields(true);
                 fs.exists.withArgs('content/images/2013/Sep/IMAGE-4.jpg').yields(false);
+
+                // windows setup
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE.jpg').yields(true);
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-1.jpg').yields(true);
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-2.jpg').yields(true);
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-3.jpg').yields(true);
+                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-4.jpg').yields(false);
 
                 sinon.stub(res, 'send', function(data) {
                     data.should.equal('/content/images/2013/Sep/IMAGE-4.jpg');
