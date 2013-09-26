@@ -12,6 +12,7 @@ var testUtils = require('./testUtils'),
 describe("Ghost API", function () {
     var testTemplatePath = 'core/test/unit/fixtures/',
         themeTemplatePath = 'core/test/unit/fixtures/theme',
+        sandbox,
         ghost;
 
     before(function (done) {
@@ -21,23 +22,26 @@ describe("Ghost API", function () {
     });
 
     beforeEach(function (done) {
+        sandbox = sinon.sandbox.create();
+
         testUtils.initData().then(function () {
             ghost = new Ghost();
             done();
         }, done);
     });
 
-    it("is a singleton", function () {
-        var logStub = sinon.stub(console, "log"),
-            ghost1 = new Ghost(),
-            ghost2 = new Ghost();
+    afterEach(function () {
+        sandbox.restore();
+    });
 
-        should.strictEqual(ghost1, ghost2);
-        logStub.restore();
+    it("is a singleton", function () {
+        var ghost2 = new Ghost();
+
+        should.strictEqual(ghost, ghost2);
     });
 
     it("uses init() to initialize", function (done) {
-        var dataProviderInitMock = sinon.stub(ghost.dataProvider, "init", function () {
+        var dataProviderInitMock = sandbox.stub(ghost.dataProvider, "init", function () {
             return when.resolve();
         });
 
@@ -49,8 +53,6 @@ describe("Ghost API", function () {
 
             dataProviderInitMock.called.should.equal(true);
 
-            dataProviderInitMock.restore();
-
             done();
         }, done);
 
@@ -59,7 +61,7 @@ describe("Ghost API", function () {
     it("can register filters with specific priority", function () {
         var filterName = 'test',
             filterPriority = 9,
-            testFilterHandler = sinon.spy();
+            testFilterHandler = sandbox.spy();
 
         ghost.registerFilter(filterName, filterPriority, testFilterHandler);
 
@@ -72,7 +74,7 @@ describe("Ghost API", function () {
     it("can register filters with default priority", function () {
         var filterName = 'test',
             defaultPriority = 5,
-            testFilterHandler = sinon.spy();
+            testFilterHandler = sandbox.spy();
 
         ghost.registerFilter(filterName, testFilterHandler);
 
@@ -84,9 +86,9 @@ describe("Ghost API", function () {
 
     it("executes filters in priority order", function (done) {
         var filterName = 'testpriority',
-            testFilterHandler1 = sinon.spy(),
-            testFilterHandler2 = sinon.spy(),
-            testFilterHandler3 = sinon.spy();
+            testFilterHandler1 = sandbox.spy(),
+            testFilterHandler2 = sandbox.spy(),
+            testFilterHandler3 = sandbox.spy();
 
         ghost.registerFilter(filterName, 0, testFilterHandler1);
         ghost.registerFilter(filterName, 2, testFilterHandler2);
@@ -118,13 +120,13 @@ describe("Ghost API", function () {
     });
 
     it("loads templates for helpers", function (done) {
-        var compileSpy = sinon.spy(ghost, 'compileTemplate'),
+        var compileSpy = sandbox.spy(ghost, 'compileTemplate'),
             pathsStub;
 
         should.exist(ghost.loadTemplate, 'load template function exists');
 
         // In order for the test to work, need to replace the path to the template
-        pathsStub = sinon.stub(ghost, "paths", function () {
+        pathsStub = sandbox.stub(ghost, "paths", function () {
             return {
                 // Forcing the theme path to be the same
                 activeTheme: path.join(process.cwd(), testTemplatePath),
@@ -145,20 +147,18 @@ describe("Ghost API", function () {
 
             templateFn().should.equal('<h1>HelloWorld</h1>');
 
-
-
             done();
         }).then(null, done);
     });
 
     it("loads templates from themes first", function (done) {
-        var compileSpy = sinon.spy(ghost, 'compileTemplate'),
+        var compileSpy = sandbox.spy(ghost, 'compileTemplate'),
             pathsStub;
 
         should.exist(ghost.loadTemplate, 'load template function exists');
 
         // In order for the test to work, need to replace the path to the template
-        pathsStub = sinon.stub(ghost, "paths", function () {
+        pathsStub = sandbox.stub(ghost, "paths", function () {
             return {
                 activeTheme: path.join(process.cwd(), themeTemplatePath),
                 helperTemplates: path.join(process.cwd(), testTemplatePath)
