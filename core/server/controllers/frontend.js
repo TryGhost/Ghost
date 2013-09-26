@@ -4,14 +4,14 @@
 
 /*global require, module */
 
-var Ghost = require('../../ghost'),
-    api = require('../api'),
-    RSS = require('rss'),
-    _ = require('underscore'),
+var Ghost  = require('../../ghost'),
+    api    = require('../api'),
+    RSS    = require('rss'),
+    _      = require('underscore'),
     errors = require('../errorHandling'),
-    when = require('when'),
+    when   = require('when'),
 
-    ghost = new Ghost(),
+    ghost  = new Ghost(),
     frontendControllers;
 
 frontendControllers = {
@@ -24,7 +24,7 @@ frontendControllers = {
         // No negative pages
         if (isNaN(pageParam) || pageParam < 1) {
             //redirect to 404 page?
-            return res.redirect("/");
+            return res.redirect('/');
         }
         options.page = pageParam;
 
@@ -94,7 +94,7 @@ frontendControllers = {
 
             // No negative pages
             if (isNaN(pageParam) || pageParam < 1) {
-                return res.redirect("/rss/");
+                return res.redirect('/rss/');
             }
 
             if (pageParam === 1 && req.route.path === '/rss/:page/') {
@@ -112,7 +112,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect("/rss/" + maxPage + "/");
+                    return res.redirect('/rss/' + maxPage + '/');
                 }
 
                 ghost.doFilter('prePostsRender', page.posts, function (posts) {

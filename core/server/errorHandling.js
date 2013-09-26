@@ -1,16 +1,16 @@
 /*jslint regexp: true */
-var _ = require('underscore'),
-    colors = require("colors"),
-    fs = require('fs'),
-    path = require('path'),
+var _      = require('underscore'),
+    colors = require('colors'),
+    fs     = require('fs'),
+    path   = require('path'),
     errors,
 
     // Paths for views
-    appRoot = path.resolve(__dirname, '../'),
-    themePath = path.resolve(appRoot + '/content/themes'),
-    adminTemplatePath = path.resolve(appRoot + '/server/views/'),
+    appRoot                  = path.resolve(__dirname, '../'),
+    themePath                = path.resolve(appRoot + '/content/themes'),
+    adminTemplatePath        = path.resolve(appRoot + '/server/views/'),
     defaultErrorTemplatePath = path.resolve(adminTemplatePath + '/user-error.hbs'),
-    userErrorTemplatePath = path.resolve(themePath + '/error.hbs'),
+    userErrorTemplatePath    = path.resolve(themePath + '/error.hbs'),
     userErrorTemplateExists;
 
 /**
@@ -31,14 +31,14 @@ errors = {
 
     logError: function (err, context, help) {
         var stack = err ? err.stack : null;
-        err = err.message || err || "Unknown";
+        err = err.message || err || 'Unknown';
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
 
-            console.error("\nERROR:".red, err.red);
+            console.error('\nERROR:'.red, err.red);
 
             if (context) {
                 console.error(context);
@@ -49,10 +49,10 @@ errors = {
             }
 
             // add a new line
-            console.error("");
+            console.error('');
 
             if (stack) {
-                console.error(stack, "\n");
+                console.error(stack, '\n');
             }
         }
     },
@@ -84,7 +84,7 @@ errors = {
     renderErrorPage: function (code, err, req, res, next) {
 
         function parseStack(stack) {
-            if (typeof stack !== "string") {
+            if (typeof stack !== 'string') {
                 return stack;
             }
 
@@ -102,8 +102,8 @@ errors = {
                         }
 
                         return {
-                            "function": parts[1],
-                            "at": parts[2]
+                            'function': parts[1],
+                            'at': parts[2]
                         };
                     })
                     .filter(function (line) {
@@ -116,12 +116,12 @@ errors = {
         function renderErrorInt(errorView) {
             var stack = null;
 
-            if (process.env.NODE_ENV !== "production" && err.stack) {
+            if (process.env.NODE_ENV !== 'production' && err.stack) {
                 stack = parseStack(err.stack);
             }
 
             // TODO: Attach node-polyglot
-            res.render((errorView || "error"), {
+            res.render((errorView || 'error'), {
                 message: err.message || err,
                 code: code,
                 stack: stack
@@ -177,13 +177,13 @@ errors = {
 // Ensure our 'this' context in the functions
 _.bindAll(
     errors,
-    "throwError",
-    "logError",
-    "logAndThrowError",
-    "logErrorWithRedirect",
-    "renderErrorPage",
-    "render404Page",
-    "render500Page"
+    'throwError',
+    'logError',
+    'logAndThrowError',
+    'logErrorWithRedirect',
+    'renderErrorPage',
+    'render404Page',
+    'render500Page'
 );
 
 module.exports = errors;

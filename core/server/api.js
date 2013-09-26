@@ -1,14 +1,14 @@
 // # Ghost Data API
 // Provides access to the data model
 
-var Ghost = require('../ghost'),
-    _ = require('underscore'),
-    when = require('when'),
-    errors = require('./errorHandling'),
-    permissions = require('./permissions'),
-    canThis = permissions.canThis,
+var Ghost        = require('../ghost'),
+    _            = require('underscore'),
+    when         = require('when'),
+    errors       = require('./errorHandling'),
+    permissions  = require('./permissions'),
+    canThis      = permissions.canThis,
 
-    ghost = new Ghost(),
+    ghost        = new Ghost(),
     dataProvider = ghost.dataProvider,
     posts,
     users,
@@ -221,7 +221,7 @@ settingsCollection = function (settings) {
 settingsFilter = function (settings, filter) {
     return _.object(_.filter(_.pairs(settings), function (setting) {
         if (filter) {
-            return _.some(filter.split(","), function (f) {
+            return _.some(filter.split(','), function (f) {
                 return setting[1].type === f;
             });
         }

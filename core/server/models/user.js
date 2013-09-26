@@ -1,20 +1,20 @@
 var User,
     Users,
-    _ = require('underscore'),
-    uuid = require('node-uuid'),
-    when = require('when'),
-    errors = require('../errorHandling'),
-    nodefn = require('when/node/function'),
-    bcrypt = require('bcrypt-nodejs'),
-    Posts = require('./post').Posts,
+    _              = require('underscore'),
+    uuid           = require('node-uuid'),
+    when           = require('when'),
+    errors         = require('../errorHandling'),
+    nodefn         = require('when/node/function'),
+    bcrypt         = require('bcrypt-nodejs'),
+    Posts          = require('./post').Posts,
     GhostBookshelf = require('./base'),
-    Role = require('./role').Role,
-    Permission = require('./permission').Permission;
+    Role           = require('./role').Role,
+    Permission     = require('./permission').Permission;
 
 
 function validatePasswordLength(password) {
     try {
-        GhostBookshelf.validator.check(password, "Your password is not long enough. It must be at least 8 characters long.").len(8);
+        GhostBookshelf.validator.check(password, "Your must be at least 8 characters long.").len(8);
     } catch (error) {
         return when.reject(error);
     }
@@ -33,10 +33,10 @@ User = GhostBookshelf.Model.extend({
     ],
 
     validate: function () {
-        GhostBookshelf.validator.check(this.get('email'), "Please check your email address. It does not seem to be valid.").isEmail();
-        GhostBookshelf.validator.check(this.get('bio'), "Your bio is too long. Please keep it to 200 chars.").len(0, 200);
+        GhostBookshelf.validator.check(this.get('email'), "Please enter a valid email address. That one looks a bit dodgy.").isEmail();
+        GhostBookshelf.validator.check(this.get('bio'), "We're not writing a novel here! I'm afraid your bio has to stay under 200 characters.").len(0, 200);
         if (this.get('website') && this.get('website').length > 0) {
-            GhostBookshelf.validator.check(this.get('website'), "Your website is not a valid URL.").isUrl();
+            GhostBookshelf.validator.check(this.get('website'), "Looks like your website is not actually a website. Try again?").isUrl();
         }
         return true;
     },

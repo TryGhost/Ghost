@@ -1,11 +1,11 @@
 /*global Ghost, Backbone */
 (function () {
-    "use strict";
+    'use strict';
     Ghost.Models.uploadModal = Backbone.Model.extend({
 
         options: {
             close: true,
-            type: "action",
+            type: 'action',
             style: ["wide"],
             animation: 'fade',
             afterRender: function () {
