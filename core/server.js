@@ -356,7 +356,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
     // ## Start Ghost App
     server.listen(
-        ghost.config().server.port,
+        process.env.PORT || ghost.config().server.port,
         ghost.config().server.host,
         function () {
 
