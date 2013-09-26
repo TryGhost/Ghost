@@ -61,15 +61,19 @@ Post = GhostBookshelf.Model.extend({
             this.set('published_by', 1);
         }
 
-        GhostBookshelf.Model.prototype.saving.call(this);
-
         if (this.hasChanged('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return this.generateSlug(Post, this.get('slug'))
                 .then(function (slug) {
                     self.set({slug: slug});
+
+                    // Still need to call the super saving method
+                    return GhostBookshelf.Model.prototype.saving.call(self);
                 });
         }
+
+        // Just fall through to the super saving call if slug hasn't changed
+        GhostBookshelf.Model.prototype.saving.call(this);
     },
 
     creating: function () {

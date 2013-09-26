@@ -262,6 +262,25 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
+    it('can create a new Post with a previous published_at date', function (done) {
+        var previousPublishedAtDate = new Date(2013, 8, 21, 12);
+
+        PostModel.add({
+            status: "published",
+            published_at: previousPublishedAtDate,
+            title: "published_at test",
+            markdown: "This is some content"
+        }).then(function (newPost) {
+
+            should.exist(newPost);
+
+            newPost.get("published_at").should.equal(previousPublishedAtDate);
+
+            done();
+
+        }).otherwise(done);
+    });
+
     it('can fetch a paginated set, with various options', function (done) {
         this.timeout(10000); // this is a patch to ensure it doesn't timeout.
 
