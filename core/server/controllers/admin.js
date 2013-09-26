@@ -73,11 +73,12 @@ adminControllers = {
     'uploader': function (req, res) {
 
         var currentDate = moment(),
-            month = currentDate.format("MMM"),
-            year =  currentDate.format("YYYY"),
+            month = currentDate.format('MMM'),
+            year =  currentDate.format('YYYY'),
             tmp_path = req.files.uploadimage.path,
             dir = path.join('content/images', year, month),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
+            type = req.files.uploadimage.type,
             basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
 
         function renameFile(target_path) {
@@ -105,13 +106,12 @@ adminControllers = {
             });
         }
 
-        // TODO: is it better to use file type eg. image/png?
-        if (ext === ".jpg" || ext === ".jpeg"  || ext === ".png" || ext === ".gif") {
+        if (type === 'image/jpeg' || type === 'image/png' || type === 'image/gif') {
             getUniqueFileName(dir, basename, ext, null, function (filename) {
                 renameFile(filename);
             });
         } else {
-            res.send(404, "Invalid filetype");
+            res.send(404, 'Invalid filetype');
         }
     },
     'login': function (req, res) {
