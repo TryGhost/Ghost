@@ -189,9 +189,15 @@ describe('Core Helpers', function () {
         });
 
         it('returns meta tag string', function () {
-            var rendered = handlebars.helpers.ghost_head.call({version: "0.3"});
+            var rendered = handlebars.helpers.ghost_head.call({version: "0.3.0"});
             should.exist(rendered);
             rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+        });
+
+        it('returns meta tag string even if version is invalid', function () {
+            var rendered = handlebars.helpers.ghost_head.call({version: "0.9"});
+            should.exist(rendered);
+            rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
         });
     });
 
