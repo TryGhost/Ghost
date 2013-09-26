@@ -234,6 +234,7 @@
 
     // ### User profile
     Settings.user = Settings.Pane.extend({
+        templateName: 'settings/user-profile',
         id: 'user',
 
         options: {
@@ -244,7 +245,8 @@
             'click .button-save': 'saveUser',
             'click .button-change-password': 'changePassword',
             'click .js-modal-cover': 'showCover',
-            'click .js-modal-image': 'showImage'
+            'click .js-modal-image': 'showImage',
+            'keyup .user-profile': 'handleEnterKeyOnForm'
         },
         showCover: function (e) {
             e.preventDefault();
@@ -281,6 +283,31 @@
             }));
         },
 
+        handleEnterKeyOnForm: function (ev) {
+            // Don't worry about it unless it's an enter key
+            if (ev.which !== 13) {
+                return;
+            }
+
+            var $target = $(ev.target);
+
+            if ($target.is("textarea")) {
+                // Allow enter key on user bio text area.
+                return;
+            }
+
+            if ($target.is('input[type=password]')) {
+                // Change password if on a password input
+                return this.changePassword(ev);
+            }
+
+            // Simulate clicking save otherwise
+            ev.preventDefault();
+
+            this.saveUser(ev);
+
+            return false;
+        },
 
         saveUser: function () {
             var userName = this.$('#user-name').val(),
@@ -368,8 +395,6 @@
                 });
             }
         },
-
-        templateName: 'settings/user-profile',
 
         afterRender: function () {
             var self = this;
