@@ -23,8 +23,6 @@
             complete: function (result) {
                 var self = this;
 
-                $dropzone.trigger("uploadsuccess", [result, $dropzone.attr('id')]);
-
                 function showImage(width, height) {
                     $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
                     $dropzone.find('.fileupload-loading').remove();
@@ -163,6 +161,7 @@
                 $dropzone.find('div.description').before($url);
 
                 $dropzone.find('.js-button-accept').on('click', function () {
+                    $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
                     $dropzone.find('div.description').hide();
                     val = $('#uploadurl').val();
                     $dropzone.find('.js-fileupload').removeClass('right');
