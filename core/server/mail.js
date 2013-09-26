@@ -51,7 +51,7 @@ GhostMailer.prototype.detectSendmail = function () {
             if (err && !/bin\/sendmail/.test(stdout)) {
                 return reject();
             }
-            resolve(stdout.toString());
+            resolve(stdout.toString().replace(/(\n|\r|\r\n)$/, ''));
         });
     });
 };
