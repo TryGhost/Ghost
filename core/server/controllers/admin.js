@@ -369,6 +369,9 @@ adminControllers = {
 
                     return api.notifications.add(notification).then(function () {
                         delete req.session.user;
+                        res.set({
+                            "X-Cache-Invalidate": "/*"
+                        });
                         res.redirect('/ghost/signin/');
                     });
 
@@ -399,6 +402,9 @@ adminControllers = {
 
                     return api.notifications.add(notification).then(function () {
                         delete req.session.user;
+                        res.set({
+                            "X-Cache-Invalidate": "/*"
+                        });
                         res.redirect('/ghost/signup/');
                     });
                 }, function resetFailure(error) {
