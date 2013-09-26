@@ -223,7 +223,9 @@ function manageAdminAndTheme(req, res, next) {
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
-when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
+when(ghost.init()).then(function () {
+    return helpers.loadCoreHelpers(ghost);
+}).then(function () {
 
     // ##Configuration
     var oneYear = 31536000000;
