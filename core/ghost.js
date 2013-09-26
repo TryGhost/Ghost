@@ -130,14 +130,14 @@ Ghost.prototype.init = function () {
 
     function doFirstRun() {
         var firstRunMessage = [
-            "Welcome to Ghost.",
-            "You're running under the <strong>",
+            'Welcome to Ghost.',
+            'You\'re running under the <strong>',
             process.env.NODE_ENV,
-            "</strong>environment.",
+            '</strong>environment.',
 
-            "Your URL is set to",
-            "<strong>" + self.config().url + "</strong>.",
-            "See <a href=\"http://docs.ghost.org/\">http://docs.ghost.org</a> for instructions."
+            'Your URL is set to',
+            '<strong>' + self.config().url + '</strong>.',
+            'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
         ];
 
         self.notifications.push({
@@ -165,14 +165,13 @@ Ghost.prototype.init = function () {
     }
 
     // ### Initialisation
-    // make sure things are done in order
     return when.join(
         // Initialise the models
-        instance.dataProvider.init(),
+        self.dataProvider.init(),
         // Calculate paths
-        instance.getPaths(),
+        self.getPaths(),
         // Initialise mail after first run
-        instance.mail.init(self)
+        self.mail.init(self)
     ).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -183,7 +182,7 @@ Ghost.prototype.init = function () {
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-             // Initialize plugins
+            // Initialize plugins
             self.initPlugins(),
             // Initialize the permissions actions and objects
             permissions.init()
