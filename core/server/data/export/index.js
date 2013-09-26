@@ -15,7 +15,7 @@ function getTablesFromSqlite3() {
 }
 
 function getTablesFromMySQL() {
-    knex.Raw("show tables").then(function (response) {
+    return knex.Raw("show tables").then(function (response) {
         return _.flatten(_.map(response, function (entry) {
             return _.values(entry);
         }));

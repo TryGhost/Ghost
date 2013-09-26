@@ -81,7 +81,12 @@ function preProcessPostTags(tableData) {
 function importTags(ops, tableData) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (tag) {
-        ops.push(models.Tag.add(tag));
+        ops.push(models.Tag.read({name: tag.name}).then(function (_tag) {
+            if (!_tag) {
+                return models.Tag.add(tag);
+            }
+            return when.resolve(_tag);
+        }));
     });
 }
 
