@@ -60,4 +60,5 @@
 
     window.Ghost = Ghost;
 
+    window.addEventListener("load", Ghost.init, false);
 }());
