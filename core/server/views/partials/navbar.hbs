@@ -9,8 +9,8 @@
 
             <li id="usermenu" class="subnav">
                 <a href="#" data-toggle="ul" class="dropdown">
-                    <img class="avatar" src="{{#if currentUser.profile}}{{currentUser.profile}}{{else}}/shared/img/user-image.png{{/if}}" alt="Avatar" />
-                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}Ghost{{/if}}</span>
+                    <img class="avatar" src="{{#if currentUser.image}}{{currentUser.image}}{{else}}/shared/img/user-image.png{{/if}}" alt="Avatar" />
+                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
                 </a>
                 <ul class="overlay">
                     <li class="usermenu-profile"><a href="/ghost/settings/user/">Your Profile</a></li>
