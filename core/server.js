@@ -314,6 +314,15 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
 
 
     // ### Admin routes
+    // CSP for admin
+    server.all("/ghost/*", function (req, res, next) {
+        res.set({
+            "Content-Security-Policy": "script-src 'self' style-src 'self'"
+        });
+
+        next();
+    });
+
     /* TODO: put these somewhere in admin */
     server.get(/^\/logout\/?$/, function redirect(req, res) {
         res.redirect(301, '/signout/');
