@@ -38,7 +38,7 @@
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
-                pubDate = moment(pubDate).format('DD MMM YY');
+                pubDate = moment(pubDate).format('DD MMM YY HH:mm');
             }
 
             if (this.model && this.model.get('id')) {
@@ -93,14 +93,29 @@
         editDate: function (e) {
             e.preventDefault();
             var self = this,
-                parseDateFormats = ['DD MMM YY', 'DD MMM YYYY', 'DD/MM/YY', 'DD/MM/YYYY', 'DD-MM-YY', 'DD-MM-YYYY'],
-                displayDateFormat = 'DD MMM YY',
+                parseDateFormats = ['DD MMM YY HH:mm', 'DD MMM YYYY HH:mm', 'DD/MM/YY HH:mm', 'DD/MM/YYYY HH:mm', 'DD-MM-YY HH:mm', 'DD-MM-YYYY HH:mm'],
+                displayDateFormat = 'DD MMM YY HH:mm',
                 errMessage = '',
                 pubDate = self.model.get('published_at'),
-                pubDateMoment = moment(pubDate, parseDateFormats),
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
-                newPubDateMoment = moment(newPubDate, parseDateFormats);
+                pubDateMoment,
+                newPubDateMoment;
+
+            // Check for missing time stamp on current model
+            // If no time specified, add a 12:00
+            if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
+                pubDate += " 12:00";
+            }
+
+            pubDateMoment = moment(pubDate, parseDateFormats);
+
+            // Same for new date
+            if (!newPubDate.slice(-5).match(/\d+:\d\d/)) {
+                newPubDate += " 12:00";
+            }
+
+            newPubDateMoment = moment(newPubDate, parseDateFormats);
 
             // Ensure the published date has changed
             if (newPubDate.length === 0 || pubDateMoment.isSame(newPubDateMoment)) {
@@ -110,7 +125,7 @@
 
             // Validate new Published date
             if (!newPubDateMoment.isValid()) {
-                errMessage = 'Published Date must be a valid date with format: DD MMM YY (e.g. 6 Dec 14)';
+                errMessage = 'Published Date must be a valid date with format: DD MMM YY HH:mm (e.g. 6 Dec 14 15:00)';
             }
 
             if (newPubDateMoment.diff(new Date(), 'h') > 0) {
@@ -118,22 +133,23 @@
             }
 
             if (errMessage.length) {
+                // Show error message
                 Ghost.notifications.addItem({
                     type: 'error',
                     message: errMessage,
                     status: 'passive'
                 });
+
+                // Reset back to original value and return
                 pubDateEl.value = pubDateMoment.format(displayDateFormat);
                 return;
             }
 
             // Save new 'Published' date
             this.model.save({
-                // Temp Fix. Set hour to 12 instead of 00 to avoid some TZ issues.
-                published_at: newPubDateMoment.hour(12).toDate()
+                published_at: newPubDateMoment.toDate()
             }, {
-                success : function (model, response, options) {
-                    /*jslint unparam:true*/
+                success : function (model) {
                     pubDateEl.value = moment(model.get('published_at')).format(displayDateFormat);
                     Ghost.notifications.addItem({
                         type: 'success',
