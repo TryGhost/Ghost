@@ -19,6 +19,7 @@ subheading: The first steps to setting up your new blog for the first time.
                             <li class=""><a href="#install-windows">Windows</a></li>
                             <li class=""><a href="#install-linux">Linux</a></li>
                             <li class=""><a href="#deploy">Live Server</a></li>
+                            <li class=""><a href="#upgrade">Upgrading</a></li>
                             <li class=""><a href="#troubleshooting">Troubleshooting</a></li>
                         </ul>
                     </li>
@@ -159,6 +160,45 @@ subheading: The first steps to setting up your new blog for the first time.
                 </ul>
             </p>
 
+            <h2 id="upgrade">Upgrading</h2>
+
+            <p>Upgrading Ghost involves replacing old files with the new files, and restarting the server. However, as the database, image uploads and custom themes are stored alongside Ghost in the <code>content</code> directory, care should be taken to only replace the necessary files as explained below.</p>
+
+            <p>It is highly recommended that you make a backup of your data before upgrading. This can be done by logging into your Ghost install and going to <code>/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data.</p>
+
+            <h3>Upgrade process:</h3>
+            <ul>
+                <li>Download the latest version of Ghost from <a href="http://ghost.org/download/">ghost.org</a></li>
+                <li>Either extract the zip file locally, or into a temporary directory on your server</li>
+                <li>Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.</li>
+                <li>Next replace the old <code>core</code> directory with the new <code>core</code> directory</li>
+                <li>For releases which include update to Casper (the default theme), replace the old <code>content/themes/casper</code> directory with the new one</li>
+                <li>Run <code>npm install --production</code></li>
+                <li>Finally, Restart Ghost so that the changes take effect</li>
+            </ul>
+
+            <h3>Command line only</h3>
+
+            <p>The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code>~/Downloads</code> and Ghost is installed in <code>~/ghost</code> (<strong>Note:</strong> <code>~</code> means the user's home directory on mac and linux).</p>
+
+            <img src="http://f.cl.ly/items/2u1c3f2o0l1o0f09141j/upgrade-ghost.gif" width="100%" />
+
+            <p>The steps in the screencast are:
+                <ul>
+                    <li><code>cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved</li>
+                    <li><code>unzip ghost-0.3.1.zip -d ghost-0.3.1</code> - unzip ghost into the folder <code>ghost-0.3.1</code></li>
+                    <li><code>cd ghost-0.3.1</code> - change directory into the <code>ghost-0.3.1</code> directory</li>
+                    <li><code>ls</code> - show all the files and folders inside this directory</li>
+                    <li><code>cp *.md *.js *.txt *.json ~/ghost</code> - copy all .md .js .txt and .json files from this location to <code>~/ghost</code></li>
+                    <li><code>cp -R core ~/ghost</code> - copy the <code>core</code> directory and all of its contents to the <code>~/ghost</code></li>
+                    <li><code>cp -R content/themes/casper ~/ghost/content/themes</code> - copy the <code>casper</code> directory and all of its contents to <code>~/ghost/content/themes</code></li>
+                    <li><code>cd ~/ghost</code> - change directory to the <code>~/ghost</code> directory</li>
+                    <li><code>npm install --production</code> - install Ghost</li>
+                    <li><code>npm start</code> - start Ghost</li>
+                </ul>
+            </p>
+
+            <p><strong>Additionally</strong>, <a href="http://www.howtoinstallghost.com/how-to-update-ghost/">howtoinstallghost.com</a> also has instructions for upgrading Ghost on linux servers.</p>
 
             <h2 id="troubleshooting">Troubleshooting / FAQ</h2>
 
@@ -170,7 +210,7 @@ subheading: The first steps to setting up your new blog for the first time.
                         <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
                         <li>You should see a file called <code>.profile</code> or <code>.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
                         <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
-                        <li>Add <code>export $PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
+                        <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
                         <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
                     </ul>
                 </dd>
