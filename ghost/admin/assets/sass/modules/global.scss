@@ -385,7 +385,7 @@ nav {
    ========================================================================== */
 
 .ghost-logo {
-    @include icon($i-ghost);
+    @include icon($i-ghost) { line-height: 0; }
     display: block;
     float:left;
     height:40px;
