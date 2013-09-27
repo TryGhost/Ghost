@@ -128,7 +128,7 @@ Post = GhostBookshelf.Model.extend({
                 }
             });
 
-            if (tagsToAttach) {
+            if (!_.isEmpty(tagsToAttach)) {
                 return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch().then(function (matchingTags) {
                     _.each(matchingTags.toJSON(), function (matchingTag) {
                         tagOperations.push(self.tags().attach(matchingTag.id));
