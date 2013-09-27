@@ -233,6 +233,14 @@ var path           = require('path'),
                     files: {
                         '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
+                },
+                compress: {
+                    options: {
+                        style: 'compressed'
+                    },
+                    files: {
+                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
+                    }
                 }
             },
 
@@ -766,51 +774,53 @@ var path           = require('path'),
          * - Zip files in build folder to dist-folder/#{version} directory
          */
         grunt.registerTask("nightly", [
-            'setCurrentBuildType:Nightly',
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'bump:build',
-            'updateCurrentPackageInfo',
-            'changelog',
-            'copy:nightly',
-            'compress:nightly'
+            "setCurrentBuildType:Nightly",
+            "shell:bourbon",
+            "sass:compress",
+            "handlebars",
+            "concat",
+            "uglify",
+            "bump:build",
+            "updateCurrentPackageInfo",
+            "changelog",
+            "copy:nightly",
+            "compress:nightly"
         ]);
 
         grunt.registerTask("weekly", [
-            'setCurrentBuildType:Weekly',
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'bump:build',
-            'updateCurrentPackageInfo',
-            'changelog',
-            'copy:weekly',
-            'compress:weekly'
+            "setCurrentBuildType:Weekly",
+            "shell:bourbon",
+            "sass:compress",
+            "handlebars",
+            "concat",
+            "uglify",
+            "bump:build",
+            "updateCurrentPackageInfo",
+            "changelog",
+            "copy:weekly",
+            "compress:weekly"
         ]);
 
-        grunt.registerTask('build', [
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'changelog',
-            'clean:build',
-            'copy:build',
-            'compress:build'
+        grunt.registerTask("build", [
+            "shell:bourbon",
+            "sass:compress",
+            "handlebars",
+            "concat",
+            "uglify",
+            "changelog",
+            "clean:build",
+            "copy:build",
+            "compress:build"
         ]);
 
         // Dev Mode; watch files and restart server on changes
-        grunt.registerTask('dev', [
-            'default',
-            'express:dev',
-            'open',
-            'watch'
+        grunt.registerTask("dev", [
+            "sass:admin",
+            "handlebars",
+            "concat",
+            "express:dev",
+            "open",
+            "watch"
         ]);
 
         // Prepare the project for development
@@ -831,10 +841,10 @@ var path           = require('path'),
 
         // TODO: Production build task that minifies with uglify:prod
 
-        grunt.registerTask('prod', ['sass:admin', 'handlebars', 'concat', 'uglify']);
+        grunt.registerTask("prod", ['sass:compress', 'handlebars', 'concat', "uglify"]);
 
-        // When you just say 'grunt'
-        grunt.registerTask('default', ['sass:admin', 'handlebars', 'concat']);
+        // When you just say "grunt"
+        grunt.registerTask("default", ['sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;
