@@ -139,11 +139,11 @@ describe('Post Model', function () {
             createdPost.has('html').should.equal(true);
             createdPost.get('html').should.equal('<p>' + newPost.markdown + '</p>');
             createdPost.get('slug').should.equal('test-title-1');
-            createdPost.get('created_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
+            createdPost.get('created_at').should.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
             createdPost.get('created_by').should.equal(createdPost.get('author_id'));
-            createdPost.get('updated_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
+            createdPost.get('updated_at').should.be.above(new Date(0).getTime());
             createdPost.get('updated_by').should.equal(1);
             should.equal(createdPost.get('published_at'), null);
             should.equal(createdPost.get('published_by'), null);

@@ -128,7 +128,7 @@ Post = GhostBookshelf.Model.extend({
                 }
             });
 
-            if (tagsToAttach) {
+            if (!_.isEmpty(tagsToAttach)) {
                 return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch().then(function (matchingTags) {
                     _.each(matchingTags.toJSON(), function (matchingTag) {
                         tagOperations.push(self.tags().attach(matchingTag.id));
@@ -331,6 +331,19 @@ Post = GhostBookshelf.Model.extend({
         return GhostBookshelf.Model.add.call(this, newPostData, options).tap(function (post) {
             // associated models can't be created until the post has an ID, so run this after
             return post.updateTags(newPostData.tags);
+        });
+    },
+    destroy: function (_identifier, options) {
+        options = options || {};
+        return this.forge({id: _identifier}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
+            var tagIds = _.pluck(post.related('tags').toJSON(), 'id');
+            if (tagIds) {
+                return post.tags().detach(tagIds).then(function destroyPost() {
+                    return post.destroy(options);
+                });
+            }
+
+            return post.destroy(options);
         });
     }
 
