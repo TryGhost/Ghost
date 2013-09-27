@@ -37,7 +37,7 @@ sampleUser = function (i) {
         email: "joe_" + i + "@bloggs.com",
         password: "$2a$10$c5G9RS5.dXRt3UqvZ5wNgOLQLc7ZFc2DJo01du0oLT1YYOM67KJMe",
         created_by: 1,
-        created_at: 1234567890
+        created_at: new Date()
     };
 };
 

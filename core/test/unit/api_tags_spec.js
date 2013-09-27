@@ -130,7 +130,7 @@ describe('Tag Model', function () {
                     return postModel.save();
                 }).then(function (postModel) {
                     var tagNames = postModel.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.should.eql(seededTagNames);
+                    tagNames.sort().should.eql(seededTagNames);
 
                     return TagModel.findAll();
                 }).then(function (tagsFromDB) {
@@ -155,7 +155,7 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.should.eql(['tag1', 'tag3']);
+                    tagNames.sort().should.eql(['tag1', 'tag3']);
 
                     done();
                 }).then(null, done);
@@ -180,7 +180,7 @@ describe('Tag Model', function () {
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
                         tagNames = tagModels.map(function (t) { return t.attributes.name; });
-                    tagNames.should.eql(['tag1', 'tag2', 'tag3']);
+                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
                     tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
 
                     done();
@@ -201,7 +201,7 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.should.eql(['tag1', 'tag2', 'tag3']);
+                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
 
                     done();
                 }).then(null, done);
