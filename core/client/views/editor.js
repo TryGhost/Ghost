@@ -33,7 +33,9 @@
             {'key': 'Ctrl+Alt+W', 'style': 'selectword'},
             {'key': 'Ctrl+L', 'style': 'list'},
             {'key': 'Ctrl+Alt+C', 'style': 'copyHTML'},
-            {'key': 'Meta+Alt+C', 'style': 'copyHTML'}
+            {'key': 'Meta+Alt+C', 'style': 'copyHTML'},
+            {'key': 'Meta+Enter', 'style': 'newLine'},
+            {'key': 'Ctrl+Enter', 'style': 'newLine'}
         ],
         imageMarkdownRegex = /^(?:\{<(.*?)>\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
         markerRegex = /\{<([\w\W]*?)>\}/;
