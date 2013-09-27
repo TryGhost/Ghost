@@ -252,4 +252,19 @@ describe("Github showdown extensions", function () {
         });
     });
 
+    it("should not output image if there is no src", function () {
+        var testPhrases = [
+                {
+                    input: "![anything here]()",
+                    output: /^$/
+                }
+            ],
+            processedMarkup;
+
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
 });

@@ -178,7 +178,7 @@ describe("Showdown client side converter", function () {
                 },
                 {
                     input: "# http://google.co.uk",
-                    output: /^<h1 id="ahrefhttpgooglecoukhttpgooglecouka"><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/h1>$/
+                    output: /^<h1 id="httpgooglecouk"><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/h1>$/
                 },
                 {
                     input: "* http://google.co.uk",
@@ -270,6 +270,30 @@ describe("Showdown client side converter", function () {
                     input: '<a href="http://facebook.com">test</a> http://google.co.uk',
                     output: /^<p><a href=\"http:\/\/facebook.com\">test<\/a> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a><\/p>$/
                 }
+            ],
+            processedMarkup;
+
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
+    it("should NOT auto-link URLS inside of code/pre blocks", function () {
+        var testPhrases = [
+                {
+                    input: "```\nurl: http://google.co.uk\n```",
+                    output: /^<pre><code>url: http:\/\/google.co.uk  \n<\/code><\/pre>$/
+                },
+                {
+                    input: "`url: http://google.co.uk`",
+                    output: /^<p><code>url: http:\/\/google.co.uk<\/code><\/p>$/
+                },
+                {
+                    input: "Hello type some `url: http://google.co.uk` stuff",
+                    output: /^<p>Hello type some <code>url: http:\/\/google.co.uk<\/code> stuff<\/p>$/
+                }
+
             ],
             processedMarkup;
 
