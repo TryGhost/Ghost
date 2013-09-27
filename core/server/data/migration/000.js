@@ -131,19 +131,19 @@ up = function () {
 
 down = function () {
     return when.all([
-        knex.Schema.dropTableIfExists('posts'),
-        knex.Schema.dropTableIfExists('users'),
-        knex.Schema.dropTableIfExists('roles'),
-        knex.Schema.dropTableIfExists('settings'),
-        knex.Schema.dropTableIfExists('permissions'),
-        knex.Schema.dropTableIfExists('tags')
+        knex.Schema.dropTableIfExists('posts_tags'),
+        knex.Schema.dropTableIfExists('roles_users'),
+        knex.Schema.dropTableIfExists('permissions_users'),
+        knex.Schema.dropTableIfExists('permissions_roles'),
+        knex.Schema.dropTableIfExists('users')
+
     ]).then(function () {
-        // Drop the relation tables after the model tables
         return when.all([
-            knex.Schema.dropTableIfExists('roles_users'),
-            knex.Schema.dropTableIfExists('permissions_users'),
-            knex.Schema.dropTableIfExists('permissions_roles'),
-            knex.Schema.dropTableIfExists('posts_tags')
+            knex.Schema.dropTableIfExists('roles'),
+            knex.Schema.dropTableIfExists('settings'),
+            knex.Schema.dropTableIfExists('permissions'),
+            knex.Schema.dropTableIfExists('tags'),
+            knex.Schema.dropTableIfExists('posts')
         ]);
     });
 };
