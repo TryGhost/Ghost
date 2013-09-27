@@ -35,6 +35,11 @@
 
         showNext: function () {
             if (this.isLoading) { return; }
+
+            if (!this.collection.length) {
+                return Backbone.trigger('blog:activeItem', null);
+            }
+
             var id = this.collection.at(0).id;
             if (id) {
                 Backbone.trigger('blog:activeItem', id);
@@ -192,10 +197,9 @@
         templateName: "preview",
 
         render: function () {
-            if (this.activeId) {
-                this.model = this.collection.get(this.activeId);
-                this.$el.html(this.template(this.templateData()));
-            }
+            this.model = this.collection.get(this.activeId);
+            this.$el.html(this.template(this.templateData()));
+
             this.$('.content-preview-content').scrollClass({target: '.content-preview', offset: 10});
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');
