@@ -9,13 +9,13 @@
 
             <li id="usermenu" class="subnav">
                 <a href="#" data-toggle="ul" class="dropdown">
-                    <img class="avatar" src="{{#if currentUser.profile}}{{currentUser.profile}}{{else}}/shared/img/user-image.png{{/if}}" alt="Avatar" />
-                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}Ghost{{/if}}</span>
+                    <img class="avatar" src="{{#if currentUser.image}}{{currentUser.image}}{{else}}/shared/img/user-image.png{{/if}}" alt="Avatar" />
+                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
                 </a>
                 <ul class="overlay">
                     <li class="usermenu-profile"><a href="/ghost/settings/user/">Your Profile</a></li>
                     <li class="divider"></li>
-                    <li class="usermenu-help"><a href="http://forum.tryghost.org">Help / Support</a></li>
+                    <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
                     <li class="divider"></li>
                     <li class="usermenu-signout"><a href="/signout/">Sign Out</a></li>
                 </ul>

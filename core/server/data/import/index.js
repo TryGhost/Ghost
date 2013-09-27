@@ -4,7 +4,7 @@ module.exports = function (version, data) {
     var importer;
 
     try {
-        importer = require("./" + version);
+        importer = require('./' + version);
     } catch (ignore) {
         // Zero effs given
     }

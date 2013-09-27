@@ -1,7 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('./testUtils'),
     should = require('should'),
-    _ = require("underscore"),
+    _ = require('underscore'),
     when = require('when'),
     sequence = require('when/sequence'),
 
@@ -14,8 +14,8 @@ describe('Post Model', function () {
         UserModel = Models.User,
         userData = {
             password: 'testpass1',
-            email: "test@test1.com",
-            name: "Mr Biscuits"
+            email: 'test@test1.com',
+            name: 'Mr Biscuits'
         };
 
     before(function (done) {
@@ -79,10 +79,10 @@ describe('Post Model', function () {
             results.length.should.be.above(0);
             firstPost = results.models[0].toJSON();
 
-            firstPost.author.should.be.a("object");
-            firstPost.user.should.be.a("object");
-            firstPost.author.name.should.equal("Mr Biscuits");
-            firstPost.user.name.should.equal("Mr Biscuits");
+            firstPost.author.should.be.a('object');
+            firstPost.user.should.be.a('object');
+            firstPost.author.name.should.equal('Mr Biscuits');
+            firstPost.user.name.should.equal('Mr Biscuits');
 
             done();
         }, done);
@@ -95,10 +95,10 @@ describe('Post Model', function () {
             should.exist(result);
             firstPost = result.toJSON();
 
-            firstPost.author.should.be.a("object");
-            firstPost.user.should.be.a("object");
-            firstPost.author.name.should.equal("Mr Biscuits");
-            firstPost.user.name.should.equal("Mr Biscuits");
+            firstPost.author.should.be.a('object');
+            firstPost.user.should.be.a('object');
+            firstPost.author.name.should.equal('Mr Biscuits');
+            firstPost.user.name.should.equal('Mr Biscuits');
 
             done();
         }, done);
@@ -112,7 +112,7 @@ describe('Post Model', function () {
             results.length.should.be.above(0);
             firstPost = results.models[0];
 
-            return PostModel.edit({id: firstPost.id, title: "new title"});
+            return PostModel.edit({id: firstPost.id, title: 'new title'});
         }).then(function (edited) {
             should.exist(edited);
             edited.attributes.title.should.equal('new title');
@@ -134,16 +134,16 @@ describe('Post Model', function () {
             should.exist(createdPost);
             createdPost.has('uuid').should.equal(true);
             createdPost.get('status').should.equal('draft');
-            createdPost.get('title').should.equal(newPost.title, "title is correct");
-            createdPost.get('markdown').should.equal(newPost.markdown, "markdown is correct");
+            createdPost.get('title').should.equal(newPost.title, 'title is correct');
+            createdPost.get('markdown').should.equal(newPost.markdown, 'markdown is correct');
             createdPost.has('html').should.equal(true);
             createdPost.get('html').should.equal('<p>' + newPost.markdown + '</p>');
             createdPost.get('slug').should.equal('test-title-1');
-            createdPost.get('created_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
+            createdPost.get('created_at').should.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
             createdPost.get('created_by').should.equal(createdPost.get('author_id'));
-            createdPost.get('updated_at').should.be.below(new Date().getTime()).and.be.above(new Date(0).getTime());
+            createdPost.get('updated_at').should.be.above(new Date(0).getTime());
             createdPost.get('updated_by').should.equal(1);
             should.equal(createdPost.get('published_at'), null);
             should.equal(createdPost.get('published_by'), null);
@@ -198,8 +198,8 @@ describe('Post Model', function () {
         sequence(_.times(12, function (i) {
             return function () {
                 return PostModel.add({
-                    title: "Test Title",
-                    markdown: "Test Content " + (i+1)
+                    title: 'Test Title',
+                    markdown: 'Test Content ' + (i+1)
                 });
             };
         })).then(function (createdPosts) {
@@ -224,7 +224,6 @@ describe('Post Model', function () {
         }).otherwise(done);
     });
 
-
     it('can generate slugs without duplicate hyphens', function (done) {
         var newPost = {
             title: 'apprehensive  titles  have  too  many  spaces  ',
@@ -237,6 +236,53 @@ describe('Post Model', function () {
 
             done();
         }).then(null, done);
+    });
+
+    it('detects duplicate slugs before saving', function (done) {
+        var firstPost = {
+                title: 'First post',
+                markdown: 'First content 1'
+            },
+            secondPost = {
+                title: 'Second post',
+                markdown: 'Second content 1'
+            };
+
+        // Create the first post
+        PostModel.add(firstPost)
+            .then(function (createdFirstPost) {
+                // Store the slug for later
+                firstPost.slug = createdFirstPost.get('slug');
+
+                // Create the second post
+                return PostModel.add(secondPost);
+            }).then(function (createdSecondPost) {
+                // Store the slug for comparison later
+                secondPost.slug = createdSecondPost.get('slug');
+
+                // Update with a conflicting slug from the first post
+                return createdSecondPost.save({
+                    slug: firstPost.slug
+                });
+            }).then(function (updatedSecondPost) {
+
+                // Should have updated from original
+                updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                // Should not have a conflicted slug from the first
+                updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+
+                return PostModel.read({
+                    id: updatedSecondPost.id
+                });
+            }).then(function (foundPost) {
+
+                // Should have updated from original
+                foundPost.get('slug').should.not.equal(secondPost.slug);
+                // Should not have a conflicted slug from the first
+                foundPost.get('slug').should.not.equal(firstPost.slug);
+
+                done();
+            }).otherwise(done);
     });
 
     it('can delete', function (done) {
@@ -252,7 +298,7 @@ describe('Post Model', function () {
         }).then(function (newResults) {
             var ids, hasDeletedId;
 
-            ids = _.pluck(newResults.models, "id");
+            ids = _.pluck(newResults.models, 'id');
             hasDeletedId = _.any(ids, function (id) {
                 return id === firstPostId;
             });
@@ -260,6 +306,25 @@ describe('Post Model', function () {
 
             done();
         }).then(null, done);
+    });
+
+    it('can create a new Post with a previous published_at date', function (done) {
+        var previousPublishedAtDate = new Date(2013, 8, 21, 12);
+
+        PostModel.add({
+            status: 'published',
+            published_at: previousPublishedAtDate,
+            title: 'published_at test',
+            markdown: 'This is some content'
+        }).then(function (newPost) {
+
+            should.exist(newPost);
+
+            newPost.get('published_at').should.equal(previousPublishedAtDate);
+
+            done();
+
+        }).otherwise(done);
     });
 
     it('can fetch a paginated set, with various options', function (done) {

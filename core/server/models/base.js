@@ -1,10 +1,10 @@
 var GhostBookshelf,
     Bookshelf = require('bookshelf'),
-    when = require('when'),
-    moment = require('moment'),
-    _ = require('underscore'),
-    uuid = require('node-uuid'),
-    config = require('../../../config'),
+    when      = require('when'),
+    moment    = require('moment'),
+    _         = require('underscore'),
+    uuid      = require('node-uuid'),
+    config    = require('../../../config'),
     Validator = require('validator').Validator;
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
@@ -70,7 +70,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
         }
 
         _.each(relations, function (relation, key) {
-            if (key.substring(0, 7) !== "_pivot_") {
+            if (key.substring(0, 7) !== '_pivot_') {
                 attrs[key] = relation.toJSON ? relation.toJSON() : relation;
             }
         });
@@ -126,7 +126,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
         //if slug is empty after trimming use "post"
         if (!slug) {
-            slug = "post";
+            slug = 'post';
         }
         // Test for duplicate slugs.
         return checkIfSlugExists(slug);

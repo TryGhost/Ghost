@@ -1,10 +1,10 @@
 var Settings,
     GhostBookshelf = require('./base'),
-    validator = GhostBookshelf.validator,
-    uuid = require('node-uuid'),
-    _ = require('underscore'),
-    errors = require('../errorHandling'),
-    when = require('when'),
+    validator      = GhostBookshelf.validator,
+    uuid           = require('node-uuid'),
+    _              = require('underscore'),
+    errors         = require('../errorHandling'),
+    when           = require('when'),
     defaultSettings;
 
 // For neatness, the defaults file is split into categories.

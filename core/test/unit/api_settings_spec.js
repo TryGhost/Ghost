@@ -76,13 +76,7 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                firstSetting = results.models[1];
-
-                // The edit method has been modified to take an object of
-                // key/value pairs
-                firstSetting.set('value', 'new value');
-
-                return SettingsModel.edit(firstSetting);
+                return SettingsModel.edit({key: "description", value: "new value"});
 
             }).then(function (edited) {
 
@@ -92,7 +86,7 @@ describe('Settings Model', function () {
 
                 edited = edited[0];
 
-                edited.attributes.key.should.equal(firstSetting.attributes.key);
+                edited.attributes.key.should.equal('description');
                 edited.attributes.value.should.equal('new value');
 
                 done();
@@ -111,13 +105,8 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                model1 = results.models[1];
-                model2 = results.models[2];
-
-                // The edit method has been modified to take an object of
-                // key/value pairs
-                model1.set('value', 'new value1');
-                model2.set('value', 'new value2');
+                model1 = {key: "description", value: "another new value"};
+                model2 = {key: "title", value: "new title"};
 
                 return SettingsModel.edit([model1, model2]);
 
@@ -129,13 +118,13 @@ describe('Settings Model', function () {
 
                 editedModel = edited[0];
 
-                editedModel.attributes.key.should.equal(model1.attributes.key);
-                editedModel.attributes.value.should.equal('new value1');
+                editedModel.attributes.key.should.equal(model1.key);
+                editedModel.attributes.value.should.equal(model1.value);
 
                 editedModel = edited[1];
 
-                editedModel.attributes.key.should.equal(model2.attributes.key);
-                editedModel.attributes.value.should.equal('new value2');
+                editedModel.attributes.key.should.equal(model2.key);
+                editedModel.attributes.value.should.equal(model2.value);
 
                 done();
 
@@ -205,7 +194,6 @@ describe('Settings Model', function () {
 
         it('populates any unset settings from the JSON defaults', function (done) {
             SettingsModel.findAll().then(function (allSettings) {
-                console.log(allSettings.models)
                 allSettings.length.should.equal(0);
                 return SettingsModel.populateDefaults();
             }).then(function () {

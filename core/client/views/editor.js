@@ -281,7 +281,7 @@
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
 
             this.$('#entry-title').val(this.model.get('title')).focus();
-            this.$('#entry-markdown').html(this.model.get('markdown'));
+            this.$('#entry-markdown').text(this.model.get('markdown'));
 
             this.initMarkdown();
             this.renderPreview();

@@ -1,11 +1,11 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-var _ = require('underscore'),
-    when = require('when'),
-    Models = require('../models'),
-    objectTypeModelMap = require('./objectTypeModelMap'),
-    UserProvider = Models.User,
+var _                   = require('underscore'),
+    when                = require('when'),
+    Models              = require('../models'),
+    objectTypeModelMap  = require('./objectTypeModelMap'),
+    UserProvider        = Models.User,
     PermissionsProvider = Models.Permission,
     init,
     refresh,

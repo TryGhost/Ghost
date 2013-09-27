@@ -4,14 +4,16 @@
 
 /*global require, module */
 
-var Ghost = require('../../ghost'),
-    api = require('../api'),
-    RSS = require('rss'),
-    _ = require('underscore'),
+var Ghost  = require('../../ghost'),
+    api    = require('../api'),
+    RSS    = require('rss'),
+    _      = require('underscore'),
     errors = require('../errorHandling'),
-    when = require('when'),
+    when   = require('when'),
+    url    = require('url'),
 
-    ghost = new Ghost(),
+
+    ghost  = new Ghost(),
     frontendControllers;
 
 frontendControllers = {
@@ -24,7 +26,7 @@ frontendControllers = {
         // No negative pages
         if (isNaN(pageParam) || pageParam < 1) {
             //redirect to 404 page?
-            return res.redirect("/");
+            return res.redirect('/');
         }
         options.page = pageParam;
 
@@ -87,14 +89,14 @@ frontendControllers = {
                 description: ghost.settings('description'),
                 generator: 'Ghost v' + res.locals.version,
                 author: user ? user.attributes.name : null,
-                feed_url: siteUrl + '/rss/',
+                feed_url: url.resolve(siteUrl, '/rss/'),
                 site_url: siteUrl,
                 ttl: '60'
             });
 
             // No negative pages
             if (isNaN(pageParam) || pageParam < 1) {
-                return res.redirect("/rss/");
+                return res.redirect('/rss/');
             }
 
             if (pageParam === 1 && req.route.path === '/rss/:page/') {
@@ -112,22 +114,30 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect("/rss/" + maxPage + "/");
+                    return res.redirect('/rss/' + maxPage + '/');
                 }
 
                 ghost.doFilter('prePostsRender', page.posts, function (posts) {
                     posts.forEach(function (post) {
                         var item = {
-                            title:  _.escape(post.title),
-                            guid: post.uuid,
-                            url: siteUrl + '/' + post.slug + '/',
-                            date: post.published_at
-                        };
+                                title:  _.escape(post.title),
+                                guid: post.uuid,
+                                url: siteUrl + '/' + post.slug + '/',
+                                date: post.published_at,
+                            },
+                            content = post.html;
 
-                        if (post.meta_description !== null) {
-                            item.push({ description: post.meta_description });
-                        }
-
+                        //set img src to absolute url
+                        content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            p1 = url.resolve(siteUrl, p1);
+                            return "src='" + p1 + "' ";
+                        });
+                        //set a href to absolute url
+                        content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            p1 = url.resolve(siteUrl, p1);
+                            return "href='" + p1 + "' ";
+                        });
+                        item.description = content;
                         feed.item(item);
                     });
                     res.set('Content-Type', 'text/xml');
@@ -138,6 +148,7 @@ frontendControllers = {
             return next(new Error(err));
         });
     }
+
 };
 
 module.exports = frontendControllers;

@@ -2,28 +2,28 @@
 // Defines core methods required to build the application
 
 // Module dependencies
-var config = require('../config'),
-    when = require('when'),
-    express = require('express'),
-    errors = require('./server/errorHandling'),
-    fs = require('fs'),
-    path = require('path'),
-    hbs = require('express-hbs'),
-    nodefn = require('when/node/function'),
-    _ = require('underscore'),
-    Polyglot = require('node-polyglot'),
-    Mailer = require('./server/mail'),
-    models = require('./server/models'),
-    plugins = require('./server/plugins'),
+var config      = require('../config'),
+    when        = require('when'),
+    express     = require('express'),
+    errors      = require('./server/errorHandling'),
+    fs          = require('fs'),
+    path        = require('path'),
+    hbs         = require('express-hbs'),
+    nodefn      = require('when/node/function'),
+    _           = require('underscore'),
+    Polyglot    = require('node-polyglot'),
+    Mailer      = require('./server/mail'),
+    models      = require('./server/models'),
+    plugins     = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
     permissions = require('./server/permissions'),
-    uuid = require('node-uuid'),
+    uuid        = require('node-uuid'),
 
 // Variables
-    appRoot = path.resolve(__dirname, '../'),
-    themePath = path.resolve(appRoot + '/content/themes'),
-    pluginPath = path.resolve(appRoot + '/content/plugins'),
-    themeDirectories = requireTree(themePath),
+    appRoot           = path.resolve(__dirname, '../'),
+    themePath         = path.resolve(appRoot + '/content/themes'),
+    pluginPath        = path.resolve(appRoot + '/content/plugins'),
+    themeDirectories  = requireTree(themePath),
     pluginDirectories = requireTree(pluginPath),
 
     Ghost,
@@ -111,7 +111,7 @@ Ghost = function () {
                     'appRoot':          appRoot,
                     'themePath':        themePath,
                     'pluginPath':       pluginPath,
-                    'activeTheme':      path.join(themePath, !instance.settingsCache ? "" : instance.settingsCache.activeTheme.value),
+                    'activeTheme':      path.join(themePath, !instance.settingsCache ? '' : instance.settingsCache.activeTheme.value),
                     'adminViews':       path.join(appRoot, '/core/server/views/'),
                     'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
                     'lang':             path.join(appRoot, '/core/shared/lang/'),
@@ -130,14 +130,14 @@ Ghost.prototype.init = function () {
 
     function doFirstRun() {
         var firstRunMessage = [
-            "Welcome to Ghost.",
-            "You're running under the <strong>",
+            'Welcome to Ghost.',
+            'You\'re running under the <strong>',
             process.env.NODE_ENV,
-            "</strong>environment.",
+            '</strong>environment.',
 
-            "Your URL is set to",
-            "<strong>" + self.config().url + "</strong>.",
-            "See <a href=\"http://docs.ghost.org/\">http://docs.ghost.org</a> for instructions."
+            'Your URL is set to',
+            '<strong>' + self.config().url + '</strong>.',
+            'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
         ];
 
         self.notifications.push({
@@ -165,14 +165,13 @@ Ghost.prototype.init = function () {
     }
 
     // ### Initialisation
-    // make sure things are done in order
     return when.join(
         // Initialise the models
-        instance.dataProvider.init(),
+        self.dataProvider.init(),
         // Calculate paths
-        instance.getPaths(),
+        self.getPaths(),
         // Initialise mail after first run
-        instance.mail.init(self)
+        self.mail.init(self)
     ).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -183,7 +182,7 @@ Ghost.prototype.init = function () {
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-             // Initialize plugins
+            // Initialize plugins
             self.initPlugins(),
             // Initialize the permissions actions and objects
             permissions.init()
@@ -261,7 +260,7 @@ Ghost.prototype.loadTemplate = function (name) {
     var self = this,
         templateFileName = name + '.hbs',
         // Check for theme specific version first
-        templatePath = path.join(this.paths().activeTheme, "partials", templateFileName),
+        templatePath = path.join(this.paths().activeTheme, 'partials', templateFileName),
         deferred = when.defer();
 
     // Can't use nodefn here because exists just returns one parameter, true or false

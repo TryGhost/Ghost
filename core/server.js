@@ -1,18 +1,18 @@
 // Module dependencies
-var express = require('express'),
-    when = require('when'),
-    _ = require('underscore'),
-    colors = require("colors"),
-    semver = require("semver"),
-    slashes = require("connect-slashes"),
-    errors = require('./server/errorHandling'),
-    admin = require('./server/controllers/admin'),
-    frontend = require('./server/controllers/frontend'),
-    api = require('./server/api'),
-    path = require('path'),
-    hbs = require('express-hbs'),
-    Ghost = require('./ghost'),
-    helpers = require('./server/helpers'),
+var express     = require('express'),
+    when        = require('when'),
+    _           = require('underscore'),
+    colors      = require('colors'),
+    semver      = require('semver'),
+    slashes     = require('connect-slashes'),
+    errors      = require('./server/errorHandling'),
+    admin       = require('./server/controllers/admin'),
+    frontend    = require('./server/controllers/frontend'),
+    api         = require('./server/api'),
+    path        = require('path'),
+    hbs         = require('express-hbs'),
+    Ghost       = require('./ghost'),
+    helpers     = require('./server/helpers'),
     packageInfo = require('../package.json'),
 
 // Variables
@@ -112,7 +112,8 @@ function ghostLocals(req, res, next) {
             _.extend(res.locals,  {
                 currentUser: {
                     name: currentUser.attributes.name,
-                    profile: currentUser.attributes.image
+                    email: currentUser.attributes.email,
+                    image: currentUser.attributes.image
                 }
             });
             next();
@@ -128,8 +129,8 @@ function ghostLocals(req, res, next) {
 // Disable any caching until it can be done properly
 function disableCachedResult(req, res, next) {
     res.set({
-        "Cache-Control": "no-cache, must-revalidate",
-        "Expires": "Sat, 26 Jul 1997 05:00:00 GMT"
+        'Cache-Control': 'no-cache, must-revalidate',
+        'Expires': 'Sat, 26 Jul 1997 05:00:00 GMT'
     });
 
     next();
@@ -222,13 +223,15 @@ function manageAdminAndTheme(req, res, next) {
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
-when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
+when(ghost.init()).then(function () {
+    return helpers.loadCoreHelpers(ghost);
+}).then(function () {
 
     // ##Configuration
     var oneYear = 31536000000;
 
     // Logging configuration
-    if (server.get('env') !== "development") {
+    if (server.get('env') !== 'development') {
         server.use(express.logger());
     } else {
         server.use(express.logger('dev'));
@@ -243,7 +246,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.use('/shared', express['static'](path.join(__dirname, '/shared')));
     server.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
     // Serve our built scripts; can't use /scripts here because themes already are
-    server.use("/built/scripts", express['static'](path.join(__dirname, '/built/scripts'), {
+    server.use('/built/scripts', express['static'](path.join(__dirname, '/built/scripts'), {
         // Put a maxAge of one year on built scripts
         maxAge: oneYear
     }));
@@ -264,6 +267,7 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.use(express.urlencoded());
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
+    server.use('/ghost/debug/db/import/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
 
@@ -339,7 +343,11 @@ when.all([ghost.init(), helpers.loadCoreHelpers(ghost)]).then(function () {
     server.get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
     server.post('/ghost/upload/', admin.uploader);
-    server.get(/^\/(ghost$|(ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, auth, function (req, res) {
+    // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
+    server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
+        res.redirect('/ghost/');
+    });
+    server.get(/^\/(ghost$\/?)/, auth, function (req, res) {
         res.redirect('/ghost/');
     });
     server.get('/ghost/', redirectToSignup, auth, admin.index);

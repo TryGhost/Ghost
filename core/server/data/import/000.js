@@ -1,19 +1,19 @@
-var when = require("when"),
-    _ = require("underscore"),
+var when   = require('when'),
+    _      = require('underscore'),
     models = require('../../models'),
     errors = require('../../errorHandling'),
     Importer000;
 
 
 Importer000 = function () {
-    _.bindAll(this, "basicImport");
+    _.bindAll(this, 'basicImport');
 
-    this.version = "000";
+    this.version = '000';
 
     this.importFrom = {
-        "000": this.basicImport,
-        "001": this.tempImport,
-        "002": this.tempImport
+        '000': this.basicImport,
+        '001': this.tempImport,
+        '002': this.tempImport
     };
 };
 
@@ -81,7 +81,12 @@ function preProcessPostTags(tableData) {
 function importTags(ops, tableData) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (tag) {
-        ops.push(models.Tag.add(tag));
+        ops.push(models.Tag.read({name: tag.name}).then(function (_tag) {
+            if (!_tag) {
+                return models.Tag.add(tag);
+            }
+            return when.resolve(_tag);
+        }));
     });
 }
 
