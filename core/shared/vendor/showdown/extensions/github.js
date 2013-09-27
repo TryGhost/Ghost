@@ -36,7 +36,11 @@
 
                     // better URL support, but no title support
                     text = text.replace(imageMarkdownRegex, function (match, key, alt, src) {
-                        return '<img src="' + src + '" alt="' + alt + '" />';
+                        if (src) {
+                            return '<img src="' + src + '" alt="' + alt + '" />';
+                        }
+
+                        return '';
                     });
 
                     //prevent foo_bar and foo_bar_baz from ending up with an italic word in the middle
