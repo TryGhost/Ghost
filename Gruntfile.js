@@ -233,6 +233,14 @@ var path = require('path'),
                     files: {
                         '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
+                },
+                compress: {
+                    options: {
+                        style: 'compressed'
+                    },
+                    files: {
+                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
+                    }
                 }
             },
 
@@ -767,7 +775,7 @@ var path = require('path'),
         grunt.registerTask("nightly", [
             "setCurrentBuildType:Nightly",
             "shell:bourbon",
-            "sass:admin",
+            "sass:compress",
             "handlebars",
             "concat",
             "uglify",
@@ -781,7 +789,7 @@ var path = require('path'),
         grunt.registerTask("weekly", [
             "setCurrentBuildType:Weekly",
             "shell:bourbon",
-            "sass:admin",
+            "sass:compress",
             "handlebars",
             "concat",
             "uglify",
@@ -794,7 +802,7 @@ var path = require('path'),
 
         grunt.registerTask("build", [
             "shell:bourbon",
-            "sass:admin",
+            "sass:compress",
             "handlebars",
             "concat",
             "uglify",
@@ -806,7 +814,9 @@ var path = require('path'),
 
         // Dev Mode; watch files and restart server on changes
         grunt.registerTask("dev", [
-            "default",
+            "sass:admin",
+            "handlebars",
+            "concat",
             "express:dev",
             "open",
             "watch"
@@ -830,10 +840,10 @@ var path = require('path'),
 
         // TODO: Production build task that minifies with uglify:prod
 
-        grunt.registerTask("prod", ['sass:admin', 'handlebars', 'concat', "uglify"]);
+        grunt.registerTask("prod", ['sass:compress', 'handlebars', 'concat', "uglify"]);
 
         // When you just say "grunt"
-        grunt.registerTask("default", ['sass:admin', 'handlebars', 'concat']);
+        grunt.registerTask("default", ['sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;
