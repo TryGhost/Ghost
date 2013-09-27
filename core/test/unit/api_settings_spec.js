@@ -205,7 +205,6 @@ describe('Settings Model', function () {
 
         it('populates any unset settings from the JSON defaults', function (done) {
             SettingsModel.findAll().then(function (allSettings) {
-                console.log(allSettings.models)
                 allSettings.length.should.equal(0);
                 return SettingsModel.populateDefaults();
             }).then(function () {
