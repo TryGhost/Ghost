@@ -1020,16 +1020,6 @@ nav {
     z-index: 1030;
 }
 
-body.blur > *:not(#modal-container) {
-    @include transition(all 0.15s linear 0s);
-    -webkit-filter: blur(2px);
-       -moz-filter: blur(2px);
-        -ms-filter: blur(2px);
-         -o-filter: blur(2px);
-    @include transform(translateZ(0));
-
-}
-
 %modal, .modal {
     @include box-sizing(border-box);
     left: 50%;
@@ -1056,6 +1046,12 @@ body.blur > *:not(#modal-container) {
         width: 100%;
         margin-left: 0;
     }
+
+    //Uploaders
+    .image-uploader,
+    .pre-image-uploader {
+        margin: 0;
+    }
 }
 
 .modal-info {
@@ -1069,15 +1065,12 @@ body.blur > *:not(#modal-container) {
     @include breakpoint($tablet) {
         padding: 30px 0;
     }
-
-    .modal-footer {
-        margin-top: 20px;
-    }
 }
 
 .modal-content {
     @include box-sizing(padding-box);
     position: relative;
+    padding: 20px;
     background-clip: padding-box;
     background-color: #FFFFFF;
     border-radius: $rounded;
@@ -1119,13 +1112,11 @@ body.blur > *:not(#modal-container) {
 .modal-body {
     position: relative;
     min-height: 100px;
-    padding: 0 20px;
     overflow-y: auto;
 }
 
 .modal-footer {
-    padding: 20px;
-    padding-top: 0;
+    margin-top: 20px;
 }
 
 .modal-style-wide {
@@ -1139,6 +1130,8 @@ body.blur > *:not(#modal-container) {
 .modal-style-centered {
     text-align: center;
 }
+
+
 /* ==========================================================================
    Main Elements
    ========================================================================== */
