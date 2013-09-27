@@ -1277,10 +1277,7 @@ main {
             color: $darkgrey;
         }
     }
-    .description {
-        margin-top: 10px;
-        margin-bottom: -40px;
-    }
+    
     .centre{
         position: relative;
         top: 50px;
@@ -1325,17 +1322,17 @@ main {
         text-decoration: none;
     }
     .image-cancel {
-        @include icon($i-x, 16px);
+        @include icon($i-x, 14px);
         position: absolute;
-        color: white;
-        text-shadow: rgba(0,0,0,0.3) 0 0 3px;
         top: 10px;
         right: 10px;
+        padding: 8px;
+        color: $brown;
         text-decoration: none;
+        line-height: 0;
 
         &:hover {
             cursor: pointer;
-            color: white;
         }
     }
     input {
@@ -1404,6 +1401,13 @@ main {
         &.fail {
             background: $red;
         }
+    }
+}
+
+.image-uploader-url {
+    .description {
+        margin-top: 10px;
+        margin-bottom: -40px;
     }
 }
 
