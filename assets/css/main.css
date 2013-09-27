@@ -8,6 +8,16 @@ body {
     background: #edece4;
 }
 
+code, tt {
+    background: #F1F0EA;
+    border: 1px solid #DDDBCC;
+    border-radius: 2px 2px 2px 2px;
+    font-family: Inconsolata,monospace;
+    color: #3C4043;
+    font-size: 0.85em;
+    padding: 1px 3px;
+}
+
 a {
     color: #5ba4e5;
     -webkit-transition: all 0.25s ease;
