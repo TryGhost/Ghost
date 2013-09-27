@@ -332,6 +332,19 @@ Post = GhostBookshelf.Model.extend({
             // associated models can't be created until the post has an ID, so run this after
             return post.updateTags(newPostData.tags);
         });
+    },
+    destroy: function (_identifier, options) {
+        options = options || {};
+        return this.forge({id: _identifier}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
+            var tagIds = _.pluck(post.related('tags').toJSON(), 'id');
+            if (tagIds) {
+                return post.tags().detach(tagIds).then(function destroyPost() {
+                    return post.destroy(options);
+                });
+            }
+
+            return post.destroy(options);
+        });
     }
 
 });
