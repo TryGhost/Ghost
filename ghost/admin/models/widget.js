@@ -1,15 +1,15 @@
 /*global window, document, Ghost, $, _, Backbone */
 (function () {
-    "use strict";
+    'use strict';
 
     Ghost.Models.Widget = Backbone.Model.extend({
 
         defaults: {
-            title: "",
-            name: "",
-            author: "",
-            applicationID: "",
-            size: "",
+            title: '',
+            name: '',
+            author: '',
+            applicationID: '',
+            size: '',
             content: {
                 template: '',
                 data: {
@@ -17,9 +17,9 @@
                         count: 0,
                         sub: {
                             value: 0,
-                            dir: "", // "up" or "down"
-                            item: "",
-                            period: ""
+                            dir: '', // "up" or "down"
+                            item: '',
+                            period: ''
                         }
                     }
                 }
@@ -28,8 +28,8 @@
                 settingsPane: false,
                 enabled: false,
                 options: [{
-                    title: "ERROR",
-                    value: "Widget options not set"
+                    title: 'ERROR',
+                    value: 'Widget options not set'
                 }]
             }
         }

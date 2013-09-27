@@ -23,8 +23,6 @@
             complete: function (result) {
                 var self = this;
 
-                $dropzone.trigger("uploadsuccess", [result, $dropzone.attr('id')]);
-
                 function showImage(width, height) {
                     $dropzone.find('img.js-upload-target').attr({"width": width, "height": height}).css({"display": "block"});
                     $dropzone.find('.fileupload-loading').remove();
@@ -137,7 +135,7 @@
                 var self = this;
                 //This is the start point if no image exists
                 $dropzone.find('img.js-upload-target').css({"display": "none"});
-                $dropzone.removeClass('pre-image-uploader').addClass('image-uploader');
+                $dropzone.removeClass('pre-image-uploader image-uploader-url').addClass('image-uploader');
                 this.removeExtras();
                 this.buildExtras();
                 this.bindFileUpload();
@@ -148,6 +146,7 @@
             initUrl: function () {
                 var self = this, val;
                 this.removeExtras();
+                $dropzone.addClass('image-uploader-url').removeClass('pre-image-uploader');
                 $dropzone.find('.js-fileupload').addClass('right');
                 $dropzone.append($cancel);
                 $dropzone.find('.js-cancel').on('click', function () {
@@ -163,6 +162,7 @@
                 $dropzone.find('div.description').before($url);
 
                 $dropzone.find('.js-button-accept').on('click', function () {
+                    $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
                     $dropzone.find('div.description').hide();
                     val = $('#uploadurl').val();
                     $dropzone.find('.js-fileupload').removeClass('right');
@@ -175,7 +175,7 @@
                 var self = this;
                 // This is the start point if an image already exists
                 source = $dropzone.find('img.js-upload-target').attr('src');
-                $dropzone.removeClass('image-uploader').addClass('pre-image-uploader');
+                $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
                 $dropzone.find('div.description').hide();
                 $dropzone.append($cancel);
                 $dropzone.find('.js-cancel').on('click', function () {
