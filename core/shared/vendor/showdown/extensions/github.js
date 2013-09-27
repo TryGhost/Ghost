@@ -20,6 +20,7 @@
                 type    : 'lang',
                 filter  : function (text) {
                     var preExtractions = {},
+                        imageMarkdownRegex = /^(?:\{(.*?)\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
                         hashID = 0;
 
                     function hashId() {
@@ -43,6 +44,14 @@
                         return x.match(/\n{2}/) ? x : x.trim() + "  \n";
                     });
 
+                    // better URL support, but no title support
+                    text = text.replace(imageMarkdownRegex, function (match, key, alt, src) {
+                        if (src) {
+                            return '<img src="' + src + '" alt="' + alt + '" />';
+                        }
+
+                        return '';
+                    });
 
                     text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {
                         return "\n\n" + preExtractions[y];
@@ -58,7 +67,6 @@
                 filter  : function (text) {
                     var refExtractions = {},
                         preExtractions = {},
-                        imageMarkdownRegex = /^(?:\{(.*?)\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
                         hashID = 0;
 
                     function hashId() {
@@ -80,15 +88,6 @@
                             refExtractions[hash] = x;
                             return "{gfm-js-extract-ref-url-" + hash + "}";
                         });
-
-                    // better URL support, but no title support
-                    text = text.replace(imageMarkdownRegex, function (match, key, alt, src) {
-                        if (src) {
-                            return '<img src="' + src + '" alt="' + alt + '" />';
-                        }
-
-                        return '';
-                    });
 
                     // match a URL
                     // adapted from https://gist.github.com/jorilallo/1283095#L158
