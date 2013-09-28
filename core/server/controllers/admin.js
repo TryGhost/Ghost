@@ -47,72 +47,41 @@ function setSelected(list, name) {
     return list;
 }
 
-// TODO: this could be a separate module
-function getUniqueFileName(dir, name, ext, i, done) {
-    var filename,
-        append = '';
-
-    if (i) {
-        append = '-' + i;
-    }
-
-    filename = path.join(dir, name + append + ext);
-    fs.exists(filename, function (exists) {
-        if (exists) {
-            setImmediate(function () {
-                i = i + 1;
-                return getUniqueFileName(dir, name, ext, i, done);
-            });
-        } else {
-            return done(filename);
-        }
-    });
-}
-
 adminControllers = {
+    'get_storage': function () {
+        console.log('get_storage');
+        // TODO get storage choice from config
+        var storageChoice = 'localfilesystem.js';
+        return require('./storage/' + storageChoice);
+    },
     'uploader': function (req, res) {
 
-        var currentDate = moment(),
-            month = currentDate.format('MMM'),
-            year =  currentDate.format('YYYY'),
-            tmp_path = req.files.uploadimage.path,
-            dir = path.join('content/images', year, month),
-            ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            type = req.files.uploadimage.type,
-            basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
+        // Ensure file type is supported
+        var type = req.files.uploadimage.type,
+            storage = adminControllers.get_storage(),
+            rootToUrl = 'TODO';
 
-        function renameFile(target_path) {
-            // adds directories recursively
-            fs.mkdirs(dir, function (err) {
-                if (err) {
-                    return errors.logError(err);
-                }
+        if (type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif') {
+            return res.send(404, 'Invalid filetype');
+        }
 
-                fs.copy(tmp_path, target_path, function (err) {
-                    if (err) {
-                        return errors.logError(err);
+        storage
+            .save(new Date().getTime(), req.files.uploadimage, rootToUrl)
+            .then(function (url) {
+
+                // delete the temporary file
+                // TODO convert to promise using nodefn
+                fs.unlink(req.files.uploadimage.path, function (e) {
+                    if (e) {
+                        return errors.logError(e);
                     }
 
-                    fs.unlink(tmp_path, function (e) {
-                        if (err) {
-                            return errors.logError(err);
-                        }
-
-                        // the src for the image must be in URI format, not a file system path, which in Windows uses \
-                        var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
-                        return res.send(src);
-                    });
+                    return res.send(url);
                 });
+            })
+            .otherwise(function (e) {
+                return errors.logError(e);
             });
-        }
-
-        if (type === 'image/jpeg' || type === 'image/png' || type === 'image/gif') {
-            getUniqueFileName(dir, basename, ext, null, function (filename) {
-                renameFile(filename);
-            });
-        } else {
-            res.send(404, 'Invalid filetype');
-        }
     },
     'login': function (req, res) {
         res.render('login', {

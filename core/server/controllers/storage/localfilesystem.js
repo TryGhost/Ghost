@@ -1,4 +1,8 @@
-var fs = require('fs-extra'),
+// # Local File System Image Storage module
+// The (default) module for storing images, using the local file system
+
+var errors = require('../../errorHandling'),
+    fs = require('fs-extra'),
     moment = require('moment'),
     nodefn = require('when/node/function'),
     path = require('path'),
@@ -28,19 +32,23 @@ function getUniqueFileName(dir, name, ext, i, done) {
     });
 }
 
+// ## Module interface  
 localfilesystem = {
     // TODO use promises!!
     // QUESTION pass date or month and year? And should the date be ticks or an object? Gone with ticks.
     // QUESTION feels wrong to pass in the ghostUrl, the local file system needs it but something like S3 won't?
-    // ** date is current date in ticks
-    // ** save returns a full url to the uploaded image
-    // ** image is the express image object
-    'save': function(date, image, ghostUrl, done) {
 
-        var saved = when.defer();
+    // ### Save
+    // Saves the image to storage (the file system)
+    // - date is current date in ticks
+    // - image is the express image object
+    // - ghosturl is thr base url for the site
+    // - returns a promise which ultimately returns the full url to the uploaded image
+    'save': function (date, image, ghostUrl) {
 
-        // QUESTION is it okay for this module to know about content images?
-        var m = new moment(date),
+        // QUESTION is it okay for this module to know about content/images?
+        var saved = when.defer(),
+            m = moment(date),
             month = m.format('MMM'),
             year =  m.format('YYYY'),
             target_dir = path.join('content/images', year, month),
@@ -48,8 +56,8 @@ localfilesystem = {
             ext = path.extname(image.name),
             basename = path.basename(image.name, ext).replace(/[\W]/gi, '_');
 
-        getUniqueFileName(target_dir, basename, ext, null, function(filename) {
-            
+        getUniqueFileName(target_dir, basename, ext, null, function (filename) {
+
             fs.mkdirs(target_dir, function (err) {
                 if (err) {
                     errors.logError(err);
@@ -61,7 +69,7 @@ localfilesystem = {
                         errors.logError(err);
                         return saved.reject();
                     }
-            
+
                     // NOTE as every upload will need to delete the tmp file make this the admin controllers job
                     return saved.resolve(path.join(ghostUrl, filename));
                 });
@@ -71,5 +79,11 @@ localfilesystem = {
         return saved.promise;
     }
 };
+
+// TODO Windows path code
+//     basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
+//     // the src for the image must be in URI format, not a file system path, which in Windows uses \
+//     var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
+
 
 module.exports = localfilesystem;
