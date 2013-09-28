@@ -125,15 +125,25 @@ function ghostLocals(req, res, next) {
     }
 }
 
-// ### DisableCachedResult Middleware
-// Disable any caching until it can be done properly
-function disableCachedResult(req, res, next) {
-    res.set({
-        'Cache-Control': 'no-cache, must-revalidate',
-        'Expires': 'Sat, 26 Jul 1997 05:00:00 GMT'
-    });
+function cacheControl(options) {
+    var profiles = {
+            'public': 'public, max-age=0',
+            'private': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+        },
+        output = '';
 
-    next();
+    if (_.isString(options) && profiles.hasOwnProperty(options)) {
+        output = profiles[options];
+    } else {
+        output = options;
+    }
+
+    return function cacheControlHeaders(req, res, next) {
+        res.set({
+            'Cache-Control': output
+        });
+        next();
+    };
 }
 
 // ### whenEnabled Middleware
@@ -228,7 +238,10 @@ when(ghost.init()).then(function () {
 }).then(function () {
 
     // ##Configuration
-    var oneYear = 31536000000;
+    var oneYear = 31536000000,
+        oneHour = 3600;
+
+    // TODO: Implement query strings on assets so that the caches can be cleared
 
     // Logging configuration
     if (server.get('env') !== 'development') {
@@ -243,33 +256,38 @@ when(ghost.init()).then(function () {
     // return the correct mime type for woff filess
     express['static'].mime.define({'application/font-woff': ['woff']});
     // Shared static config
-    server.use('/shared', express['static'](path.join(__dirname, '/shared')));
-    server.use('/content/images', express['static'](path.join(__dirname, '/../content/images')));
-    // Serve our built scripts; can't use /scripts here because themes already are
-    server.use('/built/scripts', express['static'](path.join(__dirname, '/built/scripts'), {
-        // Put a maxAge of one year on built scripts
-        maxAge: oneYear
-    }));
+    server.use('/shared',  express['static'](path.join(__dirname, '/shared'), {maxAge: oneHour}));
+    // Images uploaded and stored in the filesystem; are immutable; maxage of one year
+    server.use('/content/images', express['static'](path.join(__dirname, '/../content/images'), {maxAge: oneYear}));
+    // Serve our built scripts; can't use /scripts here because themes already are; maxAge of one year
+    server.use('/built/scripts', express['static'](path.join(__dirname, '/built/scripts'), {maxAge: oneYear}));
 
     // First determine whether we're serving admin or theme content
     server.use(manageAdminAndTheme);
 
     // Admin only config
-    server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
+    server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'), {maxAge: oneHour})));
 
     // Theme only config
-    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
+    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme, {maxAge: oneHour})));
 
     // Add in all trailing slashes
     server.use(slashes());
 
+    // Body parsing middleware
     server.use(express.json());
     server.use(express.urlencoded());
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
     server.use('/ghost/debug/db/import/', express.multipart());
+
+    // Cookie and session middleware
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
+
+    // Caching middleware for general routes
+    server.use('/api/', cacheControl('private'));
+    server.use('/ghost/', cacheControl('private'));
 
     // local data
     server.use(ghostLocals);
@@ -297,24 +315,24 @@ when(ghost.init()).then(function () {
     // ### API routes
     /* TODO: auth should be public auth not user auth */
     // #### Posts
-    server.get('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
-    server.post('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
-    server.get('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
-    server.put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
-    server.del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+    server.get('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.browse));
+    server.post('/api/v0.1/posts', authAPI, api.requestHandler(api.posts.add));
+    server.get('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.read));
+    server.put('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.edit));
+    server.del('/api/v0.1/posts/:id', authAPI, api.requestHandler(api.posts.destroy));
     // #### Settings
-    server.get('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
-    server.get('/api/v0.1/settings/:key/', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
-    server.put('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
+    server.get('/api/v0.1/settings/', authAPI, api.requestHandler(api.settings.browse));
+    server.get('/api/v0.1/settings/:key/', authAPI, api.requestHandler(api.settings.read));
+    server.put('/api/v0.1/settings/', authAPI, api.requestHandler(api.settings.edit));
     // #### Users
-    server.get('/api/v0.1/users/', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
-    server.get('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.read));
-    server.put('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    server.get('/api/v0.1/users/', authAPI, api.requestHandler(api.users.browse));
+    server.get('/api/v0.1/users/:id/', authAPI, api.requestHandler(api.users.read));
+    server.put('/api/v0.1/users/:id/', authAPI, api.requestHandler(api.users.edit));
     // #### Tags
-    server.get('/api/v0.1/tags/', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
+    server.get('/api/v0.1/tags/', authAPI, api.requestHandler(api.tags.all));
     // #### Notifications
-    server.del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
-    server.post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
+    server.del('/api/v0.1/notifications/:id', authAPI, api.requestHandler(api.notifications.destroy));
+    server.post('/api/v0.1/notifications/', authAPI, api.requestHandler(api.notifications.add));
 
 
     // ### Admin routes
@@ -353,14 +371,11 @@ when(ghost.init()).then(function () {
     server.get('/ghost/', redirectToSignup, auth, admin.index);
 
     // ### Frontend routes
-    /* TODO: dynamic routing, homepage generator, filters ETC ETC */
-    server.get('/rss/', frontend.rss);
-    server.get('/rss/:page/', frontend.rss);
-    server.get('/page/:page/', frontend.homepage);
-    server.get('/:slug/', frontend.single);
-    server.get('/', frontend.homepage);
-
-
+    server.get('/rss/', cacheControl('public'), frontend.rss);
+    server.get('/rss/:page/', cacheControl('public'), frontend.rss);
+    server.get('/page/:page/', cacheControl('public'), frontend.homepage);
+    server.get('/:slug/', cacheControl('public'), frontend.single);
+    server.get('/', cacheControl('public'), frontend.homepage);
 
     // ## Start Ghost App
     server.listen(
