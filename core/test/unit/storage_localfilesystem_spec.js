@@ -2,6 +2,7 @@
 var fs = require('fs-extra'),
     should = require('should'),
     sinon = require('sinon'),
+    when = require('when'),
     localfilesystem = require('../../server/controllers/storage/localfilesystem');
 
 describe('Local File System Storage', function() {
@@ -28,7 +29,7 @@ describe('Local File System Storage', function() {
     it('should send correct path to image when date is in Sep 2013', function(done) {
         // Sat Sep 07 2013 21:24
         var date = new Date(2013, 8, 7, 21, 24).getTime();
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             url.should.equal('GHOSTURL/content/images/2013/Sep/IMAGE.jpg');
             return done();
         });
@@ -37,16 +38,16 @@ describe('Local File System Storage', function() {
     it('should send correct path to image when date is in Jan 2014', function(done) {
         // Jan 1 2014 12:00
         var date = new Date(2014, 0, 1, 12).getTime()
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             url.should.equal('GHOSTURL/content/images/2014/Jan/IMAGE.jpg');
             return done();
-        });
+        });        
     });
 
     it('should create month and year directory', function(done) {
        // Sat Sep 07 2013 21:24
         var date = new Date(2013, 8, 7, 21, 24).getTime();
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             fs.mkdirs.calledOnce.should.be.true;
             fs.mkdirs.args[0][0].should.equal('content/images/2013/Sep');
             return done();
@@ -56,7 +57,7 @@ describe('Local File System Storage', function() {
     it('should copy temp file to new location', function(done) {
        // Sat Sep 07 2013 21:24
         var date = new Date(2013, 8, 7, 21, 24).getTime();
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             fs.copy.calledOnce.should.be.true;
             fs.copy.args[0][0].should.equal('tmp/123456.jpg');
             fs.copy.args[0][1].should.equal('content/images/2013/Sep/IMAGE.jpg');
@@ -76,7 +77,7 @@ describe('Local File System Storage', function() {
         fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE.jpg').yields(true);
         fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-1.jpg').yields(false);
 
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             url.should.equal('GHOSTURL/content/images/2013/Sep/IMAGE-1.jpg');
             return done();
         });
@@ -99,7 +100,7 @@ describe('Local File System Storage', function() {
         fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-3.jpg').yields(true);
         fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-4.jpg').yields(false);
 
-        localfilesystem.save(date, image, 'GHOSTURL', function(e, url) {
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
             url.should.equal('GHOSTURL/content/images/2013/Sep/IMAGE-4.jpg');
             return done();
         });

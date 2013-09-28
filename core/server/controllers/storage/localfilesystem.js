@@ -1,7 +1,8 @@
 var fs = require('fs-extra'),
     moment = require('moment'),
     nodefn = require('when/node/function'),
-    path = require('path');
+    path = require('path'),
+    when = require('when');
 
 var localfilesystem;
 
@@ -36,6 +37,8 @@ localfilesystem = {
     // ** image is the express image object
     'save': function(date, image, ghostUrl, done) {
 
+        var saved = when.defer();
+
         // QUESTION is it okay for this module to know about content images?
         var m = new moment(date),
             month = m.format('MMM'),
@@ -49,19 +52,23 @@ localfilesystem = {
             
             fs.mkdirs(target_dir, function (err) {
                 if (err) {
-                    return errors.logError(err);
+                    errors.logError(err);
+                    return saved.reject();
                 }
 
                 fs.copy(image.path, target_path, function (err) {
                     if (err) {
-                        return errors.logError(err);
+                        errors.logError(err);
+                        return saved.reject();
                     }
             
                     // NOTE as every upload will need to delete the tmp file make this the admin controllers job
-                    return done(null, path.join(ghostUrl, filename));
+                    return saved.resolve(path.join(ghostUrl, filename));
                 });
             });
         });
+
+        return saved.promise;
     }
 };
 
