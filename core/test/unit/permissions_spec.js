@@ -13,7 +13,7 @@ var testUtils = require('./testUtils'),
     PermissionsProvider = Models.Permission,
     PostProvider = Models.Post;
 
-describe('permissions', function () {
+describe('Permissions', function () {
 
     before(function (done) {
         testUtils.clearData()

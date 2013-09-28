@@ -3,18 +3,18 @@
  */
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
-casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
-    test.filename = "logout_test.png";
+Mindless.begin('Ghost logout works correctly', 2, function suite(test) {
+    Mindless.then(Mindless.Routines.login, test);
 
-    casper.start(url + "ghost/", function then() {
-        test.assertEquals(casper.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
+    casper.thenOpen(url + 'ghost/', function then() {
+        test.assertEquals(casper.getCurrentUrl(), url + 'ghost/', 'Ghost doesn\'t require login this time');
+    });
 
     casper.thenClick('#usermenu a').waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var loginBox = document.querySelector('#usermenu .overlay.open');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
-                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === 'block'
+                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === '1';
         });
     });
 
@@ -26,25 +26,19 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No success notification :(');
     });
-
-    casper.run(function () {
-        test.done();
-    });
-});
+}, true);
 
 // has to be done after signing out
-casper.test.begin("Can't spam signin", 3, function suite(test) {
-    test.filename = "spam_test.png";
-
-    casper.start(url + "ghost/signin/", function testTitle() {
-        test.assertTitle("", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+Mindless.begin("Can't spam signin", 3, function suite(test) {
+    casper.thenOpen(url + 'ghost/signin/', function testTitle() {
+        test.assertTitle('', 'Ghost admin has no title');
+    });
 
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var loginBox = document.querySelector('.login-box');
-            return window.getComputedStyle(loginBox).getPropertyValue('display') === "table"
-                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
+            return window.getComputedStyle(loginBox).getPropertyValue('display') === 'table'
+                && window.getComputedStyle(loginBox).getPropertyValue('opacity') === '1';
         });
     }, function then() {
         this.fill("#login", falseUser, true);
@@ -60,18 +54,14 @@ casper.test.begin("Can't spam signin", 3, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification :(');
     });
+}, true);
 
-    casper.run(function () {
-        test.done();
-    });
-});
+Mindless.begin('Ghost signup fails properly', 5, function suite(test) {
+    Mindless.then(Mindless.Routines.register, test);
 
-casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
-    test.filename = "signup_test.png";
-
-    casper.start(url + "ghost/signup/", function then() {
+    casper.thenOpen(url + 'ghost/signup/', function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/signup/", "Reached signup page");
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function signupWithShortPassword() {
         this.fill("#signup", {email: email, password: 'test'}, true);
@@ -98,8 +88,4 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification :(');
     });
-
-    casper.run(function () {
-        test.done();
-    });
-});
+}, true);

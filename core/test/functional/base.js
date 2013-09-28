@@ -84,3 +84,151 @@ casper.test.on("fail", function captureFailure() {
     var filename = casper.test.filename || "casper_test_fail.png";
     casper.capture(new Date().getTime() + '_' + filename);
 });
+
+
+var Mindless = (function () {
+
+    var _beforeDoneHandler,
+        _noop = function noop() { },
+        _isUserRegistered = false;
+
+    // Always log out at end of test.
+    casper.test.tearDown(function (done) {
+        casper.then(_beforeDoneHandler);
+
+        casper.thenOpen(url + 'signout/');
+
+        casper.waitForResource(/ghost\/sign/);
+        
+        casper.run(done);
+    });
+
+    // Wrapper around `casper.test.begin`
+    function begin(testName, expect, suite, doNotAutoLogin) {
+        _beforeDoneHandler = _noop;
+
+        var runTest = function (test) {
+            test.filename = testName.toLowerCase().replace(/ /g, '-').concat('.png');
+
+            casper.start().viewport(1280, 1024);
+
+            if (!doNotAutoLogin) {
+                // Only call register once for the lifetime of Mindless
+                if (!_isUserRegistered) {
+                    then([
+                        Mindless.Routines.logout,
+                        Mindless.Routines.register
+                    ], test);
+
+                    _isUserRegistered = true;
+                }
+                
+                /* Ensure we're logged out at the start of every test or we may get
+                   unexpected failures. */
+                then([
+                    Mindless.Routines.logout,
+                    Mindless.Routines.login
+                ], test);
+            }
+
+            suite.call(casper, test);
+
+            casper.run(function () {
+                test.done();
+            });
+        };
+
+        if (typeof expect === 'function') {
+            doNotAutoLogin = suite;
+            suite = expect;
+
+            casper.test.begin(testName, runTest);
+        }
+        else {
+            casper.test.begin(testName, expect, runTest);
+        }
+    }
+
+    function _wrapInThen(doThis, test) {
+        casper.then(function () {
+            doThis.call(casper, test);
+        });
+    }
+
+    // Wraps a function or set of functions into a call to `casper.then`
+    function then(doThis, test) {
+        if (Array.isArray(doThis)) {
+            for (var i = 0; i < doThis.length; i++) {
+                _wrapInThen(doThis[i], test);
+            }
+        }
+        else {
+            _wrapInThen(doThis, test);
+        }
+    }
+
+    // Sets a handler to be invoked right before `test.done` is invoked
+    function beforeDone(fn) {
+        if (fn) {
+            _beforeDoneHandler = fn;
+        }
+        else {
+            _beforeDoneHandler = _noop;
+        }
+    }
+
+    return {
+        begin: begin,
+        then: then,
+        beforeDone: beforeDone
+    };
+}());
+
+Mindless.Routines = (function () {
+
+    function register(test) {
+        casper.open(url + 'ghost/signup/').viewport(1280, 1024);
+
+        casper.waitForOpaque('.signup-box', function then() {
+            this.fill('#signup', newUser, true);
+        });
+
+        casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+            this.echo('It appears as though a user is already registered.');
+        }, function onTimeout() {
+            this.echo('It appears as though a user was not already registered.');
+        }, 2000);
+    }
+
+    function login(test) {
+        casper.open(url + 'ghost/signin/');
+
+        casper.waitForOpaque('.login-box', function then() {
+            this.fill("#login", user, true);
+        });
+
+        casper.waitForResource(/ghost\/$/);
+    }
+
+    function logout(test) {
+        casper.thenOpen(url + 'signout/');
+        // Wait for signin or signup
+        casper.waitForResource(/ghost\/sign/);
+    }
+
+    function deletePost(id) {
+        casper.thenOpen(url + 'ghost/');
+
+        casper.thenEvaluate(function (id) {
+            return __utils__.sendAJAX(Ghost.settings.apiRoot + '/posts/' + id, 'DELETE');
+        }, id);
+    }
+
+    return {
+        register: register,
+        login: login,
+        logout: logout,
+        deletePost: deletePost
+    };
+
+}());

@@ -1,12 +1,31 @@
 /*globals casper, __utils__, url, testPost */
 
-casper.test.begin("Content screen is correct", 17, function suite(test) {
-    test.filename = "content_test.png";
+Mindless.begin("Content screen is correct", 20, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+    });
 
-    casper.start(url + "ghost/content/", function testTitleAndUrl() {
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForResource(/posts/, function checkPostWasCreated() {
+        test.assertExists('.notification-success', 'got success notification');
+    });
+
+    // Begin test
+    casper.thenOpen(url + "ghost/content/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/content\/$/, "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function testMenus() {
         test.assertExists("#main-menu", "Main menu is present");
@@ -25,7 +44,7 @@ casper.test.begin("Content screen is correct", 17, function suite(test) {
         test.assertExists(".content-list-content", "Content list view is present");
         test.assertExists(".content-list-content li .entry-title", "Content list view has at least one item");
         test.assertExists(".content-preview", "Content preview is present");
-        test.assertSelectorHasText(".content-list-content li:first-child h3", testPost.title, "first item is the post we created");
+        test.assertSelectorHasText(".content-list-content li:first-child h3", testPost.title, "item is present and has content");
     });
 
     casper.then(function testActiveItem() {
@@ -38,27 +57,12 @@ casper.test.begin("Content screen is correct", 17, function suite(test) {
             return document.querySelectorAll('.content-list-content li')[1].className;
         }, "active", "second item is active");
     });
-
-    // TODO: finish testing delete
-//    casper.then(function testDeletePost() {
-//        casper.clickLabel(testPost.title, "h3");
-//    });
-
-    casper.run(function () {
-        test.done();
-    });
 });
 
-casper.test.begin('Infinite scrolling', 1, function suite(test) {
-    test.filename = 'content_infinite_scrolling_test.png';
-
+Mindless.begin('Infinite scrolling', 1, function suite(test) {
     // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 
-    casper.start(url + "ghost/content/", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
-    }).viewport(1280, 1024);
-
-    casper.run(function () {
-        test.done();
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
     });
 });

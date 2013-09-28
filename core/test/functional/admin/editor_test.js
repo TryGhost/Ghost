@@ -1,15 +1,12 @@
 /*globals casper, __utils__, url, testPost */
 
-casper.test.begin("Ghost editor is correct", 9, function suite(test) {
-    test.filename = "editor_test.png";
-
-    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
-        test.assertExists(".entry-markdown", "Ghost editor is present");
-        test.assertExists(".entry-preview", "Ghost preview is present");
-    }).viewport(1280, 1024);
-
+Mindless.begin('Ghost editor is correct', 10, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Ghost doesn\'t require login this time');
+        test.assertExists('.entry-markdown', 'Ghost editor is present');
+        test.assertExists('.entry-preview', 'Ghost preview is present');
+    });
 
     // test saving with no data
     casper.thenClick('.js-publish-button');
@@ -26,9 +23,8 @@ casper.test.begin("Ghost editor is correct", 9, function suite(test) {
         casper.writeContentToCodeMirror(testPost.html);
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo("I've waited for 1 seconds.");
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
     });
 
     casper.thenClick('.js-publish-button');
@@ -40,54 +36,31 @@ casper.test.begin("Ghost editor is correct", 9, function suite(test) {
         test.assertEvalEquals(function () {
             return document.querySelector('#entry-title').value;
         }, testPost.title, 'Title is correct');
-
-        // TODO: make this work - spaces & newlines are problematic
-        // test.assertTextExists(testPost.html, 'Post html exists');
-    });
-
-    casper.run(function () {
-        test.done();
     });
 });
 
-
-casper.test.begin("Haunted markdown in editor works", 3, function suite(test) {
-    test.filename = "markdown_test.png";
-
-    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+Mindless.begin('Haunted markdown in editor works', 3, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+    });
 
     casper.then(function testImage() {
-        casper.writeContentToCodeMirror("![sometext]()");
+        casper.writeContentToCodeMirror('![sometext]()');
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo("I've waited for 1 seconds.");
-        // bind to resource events so we can get the API response
-    });
-
-    casper.then(function checkPostWasCreated() {
-
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
         test.assertEvalEquals(function () {
             return document.querySelector('.CodeMirror-wrap textarea').value;
-        }, "![sometext]()", 'Editor value is correct');
+        }, '![sometext]()', 'Editor value is correct');
 
         test.assertSelectorHasText('.entry-preview .rendered-markdown', 'Add image of sometext', 'Editor value is correct');
     });
-
-    casper.run(function () {
-        test.done();
-    });
 });
 
-casper.test.begin("Word count and plurality", 4, function suite(test) {
-    test.filename = "editor_plurality_test.png";
-
-    casper.start(url + "ghost/editor/", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+Mindless.begin('Word count and plurality', 4, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+    });
 
     casper.then(function checkZeroPlural() {
         test.assertSelectorHasText('.entry-word-count', '0 words', 'count of 0 produces plural "words".');
@@ -97,42 +70,26 @@ casper.test.begin("Word count and plurality", 4, function suite(test) {
         casper.writeContentToCodeMirror('test');
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo('I\'ve waited for 1 seconds.');
-    });
-
-    casper.then(function checkSinglular() {
+    casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
         test.assertSelectorHasText('.entry-word-count', '1 word', 'count of 1 produces singular "word".');
-    });
+    })
 
     casper.then(function () {
         casper.writeContentToCodeMirror('test'); // append another word, assumes newline
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo('I\'ve waited for 1 seconds.');
-    });
-
-    casper.then(function checkPlural() {
+    casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
         test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
-    });
-
-    casper.run(function () {
-        test.done();
     });
 });
 
-casper.test.begin('Title Trimming', function suite(test) {
+Mindless.begin('Title Trimming', function suite(test) {
     var untrimmedTitle = '  test title  ',
         trimmedTitle = 'test title';
 
-    test.filename = 'editor_title_trimming_test.png';
-
-    casper.start(url + 'ghost/editor/', function testTitleAndUrl() {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('', 'Ghost admin has no title');
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function populateTitle() {
         casper.sendKeys('#entry-title', untrimmedTitle);
@@ -143,18 +100,12 @@ casper.test.begin('Title Trimming', function suite(test) {
 
         }, trimmedTitle, 'Entry title should match expected value.');
     });
-
-    casper.run(function () {
-        test.done();
-    });
 });
 
-casper.test.begin('Publish menu - new post', function suite(test) {
-    test.filename = 'publish_menu_new_post.png';
-
-    casper.start(url + 'ghost/editor/', function testTitleAndUrl() {
+Mindless.begin('Publish menu - new post', 11, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('', 'Ghost admin has no title');
-    }).viewport(1280, 1024);
+    });
 
     // ... check default option status, label, class
     casper.then(function () {
@@ -184,28 +135,21 @@ casper.test.begin('Publish menu - new post', function suite(test) {
             return (__utils__.findOne('.js-publish-button').getAttribute('data-status') === 'published');
         }, 'Publish button\'s updated status should be "published"');
     });
-
-    casper.run(function () {
-        test.done();
-    });
 });
 
-casper.test.begin('Publish menu - existing post', function suite(test) {
-    test.filename = 'publish_menu_existing_post.png';
-
+Mindless.begin('Publish menu - existing post', 24, function suite(test) {
     // Create a post, save it and test refreshed editor
-    casper.start(url + 'ghost/editor/', function testTitleAndUrl() {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('', 'Ghost admin has no title');
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
         casper.writeContentToCodeMirror(testPost.html);
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo("I've waited for 1 seconds.");
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
     });
 
     // Create a post in draft status
@@ -278,9 +222,5 @@ casper.test.begin('Publish menu - existing post', function suite(test) {
         test.assertEval(function() {
             return (__utils__.findOne('.js-publish-button').getAttribute('data-status') === 'draft');
         }, 'Publish button\'s updated status should be "draft"');
-    });
-
-    casper.run(function () {
-        test.done();
     });
 });

@@ -1,12 +1,10 @@
 /*globals casper, __utils__, url */
 
-casper.test.begin("Settings screen is correct", 15, function suite(test) {
-    test.filename = "settings_test.png";
-
-    casper.start(url + "ghost/settings/", function testTitleAndUrl() {
+Mindless.begin('Settings screen is correct', 15, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/", function testTitleAndUrl() {
         test.assertTitle("", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function testViews() {
         test.assertExists(".wrapper", "Settings main view is present");
@@ -105,22 +103,19 @@ casper.test.begin("Settings screen is correct", 15, function suite(test) {
         test.assert(false, 'No success notification :(');
     });
 
-    casper.run(function () {
+    Mindless.beforeDone(function () {
         casper.removeListener('resource.requested', handleUserRequest);
         casper.removeListener('resource.requested', handleSettingsRequest);
-        test.done();
-    });
+    })
 });
 
-casper.test.begin("User settings screen validates email", 6, function suite(test) {
+Mindless.begin('User settings screen validates email', 6, function suite(test) {
     var email, brokenEmail;
 
-    test.filename = "user_settings_test.png";
-
-    casper.start(url + "ghost/settings/user/", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
+    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+        test.assertTitle('', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
+    });
 
     casper.then(function setEmailToInvalid() {
         email = casper.getElementInfo('#user-email').attributes.value;
@@ -157,9 +152,5 @@ casper.test.begin("User settings screen validates email", 6, function suite(test
         test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
     }, function onTimeout() {
         test.assert(false, 'No success notification :(');
-    });
-
-    casper.run(function () {
-        test.done();
     });
 });
