@@ -55,7 +55,7 @@ casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
     test.filename = "admin_test.png";
 
     casper.start(url + "ghost", function testTitleAndUrl() {
-        test.assertTitle("", "Ghost admin has no title");
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/signin\/$/, 'If we\'re not already registered, we should be logged in.');
     }).viewport(1280, 1024);
 
@@ -81,7 +81,7 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
     test.filename = "login_spam_test.png";
 
     casper.start(url + "ghost/signin/", function testTitle() {
-        test.assertTitle("", "Ghost admin has no title");
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
     casper.waitForOpaque(".login-box",
@@ -117,7 +117,7 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
     test.filename = "login_test.png";
 
     casper.start(url + "ghost/login/", function testTitle() {
-        test.assertTitle("", "Ghost admin has no title");
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
     casper.waitForOpaque(".login-box",

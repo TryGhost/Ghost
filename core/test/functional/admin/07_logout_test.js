@@ -37,7 +37,7 @@ casper.test.begin("Can't spam signin", 3, function suite(test) {
     test.filename = "spam_test.png";
 
     casper.start(url + "ghost/signin/", function testTitle() {
-        test.assertTitle("", "Ghost admin has no title");
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
     casper.waitFor(function checkOpaque() {
