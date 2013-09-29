@@ -16,8 +16,9 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <meta http-equiv="cleartype" content="on">
 
-        <link rel="stylesheet" type='text/css' href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
-        <link rel="stylesheet" href="/ghost/css/screen.css">
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,700">
+        {{asset "css/screen.css" ghost="true"}}
+
         {{{block "pageStyles"}}}
     </head>
     <body class="{{bodyClass}}">
@@ -37,7 +38,7 @@
         </div>
         <div class="modal-background fade"></div>
 
-        {{{ghostScriptTags}}}
+        {{asset "scripts" ghost="true"}}
 
         {{{block "bodyScripts"}}}
 

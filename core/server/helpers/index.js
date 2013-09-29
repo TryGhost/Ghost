@@ -3,6 +3,7 @@ var _           = require('underscore'),
     downsize    = require('downsize'),
     when        = require('when'),
     hbs         = require('express-hbs'),
+    path        = require('path'),
     packageInfo = require('../../../package.json'),
     errors      = require('../errorHandling'),
     models      = require('../models'),
@@ -11,7 +12,8 @@ var _           = require('underscore'),
 
 coreHelpers = function (ghost) {
     var paginationHelper,
-        scriptTemplate = _.template("<script src='/built/scripts/<%= name %>?v=<%= version %>'></script>"),
+        scriptTemplate = _.template('<script type="text/javascript" src="<%= path %>/<%= name %>?v=<%= version %>"></script>'),
+        styleTemplate = _.template('<link rel="stylesheet" type="text/css" href="<%= path %>/<%= name %>?v=<%= version %>">'),
         isProduction = process.env.NODE_ENV === 'production',
         version = encodeURIComponent(packageInfo.version);
 
@@ -358,8 +360,8 @@ coreHelpers = function (ghost) {
         return ret;
     });
 
-    // A helper for inserting the javascript tags with version hashes
-    ghost.registerThemeHelper('ghostScriptTags', function () {
+
+    function ghostScriptTags() {
         var scriptFiles = [];
 
         if (isProduction) {
@@ -376,13 +378,52 @@ coreHelpers = function (ghost) {
 
         scriptFiles = _.map(scriptFiles, function (fileName) {
             return scriptTemplate({
+                path: '/built/scripts',
                 name: fileName,
                 version: version
             });
         });
 
         return scriptFiles.join('');
+    }
+
+    ghost.registerThemeHelper('asset', function (file, options) {
+        options = options.hash || {};
+        var output = '',
+            assetPath;
+        // special case for concatenated ghost scripts
+        if (file === 'scripts' && options.ghost && this.path.match(/^\/ghost\//)) {
+            output = ghostScriptTags();
+        } else {
+            if (options.ghost && this.path.match(/^\/ghost\//)) {
+                assetPath = '/ghost'; // ghost asset path
+            } else {
+                assetPath = '/assets'; // theme asset path
+            }
+
+            switch (path.extname(file)) {
+            case '.css':
+                output = styleTemplate({
+                    path: assetPath,
+                    name: file,
+                    version: version
+                });
+                break;
+            case '.js':
+                output = scriptTemplate({
+                    path: assetPath,
+                    name: file,
+                    version: version
+                });
+                break;
+            }
+        }
+
+        return new hbs.handlebars.SafeString(output);
     });
+
+    // A helper for inserting the javascript tags with version hashes
+
 
     // ## Template driven helpers
     // Template driven helpers require that their template is loaded before they can be registered.

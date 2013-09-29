@@ -196,8 +196,7 @@ function activateTheme() {
     server.set('activeTheme', ghost.settings('activeTheme'));
     server.enable(server.get('activeTheme'));
     if (stackLocation) {
-        // Give theme static assets a one hour max-age
-        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme, {maxAge: 3600}));
+        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme, {maxAge: 3600000}));
     }
 }
 
@@ -240,7 +239,7 @@ when(ghost.init()).then(function () {
 
     // ##Configuration
     var oneYear = 31536000000,
-        oneHour = 3600;
+        oneHour = 3600000;
 
     // TODO: Implement query strings on assets so that the caches can be cleared
 
@@ -268,6 +267,9 @@ when(ghost.init()).then(function () {
 
     // Admin only config
     server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'), {maxAge: oneHour})));
+
+    // Theme only config; initialise theme
+    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme, {maxAge: oneHour})));
 
     // Add in all trailing slashes
     server.use(slashes());
