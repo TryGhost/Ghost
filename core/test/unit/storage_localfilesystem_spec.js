@@ -36,6 +36,15 @@ describe('Local File System Storage', function() {
         });
     });
 
+    it('should send correct path to image when original file has spaces', function(done) {
+        var date = new Date(2013, 8, 7, 21, 24).getTime();
+        image.name = 'AN IMAGE.jpg';
+        localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
+            url.should.equal('GHOSTURL/content/images/2013/Sep/AN_IMAGE.jpg');
+            return done();
+        });
+    });
+
     it('should send correct path to image when date is in Jan 2014', function(done) {
         // Jan 1 2014 12:00
         var date = new Date(2014, 0, 1, 12).getTime()

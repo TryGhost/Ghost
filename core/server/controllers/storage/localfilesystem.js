@@ -83,8 +83,4 @@ localfilesystem = {
     }
 };
 
-// TODO 
-//     basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
-
-
 module.exports = localfilesystem;
