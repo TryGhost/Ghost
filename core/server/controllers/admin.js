@@ -56,10 +56,9 @@ adminControllers = {
     },
     'uploader': function (req, res) {
 
-        // Ensure file type is supported
         var type = req.files.uploadimage.type,
             storage = adminControllers.get_storage(),
-            rootToUrl = 'TODO';
+            rootToUrl = '/'; // TODO for local storage this works, for external storage not
 
         if (type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif') {
             return res.send(404, 'Invalid filetype');
