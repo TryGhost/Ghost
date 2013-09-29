@@ -71,7 +71,10 @@ localfilesystem = {
                     }
 
                     // NOTE as every upload will need to delete the tmp file make this the admin controllers job
-                    return saved.resolve(path.join(ghostUrl, filename));
+
+                    // The src for the image must be in URI format, not a file system path, which in Windows uses \
+                    var fullUrl = path.join(ghostUrl, filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                    return saved.resolve(fullUrl);
                 });
             });
         });
@@ -80,10 +83,8 @@ localfilesystem = {
     }
 };
 
-// TODO Windows path code
+// TODO 
 //     basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
-//     // the src for the image must be in URI format, not a file system path, which in Windows uses \
-//     var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
 
 module.exports = localfilesystem;

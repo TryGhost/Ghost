@@ -1,5 +1,6 @@
 /*globals describe, beforeEach, it*/
 var fs = require('fs-extra'),
+    path = require('path'),
     should = require('should'),
     sinon = require('sinon'),
     when = require('when'),
@@ -106,5 +107,30 @@ describe('Local File System Storage', function() {
         });
     });
 
-    // TODO tests to check for working on windows
+
+    describe('on Windows', function() {
+        // TODO tests to check for working on windows
+
+        var truePathSep = path.sep;
+
+        beforeEach(function() {
+            sinon.stub(path, 'join');
+        });
+
+        afterEach(function() {
+            path.join.restore();
+            path.sep = truePathSep;
+        });
+
+        it('should return url in proper format for windows', function(done) {
+            path.sep = '\\';
+            path.join.returns('/content/images/2013/Sep/IMAGE.jpg');
+            path.join.withArgs('GHOSTURL', '/content/images/2013/Sep/IMAGE.jpg').returns('GHOSTURL\\content\\images\\2013\\Sep\\IMAGE.jpg');
+            var date = new Date(2013, 8, 7, 21, 24).getTime();
+            localfilesystem.save(date, image, 'GHOSTURL').then(function(url) {
+                url.should.equal('GHOSTURL/content/images/2013/Sep/IMAGE.jpg');
+                return done();
+            });
+        });
+    });  
 });
