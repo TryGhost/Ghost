@@ -5,15 +5,14 @@
     Ghost.Router = Backbone.Router.extend({
 
         routes: {
-            ''                 : 'blog',
-            'content/'         : 'blog',
+            ''                  : 'blog',
+            'content/'          : 'blog',
             'settings(/:pane)/' : 'settings',
             'editor(/:id)/'     : 'editor',
-            'debug/'           : 'debug',
-            'register/'        : 'register',
-            'signup/'          : 'signup',
-            'signin/'          : 'login',
-            'forgotten/'       : 'forgotten'
+            'debug/'            : 'debug',
+            'register/'         : 'register',
+            'signup/'           : 'signup',
+            'forgotten/'        : 'forgotten'
         },
 
         signup: function () {
@@ -29,10 +28,16 @@
         },
 
         blog: function () {
-            var posts = new Ghost.Collections.Posts();
-            posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
-                Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
-            });
+            // Hacky, but doesn't matter. Even if they add the element through the console, they still wouldn't be
+            // able to get the posts due to authentication reasons.
+            if ($('.login-box').length > 0) {
+                Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-box' });
+            } else {
+                var posts = new Ghost.Collections.Posts();
+                posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
+                    Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
+                });
+            }
         },
 
         settings: function (pane) {

@@ -237,14 +237,19 @@ adminControllers = {
         };
 
         return api.notifications.add(notification).then(function () {
-            res.redirect('/ghost/signin/');
+            res.redirect('/ghost/');
         });
     },
     'index': function (req, res) {
-        res.render('content', {
-            bodyClass: 'manage',
-            adminNav: setSelected(adminNavbar, 'content')
-        });
+        if (!req.session.user) {
+            adminControllers.login(req, res);
+        } else {
+            res.render('content', {
+                bodyClass: 'manage',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
+        }
+
     },
     'editor': function (req, res) {
         if (req.params.id !== undefined) {

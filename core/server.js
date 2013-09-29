@@ -44,7 +44,10 @@ function auth(req, res, next) {
             }
             redirect = '?r=' + encodeURIComponent(path);
         }
-        return res.redirect('/ghost/signin/' + redirect);
+
+        if (req.path !== '/ghost/') {
+            return res.redirect('/ghost/' + redirect);
+        }
     }
 
     next();
@@ -319,7 +322,7 @@ when(ghost.init()).then(function () {
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
-    server.get(/^\/logout\/?$/, function redirect(req, res) {
+    server.get(/^\/logout\/?/, function redirect(req, res) {
         res.redirect(301, '/signout/');
     });
     server.get(/^\/signout\/?$/, admin.logout);

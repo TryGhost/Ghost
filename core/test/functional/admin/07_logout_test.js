@@ -19,7 +19,7 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
     });
 
     casper.thenClick('.usermenu-signout a');
-    casper.waitForResource(/signin/);
+    casper.waitForResource(/ghost\//);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
         test.assert(true, 'Got success notification');
@@ -36,7 +36,7 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
 casper.test.begin("Can't spam signin", 3, function suite(test) {
     test.filename = "spam_test.png";
 
-    casper.start(url + "ghost/signin/", function testTitle() {
+    casper.start(url + "ghost/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 

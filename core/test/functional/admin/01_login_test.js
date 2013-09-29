@@ -3,8 +3,8 @@
 casper.test.begin('Ensure Session is Killed', 1, function suite(test) {
     test.filename = 'login_logout_test.png';
 
-    casper.start(url + 'logout/', function (response) {
-        test.assertUrlMatch(/ghost\/sign/, 'We got redirected to signin or signup page');
+    casper.start(url + 'signout/', function (response) {
+        test.assertUrlMatch(/ghost(\/signup)?/, 'We got redirected to signin or signup page');
     });
 
     casper.run(function () {
@@ -43,7 +43,7 @@ casper.test.begin('Ensure Session is Killed after Registration', 1, function sui
     test.filename = 'login_logout2_test.png';
 
     casper.start(url + 'logout/', function then() {
-        test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page');
+        test.assertUrlMatch(/ghost\//, 'We got redirected to signin page');
     });
 
     casper.run(function () {
@@ -56,7 +56,7 @@ casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
 
     casper.start(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/signin\/$/, 'If we\'re not already registered, we should be logged in.');
+        test.assertUrlMatch(/ghost\/$/, 'If we\'re not already registered, we should be logged in.');
     }).viewport(1280, 1024);
 
     casper.run(function () {
@@ -64,23 +64,26 @@ casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
     });
 });
 
-casper.test.begin('Redirects to signin', 2, function suite(test) {
-    test.filename = 'login_redirect_test.png';
 
-    casper.start(url + 'ghost/login/', function testRedirect(response) {
-        test.assertEqual(response.status, 200, 'Response status should be 200.');
-        test.assertUrlMatch(/ghost\/signin\/$/, 'Should be redirected to /signin/.');
-    });
+// Removed due to not needing because of fix for #484
 
-    casper.run(function () {
-        test.done();
-    });
-});
+// casper.test.begin('Redirects to signin', 2, function suite(test) {
+//     test.filename = 'login_redirect_test.png';
+
+//     casper.start(url + 'ghost/', function testRedirect(response) {
+//         test.assertEqual(response.status, 200, 'Response status should be 200.');
+//         test.assertUrlMatch(/ghost\/$/, 'Should be redirected to /signin/.');
+//     });
+
+//     casper.run(function () {
+//         test.done();
+//     });
+// });
 
 casper.test.begin("Can't spam it", 4, function suite(test) {
     test.filename = "login_spam_test.png";
 
-    casper.start(url + "ghost/signin/", function testTitle() {
+    casper.start(url + "ghost/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
@@ -116,7 +119,7 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
 casper.test.begin("Can login to Ghost", 4, function suite(test) {
     test.filename = "login_test.png";
 
-    casper.start(url + "ghost/login/", function testTitle() {
+    casper.start(url + "ghost/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     }).viewport(1280, 1024);
 
@@ -124,6 +127,10 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
         function then() {
             this.fill("#login", user, true);
         });
+
+    // had to add it because the waitforresource would run immediately before login would happen
+    // due to same url
+    casper.wait(500);
 
     casper.waitForResource(/ghost\/$/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/$/, 'We got redirected to the Ghost page');
