@@ -1,6 +1,6 @@
 /*globals describe, beforeEach, it*/
 var fs = require('fs-extra'),
-    SandboxedModule = require('sandboxed-module');
+    // SandboxedModule = require('sandboxed-module'),
     should = require('should'),
     sinon = require('sinon'),
     testUtils = require('./testUtils'),
