@@ -49,7 +49,6 @@ function setSelected(list, name) {
 
 adminControllers = {
     'get_storage': function () {
-        console.log('get_storage');
         // TODO get storage choice from config
         var storageChoice = 'localfilesystem.js';
         return require('./storage/' + storageChoice);
