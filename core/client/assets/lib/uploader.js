@@ -80,7 +80,7 @@
                                 data.submit();
                             });
                     },
-                    dropZone: $dropzone,
+                    dropZone: settings.fileStorage ? $dropzone : null,
                     progressall: function (e, data) {
                         var progress = parseInt(data.loaded / data.total * 100, 10);
                         if (!settings.editor) {$progress.find('div.js-progress').css({"position": "absolute", "top": "40px"}); }
