@@ -321,9 +321,9 @@ function invalidateCache(req, res, result) {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
             if (id) {
                 if (result.toJSON) {
-                    cacheInvalidate += ', /' + result.toJSON().slug;
+                    cacheInvalidate += ', /' + result.toJSON().slug + '/';
                 } else {
-                    cacheInvalidate += ', /' + result.slug;
+                    cacheInvalidate += ', /' + result.slug + '/';
                 }
             }
         }
