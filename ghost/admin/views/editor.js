@@ -432,7 +432,8 @@
         },
 
         initUploads: function () {
-            this.$('.js-drop-zone').upload({editor: true});
+            var filestorage = $('#entry-markdown-content').data('filestorage');
+            this.$('.js-drop-zone').upload({editor: true, fileStorage: filestorage});
             this.$('.js-drop-zone').on('uploadstart', $.proxy(this.disableEditor, this));
             this.$('.js-drop-zone').on('uploadstart', this.uploadMgr.handleDownloadStart);
             this.$('.js-drop-zone').on('uploadfailure', $.proxy(this.enableEditor, this));
