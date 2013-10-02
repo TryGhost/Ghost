@@ -1,4 +1,4 @@
-/*global Ghost, Backbone */
+/*global Ghost, Backbone, $ */
 (function () {
     'use strict';
     Ghost.Models.uploadModal = Backbone.Model.extend({
@@ -8,8 +8,9 @@
             type: 'action',
             style: ["wide"],
             animation: 'fade',
-            afterRender: function () {
-                this.$('.js-drop-zone').upload();
+            afterRender: function (id) {
+                var filestorage = $('#' + this.options.model.id).data('filestorage');
+                this.$('.js-drop-zone').upload({fileStorage: filestorage});
             },
             confirm: {
                 reject: {
