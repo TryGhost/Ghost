@@ -200,7 +200,7 @@
             this.showUpload('cover', settings.cover);
         },
         showUpload: function (key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
+            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
                     if (this.$('#uploadurl').val()) {
@@ -257,7 +257,7 @@
             this.showUpload('image', user.image);
         },
         showUpload: function (key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'accept': {
+            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
                     if (this.$('#uploadurl').val()) {
