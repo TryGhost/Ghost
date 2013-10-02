@@ -1,5 +1,6 @@
 /*globals describe, beforeEach, it*/
 var fs = require('fs-extra'),
+    // SandboxedModule = require('sandboxed-module'),
     should = require('should'),
     sinon = require('sinon'),
     testUtils = require('./testUtils'),
@@ -7,6 +8,12 @@ var fs = require('fs-extra'),
 
     // Stuff we are testing
     admin = require('../../server/controllers/admin');
+
+    // This might work instead of exposing the get_storage method
+    // localfilesystem = sinon.stub(),
+    // admin = SandboxedModule.require('../../server/controllers/admin', {
+    //   requires: {'./storage/localfilesystem.js': localfilesystem}
+    // });
 
 describe('Admin Controller', function() {
     describe('uploader', function() {
