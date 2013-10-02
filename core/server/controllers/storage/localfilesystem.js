@@ -54,28 +54,19 @@ localfilesystem = {
             target_dir = path.join('content/images', year, month),
             target_path = path.join(target_dir, image.name),
             ext = path.extname(image.name),
-            basename = path.basename(image.name, ext).replace(/[\W]/gi, '_');
+            basename = path.basename(image.name, ext); //.replace(/[\W]/gi, '_'); // TODO this messes up names with - dashes in
 
         getUniqueFileName(target_dir, basename, ext, null, function (filename) {
 
-            fs.mkdirs(target_dir, function (err) {
-                if (err) {
-                    errors.logError(err);
-                    return saved.reject();
-                }
-
-                fs.copy(image.path, target_path, function (err) {
-                    if (err) {
-                        errors.logError(err);
-                        return saved.reject();
-                    }
-
-                    // NOTE as every upload will need to delete the tmp file make this the admin controllers job
-
-                    // The src for the image must be in URI format, not a file system path, which in Windows uses \
-                    var fullUrl = path.join(ghostUrl, filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
-                    return saved.resolve(fullUrl);
-                });
+            nodefn.call(fs.mkdirs, target_dir).then(function() {
+                return nodefn.call(fs.copy, image.path, target_path);
+            }).then(function() {
+                // The src for the image must be in URI format, not a file system path, which in Windows uses \
+                var fullUrl = path.join(ghostUrl, filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                return saved.resolve(fullUrl);
+            }).otherwise(function(e) {
+                errors.logError(e);
+                return saved.reject(e);
             });
         });
 

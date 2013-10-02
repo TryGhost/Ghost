@@ -285,11 +285,18 @@ adminControllers = {
                 });
         },
         'import': function (req, res) {
-            if (!req.files.importfile) {
-                // Notify of an error if it occurs
+            if (!req.files.importfile || req.files.importfile.size === 0 || req.files.importfile.name.indexOf('json') === -1) {
+                /**
+                 * Notify of an error if it occurs
+                 *
+                 * - If there's no file (although if you don't select anything, the input is still submitted, so
+                 *   !req.files.importfile will always be false)
+                 * - If the size is 0
+                 * - If the name doesn't have json in it
+                 */
                 var notification = {
                     type: 'error',
-                    message:  "Must select a file to import",
+                    message:  "Must select a .json file to import",
                     status: 'persistent',
                     id: 'per-' + (ghost.notifications.length + 1)
                 };
