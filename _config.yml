@@ -1,5 +1,5 @@
 pygments:     true
-permalink:    /:categories/:title
+permalinks: pretty
 relative_permalinks: false
 languages:
     - name: 'English'
