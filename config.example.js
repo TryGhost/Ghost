@@ -14,13 +14,12 @@ config = {
         // Visit http://docs.ghost.org/mail for instructions
         // ```
         //  mail: {
-        //      transport: 'sendgrid',
-        //      host: 'smtp.sendgrid.net',
+        //      transport: 'SMTP',
         //      options: {
-        //          service: 'Sendgrid',
+        //          service: 'Mailgun',
         //          auth: {
-        //              user: '', // Super secret username
-        //              pass: ''  // Super secret password
+        //              user: '', // mailgun username
+        //              pass: ''  // mailgun password
         //          }
         //      }
         //  },
