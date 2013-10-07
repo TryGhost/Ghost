@@ -367,4 +367,16 @@ describe('Post Model', function () {
             done();
         }).then(null, done);
     });
+
+    it('should escape the title', function (done) {
+
+        new PostModel().fetch().then(function(model) {
+            return model.set({'title': '<script>alert("hello world")</script>'}).save();
+        }).then(function(saved) {
+            saved.get('title').should.eql('&lt;script&gt;alert(&quot;hello world&quot;)&lt;&#x2F;script&gt;');
+            done();
+        }).otherwise(done);
+
+    });
+
 });
