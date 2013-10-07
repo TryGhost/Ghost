@@ -55,6 +55,13 @@ User = GhostBookshelf.Model.extend({
         }
     },
 
+    saving: function () {
+
+        this.set('name', this.escape('name'));
+
+        return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
+    },
+
     posts: function () {
         return this.hasMany(Posts, 'created_by');
     },
