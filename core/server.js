@@ -177,7 +177,7 @@ function initViews(req, res, next) {
 // Helper for manageAdminAndTheme
 function activateTheme() {
     var stackLocation = _.indexOf(server.stack, _.find(server.stack, function (stackItem, key) {
-        return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
+        return stackItem.route === '/assets' && stackItem.handle.name === 'settingEnabled';
     }));
 
     // clear the view cache
@@ -186,7 +186,7 @@ function activateTheme() {
     server.set('activeTheme', ghost.settings('activeTheme'));
     server.enable(server.get('activeTheme'));
     if (stackLocation) {
-        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme));
+        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](path.join(ghost.paths().activeTheme, 'assets')));
     }
 }
 
@@ -258,7 +258,7 @@ when(ghost.init()).then(function () {
     server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
 
     // Theme only config
-    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
+    server.use('/assets', whenEnabled(server.get('activeTheme'), express['static'](path.join(ghost.paths().activeTheme, 'assets'))));
 
     // Add in all trailing slashes
     server.use(slashes());
