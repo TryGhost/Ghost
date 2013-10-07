@@ -360,68 +360,74 @@ when(ghost.init()).then(function () {
     server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
 
+    function startGhost() {
+        // Tell users if their node version is not supported, and exit
+        if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+            console.log(
+                "\nERROR: Unsupported version of Node".red,
+                "\nGhost needs Node version".red,
+                packageInfo.engines.node.yellow,
+                "you are using version".red,
+                process.versions.node.yellow,
+                "\nPlease go to http://nodejs.org to get the latest version".green
+            );
 
+            process.exit(0);
+        }
+
+        // Startup & Shutdown messages
+        if (process.env.NODE_ENV === 'production') {
+            console.log(
+                "Ghost is running...".green,
+                "\nYour blog is now available on",
+                ghost.config().url,
+                "\nCtrl+C to shut down".grey
+            );
+
+            // ensure that Ghost exits correctly on Ctrl+C
+            process.on('SIGINT', function () {
+                console.log(
+                    "\nGhost has shut down".red,
+                    "\nYour blog is now offline"
+                );
+                process.exit(0);
+            });
+        } else {
+            console.log(
+                "Ghost is running...".green,
+                "\nListening on",
+                ghost.config().server.host + ':' + ghost.config().server.port,
+                "\nUrl configured as:",
+                ghost.config().url,
+                "\nCtrl+C to shut down".grey
+            );
+            // ensure that Ghost exits correctly on Ctrl+C
+            process.on('SIGINT', function () {
+                console.log(
+                    "\nGhost has shutdown".red,
+                    "\nGhost was running for",
+                    Math.round(process.uptime()),
+                    "seconds"
+                );
+                process.exit(0);
+            });
+        }
+
+        // Let everyone know we have finished loading
+        loading.resolve();
+    }
 
     // ## Start Ghost App
-    server.listen(
-        ghost.config().server.port,
-        ghost.config().server.host,
-        function () {
-
-            // Tell users if their node version is not supported, and exit
-            if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
-                console.log(
-                    "\nERROR: Unsupported version of Node".red,
-                    "\nGhost needs Node version".red,
-                    packageInfo.engines.node.yellow,
-                    "you are using version".red,
-                    process.versions.node.yellow,
-                    "\nPlease go to http://nodejs.org to get the latest version".green
-                );
-
-                process.exit(0);
-            }
-
-            // Startup & Shutdown messages
-            if (process.env.NODE_ENV === 'production') {
-                console.log(
-                    "Ghost is running...".green,
-                    "\nYour blog is now available on",
-                    ghost.config().url,
-                    "\nCtrl+C to shut down".grey
-                );
-
-                // ensure that Ghost exits correctly on Ctrl+C
-                process.on('SIGINT', function () {
-                    console.log(
-                        "\nGhost has shut down".red,
-                        "\nYour blog is now offline"
-                    );
-                    process.exit(0);
-                });
-            } else {
-                console.log(
-                    "Ghost is running...".green,
-                    "\nListening on",
-                    ghost.config().server.host + ':' + ghost.config().server.port,
-                    "\nUrl configured as:",
-                    ghost.config().url,
-                    "\nCtrl+C to shut down".grey
-                );
-                // ensure that Ghost exits correctly on Ctrl+C
-                process.on('SIGINT', function () {
-                    console.log(
-                        "\nGhost has shutdown".red,
-                        "\nGhost was running for",
-                        Math.round(process.uptime()),
-                        "seconds"
-                    );
-                    process.exit(0);
-                });
-            }
-
-            // Let everyone know we have finished loading
-            loading.resolve();
-        }
-    );
+    if (ghost.config().server.hasOwnProperty('socket') && _.isString(ghost.config().server.socket)) {
+        server.listen(
+            ghost.config().server.socket,
+            startGhost
+        );
+    } else {
+        server.listen(
+            ghost.config().server.port,
+            ghost.config().server.host,
+            startGhost
+        );
+    }
 }, errors.logAndThrowError);
