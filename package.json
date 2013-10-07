@@ -12,7 +12,7 @@
     "engineStrict": true,
     "dependencies": {
         "express": "3.4.0",
-        "express-hbs": "0.2.2",
+        "express-hbs": "0.3.0",
         "connect-slashes": "0.0.9",
         "node-polyglot": "0.2.1",
         "moment": "2.1.0",
