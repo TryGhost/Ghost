@@ -13,6 +13,7 @@ var express     = require('express'),
     hbs         = require('express-hbs'),
     Ghost       = require('./ghost'),
     helpers     = require('./server/helpers'),
+    middleware  = require('./server/middleware'),
     packageInfo = require('../package.json'),
 
 // Variables
@@ -192,7 +193,7 @@ function activateTheme() {
     server.set('activeTheme', ghost.settings('activeTheme'));
     server.enable(server.get('activeTheme'));
     if (stackLocation) {
-        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme));
+        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost));
     }
 }
 
@@ -264,7 +265,7 @@ when(ghost.init()).then(function () {
     server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
 
     // Theme only config
-    server.use(whenEnabled(server.get('activeTheme'), express['static'](ghost.paths().activeTheme)));
+    server.use(whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
 
     // Add in all trailing slashes
     server.use(slashes());
