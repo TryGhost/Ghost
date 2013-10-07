@@ -75,6 +75,14 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
             }
         });
 
+        if (_.isArray(this.escaped)) {
+            _.each(this.escaped, function (item) {
+                if (_.isString(attrs[item])) {
+                    attrs[item] = this.escape(item);
+                }
+            }, this);
+        }
+
         return attrs;
     },
 

@@ -367,4 +367,15 @@ describe('Post Model', function () {
             done();
         }).then(null, done);
     });
+
+    it('should use the "escaped" property on the model to defined escaped fields', function () {
+
+        var model = new PostModel({'title': '<script>alert("hello world")</script>'});
+
+        _.isArray(model.escaped).should.equal(true);
+
+        model.toJSON().should.eql({title: '&lt;script&gt;alert(&quot;hello world&quot;)&lt;&#x2F;script&gt;'});
+
+    });
+
 });

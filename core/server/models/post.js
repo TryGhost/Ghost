@@ -17,6 +17,8 @@ Post = GhostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    escaped: ['title'],
+
     permittedAttributes: [
         'id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
         'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
