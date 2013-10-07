@@ -20,6 +20,12 @@ var express     = require('express'),
     server = express(),
     ghost = new Ghost();
 
+// If we're in development mode, require "when/console/monitor"
+// for help in seeing swallowed promise errors.
+if (process.env.NODE_ENV === 'development') {
+    require('when/monitor/console');
+}
+
 // ##Custom Middleware
 
 // ### Auth Middleware
