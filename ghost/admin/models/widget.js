@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Models.Widget = Backbone.Model.extend({
+    Ghost.Models.Widget = Ghost.TemplateModel.extend({
 
         defaults: {
             title: '',

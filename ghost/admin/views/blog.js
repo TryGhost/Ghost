@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, JST */
+/*global window, document, Ghost, $, _, Backbone, JST, NProgress */
 (function () {
     "use strict";
 
@@ -10,6 +10,12 @@
     // ----------
     Ghost.Views.Blog = Ghost.View.extend({
         initialize: function (options) {
+            this.listenTo(this.collection, 'request', function () {
+                NProgress.start();
+            });
+            this.listenTo(this.collection, 'sync', function () {
+                NProgress.done();
+            });
             this.addSubview(new PreviewContainer({ el: '.js-content-preview', collection: this.collection })).render();
             this.addSubview(new ContentList({ el: '.js-content-list', collection: this.collection })).render();
         }
@@ -80,7 +86,6 @@
 
             // Load moar posts!
             this.isLoading = true;
-
             this.collection.fetch({
                 data: {
                     status: 'all',
