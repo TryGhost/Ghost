@@ -3,12 +3,12 @@
  */
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
-casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
-    test.filename = "logout_test.png";
+CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
+    CasperTest.Routines.login.run(test);
 
-    casper.start(url + "ghost/", function then() {
+    casper.thenOpen(url + "ghost/", function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
+    });
 
     casper.thenClick('#usermenu a').waitFor(function checkOpaque() {
         return this.evaluate(function () {
@@ -26,19 +26,13 @@ casper.test.begin("Ghost logout works correctly", 2, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No success notification :(');
     });
-
-    casper.run(function () {
-        test.done();
-    });
-});
+}, true);
 
 // has to be done after signing out
-casper.test.begin("Can't spam signin", 3, function suite(test) {
-    test.filename = "spam_test.png";
-
-    casper.start(url + "ghost/signin/", function testTitle() {
+CasperTest.begin("Can't spam signin", 3, function suite(test) {
+    casper.thenOpen(url + "ghost/signin/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+    });
 
     casper.waitFor(function checkOpaque() {
         return this.evaluate(function () {
@@ -60,18 +54,12 @@ casper.test.begin("Can't spam signin", 3, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification :(');
     });
+}, true);
 
-    casper.run(function () {
-        test.done();
-    });
-});
-
-casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
-    test.filename = "signup_test.png";
-
-    casper.start(url + "ghost/signup/", function then() {
+CasperTest.begin("Ghost signup fails properly", 5, function suite(test) {
+    casper.thenOpen(url + "ghost/signup/", function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/signup/", "Reached signup page");
-    }).viewport(1280, 1024);
+    });
 
     casper.then(function signupWithShortPassword() {
         this.fill("#signup", {email: email, password: 'test'}, true);
@@ -98,8 +86,4 @@ casper.test.begin("Ghost signup fails properly", 5, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification :(');
     });
-
-    casper.run(function () {
-        test.done();
-    });
-});
+}, true);

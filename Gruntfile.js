@@ -817,7 +817,7 @@ var path           = require('path'),
         grunt.registerTask('init', ['shell:bourbon', 'default']);
 
         // Run unit tests
-        grunt.registerTask('test-unit', ['setTestEnv', 'loadConfig', 'mochacli:all']);
+        grunt.registerTask('test-unit', ['setTestEnv', 'loadConfig', 'express:test', 'mochacli:all']);
 
         // Run casperjs tests only
         grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);

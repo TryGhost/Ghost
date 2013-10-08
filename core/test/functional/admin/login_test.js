@@ -1,21 +1,13 @@
 /*globals casper, __utils__, url, user, falseUser */
 
-casper.test.begin('Ensure Session is Killed', 1, function suite(test) {
-    test.filename = 'login_logout_test.png';
-
-    casper.start(url + 'logout/', function (response) {
+CasperTest.begin('Ensure Session is Killed', 1, function suite(test) {
+    casper.thenOpen(url + 'logout/', function (response) {
         test.assertUrlMatch(/ghost\/sign/, 'We got redirected to signin or signup page');
     });
+}, true);
 
-    casper.run(function () {
-        test.done();
-    });
-});
-
-casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
-    test.filename = 'login_user_registered_test.png';
-
-    casper.start(url + 'ghost/signup/').viewport(1280, 1024);
+CasperTest.begin('Ensure a User is Registered', 2, function suite(test) {
+    casper.thenOpen(url + 'ghost/signup/');
 
     casper.waitForOpaque(".signup-box",
         function then() {
@@ -28,61 +20,35 @@ casper.test.begin('Ensure a User is Registered', 2, function suite(test) {
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
         test.assertSelectorHasText('.notification-error', 'already registered');
         // If the previous assert succeeds, then we should skip the next check and just pass.
-        test.pass('Already registered!');
+        casper.echo('Already registered!');
     }, function onTimeout() {
         test.assertUrlMatch(/\/ghost\/$/, 'If we\'re not already registered, we should be logged in.');
-        test.pass('Successfully registered.');
+        casper.echo('Successfully registered.');
     }, 2000);
 
-    casper.run(function () {
-        test.done();
+    casper.thenOpen(url + 'logout/', function then() {
+        test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page.');
     });
-});
+}, true);
 
-casper.test.begin('Ensure Session is Killed after Registration', 1, function suite(test) {
-    test.filename = 'login_logout2_test.png';
-
-    casper.start(url + 'logout/', function then() {
-        test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page');
-    });
-
-    casper.run(function () {
-        test.done();
-    });
-});
-
-casper.test.begin("Ghost admin will load login page", 2, function suite(test) {
-    test.filename = "admin_test.png";
-
-    casper.start(url + "ghost", function testTitleAndUrl() {
+CasperTest.begin("Ghost admin will load login page", 2, function suite(test) {
+    casper.thenOpen(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/signin\/$/, 'If we\'re not already registered, we should be logged in.');
-    }).viewport(1280, 1024);
-
-    casper.run(function () {
-        test.done();
+        test.assertUrlMatch(/ghost\/signin\/$/, 'We should be presented with the signin page.');
     });
-});
+}, true);
 
-casper.test.begin('Redirects to signin', 2, function suite(test) {
-    test.filename = 'login_redirect_test.png';
-
+CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     casper.start(url + 'ghost/login/', function testRedirect(response) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\/$/, 'Should be redirected to /signin/.');
     });
+}, true);
 
-    casper.run(function () {
-        test.done();
-    });
-});
-
-casper.test.begin("Can't spam it", 4, function suite(test) {
-    test.filename = "login_spam_test.png";
-
-    casper.start(url + "ghost/signin/", function testTitle() {
+CasperTest.begin("Can't spam it", 4, function suite(test) {
+    casper.thenOpen(url + "ghost/signin/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+    });
 
     casper.waitForOpaque(".login-box",
         function then() {
@@ -107,18 +73,12 @@ casper.test.begin("Can't spam it", 4, function suite(test) {
     // This test causes the spam notification
     // add a wait to ensure future tests don't get tripped up by this.
     casper.wait(1000);
+}, true);
 
-    casper.run(function () {
-        test.done();
-    });
-});
-
-casper.test.begin("Can login to Ghost", 4, function suite(test) {
-    test.filename = "login_test.png";
-
-    casper.start(url + "ghost/login/", function testTitle() {
+CasperTest.begin("Can login to Ghost", 4, function suite(test) {
+    casper.thenOpen(url + "ghost/login/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
-    }).viewport(1280, 1024);
+    });
 
     casper.waitForOpaque(".login-box",
         function then() {
@@ -132,8 +92,4 @@ casper.test.begin("Can login to Ghost", 4, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to load ghost/ resource');
     });
-
-    casper.run(function () {
-        test.done();
-    });
-});
+}, true);
