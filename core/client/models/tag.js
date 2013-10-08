@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Collections.Tags = Backbone.Collection.extend({
+    Ghost.Collections.Tags = Ghost.TemplateModel.extend({
         url: Ghost.settings.apiRoot + '/tags/'
     });
 }());
