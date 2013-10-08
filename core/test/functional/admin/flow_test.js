@@ -3,22 +3,18 @@
  */
 
 /*globals casper, __utils__, url, testPost */
-casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(test) {
-    test.filename = "flow_test.png";
-
-    casper.start(url + "ghost/editor/", function then() {
+CasperTest.begin("Ghost edit draft flow works correctly", 8, function suite(test) {
+    casper.thenOpen(url + "ghost/editor/", function then() {
         test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
-    }).viewport(1280, 1024);
-
-    // First, create a new draft post
-    casper.then(function createTestPost() {
-        casper.sendKeys('#entry-title', 'Test Draft Post');
-        casper.writeContentToCodeMirror('I am a draft');
     });
 
-    // We must wait after sending keys to CodeMirror
-    casper.wait(1000, function doneWait() {
-        this.echo("I've waited for 1 seconds.");
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
     });
 
     casper.thenClick('.js-publish-button');
@@ -39,7 +35,7 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
             return document.querySelector('.content-list-content li').className;
         }, "active", "first item is active");
 
-        test.assertSelectorHasText(".content-list-content li:first-child h3", 'Test Draft Post', "first item is the post we created");
+        test.assertSelectorHasText(".content-list-content li:first-child h3", testPost.title, "first item is the post we created");
     });
 
     casper.thenClick('.post-edit').waitForResource(/editor/, function then() {
@@ -54,16 +50,11 @@ casper.test.begin("Ghost edit draft flow works correctly", 7, function suite(tes
     }, function onTimeout() {
         test.assert(false, 'No success notification :(');
     });
-
-    casper.run(function () {
-        test.done();
-    });
 });
 
 // TODO: test publishing, editing, republishing, unpublishing etc
-//casper.test.begin("Ghost edit published flow works correctly", 6, function suite(test) {
+//CasperTest.begin("Ghost edit published flow works correctly", 6, function suite(test) {
 //
-//    test.filename = "flow_test.png";
 //
 //
 //});
