@@ -33,11 +33,7 @@ describe('User Model', function run() {
         });
 
         it('can add first', function (done) {
-            var userData = {
-                    name: 'test',
-                    password: 'testpass1',
-                    email: "test@test1.com"
-                };
+            var userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.add(userData).then(function (createdUser) {
                 should.exist(createdUser);
@@ -64,11 +60,7 @@ describe('User Model', function run() {
         });
 
         it('can\'t add second', function (done) {
-            var userData = {
-                name: 'test',
-                password: 'testpass3',
-                email: "test3@test1.com"
-            };
+            var userData = testUtils.DataGenerator.forModel.users[1];
 
             return UserModel.add(userData).then(done, function (failure) {
                 failure.message.should.eql('A user is already registered. Only one user for now!');
