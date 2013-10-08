@@ -11,7 +11,6 @@
  * Mobile Navigation
  * Drop-down / Pop-up Menu
  * Notifications
- * Loading Bar
  * Modals
  * Main Elements
  * Floating Headers
@@ -979,29 +978,6 @@ nav {
     @extend %notification;
     @include icon($i-info);
     background: $blue;
-}
-
-
-/* ==========================================================================
-   Loading Bar
-   ========================================================================== */
-
-.js-loading .loading-bar {
-    display: block;
-    @include animation(shift-rightwards 1.5s ease-in-out infinite);
-    @include animation-delay(0.4s);
-}
-
-.loading-bar {
-    position: fixed;
-    display: none;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    z-index: 900;
-    background: $blue;
-    @include transform(translateX(100%));
 }
 
 /* ==========================================================================
