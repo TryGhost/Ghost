@@ -34,6 +34,10 @@ h1:before, h2:before {
     margin:-70px 0 0; 
 }
 
+.row {
+    position: relative;
+}
+
 /* ==========================================================================
    Navigation
    ========================================================================== */
@@ -48,15 +52,16 @@ h1:before, h2:before {
 }
 
 .navbar-nav > li > a {
-    padding-top:20px;
-    padding-bottom:20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .bs-sidenav li a {
-    color: #5a5a5a;
+    color: #aaa;
     position: relative;
     overflow: visible;
-    padding:10px 5px;
+    padding: 10px 20px;
+    border-top: rgba(0,0,0,0.05) 1px solid;
 }
 
 .bs-sidenav li a:hover,
@@ -65,19 +70,9 @@ h1:before, h2:before {
     background: transparent;
 }
 
-.bs-sidenav li.active li.active a {
-    color:#5ba4e5;
-}
-.bs-sidenav > li.active li.active a:before {
-    content: "";
-    display: block;
-    border-width: 8px 0 8px 8px;
-    border-style:solid;
-    border-color: transparent #fff;
-    position: absolute;
-    top: 10px;
-    left: -15px;
-    z-index: 100;
+.bs-sidenav li.active a {
+    color:#000;
+    background: #fff;
 }
 
 /* ==========================================================================
@@ -116,6 +111,11 @@ h1:before, h2:before {
     font-size: 2.4em;
 }
 
+@media (max-width: 400px) {
+    .bs-header { padding: 20px 15px 20px; }
+    .bs-header h1 { font-size: 2rem; }
+}
+
 /* ==========================================================================
    Main Content Area
    ========================================================================== */
@@ -123,11 +123,21 @@ h1:before, h2:before {
 #content {
     padding: 1px 3em 2em 3em;
     background: #fff;
-    box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+}
+
+@media (max-width: 400px) {
+    #content { padding: 1px 15px 15px; }
 }
 
 #sidebar {
     float: right;
+    padding: 30px 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #fbfbf9;
+    box-shadow: #edece4 1px 0 0 0 inset
 }
 
 /* ==========================================================================
