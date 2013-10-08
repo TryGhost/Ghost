@@ -1,0 +1,230 @@
+---
+title: Installing Ghost
+layout: default
+lang: es
+lang-url: es/
+bodyclass: installation
+heading: Installing Ghost &amp; Getting Started
+subheading: The first steps to setting up your new blog for the first time.
+---
+
+<div class="container">
+    <div class="row">
+        <aside id="sidebar" class="col-lg-3">
+            <nav class="bs-sidebar">
+                <ul class="nav bs-sidenav">
+
+                    <li class="active">
+                        <a href="#overview">Overview</a>
+                        <ul class="nav">
+                            <li class="active"><a href="#install-mac">Mac</a></li>
+                            <li class=""><a href="#install-windows">Windows</a></li>
+                            <li class=""><a href="#install-linux">Linux</a></li>
+                            <li class=""><a href="#deploy">Live Server</a></li>
+                            <li class=""><a href="#upgrade">Upgrading</a></li>
+                            <li class=""><a href="#troubleshooting">Troubleshooting</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <section id="content" class="col-lg-9">
+
+            <h1 id="overview">Overview</h1>
+
+            <p>The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.</p>
+
+            <p>Ghost is built on <a href="http:://nodejs.org">Node</a>, and requires version <code>0.10.*</code> (latest stable version).</p>
+
+            <p>Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.</p>
+
+            <h2 id="install-mac">Installing on Mac</h2>
+
+            <p>To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".</p>
+
+            <h3>Install Node</h3>
+
+            <ul>
+                <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, a '.pkg' file will be downloaded</li>
+                <li>Click on the download to open the installer, this is going to install both node and npm.</li>
+                <li>Click through the installer, finally entering your password and clicking 'install software'.</li>
+                <li>Once the installer is complete, go into your open Terminal window and type <code>echo $PATH</code> to check that '/usr/local/bin/' is in your path.</li>
+            </ul>
+
+            <p><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
+
+            <img width="100%" src="http://f.cl.ly/items/1g0s1L0p0K0b3G360a1Z/install-node-mac.gif" />
+
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
+                <li>On the downloads page, press the button to download the latest zip file.</li>
+                <li>Click on the arrow next to the newly downloaded file, and choose 'show in finder'.</li>
+                <li>In finder, double-click on the downloaded zip file to extract it.</li>
+                <li>Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.</li>
+                <li>In the new terminal tab type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
+                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+            </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/0W22431g241t2G3x3C24/install-ghost-mac.gif" />
+
+            <h2 id="install-windows">Installing on Windows</h2>
+
+            <h3>Install Node</h3>
+
+            <ul>
+                <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, an '.msi' file will be downloaded</li>
+                <li>Click on the download to open the installer, this is going to install both Node and npm.</li>
+                <li>Click through the installer, until you get to the screen telling you Node.js is installed.</li>
+            </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/3N0l3Z1M2Q1G083K0v22/install-node-win.gif" />
+
+            <h3>Download & Extract Ghost</h3>
+
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
+                <li>On the downloads page, press the button to download the latest zip file.</li>
+                <li>Click on the arrow next to the newly downloaded file, and choose 'show in folder'.</li>
+                <li>When the folder opens, right click on the downloaded zip file and choose 'Extract all'.</li>
+            </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/1g0I1L0o1r0y143M1Z0P/install-ghost-win.gif" />
+
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'</li>
+                <li>In the Node command prompt, you need to change directory to where you extracted Ghost. Type: <code>cd Downloads/ghost-#.#.#</code> (replace hashes with the version of Ghost you downloaded).</li>
+                <li>Next, in the command prompt type <code>npm install --production</code> (note the two dashes).</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
+                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+            </ul>
+
+            <img width="100%" src="http://f.cl.ly/items/0H0r1A2L061n1x3E3s47/install-ghost-win-2.gif" />
+
+            <h2 id="install-linux">Installing on Linux</h2>
+
+            <h3>Install Node</h3>
+
+            <ul>
+                <li>Either download the <code>.tar.gz</code> archive from <a href="http://nodejs.org">http://nodejs.org</a>, or you may prefer to follow the instructions on how to <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">install from a package manager</a> instead.</li>
+                <li>Double check that you have Node and npm installed by typing <code>node -v</code> and <code>npm -v</code> into a terminal window</li>
+            </ul>
+
+            <h3>Install and Run Ghost</h3>
+
+            <ul>
+                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button</li>
+                <li>On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from</li>
+                <li>In a terminal window, change directory to the root of the extracted Ghost folder</li>
+                <li>In the terminal type <code>npm install --production</code> (note the two dashes)</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
+                <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
+                <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin</li>
+            </ul>
+
+            <p>If you are using linux as a guest OS or through SSH and only have the terminal, then:</p>
+
+            <ul>
+                <li>Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'</li>
+                <li>In the terminal use <code>wget url-of-ghost.zip</code> to download Ghost</li>
+                <li>Unzip the archive with <code>unzip -uo Ghost-#.#.#.zip -d ghost</code>, and then <code>cd ghost</code></li>
+                <li>Type <code>npm install --production</code> (note the two dashes) to install Ghost</li>
+                <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
+                <li>Ghost will now be running on localhost</li>
+            </ul>
+
+            <h2 id="deploy">Putting Ghost on a Live Server</h2>
+
+            <p>So you're ready to get Ghost live? Excellent!</p>
+
+            <p>You're going to need a hosting package that already has, or will allow you to install Node.js. This means something like a cloud (Amazon EC2, DigitalOcean), VPS (Webfaction, Dreamhost) or other package that has SSH (terminal) access & will allow you to install Node. There are plenty around and they can be very cheap.</p>
+
+            <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node in the future as they are somewhat similar.
+
+            <p>Additionally, several of the Node-specific cloud hosting solutions such as Nodejitsu & Heroku will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.</p>
+
+            <p>The following links contain instructions on how to get up and running with:
+                <ul>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/">Dreamhost</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghosted.co/install-ghost-digitalocean/">DigitalOcean</a> - from <a href="http://ghosted.co">Corbett Barr</a></li>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/">Webfaction</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghost.pellegrom.me/installing-ghost-on-ubuntu/">Rackspace</a> (Ubuntu 13.04 + linux service) - from <a href="http://ghost.pellegrom.me/">Gilbert Pellegrom</a></li>
+                    <li><a href="http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/">Ubuntu + nginx + forever</a> - from <a href="http://0v.org/">Gregg Housh</a></li>
+                    <li>...check the <a href="https://en.ghost.org/forum/installation">installation forum</a> for more guides ...</li>
+                </ul>
+            </p>
+
+            <h2 id="upgrade">Upgrading</h2>
+
+            <p>Upgrading Ghost involves replacing old files with the new files, and restarting the server. However, as the database, image uploads and custom themes are stored alongside Ghost in the <code>content</code> directory, care should be taken to only replace the necessary files as explained below.</p>
+
+            <p>It is highly recommended that you make a backup of your data before upgrading. This can be done by logging into your Ghost install and going to <code>/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data.</p>
+
+            <h3>Upgrade process:</h3>
+            <ul>
+                <li>Download the latest version of Ghost from <a href="http://ghost.org/download/">ghost.org</a></li>
+                <li>Either extract the zip file locally, or into a temporary directory on your server</li>
+                <li>Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.</li>
+                <li>Next replace the old <code>core</code> directory with the new <code>core</code> directory</li>
+                <li>For releases which include update to Casper (the default theme), replace the old <code>content/themes/casper</code> directory with the new one</li>
+                <li>Run <code>npm install --production</code></li>
+                <li>Finally, Restart Ghost so that the changes take effect</li>
+            </ul>
+
+            <h3>Command line only</h3>
+
+            <p>The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code>~/Downloads</code> and Ghost is installed in <code>~/ghost</code> (<strong>Note:</strong> <code>~</code> means the user's home directory on mac and linux).</p>
+
+            <img src="http://f.cl.ly/items/2u1c3f2o0l1o0f09141j/upgrade-ghost.gif" width="100%" />
+
+            <p>The steps in the screencast are:
+                <ul>
+                    <li><code>cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved</li>
+                    <li><code>unzip ghost-0.3.1.zip -d ghost-0.3.1</code> - unzip ghost into the folder <code>ghost-0.3.1</code></li>
+                    <li><code>cd ghost-0.3.1</code> - change directory into the <code>ghost-0.3.1</code> directory</li>
+                    <li><code>ls</code> - show all the files and folders inside this directory</li>
+                    <li><code>cp *.md *.js *.txt *.json ~/ghost</code> - copy all .md .js .txt and .json files from this location to <code>~/ghost</code></li>
+                    <li><code>cp -R core ~/ghost</code> - copy the <code>core</code> directory and all of its contents to the <code>~/ghost</code></li>
+                    <li><code>cp -R content/themes/casper ~/ghost/content/themes</code> - copy the <code>casper</code> directory and all of its contents to <code>~/ghost/content/themes</code></li>
+                    <li><code>cd ~/ghost</code> - change directory to the <code>~/ghost</code> directory</li>
+                    <li><code>npm install --production</code> - install Ghost</li>
+                    <li><code>npm start</code> - start Ghost</li>
+                </ul>
+            </p>
+
+            <p><strong>Additionally</strong>, <a href="http://www.howtoinstallghost.com/how-to-update-ghost/">howtoinstallghost.com</a> also has instructions for upgrading Ghost on linux servers.</p>
+
+            <h2 id="troubleshooting">Troubleshooting / FAQ</h2>
+
+            <dl>
+                <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
+                <dd>You can add it by doing the following:
+                    <ul>
+                        <li>In your terminal window type <code>cd ~</code>, this will take you to your home directory</li>
+                        <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
+                        <li>You should see a file called <code>.profile</code> or <code>.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
+                        <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
+                        <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
+                        <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
+                    </ul>
+                </dd>
+                <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+                <dd>
+                    <p>The SQLite3 package comes with pre-built binaries for the most common architectures. If you are using a less popular linux or other unix flavor, you may find that SQLite3 will give you a 404 as it cannot find a binary for your platform.</p>
+                    <p>This can be fixed by forcing SQLite3 to compile. This will require python & gcc. Try it out by running <code>npm install sqlite3 --build-from-source</code></p>
+                    <p>If it won't build you're probably missing one of the python or gcc dependencies, on linux try running <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> and <code>sudo apt-get install python-software-properties python g++ make</code> before retrying the build from source.</p>
+                    <p>For more information about building the binaries please see: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
+                    <p>Once you have successfully built a binary for your platform, please follow the <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instructions here</a> to submit the binary to the node-sqlite project, so that future users won't have the same problem.</p>
+                </dd>
+            </dl>
+        </section>
+    </div>
+</div>

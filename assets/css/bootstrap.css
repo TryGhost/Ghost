@@ -2156,6 +2156,10 @@ input[type="button"].btn-block {
   height: auto;
 }
 
+.dropup, .dropdown {
+    position: relative;
+}
+
 .caret {
   display: inline-block;
   width: 0;

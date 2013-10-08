@@ -1,5 +1,11 @@
 pygments:     true
-permalink:    pretty
+permalinks: pretty
+relative_permalinks: false
+languages:
+    - name: 'English'
+      key: 'en'
+    - name: 'Español'
+      key: 'es'
 port:         4478
 
 # If running locally, simply comment out the line below to make all urls relative

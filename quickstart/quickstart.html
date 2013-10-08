@@ -1,0 +1,58 @@
+---
+title: Ghost Quickstart
+layout: default
+lang: en
+lang-url:
+bodyclass: installation
+heading: Ghost Quickstart
+subheading: Get up and running with Ghost.
+---
+
+<div class="container">
+    <div class="row">
+        <aside id="sidebar" class="col-lg-3">
+            <nav class="bs-sidebar">
+                <ul class="nav bs-sidenav">
+
+                    <li class="active">
+                        <a href="#overview">Overview</a>
+                        <ul class="nav">
+                            <li class="active"><a href="#ghost-local">Local Install</a></li>
+                            <li class=""><a href="#customise">Customise</a></li>
+                            <li class=""><a href="#ghost-deploy">Deploy Ghost</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <section id="content" class="col-lg-9">
+
+            <h1 id="overview">Overview</h1>
+
+            <p>The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with <a href="http://nodejs.org">Node</a>, or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth <a href="/installation.html">Installation Guide</a>.</p>
+
+            <h2 id="ghost-local">Get Ghost running locally</h2>
+
+            <p>Ghost requires node <code>0.10.*</code> (the latest stable version).</p>
+
+            <p>If you haven't already got it, head over to <a href="http://nodejs.org">http://nodejs.org</a> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.</p>
+
+            <p>For users on Linux, rather than installing from the .tar.gz archive, you may want to <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">install from a package manager</a></p>
+
+            <p>Download the latest version of Ghost from <a href="http://ghost.org">Ghost.org</a>. Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!</p>
+
+            <p>Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).</p>
+
+            <p>To install Ghost, run <code>npm install --production</code></p>
+
+            <!--<h2 id="customise">Customise & Configure Ghost</h2>
+
+            <h2 id="ghost-deploy">Deploy Ghost</h2>
+
+            <ol>
+                <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
+                <li><p>This will have launched your Ghost blog, visit one  <a href="http://localhost:2368/">http://localhost:2368/</a> to see</p></li>
+            </ol>
+        </section>
+    </div>
+</div>
