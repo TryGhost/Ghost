@@ -73,7 +73,7 @@ translations:
 
 <main id="main" role="main">
 
-
+    {% if page.heading %}
     <header class="bs-header">
         <div class="container">
             <h1>{{ page.heading }}</h1>
@@ -82,6 +82,7 @@ translations:
             {% endif %}
         </div>
     </header>
+    {% endif %}
 
   {{ content }}
 
