@@ -197,6 +197,18 @@ h1:before, h2:before {
     color: #e2edf2;
 }
 
+#global-footer .dropdown {
+    display: inline-block;
+}
+
+#global-footer .dropdown ul a {
+    color: inherit;
+}
+
+#global-footer .dropdown li:hover a {
+    color: #fff;
+}
+
 #global-footer hr {
     width: 40%;
     margin: 1em auto;
