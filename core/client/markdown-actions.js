@@ -116,6 +116,13 @@
                 this.elem.replaceSelection(md, 'end');
                 pass = false;
                 break;
+            case 'newLine':
+                cursor = this.elem.getCursor();
+                if (this.elem.getLine(cursor.line) !== "") {
+                    this.elem.setLine(cursor.line, this.elem.getLine(cursor.line) + "\n\n");
+                }
+                pass = false;
+                break;
             default:
                 if (this.options.syntax[this.style]) {
                     md = this.options.syntax[this.style].replace('$1', text);
