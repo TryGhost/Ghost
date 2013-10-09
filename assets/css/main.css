@@ -14,8 +14,13 @@ code, tt {
     border-radius: 2px 2px 2px 2px;
     font-family: Inconsolata,monospace;
     color: #3C4043;
-    font-size: 0.85em;
+    font-size: 1em;
     padding: 1px 3px;
+}
+
+code.path {
+    background: #FFFFD8;
+    border-color: #F2F2CB;
 }
 
 a {
@@ -127,6 +132,34 @@ h1:before, h2:before {
 
 @media (max-width: 400px) {
     #content { padding: 1px 15px 15px; }
+}
+
+#content li {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#content img {
+    max-width: 100%;
+}
+
+#content h1, #content h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #F1F0EA;
+}
+
+.note {
+    background: #D7E6ED;
+    border-radius: 3px;
+}
+
+p.note, div.note {
+    padding: 10px;
+}
+
+span.note {
+    padding: 2px;
 }
 
 #sidebar {
