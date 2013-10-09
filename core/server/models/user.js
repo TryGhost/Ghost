@@ -57,7 +57,11 @@ User = GhostBookshelf.Model.extend({
 
     saving: function () {
 
-        this.set('name', this.escape('name'));
+        this.set('name', this.sanitize('name'));
+        this.set('email', this.sanitize('email'));
+        this.set('location', this.sanitize('location'));
+        this.set('website', this.sanitize('website'));
+        this.set('bio', this.sanitize('bio'));
 
         return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
