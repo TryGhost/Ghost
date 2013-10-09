@@ -283,6 +283,8 @@
             this.$('#entry-title').val(this.model.get('title')).focus();
             this.$('#entry-markdown').text(this.model.get('markdown'));
 
+            this.listenTo(this.model, 'change:title', this.renderTitle);
+
             this.initMarkdown();
             this.renderPreview();
 
@@ -361,6 +363,10 @@
             if (rawTitle !== trimmedTitle) {
                 $title.val(trimmedTitle);
             }
+        },
+
+        renderTitle: function () {
+            this.$('#entry-title').val(this.model.get('title'));
         },
 
         // This is a hack to remove iOS6 white space on orientation change bug
