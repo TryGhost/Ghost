@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Models.Post = Backbone.Model.extend({
+    Ghost.Models.Post = Ghost.TemplateModel.extend({
 
         defaults: {
             status: 'draft'

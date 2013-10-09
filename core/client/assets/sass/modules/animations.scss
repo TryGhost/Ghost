@@ -37,21 +37,3 @@
     }
 }
 
-@include keyframes(shift-rightwards) {
-    0% {
-        @include transform(translateX(-100%));
-    }
-
-    40% {
-        @include transform(translateX(0%));
-    }
-
-    60% {
-        @include transform(translateX(0%));
-    }
-
-    100% {
-        @include transform(translateX(100%));
-    }
-}
-
