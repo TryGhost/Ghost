@@ -129,6 +129,34 @@ h1:before, h2:before {
     #content { padding: 1px 15px 15px; }
 }
 
+#content li {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#content img {
+    max-width: 100%;
+}
+
+#content h1, #content h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #F1F0EA;
+}
+
+.note {
+    background: #D7E6ED;
+    border-radius: 3px;
+}
+
+p.note, div.note {
+    padding: 10px;
+}
+
+span.note {
+    padding: 2px;
+}
+
 #sidebar {
     float: right;
     padding: 30px 0;

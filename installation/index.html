@@ -44,7 +44,7 @@ subheading: The first steps to setting up your new blog for the first time.
                 <li>Once the installer is complete, go into your open Terminal window and type <code>echo $PATH</code> to check that '/usr/local/bin/' is in your path.</li>
             </ul>
 
-            <p><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
+            <p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
 
             <img width="100%" src="http://f.cl.ly/items/1g0s1L0p0K0b3G360a1Z/install-node-mac.gif" />
 
@@ -56,7 +56,7 @@ subheading: The first steps to setting up your new blog for the first time.
                 <li>Click on the arrow next to the newly downloaded file, and choose 'show in finder'.</li>
                 <li>In finder, double-click on the downloaded zip file to extract it.</li>
                 <li>Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.</li>
-                <li>In the new terminal tab type <code>npm install --production</code> (note the two dashes).</li>
+                <li>In the new terminal tab type <code>npm install --production</code> <span class="note">note the two dashes</span></li>
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
                 <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
@@ -93,7 +93,7 @@ subheading: The first steps to setting up your new blog for the first time.
             <ul>
                 <li>In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'</li>
                 <li>In the Node command prompt, you need to change directory to where you extracted Ghost. Type: <code>cd Downloads/ghost-#.#.#</code> (replace hashes with the version of Ghost you downloaded).</li>
-                <li>Next, in the command prompt type <code>npm install --production</code> (note the two dashes).</li>
+                <li>Next, in the command prompt type <code>npm install --production</code> <span class="note">note the two dashes</span></li>
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
                 <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
@@ -117,7 +117,7 @@ subheading: The first steps to setting up your new blog for the first time.
                 <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button</li>
                 <li>On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from</li>
                 <li>In a terminal window, change directory to the root of the extracted Ghost folder</li>
-                <li>In the terminal type <code>npm install --production</code> (note the two dashes)</li>
+                <li>In the terminal type <code>npm install --production</code> <span class="note">note the two dashes</span></li>
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>In a browser, navigate to <code>127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
                 <li>Change the url to <code>127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin</li>
@@ -129,7 +129,7 @@ subheading: The first steps to setting up your new blog for the first time.
                 <li>Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'</li>
                 <li>In the terminal use <code>wget url-of-ghost.zip</code> to download Ghost</li>
                 <li>Unzip the archive with <code>unzip -uo Ghost-#.#.#.zip -d ghost</code>, and then <code>cd ghost</code></li>
-                <li>Type <code>npm install --production</code> (note the two dashes) to install Ghost</li>
+                <li>Type <code>npm install --production</code> to install Ghost <span class="note">note the two dashes</span></li>
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>Ghost will now be running on localhost</li>
             </ul>
@@ -174,7 +174,7 @@ subheading: The first steps to setting up your new blog for the first time.
 
             <h3>Command line only</h3>
 
-            <p>The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code>~/Downloads</code> and Ghost is installed in <code>~/ghost</code> (<strong>Note:</strong> <code>~</code> means the user's home directory on mac and linux).</p>
+            <p>The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code>~/Downloads</code> and Ghost is installed in <code>~/ghost</code> <span class="note"><strong>Note:</strong> <code>~</code> means the user's home directory on mac and linux</span></p>
 
             <img src="http://f.cl.ly/items/2u1c3f2o0l1o0f09141j/upgrade-ghost.gif" width="100%" />
 
