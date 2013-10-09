@@ -1,4 +1,4 @@
-/*global window, document, Ghost, Backbone, $, _ */
+/*global window, document, Ghost, Backbone, $, _, NProgress */
 (function () {
     "use strict";
 
@@ -30,8 +30,10 @@
 
         blog: function () {
             var posts = new Ghost.Collections.Posts();
+            NProgress.start();
             posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
+                NProgress.done();
             });
         },
 

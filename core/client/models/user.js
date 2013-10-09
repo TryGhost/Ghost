@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Models.User = Backbone.Model.extend({
+    Ghost.Models.User = Ghost.TemplateModel.extend({
         url: Ghost.settings.apiRoot + '/users/me/'
     });
 
