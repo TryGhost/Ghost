@@ -14,8 +14,13 @@ code, tt {
     border-radius: 2px 2px 2px 2px;
     font-family: Inconsolata,monospace;
     color: #3C4043;
-    font-size: 0.85em;
+    font-size: 1em;
     padding: 1px 3px;
+}
+
+code.path {
+    background: #FFFFD8;
+    border-color: #F2F2CB;
 }
 
 a {

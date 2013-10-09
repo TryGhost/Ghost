@@ -25,13 +25,13 @@ subheading: Get started creating your own themes for Ghost
             {% raw %}
             <h2 id="switching-theme">Switching Theme</h2>
 
-            <p>Ghost themes live in <code>content/themes/</code></p>
-            <p>If you want to use a different theme to the default Casper theme, check out the custom themes on our <a href="http://marketplace.ghost.org/">marketplace gallery</a>. Download the theme package of your choice, extract it and place it in <code>content/themes</code> alongside Casper.</p>
+            <p>Ghost themes live in <code class="path">content/themes/</code></p>
+            <p>If you want to use a different theme to the default Casper theme, check out the custom themes on our <a href="http://marketplace.ghost.org/">marketplace gallery</a>. Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.</p>
             <p>If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.</p>
             <p>To switch to your newly added theme:</p>
             <ol>
-                <li>Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code>content/themes</code> so you'll need to restart it</li>
-                <li>Login to your Ghost admin, and navigate to  <code>/ghost/settings/general/</code></li>
+                <li>Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it</li>
+                <li>Login to your Ghost admin, and navigate to  <code class="path">/ghost/settings/general/</code></li>
                 <li>Select your Theme name in the 'Theme' options dropdown</li>
                 <li>Click 'Save'</li>
                 <li>Visit the frontend of your blog and marvel at the new theme</li>
@@ -66,7 +66,7 @@ subheading: Get started creating your own themes for Ghost
 ├── index.hbs [required]
 └── post.hbs [required]
             </pre>
-            <p>For the time being there is no requirement that default.hbs or any of the folders exist. <code>index.hbs</code> and <code>post.hbs</code> are required – Ghost will not work if these two templates are not present. <code>partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code>list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive &amp; tag pages. <code>partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code>pagination.hbs</code> file inside <code>partials</code> will let you specify your own HTML for pagination.</p>
+            <p>For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive &amp; tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.</p>
 
             <h3>default.hbs</h3>
 
@@ -76,12 +76,12 @@ subheading: Get started creating your own themes for Ghost
 
             <h3>index.hbs</h3>
 
-            <p>This is the template for the homepage, and extends <code>default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code>index.hbs</code> defines how each posts should be displayed.</p>
+            <p>This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.</p>
             <p>In Casper (the current default theme), the homepage has a large header which uses <code>@blog</code> global settings to output the blog logo, title and description. This is followed by using the <code>{{#foreach}}</code> helper to output a list of the latest posts.</p>
 
             <h3>post.hbs</h3>
 
-            <p>This is the template for a single post, which also extends <code>default.hbs</code>.</p>
+            <p>This is the template for a single post, which also extends <code class="path">default.hbs</code>.</p>
             <p>In Casper (the current default theme), the single post template has it's own header, also using <code>@blog</code> global settings and then uses the <code>{{#post}}</code> data accessor to output all of the post details.</p>
 
             <h3>Post styling &amp; previewing</h3>
@@ -91,11 +91,11 @@ subheading: Get started creating your own themes for Ghost
 
             <h2 id="create-your-own">Creating Your Own Theme</h2>
 
-            <p>Create your own Ghost theme by either copying Casper, or adding a new folder to the <code>content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.</p>
+            <p>Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.</p>
 
             <h3>The post list</h3>
 
-            <p><code>index.hbs</code> gets handed an object called <code>posts</code> which can be used with the foreach helper to output each post. E.g.</p>
+            <p><code class="path">index.hbs</code> gets handed an object called <code>posts</code> which can be used with the foreach helper to output each post. E.g.</p>
             <pre>
 {{#foreach posts}}
     // here we are in the context of a single post
@@ -109,7 +109,7 @@ subheading: Get started creating your own themes for Ghost
 
             <h3>Outputting individual posts</h3>
 
-            <p>Once you are in the context of a single post, either by looping through the posts list with <code>foreach</code> or inside of <code>post.hbs</code> you have access to the properties of a post.</p>
+            <p>Once you are in the context of a single post, either by looping through the posts list with <code>foreach</code> or inside of <code class="path">post.hbs</code> you have access to the properties of a post.</p>
             <p>For the time being, these are:</p>
             <ul>
                 <li>id – <em>post id</em></li>
@@ -165,7 +165,7 @@ subheading: Get started creating your own themes for Ghost
 
             <p>Ghost themes have access to a number of global settings via the <code>@blog</code> global data accessor.</p>
             <ul>
-            <li><code>{{@blog.url}}</code> – the url specified for this env in <code>config.js</code></li>
+            <li><code>{{@blog.url}}</code> – the url specified for this env in <code class="path">config.js</code></li>
             <li><code>{{@blog.title}}</code> – the blog title from the settings page</li>
             <li><code>{{@blog.description}}</code> – the blog description from the settings page</li>
             <li><code>{{@blog.logo}}</code> – the blog logo from the settings page</li>
@@ -283,7 +283,7 @@ subheading: Get started creating your own themes for Ghost
                 <li>Options: none (coming soon)</li>
             </ul>
             <p><code>{{pagination}}</code> is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.</p>
-            <p>You can override the HTML output by the pagination helper by placing a file called <code>pagination.hbs</code> inside of <code>content/themes/your-theme/partials</code>.</p>
+            <p>You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.</p>
 
             <h3 id="bodyclass-helper"><code>body_class</code></h3>
 
@@ -291,7 +291,7 @@ subheading: Get started creating your own themes for Ghost
                 <li>Helper type: output</li>
                 <li>Options: none</li>
             </ul>
-            <p><code>{{body_class}}</code> – outputs classes intended for the <code>&lt;body&gt;</code> tag in <code>default.hbs</code>, useful for targeting specific pages with styles.</p>
+            <p><code>{{body_class}}</code> – outputs classes intended for the <code>&lt;body&gt;</code> tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.</p>
 
             <h3 id="postclass-helper"><code>post_class</code></h3>
 
@@ -307,7 +307,7 @@ subheading: Get started creating your own themes for Ghost
                 <li>Helper type: output</li>
                 <li>Options: none</li>
             </ul>
-            <p><code>{{ghost_head}}</code> – belongs just before the <code>&lt;/head&gt;</code> tag in <code>default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.</p>
+            <p><code>{{ghost_head}}</code> – belongs just before the <code>&lt;/head&gt;</code> tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.</p>
 
             <h3 id="ghostfoot-helper"><code>ghost_foot</code></h3>
 
@@ -315,7 +315,7 @@ subheading: Get started creating your own themes for Ghost
                 <li>Helper type: output</li>
                 <li>Options: none</li>
             </ul>
-            <p><code>{{ghost_foot}}</code> – belongs just before the <code>&lt;/body&gt;</code> tag in <code>default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.</p>
+            <p><code>{{ghost_foot}}</code> – belongs just before the <code>&lt;/body&gt;</code> tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.</p>
 
             <h3 id="metatitle-helper"><code>meta_title</code></h3>
 
