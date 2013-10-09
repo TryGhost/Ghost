@@ -370,7 +370,7 @@ when(ghost.init()).then(function () {
     // Are we using sockets? Custom socket or the default?
     function getSocket() {
         if (ghost.config().server.hasOwnProperty('socket')) {
-            return _.isString(ghost.config().server.socket) ? ghost.config().server.socket : __dirname + '/../content/' + process.env.NODE_ENV + '.socket';
+            return _.isString(ghost.config().server.socket) ? ghost.config().server.socket : path.join( __dirname, '../content/', process.env.NODE_ENV + '.socket' );
         }
         return false;
     }
