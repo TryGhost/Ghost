@@ -1,4 +1,3 @@
-
 var _               = require('underscore'),
     when            = require('when'),
     series          = require('when/sequence'),

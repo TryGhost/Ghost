@@ -273,7 +273,7 @@ when(ghost.init()).then(function () {
     server.use(express.urlencoded());
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
-    server.use('/ghost/debug/db/import/', express.multipart());
+    server.use('/api/v0.1/db/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
 
@@ -321,7 +321,9 @@ when(ghost.init()).then(function () {
     // #### Notifications
     server.del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
     server.post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
-
+    // #### Import/Export
+    server.get('/api/v0.1/db/', auth, api.db['export']);
+    server.post('/api/v0.1/db/', auth, api.db['import']);
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
@@ -344,11 +346,10 @@ when(ghost.init()).then(function () {
     server.get('/ghost/content/', auth, admin.content);
     server.get('/ghost/settings*', auth, admin.settings);
     server.get('/ghost/debug/', auth, admin.debug.index);
-    server.get('/ghost/debug/db/export/', auth, admin.debug['export']);
-    server.post('/ghost/debug/db/import/', auth, admin.debug['import']);
-    server.get('/ghost/debug/db/reset/', auth, admin.debug.reset);
+
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
     server.post('/ghost/upload/', admin.uploader);
+
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
         res.redirect('/ghost/');
@@ -365,8 +366,6 @@ when(ghost.init()).then(function () {
     server.get('/page/:page/', frontend.homepage);
     server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
-
-
 
     // ## Start Ghost App
     server.listen(
