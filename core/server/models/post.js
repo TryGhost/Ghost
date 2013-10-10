@@ -51,7 +51,7 @@ Post = GhostBookshelf.Model.extend({
 
         this.set('html', converter.makeHtml(this.get('markdown')));
 
-        this.set('title', this.get('title').trim());
+        this.set('title', this.sanitize('title').trim());
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             if (!this.get('published_at')) {

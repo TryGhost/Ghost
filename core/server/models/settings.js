@@ -73,7 +73,19 @@ Settings = GhostBookshelf.Model.extend({
                 validation[validationName].apply(validation, validationOptions);
             }, this);
         }
+    },
+
+
+    saving: function () {
+
+        // All blog setting keys that need their values to be escaped.
+        if (this.get('type') === 'blog' && _.contains(['title', 'description', 'email'], this.get('key'))) {
+            this.set('value', this.sanitize('value'));
+        }
+
+        return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
     }
+
 }, {
     read: function (_key) {
         // Allow for just passing the key instead of attributes

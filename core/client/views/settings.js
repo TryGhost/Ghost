@@ -18,7 +18,7 @@
 
             this.addSubview(this.sidebar);
 
-            this.listenTo(Ghost.router, "route:settings", this.changePane);
+            this.listenTo(Ghost.router, 'route:settings', this.changePane);
         },
 
         changePane: function (pane) {
@@ -155,7 +155,8 @@
         },
 
         saveSettings: function () {
-            var title = this.$('#blog-title').val(),
+            var self = this,
+                title = this.$('#blog-title').val(),
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
                 postsPerPage = this.$('#postsPerPage').val();
@@ -186,7 +187,7 @@
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
-                });
+                }).then(function () { self.render(); });
             }
         },
         showLogo: function (e) {
@@ -212,8 +213,10 @@
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
+                    }).then(function () {
+                        self.render();
                     });
-                    self.render();
+
                     return true;
                 },
                 buttonClass: "button-save right",
@@ -268,8 +271,9 @@
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
+                    }).then(function () {
+                        self.render();
                     });
-                    self.render();
                     return true;
                 },
                 buttonClass: "button-save right",
@@ -283,7 +287,8 @@
 
 
         saveUser: function () {
-            var userName = this.$('#user-name').val(),
+            var self = this,
+                userName = this.$('#user-name').val(),
                 userEmail = this.$('#user-email').val(),
                 userLocation = this.$('#user-location').val(),
                 userWebsite = this.$('#user-website').val(),
@@ -322,6 +327,8 @@
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
+                }).then(function () {
+                    self.render();
                 });
             }
         },
@@ -365,6 +372,8 @@
                             status: 'passive'
                         });
                     }
+                }).then(function () {
+                    self.render();
                 });
             }
         },

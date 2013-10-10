@@ -5,7 +5,8 @@ var GhostBookshelf,
     _         = require('underscore'),
     uuid      = require('node-uuid'),
     config    = require('../../../config'),
-    Validator = require('validator').Validator;
+    Validator = require('validator').Validator,
+    sanitize  = require('validator').sanitize;
 
 // Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
 // others' if they're using the library outside of ghost.
@@ -76,6 +77,10 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
         });
 
         return attrs;
+    },
+
+    sanitize: function (attr) {
+        return sanitize(this.get(attr)).xss();
     },
 
     // #### generateSlug
