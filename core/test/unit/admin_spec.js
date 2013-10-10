@@ -4,6 +4,8 @@ var testUtils = require('./testUtils'),
     sinon = require('sinon'),
     when = require('when'),
     fs = require('fs-extra'),
+    path = require('path'),
+    appRoot = path.resolve(__dirname, '../../../'),
 
     // Stuff we are testing
     admin = require('../../server/controllers/admin');
@@ -143,13 +145,13 @@ describe('Admin Controller', function() {
             it('can upload two different images with the same name without overwriting the first', function(done) {
                 // Sun Sep 08 2013 10:57
                 clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE.jpg').yields(true);
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE-1.jpg').yields(false);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE-1.jpg')).yields(false);
 
                 // if on windows need to setup with back slashes
                 // doesn't hurt for the test to cope with both
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE.jpg').yields(true);
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-1.jpg').yields(false);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE-1.jpg')).yields(false);
 
                 sinon.stub(res, 'send', function(data) {
                     data.should.equal('/content/images/2013/Sep/IMAGE-1.jpg');
@@ -162,18 +164,18 @@ describe('Admin Controller', function() {
             it('can upload five different images with the same name without overwriting the first', function(done) {
                 // Sun Sep 08 2013 10:57
                 clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE.jpg').yields(true);
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE-1.jpg').yields(true);
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE-2.jpg').yields(true);
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE-3.jpg').yields(true);
-                fs.exists.withArgs('content/images/2013/Sep/IMAGE-4.jpg').yields(false);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE-1.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE-2.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE-3.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content/images/2013/Sep/IMAGE-4.jpg')).yields(false);
 
                 // windows setup
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE.jpg').yields(true);
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-1.jpg').yields(true);
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-2.jpg').yields(true);
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-3.jpg').yields(true);
-                fs.exists.withArgs('content\\images\\2013\\Sep\\IMAGE-4.jpg').yields(false);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE-1.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE-2.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE-3.jpg')).yields(true);
+                fs.exists.withArgs(path.join(appRoot, 'content\\images\\2013\\Sep\\IMAGE-4.jpg')).yields(false);
 
                 sinon.stub(res, 'send', function(data) {
                     data.should.equal('/content/images/2013/Sep/IMAGE-4.jpg');
