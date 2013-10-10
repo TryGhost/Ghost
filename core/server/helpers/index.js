@@ -179,13 +179,19 @@ coreHelpers = function (ghost) {
 
 
     ghost.registerThemeHelper('body_class', function (options) {
-        var classes = [];
+        var classes = [],
+            tags = this.post && this.post.tags ? this.post.tags : this.tags || [];
+
         if (_.isString(this.path) && this.path.match(/\/page/)) {
             classes.push('archive-template');
         } else if (!this.path || this.path === '/' || this.path === '') {
             classes.push('home-template');
         } else {
             classes.push('post-template');
+        }
+
+        if (tags) {
+            classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
         }
 
         return ghost.doFilter('body_class', classes, function (classes) {
@@ -195,10 +201,11 @@ coreHelpers = function (ghost) {
     });
 
     ghost.registerThemeHelper('post_class', function (options) {
-        var classes = ['post'];
+        var classes = ['post'],
+            tags = this.post && this.post.tags ? this.post.tags : this.tags || [];
 
-        if (this.tags) {
-            classes = classes.concat(this.tags.map(function (tag) { return 'tag-' + tag.name; }));
+        if (tags) {
+            classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
         }
 
         return ghost.doFilter('post_class', classes, function (classes) {
