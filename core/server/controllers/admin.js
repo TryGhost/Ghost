@@ -76,7 +76,8 @@ adminControllers = {
             month = currentDate.format('MMM'),
             year =  currentDate.format('YYYY'),
             tmp_path = req.files.uploadimage.path,
-            dir = path.join('content/images', year, month),
+            imagespath = path.join(ghost.paths().appRoot, 'content/images'),
+            dir = path.join(imagespath, year, month),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
             type = req.files.uploadimage.type,
             basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
@@ -99,7 +100,7 @@ adminControllers = {
                         }
 
                         // the src for the image must be in URI format, not a file system path, which in Windows uses \
-                        var src = path.join('/', target_path).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                        var src = path.join('/', target_path.replace(ghost.paths().appRoot, "")).replace(new RegExp('\\' + path.sep, 'g'), '/');
                         return res.send(src);
                     });
                 });
