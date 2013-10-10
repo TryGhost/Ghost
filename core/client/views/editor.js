@@ -440,10 +440,9 @@
         initUploads: function () {
             this.$('.js-drop-zone').upload({editor: true});
             this.$('.js-drop-zone').on('uploadstart', $.proxy(this.disableEditor, this));
-            this.$('.js-drop-zone').on('uploadstart', this.uploadMgr.handleDownloadStart);
             this.$('.js-drop-zone').on('uploadfailure', $.proxy(this.enableEditor, this));
             this.$('.js-drop-zone').on('uploadsuccess', $.proxy(this.enableEditor, this));
-            this.$('.js-drop-zone').on('uploadsuccess', this.uploadMgr.handleDownloadSuccess);
+            this.$('.js-drop-zone').on('uploadsuccess', this.uploadMgr.handleUpload);
         },
 
         enableEditor: function () {
@@ -608,7 +607,7 @@
             // TODO: hasMarker but no image?
         }
 
-        function handleDownloadStart(e) {
+        function handleUpload(e, result_src) {
             /*jslint regexp: true, bitwise: true */
             var line = findLine($(e.currentTarget).attr('id')),
                 lineNumber = editor.getLineNumber(line),
@@ -633,9 +632,6 @@
                     );
                 }
             }
-        }
-
-        function handleDownloadSuccess(e, result_src) {
             editor.replaceSelection(result_src);
         }
 
@@ -652,8 +648,7 @@
         // Public API
         _.extend(this, {
             getEditorValue: getEditorValue,
-            handleDownloadStart: handleDownloadStart,
-            handleDownloadSuccess: handleDownloadSuccess
+            handleUpload: handleUpload
         });
 
         // initialise
