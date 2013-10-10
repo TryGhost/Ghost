@@ -361,4 +361,13 @@ describe('Post Model', function () {
             done();
         }).then(null, done);
     });
+
+    it('should santize the title', function (done) {
+        new PostModel().fetch().then(function (model) {
+            return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
+        }).then(function (saved) {
+                saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+                done();
+            }).otherwise(done);
+    });
 });
