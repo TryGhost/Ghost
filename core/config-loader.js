@@ -1,31 +1,36 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
-    errors  = require('./server/errorHandling');
+    errors  = require('./server/errorHandling'),
+    path    = require('path'),
+
+    appRoot = path.resolve(__dirname, '../'),
+    configexample = path.join(appRoot, 'config.example.js'),
+    config = path.join(appRoot, 'config.js');
 
 function writeConfigFile() {
     var written = when.defer();
 
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
-    fs.exists('config.example.js', function checkTemplate(templateExists) {
+    fs.exists(configexample, function checkTemplate(templateExists) {
         var read,
             write;
 
         if (!templateExists) {
-            return errors.logError(new Error('Could not locate a configuration file.'), process.cwd(), 'Please check your deployment for config.js or config.example.js.');
+            return errors.logError(new Error('Could not locate a configuration file.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         }
 
         // Copy config.example.js => config.js
-        read = fs.createReadStream('config.example.js');
+        read = fs.createReadStream(configexample);
         read.on('error', function (err) {
-            return errors.logError(new Error('Could not open config.example.js for read.'), process.cwd(), 'Please check your deployment for config.js or config.example.js.');
+            return errors.logError(new Error('Could not open config.example.js for read.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
         read.on('end', written.resolve);
 
-        write = fs.createWriteStream('config.js');
+        write = fs.createWriteStream(config);
         write.on('error', function (err) {
-            return errors.logError(new Error('Could not open config.js for write.'), process.cwd(), 'Please check your deployment for config.js or config.example.js.');
+            return errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
 
         read.pipe(write);
@@ -77,7 +82,7 @@ exports.loadConfig = function () {
     var loaded = when.defer();
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
-    fs.exists('config.js', function checkConfig(configExists) {
+    fs.exists(config, function checkConfig(configExists) {
         if (configExists) {
             validateConfigEnvironment().then(loaded.resolve).otherwise(loaded.reject);
         } else {
