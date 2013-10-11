@@ -11,7 +11,7 @@
     },
     "engineStrict": true,
     "dependencies": {
-        "express": "3.4.0",
+        "express": "3.3.4",
         "express-hbs": "0.3.0",
         "connect-slashes": "0.0.9",
         "node-polyglot": "0.2.1",
