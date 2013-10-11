@@ -1,6 +1,6 @@
 {
     "name": "ghost",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "private": true,
     "scripts": {
         "start": "node index",
@@ -30,7 +30,10 @@
         "downsize": "0.0.2",
         "validator": "1.4.0",
         "rss": "0.2.0",
-        "nodemailer": "~0.5.2"
+        "nodemailer": "0.5.2"
+    },
+    "optionalDependencies": {
+        "mysql": "2.0.0-alpha9"
     },
     "devDependencies": {
         "grunt": "~0.4.1",
