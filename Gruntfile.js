@@ -12,7 +12,16 @@ var path           = require('path'),
     buildGlob = [
         '**',
         '!docs/**',
+        '!_site/**',
+        '!content/images/**',
+        'content/images/README.md',
+        '!content/themes/**',
+        'content/themes/casper/**',
+        '!content/plugins/**',
+        'content/plugins/README.md',
         '!node_modules/**',
+        '!core/test/**',
+        '!core/client/assets/sass/**',
         '!**/*.db*',
         '!*.db*',
         '!.sass*',
@@ -21,6 +30,8 @@ var path           = require('path'),
         '!.groc*',
         '!*.iml',
         '!config.js',
+        '!CONTRIBUTING.md',
+        '!SECURITY.md',
         '!.travis.yml'
     ],
 
@@ -40,7 +51,8 @@ var path           = require('path'),
                 dist: distDirectory,
                 nightlyDist: path.join(distDirectory, 'nightly'),
                 weeklyDist: path.join(distDirectory, 'weekly'),
-                buildDist: path.join(distDirectory, 'build')
+                buildDist: path.join(distDirectory, 'build'),
+                releaseDist: path.join(distDirectory, 'release')
             },
             buildType: 'Build',
             pkg: grunt.file.readJSON('package.json'),
@@ -336,6 +348,14 @@ var path           = require('path'),
                 build: {
                     options: {
                         archive: '<%= paths.buildDist %>/Ghost-Build.zip'
+                    },
+                    expand: true,
+                    cwd: '<%= paths.buildBuild %>/',
+                    src: ['**']
+                },
+                release: {
+                    options: {
+                        archive: '<%= paths.releaseDist %>/Ghost-<%= pkg.version %>.zip'
                     },
                     expand: true,
                     cwd: '<%= paths.buildBuild %>/',
@@ -811,6 +831,18 @@ var path           = require('path'),
             "clean:build",
             "copy:build",
             "compress:build"
+        ]);
+
+        grunt.registerTask('release', [
+            'shell:bourbon',
+            'sass:admin',
+            'handlebars',
+            'concat',
+            'uglify',
+            'changelog',
+            'clean:build',
+            'copy:build',
+            'compress:release'
         ]);
 
         // Dev Mode; watch files and restart server on changes
