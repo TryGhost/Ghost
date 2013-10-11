@@ -79,7 +79,7 @@ adminControllers = {
             imagespath = path.join(ghost.paths().appRoot, 'content/images'),
             dir = path.join(imagespath, year, month),
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            type = req.files.uploadimage.type,
+            type = req.files.uploadimage.type || req.files.uploadimage.headers['content-type'],
             basename = path.basename(req.files.uploadimage.name, ext).replace(/[\W]/gi, '_');
 
         function renameFile(target_path) {
