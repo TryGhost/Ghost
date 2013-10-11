@@ -25,7 +25,8 @@ heading: Using Ghost
 
             <ol>
                 <li>Go to <code>&lt;your URL&gt;/ghost/signup/</code></li>
-                <li>Enter your user details</li>
+                <li>Enter your user email and password</li>
+                <li>Click "Login"</li>
             </ol>
 
 
@@ -34,43 +35,58 @@ heading: Using Ghost
             <h2 id="config-ghost">Configuring Ghost</h2>
 
             <p>Go to <code>&lt;your URL&gt;/ghost/settings/</code>.</p>
+            <p>After you are finished adjusting the settings the "Save" button <em>must</em> be pressed, this will save your changes.</p>
+            <p>You can check your changes by visiting the Blog URL.</p>
 
             <h3>Blog Settings (<code>/general/</code>)</h3>
 
-            <p>These are the Blog specific settings</p>
+            <p>These are the Blog specific settings.</p>
 
-            <ol>
-                <li>Change your Blog Title</li>
-                <li>Change your Blog Description</li>
-                <li>Upload a Blog Logo, this will be displayed in Themes over your Blog name.</li>
-                <li>Upload a Blog Cover, this will be displayed in Themes as a heading image.</li>
-                <li>Click "Save".</li>
-            </ol>
+            <ul>
+                <li><strong>Blog Title</strong>: Changes your Blog's title. Theme reference <code>@blog.title</code>.</li>
+                <li><strong>Blog Description</strong>: Changes your Blog's description. Theme reference <code>@blog.description</code>.</li>
+                <li><strong>Blog Logo</strong>: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference <code>@blog.logo</code>.</li>
+                <li><strong>Blog Cover</strong>: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference <code>@blog.cover</code>.</li>
+                <li><strong>Email Address</strong>: This is the email admin notifications are sent too. It <em>must</em> be a valid email.</li>
+                <li><strong>Posts per page</strong>: This is how many posts are displayed per page. This should be a numeric value.</li>
+                <li><strong>Theme</strong>: This will list all the themes in your <code>content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
 
-
-            <p>This will update all your Blog settings, you can check these by visiting your Blog URL.</p>
+            </ul>
 
             <h3>User Settings (<code>/user/</code>)</h3>
 
-            <p>These are the settings that control your User profile.</p>
+            <p>These are the settings that control your user / author profile.</p>
+
+            <ul>
+                <li><strong>Your Name</strong>: This is your name that will be used to credit you when you publish a post. Theme reference (post) <code>author.name</code>.</li>
+                <li><strong>Cover Image</strong>: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) <code>author.cover</code>.</li>
+                <li><strong>Display Picture</strong>: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) <code>author.image</code>.</li>
+                <li><strong>Email Address</strong>: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) <code>author.email</code>.</li>
+                <li><strong>Location</strong>: This should be your current location. Theme reference (post) <code>author.location</code>.</li>
+                <li><strong>Website</strong>: This is your personal website URL or even one of your social network URLs. Theme reference (post) <code>author.website</code>.</li>
+                <li><strong>Bio</strong>: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) <code>author.bio</code>.</li>
+            </ul>
+
+            <h4>Changing your password</h4>
 
             <ol>
-                <li>Click on the Display Image and upload a dashing photo of yourself.</li>
-                <li>Click on "Change Cover" and upload your own cover image.</li>
-                <li>Fill in Location, Website and Bio with information.</li>
-                <li>Click "Save".</li>
+                <li>Fill out the input boxes with the appropriate password (current / new password).</li>
+                <li>Now click <strong>Change Password</strong>.</li>
             </ol>
+
+            <p><strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.</p>
 
 
             <h1>Using Ghost</h1>
 
-            <h2>Write a Post</h2>
+            <h3>Writing a Post</h3>
 
             <ol>
                 <li>Go to <code>&lt;your URL&gt;/ghost/editor/</code></li>
                 <li>Enter a Post Title</li>
-                <li>Enter your content using <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a></li>
-                <li>Save your Post as Draft by clicking the 'Save Draft' button, or press Ctrl / CMD + S.</li>
+                <li>Enter your post content using <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a></li>
+                <li>Save your Post as "Draft" by clicking the 'Save Draft' button, or press Ctrl / CMD + S.</li>
+                <img src="http://f.cl.ly/items/2l2h0N3u0c3Z3b2p1e1f/draft.gif" />
             </ol>
 
 
@@ -81,8 +97,8 @@ heading: Using Ghost
             <ol>
                 <li>Click the arrow next to "Save Draft"</li>
                 <li>Select "Publish Now"</li>
+                <img src="http://f.cl.ly/items/0z3R223D0o2v0w334111/publish.gif" />
             </ol>
-
 
             <p>This will set the save state to 'Publish Now' and the button will turn Red, once you press this button the Post will be published. To return the Post to a 'Draft' state;</p>
 
@@ -98,6 +114,7 @@ heading: Using Ghost
             <ol>
                 <li>Click the 'Settings' icon.</li>
                 <li>Proceed to update the information as required (this will be saved automatically when you naviagte away).</li>
+                <img style="max-width:100%;" src="http://f.cl.ly/items/3q172h1y3Z0m0N2f121D/updateSlug.gif">
             </ol>
 
 
@@ -107,6 +124,7 @@ heading: Using Ghost
                 <li>Navigate to the 'Settings' icon in either the 'Content' page or 'Editor' page.</li>
                 <li>Click "Delete".</li>
                 <li>Accept the Modal</li>
+                <img width="100%" src="http://f.cl.ly/items/3G2b3d443i1T1j0p433F/deletePost.gif" />
             </ol>
         </section>
     </div>
