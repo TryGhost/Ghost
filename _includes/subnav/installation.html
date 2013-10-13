@@ -1,69 +1,103 @@
+{% assign chapter = "installation" %}
+{% assign items = "mac windows linux deploy upgrading troubleshooting" | split: ' ' %}
+
+{% if page.lang %}
+    {% assign base_url = site.url | append: '/' | append: page.lang | append: '/' | append: chapter | append: '/' %}
+{% else %}
+    {% assign base_url = site.url | append: '/' | append: chapter | append: '/' %}
+{% endif %}
+
+{% assign index_url = base_url | append: 'index.html' %}
+
 <aside id="sidebar" class="col-lg-3">
     <nav class="bs-sidebar">
         <ul class="nav bs-sidenav">
-            <li class="active">
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/">
+
+            <li class="{% if page.url == index_url %}active{% endif %}">
+                <a href="{{ index_url }}">
                     {% if page.lang %}
-                        {{page.translations.[page.lang].installation}}
+                    {{page.translations.[page.lang][chapter]}}
                     {% else %}
-                        Installation
+                    {{ chapter | capitalize }}
                     {% endif %}
                 </a>
             </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/mac.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Mac
-                    {% endif %}
-                </a>
-            </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/windows.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Windows
-                    {% endif %}
-                </a>
-            </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/linux.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Linux
-                    {% endif %}
-                </a>
-            </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/deploy.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Live Server
-                    {% endif %}
-                </a>
-            </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Upgrading
-                    {% endif %}
-                </a>
-            </li>
-            <li>
-                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/troubleshooting.html">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang].mac}}
-                    {% else %}
-                        Troubleshooting
-                    {% endif %}
-                </a>
-            </li>
+
+            {% for item in items %}
+                {% assign item_url = base_url | append: item | append: '/' %}
+                <li>
+                    <a href="{{ item_url }}" class="">
+                        {% if page.lang %}
+                        {{page.translations.[page.lang][item]}}
+                        {% else %}
+                        {{ item | capitalize }}
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+            <!--<li class="active">-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].installation}}-->
+                    <!--{% else %}-->
+                        <!--Installation-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/mac/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].mac}}-->
+                    <!--{% else %}-->
+                        <!--Mac-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/windows/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].windows}}-->
+                    <!--{% else %}-->
+                        <!--Windows-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/linux/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].linux}}-->
+                    <!--{% else %}-->
+                        <!--Linux-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/deploy/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].deploy}}-->
+                    <!--{% else %}-->
+                        <!--Live Server-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/upgrading/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].upgrading}}-->
+                    <!--{% else %}-->
+                        <!--Upgrading-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/troubleshooting/">-->
+                    <!--{% if page.lang %}-->
+                        <!--{{page.translations.[page.lang].troubleshooting}}-->
+                    <!--{% else %}-->
+                        <!--Troubleshooting-->
+                    <!--{% endif %}-->
+                <!--</a>-->
+            <!--</li>-->
         </ul>
     </nav>
-</aside>s
+</aside>

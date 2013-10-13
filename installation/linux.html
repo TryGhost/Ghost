@@ -4,6 +4,10 @@ meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
+permalink: /installation/linux/
+chapter: installation
+prev_section: windows
+next_section: deploy
 ---
 
 <div class="container">
@@ -43,6 +47,10 @@ subheading: The first steps to setting up your new blog for the first time.
                 <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
                 <li>Ghost will now be running on localhost</li>
             </ul>
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
         </section>
     </div>
 </div>

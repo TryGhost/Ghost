@@ -4,6 +4,10 @@ meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
+permalink: /installation/upgrading/
+chapter: installation
+prev_section: deploy
+next_section: troubleshooting
 ---
 
 <div class="container">
@@ -51,6 +55,10 @@ subheading: The first steps to setting up your new blog for the first time.
             </p>
 
             <p><strong>Additionally</strong>, <a href="http://www.howtoinstallghost.com/how-to-update-ghost/">howtoinstallghost.com</a> also has instructions for upgrading Ghost on linux servers.</p>
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
         </section>
     </div>
 </div>

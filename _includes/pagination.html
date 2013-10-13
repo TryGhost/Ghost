@@ -1,0 +1,19 @@
+<nav class="section-nav text-center">
+    {% if page.prev_section != null %}
+      <a href="{{ site.url }}/{{page.chapter}}/{{ page.prev_section }}/"
+         class="btn btn-prev btn-primary" title="{{ page.prev_section | capitalize  }}">
+       Back
+      </a>
+    {% else %}
+      <a class="btn btn-prev prev disabled">Back</a>
+    {% endif %}
+
+    {% if page.next_section != null %}
+      <a href="{{ site.url }}/{{page.chapter}}/{{ page.next_section }}/"
+         class="btn btn-next btn-primary" title="{{ page.next_section | capitalize }}">
+        Next
+      </a>
+    {% else %}
+      <a class="btn btn-next next disabled">Next</a>
+    {% endif %}
+</nav>

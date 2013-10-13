@@ -4,6 +4,10 @@ meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
+permalink: /installation/mac/
+chapter: installation
+prev_section: installation
+next_section: windows
 ---
 
 <div class="container">
@@ -45,6 +49,10 @@ subheading: The first steps to setting up your new blog for the first time.
             </ul>
 
             <img width="100%" src="http://f.cl.ly/items/0W22431g241t2G3x3C24/install-ghost-mac.gif" />
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
         </section>
     </div>
 </div>
