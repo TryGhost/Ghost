@@ -1,0 +1,69 @@
+<aside id="sidebar" class="col-lg-3">
+    <nav class="bs-sidebar">
+        <ul class="nav bs-sidenav">
+            <li class="active">
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].installation}}
+                    {% else %}
+                        Installation
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/mac.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Mac
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/windows.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Windows
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/linux.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Linux
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/deploy.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Live Server
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Upgrading
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/troubleshooting.html">
+                    {% if page.lang %}
+                        {{page.translations.[page.lang].mac}}
+                    {% else %}
+                        Troubleshooting
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>s

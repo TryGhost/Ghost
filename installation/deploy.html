@@ -1,0 +1,37 @@
+---
+layout: default
+meta_title: How to Install Ghost on Your Server - Ghost Docs
+meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
+heading: Installing Ghost &amp; Getting Started
+subheading: The first steps to setting up your new blog for the first time.
+---
+
+<div class="container">
+    <div class="row">
+        {% include subnav/installation.html %}
+
+        <section id="content" class="col-lg-9">
+
+            <h1 id="deploy">Putting Ghost on a Live Server</h1>
+
+            <p>So you're ready to get Ghost live? Excellent!</p>
+
+            <p>You're going to need a hosting package that already has, or will allow you to install Node.js. This means something like a cloud (Amazon EC2, DigitalOcean), VPS (Webfaction, Dreamhost) or other package that has SSH (terminal) access & will allow you to install Node. There are plenty around and they can be very cheap.</p>
+
+            <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node in the future as they are somewhat similar.
+
+            <p>Additionally, several of the Node-specific cloud hosting solutions such as Nodejitsu & Heroku will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.</p>
+
+            <p>The following links contain instructions on how to get up and running with:
+                <ul>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/">Dreamhost</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghosted.co/install-ghost-digitalocean/">DigitalOcean</a> - from <a href="http://ghosted.co">Corbett Barr</a></li>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/">Webfaction</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghost.pellegrom.me/installing-ghost-on-ubuntu/">Rackspace</a> (Ubuntu 13.04 + linux service) - from <a href="http://ghost.pellegrom.me/">Gilbert Pellegrom</a></li>
+                    <li><a href="http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/">Ubuntu + nginx + forever</a> - from <a href="http://0v.org/">Gregg Housh</a></li>
+                    <li>...check the <a href="https://en.ghost.org/forum/installation">installation forum</a> for more guides ...</li>
+                </ul>
+            </p>
+        </section>
+    </div>
+</div>
