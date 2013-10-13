@@ -14,7 +14,7 @@
         <ul class="nav bs-sidenav">
 
             <li class="{% if page.url == index_url %}active{% endif %}">
-                <a href="{{ index_url }}">
+                <a href="{{ base_url }}">
                     {% if page.lang %}
                     {{page.translations.[page.lang][chapter]}}
                     {% else %}
@@ -25,8 +25,9 @@
 
             {% for item in items %}
                 {% assign item_url = base_url | append: item | append: '/' %}
-                <li>
-                    <a href="{{ item_url }}" class="">
+
+                <li class="{% if page.url == item_url %}active{% endif %}">
+                    <a href="{{ item_url }}">
                         {% if page.lang %}
                         {{page.translations.[page.lang][item]}}
                         {% else %}
