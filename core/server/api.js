@@ -114,7 +114,11 @@ users = {
             args = {id: this.user};
         }
 
-        return dataProvider.User.read(args);
+        var filteredAttributes = ['password', 'created_by', 'updated_by'];
+
+        return dataProvider.User.read(args).then(function omitAttrs(result) {
+            return _.omit(result, filteredAttributes);
+        });
     },
 
     // #### Edit
