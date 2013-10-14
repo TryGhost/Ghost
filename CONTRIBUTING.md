@@ -23,7 +23,6 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 * for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
 * for building docs:, python and pygments
 
-
 ## Key Branches & Tags
 
 - **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next release is here.
@@ -33,7 +32,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 ### Installation / Setup Instructions
 
-1. Clone the git repo
+1. Clone the git repo via SSH, not HTTP - we use SSH submodules
 2. cd into the project folder
 3. Run `git submodule update --init`
 4. Run `npm install -g grunt-cli`
