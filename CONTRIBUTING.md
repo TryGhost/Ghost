@@ -21,13 +21,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 * node > 0.10 and < 0.11.4
 * ruby and the gems 'sass' and 'bourbon'
 * for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
-* for building docs:, python and pygments
-
-## Key Branches & Tags
-
-- **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next release is here.
-- **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
-- **[releases](https://github.com/TryGhost/Ghost/releases)** are used to contain stable tagged versions of Ghost.
+* for building docs: python and pygments
 
 
 ### Installation / Setup Instructions
@@ -37,14 +31,13 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 3. Run `git submodule update --init`
 4. Run `npm install -g grunt-cli`
 5. Run `npm install`.
-	* If the install fails with errors to do with "node-gyp rebuild", follow the SQLite3 install instructions below this list
+	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
 6. run `grunt init` from the root - this installs Bourbon, compiles SASS and compiles Handlebars templates
 
 Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
 
 Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically, see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
-
 
 ### Updating with the latest changes
 
@@ -55,18 +48,18 @@ Pulling down the latest changes from master will often require more than just a 
  * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run `grunt init` to install bourbon)
  * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
+## Key Branches & Tags
+
+- **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next release is here.
+- **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
+- **[releases](https://github.com/TryGhost/Ghost/releases)** are used to contain stable tagged versions of Ghost.
+
 
 ### SQLite3 Install Instructions
 
 *Only needed if you experienced errors in Step 5 above - Skip this otherwise*
 
-Ghost depends upon SQLite3, which has to be built for each OS. NPM is as smart as it can be about this, and as long as your machine has all the pre-requisites for compiling/building a C++ program, the npm install still works.
-
-**For Mac users:** The easiest way to do this is to download/install xCode from the App Store (free). This will automatically install all the tools you need - you don't need to open the app.
-
-**For Everyone else:** if you don't have the required pre-requisites, you will need to either get them, or as a shortcut, obtain a precompiled SQLite3 package for your OS. We have created some of these [here](https://github.com/developmentseed/node-sqlite3/issues/106).
-
-The pre-compiled package should be downloaded, extracted and placed in the node\_modules folder, such that it lives in node\_modules/sqlite3, if you have a partial install of the SQLite3 package, replace it with the files you downloaded from Github. Be sure that all the SQLite3 files and folders live directly in node\_modules/sqlite3 - there should note be a node\_modules/sqlite3/sqlite3 folder.
+Ghost depends upon SQLite3, which requires a native binary. These are provided for most major platforms, but if you are using a more obscure *nix flavor you may need to follow the [node-sqlite3 binary instructions](https://github.com/developmentseed/node-sqlite3/wiki/Binaries).
 
 
 ### Compiling CSS & JavaScript
