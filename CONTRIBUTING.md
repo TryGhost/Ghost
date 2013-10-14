@@ -129,6 +129,16 @@ Ghost uses Grunt heavily to automate useful tasks such as building assets, testi
 
 [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) are a worthwhile read for any would-be contributor.
 
+## Troubleshooting / FAQ
+
+### I get "ERROR: Failed to lookup view "index"
+
+Sounds like you don't have our default theme - Casper, your content/themes/casper folder is probably empty. When cloning from Github be sure to use SSH and to run `git submodule update --init`. Don't use the release zip file on Github, if you want a zip file use the one from [Ghost.org](http://ghost.org/download).
+
+### I get "Syntax error: File to import not found or unreadable: bourbon/_bourbon."
+
+Sounds like you don't have the Ruby gem "bourbon" installed. Make sure you have Ruby, and then run `gem install bourbon`.
+
 ## Contributor License Agreement
 
 By contributing your code to Ghost you grant the Ghost Foundation a non-exclusive, irrevocable, worldwide, royalty-free, sublicenseable, transferable license under all of Your relevant intellectual property rights (including copyright, patent, and any other rights), to use, copy, prepare derivative works of, distribute and publicly perform and display the Contributions on any licensing terms, including without limitation: (a) open source licenses like the MIT license; and (b) binary, proprietary, or commercial licenses. Except for the licenses granted herein, You reserve all right, title, and interest in and to the Contribution.
