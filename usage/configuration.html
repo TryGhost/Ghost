@@ -19,19 +19,43 @@ next_section: settings
 
             <h2 id="configuration">Configuring Ghost</h2>
 
-            <h2 id="environments">About environments</h2>
-
-            <!--<p>Ghost</p>-->
-            <!---->
-            <!--<p>There are a few, very subtle differences between the two modes or environments. Essentially ‘development’ is geared towards developing and particularly debugging Ghost. Meanwhile ‘production’ is intended to be used when you’re running Ghost as a blog in public.</p>-->
-
-            <!--<p>The differences are things like what logging / error messaging you get, and also how much the assets are concatenated and minified. In production, you’ll get just 1 JavaScript file containing all the code for the admin, in the development you’ll get several.</p>-->
-
-            <!--<p>As we move forward these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the production environment,</p>-->
-
-            <!--<p>I guess that leads on to the question, why ‘development’ by default, if most people are going to want to run it in ‘production’ mode? This is something we may reassess and change, but for now it is because in production mode error messages will be much more hidden away, which is a real frustration when you’re getting set up for the first time.</p>-->
-
             <h2 id="config-file">config.js</h2>
+
+            <h2 id="environments">About Environments</h2>
+
+            <p>Node.js, and therefore Ghost, has the concept of environments built in. Environments allow you to create different configurations for different modes in which you might want to run Ghost.
+                By default Ghost has two built-in modes: <strong>development</strong> and <strong>production</strong>.</p>
+
+            <p>There are a few, very subtle differences between the two modes or environments. Essentially <strong>development</strong>  is geared towards developing and particularly debugging Ghost.
+                Meanwhile "production" is intended to be used when you're running Ghost publicly. The differences include things like what logging & error messaging is output, and also how much static assets are concatenated and minified.
+                In <strong>production</strong>, you'll get just one JavaScript file containing all the code for the admin, in <strong>development</strong>  you'll get several.</p>
+
+            <p>As Ghost progresses, these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the <strong>production</strong> environment.
+                This perhaps begs the question, why <strong>development</strong> mode by default, if most people are going to want to run it in <strong>production</strong> mode?
+                Ghost has <strong>development</strong> as the default because this is the environment that is best for debugging problems, which you're most likely to need when getting set up for the first time.</p>
+
+            <h2 id="using-env">Using Environments</h2>
+
+            <p>In order to set Ghost to run under a different environment, you need to use an environment variable. For example if you normally start Ghost with <code>node index.js</code> you would use:</p>
+
+            <p><code>NODE_ENV=production node index.js</code></p>
+
+            <p>Or if you normally use forever:</p>
+
+            <p><code>NODE_ENV=production forever start index.js</code></p>
+
+            <p>Or if you're used to using <code>npm start</code> you could use the slightly easier to remember:</p>
+
+            <p><code>npm start --production</code></p>
+
+            <h3>Why use <code>npm install --production</code>?</h3>
+
+            <p>We have been asked a few times why, if Ghost starts in development mode by default, does the installation documentation say to run <code>npm install --production</code>?
+                This is a good question! If you don't include <code>--production</code> when installing Ghost, nothing bad will happen, but it will install a tonne of extra packages which are only useful for people who want to develop Ghost core itself.
+                This also requires that you have one particular package, <code>grunt-cli</code> installed globally, which has to be done with <code>npm install -g grunt-cli</code>, it's an extra step and it's not needed if you just want to run Ghost as a blog.</p>
+            </p>
+
+
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}

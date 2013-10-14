@@ -22,11 +22,12 @@ next_section: upgrading
 
             <!--<p>The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you want to use an installer.</p>-->
 
-            <p>You're going to need a hosting package that already has, or will allow you to install <a href="http://nodejs.org">Node.js</a>. This means something like a cloud (Amazon EC2, DigitalOcean), VPS (Webfaction, Dreamhost) or other package that has SSH (terminal) access & will allow you to install Node. There are plenty around and they can be very cheap.</p>
+            <p>You're going to need a hosting package that already has, or will allow you to install <a href="http://nodejs.org">Node.js</a>.
+                This means something like a cloud (<a href="http://aws.amazon.com/ec2/">Amazon EC2</a>, <a href="http://www.digitalocean.com">DigitalOcean</a>, <a href="http://www.rackspace.com/cloud/">Rackspace Cloud</a>), VPS (<a href="https://www.webfaction.com/">Webfaction</a>, <a href="http://www.dreamhost.com/servers/vps/">Dreamhost</a>) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.</p>
 
-            <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node in the future as they are somewhat similar.
+            <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
 
-            <p>Additionally, several of the Node-specific cloud hosting solutions such as Nodejitsu & Heroku will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.</p>
+            <p>Unfortunately, many of the Node-specific cloud hosting solutions such as <strong>Nodejitsu</strong> & <strong>Heroku</strong> are <strong>NOT</strong> compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.</p>
 
             <p>The following links contain instructions on how to get up and running with:
                 <ul>
