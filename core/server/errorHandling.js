@@ -119,7 +119,8 @@ errors = {
             if (process.env.NODE_ENV !== 'production' && err.stack) {
                 stack = parseStack(err.stack);
             }
-
+            
+            res.statusCode = code;
             // TODO: Attach node-polyglot
             res.render((errorView || 'error'), {
                 message: err.message || err,
