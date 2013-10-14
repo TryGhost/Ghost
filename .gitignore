@@ -19,6 +19,9 @@ node_modules
 projectFilesBackup
 
 .DS_Store
+*~
+*.swp
+*.swo
 
 # Ghost DB file
 *.db
