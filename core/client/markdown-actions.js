@@ -1,6 +1,6 @@
 // # Surrounds given text with Markdown syntax
 
-/*global $, window, CodeMirror, Showdown, moment */
+/* global $, window, CodeMirror, Showdown, moment */
 (function () {
     'use strict';
     var Markdown = {
@@ -15,46 +15,41 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, md, cursor, line, word, letterCount, converter;
+            var text = this.elem.getSelection(),
+                pass = true,
+                md,
+                cursor = this.elem.getCursor(),
+                line = this.elem.getLine(cursor.line),
+                word,
+                letterCount,
+                converter;
             switch (this.style) {
             case 'h1':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '# ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 2);
                 pass = false;
                 break;
             case 'h2':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '## ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 3);
                 pass = false;
                 break;
             case 'h3':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 4);
                 pass = false;
                 break;
             case 'h4':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '#### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 5);
                 pass = false;
                 break;
             case 'h5':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '##### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 6);
                 pass = false;
                 break;
             case 'h6':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '###### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 7);
                 pass = false;
@@ -67,7 +62,6 @@
                 pass = false;
                 break;
             case 'image':
-                cursor = this.elem.getCursor();
                 md = this.options.syntax.image.replace('$1', text);
                 if (this.elem.getLine(cursor.line) !== '') {
                     md = "\n\n" + md;
@@ -87,7 +81,6 @@
                 md = text.toTitleCase();
                 break;
             case 'selectword':
-                cursor = this.elem.getCursor();
                 word = this.elem.getTokenAt(cursor);
                 if (!/\w$/g.test(word.string)) {
                     this.elem.setSelection({line: cursor.line, ch: word.start}, {line: cursor.line, ch: word.end - 1});
@@ -117,7 +110,6 @@
                 pass = false;
                 break;
             case 'newLine':
-                cursor = this.elem.getCursor();
                 if (this.elem.getLine(cursor.line) !== "") {
                     this.elem.setLine(cursor.line, this.elem.getLine(cursor.line) + "\n\n");
                 }
