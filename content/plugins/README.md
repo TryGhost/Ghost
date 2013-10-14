@@ -1,3 +1,3 @@
 # Content / Plugins
 
-Coming soon, Ghost plugins will appear here
+Coming soon, Ghost plugins will appear here.
