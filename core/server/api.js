@@ -10,19 +10,14 @@ var Ghost        = require('../ghost'),
 
     ghost        = new Ghost(),
     dataProvider = ghost.dataProvider,
-    posts,
-    users,
-    tags,
-    notifications,
-    settings,
-    themes,
-    requestHandler,
     settingsObject,
     settingsCollection,
     settingsFilter;
 
+var api = module.exports;
+
 // ## Posts
-posts = {
+api.posts = {
     // #### Browse
 
     // **takes:** filter / pagination parameters
@@ -81,7 +76,7 @@ posts = {
         }
 
         return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id})).then(function (result) {
+            return when(api.posts.read({id : args.id})).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = {};
                     deletedObj.id = result.attributes.id;
@@ -96,7 +91,7 @@ posts = {
 };
 
 // ## Users
-users = {
+api.users = {
     // #### Browse
 
     // **takes:** options object
@@ -114,7 +109,11 @@ users = {
             args = {id: this.user};
         }
 
-        return dataProvider.User.read(args);
+        var filteredAttributes = ['password', 'created_by', 'updated_by'];
+
+        return dataProvider.User.read(args).then(function omitAttrs(result) {
+            return _.omit(result, filteredAttributes);
+        });
     },
 
     // #### Edit
@@ -157,7 +156,7 @@ users = {
     }
 };
 
-tags = {
+api.tags = {
     // #### All
 
     // **takes:** Nothing yet
@@ -168,7 +167,7 @@ tags = {
 };
 
 // ## Notifications
-notifications = {
+api.notifications = {
     // #### Destroy
 
     // **takes:** an identifier (id)
@@ -236,7 +235,7 @@ settingsFilter = function (settings, filter) {
     }));
 };
 
-settings = {
+api.settings = {
     // #### Browse
 
     // **takes:** options object
@@ -338,7 +337,7 @@ function invalidateCache(req, res, result) {
 // ### requestHandler
 // decorator for api functions which are called via an HTTP request
 // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
-requestHandler = function (apiMethod) {
+api.requestHandler = function (apiMethod) {
     return function (req, res) {
         var options = _.extend(req.body, req.query, req.params),
             apiContext = {
@@ -355,11 +354,3 @@ requestHandler = function (apiMethod) {
     };
 };
 
-// Public API
-module.exports.posts = posts;
-module.exports.users = users;
-module.exports.tags = tags;
-module.exports.notifications = notifications;
-module.exports.settings = settings;
-module.exports.themes = themes;
-module.exports.requestHandler = requestHandler;
