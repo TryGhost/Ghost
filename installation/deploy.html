@@ -73,6 +73,52 @@ next_section: upgrading
                 </li>
             </ul>
 
+            <h3>Supervisor (<a href="http://supervisord.org/">http://supervisord.org/</a>)</h3>
+            <p>Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.</p>
+            <ul>
+                <li>
+                    <a href="http://supervisord.org/installing.html">Install Supervisor</a> as required for your Linux distribution. Typically, this will be:
+                    <ul>
+                        <li>
+                            Debian/Ubuntu: <code>apt-get install supervisor</code>
+                        </li>
+                        <li>
+                            Fedora: <code>yum install supervisor</code>
+                        </li>
+                        <li>
+                            Most other distributions: <code>easy_install supervisor</code>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Ensure that Supervisor is running, by running <code>service supervisor start</code>
+                </li>
+                <li>
+                    Create the startup script for your Ghost installation. Typically this will go in <code>/etc/supervisor/conf.d/ghost.conf</code> For example:
+                    <p><pre>
+[program:ghost]
+command = node /path/to/ghost/index.js
+directory = /path/to/ghost
+user = ghost
+autostart = true
+autorestart = true
+stdout_logfile = /var/log/supervisor/ghost.log
+stderr_logfile = /var/log/supervisor/ghost_err.log
+environment = NODE_ENV="production"
+                    </pre></p>
+                </li>
+                <li>
+                    Start Ghost using Supervisor: <code>supervisorctl start ghost</code>
+                </li>
+                <li>
+                    To stop Ghost: <code>supervisorctl stop ghost</code>
+                </li>
+            </ul>
+            <p>You can see the <a href="http://supervisord.org">documentation for Supervisor</a> for more information.</p>
+                
+
+
+
             <h3>Init Script</h3>
             <p>Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on <b>Ubuntu 12.04</b>.</p>
 
