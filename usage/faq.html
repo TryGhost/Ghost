@@ -5,9 +5,8 @@ meta_description: An in depth guide to using the Ghost blogging platform. Got Gh
 heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
-permalink: /usage/writing/
-prev_section: managing
-next_section: faq
+permalink: /usage/faq/
+prev_section: writing
 ---
 
 <div class="container">
@@ -17,11 +16,19 @@ next_section: faq
 
         <section id="content" class="col-lg-9">
 
-            <h2 id="writing">Writing posts</h2>
+            <h2 id="faq">FAQ</h2>
 
-            <p>Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.</p>
+            <h3>(When) Will Ghost support feature X?</h3>
 
-            <h3 id="markdown">Markdown Guide</h3>
+            <p>Please see the Planned Features listing and Roadmap on the Github wiki (links coming soon).</p>
+
+            <h3>How do I insert images into a post?</h3>
+
+            <p>Please see the <a href="/usage/writing/#markdown">Markdown Guide</a> for a full explanation of how image uploads work in the Ghost editor.</p>
+
+            <br />
+            <br />
+
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}

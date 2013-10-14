@@ -16,11 +16,13 @@ next_section: upgrading
 
         <section id="content" class="col-lg-9">
 
-            <h2 id="deploy">Putting Ghost on a Live Server</h2>
+            <h2 id="deploy">Getting Ghost Live</h2>
 
             <p>So you're ready to get Ghost live? Excellent!</p>
 
-            <p>You're going to need a hosting package that already has, or will allow you to install Node.js. This means something like a cloud (Amazon EC2, DigitalOcean), VPS (Webfaction, Dreamhost) or other package that has SSH (terminal) access & will allow you to install Node. There are plenty around and they can be very cheap.</p>
+            <!--<p>The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you want to use an installer.</p>-->
+
+            <p>You're going to need a hosting package that already has, or will allow you to install <a href="http://nodejs.org">Node.js</a>. This means something like a cloud (Amazon EC2, DigitalOcean), VPS (Webfaction, Dreamhost) or other package that has SSH (terminal) access & will allow you to install Node. There are plenty around and they can be very cheap.</p>
 
             <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node in the future as they are somewhat similar.
 
@@ -36,6 +38,10 @@ next_section: upgrading
                     <li>...check the <a href="https://en.ghost.org/forum/installation">installation forum</a> for more guides ...</li>
                 </ul>
             </p>
+
+            <h2>Making Ghost run forever</h2>
+
+            <h2>Setting up Ghost with a domain name</h2>
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}
