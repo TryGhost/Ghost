@@ -37,7 +37,9 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
-        }
+        },
+        // should we strip trailing slashes from our URLs? 
+        stripSlashes: false
     },
 
     // ### Production
@@ -58,7 +60,9 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
-        }
+        },
+        // should we strip trailing slashes from our URLs? 
+        stripSlashes: false
     },
 
     // **Developers only need to edit below here**
