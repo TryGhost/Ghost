@@ -268,8 +268,8 @@ when(ghost.init()).then(function () {
     // Theme only config
     server.use(whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
 
-    // Add in all trailing slashes
-    server.use(slashes());
+    // Either add or remove trailing slashes from URLs
+    server.use(slashes(ghost.config().server.stripSlashes ? false : true));
 
     server.use(express.json());
     server.use(express.urlencoded());
