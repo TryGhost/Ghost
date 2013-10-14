@@ -60,8 +60,8 @@ function validateConfigEnvironment() {
     }
 
     // Check that our url is valid
-    parsedUrl = url.parse(config.url || 'invalid');
-    if (!parsedUrl.protocol || !parsedUrl.host) {
+    parsedUrl = url.parse(config.url || 'invalid', false, true);
+    if (!parsedUrl.host) {
         errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
         return when.reject();
     }
