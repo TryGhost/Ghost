@@ -1,0 +1,41 @@
+---
+layout: default
+meta_title: How to Use Ghost - Ghost Docs
+meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+heading: Using Ghost
+subheading: Finding your way around, and getting set up the way you want
+chapter: usage
+permalink: /usage/configuration/
+prev_section: usage
+next_section: settings
+---
+
+<div class="container">
+    <div class="row">
+
+        {% include subnav/usage.html %}
+
+        <section id="content" class="col-lg-9">
+
+            <h2 id="configuration">Configuring Ghost</h2>
+
+            <h2 id="environments">About environments</h2>
+
+            <!--<p>Ghost</p>-->
+            <!---->
+            <!--<p>There are a few, very subtle differences between the two modes or environments. Essentially ‘development’ is geared towards developing and particularly debugging Ghost. Meanwhile ‘production’ is intended to be used when you’re running Ghost as a blog in public.</p>-->
+
+            <!--<p>The differences are things like what logging / error messaging you get, and also how much the assets are concatenated and minified. In production, you’ll get just 1 JavaScript file containing all the code for the admin, in the development you’ll get several.</p>-->
+
+            <!--<p>As we move forward these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the production environment,</p>-->
+
+            <!--<p>I guess that leads on to the question, why ‘development’ by default, if most people are going to want to run it in ‘production’ mode? This is something we may reassess and change, but for now it is because in production mode error messages will be much more hidden away, which is a real frustration when you’re getting set up for the first time.</p>-->
+
+            <h2 id="config-file">config.js</h2>
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>
