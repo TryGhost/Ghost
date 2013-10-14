@@ -408,14 +408,16 @@
 
         afterRender: function () {
             var self = this;
+
             Countable.live(document.getElementById('user-bio'), function (counter) {
+                var bioContainer = self.$('.bio-container .word-count');
                 if (counter.all > 180) {
-                    self.$('.bio-container .word-count').css({color: "#e25440"});
+                    bioContainer.css({color: "#e25440"});
                 } else {
-                    self.$('.bio-container .word-count').css({color: "#9E9D95"});
+                    bioContainer.css({color: "#9E9D95"});
                 }
 
-                self.$('.bio-container .word-count').text(200 - counter.all);
+                bioContainer.text(200 - counter.all);
 
             });
 
