@@ -20,7 +20,18 @@ next_section: upgrading
 
             <p>So you're ready to get Ghost live? Excellent!</p>
 
-            <!--<p>The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you want to use an installer.</p>-->
+            <p>The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.</p>
+
+            <h3>Installers</h3>
+
+            <p>There are a couple of options for simple installers at the moment:
+                <ul>
+                    <li>Deploy to the cloud with <a href="http://wiki.bitnami.com/Applications/BitNami_Ghost">Bitnami</a>.</li>
+                    <li>Launch Ghost with <a href="http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html">Rackspace deployments</a>.</li>
+                </ul>
+            </p>
+
+            <h3>Manual Setup</h3>
 
             <p>You're going to need a hosting package that already has, or will allow you to install <a href="http://nodejs.org">Node.js</a>.
                 This means something like a cloud (<a href="http://aws.amazon.com/ec2/">Amazon EC2</a>, <a href="http://www.digitalocean.com">DigitalOcean</a>, <a href="http://www.rackspace.com/cloud/">Rackspace Cloud</a>), VPS (<a href="https://www.webfaction.com/">Webfaction</a>, <a href="http://www.dreamhost.com/servers/vps/">Dreamhost</a>) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.</p>
@@ -42,7 +53,11 @@ next_section: upgrading
 
             <h2>Making Ghost run forever</h2>
 
+            <p>Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!</p>
+
             <h2>Setting up Ghost with a domain name</h2>
+
+            <p>Documentation on using nginx as a reverse proxy on their way.</p>
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}
