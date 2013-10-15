@@ -4,6 +4,8 @@
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
 CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
+    CasperTest.Routines.register.run(test);
+    CasperTest.Routines.logout.run(test);
     CasperTest.Routines.login.run(test);
 
     casper.thenOpen(url + "ghost/", function then() {

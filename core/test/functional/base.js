@@ -109,7 +109,7 @@ var CasperTest = (function() {
         var runTest = function (test) {
             test.filename = testName.toLowerCase().replace(/ /g, '-').concat('.png');
 
-            casper.start().viewport(1280, 1024);
+            casper.start('about:blank').viewport(1280, 1024);
 
             if (!doNotAutoLogin) {
                 // Only call register once for the lifetime of Mindless
@@ -171,7 +171,10 @@ CasperTest.Routines = (function () {
         });
 
         casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-            this.echo('It appears as though a user is already registered.');
+            var errorText = casper.evaluate(function () {
+                return document.querySelector('.notification-error').innerText;
+            });
+            this.echo('It appears as though a user is already registered. Error text: ' + errorText);
         }, function onTimeout() {
             this.echo('It appears as though a user was not already registered.');
         }, 2000);
