@@ -463,6 +463,7 @@ var path           = require('path'),
                             'core/client/assets/vendor/to-title-case.js',
                             'core/client/assets/vendor/packery.pkgd.min.js',
                             'core/client/assets/vendor/fastclick.js',
+                            'core/client/assets/vendor/nprogress.js',
 
                             'core/client/init.js',
 
