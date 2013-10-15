@@ -342,8 +342,8 @@ Ghost.prototype.doFilter = function (name, args, callback) {
 
 // Initialise plugins.  Will load from config.activePlugins by default
 Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    pluginsToLoad = pluginsToLoad || models.Settings.activePlugins;
     var self = this;
+    pluginsToLoad = pluginsToLoad || self.config().activePlugins;
 
     return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
         // Extend the loadedPlugins onto the available plugins

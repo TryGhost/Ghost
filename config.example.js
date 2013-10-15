@@ -7,6 +7,11 @@ var path = require('path'),
 config = {
     // ### Development **(default)**
     development: {
+        // Allowed plugins. For example, if you had
+        // `content/plugins/example.json`,
+        // then you put it in the list as `example`, i.e.,
+        // `activePlugins: ['example'],`
+        activePlugins: [],
         // The url to use when providing links to the site, E.g. in RSS and email.
         url: 'http://my-ghost-blog.com',
 
@@ -44,6 +49,7 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
+        activePlugins: [],
         url: 'http://my-ghost-blog.com',
         mail: {},
         database: {
@@ -67,6 +73,7 @@ config = {
     // Used when developing Ghost to run tests and check the health of Ghost
     // Uses a different port number
     testing: {
+        activePlugins: [],
         url: 'http://127.0.0.1:2369',
         database: {
             client: 'sqlite3',
@@ -83,6 +90,7 @@ config = {
     // ### Travis
     // Automated testing run through Github
     travis: {
+        activePlugins: [],
         url: 'http://127.0.0.1:2368',
         database: {
             client: 'sqlite3',
