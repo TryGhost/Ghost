@@ -1170,9 +1170,7 @@ main {
     font-size: 0.85em;
     color: $brown;
     //Transparent gradient to make bg fade out as it goes out the top.
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
-    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
-    background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+    @include linear-gradient(top, white 0%, white 25%, rgba(255,255,255,0.9) 100%, $fallback: transparent);
 
     button, .button {
         display: inline-block;
