@@ -46,7 +46,7 @@ Pulling down the latest changes from master will often require more than just a 
  * `npm install` - fetch any new dependencies
  * `git submodule update` - fetch the latest changes to Casper (the default theme)
  * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously run `grunt init` to install bourbon)
- * delete core/server/data/*.db - delete the database and allow Ghost to recreate the fixtures
+ * delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ## Key Branches & Tags
 
