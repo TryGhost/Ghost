@@ -47,6 +47,19 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    //
+    // ### URI Encoding helper
+    // 
+    // *Usage example:*
+    // `{{encode uri}}`
+    //
+    // Returns URI encoded string
+    //
+    ghost.registerThemeHelper('encode', function (context, str) {
+        var uri = context || str;
+        return new hbs.handlebars.SafeString(encodeURIComponent(uri));
+    });
+
     // ### Page URL Helper
     //
     // *Usage example:*
