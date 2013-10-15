@@ -67,7 +67,7 @@ config = {
     // Used when developing Ghost to run tests and check the health of Ghost
     // Uses a different port number
     testing: {
-        url: 'http://127.0.0.1:2369',
+        url: 'http://127.0.0.1:' + process.env.PORT,
         database: {
             client: 'sqlite3',
             connection: {
@@ -83,7 +83,7 @@ config = {
     // ### Travis
     // Automated testing run through Github
     travis: {
-        url: 'http://127.0.0.1:2368',
+        url: 'http://127.0.0.1:' + process.env.PORT,
         database: {
             client: 'sqlite3',
             connection: {
