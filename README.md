@@ -18,9 +18,10 @@ There are two main ways to get started with Ghost:
 
 1.  Once you've downloaded one of the releases, unzip it, and place the directory wherever you would like to run the code
 2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
-4.  run `npm install --production` to install the node dependencies
-4.  To start ghost, run `npm start`
-5.  Visit `http://localhost:2368/` in your web browser
+3.  run `npm install --production` to install the node dependencies
+4.  get default theme [Casper](https://github.com/TryGhost/Casper) `git submodule update --init --recursive`
+5.  To start ghost, run `npm start`
+6.  Visit `http://localhost:2368/` in your web browser
 
 
 ### Updating with the latest changes
