@@ -36,7 +36,7 @@ config = {
             // Host to be passed to node's `net.Server#listen()`
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
-            port: '2368'
+            port: process.env.PORT || '2368'
         }
     },
 
@@ -57,7 +57,7 @@ config = {
             // Host to be passed to node's `net.Server#listen()`
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
-            port: '2368'
+            port: process.env.PORT || '2368'
         }
     },
 
@@ -67,7 +67,7 @@ config = {
     // Used when developing Ghost to run tests and check the health of Ghost
     // Uses a different port number
     testing: {
-        url: 'http://127.0.0.1:2369',
+        url: 'http://127.0.0.1:' + process.env.PORT,
         database: {
             client: 'sqlite3',
             connection: {
@@ -76,14 +76,14 @@ config = {
         },
         server: {
             host: '127.0.0.1',
-            port: '2369'
+            port: process.env.PORT || '2369'
         }
     },
 
     // ### Travis
     // Automated testing run through Github
     travis: {
-        url: 'http://127.0.0.1:2368',
+        url: 'http://127.0.0.1:' + process.env.PORT,
         database: {
             client: 'sqlite3',
             connection: {
@@ -92,7 +92,7 @@ config = {
         },
         server: {
             host: '127.0.0.1',
-            port: '2368'
+            port: process.env.PORT || '2368'
         }
     }
 };
