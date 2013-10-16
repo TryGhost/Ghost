@@ -128,7 +128,7 @@ Ghost uses Grunt heavily to automate useful tasks such as building assets, testi
 
 ### I get "ERROR: Failed to lookup view "index"
 
-Sounds like you don't have our default theme - Casper, your content/themes/casper folder is probably empty. When cloning from Github be sure to use SSH and to run `git submodule update --init`. Don't use the release zip file on Github, if you want a zip file use the one from [Ghost.org](http://ghost.org/download).
+Sounds like you don't have our default theme - Casper, your content/themes/casper folder is probably empty. When cloning from GitHub be sure to use SSH and to run `git submodule update --init`. Don't use the release zip file on Github, if you want a zip file use the one from [Ghost.org](http://ghost.org/download).
 
 ### I get "Syntax error: File to import not found or unreadable: bourbon/_bourbon."
 
