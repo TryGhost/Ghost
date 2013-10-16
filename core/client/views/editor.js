@@ -66,6 +66,7 @@
         },
 
         statusMap: null,
+        savingPost: false,
 
         createStatusMap: {
             'draft': 'Save Draft',
@@ -86,8 +87,6 @@
             'draft': 'Your post could not be saved as a draft.',
             'published': 'Your post could not be published.'
         },
-
-        savingPost: false,
 
         initialize: function () {
             var self = this;
