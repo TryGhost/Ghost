@@ -86,6 +86,22 @@ describe('Core Helpers', function () {
 
     });
 
+    describe('encode Helper', function () {
+
+        it('has loaded encode helper', function() {
+            should.exist(handlebars.helpers.encode);
+        });
+
+        it('can escape URI', function() {
+            var uri = "$pecial!Charact3r(De[iver]y)Foo #Bar",
+                expected = "%24pecial!Charact3r(De%5Biver%5Dy)Foo%20%23Bar",
+                escaped = handlebars.helpers.encode(uri);
+
+            should.exist(escaped);
+            String(escaped).should.equal(expected);
+        });
+    });
+
     describe('Excerpt Helper', function () {
 
         it('has loaded excerpt helper', function () {
