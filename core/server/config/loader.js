@@ -7,7 +7,7 @@ var fs      = require('fs'),
 
     appRoot = paths().appRoot,
     configexample = paths().configExample,
-    config = paths().config;
+    configFile =  process.env.GHOST_CONFIG || paths().config;
 
 function writeConfigFile() {
     var written = when.defer();
@@ -30,7 +30,7 @@ function writeConfigFile() {
         });
         read.on('end', written.resolve);
 
-        write = fs.createWriteStream(config);
+        write = fs.createWriteStream(configFile);
         write.on('error', function (err) {
             /*jslint unparam:true*/
             return errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
@@ -50,11 +50,10 @@ function validateConfigEnvironment() {
         parsedUrl;
 
     try {
-        config = require('../../../config')[envVal];
+        config = require(configFile)[envVal];
     } catch (ignore) {
 
     }
-
 
     // Check if we don't even have a config
     if (!config) {
@@ -92,7 +91,7 @@ function loadConfig() {
         pendingConfig;
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
-    fs.exists(config, function checkConfig(configExists) {
+    fs.exists(configFile, function checkConfig(configExists) {
         if (!configExists) {
             pendingConfig = writeConfigFile();
         }
