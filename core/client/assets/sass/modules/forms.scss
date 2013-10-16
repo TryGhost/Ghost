@@ -114,8 +114,8 @@ form {
     select {
         @include box-sizing(border-box);
         width: 270px;
-        height: 30px;
-        line-height: 30px;
+        height: 33px;
+        line-height: 33px;
 
         @include breakpoint(550px) {
             width: 100%;
