@@ -90,7 +90,7 @@
                 newPubDate = pubDateEl.value;
 
             // Ensure the published date has changed
-            if (newPubDate.length === 0 || pubDate === newPubDate) {
+            if (newPubDate.length === 0 || moment(pubDate).format("DD MMM YY") === newPubDate) {
                 pubDateEl.value = pubDate === undefined ? 'Not Published' : moment(pubDate).format("DD MMM YY");
                 return;
             }
