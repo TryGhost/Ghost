@@ -204,12 +204,11 @@
         },
 
         savePost: function (data) {
-            if(this.savingPost) {
+            if (this.savingPost) {
                 return;
-            } else {
-              this.savingPost = true;
             }
-              
+            this.savingPost = true;
+
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
