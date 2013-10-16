@@ -9,7 +9,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 1. **Search for existing issues** - The most important step! Help us keep duplicate issues to a minimum by checking to see if someone has already reported your problem or requested your idea.
 2. **Describe your issue in detail** - Help us help you. Before opening any issue, please read the [Issue Guidelines](https://github.com/necolas/issue-guidelines), written by [Nicolas Gallagher](https://github.com/necolas/). Include operating system and version, browser and version, version of Ghost, customized or vanilla build, etc. where appropriate. Also include steps to reproduce the bug.
-3. **Include a screencast if relevant** - Is your issue about a design or front end feature or bug? The most helpful thing in the world is if we can *see* what you're talking about. Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your Github issue. Kapow.
+3. **Include a screencast if relevant** - Is your issue about a design or front end feature or bug? The most helpful thing in the world is if we can *see* what you're talking about. Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
 
 ## Working on Ghost Core
