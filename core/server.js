@@ -74,9 +74,10 @@ function redirectToSignup(req, res, next) {
         if (users.length === 0) {
             return res.redirect('/ghost/signup/');
         }
+        next();
+    }).otherwise(function (err) {
+        return next(new Error(err));
     });
-
-    next();
 }
 
 // While we're here, let's clean up on aisle 5
