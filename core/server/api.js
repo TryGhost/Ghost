@@ -15,7 +15,6 @@ var Ghost        = require('../ghost'),
     tags,
     notifications,
     settings,
-    themes,
     requestHandler,
     settingsObject,
     settingsCollection,
@@ -229,6 +228,7 @@ settingsCollection = function (settings) {
     });
 };
 
+// Filters an object based on a given filter object
 settingsFilter = function (settings, filter) {
     return _.object(_.filter(_.pairs(settings), function (setting) {
         if (filter) {
@@ -365,5 +365,4 @@ module.exports.users = users;
 module.exports.tags = tags;
 module.exports.notifications = notifications;
 module.exports.settings = settings;
-module.exports.themes = themes;
 module.exports.requestHandler = requestHandler;
