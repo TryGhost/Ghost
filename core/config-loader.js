@@ -47,7 +47,7 @@ function validateConfigEnvironment() {
         parsedUrl;
 
     try {
-        config = require('../config')[envVal];
+        config = require(config)[envVal];
     } catch (ignore) {
 
     }
