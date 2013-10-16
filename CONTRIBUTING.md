@@ -33,7 +33,8 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 5. Run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-6. run `grunt init` from the root - this installs Bourbon, compiles SASS and compiles Handlebars templates
+6. Run `grunt init` from the root - this installs Bourbon, compiles SASS and compiles Handlebars templates
+7. Run `npm start` from the root to start the server.
 
 Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
 
