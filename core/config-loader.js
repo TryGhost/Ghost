@@ -6,7 +6,7 @@ var fs      = require('fs'),
 
     appRoot = path.resolve(__dirname, '../'),
     configexample = path.join(appRoot, 'config.example.js'),
-    config = path.join(appRoot, 'config.js');
+    config = process.argv[2] || path.join(appRoot, 'config.js');
 
 function writeConfigFile() {
     var written = when.defer();
