@@ -102,7 +102,7 @@ CasperTest.begin('Title Trimming', 2, function suite(test) {
     });
 });
 
-CasperTest.begin('Publish menu - new post', 11, function suite(test) {
+CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", 'Ghost admin has no title');
     });
@@ -127,17 +127,18 @@ CasperTest.begin('Publish menu - new post', 11, function suite(test) {
     });
 
     // ... check status, label, class
-    casper.then(function () {
-        test.assertExists('.js-publish-splitbutton.splitbutton-delete', 'Publish split button should have .splitbutton-delete');
+    casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
         test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
         test.assertSelectorHasText('.js-publish-button', 'Publish Now');
         test.assertEval(function() {
             return (__utils__.findOne('.js-publish-button').getAttribute('data-status') === 'published');
         }, 'Publish button\'s updated status should be "published"');
+    }, function onTimeout() {
+        test.assert(false, 'Publish split button should have .splitbutton-delete');
     });
 });
 
-CasperTest.begin('Publish menu - existing post', 24, function suite(test) {
+CasperTest.begin('Publish menu - existing post', 22, function suite(test) {
     // Create a post, save it and test refreshed editor
     casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", 'Ghost admin has no title');
@@ -179,13 +180,14 @@ CasperTest.begin('Publish menu - existing post', 24, function suite(test) {
     casper.thenClick('.js-publish-splitbutton li[data-set-status="published"]');
 
     // ... check status, label, class
-    casper.then(function () {
-        test.assertExists('.js-publish-splitbutton.splitbutton-delete', 'Publish split button should have .splitbutton-delete');
+    casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
         test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
         test.assertSelectorHasText('.js-publish-button', 'Publish Now');
         test.assertEval(function() {
             return (__utils__.findOne('.js-publish-button').getAttribute('data-status') === 'published');
         }, 'Publish button\'s updated status should be "published"');
+    }, function onTimeout() {
+        test.assert(false, 'Publish split button should have .splitbutton-delete');
     });
 
     // Publish the post
@@ -215,12 +217,13 @@ CasperTest.begin('Publish menu - existing post', 24, function suite(test) {
     casper.thenClick('.js-publish-splitbutton li[data-set-status="draft"]');
 
     // ... check status, label, class
-    casper.then(function () {
-        test.assertExists('.js-publish-splitbutton.splitbutton-delete', 'Publish split button should have .splitbutton-delete');
+    casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
         test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
         test.assertSelectorHasText('.js-publish-button', 'Unpublish');
         test.assertEval(function() {
             return (__utils__.findOne('.js-publish-button').getAttribute('data-status') === 'draft');
         }, 'Publish button\'s updated status should be "draft"');
+    }, function onTimeout() {
+        test.assert(false, 'Publish split button should have .splitbutton-delete');
     });
 });

@@ -18,7 +18,6 @@ describe('Settings Model', function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
         testUtils.initData().then(function () {
             done();
         }, done);

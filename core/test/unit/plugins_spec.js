@@ -22,7 +22,6 @@ describe('Plugins', function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
         sandbox = sinon.sandbox.create();
 
         testUtils.initData().then(function () {
