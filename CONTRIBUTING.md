@@ -26,7 +26,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 ### Installation / Setup Instructions
 
-1. Clone the git repo via SSH, not HTTP - we use SSH submodules
+1. Clone the git repo
 2. cd into the project folder
 3. Run `git submodule update --init`
 4. Run `npm install -g grunt-cli`
@@ -38,7 +38,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
 
-Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically, see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
+Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically, if you run Ghost in **production** mode, you will need to run **grunt prod** - please see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
 
 ### Updating with the latest changes
 
@@ -56,16 +56,10 @@ Pulling down the latest changes from master will often require more than just a 
 - **[releases](https://github.com/TryGhost/Ghost/releases)** are used to contain stable tagged versions of Ghost.
 
 
-### SQLite3 Install Instructions
-
-*Only needed if you experienced errors in Step 5 above - Skip this otherwise*
-
-Ghost depends upon SQLite3, which requires a native binary. These are provided for most major platforms, but if you are using a more obscure *nix flavor you may need to follow the [node-sqlite3 binary instructions](https://github.com/developmentseed/node-sqlite3/wiki/Binaries).
-
-
 ### Compiling CSS & JavaScript
 
 A SASS compiler is required to work with the CSS in this project. You can either do this by running `grunt` from the command line - or by using a 3rd party app. We recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac) & [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
+You will need to have Ruby installed, as well as having run `gem install sass && gem install bourbon`.
 
 
 ## Coding standards
@@ -139,6 +133,15 @@ Sounds like you don't have our default theme - Casper, your content/themes/caspe
 ### I get "Syntax error: File to import not found or unreadable: bourbon/_bourbon."
 
 Sounds like you don't have the Ruby gem "bourbon" installed. Make sure you have Ruby, and then run `gem install bourbon`.
+
+### Ghost doesn't do anything - I get a blank screen
+
+Sounds like you probably didn't run the right grunt command for building assets
+
+### SQLite3 doesn't install properly during npm install
+
+Ghost depends upon SQLite3, which requires a native binary. These are provided for most major platforms, but if you are using a more obscure *nix flavor you may need to follow the [node-sqlite3 binary instructions](https://github.com/developmentseed/node-sqlite3/wiki/Binaries).
+
 
 ## Contributor License Agreement
 
