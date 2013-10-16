@@ -22,6 +22,16 @@
                                '</section>';
                     });
                 }
+            },
+
+            // 4 or more inline underscores e.g. Ghost rocks my _____!
+            {
+                type: 'lang',
+                filter: function (text) {
+                    return text.replace(/([^_\n\r])(_{4,})/g, function (match, prefix, underscores) {
+                        return prefix + underscores.replace(/_/g, '&#95;');
+                    });
+                }
             }
         ];
     };
