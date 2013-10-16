@@ -10,7 +10,7 @@
 
     <header class="user-profile-header">
         <img id="user-cover" class="cover-image" src="{{#if cover}}{{cover}}{{else}}/shared/img/user-cover.png{{/if}}" title="{{name}}'s Cover Image"/>
-        <button class="edit-cover-image js-modal-cover">Change Cover</button>
+        <a class="edit-cover-image js-modal-cover button" href="#">Change Cover</a>
     </header>
 
     <form class="user-profile" novalidate="novalidate">
@@ -18,8 +18,8 @@
         <fieldset class="user-details-top">
 
             <figure class="user-image">
-                <a id="user-image" class="img" {{#if image}}style="background-image: url({{image}});"{{/if}} href="#"><span class="hidden">{{name}}'s Picture</span></a>
-                <button class="edit-user-image js-modal-image">Edit Picture</button>
+                <div id="user-image" class="img" {{#if image}}style="background-image: url({{image}});"{{/if}} href="#"><span class="hidden">{{name}}'s Picture</span></div>
+                <a href="#" class="edit-user-image js-modal-image">Edit Picture</a>
             </figure>
 
             <div class="form-group">
