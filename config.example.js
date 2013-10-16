@@ -81,7 +81,7 @@ config = {
     },
 
     // ### Travis
-    // Automated testing run through Github
+    // Automated testing run through GitHub
     travis: {
         url: 'http://127.0.0.1:2368',
         database: {
