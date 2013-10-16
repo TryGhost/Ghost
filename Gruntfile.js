@@ -143,7 +143,9 @@ var path           = require('path'),
                         // allow unused parameters
                         unparam: true,
                         // don't require use strict pragma
-                        sloppy: true
+                        sloppy: true,
+                        // allow unfiltered for in
+                        forin: true
                     },
                     files: {
                         src: [

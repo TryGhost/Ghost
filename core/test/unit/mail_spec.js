@@ -9,7 +9,7 @@ var testUtils = require('./testUtils'),
 
     // Stuff we are testing
     Ghost = require('../../ghost'),
-    defaultConfig = require('../../../config'),
+    defaultConfig = require('../../config-loader'),
     SMTP,
     SENDMAIL,
     fakeConfig,
