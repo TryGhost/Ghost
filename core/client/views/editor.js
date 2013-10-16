@@ -87,6 +87,8 @@
             'published': 'Your post could not be published.'
         },
 
+        savingPost: false,
+
         initialize: function () {
             var self = this;
             // Toggle publish
@@ -202,6 +204,12 @@
         },
 
         savePost: function (data) {
+            if(this.savingPost) {
+                return;
+            } else {
+              this.savingPost = true;
+            }
+              
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
@@ -215,6 +223,7 @@
             // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
             // ourselves for more consistent promises.
             if (saved) {
+                this.savingPost = false;
                 return saved;
             }
             return $.Deferred().reject();
