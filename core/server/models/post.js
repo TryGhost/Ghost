@@ -8,7 +8,7 @@ var Post,
     github = require('../../shared/vendor/showdown/extensions/github'),
     converter = new Showdown.converter({extensions: [github]}),
     User = require('./user').User,
-    config = require('../../../config'),
+    config = require('../../config-loader'),
     Tag = require('./tag').Tag,
     Tags = require('./tag').Tags,
     GhostBookshelf = require('./base');

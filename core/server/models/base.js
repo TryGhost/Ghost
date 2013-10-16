@@ -4,7 +4,7 @@ var GhostBookshelf,
     moment    = require('moment'),
     _         = require('underscore'),
     uuid      = require('node-uuid'),
-    config    = require('../../../config'),
+    config    = require('../../config-loader'),
     Validator = require('validator').Validator,
     sanitize  = require('validator').sanitize;
 
