@@ -410,7 +410,11 @@
                 tabMode: 'indent',
                 tabindex: "2",
                 lineWrapping: true,
-                dragDrop: false
+                dragDrop: false,
+                extraKeys: {
+                    Home: "goLineLeft",
+                    End: "goLineRight"
+                }
             });
             this.uploadMgr = new UploadManager(this.editor);
 
