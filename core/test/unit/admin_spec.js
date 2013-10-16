@@ -2,17 +2,14 @@
 var fs = require('fs-extra'),
     should = require('should'),
     sinon = require('sinon'),
-    testUtils = require('./testUtils'),
     when = require('when'),
-
-    // Stuff we are testing
+    Ghost = require('../../ghost'),
     admin = require('../../server/controllers/admin');
 
 describe('Admin Controller', function() {
     describe('uploader', function() {
 
-        var req;
-        var res;
+        var req, res, storage;
 
         beforeEach(function() {
             req = {
@@ -27,7 +24,21 @@ describe('Admin Controller', function() {
                 send: function(){}
             };
 
-            // localfilesystem.save = sinon.stub().returns(when('URL'));
+            var config = {
+                    images: {
+                        store: 'STORE',
+                    }
+                };
+
+            storage = sinon.stub();
+            storage.save = sinon.stub().returns(when('URL'));
+            sinon.stub(admin, 'get_storage').returns(storage);
+            sinon.stub(admin, 'get_config').returns(config);
+        });
+
+        afterEach(function () {
+            admin.get_storage.restore();
+            admin.get_config.restore();
         });
 
         describe('can not upload invalid file', function() {
@@ -60,14 +71,11 @@ describe('Admin Controller', function() {
                 req.files.uploadimage.name = 'IMAGE.jpg';
                 req.files.uploadimage.type = 'image/jpeg';
                 sinon.stub(fs, 'unlink').yields();
-                var storage = sinon.stub();
                 storage.save = sinon.stub().returns(when('URL'));
-                sinon.stub(admin, 'get_storage').returns(storage);
             });
 
             afterEach(function() {
                 fs.unlink.restore();
-                admin.get_storage.restore();
             });
 
             it('can upload jpg', function(done) {
@@ -120,6 +128,15 @@ describe('Admin Controller', function() {
 
                 admin.uploader(req, res);
             });
+
+            it('should pass in config to save', function (done) {
+                sinon.stub(res, 'send', function(data) {
+                    storage.save.args[0][2].should.eql({store: 'STORE'});
+                    return done();
+                });
+
+                admin.uploader(req, res);
+            }); 
         });
     });
 });

@@ -38,6 +38,11 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
+        },
+        images: {
+            store: 'localfilesystem', // 'localfilesystem' or 's3'
+            bucket: '', // Used for S3 storage only eg. my-bucket.com
+            region: 'us-east-1' // Used for S3 storage only
         }
     },
 

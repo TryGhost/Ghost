@@ -265,7 +265,7 @@ when(ghost.init()).then(function () {
 
     server.use(express.json());
     server.use(express.urlencoded());
-    server.use('/ghost/upload/', express.multipart());
+    server.use('/ghost/upload/', express.multipart({hash: 'sha1'}));
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
     server.use('/ghost/debug/db/import/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));

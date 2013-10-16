@@ -34,17 +34,12 @@ function getUniqueFileName(dir, name, ext, i, done) {
 
 // ## Module interface  
 localfilesystem = {
-    // TODO use promises!!
-    // QUESTION pass date or month and year? And should the date be ticks or an object? Gone with ticks.
-    // QUESTION feels wrong to pass in the ghostUrl, the local file system needs it but something like S3 won't?
-
     // ### Save
     // Saves the image to storage (the file system)
     // - date is current date in ticks
     // - image is the express image object
-    // - ghosturl is thr base url for the site
     // - returns a promise which ultimately returns the full url to the uploaded image
-    'save': function (date, image, ghostUrl) {
+    'save': function (date, image) {
 
         // QUESTION is it okay for this module to know about content/images?
         var saved = when.defer(),
@@ -62,7 +57,9 @@ localfilesystem = {
                 return nodefn.call(fs.copy, image.path, target_path);
             }).then(function () {
                 // The src for the image must be in URI format, not a file system path, which in Windows uses \
-                var fullUrl = path.join(ghostUrl, filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                // For local file system storage can use relative path so add a slash
+                var fullUrl = ('/' + filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+
                 return saved.resolve(fullUrl);
             }).otherwise(function (e) {
                 errors.logError(e);
