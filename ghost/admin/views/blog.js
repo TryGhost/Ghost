@@ -35,7 +35,7 @@
 
         showNext: function () {
             if (this.isLoading) { return; }
-            var id = this.collection.at(0).id;
+            var id = this.collection.at(0) ? this.collection.at(0).id : false;
             if (id) {
                 Backbone.trigger('blog:activeItem', id);
             }
@@ -77,6 +77,8 @@
             this.isLoading = true;
 
             this.collection.fetch({
+                update: true,
+                remove: false,
                 data: {
                     status: 'all',
                     page: (self.collection.currentPage + 1),
