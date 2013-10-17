@@ -11,6 +11,7 @@
             'blur  .post-setting-slug' : 'editSlug',
             'click .post-setting-slug' : 'selectSlug',
             'blur  .post-setting-date' : 'editDate',
+            'click .post-setting-static-page' : 'toggleStaticPage',
             'click .delete' : 'deletePost'
         },
 
@@ -19,6 +20,7 @@
                 this.listenTo(this.model, 'change:id', this.render);
                 this.listenTo(this.model, 'change:status', this.render);
                 this.listenTo(this.model, 'change:published_at', this.render);
+                this.listenTo(this.model, 'change:page', this.render);
             }
         },
 
@@ -29,12 +31,18 @@
 
             $('.post-setting-slug').val(slug);
 
+            // Update page status test if already a page.
+            if (this.model && this.model.get('page')) {
+                $('.post-setting-static-page').prop('checked', this.model.get('page'));
+            }
+
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
                 pubDate = moment(pubDate).format('DD MMM YY');
             }
 
             if (this.model && this.model.get('id')) {
+                this.$('.post-setting-page').removeClass('hidden');
                 this.$('.delete').removeClass('hidden');
             }
 
@@ -139,6 +147,32 @@
                 }
             });
 
+        },
+
+        toggleStaticPage: function (e) {
+            e.preventDefault();
+            var pageEl = $(e.currentTarget),
+                page = this.model ? !this.model.get('page') : false;
+
+            this.model.save({
+                page: page
+            }, {
+                success : function (model, response, options) {
+                    pageEl.prop('checked', page);
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Successfully converted " + (page ? "to static page" : "to post") + '.',
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
         },
 
         deletePost: function (e) {

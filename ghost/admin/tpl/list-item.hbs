@@ -1,4 +1,4 @@
-<a class="permalink{{#if featured}} featured{{/if}}" href="#" title="Edit this post">
+<a class="permalink{{#if featured}} featured{{/if}}{{#if page}} page{{/if}}" href="#" title="Edit this post">
     <h3 class="entry-title">{{{title}}}</h3>
     <section class="entry-meta">
         <time datetime="2013-01-04" class="date">
@@ -8,6 +8,9 @@
                 <span class="status-draft">Draft</span>
             {{/if}}
         </time>
+        {{#if page}}
+        | <span class="page">Static Page</span>
+        {{/if}}
         {{!<span class="views">1,934</span>}}
     </section>
 </a>
