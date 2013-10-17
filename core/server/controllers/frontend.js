@@ -66,7 +66,7 @@ frontendControllers = {
     'single': function (req, res, next) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
-                ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
+                ghost.doFilter('prePostsRender', post, function (post) {
                     res.render('post', {post: post});
                 });
             } else {

@@ -49,10 +49,16 @@ posts = {
         // **returns:** a promise for a single post in a json object
 
         return dataProvider.Post.findOne(args).then(function (result) {
-            var omitted = result.toJSON();
-            omitted.author = _.omit(omitted.author, filteredUserAttributes);
-            omitted.user = _.omit(omitted.user, filteredUserAttributes);
-            return omitted;
+            var omitted;
+
+            if (result) {
+                omitted = result.toJSON();
+                omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                omitted.user = _.omit(omitted.user, filteredUserAttributes);
+                return omitted;
+            }
+
+            return null;
         });
     },
 
@@ -101,8 +107,8 @@ posts = {
             return when(posts.read({id : args.id})).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = {};
-                    deletedObj.id = result.attributes.id;
-                    deletedObj.slug = result.attributes.slug;
+                    deletedObj.id = result.id;
+                    deletedObj.slug = result.slug;
                     return deletedObj;
                 });
             });
@@ -122,11 +128,16 @@ users = {
 
         return dataProvider.User.browse(options).then(function (result) {
             var i = 0,
+                omitted = {};
+
+            if (result) {
                 omitted = result.toJSON();
+            }
 
             for (i = 0; i < omitted.length; i = i + 1) {
                 omitted[i] = _.omit(omitted[i], filteredUserAttributes);
             }
+
             return omitted;
         });
     },
@@ -141,8 +152,12 @@ users = {
         }
 
         return dataProvider.User.read(args).then(function (result) {
-            var omitted = _.omit(result.toJSON(), filteredUserAttributes);
-            return omitted;
+            if (result) {
+                var omitted = _.omit(result.toJSON(), filteredUserAttributes);
+                return omitted;
+            }
+
+            return null;
         });
     },
 
