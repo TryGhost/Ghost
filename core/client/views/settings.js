@@ -351,6 +351,9 @@
                 $.ajax({
                     url: '/ghost/changepw/',
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     data: {
                         password: oldPassword,
                         newpassword: newPassword,
