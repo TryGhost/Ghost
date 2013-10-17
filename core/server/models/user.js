@@ -38,6 +38,7 @@ User = GhostBookshelf.Model.extend({
         if (this.get('website') && this.get('website').length > 0) {
             GhostBookshelf.validator.check(this.get('website'), "Looks like your website is not actually a website. Try again?").isUrl();
         }
+        GhostBookshelf.validator.check(this.get('location'), 'This seems a little too long! Please try and keep your location under 150 characters.').len(0, 150);
         return true;
     },
 
