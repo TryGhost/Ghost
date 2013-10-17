@@ -302,10 +302,10 @@ when(ghost.init()).then(function () {
 
     // ### Error handling
     // 404 Handler
-    server.use(errors.render404Page);
+    server.use(errors.error404);
 
     // 500 Handler
-    server.use(errors.render500Page);
+    server.use(errors.error500);
 
     // ## Routing
 
