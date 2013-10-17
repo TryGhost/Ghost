@@ -114,6 +114,23 @@
                 border-bottom: $lightbrown 1px solid;
                 position:relative;
 
+                .entry-meta {
+                    .post-type {
+                        background-color: #5ba4e5;
+                        border-radius: 2px;
+                        font-size: 10px;
+                        padding: 1px 3px;
+                        margin: 0 5px 0 0;
+                        color: #fff;
+
+                        &.post-type-page {
+                            background-color: #E55B5B;
+                        }
+                    }
+
+
+                }
+
                 a {
 
                     display:block;
@@ -153,7 +170,8 @@
                     }
 
                     .entry-title { font-weight: bold; }
-                    .entry-meta { color: $darkgrey; }
+                    .entry-meta { color: $darkgrey; 
+                    }
 
                     .views {
                         @include icon($i-stats, 10px, $darkgrey);

@@ -11,6 +11,8 @@
             'blur  .post-setting-slug' : 'editSlug',
             'click .post-setting-slug' : 'selectSlug',
             'blur  .post-setting-date' : 'editDate',
+            'change  .post-setting-page' : 'editType',
+            'click .post-setting-page' : 'selectType',
             'click .delete' : 'deletePost'
         },
 
@@ -24,10 +26,12 @@
 
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
+                is_page = this.model ? this.model.get('page') : 0,
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
                 $pubDateEl = this.$('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
+            $('.post-setting-page').val(is_page);
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
@@ -67,6 +71,47 @@
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: "Permalink successfully changed to <strong>" + model.get('slug') + '</strong>.',
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+        },
+
+        selectType: function (e) {
+            e.currentTarget.select();
+        },
+
+        editType: function (e) {
+            e.preventDefault();
+            var self = this,
+                isPage = self.model.get('page'),
+                typeEl = e.currentTarget,
+                newIsPage = typeEl.value;
+
+            // Ignore empty or unchanged is_page
+            if (newIsPage.length === 0 || isPage === newIsPage) {
+                typeEl.value = isPage === undefined ? '' : isPage;
+                return;
+            }
+
+            this.model.save({
+                page: newIsPage
+            }, {
+                success : function (model, response, options) {
+                    // Repopulate type in case it changed on the server
+                    typeEl.value = model.get('page');
+                    var typeMap = ['Post', 'Page'];
+
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Post type successfully changed to <strong>" + typeMap[model.get('page')] + '</strong>.',
                         status: 'passive'
                     });
                 },

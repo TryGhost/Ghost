@@ -20,13 +20,14 @@ Post = GhostBookshelf.Model.extend({
     permittedAttributes: [
         'id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
         'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
-        'published_at', 'published_by'
+        'published_at', 'published_by', 'page'
     ],
 
     defaults: function () {
         return {
             uuid: uuid.v4(),
-            status: 'draft'
+            status: 'draft',
+            page: false
         };
     },
 
@@ -88,6 +89,10 @@ Post = GhostBookshelf.Model.extend({
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
+        }
+
+        if (!this.get('type')) {
+            return 'post';
         }
     },
 
