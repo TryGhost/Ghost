@@ -114,9 +114,9 @@ function ghostLocals(req, res, next) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 currentUser: {
-                    name: currentUser.attributes.name,
-                    email: currentUser.attributes.email,
-                    image: currentUser.attributes.image
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    image: currentUser.image
                 }
             });
             next();
@@ -272,7 +272,7 @@ when(ghost.init()).then(function () {
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
     server.use('/ghost/debug/db/import/', express.multipart());
 
-    // Session handling 
+    // Session handling
     // Pro tip: while in development mode cookieSession can be used
     // to keep you logged in while restarting the server
     server.use(express.cookieParser());
