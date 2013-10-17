@@ -1,10 +1,10 @@
-var GhostBookshelf = require('./base'),
+var ghostBookshelf = require('./base'),
     User           = require('./user').User,
     Role           = require('./role').Role,
     Permission,
     Permissions;
 
-Permission = GhostBookshelf.Model.extend({
+Permission = ghostBookshelf.Model.extend({
 
     tableName: 'permissions',
 
@@ -14,7 +14,7 @@ Permission = GhostBookshelf.Model.extend({
 
     validate: function () {
         // TODO: validate object_type, action_type and object_id
-        GhostBookshelf.validator.check(this.get('name'), "Permission name cannot be blank").notEmpty();
+        ghostBookshelf.validator.check(this.get('name'), "Permission name cannot be blank").notEmpty();
     },
 
     roles: function () {
@@ -26,7 +26,7 @@ Permission = GhostBookshelf.Model.extend({
     }
 });
 
-Permissions = GhostBookshelf.Collection.extend({
+Permissions = ghostBookshelf.Collection.extend({
     model: Permission
 });
 

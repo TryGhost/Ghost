@@ -3,7 +3,7 @@ var _               = require('underscore'),
     when            = require('when'),
     series          = require('when/sequence'),
     errors          = require('../../errorHandling'),
-    knex            = require('../../models/base').Knex,
+    knex            = require('../../models/base').knex,
 
     defaultSettings = require('../default-settings'),
     Settings        = require('../../models/settings').Settings,
@@ -30,7 +30,7 @@ function getDefaultDatabaseVersion() {
 // The migration version number according to the database
 // This is what the database is currently at and may need to be updated
 function getDatabaseVersion() {
-    return knex.Schema.hasTable('settings').then(function (exists) {
+    return knex.schema.hasTable('settings').then(function (exists) {
         // Check for the current version from the settings table
         if (exists) {
             // Temporary code to deal with old databases with currentVersion settings
