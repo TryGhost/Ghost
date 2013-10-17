@@ -88,7 +88,7 @@ frontendControllers = {
                 title: ghost.settings('title'),
                 description: ghost.settings('description'),
                 generator: 'Ghost v' + res.locals.version,
-                author: user ? user.attributes.name : null,
+                author: user ? user.name : null,
                 feed_url: url.resolve(siteUrl, '/rss/'),
                 site_url: siteUrl,
                 ttl: '60'
