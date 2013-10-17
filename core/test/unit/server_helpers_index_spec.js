@@ -383,4 +383,81 @@ describe('Core Helpers', function () {
             }).then(null, done);
         });
     });
+
+    describe("tags helper", function () {
+
+        it('has loaded tags helper', function () {
+            should.exist(handlebars.helpers.tags);
+        });
+
+        it('can return string with tags', function () {
+            var tags = [{name:'foo'}, {name:'bar'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags}, 
+                    {"hash": {}}
+                );
+            should.exist(rendered);
+
+            String(rendered).should.equal('foo, bar');
+        });
+
+        it('can use a different separator', function () {
+            var tags = [{name:'haunted'},{name:'ghost'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {separator: '|'}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('haunted|ghost');
+        });
+    });
+
+    describe("meta_title helper", function () {
+
+        it('has loaded meta_title helper', function () {
+            should.exist(handlebars.helpers.meta_title);
+        });
+
+        it('can return blog title', function () {
+            var rendered = handlebars.helpers.meta_title.call({path: '/'});
+
+            should.exist(rendered);
+            String(rendered).should.equal('Ghost');
+        });
+
+        it('can return title of a post', function () {
+            var rendered = handlebars.helpers.meta_title.call(
+                {path: '/nice-post', post: {title: 'Post Title'}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('Post Title');
+        });
+    });
+
+    describe("meta_description helper", function () {
+
+        it('has loaded meta_description helper', function () {
+            should.exist(handlebars.helpers.meta_description);
+        });
+
+        it('can return blog description', function () {
+            var rendered = handlebars.helpers.meta_description.call({path: '/'});
+
+            should.exist(rendered);
+            String(rendered).should.equal('Just a blogging platform.');
+        });
+
+        it('can return empty description on post', function () {
+            var rendered = handlebars.helpers.meta_description.call(
+                {path: '/nice-post', post: {title: 'Post Title'}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+    });
 });
