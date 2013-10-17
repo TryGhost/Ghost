@@ -219,7 +219,8 @@ coreHelpers = function (ghost) {
 
     ghost.registerThemeHelper('body_class', function (options) {
         var classes = [],
-            tags = this.post && this.post.tags ? this.post.tags : this.tags || [];
+            tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
+            page = this.post && this.post.page ? this.post.page : this.page || false;
 
         if (_.isString(this.path) && this.path.match(/\/page/)) {
             classes.push('archive-template');
@@ -233,6 +234,10 @@ coreHelpers = function (ghost) {
             classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
         }
 
+        if (page) {
+            classes.push('page');
+        }
+
         return ghost.doFilter('body_class', classes, function (classes) {
             var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
             return new hbs.handlebars.SafeString(classString.trim());
@@ -242,7 +247,8 @@ coreHelpers = function (ghost) {
     ghost.registerThemeHelper('post_class', function (options) {
         var classes = ['post'],
             tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
-            featured = this.post && this.post.featured ? this.post.featured : this.featured || false;
+            featured = this.post && this.post.featured ? this.post.featured : this.featured || false,
+            page = this.post && this.post.page ? this.post.page : this.page || false;
 
         if (tags) {
             classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
@@ -250,6 +256,10 @@ coreHelpers = function (ghost) {
 
         if (featured) {
             classes.push('featured');
+        }
+
+        if (page) {
+            classes.push('page');
         }
 
         return ghost.doFilter('post_class', classes, function (classes) {

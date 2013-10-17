@@ -184,6 +184,16 @@ describe('Core Helpers', function () {
             rendered2.string.should.equal('post-template');
             rendered3.string.should.equal('archive-template');
         });
+
+        it('can render class for static page', function () {
+            var rendered = handlebars.helpers.body_class.call(
+                    {post: {page: true}},
+                    {path: '/'}
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal('home-template page');
+        });
     });
 
     describe('post_class Helper', function () {
