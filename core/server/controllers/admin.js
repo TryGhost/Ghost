@@ -136,6 +136,7 @@ adminControllers = {
             loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
                 req.session.user = user.id;
+                req.session.time = Date.now();
                 res.json(200, {redirect: req.body.redirect ? '/ghost/'
                     + decodeURIComponent(req.body.redirect) : '/ghost/'});
             }, function (error) {
