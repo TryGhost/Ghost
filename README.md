@@ -7,10 +7,11 @@ Visit the project's website at [http://ghost.org](http://ghost.org)!
 
 ## Getting Started
 
-There are two main ways to get started with Ghost:
+There are **two** ways to get started with Ghost:
 
-1. Working from a Release - these are pre-built zip packages found on ghost.org. Installation instructions are below.
-2. Working from the GitHub repo - instructions can be found in [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
+1. **Install from a Release** - these are pre-built zip packages found on [Ghost.org](http://ghost.org/download) which have no dependencies other than node & npm. Installation instructions are below.
+2. **Cloning from the GitHub repo** - requires you to build assets yourself. Instructions can be found in [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
+
 
 ### Installing from a Release
 
@@ -20,20 +21,13 @@ There are two main ways to get started with Ghost:
 2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
 4.  run `npm install --production` to install the node dependencies
 4.  To start ghost, run `npm start`
-5.  Visit `http://localhost:2368/` in your web browser
+5.  Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
 
+Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
 ### Updating with the latest changes
 
-**Warning:** The Ghost file system contains your database and config. Be sure to back these up first.
-
-1. Make a backup of your data!
-2. Update the files by pasting new files over the top of old ones. If prompted by your OS or FTP client to 'merge' or 'replace' always choose 'merge'.
-3. Run npm install
-4. Run npm update
-5. Restart the application
-6. Log out and log back in again.
-
+Documentation on updating can be found in the [Ghost Guide](http://docs.ghost.org/installation/upgrading/)
 
 ### Logging in For The First Time
 

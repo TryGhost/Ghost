@@ -2,11 +2,16 @@
     <h3 class="entry-title">{{{title}}}</h3>
     <section class="entry-meta">
         <time datetime="2013-01-04" class="date">
-            {{#if published}}
-                Published {{date published_at timeago="True"}}
+            {{#if page}}
+                Static Page
             {{else}}
-                <span class="status-draft">Draft</span>
+                {{#if published}}
+                    Published {{date published_at timeago="True"}}
+                {{else}}
+                    <span class="status-draft">Draft</span>
+                {{/if}}
             {{/if}}
+
         </time>
         {{!<span class="views">1,934</span>}}
     </section>

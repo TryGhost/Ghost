@@ -47,6 +47,19 @@ coreHelpers = function (ghost) {
         return date;
     });
 
+    //
+    // ### URI Encoding helper
+    // 
+    // *Usage example:*
+    // `{{encode uri}}`
+    //
+    // Returns URI encoded string
+    //
+    ghost.registerThemeHelper('encode', function (context, str) {
+        var uri = context || str;
+        return new hbs.handlebars.SafeString(encodeURIComponent(uri));
+    });
+
     // ### Page URL Helper
     //
     // *Usage example:*
@@ -199,7 +212,11 @@ coreHelpers = function (ghost) {
         } else if (!this.path || this.path === '/' || this.path === '') {
             classes.push('home-template');
         } else {
-            classes.push('post-template');
+            if (this.post.page) {
+                classes.push('page-template');
+            } else {
+                classes.push('post-template');
+            }
         }
 
         if (tags) {

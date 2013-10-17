@@ -1,7 +1,18 @@
 {
-    "name": "ghost",
-    "version": "0.3.2",
-    "private": true,
+    "name"        : "ghost",
+    "version"     : "0.3.2",
+    "description" : "Just a blogging platform.",
+    "author"      : "Ghost Foundation",
+    "homepage"    : "http://ghost.org",
+    "keywords"    : ["ghost", "blog", "cms"],
+    "repository"  : {"type": "git", "url": "git://github.com/TryGhost/Ghost.git"},
+    "private"     : true,
+    "licenses"    : [
+        {
+            "type": "MIT",
+            "url": "https://raw.github.com/TryGhost/Ghost/master/LICENSE.txt"
+        }
+    ],
     "scripts": {
         "start": "node index",
         "test": "grunt validate --verbose"

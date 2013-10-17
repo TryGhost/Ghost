@@ -40,6 +40,9 @@ frontendControllers = {
             options.limit = postsPerPage;
         }
 
+        //exclude pages from home page
+        options.where = {'page': false};
+
         api.posts.browse(options).then(function (page) {
 
             var maxPage = page.pages;
@@ -66,9 +69,17 @@ frontendControllers = {
     'single': function (req, res, next) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
-                ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
-                    res.render('post', {post: post});
-                });
+                if (post.get('page')) {
+                    ghost.doFilter('prePageRender', post.toJSON(), function (post) {
+                        res.render('page', {post: post});
+                    });
+
+                } else {
+                    ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
+                        res.render('post', {post: post});
+                    });
+                }
+
             } else {
                 next();
             }

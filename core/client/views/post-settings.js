@@ -11,6 +11,7 @@
             'blur  .post-setting-slug' : 'editSlug',
             'click .post-setting-slug' : 'selectSlug',
             'blur  .post-setting-date' : 'editDate',
+            'click .post-setting-static' : 'editStatic',
             'click .delete' : 'deletePost'
         },
 
@@ -24,10 +25,12 @@
 
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
+                isStatic = this.model ? this.model.get('page') : 0,
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
                 $pubDateEl = this.$('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
+            $('.post-setting-static').prop('checked', (isStatic === 1) ? true : false);
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
@@ -80,6 +83,43 @@
             });
         },
 
+
+        editStatic: function (e) {
+            e.preventDefault();
+            var self = this,
+                isStatic = self.model.get('page'),
+                staticEl = e.currentTarget,
+                newIsStatic = staticEl.checked;
+
+            // Ignore empty or unchanged isStatic
+            if (isStatic === newIsStatic) {
+                staticEl.checked = isStatic === undefined ? '' : isStatic;
+                return;
+            }
+
+            this.model.save({
+                page: newIsStatic
+            }, {
+                success : function (model, response, options) {
+                    // Repopulate type in case it changed on the server
+                    staticEl.checked = model.get('page');
+
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Static successfully changed to <strong>" + model.get('page') + '</strong>.',
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+        },
+
         editDate: function (e) {
             e.preventDefault();
             var self = this,
@@ -90,7 +130,7 @@
                 newPubDate = pubDateEl.value;
 
             // Ensure the published date has changed
-            if (newPubDate.length === 0 || pubDate === newPubDate) {
+            if (newPubDate.length === 0 || moment(pubDate).format("DD MMM YY") === newPubDate) {
                 pubDateEl.value = pubDate === undefined ? 'Not Published' : moment(pubDate).format("DD MMM YY");
                 return;
             }
