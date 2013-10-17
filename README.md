@@ -19,7 +19,7 @@ There are **two** ways to get started with Ghost:
 
 1.  Once you've downloaded one of the releases, unzip it, and place the directory wherever you would like to run the code
 2.  Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
-4.  run `npm install --production` to install the node dependencies
+4.  run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
 4.  To start ghost, run `npm start`
 5.  Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
 
