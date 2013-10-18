@@ -58,7 +58,7 @@
             post.urlRoot = Ghost.settings.apiRoot + '/posts';
             if (id) {
                 post.id = id;
-                post.fetch().then(function () {
+                post.fetch({ data: {status: 'all'}}).then(function () {
                     Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
                 });
             } else {

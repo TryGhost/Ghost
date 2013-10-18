@@ -85,12 +85,13 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
     // #### generateSlug
     // Create a string act as the permalink for an object.
-    generateSlug: function (Model, base) {
+    generateSlug: function (Model, base, readOptions) {
         var slug,
             slugTryCount = 1,
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
-                return Model.read({slug: slugToFind}).then(function (found) {
+                readOptions = _.extend(readOptions || {}, { slug: slugToFind });
+                return Model.read(readOptions).then(function (found) {
                     var trimSpace;
 
                     if (!found) {

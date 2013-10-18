@@ -50,7 +50,7 @@ describe('Tag Model', function () {
                 createdPostID = createdPost.id;
                 return createdPost.tags().attach(createdTag);
             }).then(function () {
-                return PostModel.read({id: createdPostID}, { withRelated: ['tags']});
+                return PostModel.read({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
             }).then(function (postWithTag) {
                 postWithTag.related('tags').length.should.equal(1);
                 done();
@@ -78,11 +78,11 @@ describe('Tag Model', function () {
                 createdTagID = createdTag.id;
                 return createdPost.tags().attach(createdTag);
             }).then(function () {
-                return PostModel.read({id: createdPostID}, { withRelated: ['tags']});
+                return PostModel.read({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
             }).then(function (postWithTag) {
                 return postWithTag.tags().detach(createdTagID);
             }).then(function () {
-                return PostModel.read({id: createdPostID}, { withRelated: ['tags']});
+                return PostModel.read({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
             }).then(function (postWithoutTag) {
                 postWithoutTag.related('tags').should.be.empty;
                 done();
@@ -115,7 +115,7 @@ describe('Tag Model', function () {
                         return postModel;
                     });
                 }).then(function (postModel) {
-                    return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 });
             }
 
@@ -151,7 +151,7 @@ describe('Tag Model', function () {
                     tagData.splice(1, 1);
                     return postModel.set('tags', tagData).save();
                 }).then(function (postModel) {
-                    return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.sort().should.eql(['tag1', 'tag3']);
@@ -175,7 +175,7 @@ describe('Tag Model', function () {
                     tagData.push({id: 3, name: 'tag3'});
                     return postModel.set('tags', tagData).save();
                 }).then(function () {
-                    return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
                         tagNames = tagModels.map(function (t) { return t.attributes.name; });
@@ -197,7 +197,7 @@ describe('Tag Model', function () {
                     tagData.push({id: null, name: 'tag3'});
                     return postModel.set('tags', tagData).save();
                 }).then(function (postModel) {
-                    return PostModel.read({id: postModel.id}, { withRelated: ['tags']});
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
@@ -211,7 +211,7 @@ describe('Tag Model', function () {
                 var newPost = _.extend(testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]})
 
                 PostModel.add(newPost).then(function (createdPost) {
-                    return PostModel.read({id: createdPost.id}, { withRelated: ['tags']});
+                    return PostModel.read({id: createdPost.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (postWithTag) {
                     postWithTag.related('tags').length.should.equal(1);
                     done();
