@@ -16,15 +16,45 @@ next_section: troubleshooting
 
         <section id="content" class="col-lg-9">
 
-            <h1 id="upgrade">Upgrading</h1>
+            <h1 id="upgrade">Upgrading Ghost</h1>
 
-            <p>Upgrading Ghost involves replacing old files with the new files, and restarting the server. However, as the database, image uploads and custom themes are stored alongside Ghost in the <code class="path">content</code> directory, care should be taken to only replace the necessary files as explained below.</p>
+            <p>Upgrading Ghost is super straightforward.</p>
+            <p>There is a couple of different ways you might want to go about it. The following describes what needs to happen, and then covers the process step-by-step for both doing it <a href="#how-to">point-and-click style</a> and via a <a href="#cli">command line</a>, so that you are free to choose the method you are most comfortable with.</p>
 
-            <p>It is highly recommended that you make a backup of your data before upgrading. This can be done by logging into your Ghost install and going to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data.</p>
+            <p class="note"><strong>Warning:</strong> You should always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> before doing anything else!</p>
 
-            <h3>Upgrade process:</h3>
+            <h2>Overview</h2>
+
+            <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/folder-structure.png" style="float:left" />
+
+            <p>Ghost, once installed, has a folder structure similar to that shown on the left. There are two main directories <code class="path">content</code> and <code class="path">core</code>, plus some files in the root.</p>
+
+            <p>Upgrading Ghost is matter of replacing the old files with the new files, re-running <code>npm install</code> to update the <code class="path">node_modules</code> folder and then restarting Ghost to make it all take affect.</p>
+
+            <p>Remember, by default Ghost stores all your custom data, themes, images, etc in the <code class="path">content</code> directory, so take care to keep this safe! Replace only the files in <code class="path">core</code> and the root, and all will be fine.</p>
+
+            <br />
+            <h2 id="backing-up">Backing Up</h2>
+
+            <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
+
             <ul>
-                <li>Download the latest version of Ghost from <a href="http://ghost.org/download/">ghost.org</a></li>
+                <li>To backup all the data from your database, log into your Ghost install and go to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data. Job done</li>
+                <li>To back up your custom themes and images, you need to take a copy of the files inside of <code class="path">content/themes</code> and <code class="path">content/images</code></li>
+            </ul>
+            <p class="note"><strong>Note:</strong> You *can* take a copy of your database from <code class="path">content/data</code> but **be warned** you should not do this whilst Ghost is running. Please stop it first.</p>
+
+            <h2 id="how-to">How to Upgrade</h2>
+
+            <!--<ul>-->
+                <!--<li>Download the latest version of Ghost from <a href="http://ghost.org/download/">Ghost.org</a></li>-->
+                <!--<li>Extract the .zip file</li>-->
+                <!--<li>If you are on Windows, you are safe to copy and paste all new files over the top of the old files. Windows will merge them for you.</li>-->
+                <!--<li>If you'd rather be safe than sorry</li>-->
+            <!--</ul>-->
+
+            <ul>
+                <li>Download the latest version of Ghost from <a href="http://ghost.org/download/">Ghost.org</a></li>
                 <li>Either extract the zip file locally, or into a temporary directory on your server</li>
                 <li>Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.</li>
                 <li>Next replace the old <code class="path">core</code> directory with the new <code class="path">core</code> directory</li>
@@ -33,7 +63,9 @@ next_section: troubleshooting
                 <li>Finally, Restart Ghost so that the changes take effect</li>
             </ul>
 
-            <h3>Command line only</h3>
+
+
+            <h2 id="cli">Upgrade with Command line only on mac</h2>
 
             <p>The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note"><strong>Note:</strong> <code>~</code> means the user's home directory on mac and linux</span></p>
 
@@ -42,8 +74,8 @@ next_section: troubleshooting
             <p>The steps in the screencast are:
             <ul>
                 <li><code class="path">cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved</li>
-                <li><code>unzip ghost-0.3.1.zip -d ghost-0.3.1</code> - unzip ghost into the folder <code class="path">ghost-0.3.1</code></li>
-                <li><code class="path">cd ghost-0.3.1</code> - change directory into the <code class="path">ghost-0.3.1</code> directory</li>
+                <li><code>unzip ghost-0.3.1.zip -d ghost-0.3.3</code> - unzip ghost into the folder <code class="path">ghost-0.3.3</code></li>
+                <li><code class="path">cd ghost-0.3.3</code> - change directory into the <code class="path">ghost-0.3.3</code> directory</li>
                 <li><code>ls</code> - show all the files and folders inside this directory</li>
                 <li><code>cp *.md *.js *.txt *.json ~/ghost</code> - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code></li>
                 <li><code>cp -R core ~/ghost</code> - copy the <code>core</code> directory and all of its contents to the <code class="path">~/ghost</code></li>
