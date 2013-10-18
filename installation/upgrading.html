@@ -42,9 +42,11 @@ next_section: troubleshooting
                 <li>To backup all the data from your database, log into your Ghost install and go to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data. Job done</li>
                 <li>To back up your custom themes and images, you need to take a copy of the files inside of <code class="path">content/themes</code> and <code class="path">content/images</code></li>
             </ul>
-            <p class="note"><strong>Note:</strong> You *can* take a copy of your database from <code class="path">content/data</code> but **be warned** you should not do this whilst Ghost is running. Please stop it first.</p>
+            <p class="note"><strong>Note:</strong> You can, if you like, take a copy of your database from <code class="path">content/data</code> but <strong>be warned</strong> you should not do this whilst Ghost is running. Please stop it first.</p>
 
             <h2 id="how-to">How to Upgrade</h2>
+
+            <p class="warn"><strong>WARNING:</strong> Do <strong>NOT</strong> copy and paste the entire Ghost folder over the top of an existing installation on mac. Do <strong>NOT</strong> choose <kbd>REPLACE</kbd> if uploading with Transmit or other FTP software, choose <strong>MERGE</strong>.</p>
 
             <!--<ul>-->
                 <!--<li>Download the latest version of Ghost from <a href="http://ghost.org/download/">Ghost.org</a></li>-->
@@ -89,6 +91,8 @@ next_section: troubleshooting
             <p><strong>Additionally</strong>, <a href="http://www.howtoinstallghost.com/how-to-update-ghost/">howtoinstallghost.com</a> also has instructions for upgrading Ghost on linux servers.</p>
 
             <h2 id="digitalocean">How to update a DigitalOcean Droplet</h2>
+
+            <p class="note"><strong>Warning:</strong> You should always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> before doing anything else!</p>
 
             <ul>
             <li>First you'll need to find out the URL of the latest Ghost version. It should be something like <code>http://ghost.org/zip/ghost-latest.zip</code>.</li>

@@ -164,6 +164,19 @@ span.note {
     padding: 2px;
 }
 
+.warn {
+    background: #edd4d3;
+    border-radius: 3px;
+}
+
+p.warn, div.warn {
+    padding: 10px;
+}
+
+span.warn {
+    padding: 2px;
+}
+
 #sidebar {
     float: right;
     padding: 30px 0;
