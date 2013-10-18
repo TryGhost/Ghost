@@ -88,6 +88,19 @@ next_section: troubleshooting
 
             <p><strong>Additionally</strong>, <a href="http://www.howtoinstallghost.com/how-to-update-ghost/">howtoinstallghost.com</a> also has instructions for upgrading Ghost on linux servers.</p>
 
+            <h2 id="digitalocean">How to update a DigitalOcean Droplet</h2>
+
+            <ul>
+            <li>First you'll need to find out the URL of the latest Ghost version. It should be something like <code>http://ghost.org/zip/ghost-latest.zip</code>.</li>
+            <li>Once you've got the URL for the latest version, in your Droplet console type <code>cd /var/www/</code> to change directory to where the Ghost codebase lives.</li>
+            <li>Next, type <code>wget hhttp://ghost.org/zip/ghost-latest.zip</code> (or whatever the URL for the latest Ghost version is).</li>
+            <li>Unzip the archive with <code>unzip -uo ghost-0.3.*.zip -d ghost</code></li>
+            <li>Make sure all of the files have the right permissions with <code>chown -R ghost:ghost ghost/*</code></li>
+            <li>Run <code>npm install</code> to get any new dependencies</li>
+            <li>Finally, restart Ghost so that the changes take effect using <code>service ghost restart</code></li>
+            </ul>
+
+
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
