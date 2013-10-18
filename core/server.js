@@ -275,14 +275,9 @@ when(ghost.init()).then(function () {
     // Session handling
     // Pro tip: while in development mode cookieSession can be used
     // to keep you logged in while restarting the server
-    server.use(express.cookieParser());
-    if (process.env.NODE_ENV === 'development'
-            && ghost.config().hasOwnProperty('useCookieSession')
-            && ghost.config().useCookieSession) {
-        server.use(express.cookieSession({ secret: ghost.dbHash, cookie: { maxAge: 60000000 }}));
-    } else {
-        server.use(express.session({ secret: ghost.dbHash, cookie: { maxAge: 60000000 }}));
-    }
+    server.use(express.cookieParser(ghost.dbHash));
+    server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
+
 
     //enable express csrf protection
     server.use(express.csrf());

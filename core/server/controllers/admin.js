@@ -136,21 +136,9 @@ adminControllers = {
         if (!denied) {
             loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-                if (process.env.NODE_ENV === 'development'
-                        && ghost.config().hasOwnProperty('useCookieSession')
-                        && ghost.config().useCookieSession) {
-                    req.session.user = user.id;
-                    res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                        + decodeURIComponent(req.body.redirect) : '/ghost/'});
-                } else {
-                    req.session.regenerate(function (err) {
-                        if (!err) {
-                            req.session.user = user.id;
-                            res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                                + decodeURIComponent(req.body.redirect) : '/ghost/'});
-                        }
-                    });
-                }
+                req.session.user = user.id;
+                res.json(200, {redirect: req.body.redirect ? '/ghost/'
+                    + decodeURIComponent(req.body.redirect) : '/ghost/'});
             }, function (error) {
                 res.json(401, {error: error.message});
             });
@@ -190,23 +178,10 @@ adminControllers = {
             password: password
         }).then(function (user) {
             api.settings.edit('email', email).then(function () {
-                if (process.env.NODE_ENV === 'development'
-                        && ghost.config().hasOwnProperty('useCookieSession')
-                        && ghost.config().useCookieSession) {
-                    if (req.session.user === undefined) {
-                        req.session.user = user.id;
-                    }
-                    res.json(200, {redirect: '/ghost/'});
-                } else {
-                    req.session.regenerate(function (err) {
-                        if (!err) {
-                            if (req.session.user === undefined) {
-                                req.session.user = user.id;
-                            }
-                            res.json(200, {redirect: '/ghost/'});
-                        }
-                    });
+                if (req.session.user === undefined) {
+                    req.session.user = user.id;
                 }
+                res.json(200, {redirect: '/ghost/'});
             });
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
@@ -254,13 +229,7 @@ adminControllers = {
         }).otherwise(errors.logAndThrowError);
     },
     'logout': function (req, res) {
-        if (process.env.NODE_ENV === 'development'
-                && ghost.config().hasOwnProperty('useCookieSession')
-                && ghost.config().useCookieSession) {
-            delete req.session.user;
-        } else {
-            req.session.destroy();
-        }
+        req.session = null;
         var notification = {
             type: 'success',
             message: 'You were successfully signed out',
@@ -400,13 +369,7 @@ adminControllers = {
                     };
 
                     return api.notifications.add(notification).then(function () {
-                        if (process.env.NODE_ENV === 'development'
-                                && ghost.config().hasOwnProperty('useCookieSession')
-                                && ghost.config().useCookieSession) {
-                            delete req.session.user;
-                        } else {
-                            req.session.destroy();
-                        }
+                        req.session = null;
                         res.set({
                             "X-Cache-Invalidate": "/*"
                         });
