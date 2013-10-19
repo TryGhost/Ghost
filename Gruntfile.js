@@ -519,7 +519,9 @@ var path           = require('path'),
         grunt.registerTask('spawn-casperjs', function () {
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
-                args = ['test', 'admin/', 'frontend/', '--includes=base.js', '--verbose', '--log-level=debug', '--port=2369'];
+                args = ['test']
+                           .concat(grunt.option('target') || ['admin/', 'frontend/'])
+                           .concat(['--includes=base.js', '--verbose', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs
             _.each(options, function processOption(option) {
