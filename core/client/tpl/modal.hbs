@@ -1,7 +1,7 @@
 <article class="modal{{#if options.type}}-{{options.type}}{{/if}} {{#if options.style}}{{#each options.style}}modal-style-{{this}} {{/each}}{{/if}}{{options.animation}} js-modal">
     <section class="modal-content">
         {{#if content.title}}<header class="modal-header"><h1>{{content.title}}</h1></header>{{/if}}
-        {{#if options.close}}<a class="close" href="#"><span class="hidden">Close</span></a>{{/if}}
+        {{#if options.close}}<a class="close" href="#" title="Close"><span class="hidden">Close</span></a>{{/if}}
         <section class="modal-body">
         </section>
         {{#if options.confirm}}
