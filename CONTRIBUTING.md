@@ -16,13 +16,12 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 **Note:** It is recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for developing Ghost.
 
-**Pre-requisites:**
+### Requirements 
 
-* node > 0.10 and < 0.11.4
-* ruby and the gems 'sass' and 'bourbon'
-* for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
-* for building docs: python and pygments
-
+* [Node.js](http://nodejs.org/) > 0.10 and < 0.11.4
+* Ruby and the Gems [Sass](https://github.com/nex3/sass) and [Bourbon](https://github.com/thoughtbot/bourbon/)
+* [PhantomJS](http://phantomjs.org/) 1.9.* and [CasperJS](http://casperjs.org/) 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running functional tests
+* Python and [Pygments](http://pygments.org/) for building docs
 
 ### Installation / Setup Instructions
 
