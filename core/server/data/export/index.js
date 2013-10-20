@@ -2,21 +2,21 @@ var when      = require('when'),
     _         = require('underscore'),
     migration = require('../migration'),
     client    = require('../../models/base').client,
-    knex      = require('../../models/base').Knex,
+    knex      = require('../../models/base').knex,
 
     exporter;
 
 function getTablesFromSqlite3() {
-    return knex.Raw("select * from sqlite_master where type = 'table'").then(function (response) {
-        return _.reject(_.pluck(response, 'tbl_name'), function (name) {
+    return knex.raw("select * from sqlite_master where type = 'table'").then(function (response) {
+        return _.reject(_.pluck(response[0], 'tbl_name'), function (name) {
             return name === 'sqlite_sequence';
         });
     });
 }
 
 function getTablesFromMySQL() {
-    return knex.Raw('show tables').then(function (response) {
-        return _.flatten(_.map(response, function (entry) {
+    return knex.raw("show tables").then(function (response) {
+        return _.flatten(_.map(response[0], function (entry) {
             return _.values(entry);
         }));
     });

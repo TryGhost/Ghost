@@ -29,6 +29,26 @@ errors = {
         throw err;
     },
 
+    logWarn: function (warn, context, help) {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
+
+            console.log('\nWarning:'.yellow, warn.yellow);
+
+            if (context) {
+                console.log(context.white);
+            }
+
+            if (help) {
+                console.log(help.green);
+            }
+
+            // add a new line
+            console.log('');
+        }
+    },
+
     logError: function (err, context, help) {
         var stack = err ? err.stack : null;
         err = err.message || err || 'Unknown';
@@ -41,7 +61,7 @@ errors = {
             console.error('\nERROR:'.red, err.red);
 
             if (context) {
-                console.error(context);
+                console.error(context.white);
             }
 
             if (help) {
@@ -133,7 +153,7 @@ errors = {
         }
 
         // Are we admin? If so, don't worry about the user template
-        if (res.isAdmin || userErrorTemplateExists === true) {
+        if ((res.isAdmin && req.session.user) || userErrorTemplateExists === true) {
             return renderErrorInt();
         }
 
@@ -150,27 +170,29 @@ errors = {
                 return renderErrorInt();
             }
 
-            // Message only displays the first time an error is triggered.
-            errors.logError(
-                "Theme error template not found",
-                null,
-                "Add an error.hbs template to the theme for customised errors."
-            );
-
             renderErrorInt(defaultErrorTemplatePath);
         });
     },
 
-    render404Page: function (req, res, next) {
-        var message = res.isAdmin ? "No Ghost Found" : "Page Not Found";
-        this.renderErrorPage(404, message, req, res, next);
+    error404: function (req, res, next) {
+        var message = res.isAdmin && req.session.user ? "No Ghost Found" : "Page Not Found";
+
+        if (req.method === 'GET') {
+            this.renderErrorPage(404, message, req, res, next);
+        } else {
+            res.send(404, message);
+        }
     },
 
-    render500Page: function (err, req, res, next) {
-        if (!err || !(err instanceof Error)) {
-            next();
+    error500: function (err, req, res, next) {
+        if (req.method === 'GET') {
+            if (!err || !(err instanceof Error)) {
+                next();
+            }
+            errors.renderErrorPage(500, err, req, res, next);
+        } else {
+            res.send(500, err);
         }
-        errors.renderErrorPage(500, err, req, res, next);
     }
 };
 
@@ -182,8 +204,8 @@ _.bindAll(
     'logAndThrowError',
     'logErrorWithRedirect',
     'renderErrorPage',
-    'render404Page',
-    'render500Page'
+    'error404',
+    'error500'
 );
 
 module.exports = errors;

@@ -1,4 +1,4 @@
-var knex = require('../../server/models/base').Knex,
+var knex = require('../../server/models/base').knex,
     when = require('when'),
     migration = require("../../server/data/migration/"),
     Settings = require('../../server/models/settings').Settings,

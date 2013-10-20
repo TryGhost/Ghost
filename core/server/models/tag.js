@@ -1,9 +1,9 @@
 var Tag,
     Tags,
     Posts          = require('./post').Posts,
-    GhostBookshelf = require('./base');
+    ghostBookshelf = require('./base');
 
-Tag = GhostBookshelf.Model.extend({
+Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
@@ -20,7 +20,7 @@ Tag = GhostBookshelf.Model.extend({
     creating: function () {
         var self = this;
 
-        GhostBookshelf.Model.prototype.creating.call(this);
+        ghostBookshelf.Model.prototype.creating.call(this);
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
@@ -36,7 +36,7 @@ Tag = GhostBookshelf.Model.extend({
     }
 });
 
-Tags = GhostBookshelf.Collection.extend({
+Tags = ghostBookshelf.Collection.extend({
 
     model: Tag
 

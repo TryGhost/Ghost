@@ -1,5 +1,5 @@
 var when    = require('when'),
-    knex    = require('../../models/base').Knex,
+    knex    = require('../../models/base').knex,
     up,
     down;
 
@@ -7,7 +7,7 @@ up = function () {
 
     return when.all([
 
-        knex.Schema.createTable('posts', function (t) {
+        knex.schema.createTable('posts', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('title', 150).notNull();
@@ -30,7 +30,7 @@ up = function () {
             t.integer('published_by').nullable();
         }),
 
-        knex.Schema.createTable('users', function (t) {
+        knex.schema.createTable('users', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('name', 150).notNull();
@@ -54,7 +54,7 @@ up = function () {
             t.integer('updated_by').nullable();
         }),
 
-        knex.Schema.createTable('roles', function (t) {
+        knex.schema.createTable('roles', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('name', 150).notNull();
@@ -65,13 +65,13 @@ up = function () {
             t.integer('updated_by').nullable();
         }),
 
-        knex.Schema.createTable('roles_users', function (t) {
+        knex.schema.createTable('roles_users', function (t) {
             t.increments().primary();
             t.integer('role_id').notNull();
             t.integer('user_id').notNull();
         }),
 
-        knex.Schema.createTable('permissions', function (t) {
+        knex.schema.createTable('permissions', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('name', 150).notNull();
@@ -84,19 +84,19 @@ up = function () {
             t.integer('updated_by').nullable();
         }),
 
-        knex.Schema.createTable('permissions_users', function (t) {
+        knex.schema.createTable('permissions_users', function (t) {
             t.increments().primary();
             t.integer('user_id').notNull();
             t.integer('permission_id').notNull();
         }),
 
-        knex.Schema.createTable('permissions_roles', function (t) {
+        knex.schema.createTable('permissions_roles', function (t) {
             t.increments().primary();
             t.integer('role_id').notNull();
             t.integer('permission_id').notNull();
         }),
 
-        knex.Schema.createTable('settings', function (t) {
+        knex.schema.createTable('settings', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('key', 150).notNull().unique();
@@ -107,7 +107,7 @@ up = function () {
             t.dateTime('updated_at').nullable();
             t.integer('updated_by').nullable();
         }),
-        knex.Schema.createTable('tags', function (t) {
+        knex.schema.createTable('tags', function (t) {
             t.increments().primary();
             t.string('uuid', 36).notNull();
             t.string('name', 150).notNull();
@@ -120,30 +120,31 @@ up = function () {
             t.integer('created_by').notNull();
             t.dateTime('updated_at').nullable();
             t.integer('updated_by').nullable();
-        }),
-        knex.Schema.createTable('posts_tags', function (t) {
+        })
+    ]).then(function () {
+        return knex.schema.createTable('posts_tags', function (t) {
             t.increments().primary();
             t.integer('post_id').notNull().unsigned().references('id').inTable('posts');
             t.integer('tag_id').notNull().unsigned().references('id').inTable('tags');
-        })
-    ]);
+        });
+    });
 };
 
 down = function () {
     return when.all([
-        knex.Schema.dropTableIfExists('posts_tags'),
-        knex.Schema.dropTableIfExists('roles_users'),
-        knex.Schema.dropTableIfExists('permissions_users'),
-        knex.Schema.dropTableIfExists('permissions_roles'),
-        knex.Schema.dropTableIfExists('users')
+        knex.schema.dropTableIfExists('posts_tags'),
+        knex.schema.dropTableIfExists('roles_users'),
+        knex.schema.dropTableIfExists('permissions_users'),
+        knex.schema.dropTableIfExists('permissions_roles'),
+        knex.schema.dropTableIfExists('users')
 
     ]).then(function () {
         return when.all([
-            knex.Schema.dropTableIfExists('roles'),
-            knex.Schema.dropTableIfExists('settings'),
-            knex.Schema.dropTableIfExists('permissions'),
-            knex.Schema.dropTableIfExists('tags'),
-            knex.Schema.dropTableIfExists('posts')
+            knex.schema.dropTableIfExists('roles'),
+            knex.schema.dropTableIfExists('settings'),
+            knex.schema.dropTableIfExists('permissions'),
+            knex.schema.dropTableIfExists('tags'),
+            knex.schema.dropTableIfExists('posts')
         ]);
     });
 };
