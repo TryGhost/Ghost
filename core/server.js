@@ -34,10 +34,13 @@ if (process.env.NODE_ENV === 'development') {
 // Authenticate a request by redirecting to login if not logged in.
 // We strip /ghost/ out of the redirect parameter for neatness
 function auth(req, res, next) {
-    if (!req.session.user) {
-        var path = req.path.replace(/^\/ghost\/?/gi, ''),
-            redirect = '',
-            msg;
+    var dur = Date.now() - req.session.time,
+        path = req.path.replace(/^\/ghost\/?/gi, ''),
+        redirect = '',
+        msg;
+
+    if (!req.session.user || !req.session.time || dur > 86400000) {
+        req.session = undefined;
 
         if (path !== '') {
             msg = {
