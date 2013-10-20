@@ -635,23 +635,6 @@ body.zen {
     position: absolute;
     bottom: 44px;
     right: -3px;
-
-    li {
-        a {
-            padding: 10px 15px;
-
-            &:before {
-                font-size: 11px;
-                line-height: 1em;
-            }
-        }
-    }
-
-    .delete {
-        @include icon($i-trash) { position: relative; top: -2px; };
-
-        &:hover { background: $red; }
-    }
 }
 
 #entry-actions {
