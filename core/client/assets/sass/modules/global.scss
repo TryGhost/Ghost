@@ -359,8 +359,7 @@ nav {
         border-top:$lightbrown 1px solid;
     }
 
-    li { font-size:1.1em;
-
+    li { 
         a {
             display:block;
             padding:10px 15px;
@@ -834,6 +833,28 @@ nav {
    Post Settings
    ========================================================================== */
 
+.post-settings-menu {
+    text-transform: none;
+
+    li {
+        a {
+            padding: 10px 15px;
+
+            &:before {
+                font-size: 11px;
+                line-height: 1em;
+                margin-right: 1em;
+            }
+        }
+    }
+
+    .delete {
+        @include icon($i-trash) { position: relative; top: -2px; };
+
+        &:hover { background: $red; }
+    }
+}
+
 .post-setting {
     min-width: 260px;
     border-bottom: 1px solid #35393b;
@@ -1167,7 +1188,6 @@ main {
     height: 40px;
     padding: 12px 15px;
     text-transform: uppercase;
-    font-size: 0.85em;
     color: $brown;
     //Transparent gradient to make bg fade out as it goes out the top.
     @include linear-gradient(top, white 0%, white 25%, rgba(255,255,255,0.9) 100%, $fallback: transparent);
@@ -1200,6 +1220,10 @@ main {
                 display: inline-block;
             }
         }
+    }
+
+    span {
+        font-size: 0.85em;
     }
 
     a {
