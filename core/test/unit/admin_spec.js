@@ -31,26 +31,26 @@ describe('Admin Controller', function() {
         });
 
         describe('can not upload invalid file', function() {
-            it('should return 403 for invalid file type', function() {
+            it('should return 415 for invalid file type', function() {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.FILE';
                 req.files.uploadimage.type = 'application/octet-stream'
                 admin.uploader(req, res);
                 res.send.calledOnce.should.be.true;
-                res.send.args[0][0].should.equal(403);
-                res.send.args[0][1].should.equal('Invalid file type');
+                res.send.args[0][0].should.equal(415);
+                res.send.args[0][1].should.equal('Unsupported Media Type');
             });
         });
 
         describe('can not upload file with valid extension but invalid type', function() {
-            it('should return 403 for invalid file type', function() {
+            it('should return 415 for invalid file type', function() {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.jpg';
                 req.files.uploadimage.type = 'application/octet-stream'
                 admin.uploader(req, res);
                 res.send.calledOnce.should.be.true;
-                res.send.args[0][0].should.equal(403);
-                res.send.args[0][1].should.equal('Invalid file type');
+                res.send.args[0][0].should.equal(415);
+                res.send.args[0][1].should.equal('Unsupported Media Type');
             });
         });
 
