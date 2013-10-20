@@ -35,6 +35,7 @@
         initialize: function (options) {
             this.$('.content-list-content').scrollClass({target: '.content-list', offset: 10});
             this.listenTo(this.collection, 'remove', this.showNext);
+            this.listenTo(this.collection, 'add', this.renderPost);
             // Can't use backbone event bind (see: http://stackoverflow.com/questions/13480843/backbone-scroll-event-not-firing)
             this.$('.content-list-content').scroll($.proxy(this.checkScroll, this));
         },
@@ -93,10 +94,11 @@
                     status: 'all',
                     page: (self.collection.currentPage + 1),
                     orderBy: ['updated_at', 'DESC']
-                }
+                },
+                remove: false
             }).then(function onSuccess(response) {
-                self.render();
                 self.isLoading = false;
+                self.showNext();
             }, function onError(e) {
                 self.reportLoadError(e);
             });
@@ -104,9 +106,13 @@
 
         render: function () {
             this.collection.each(function (model) {
-                this.$('ol').append(this.addSubview(new ContentItem({model: model})).render().el);
+                this.renderPost(model);
             }, this);
             this.showNext();
+        },
+
+        renderPost: function (newPost) {
+            this.$('ol').append(this.addSubview(new ContentItem({model: newPost})).render().el);
         }
 
     });
