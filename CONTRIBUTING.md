@@ -36,7 +36,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 6. Run `grunt init` from the root - this installs Bourbon, compiles SASS and compiles Handlebars templates
 7. Run `npm start` from the root to start the server.
 
-Front-end can be located at [localhost:2368](http://localhost:2368), Admin is at [localhost:2368/ghost/](http://localhost:2368/ghost/)
+Front-end can be located at <http://localhost:2368>, Admin is at <http://localhost:2368/ghost/>.
 
 Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile automatically, if you run Ghost in **production** mode, you will need to run **grunt prod** - please see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
 
