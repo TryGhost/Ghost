@@ -33,6 +33,9 @@
                 $.ajax({
                     url: '/ghost/signin/',
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     data: {
                         email: email,
                         password: password,
@@ -87,6 +90,9 @@
                 $.ajax({
                     url: '/ghost/signup/',
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     data: {
                         name: name,
                         email: email,
@@ -136,6 +142,9 @@
                 $.ajax({
                     url: '/ghost/forgotten/',
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     data: {
                         email: email
                     },

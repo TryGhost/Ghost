@@ -202,6 +202,9 @@
             if (self.className.indexOf('notification-persistent') !== -1) {
                 $.ajax({
                     type: "DELETE",
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
                     bbSelf.$el.slideUp(250, function () {
@@ -231,6 +234,9 @@
                 bbSelf = this;
             $.ajax({
                 type: "DELETE",
+                headers: {
+                    'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                },
                 url: '/api/v0.1/notifications/' + $(self).data('id')
             }).done(function (result) {
                 var height = bbSelf.$('.js-notification').outerHeight(true),
