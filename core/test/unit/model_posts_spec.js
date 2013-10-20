@@ -362,7 +362,7 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('should santize the title', function (done) {
+    it('should sanitize the title', function (done) {
         new PostModel().fetch().then(function (model) {
             return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
         }).then(function (saved) {

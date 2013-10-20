@@ -119,7 +119,7 @@ describe('Tag Model', function () {
                 });
             }
 
-            it('does nothing if tags havent changed', function (done) {
+            it('does nothing if tags haven\'t changed', function (done) {
                 var seededTagNames = ['tag1', 'tag2', 'tag3'];
 
                 seedTags(seededTagNames).then(function (postModel) {
@@ -160,7 +160,7 @@ describe('Tag Model', function () {
                 }).then(null, done);
             });
 
-            it('attaches tags that are new to the post, but aleady exist in the database', function (done) {
+            it('attaches tags that are new to the post, but already exist in the database', function (done) {
                 var seededTagNames = ['tag1', 'tag2'],
                     postModel;
 
