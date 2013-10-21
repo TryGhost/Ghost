@@ -198,6 +198,9 @@ function activateTheme() {
     if (stackLocation) {
         server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost));
     }
+
+    // Update user error template
+    errors.updateActiveTheme(ghost.settings('activeTheme'));
 }
 
  // ### ManageAdminAndTheme Middleware
