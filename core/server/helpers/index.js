@@ -266,7 +266,7 @@ coreHelpers = function (ghost) {
                 blog = ghost.blogGlobals();
                 title = blog.title;
             } else {
-                title = this.post.title;
+                title = this.post ? this.post.title : '';
             }
         }
 
