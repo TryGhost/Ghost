@@ -114,7 +114,7 @@ adminControllers = {
                 renameFile(filename);
             });
         } else {
-            res.send(403, 'Invalid file type');
+            res.send(415, 'Unsupported Media Type');
         }
     },
     'login': function (req, res) {
