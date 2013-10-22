@@ -170,7 +170,7 @@ var path           = require('path'),
                         src: 'core/client/**/*.js'
                     },
                     exclude: [
-                        'core/client/assets/**/*.js',
+                        'core/client/assets/vendor/**/*.js',
                         'core/client/tpl/**/*.js'
                     ]
                 },
