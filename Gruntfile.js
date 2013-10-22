@@ -31,7 +31,8 @@ var path           = require('path'),
         '!config.js',
         '!CONTRIBUTING.md',
         '!SECURITY.md',
-        '!.travis.yml'
+        '!.travis.yml',
+        '!Gemfile*'
     ],
 
     configureGrunt = function (grunt) {
