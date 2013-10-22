@@ -399,9 +399,9 @@ describe('Core Helpers', function () {
         });
 
         it('can return string with tags', function () {
-            var tags = [{name:'foo'}, {name:'bar'}],
+            var tags = [{name: 'foo'}, {name: 'bar'}],
                 rendered = handlebars.helpers.tags.call(
-                    {tags: tags}, 
+                    {tags: tags},
                     {"hash": {}}
                 );
             should.exist(rendered);
@@ -410,7 +410,7 @@ describe('Core Helpers', function () {
         });
 
         it('can use a different separator', function () {
-            var tags = [{name:'haunted'},{name:'ghost'}],
+            var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
                     {"hash": {separator: '|'}}
@@ -419,6 +419,29 @@ describe('Core Helpers', function () {
             should.exist(rendered);
 
             String(rendered).should.equal('haunted|ghost');
+        });
+
+        it('can add a single prefix to multiple tags', function () {
+            var tags = [{name: 'haunted'}, {name: 'ghost'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {prefix: 'on '}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('on haunted, ghost');
+        });
+
+        it('does not add prefix if no tags exist', function () {
+            var rendered = handlebars.helpers.tags.call(
+                    {},
+                    {"hash": {prefix: 'on '}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('');
         });
     });
 
