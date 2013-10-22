@@ -6,8 +6,7 @@
 
 
     UploadUi = function ($dropzone, settings) {
-        var source,
-            $url = '<div class="js-url"><input class="url js-upload-url" type="url" placeholder="http://"/></div>',
+        var $url = '<div class="js-url"><input class="url js-upload-url" type="url" placeholder="http://"/></div>',
             $cancel = '<a class="image-cancel js-cancel"><span class="hidden">Delete</span></a>',
             $progress =  $('<div />', {
                 "class" : "js-upload-progress progress progress-success active",
@@ -184,9 +183,8 @@
                 });
             },
             initWithImage: function () {
-                var self = this, val;
+                var self = this;
                 // This is the start point if an image already exists
-                source = $dropzone.find('img.js-upload-target').attr('src');
                 $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
                 $dropzone.find('div.description').hide();
                 $dropzone.append($cancel);
