@@ -16,6 +16,7 @@ var express     = require('express'),
     helpers     = require('./server/helpers'),
     middleware  = require('./server/middleware'),
     packageInfo = require('../package.json'),
+    nodefn      = require('when/node/function'),
 
 // Variables
     loading = when.defer(),
@@ -159,6 +160,110 @@ function whenEnabled(setting, fn) {
     };
 }
 
+// ### Load partial Theme
+// Load all partial template for the current theme
+function loadPartialsTheme() {
+
+    // Clear all partial view from the cache except partial for administration site
+    function clearPartials() {
+        var adminPartialPath = path.join(ghost.paths().adminViews, 'partials');
+
+        return nodefn.call(fs.readdir, adminPartialPath).then(function (files) {
+
+            var adminPartialNames = _.map(files, function (file) {
+                return path.basename(file, path.extname(file));
+            });
+
+            _.each(_.keys(hbs.handlebars.partials), function (partial) {
+                if (!_.contains(adminPartialNames, partial)) {
+                    delete hbs.handlebars.partials[partial];
+                }
+            });
+        });
+    }
+
+    // Load all partial from the theme
+    function loadTheme() {
+        var dirDeferred = when.defer(),
+            themeTemplatePath = path.join(ghost.paths().activeTheme, 'partials');
+
+        fs.readdir(themeTemplatePath, function (error, files) {
+            if (error) {
+                return dirDeferred.reject(error);
+            }
+
+            var filesPromise = [];
+
+            files.forEach(function (file) {
+
+                var fileDeferred = when.defer(),
+                    filePromise = fileDeferred.promise,
+                    ext   = path.extname(file),
+                    name  = path.basename(file, ext),
+                    fpath = path.join(themeTemplatePath, file);
+
+                filesPromise.push(filePromise);
+
+                fs.readFile(fpath, function (error, source) {
+                    hbs.handlebars.registerPartial(name, source.toString());
+                    fileDeferred.resolve();
+                });
+            });
+
+            return when.all(filesPromise).then(function (theFiles) {
+                return dirDeferred.resolve(theFiles);
+            });
+        });
+
+        return dirDeferred.promise;
+    }
+
+    // Load all the default templates if they are not defined in the theme
+    function loadDefault() {
+
+        var dirDeferred = when.defer(),
+            defaultTemplatePath = ghost.paths().helperTemplates;
+
+        fs.readdir(defaultTemplatePath, function (error, files) {
+            if (error) {
+                return dirDeferred.reject(error);
+            }
+
+            var filesPromise = [],
+                partialNames = _.keys(hbs.handlebars.partials);
+
+            files.forEach(function (file) {
+                var fileDeferred = when.defer(),
+                    filePromise = fileDeferred.promise,
+                    ext   = path.extname(file),
+                    name  = path.basename(file, ext),
+                    fpath = path.join(defaultTemplatePath, file);
+
+                if (!_.contains(partialNames, name)) {
+                    filesPromise.push(filePromise);
+
+                    fs.readFile(fpath, function (error, source) {
+                        hbs.handlebars.registerPartial(name, source.toString());
+                        fileDeferred.resolve();
+                    });
+                }
+            });
+
+            return when.all(filesPromise).then(function (theFiles) {
+                return dirDeferred.resolve(theFiles);
+            });
+        });
+
+        return dirDeferred.promise;
+    }
+
+    return clearPartials().then(function () {
+        return loadTheme();
+    }).then(function () {
+        return loadDefault();
+    });
+}
+
 // ### InitViews Middleware
 // Initialise Theme or Admin Views
 function initViews(req, res, next) {
@@ -168,19 +273,21 @@ function initViews(req, res, next) {
         // self.globals is a hack til we have a better way of getting combined settings & config
         hbsOptions = {templateOptions: {data: {blog: ghost.blogGlobals()}}};
 
-        if (ghost.themeDirectories[ghost.settings('activeTheme')].hasOwnProperty('partials')) {
-            // Check that the theme has a partials directory before trying to use it
-            hbsOptions.partialsDir = path.join(ghost.paths().activeTheme, 'partials');
-        }
-
+        // Call express3 to update the global blog variable
+        // Not call with partialDir because it's reload all partial view even if it's already cache by handlebars
         server.engine('hbs', hbs.express3(hbsOptions));
         server.set('views', ghost.paths().activeTheme);
-    } else {
-        server.engine('hbs', hbs.express3({partialsDir: ghost.paths().adminViews + 'partials'}));
-        server.set('views', ghost.paths().adminViews);
-    }
 
-    next();
+        // Only reload partial when cache is disabled.
+        if (server.disabled('view cache')) {
+            loadPartialsTheme().then(function () { next(); });
+        } else {
+            next();
+        }
+    } else {
+        server.set('views', ghost.paths().adminViews);
+        next();
+    }
 }
 
 // ### Activate Theme
@@ -198,7 +305,12 @@ function activateTheme() {
     if (stackLocation) {
         server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost));
     }
+
+    // Load and cache all partial view
+    return loadPartialsTheme();
 }
+
+
 
  // ### ManageAdminAndTheme Middleware
 // Uses the URL to detect whether this response should be an admin response
@@ -222,20 +334,19 @@ function manageAdminAndTheme(req, res, next) {
                 // Throw an error if the theme is not available, but not on the admin UI
                 errors.logAndThrowError('The currently active theme ' + ghost.settings('activeTheme') + ' is missing.');
             }
+            next();
         } else {
-            activateTheme();
+            loadPartialsTheme().then(function () { next(); });
         }
+    } else {
+        next();
     }
-
-    next();
 }
 
 // Expose the promise we will resolve after our pre-loading
 ghost.loaded = loading.promise;
 
 when(ghost.init()).then(function () {
-    return helpers.loadCoreHelpers(ghost);
-}).then(function () {
 
     // ##Configuration
     var oneYear = 31536000000;
@@ -293,8 +404,17 @@ when(ghost.init()).then(function () {
     // So on every request we actually clean out reduntant passive notifications from the server side
     server.use(cleanNotifications);
 
+    // Load all helpers
+    helpers.loadCoreHelpers(ghost);
+
      // set the view engine
     server.set('view engine', 'hbs');
+
+    // Init the view engine, partialsDir is set to admin partial to cache all partial view for admin
+    // Partial views for the theme are loaded in loadPartialTheme function.
+    server.engine('hbs', hbs.express3({
+        partialsDir: ghost.paths().adminViews + 'partials'
+    }));
 
      // Initialise the views
     server.use(initViews);

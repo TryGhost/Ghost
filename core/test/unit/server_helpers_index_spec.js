@@ -5,6 +5,7 @@ var testUtils = require('./testUtils'),
     when = require('when'),
     _ = require('underscore'),
     path = require('path'),
+    fs = require('fs'),
 
     // Stuff we are testing
     handlebars = require('express-hbs').handlebars,
@@ -17,9 +18,8 @@ describe('Core Helpers', function () {
 
     beforeEach(function (done) {
         ghost = new Ghost();
-        helpers.loadCoreHelpers(ghost).then(function () {
-            done();
-        }, done);
+        helpers.loadCoreHelpers(ghost);
+        done();
     });
 
     describe('Content Helper', function () {
@@ -290,105 +290,97 @@ describe('Core Helpers', function () {
             olderRegex = /class="older-posts"/,
             pageRegex = /class="page-number"/;
 
+
+        beforeEach(function(done){
+            //ghost = new Ghost();
+            var paginationFile = path.join(ghost.paths().helperTemplates, 'pagination.hbs');
+
+            fs.readFile(paginationFile, function (error, source) {
+                if(error){
+                    throw error;
+                }
+                handlebars.registerPartial('pagination', source.toString());
+                done();
+            });
+          })
+
         it('has loaded pagination helper', function () {
             should.exist(handlebars.helpers.pagination);
         });
 
-        it('can render single page with no pagination necessary', function (done) {
-            var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
-                should.exist(rendered);
-                // strip out carriage returns and compare.
-                rendered.string.should.match(paginationRegex);
-                rendered.string.should.match(pageRegex);
-                rendered.string.should.match(/Page 1 of 1/);
-                rendered.string.should.not.match(newerRegex);
-                rendered.string.should.not.match(olderRegex);
-                done();
-            }).then(null, done);
+        it('can render single page with no pagination necessary', function () {
+            var rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
+            should.exist(rendered);
+            // strip out carriage returns and compare.
+            rendered.string.should.match(paginationRegex);
+            rendered.string.should.match(pageRegex);
+            rendered.string.should.match(/Page 1 of 1/);
+            rendered.string.should.not.match(newerRegex);
+            rendered.string.should.not.match(olderRegex);
         });
 
-        it('can render first page of many with older posts link', function (done) {
-            var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
-                should.exist(rendered);
+        it('can render first page of many with older posts link', function () {
+            var rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
+            should.exist(rendered);
 
-                rendered.string.should.match(paginationRegex);
-                rendered.string.should.match(pageRegex);
-                rendered.string.should.match(olderRegex);
-                rendered.string.should.match(/Page 1 of 3/);
-                rendered.string.should.not.match(newerRegex);
-                done();
-            }).then(null, done);
+            rendered.string.should.match(paginationRegex);
+            rendered.string.should.match(pageRegex);
+            rendered.string.should.match(olderRegex);
+            rendered.string.should.match(/Page 1 of 3/);
+            rendered.string.should.not.match(newerRegex);
         });
 
-        it('can render middle pages of many with older and newer posts link', function (done) {
-            var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
-                should.exist(rendered);
+        it('can render middle pages of many with older and newer posts link', function () {
+            var rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
+            should.exist(rendered);
 
-                rendered.string.should.match(paginationRegex);
-                rendered.string.should.match(pageRegex);
-                rendered.string.should.match(olderRegex);
-                rendered.string.should.match(newerRegex);
-                rendered.string.should.match(/Page 2 of 3/);
-
-                done();
-            }).then(null, done);
+            rendered.string.should.match(paginationRegex);
+            rendered.string.should.match(pageRegex);
+            rendered.string.should.match(olderRegex);
+            rendered.string.should.match(newerRegex);
+            rendered.string.should.match(/Page 2 of 3/);
         });
 
-        it('can render last page of many with newer posts link', function (done) {
-            var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
-                should.exist(rendered);
+        it('can render last page of many with newer posts link', function () {
+            var rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
+            should.exist(rendered);
 
-                rendered.string.should.match(paginationRegex);
-                rendered.string.should.match(pageRegex);
-                rendered.string.should.match(newerRegex);
-                rendered.string.should.match(/Page 3 of 3/);
-                rendered.string.should.not.match(olderRegex);
-
-                done();
-            }).then(null, done);
+            rendered.string.should.match(paginationRegex);
+            rendered.string.should.match(pageRegex);
+            rendered.string.should.match(newerRegex);
+            rendered.string.should.match(/Page 3 of 3/);
+            rendered.string.should.not.match(olderRegex);
         });
 
-        it('validates values', function (done) {
-            helpers.loadCoreHelpers(ghost).then(function () {
-                var runErrorTest = function (data) {
-                    return function () {
-                        handlebars.helpers.pagination.call(data);
-                    };
+        it('validates values', function () {
+            var runErrorTest = function (data) {
+                return function () {
+                    handlebars.helpers.pagination.call(data);
                 };
+            };
 
-                runErrorTest({pagination: {page: 3, prev: true, next: undefined, limit: 15, total: 8, pages: 3}})
-                    .should.throwError('Invalid value, Next/Prev must be a number');
-                runErrorTest({pagination: {page: 3, prev: 2, next: true, limit: 15, total: 8, pages: 3}})
-                    .should.throwError('Invalid value, Next/Prev must be a number');
+            runErrorTest({pagination: {page: 3, prev: true, next: undefined, limit: 15, total: 8, pages: 3}})
+                .should.throwError('Invalid value, Next/Prev must be a number');
+            runErrorTest({pagination: {page: 3, prev: 2, next: true, limit: 15, total: 8, pages: 3}})
+                .should.throwError('Invalid value, Next/Prev must be a number');
 
-                runErrorTest({pagination: {limit: 15, total: 8, pages: 3}})
-                    .should.throwError('All values must be defined for page, pages, limit and total');
-                runErrorTest({pagination: {page: 3, total: 8, pages: 3}})
-                    .should.throwError('All values must be defined for page, pages, limit and total');
-                runErrorTest({pagination: {page: 3, limit: 15, pages: 3}})
-                    .should.throwError('All values must be defined for page, pages, limit and total');
-                runErrorTest({pagination: {page: 3, limit: 15, total: 8}})
-                    .should.throwError('All values must be defined for page, pages, limit and total');
+            runErrorTest({pagination: {limit: 15, total: 8, pages: 3}})
+                .should.throwError('All values must be defined for page, pages, limit and total');
+            runErrorTest({pagination: {page: 3, total: 8, pages: 3}})
+                .should.throwError('All values must be defined for page, pages, limit and total');
+            runErrorTest({pagination: {page: 3, limit: 15, pages: 3}})
+                .should.throwError('All values must be defined for page, pages, limit and total');
+            runErrorTest({pagination: {page: 3, limit: 15, total: 8}})
+                .should.throwError('All values must be defined for page, pages, limit and total');
 
-                runErrorTest({pagination: {page: null, limit: 15, total: 8, pages: 3}})
-                    .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-                runErrorTest({pagination: {page: 1, limit: null, total: 8, pages: 3}})
-                    .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-                runErrorTest({pagination: {page: 1, limit: 15, total: null, pages: 3}})
-                    .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-                runErrorTest({pagination: {page: 1, limit: 15, total: 8, pages: null}})
-                    .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-
-                done();
-            }).then(null, done);
+            runErrorTest({pagination: {page: null, limit: 15, total: 8, pages: 3}})
+                .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+            runErrorTest({pagination: {page: 1, limit: null, total: 8, pages: 3}})
+                .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+            runErrorTest({pagination: {page: 1, limit: 15, total: null, pages: 3}})
+                .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+            runErrorTest({pagination: {page: 1, limit: 15, total: 8, pages: null}})
+                .should.throwError('Invalid value, check page, pages, limit and total are numbers');
         });
     });
 
