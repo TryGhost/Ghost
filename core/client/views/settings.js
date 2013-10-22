@@ -193,35 +193,36 @@
         showLogo: function (e) {
             e.preventDefault();
             var settings = this.model.toJSON();
-            this.showUpload('logo', settings.logo);
+            this.showUpload('logo', settings.logo, 'image/*');
         },
         showCover: function (e) {
             e.preventDefault();
             var settings = this.model.toJSON();
-            this.showUpload('cover', settings.cover);
+            this.showUpload('cover', settings.cover, 'image/*');
         },
-        showUpload: function (key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
-                func: function () { // The function called on acceptance
-                    var data = {};
-                    if (this.$('.js-upload-url').val()) {
-                        data[key] = this.$('.js-upload-url').val();
-                    } else {
-                        data[key] = this.$('.js-upload-target').attr('src');
-                    }
+        showUpload: function (key, src, acceptEncoding) {
+            var self = this,
+                upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
+                    func: function () { // The function called on acceptance
+                        var data = {};
+                        if (this.$('.js-upload-url').val()) {
+                            data[key] = this.$('.js-upload-url').val();
+                        } else {
+                            data[key] = this.$('.js-upload-target').attr('src');
+                        }
 
-                    self.model.save(data, {
-                        success: self.saveSuccess,
-                        error: self.saveError
-                    }).then(function () {
-                        self.render();
-                    });
+                        self.model.save(data, {
+                            success: self.saveSuccess,
+                            error: self.saveError
+                        }).then(function () {
+                            self.render();
+                        });
 
-                    return true;
-                },
-                buttonClass: "button-save right",
-                text: "Save" // The accept button text
-            }});
+                        return true;
+                    },
+                    buttonClass: "button-save right",
+                    text: "Save" // The accept button text
+                }, acceptEncoding: acceptEncoding});
 
             this.addSubview(new Ghost.Views.Modal({
                 model: upload
