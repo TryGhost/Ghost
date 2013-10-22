@@ -111,7 +111,7 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
-    res.locals.csrfToken = req.session._csrf;
+    res.locals.csrfToken = req.csrfToken();
 
     if (res.isAdmin) {
         _.extend(res.locals,  {
