@@ -122,7 +122,7 @@ coreHelpers = function (ghost) {
         var separator = ', ',
             tagNames;
 
-        if (typeof options.hash.separator === 'string') {
+        if (_.isString(options.hash.separator)) {
             separator = options.hash.separator;
         }
 
