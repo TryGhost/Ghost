@@ -174,6 +174,10 @@
             Ghost.Validate
                 .check(postsPerPage, {message: "Please use a number less than 1000", el: $('postsPerPage')})
                 .isInt().max(1000);
+            Ghost.Validate
+                .check(postsPerPage, {message: "Please use a number greater than 0", el: $('postsPerPage')})
+                .isInt().min(0);
+
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
