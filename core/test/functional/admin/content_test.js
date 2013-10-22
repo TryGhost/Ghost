@@ -66,3 +66,40 @@ CasperTest.begin('Infinite scrolling', 1, function suite(test) {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
     });
 });
+
+CasperTest.begin("Posts can be marked as featured", 4, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForResource(/posts/, function checkPostWasCreated() {
+        test.assertExists('.notification-success', 'got success notification');
+    });
+
+    // Begin test
+    casper.thenOpen(url + "ghost/content/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+    });
+
+    // Mark as featured
+    casper.waitForSelector('.unfeatured' , function() {
+       this.click('.unfeatured');
+    });
+
+    // Mark as not featured
+    casper.waitForSelector('.featured' , function() {
+       this.click('.featured');
+    });
+
+    casper.waitForResource(/posts/, function checkPostWasMarkedAsFeatured() {
+        test.assertExists('.notification-success', 'got success notification');
+    });
+});
