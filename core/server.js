@@ -111,6 +111,7 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
+    res.locals.csrfToken = req.session._csrf;
 
     if (res.isAdmin) {
         _.extend(res.locals,  {
@@ -120,9 +121,9 @@ function ghostLocals(req, res, next) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 currentUser: {
-                    name: currentUser.attributes.name,
-                    email: currentUser.attributes.email,
-                    image: currentUser.attributes.image
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    image: currentUser.image
                 }
             });
             next();
@@ -277,9 +278,16 @@ when(ghost.init()).then(function () {
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
     server.use('/ghost/debug/db/import/', express.multipart());
-    server.use(express.cookieParser(ghost.dbHash));
-    server.use(express.cookieSession({ cookie: { maxAge: 60000000 }}));
 
+    // Session handling
+    // Pro tip: while in development mode cookieSession can be used
+    // to keep you logged in while restarting the server
+    server.use(express.cookieParser(ghost.dbHash));
+    server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
+
+
+    //enable express csrf protection
+    server.use(express.csrf());
     // local data
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
@@ -296,10 +304,10 @@ when(ghost.init()).then(function () {
 
     // ### Error handling
     // 404 Handler
-    server.use(errors.render404Page);
+    server.use(errors.error404);
 
     // 500 Handler
-    server.use(errors.render500Page);
+    server.use(errors.error500);
 
     // ## Routing
 
@@ -349,9 +357,8 @@ when(ghost.init()).then(function () {
     server.get('/ghost/debug/', auth, admin.debug.index);
     server.get('/ghost/debug/db/export/', auth, admin.debug['export']);
     server.post('/ghost/debug/db/import/', auth, admin.debug['import']);
-    server.get('/ghost/debug/db/reset/', auth, admin.debug.reset);
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
-    server.post('/ghost/upload/', admin.uploader);
+    server.post('/ghost/upload/', auth, admin.uploader);
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
         res.redirect('/ghost/');

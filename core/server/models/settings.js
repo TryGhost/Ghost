@@ -1,6 +1,6 @@
 var Settings,
-    GhostBookshelf = require('./base'),
-    validator      = GhostBookshelf.validator,
+    ghostBookshelf = require('./base'),
+    validator      = ghostBookshelf.validator,
     uuid           = require('node-uuid'),
     _              = require('underscore'),
     errors         = require('../errorHandling'),
@@ -29,7 +29,7 @@ defaultSettings = parseDefaultSettings();
 
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
-Settings = GhostBookshelf.Model.extend({
+Settings = ghostBookshelf.Model.extend({
 
     tableName: 'settings',
 
@@ -83,7 +83,7 @@ Settings = GhostBookshelf.Model.extend({
             this.set('value', this.sanitize('value'));
         }
 
-        return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
+        return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     }
 
 }, {
@@ -92,7 +92,7 @@ Settings = GhostBookshelf.Model.extend({
         if (!_.isObject(_key)) {
             _key = { key: _key };
         }
-        return GhostBookshelf.Model.read.call(this, _key);
+        return ghostBookshelf.Model.read.call(this, _key);
     },
 
     edit: function (_data) {

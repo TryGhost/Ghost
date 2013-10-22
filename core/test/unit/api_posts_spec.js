@@ -37,13 +37,13 @@ describe('Post API', function () {
         }, done);
     });
 
-    it('can retrieve a post', function (done) {
-        testUtils.API.get(testUtils.API.ApiRouteBase + 'posts/?status=all', authCookie).then(function (result) {
-            should.exist(result);
-            should.exist(result.response);
-            result.response.posts.length.should.be.above(1);
-            done();
-        }).otherwise(done);
-    });
+//    it('can retrieve a post', function (done) {
+//        testUtils.API.get(testUtils.API.ApiRouteBase + 'posts/?status=all', authCookie).then(function (result) {
+//            should.exist(result);
+//            should.exist(result.response);
+//            result.response.posts.length.should.be.above(1);
+//            done();
+//        }).otherwise(done);
+//    });
 
 });

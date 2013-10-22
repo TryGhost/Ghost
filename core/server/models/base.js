@@ -1,4 +1,4 @@
-var GhostBookshelf,
+var ghostBookshelf,
     Bookshelf = require('bookshelf'),
     when      = require('when'),
     moment    = require('moment'),
@@ -8,16 +8,15 @@ var GhostBookshelf,
     Validator = require('validator').Validator,
     sanitize  = require('validator').sanitize;
 
-// Initializes Bookshelf as its own instance, so we can modify the Models and not mess up
-// others' if they're using the library outside of ghost.
-GhostBookshelf = Bookshelf.Initialize('ghost', config[process.env.NODE_ENV || 'development'].database);
-GhostBookshelf.client = config[process.env.NODE_ENV].database.client;
+// Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
+ghostBookshelf = Bookshelf.initialize(config[process.env.NODE_ENV || 'development'].database);
+ghostBookshelf.client = config[process.env.NODE_ENV].database.client;
 
-GhostBookshelf.validator = new Validator();
+ghostBookshelf.validator = new Validator();
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
-GhostBookshelf.Model = GhostBookshelf.Model.extend({
+ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasTimestamps: true,
 
@@ -123,7 +122,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
             // Make the whole thing lowercase
             .toLowerCase();
 
-        // Remove trailing hypen
+        // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
@@ -145,7 +144,7 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
      */
     findAll:  function (options) {
         options = options || {};
-        return GhostBookshelf.Collection.forge([], {model: this}).fetch(options);
+        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options);
     },
 
     browse: function () {
@@ -212,4 +211,4 @@ GhostBookshelf.Model = GhostBookshelf.Model.extend({
 
 });
 
-module.exports = GhostBookshelf;
+module.exports = ghostBookshelf;

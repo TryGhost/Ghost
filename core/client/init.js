@@ -23,6 +23,16 @@
 
     _.extend(Ghost, Backbone.Events);
 
+    Backbone.oldsync = Backbone.sync;
+    // override original sync method to make header request contain csrf token
+    Backbone.sync = function (method, model, options, error) {
+        options.beforeSend = function (xhr) {
+            xhr.setRequestHeader('X-CSRF-Token', $("meta[name='csrf-param']").attr('content'));
+        };
+        /* call the old sync method */
+        return Backbone.oldsync(method, model, options, error);
+    };
+
     Ghost.init = function () {
         Ghost.router = new Ghost.Router();
 

@@ -66,7 +66,7 @@ frontendControllers = {
     'single': function (req, res, next) {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
-                ghost.doFilter('prePostsRender', post.toJSON(), function (post) {
+                ghost.doFilter('prePostsRender', post, function (post) {
                     res.render('post', {post: post});
                 });
             } else {
@@ -88,7 +88,7 @@ frontendControllers = {
                 title: ghost.settings('title'),
                 description: ghost.settings('description'),
                 generator: 'Ghost v' + res.locals.version,
-                author: user ? user.attributes.name : null,
+                author: user ? user.name : null,
                 feed_url: url.resolve(siteUrl, '/rss/'),
                 site_url: siteUrl,
                 ttl: '60'
