@@ -1,0 +1,331 @@
+---
+lang: cn
+layout: default
+meta_title: How to Install Ghost on Your Server - Ghost Docs
+meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
+heading: Installing Ghost &amp; Getting Started
+subheading: The first steps to setting up your new blog for the first time.
+permalink: /installation/deploy/
+chapter: installation
+prev_section: linux
+next_section: upgrading
+---
+
+<div class="container">
+    <div class="row">
+        {% include subnav/installation.html %}
+
+        <section id="content" class="col-lg-9">
+
+            <h2 id="deploy">Getting Ghost Live</h2>
+
+            <p>So you're ready to get Ghost live? Excellent!</p>
+
+            <p>The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.</p>
+
+            <h3>Installers</h3>
+
+            <p>There are a couple of options for simple installers at the moment:
+                <ul>
+                    <li>Deploy to the cloud with <a href="http://wiki.bitnami.com/Applications/BitNami_Ghost">Bitnami</a>.</li>
+                    <li>Launch Ghost with <a href="http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html">Rackspace deployments</a>.</li>
+                    <li>Get up and running with a <a href="https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application">DigitalOcean Droplet</a>.</li>
+                </ul>
+            </p>
+
+            <h3>Manual Setup</h3>
+
+            <p>You're going to need a hosting package that already has, or will allow you to install <a href="http://nodejs.org">Node.js</a>.
+                This means something like a cloud (<a href="http://aws.amazon.com/ec2/">Amazon EC2</a>, <a href="http://www.digitalocean.com">DigitalOcean</a>, <a href="http://www.rackspace.com/cloud/">Rackspace Cloud</a>), VPS (<a href="https://www.webfaction.com/">Webfaction</a>, <a href="http://www.dreamhost.com/servers/vps/">Dreamhost</a>) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.</p>
+
+            <p>What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+
+            <p>Unfortunately, many of the Node-specific cloud hosting solutions such as <strong>Nodejitsu</strong> & <strong>Heroku</strong> are <strong>NOT</strong> compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.</p>
+
+            <p>The following links contain instructions on how to get up and running with:
+                <ul>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/">Dreamhost</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghosted.co/install-ghost-digitalocean/">DigitalOcean</a> - from <a href="http://ghosted.co">Corbett Barr</a></li>
+                    <li><a href="http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/">Webfaction</a> - from <a href="http://howtoinstallghost.com">howtoinstallghost.com</a></li>
+                    <li><a href="http://ghost.pellegrom.me/installing-ghost-on-ubuntu/">Rackspace</a> (Ubuntu 13.04 + linux service) - from <a href="http://ghost.pellegrom.me/">Gilbert Pellegrom</a></li>
+                    <li><a href="http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/">Ubuntu + nginx + forever</a> - from <a href="http://0v.org/">Gregg Housh</a></li>
+                    <li>...check the <a href="https://en.ghost.org/forum/installation">installation forum</a> for more guides ...</li>
+                </ul>
+            </p>
+
+            <h2>Making Ghost run forever</h2>
+            <p>The previously described method to start Ghost is <code>npm start</code>. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.</p>
+
+            <h3>Forever (<a href="https://npmjs.org/package/forever">https://npmjs.org/package/forever</a>)</h3>
+            <p>You can use <code>forever</code> to run Ghost as a background task. <code>forever</code> will also take care of your Ghost installation and it will restart the node process if it crashes.</p>
+
+            <ul>
+                <li>
+                    To install <code>forever</code> type <code>npm install forever -g</code>
+                </li>
+                <li>
+                    To start Ghost using <code>forever</code> from the Ghost installation directory type <code>NODE_ENV=production forever start index.js</code>
+                </li>
+                <li>
+                    To stop Ghost type <code>forever stop index.js</code>
+                </li>
+                <li>
+                    To check if Ghost is currently running type <code>forever list</code>
+                </li>
+            </ul>
+
+            <h3>Supervisor (<a href="http://supervisord.org/">http://supervisord.org/</a>)</h3>
+            <p>Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.</p>
+            <ul>
+                <li>
+                    <a href="http://supervisord.org/installing.html">Install Supervisor</a> as required for your Linux distribution. Typically, this will be:
+                    <ul>
+                        <li>
+                            Debian/Ubuntu: <code>apt-get install supervisor</code>
+                        </li>
+                        <li>
+                            Fedora: <code>yum install supervisor</code>
+                        </li>
+                        <li>
+                            Most other distributions: <code>easy_install supervisor</code>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Ensure that Supervisor is running, by running <code>service supervisor start</code>
+                </li>
+                <li>
+                    Create the startup script for your Ghost installation. Typically this will go in <code>/etc/supervisor/conf.d/ghost.conf</code> For example:
+                    <p><pre>
+[program:ghost]
+command = node /path/to/ghost/index.js
+directory = /path/to/ghost
+user = ghost
+autostart = true
+autorestart = true
+stdout_logfile = /var/log/supervisor/ghost.log
+stderr_logfile = /var/log/supervisor/ghost_err.log
+environment = NODE_ENV="production"
+                    </pre></p>
+                </li>
+                <li>
+                    Start Ghost using Supervisor: <code>supervisorctl start ghost</code>
+                </li>
+                <li>
+                    To stop Ghost: <code>supervisorctl stop ghost</code>
+                </li>
+            </ul>
+            <p>You can see the <a href="http://supervisord.org">documentation for Supervisor</a> for more information.</p>
+                
+
+
+
+            <h3>Init Script</h3>
+            <p>Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on <b>Ubuntu 12.04</b>.</p>
+
+            <ul>
+                <li>
+                    Create the file /etc/init.d/ghost with the following content:
+                    <p><pre>
+                        #! /bin/sh
+### BEGIN INIT INFO
+# Provides:          ghost
+# Required-Start:    $network $syslog
+# Required-Stop:     $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Ghost Blogging Platform
+# Description:       Ghost: Just a blogging platform
+### END INIT INFO
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Ghost"
+NAME=ghost
+GHOST_ROOT=/var/www/ghost
+GHOST_GROUP=ghost
+GHOST_USER=ghost
+DAEMON=/usr/bin/node
+DAEMON_ARGS="$GHOST_ROOT/index.js"
+PIDFILE=/var/opt/ghost/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+export NODE_ENV=production
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+# I like to know what is going on
+VERBOSE = yes
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+    # Set up folder structure
+    mkdir -p /var/opt/ghost
+    mkdir -p /var/opt/ghost/run
+    chown -R ghost:ghost /var/opt/ghost
+    # Return
+    #   0 if daemon has been started
+    #   1 if daemon was already running
+    #   2 if daemon could not be started
+    start-stop-daemon --start --quiet \
+        --chuid $GHOST_USER:$GHOST_GROUP --chdir $GHOST_ROOT --background \
+        --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+        || return 1
+    start-stop-daemon --start --quiet \
+        --chuid $GHOST_USER:$GHOST_GROUP --chdir $GHOST_ROOT --background \
+        --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS \
+        || return 2
+    # Add code here, if necessary, that waits for the process to be ready
+    # to handle requests from services started subsequently which depend
+    # on this one.  As a last resort, sleep for some time.
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+    # Return
+    #   0 if daemon has been stopped
+    #   1 if daemon was already stopped
+    #   2 if daemon could not be stopped
+    #   other if a failure occurred
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 \
+        --pidfile $PIDFILE --name $NAME
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    # Wait for children to finish too if this is a daemon that forks
+    # and if the daemon is only ever run from this initscript.
+    # If the above conditions are not satisfied then add some other code
+    # that waits for the process to drop all resources that could be
+    # needed by services started subsequently.  A last resort is to
+    # sleep for some time.
+    start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 \
+        --exec $DAEMON
+    [ "$?" = 2 ] && return 2
+    # Many daemons don't delete their pidfiles when they exit.
+    rm -f $PIDFILE
+    return "$RETVAL"
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+    #
+    # If the daemon can reload its configuration without
+    # restarting (for example, when it is sent a SIGHUP),
+    # then implement that here.
+    #
+    start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE \
+        --name $NAME
+    return 0
+}
+
+case "$1" in
+  start)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+  stop)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+  status)
+       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+       ;;
+  #reload|force-reload)
+        #
+        # If do_reload() is not implemented then leave this commented out
+        # and leave 'force-reload' as an alias for 'restart'.
+        #
+        #log_daemon_msg "Reloading $DESC" "$NAME"
+        #do_reload
+        #log_end_msg $?
+        #;;
+  restart|force-reload)
+        #
+        # If the "reload" option is implemented then remove the
+        # 'force-reload' alias
+        #
+        log_daemon_msg "Restarting $DESC" "$NAME"
+        do_stop
+        case "$?" in
+          0|1)
+                do_start
+                do_start
+                case "$?" in
+                        0) log_end_msg 0 ;;
+                        1) log_end_msg 1 ;; # Old process is still running
+                        *) log_end_msg 1 ;; # Failed to start
+                esac
+                ;;
+          *)
+                # Failed to stop
+                log_end_msg 1
+                ;;
+        esac
+        ;;
+  *)
+        #echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+        exit 3
+        ;;
+esac
+
+:
+                    </pre></p>
+                </li>
+                <li>
+                    Change the execution permission for the init script by typing 
+                    <code>chmod 755 /etc/init.d/ghost</code>
+                </li>
+                <li>
+                    Use the script:
+                    <ul>
+                        <li>start: <code>service ghost start</code></li>
+                        <li>stop: <code>service ghost stop</code></li>
+                        <li>restart: <code>service ghost restart</code></li>
+                        <li>status: <code>service ghost status</code></li>
+                    </ul>
+                </li>
+                <li>
+                    To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: <code>update-rc.d ghost defaults</code> and <code>update-rc.d ghost enable</code>
+                </li>
+            </ul>
+
+            <p>Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!</p>
+
+            <h2>Setting up Ghost with a domain name</h2>
+
+            <p>Documentation on using nginx as a reverse proxy on their way.</p>
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>

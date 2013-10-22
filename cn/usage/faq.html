@@ -1,0 +1,39 @@
+---
+lang: cn
+layout: default
+meta_title: How to Use Ghost - Ghost Docs
+meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+heading: Using Ghost
+subheading: Finding your way around, and getting set up the way you want
+chapter: usage
+permalink: /usage/faq/
+prev_section: writing
+---
+
+<div class="container">
+    <div class="row">
+
+        {% include subnav/usage.html %}
+
+        <section id="content" class="col-lg-9">
+
+            <h2 id="faq">FAQ</h2>
+
+            <h3>(When) Will Ghost support feature X?</h3>
+
+            <p>Please see the <a href="https://github.com/TryGhost/Ghost/wiki/Planned-Features">Planned Features</a> listing and <a href="https://github.com/TryGhost/Ghost/wiki/Roadmap">Roadmap</a> on the <a href="https://github.com/TryGhost/Ghost/wiki">Github wiki</a>.</p>
+
+            <h3>How do I insert images into a post?</h3>
+
+            <p>Please see the <a href="/usage/writing/#markdown">Markdown Guide</a> for a full explanation of how image uploads work in the Ghost editor.</p>
+
+            <br />
+            <br />
+
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>
