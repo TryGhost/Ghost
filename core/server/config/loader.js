@@ -57,7 +57,8 @@ function validateConfigEnvironment() {
 
     // Check if we don't even have a config
     if (!config) {
-        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), "NODE_ENV=" + envVal, 'Ensure your config.js has a section for the current NODE_ENV value');
+        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), "NODE_ENV=" + envVal,
+            'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
         return when.reject();
     }
 
