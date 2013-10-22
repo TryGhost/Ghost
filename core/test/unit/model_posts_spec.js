@@ -364,4 +364,44 @@ describe('Post Model', function () {
                 done();
             }).otherwise(done);
     });
+
+    it('should update the slug with the title if not published', function (done) {
+        var post = {
+                title: 'First version',
+                markdown: 'First content 1'
+            };
+
+        // Create the first post
+        PostModel.add(post)
+            .then(function (createdPost) {
+                // Check the first slug
+                createdPost.get('slug').should.equal('first-version');
+
+                return createdPost.save({
+                    title: 'Second version'
+                });
+            }).then(function (updatedPost) {
+
+                // Should have updated from original
+                updatedPost.get('slug').should.equal('second-version');
+
+                return updatedPost.save({
+                    title: 'Third version',
+                    status: 'published'
+                });
+            }).then(function (updatedPost) {
+
+                // Should have updated again from original
+                updatedPost.get('slug').should.equal('third-version');
+
+                return updatedPost.save({
+                    title: 'Fourth version (now published)'
+                });
+            }).then(function (updatedPost) {
+
+                // Should have NOT updated from last version
+                updatedPost.get('slug').should.equal('third-version');
+                done();
+            }).otherwise(done);
+    });
 });
