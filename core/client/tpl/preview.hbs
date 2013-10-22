@@ -1,6 +1,6 @@
 <header class="floatingheader">
     <button class="button-back" href="#">Back</button>
-    <a class="{{#if featured}}featured{{else}}unfeatured{{/if}}" href="#">
+    <a class="{{#if featured}}featured{{else}}unfeatured{{/if}}" href="#" title="{{#if featured}}Unfeature{{else}}Feature{{/if}} this post">
         <span class="hidden">Star</span>
     </a>
     {{! TODO: JavaScript toggle featured/unfeatured}}
@@ -8,8 +8,8 @@
     <span class="normal">by</span>
     <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
     <section class="post-controls">
-        <a class="post-edit" href="#"><span class="hidden">Edit Post</span></a>
-        <a class="post-settings" href="#" data-toggle=".post-settings-menu"><span class="hidden">Post Settings</span></a>
+        <a class="post-edit" href="#" title="Edit Post"><span class="hidden">Edit Post</span></a>
+        <a class="post-settings" href="#" data-toggle=".post-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
         <ul class="post-settings-menu menu-drop-right overlay">
             <li class="post-setting">
                 <div class="post-setting-label">
