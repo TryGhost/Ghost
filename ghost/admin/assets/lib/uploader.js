@@ -93,6 +93,13 @@
                     fail: function (e, data) {
                         $dropzone.trigger("uploadfailure", [data.result]);
                         $dropzone.find('.js-upload-progress-bar').addClass('fail');
+                        if (data.jqXHR.status === 413) {
+                            $dropzone.find('div.js-fail').text("The image you uploaded was too big.");
+                        } else if (data.jqXHR.status === 415) {
+                            $dropzone.find('div.js-fail').text("The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF.");
+                        } else {
+                            $dropzone.find('div.js-fail').text("Something went wrong :(");
+                        }
                         $dropzone.find('div.js-fail, button.js-fail').fadeIn(1500);
                         $dropzone.find('button.js-fail').on('click', function () {
                             $dropzone.css({minHeight: 0});
