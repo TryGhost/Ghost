@@ -197,6 +197,14 @@ describe('Core Helpers', function () {
 
             rendered.string.should.equal('post');
         });
+
+        it('can render featured class', function () {
+            var post = { featured: true },
+                rendered = handlebars.helpers.post_class.call(post);
+
+            should.exist(rendered);
+            rendered.string.should.equal('post featured');
+        });
     });
 
     describe('ghost_head Helper', function () {

@@ -227,10 +227,15 @@ coreHelpers = function (ghost) {
 
     ghost.registerThemeHelper('post_class', function (options) {
         var classes = ['post'],
-            tags = this.post && this.post.tags ? this.post.tags : this.tags || [];
+            tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
+            featured = this.post && this.post.featured ? this.post.featured : this.featured || false;
 
         if (tags) {
             classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
+        }
+
+        if (featured) {
+            classes.push('featured');
         }
 
         return ghost.doFilter('post_class', classes, function (classes) {
