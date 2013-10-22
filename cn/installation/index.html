@@ -1,9 +1,10 @@
 ---
+lang: cn
 layout: default
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 如何在服务器上安装Ghost - Ghost中文文档
+meta_description: 这里详细讲述如何在你本地或远程环境中安装Ghost博客平台。
+heading: 安装Ghost &amp; 开始尝试
+subheading: 安装这个新的博客平台的第一步。
 chapter: installation
 next_section: mac
 ---
@@ -14,19 +15,17 @@ next_section: mac
 
         <section id="content" class="col-lg-9">
 
-            <h2 id="overview">Overview</h2>
+            <h2 id="overview">概览</h2>
 
-            <p>The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.</p>
+            <p>Ghost文档还不完备，仍在继续完善中，每天可能都会有更新和改进。如果你遇到了难题或者有改进意见，前告诉我们。</p>
 
-            <p>Ghost is built on <a href="http://nodejs.org">Node.js</a>, and requires version <code>0.10.*</code> (latest stable version).</p>
+            <p>Ghost构建于<a href="http://nodejs.org">Node.js</a>平台之上，支持<code>0.10.*</code>版本（最新稳定版）的Node.js。</p>
 
-            <p>Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.</p>
+            <p>在你的本地计算机上运行Ghost其实很简单，前提是你已经安装了Node.js。</p>
 
-            <h3>What is Node.js?</h3>
+            <h3>什么是Node.js？</h3>
 
-            <p><a href="http://nodejs.org">Node.js</a> is a modern platform for building fast, scalable and efficient web applications.
-                Over the past 20 years, the web has evolved from a collection of static pages into a platform capable of supporting complex web applications like Gmail and facebook.
-                JavaScript is the programming language which has enabled this progress.</p>
+            <p><a href="http://nodejs.org">Node.js</a>是构建快速、扩展性好并且高效的web应用的开发平台。再过去的20年间，web从一堆静态页面进化为能够支持复杂web应用（例如Gmail和facebook）的平台。而JavaScript这一编程语言是这一进程的推进剂。</p>
 
             <p><a href="http://nodejs.org">Node.js</a> provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.</p>
 
@@ -53,8 +52,8 @@ next_section: mac
             </div>
 
 
-            <p>Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our <a href="/installation/upgrading/">upgrading documentation</a>.
-                If you get stuck, checkout the <a href="/installation/troubleshooting/">troubleshooting guide</a>, or if that doesn't help, please get in touch via the <a href="http://ghost.org/forum">Ghost forum</a> where the Ghost staff and community are on hand to help you with any problems.</p>
+            <p>请记住，Ghost还非常新，它的开发小组还在非常努力的实现新的功能。如果你需要升级Ghost到最新版本，请参考<a href="/installation/upgrading/">Ghost升级文档</a>。
+                如果入到任何问题，请参考<a href="/installation/troubleshooting/">除错指南</a>，如果你的问题还不能得到解决，请在<a href="http://ghost.org/forum">Ghost论坛</a>提问，这里聚集了Ghost核心小组的成员和社区成员，他们会非常乐意帮你解决问题。</p>
 
             {% if page.next_section || page.prev_section %}
                {% include pagination.html %}
