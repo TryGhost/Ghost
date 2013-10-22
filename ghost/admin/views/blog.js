@@ -180,7 +180,9 @@
         activeId: null,
 
         events: {
-            'click .post-controls .post-edit' : 'editPost'
+            'click .post-controls .post-edit' : 'editPost',
+            'click .featured' : 'toggleFeatured',
+            'click .unfeatured' : 'toggleFeatured'
         },
 
         initialize: function (options) {
@@ -199,6 +201,33 @@
             // for now this will disable "open in new tab", but when we have a Router implemented
             // it can go back to being a normal link to '#/ghost/editor/X'
             window.location = '/ghost/editor/' + this.model.get('id') + '/';
+        },
+
+        toggleFeatured: function (e) {
+            var self = this,
+                featured = !self.model.get('featured'),
+                featuredEl = $(e.currentTarget),
+                model = this.collection.get(this.activeId);
+
+            model.save({
+                featured: featured
+            }, {
+                success : function (model, response, options) {
+                    featuredEl.removeClass("featured unfeatured").addClass(featured ? "featured" : "unfeatured");
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Post successfully marked as " + (featured ? "featured" : "not featured") + ".",
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
         },
 
         templateName: "preview",
