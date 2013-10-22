@@ -10,8 +10,7 @@ var _           = require('underscore'),
 
 
 coreHelpers = function (ghost) {
-    var paginationHelper,
-        scriptTemplate = _.template("<script src='/built/scripts/<%= name %>?v=<%= version %>'></script>"),
+    var scriptTemplate = _.template("<script src='/built/scripts/<%= name %>?v=<%= version %>'></script>"),
         isProduction = process.env.NODE_ENV === 'production',
         version = encodeURIComponent(packageInfo.version);
 
@@ -422,29 +421,30 @@ coreHelpers = function (ghost) {
     // ### Pagination Helper
     // `{{pagination}}`
     // Outputs previous and next buttons, along with info about the current page
-    paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
-        ghost.registerThemeHelper('pagination', function (options) {
-            if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
-                errors.logAndThrowError('pagination data is not an object or is a function');
-                return;
-            }
-            if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages)
-                    || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
-                errors.logAndThrowError('All values must be defined for page, pages, limit and total');
-                return;
-            }
-            if ((!_.isUndefined(this.pagination.next) && !_.isNumber(this.pagination.next))
-                    || (!_.isUndefined(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
-                errors.logAndThrowError('Invalid value, Next/Prev must be a number');
-                return;
-            }
-            if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages)
-                    || !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
-                errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
-                return;
-            }
-            return new hbs.handlebars.SafeString(templateFn(this.pagination));
-        });
+    ghost.registerThemeHelper('pagination', function (options) {
+        if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
+            errors.logAndThrowError('pagination data is not an object or is a function');
+            return;
+        }
+        if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages)
+                || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
+            errors.logAndThrowError('All values must be defined for page, pages, limit and total');
+            return;
+        }
+        if ((!_.isUndefined(this.pagination.next) && !_.isNumber(this.pagination.next))
+                || (!_.isUndefined(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
+            errors.logAndThrowError('Invalid value, Next/Prev must be a number');
+            return;
+        }
+        if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages)
+                || !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
+            errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
+            return;
+        }
+
+        var template = ghost.loadTemplate('pagination');
+
+        return new hbs.handlebars.SafeString(template(this.pagination));
     });
 
     ghost.registerThemeHelper('helperMissing', function (arg) {
@@ -453,10 +453,6 @@ coreHelpers = function (ghost) {
         }
         errors.logError("Missing helper: '" + arg + "'");
     });
-    // Return once the template-driven helpers have loaded
-    return when.join(
-        paginationHelper
-    );
 };
 
 module.exports.loadCoreHelpers = coreHelpers;

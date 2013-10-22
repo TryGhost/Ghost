@@ -248,33 +248,15 @@ Ghost.prototype.readSettingsResult = function (result) {
 
 // ## Template utils
 
-// Compile a template for a handlebars helper
-Ghost.prototype.compileTemplate = function (templatePath) {
-    return nodefn.call(fs.readFile, templatePath).then(function (templateContents) {
-        return hbs.handlebars.compile(templateContents.toString());
-    }, errors.logAndThrowError);
-};
-
 // Load a template for a handlebars helper
 Ghost.prototype.loadTemplate = function (name) {
-    var self = this,
-        templateFileName = name + '.hbs',
-        // Check for theme specific version first
-        templatePath = path.join(this.paths().activeTheme, 'partials', templateFileName),
-        deferred = when.defer();
+    var partial = hbs.handlebars.partials[name];
 
-    // Can't use nodefn here because exists just returns one parameter, true or false
+    if (partial instanceof Function) {
+        return partial;
+    }
 
-    fs.exists(templatePath, function (exists) {
-        if (!exists) {
-            // Fall back to helpers templates location
-            templatePath = path.join(self.paths().helperTemplates, templateFileName);
-        }
-
-        self.compileTemplate(templatePath).then(deferred.resolve, deferred.reject);
-    });
-
-    return deferred.promise;
+    return hbs.handlebars.compile(partial);
 };
 
 // Register a handlebars helper for themes
