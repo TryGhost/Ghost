@@ -141,7 +141,7 @@ errors = {
             }
 
             // TODO: Attach node-polyglot
-            res.render((errorView || 'error'), {
+            res.status(code).render((errorView || 'error'), {
                 message: err.message || err,
                 code: code,
                 stack: stack
