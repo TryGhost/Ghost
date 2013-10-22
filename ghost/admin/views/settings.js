@@ -214,7 +214,7 @@
                         success: self.saveSuccess,
                         error: self.saveError
                     }).then(function () {
-                        self.render();
+                        self.saveSettings();
                     });
 
                     return true;
@@ -275,7 +275,7 @@
                         success: self.saveSuccess,
                         error: self.saveError
                     }).then(function () {
-                        self.render();
+                        self.saveUser();
                     });
                     return true;
                 },
