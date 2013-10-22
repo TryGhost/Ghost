@@ -203,7 +203,8 @@ var path           = require('path'),
             mochacli: {
                 options: {
                     ui: 'bdd',
-                    reporter: 'spec'
+                    reporter: 'spec',
+                    timeout: '15000'
                 },
 
                 all: {

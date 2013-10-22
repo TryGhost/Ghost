@@ -26,7 +26,6 @@ describe('User Model', function run() {
 
     describe('Registration', function runRegistration() {
         beforeEach(function (done) {
-            this.timeout(5000);
             testUtils.initData().then(function () {
                 done();
             }, done);
@@ -49,7 +48,6 @@ describe('User Model', function run() {
     describe('Basic Operations', function () {
 
         beforeEach(function (done) {
-            this.timeout(5000);
             testUtils.initData()
                 .then(function () {
                     return when(testUtils.insertDefaultUser());

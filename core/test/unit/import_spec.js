@@ -43,8 +43,6 @@ describe("Import", function () {
     });
 
     describe("000", function () {
-        this.timeout(4000);
-
         should.exist(Importer000);
 
         it("imports data from 000", function (done) {
