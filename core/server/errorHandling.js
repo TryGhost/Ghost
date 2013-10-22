@@ -191,7 +191,7 @@ errors = {
             }
             errors.renderErrorPage(500, err, req, res, next);
         } else {
-            res.send(500, err);
+            res.send(err.status || 500, err);
         }
     }
 };
