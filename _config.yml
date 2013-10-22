@@ -6,6 +6,8 @@ languages:
       key: 'en'
     - name: 'Español'
       key: 'es'
+    - name: '中文'
+      key: 'cn'
 port:         4478
 
 # If running locally, simply comment out the line below to make all urls relative
