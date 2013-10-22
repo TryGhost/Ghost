@@ -258,7 +258,7 @@ Post = ghostBookshelf.Model.extend({
                 }
 
                 return qb.count(_.result(collection, 'idAttribute')).then(function (resp) {
-                    var totalPosts = resp[0].aggregate,
+                    var totalPosts = parseInt(resp[0].aggregate, 10),
                         data = {
                             posts: collection.toJSON(),
                             page: parseInt(opts.page, 10),
