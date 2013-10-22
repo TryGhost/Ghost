@@ -190,7 +190,7 @@
 
     .user-image {
         @include box-sizing(border-box);
-        display: table;
+        display: block;
         position: relative;
         width: 120px;
         height: 120px;
@@ -211,6 +211,7 @@
             background-image: url(/shared/img/user-image.png);
             background-size: cover;
             background-position: center center;
+            border-radius: 100%;
         }
 
         &:hover {
