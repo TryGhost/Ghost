@@ -834,6 +834,28 @@ nav {
    Post Settings
    ========================================================================== */
 
+.post-settings-menu {
+    text-transform: none;
+
+    li {
+        a {
+            padding: 10px 15px;
+
+            &:before {
+                font-size: 11px;
+                line-height: 1em;
+                margin-right: 1em;
+            }
+        }
+    }
+
+    .delete {
+        @include icon($i-trash) { position: relative; top: -2px; };
+
+        &:hover { background: $red; }
+    }
+}
+
 .post-setting {
     min-width: 260px;
     border-bottom: 1px solid #35393b;
