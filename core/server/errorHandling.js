@@ -6,17 +6,22 @@ var _      = require('underscore'),
     errors,
 
     // Paths for views
-    appRoot                  = path.resolve(__dirname, '../'),
-    themePath                = path.resolve(appRoot + '/content/themes'),
-    adminTemplatePath        = path.resolve(appRoot + '/server/views/'),
-    defaultErrorTemplatePath = path.resolve(adminTemplatePath + '/user-error.hbs'),
-    userErrorTemplatePath    = path.resolve(themePath + '/error.hbs'),
+    appRoot                  = path.resolve(__dirname, '..', '..'),
+    themePath                = path.resolve(appRoot, 'content', 'themes'),
+    adminTemplatePath        = path.resolve(appRoot, 'core', 'server', 'views'),
+    defaultErrorTemplatePath = path.resolve(adminTemplatePath, 'user-error.hbs'),
+    userErrorTemplatePath    = path.resolve(themePath, 'error.hbs'),
     userErrorTemplateExists;
 
 /**
  * Basic error handling helpers
  */
 errors = {
+    updateActiveTheme: function (activeTheme) {
+        userErrorTemplatePath = path.resolve(themePath, activeTheme, 'error.hbs');
+        userErrorTemplateExists = undefined;
+    },
+
     throwError: function (err) {
         if (!err) {
             err = new Error("An error occurred");
@@ -104,7 +109,7 @@ errors = {
     renderErrorPage: function (code, err, req, res, next) {
 
         function parseStack(stack) {
-            if (typeof stack !== 'string') {
+            if (_.isString(stack)) {
                 return stack;
             }
 
