@@ -280,11 +280,7 @@ when(ghost.init()).then(function () {
     server.use(express.urlencoded());
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
-    server.use('/ghost/debug/db/import/', express.multipart());
-
-    // Session handling
-    // Pro tip: while in development mode cookieSession can be used
-    // to keep you logged in while restarting the server
+    server.use('/api/v0.1/db/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
 
@@ -335,7 +331,9 @@ when(ghost.init()).then(function () {
     // #### Notifications
     server.del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
     server.post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
-
+    // #### Import/Export
+    server.get('/api/v0.1/db/', auth, api.db['export']);
+    server.post('/api/v0.1/db/', auth, api.db['import']);
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
@@ -358,10 +356,10 @@ when(ghost.init()).then(function () {
     server.get('/ghost/content/', auth, admin.content);
     server.get('/ghost/settings*', auth, admin.settings);
     server.get('/ghost/debug/', auth, admin.debug.index);
-    server.get('/ghost/debug/db/export/', auth, admin.debug['export']);
-    server.post('/ghost/debug/db/import/', auth, admin.debug['import']);
+
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
     server.post('/ghost/upload/', auth, admin.uploader);
+
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
         res.redirect('/ghost/');

@@ -1,11 +1,12 @@
 // # Ghost Data API
 // Provides access to the data model
 
-var Ghost        = require('../ghost'),
+var Ghost        = require('../../ghost'),
     _            = require('underscore'),
     when         = require('when'),
-    errors       = require('./errorHandling'),
-    permissions  = require('./permissions'),
+    errors       = require('../errorHandling'),
+    permissions  = require('../permissions'),
+    db           = require('./db'),
     canThis      = permissions.canThis,
 
     ghost        = new Ghost(),
@@ -405,4 +406,5 @@ module.exports.users = users;
 module.exports.tags = tags;
 module.exports.notifications = notifications;
 module.exports.settings = settings;
+module.exports.db = db.db;
 module.exports.requestHandler = requestHandler;
