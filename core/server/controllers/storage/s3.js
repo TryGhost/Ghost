@@ -1,5 +1,6 @@
 // S3 image storage
 var AWS = require('aws-sdk'),
+    errors = require('../../errorHandling'),
     fs = require('fs'),
     path = require('path'),
     when = require('when');
@@ -19,6 +20,7 @@ var s3ImageStore = {
         s3.client.putObject({Bucket: config.bucket, Key: key, Body: stream}).
             on('complete', function (res) {
                 if (res.error) {
+                    errors.logError(res.error);
                     return saved.reject(res.error);
                 }
 
