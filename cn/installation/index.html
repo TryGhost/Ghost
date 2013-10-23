@@ -17,7 +17,7 @@ next_section: mac
 
             <h2 id="overview">概览</h2>
 
-            <p>Ghost文档还不完备，仍在继续完善中，每天可能都会有更新和改进。如果你遇到了难题或者有改进意见，前告诉我们。</p>
+            <p>Ghost文档还不完备，仍在继续完善中，每天可能都会有更新和改进。如果你遇到了难题或者有改进意见，请告诉我们。</p>
 
             <p>Ghost构建于<a href="http://nodejs.org">Node.js</a>平台之上，支持<code>0.10.*</code>版本（最新稳定版）的Node.js。</p>
 
@@ -25,19 +25,19 @@ next_section: mac
 
             <h3>什么是Node.js？</h3>
 
-            <p><a href="http://nodejs.org">Node.js</a>是构建快速、扩展性好并且高效的web应用的开发平台。再过去的20年间，web从一堆静态页面进化为能够支持复杂web应用（例如Gmail和facebook）的平台。而JavaScript这一编程语言是这一进程的推进剂。</p>
+            <p><a href="http://nodejs.org">Node.js</a>是构建快速、扩展性良好并且高效的web应用的开发平台。在过去的20年间，web从一堆静态页面进化为能够支持复杂web应用（例如Gmail和facebook）的平台。而JavaScript这一编程语言是这一进程的推进剂。</p>
 
-            <p><a href="http://nodejs.org">Node.js</a> provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.</p>
+            <p><a href="http://nodejs.org">Node.js</a>让我们具有了开发服务器端JavaScript程序的能力。而在以前，JavaScript只能在浏览器上运行，如果要开发服务器端的程序，就要使用PHP一类的编程语言了。如果能够用同一种开发语言来完成web应用的开发，这将是多么棒！并且，Node.js还赋予了前端开发工程师更大的能力。</p>
 
-            <p>The way that <a href="http://nodejs.org">Node.js</a> makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
-                The following sections detail how to install Ghost locally on <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/">Mac</a>,  <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/">Windows</a> or <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/">Linux</a> or alternatively will help you get Ghost deployed on a <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy">server or hosting</a> account.</p>
+            <p><a href="http://nodejs.org">Node.js</a>让这一切变为可能，其原理是对Google Chrome浏览器所用的JavaScript引擎进行了包装，让它能够跨平台运行。也就是说，你能在自己的电脑上非常快速的安装Ghost并让它非常快捷、方便的跑起来。
+                接下来我们详细讲解如何在<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/">Mac</a>、<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/window/">Windows</a>或<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/">Linux</a>上安装Ghost，另外还介绍了如何在<a href="/cn/installation/deploy">服务器或托管空间</a>上部署Ghost。</p>
 
 
-            <h3>Getting started</h3>
+            <h3>起步</h3>
 
-            <p>If you don't fancy following instructions on installing Node.js and Ghost manually, the lovely people over at <a href="http://bitnami.com/">BitNami</a> have created <a href="http://bitnami.com/stack/ghost">Ghost installers</a> for all major platforms.</p>
+            <p>如果你厌烦了手工安装Node.js和Ghost，可以试试<a href="http://bitnami.com/">BitNami</a>团队开发的<a href="http://bitnami.com/stack/ghost">Ghost安装工具</a>，它提供了对所有主流平台的支持。</p>
 
-            <p>I want to install Ghost on:</p>
+            <p>Ghost支持的平台：</p>
 
             <div class="text-center install-ghost">
                 <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/" class="btn btn-success btn-large">Mac</a>
@@ -45,15 +45,15 @@ next_section: mac
                 <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
             </div>
 
-            <p>If you've already decided to deploy Ghost to your server or hosting account, that's great news! The following documentation will walk you through various options for deploying Ghost, from manual setups, to one-click installers.</p>
+            <p>如果你决定在你的服务器或托管空间上部署Ghost，这对我们是个非常好的消息！下面的文档可以给你详细的部署指南，从手工设置到一键安装包都有涉及。</p>
 
             <div class="text-center install-ghost">
-               <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Get Ghost Live</a>
+               <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">部署Ghost</a>
             </div>
 
 
             <p>请记住，Ghost还非常新，它的开发小组还在非常努力的实现新的功能。如果你需要升级Ghost到最新版本，请参考<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/upgrading/">Ghost升级文档</a>。
-                如果入到任何问题，请参考<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/">除错指南</a>，如果你的问题还不能得到解决，请在<a href="http://ghost.org/forum">Ghost论坛</a>提问，这里聚集了Ghost核心小组的成员和社区成员，他们会非常乐意帮你解决问题。</p>
+                如果遇到任何问题，请参考<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/">除错指南</a>，如果你的问题还不能得到解决，请在<a href="http://ghost.org/forum">Ghost论坛</a>提问，这里聚集了Ghost核心小组的成员和社区成员，他们会非常乐意帮你解决问题。</p>
 
             {% if page.next_section || page.prev_section %}
                {% include pagination.html %}
