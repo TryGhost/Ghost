@@ -93,7 +93,7 @@ var path           = require('path'),
                 },
                 express: {
                     // Restart any time client or server js files change
-                    files:  ['core/server/**/*.js'],
+                    files:  ['core/server.js', 'core/server/**/*.js'],
                     tasks:  ['express:dev'],
                     options: {
                         //Without this option specified express won't be reloaded
