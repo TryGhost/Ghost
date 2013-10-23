@@ -11,6 +11,8 @@
             'blur  .post-setting-slug' : 'editSlug',
             'click .post-setting-slug' : 'selectSlug',
             'blur  .post-setting-date' : 'editDate',
+            'blur  .post-setting-meta-title' : 'editMetaTitle',
+            'blur  .post-setting-meta-description' : 'editMetaDescription',
             'click .delete' : 'deletePost'
         },
 
@@ -25,9 +27,13 @@
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
+                metaTitle = this.model ? this.model.get('meta_title') : '',
+                metaDesc = this.model ? this.model.get('meta_description') : '',
                 $pubDateEl = this.$('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
+            $('.post-setting-meta-title').val(metaTitle);
+            $('.post-setting-meta-desciption').val(metaDesc);
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
@@ -139,6 +145,70 @@
                 }
             });
 
+        },
+
+        editMetaTitle: function (e) {
+            e.preventDefault();
+            var self = this,
+                metaTitle = self.model.get('meta_title'),
+                metaTitleEl = e.currentTarget,
+                newMetaTitle = metaTitleEl.value;
+
+            if (_.isEmpty(newMetaTitle) || _.isEqual(metaTitle, newMetaTitle)) {
+                metaTitleEl.value = metaTitle === undefined ? '' : metaTitle;
+                return;
+            }
+
+            this.model.save({
+                meta_title: newMetaTitle
+            }, {
+                success : function (model, response, options) {
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Meta title successfully changed to <strong>" + model.get('meta_title') + '</strong>.',
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
+        },
+
+        editMetaDescription: function (e) {
+            e.preventDefault();
+            var self = this,
+                metaDesc = self.model.get('meta_description'),
+                metaDescEl = e.currentTarget,
+                newMetaDesc = metaDescEl.value;
+
+            if (_.isEmpty(newMetaDesc) || _.isEqual(metaDesc, newMetaDesc)) {
+                metaDescEl.value = metaDesc === undefined ? '' : metaDesc;
+                return;
+            }
+
+            this.model.save({
+                meta_description: newMetaDesc
+            }, {
+                success : function (model, response, options) {
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: "Meta description successfully changed to <strong>" + model.get('meta_description') + '</strong>.',
+                        status: 'passive'
+                    });
+                },
+                error : function (model, xhr) {
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                        status: 'passive'
+                    });
+                }
+            });
         },
 
         deletePost: function (e) {

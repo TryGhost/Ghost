@@ -38,7 +38,9 @@ Post = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
+        ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank.").notEmpty();
+        ghostBookshelf.validator.check(this.get('meta_title'), "Meta title too long. Please keep it below 150 characters.").len(0, 150);
+        ghostBookshelf.validator.check(this.get('meta_description'), "Meta description too long. Please keep it below 200 characters.").len(0, 200);
 
         return true;
     },
