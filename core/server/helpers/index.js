@@ -120,14 +120,27 @@ coreHelpers = function (ghost) {
     // and can be used for more complex templates.
     ghost.registerThemeHelper('tags', function (options) {
         var separator = ', ',
+            prefix,
+            output,
             tagNames;
 
         if (_.isString(options.hash.separator)) {
             separator = options.hash.separator;
         }
 
+        if (_.isString(options.hash.prefix)) {
+            prefix = options.hash.prefix;
+        }
+
         tagNames = _.pluck(this.tags, 'name');
-        return tagNames.join(separator);
+
+        if (tagNames.length && prefix) {
+            output = prefix + tagNames.join(separator);
+        } else {
+            output = tagNames.join(separator);
+        }
+
+        return output;
     });
 
     // ### Content Helper
