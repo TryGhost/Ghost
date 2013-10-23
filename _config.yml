@@ -10,6 +10,22 @@ languages:
       key: 'cn'
 port:         4478
 
+translations:
+  es:
+    site_title:   'Ghost Guide'
+    installation: 'Instalación'
+    usage:        'uso'
+    email:        'Email'
+    themes:       'temas'
+    help:         'ayudar'
+  cn:
+    site_title:   'Ghost使用指南'
+    installation: '安装'
+    usage:        '使用'
+    email:        '邮件设置'
+    themes:       '主题'
+    help:         '帮助'
+
 # If running locally, simply comment out the line below to make all urls relative
 
 #url:          http://docs.ghost.org

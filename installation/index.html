@@ -31,7 +31,7 @@ next_section: mac
             <p><a href="http://nodejs.org">Node.js</a> provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.</p>
 
             <p>The way that <a href="http://nodejs.org">Node.js</a> makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
-                The following sections detail how to install Ghost locally on <a href="/installation/mac/">Mac</a>,  <a href="/installation/window/">Windows</a> or <a href="/installation/linux/">Linux</a> or alternatively will help you get Ghost deployed on a <a href="/installation/deploy">server or hosting</a> account.</p>
+                The following sections detail how to install Ghost locally on <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/">Mac</a>,  <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/window/">Windows</a> or <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/">Linux</a> or alternatively will help you get Ghost deployed on a <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy">server or hosting</a> account.</p>
 
 
             <h3>Getting started</h3>
@@ -41,20 +41,20 @@ next_section: mac
             <p>I want to install Ghost on:</p>
 
             <div class="text-center install-ghost">
-                <a href="/installation/mac/" class="btn btn-success btn-large">Mac</a>
-                <a href="/installation/windows/" class="btn btn-success btn-large">Windows</a>
-                <a href="/installation/linux/" class="btn btn-success btn-large">Linux</a>
+                <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/" class="btn btn-success btn-large">Mac</a>
+                <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/" class="btn btn-success btn-large">Windows</a>
+                <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
             </div>
 
             <p>If you've already decided to deploy Ghost to your server or hosting account, that's great news! The following documentation will walk you through various options for deploying Ghost, from manual setups, to one-click installers.</p>
 
             <div class="text-center install-ghost">
-               <a href="/installation/deploy/" class="btn btn-success btn-large">Get Ghost Live</a>
+               <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Get Ghost Live</a>
             </div>
 
 
             <p>Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our <a href="/installation/upgrading/">upgrading documentation</a>.
-                If you get stuck, checkout the <a href="/installation/troubleshooting/">troubleshooting guide</a>, or if that doesn't help, please get in touch via the <a href="http://ghost.org/forum">Ghost forum</a> where the Ghost staff and community are on hand to help you with any problems.</p>
+                If you get stuck, checkout the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/">troubleshooting guide</a>, or if that doesn't help, please get in touch via the <a href="http://ghost.org/forum">Ghost forum</a> where the Ghost staff and community are on hand to help you with any problems.</p>
 
             {% if page.next_section || page.prev_section %}
                {% include pagination.html %}

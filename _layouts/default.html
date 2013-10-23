@@ -1,20 +1,3 @@
----
-translations:
-  es:
-    site_title:   'Ghost Guide'
-    installation: 'Instalación'
-    usage:        'uso'
-    email:        'Email'
-    themes:       'temas'
-    help:         'ayudar'
-  cn:
-    site_title:   'Ghost使用指南'
-    installation: '安装'
-    usage:        '使用'
-    email:        '邮件设置'
-    themes:       '主题'
-    help:         '帮助'
----
 <!DOCTYPE html>
 <html lang="{% if page.lang %}{{page.lang}}{% else %}en{% endif %}">
 <head>
@@ -56,7 +39,7 @@ translations:
   <nav class="container">
     <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}" class="navbar-brand">
       {% if page.lang %}
-        {{page.translations.[page.lang].site_title}}
+        {{site.translations.[page.lang].site_title}}
       {% else %}
         Ghost Guide
       {% endif %}
@@ -71,7 +54,7 @@ translations:
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/">
             {% if page.lang %}
-              {{page.translations.[page.lang].installation}}
+              {{site.translations.[page.lang].installation}}
             {% else %}
               Installation
             {% endif %}
@@ -80,7 +63,7 @@ translations:
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}usage/">
             {% if page.lang %}
-              {{page.translations.[page.lang].usage}}
+              {{site.translations.[page.lang].usage}}
             {% else %}
               Usage
             {% endif %}
@@ -89,7 +72,7 @@ translations:
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}mail/">
             {% if page.lang %}
-              {{page.translations.[page.lang].email}}
+              {{site.translations.[page.lang].email}}
             {% else %}
               Email
             {% endif %}
@@ -98,7 +81,7 @@ translations:
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}themes/">
             {% if page.lang %}
-              {{page.translations.[page.lang].themes}}
+              {{site.translations.[page.lang].themes}}
             {% else %}
               Themes
             {% endif %}
@@ -107,7 +90,7 @@ translations:
         <li>
           <a href="http://ghost.org/forum/">
             {% if page.lang %}
-              {{page.translations.[page.lang].help}}
+              {{site.translations.[page.lang].help}}
             {% else %}
               Help
             {% endif %}

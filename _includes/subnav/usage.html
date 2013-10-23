@@ -15,8 +15,8 @@
 
             <li class="{% if page.url == index_url %}active{% endif %}">
                 <a href="{{ base_url }}">
-                    {% if page.lang %}
-                        {{page.translations.[page.lang][chapter]}}
+                    {% if page.lang and site.translations.[page.lang].[chapter] %}
+                        {{site.translations.[page.lang].[chapter]}}
                     {% else %}
                         {{ chapter | capitalize }}
                     {% endif %}
@@ -28,8 +28,8 @@
 
                 <li class="{% if page.url == item_url %}active{% endif %}">
                     <a href="{{ item_url }}">
-                        {% if page.lang %}
-                            {{page.translations.[page.lang][item]}}
+                        {% if page.lang and site.translations.[page.lang].[item] %}
+                            {{site.translations.[page.lang].[item]}}
                         {% else %}
                             {% if item == 'faq' %}
                                  FAQ
