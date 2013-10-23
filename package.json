@@ -33,7 +33,7 @@
         "bookshelf": "0.5.7",
         "knex": "0.4.11",
         "when": "2.2.1",
-        "bcrypt-nodejs": "0.0.3",
+        "bcryptjs": "0.7.10",
         "node-uuid": "1.4.0",
         "colors": "0.6.1",
         "semver": "2.1.0",
