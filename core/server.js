@@ -283,7 +283,7 @@ when(ghost.init()).then(function () {
     server.use(express.urlencoded());
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
-    server.use('/api/v0.1/db/', express.multipart());
+    server.use('/ghost/api/v0.1/db/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
 
@@ -316,27 +316,27 @@ when(ghost.init()).then(function () {
     // ### API routes
     /* TODO: auth should be public auth not user auth */
     // #### Posts
-    server.get('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
-    server.post('/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
-    server.get('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
-    server.put('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
-    server.del('/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+    server.get('/ghost/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
+    server.post('/ghost/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
+    server.get('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
+    server.put('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
+    server.del('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
     // #### Settings
-    server.get('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
-    server.get('/api/v0.1/settings/:key/', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
-    server.put('/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
+    server.get('/ghost/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
+    server.get('/ghost/api/v0.1/settings/:key/', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
+    server.put('/ghost/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
     // #### Users
-    server.get('/api/v0.1/users/', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
-    server.get('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.read));
-    server.put('/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    server.get('/ghost/api/v0.1/users/', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
+    server.get('/ghost/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.read));
+    server.put('/ghost/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
     // #### Tags
-    server.get('/api/v0.1/tags/', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
+    server.get('/ghost/api/v0.1/tags/', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
     // #### Notifications
-    server.del('/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
-    server.post('/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
+    server.del('/ghost/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
+    server.post('/ghost/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
     // #### Import/Export
-    server.get('/api/v0.1/db/', auth, api.db['export']);
-    server.post('/api/v0.1/db/', auth, api.db['import']);
+    server.get('/ghost/api/v0.1/db/', auth, api.db['export']);
+    server.post('/ghost/api/v0.1/db/', auth, api.db['import']);
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
