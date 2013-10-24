@@ -31,6 +31,7 @@
             this.options.key = options.key;
             this.options.src = options.src;
             this.options.confirm.accept = options.accept;
+            this.options.acceptEncoding = options.acceptEncoding || 'image/*';
         }
     });
 
