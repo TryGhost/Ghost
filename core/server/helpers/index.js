@@ -192,6 +192,7 @@ coreHelpers = function (ghost) {
 
         /*jslint regexp:true */
         excerpt = String(this.html).replace(/<\/?[^>]+>/gi, '');
+        excerpt = excerpt.replace(/(\r\n|\n|\r)+/gm, ' ');
         /*jslint regexp:false */
 
         if (!truncateOptions.words && !truncateOptions.characters) {
