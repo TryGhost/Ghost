@@ -9,7 +9,7 @@ var ghostBookshelf,
     sanitize  = require('validator').sanitize;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
-ghostBookshelf = Bookshelf.initialize(config[process.env.NODE_ENV || 'development'].database);
+ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config[process.env.NODE_ENV || 'development'].database);
 ghostBookshelf.client = config[process.env.NODE_ENV].database.client;
 
 ghostBookshelf.validator = new Validator();
