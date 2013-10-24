@@ -205,7 +205,7 @@
                     headers: {
                         'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
                     },
-                    url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
+                    url: Ghost.settings.apiRoot + '/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
                     bbSelf.$el.slideUp(250, function () {
                         $(this).show().css({height: "auto"});
@@ -237,7 +237,7 @@
                 headers: {
                     'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
                 },
-                url: '/api/v0.1/notifications/' + $(self).data('id')
+                url: Ghost.settings.apiRoot + '/notifications/' + $(self).data('id')
             }).done(function (result) {
                 var height = bbSelf.$('.js-notification').outerHeight(true),
                     $parent = $(self).parent();
