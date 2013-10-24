@@ -10,7 +10,7 @@
         Validate    : new Validator(),
 
         settings: {
-            apiRoot: '/api/v0.1'
+            apiRoot: '/ghost/api/v0.1'
         },
 
         // This is a helper object to denote legacy things in the

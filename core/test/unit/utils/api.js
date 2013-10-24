@@ -2,7 +2,7 @@ var _ = require('underscore'),
     when = require('when'),
     http = require('http'),
     HttpMethods,
-    ApiRouteBase = '/api/v0.1/';
+    ApiRouteBase = '/ghost/api/v0.1/';
 
 HttpMethods = {
     GET: 'GET',
