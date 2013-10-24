@@ -114,20 +114,23 @@ function ghostLocals(req, res, next) {
     res.locals.csrfToken = req.csrfToken();
 
     if (res.isAdmin) {
-        _.extend(res.locals,  {
-            messages: ghost.notifications
-        });
-
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 currentUser: {
                     name: currentUser.name,
                     email: currentUser.email,
                     image: currentUser.image
-                }
+                },
+                messages: ghost.notifications
             });
             next();
         }).otherwise(function () {
+            // Only show passive notifications
+            _.extend(res.locals, {
+                messages: _.reject(ghost.notifications, function (notification) {
+                    return notification.status !== 'passive';
+                })
+            });
             next();
         });
     } else {
