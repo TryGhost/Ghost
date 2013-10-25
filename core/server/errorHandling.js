@@ -109,7 +109,7 @@ errors = {
     renderErrorPage: function (code, err, req, res, next) {
 
         function parseStack(stack) {
-            if (_.isString(stack)) {
+            if (!_.isString(stack)) {
                 return stack;
             }
 
