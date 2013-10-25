@@ -65,7 +65,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (this.hasChanged('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return this.generateSlug(Post, this.get('slug'))
+            return this.generateSlug(Post, this.get('slug'), { status: 'all' })
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
@@ -84,7 +84,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
-            return this.generateSlug(Post, this.get('title'))
+            return this.generateSlug(Post, this.get('title'), { status: 'all' })
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
@@ -181,6 +181,15 @@ Post = ghostBookshelf.Model.extend({
     // Extends base model findOne to eager-fetch author and user relationships.
     findOne: function (args, options) {
         options = options || {};
+
+        args = _.extend({
+            status: 'published'
+        }, args || {});
+
+        if (args.status === 'all') {
+            delete args.status;
+        }
+
         options.withRelated = [ 'author', 'user', 'tags' ];
         return ghostBookshelf.Model.findOne.call(this, args, options);
     },

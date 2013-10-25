@@ -262,7 +262,8 @@ describe('Post Model', function () {
                 updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
                 return PostModel.read({
-                    id: updatedSecondPost.id
+                    id: updatedSecondPost.id,
+                    status: 'all'
                 });
             }).then(function (foundPost) {
 
