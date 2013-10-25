@@ -1,4 +1,8 @@
 <section class="notification{{#if type}}-{{type}}{{/if}} notification-{{status}} js-notification">
     {{{message}}}
+    {{#if options}}
+    <button class="js-notification-button-accept">{{options.accept.text}}</button>
+    <button class="js-notification-button-reject">{{options.reject.text}}</button>
+    {{/if}}
     <a class="close" href="#"><span class="hidden">Close</span></a>
 </section>

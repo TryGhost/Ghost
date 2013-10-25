@@ -948,6 +948,22 @@ nav {
         background: rgba(0,0,0,0.1);
     };
 
+    button {
+        display: inline-block;
+        min-height: 0;
+        padding: 8px;
+        background: darken($blue, 5%);
+        box-shadow: none;
+        border: none;
+        color: #fff;
+
+        &:hover {background: darken($blue, 10%);}
+
+        &:first-child {
+            margin-left: 10px;
+        }
+    }
+
     .close {
         @include icon-after($i-close) {
             padding:6px;

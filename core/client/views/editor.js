@@ -1,6 +1,6 @@
 // # Article Editor
 
-/*global window, document, setTimeout, navigator, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable, JST */
+/*global window, document, localStorage, setTimeout, navigator, $, _, Backbone, Ghost, Showdown, CodeMirror, shortcut, Countable, JST */
 (function () {
     "use strict";
 
@@ -305,7 +305,6 @@
             this.$('.CodeMirror-scroll').scrollClass({target: '.entry-markdown', offset: 10});
             this.$('.entry-preview-content').scrollClass({target: '.entry-preview', offset: 10});
 
-
             // Zen writing mode shortcut
             shortcut.add("Alt+Shift+Z", function () {
                 $('body').toggleClass('zen');
@@ -315,7 +314,6 @@
                 $('.entry-markdown, .entry-preview').removeClass('active');
                 $(e.target).closest('section').addClass('active');
             });
-
         },
 
         events: {
@@ -383,6 +381,52 @@
             }
         },
 
+        temporarilySave: function () {
+            var url = window.location.pathname.split('/'),
+                postTarget = url[3],
+                self = this,
+                currentSavedContent = JSON.parse(localStorage.getItem('tempPostContent'));
+            if (!postTarget) {
+                postTarget = "new";
+            }
+
+            if (!currentSavedContent[postTarget] || this.editor.getValue()) {
+                currentSavedContent[postTarget] = self.editor.getValue();
+                localStorage.setItem("tempPostContent", JSON.stringify(currentSavedContent));
+            }
+        },
+
+        restoreTempSave: function (editor) {
+            var url = window.location.pathname.split('/'),
+                postTarget = url[3],
+                currentSavedContent = JSON.parse(localStorage.getItem('tempPostContent'));
+            if (!postTarget) {
+                postTarget = "new";
+            }
+
+            Ghost.notifications.addItem({
+                type: 'info',
+                message: "You have temporarily saved content, would you like to use it?",
+                status: 'passive',
+                options: {
+                    accept: {
+                        func: function () {
+                            editor.setValue(currentSavedContent[postTarget]);
+                        },
+                        text: "Yes"
+                    },
+                    reject: {
+                        func: function () {
+                            currentSavedContent[postTarget] = "";
+                            localStorage.setItem("tempPostContent", JSON.stringify(currentSavedContent));
+                            return true;
+                        },
+                        text: "No"
+                    }
+                }
+            });
+        },
+
         // This updates the editor preview panel.
         // Currently gets called on every key press.
         // Also trigger word count update
@@ -402,7 +446,13 @@
 
         // Markdown converter & markdown shortcut initialization.
         initMarkdown: function () {
-            var self = this;
+            var self = this,
+                init;
+
+            if (localStorage.getItem('tempPostContent') === null) {
+                init = {"new": ""};
+                localStorage.setItem('tempPostContent', JSON.stringify(init));
+            }
 
             this.converter = new Showdown.converter({extensions: ['ghostdown', 'github']});
             this.editor = CodeMirror.fromTextArea(document.getElementById('entry-markdown'), {
@@ -453,11 +503,25 @@
         },
 
         enableEditor: function () {
-            var self = this;
+            var self = this,
+                url = window.location.pathname.split('/'),
+                postTarget = url[3],
+                currentSavedContent;
             this.editor.setOption("readOnly", false);
             this.editor.on('change', function () {
                 self.renderPreview();
+                self.temporarilySave();
             });
+
+            if (!postTarget) {
+                postTarget = "new";
+            }
+
+            currentSavedContent = JSON.parse(localStorage.getItem('tempPostContent'));
+            if (currentSavedContent[postTarget] && currentSavedContent[postTarget] !== this.editor.getValue()) {
+                this.restoreTempSave(this.editor);
+            }
+
         },
 
         disableEditor: function () {
