@@ -340,15 +340,22 @@ Ghost.prototype.doFilter = function (name, args, callback) {
     callback(args);
 };
 
-// Initialise plugins.  Will load from config.activePlugins by default
+// Initialise plugins.  Will load from settings.activePlugins by default
 Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    pluginsToLoad = pluginsToLoad || models.Settings.activePlugins;
+    if (!pluginsToLoad) {
+        pluginsToLoad = models.Settings.read('activePlugins').then(function (model) {
+            return JSON.parse(model.attributes.value);
+        });
+    }
+
     var self = this;
 
-    return plugins.init(this, pluginsToLoad).then(function (loadedPlugins) {
-        // Extend the loadedPlugins onto the available plugins
-        _.extend(self.availablePlugins, loadedPlugins);
-    }, errors.logAndThrowError);
+    return when(pluginsToLoad).then(function (pluginsToLoad) {
+        plugins.init(self, pluginsToLoad).then(function (loadedPlugins) {
+            // Extend the loadedPlugins onto the available plugins
+            _.extend(self.availablePlugins, loadedPlugins);
+        }, errors.logAndThrowError);
+    });
 };
 
 module.exports = Ghost;
