@@ -3,7 +3,7 @@ var path           = require('path'),
     semver         = require('semver'),
     fs             = require('fs'),
     _              = require('underscore'),
-    spawn          = require("child_process").spawn,
+    spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
     configLoader   = require('./core/config-loader.js'),
@@ -111,7 +111,7 @@ var path           = require('path'),
 
                 dev: {
                     options: {
-                        //output: "Express server listening on address:.*$"
+                        //output: 'Express server listening on address:.*$'
                     }
                 },
                 test: {
@@ -497,8 +497,7 @@ var path           = require('path'),
 
         grunt.initConfig(cfg);
 
-        grunt.registerTask('setTestEnv', function () {
-            // Use 'testing' Ghost config; unless we are running on travis (then show queries for debugging)
+        grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
             process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
         });
 
@@ -509,8 +508,7 @@ var path           = require('path'),
             });
         });
 
-        // Update the package information after changes
-        grunt.registerTask('updateCurrentPackageInfo', function () {
+        grunt.registerTask('updateCurrentPackageInfo', 'Update the package information after changes', function () {
             cfg.pkg = grunt.file.readJSON('package.json');
         });
 
@@ -552,7 +550,7 @@ var path           = require('path'),
          * - Pulls changelog from git, excluding merges.
          * - Uses first line of commit message. Includes committer name.
          */
-        grunt.registerTask("changelog", "Generate changelog from Git", function () {
+        grunt.registerTask('changelog', 'Generate changelog from Git', function () {
             // TODO: Break the contents of this task out into a separate module,
             // put on npm. (@cgiffard)
 
@@ -727,12 +725,12 @@ var path           = require('path'),
                         // Use the comparison with HEAD to remove commits which
                         // haven't been included in a build/release yet.
 
-                        if (tag.tag === "HEAD") {
+                        if (tag.tag === 'HEAD') {
                             commits.forEach(function (commit) {
                                 commitCache[commit.hash] = true;
                             });
 
-                            return callback("");
+                            return callback('');
                         }
 
                         buffer += '## Release ' + tag.tag + '\n';
@@ -753,7 +751,7 @@ var path           = require('path'),
                             });
 
                         if (!commits.length) {
-                            buffer += "\nNo changes were made in this build.\n";
+                            buffer += '\nNo changes were made in this build.\n';
                         }
 
                         callback(buffer + '\n');
@@ -792,52 +790,52 @@ var path           = require('path'),
             });
         });
 
-        /* Nightly builds
-         * - Do our standard build steps (sass, handlebars, etc)
-         * - Bump patch version in package.json, commit, tag and push
-         * - Generate changelog for the past 14 releases
-         * - Copy files to build-folder/#/#{version} directory
-         * - Clean out unnecessary files (travis, .git*, .af*, .groc*)
-         * - Zip files in build folder to dist-folder/#{version} directory
-         */
-        grunt.registerTask("nightly", [
-            "setCurrentBuildType:Nightly",
-            "shell:bourbon",
-            "sass:compress",
-            "handlebars",
-            "concat",
-            "uglify",
-            "bump:build",
-            "updateCurrentPackageInfo",
-            "changelog",
-            "copy:nightly",
-            "compress:nightly"
+        grunt.registerTask('nightly',
+            'Nightly builds\n' +
+            ' - Do our standard build steps (sass, handlebars, etc)\n' +
+            ' - Bump patch version in package.json, commit, tag and push\n' +
+            ' - Generate changelog for the past 14 releases\n' +
+            ' - Copy files to build-folder/#/#{version} directory\n' +
+            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
+            ' - Zip files in build folder to dist-folder/#{version} directory',
+            [
+                'setCurrentBuildType:Nightly',
+                'shell:bourbon',
+                'sass:compress',
+                'handlebars',
+                'concat',
+                'uglify',
+                'bump:build',
+                'updateCurrentPackageInfo',
+                'changelog',
+                'copy:nightly',
+                'compress:nightly'
+            ]);
+
+        grunt.registerTask('weekly', [
+            'setCurrentBuildType:Weekly',
+            'shell:bourbon',
+            'sass:compress',
+            'handlebars',
+            'concat',
+            'uglify',
+            'bump:build',
+            'updateCurrentPackageInfo',
+            'changelog',
+            'copy:weekly',
+            'compress:weekly'
         ]);
 
-        grunt.registerTask("weekly", [
-            "setCurrentBuildType:Weekly",
-            "shell:bourbon",
-            "sass:compress",
-            "handlebars",
-            "concat",
-            "uglify",
-            "bump:build",
-            "updateCurrentPackageInfo",
-            "changelog",
-            "copy:weekly",
-            "compress:weekly"
-        ]);
-
-        grunt.registerTask("build", [
-            "shell:bourbon",
-            "sass:compress",
-            "handlebars",
-            "concat",
-            "uglify",
-            "changelog",
-            "clean:build",
-            "copy:build",
-            "compress:build"
+        grunt.registerTask('build', [
+            'shell:bourbon',
+            'sass:compress',
+            'handlebars',
+            'concat',
+            'uglify',
+            'changelog',
+            'clean:build',
+            'copy:build',
+            'compress:build'
         ]);
 
         grunt.registerTask('release', [
@@ -852,38 +850,33 @@ var path           = require('path'),
             'compress:release'
         ]);
 
-        // Dev Mode; watch files and restart server on changes
-        grunt.registerTask("dev", [
-            "sass:admin",
-            "handlebars",
-            "concat",
-            "express:dev",
-            "open",
-            "watch"
-        ]);
+        grunt.registerTask('dev',
+            'Dev Mode; watch files and restart server on changes',
+            [
+                'sass:admin',
+                'handlebars',
+                'concat',
+                'express:dev',
+                'open',
+                'watch'
+            ]);
 
-        // Prepare the project for development
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask('init', ['shell:bourbon', 'default']);
+        grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
 
-        // Run unit tests
-        grunt.registerTask('test-unit', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:all']);
+        grunt.registerTask('test-unit', 'Run unit tests', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:all']);
 
-        // Run casperjs tests only
-        grunt.registerTask('test-functional', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs']);
+        grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs']);
 
-        // Run tests and lint code
-        grunt.registerTask('validate', ['jslint', 'test-unit', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-functional']);
 
-        // Generate Docs
-        grunt.registerTask('docs', ['groc']);
+        grunt.registerTask('docs', 'Generate Docs', ['groc']);
 
         // TODO: Production build task that minifies with uglify:prod
+        grunt.registerTask('prod', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
-        grunt.registerTask("prod", ['sass:compress', 'handlebars', 'concat', "uglify"]);
-
-        // When you just say "grunt"
-        grunt.registerTask("default", ['sass:compress', 'handlebars', 'concat']);
+        // When you just say 'grunt'
+        grunt.registerTask('default', ['sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;
