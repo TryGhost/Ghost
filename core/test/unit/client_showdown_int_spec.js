@@ -282,7 +282,7 @@ describe("Showdown client side converter", function () {
     it("should NOT escape underscore inside of code/pre blocks", function() {
         var testPhrase = {
           input: "```\n_____\n```",
-          output: /^<pre><code>_____\n<\/code><\/pre>$/
+          output: /^<pre><code>_____  \n<\/code><\/pre>$/
         } ,
         processedMarkup;
 
