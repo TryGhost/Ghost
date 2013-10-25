@@ -143,7 +143,7 @@ adminControllers = {
             res.json(401, {error: 'Slow down, there are way too many login attempts!'});
         }
     },
-    changepw: function (req, res) {
+    'changepw': function (req, res) {
         api.users.changePassword({
             currentUser: req.session.user,
             oldpw: req.body.password,
