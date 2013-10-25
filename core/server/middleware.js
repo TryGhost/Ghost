@@ -4,7 +4,7 @@ var _ = require('underscore'),
     path = require('path');
 
 function isBlackListedFileType(file) {
-    var blackListedFileTypes = ['.hbs', '.md', '.txt', '.json'],
+    var blackListedFileTypes = ['.hbs', '.md', '.json'],
         ext = path.extname(file);
     return _.contains(blackListedFileTypes, ext);
 }

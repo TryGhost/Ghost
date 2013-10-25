@@ -42,18 +42,6 @@ describe('Middleware', function () {
             });
         });
 
-        it('should call next if txt file type', function (done) {
-            var req = {
-                url: 'LICENSE.txt'
-            };
-
-            middleware.staticTheme(null)(req, null, function (a) {
-                should.not.exist(a);
-                middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
-            });
-        });
-
         it('should call next if json file type', function (done) {
             var req = {
                 url: 'sample.json'
