@@ -49,7 +49,7 @@ next_section: deploy
                 <li>Ghost will now be running on localhost</li>
             </ul>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

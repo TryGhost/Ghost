@@ -51,7 +51,7 @@ next_section: windows
 
             <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif" />
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

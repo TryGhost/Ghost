@@ -55,7 +55,7 @@ next_section: mac
             <p>请记住，Ghost还非常新，它的开发小组还在非常努力的实现新的功能。如果你需要升级Ghost到最新版本，请参考<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/upgrading/">Ghost升级文档</a>。
                 如果遇到任何问题，请参考<a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/">除错指南</a>，如果你的问题还不能得到解决，请在<a href="http://ghost.org/forum">Ghost论坛</a>提问，这里聚集了Ghost核心小组的成员和社区成员，他们会非常乐意帮你解决问题。</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                {% include pagination.html %}
             {% endif %}
         </section>

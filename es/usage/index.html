@@ -51,7 +51,7 @@ next_section: configuration
             <p>This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the <a href="/mail">email documentation</a> at some point, and learn about configuring Ghost to send email.
             This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

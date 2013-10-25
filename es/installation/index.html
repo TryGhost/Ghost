@@ -57,7 +57,7 @@ next_section: mac
             <p>Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our <a href="/installation/upgrading/">upgrading documentation</a>.
                 If you get stuck, checkout the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/">troubleshooting guide</a>, or if that doesn't help, please get in touch via the <a href="http://ghost.org/forum">Ghost forum</a> where the Ghost staff and community are on hand to help you with any problems.</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
             {% include pagination.html %}
             {% endif %}
         </section>

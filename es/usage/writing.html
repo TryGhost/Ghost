@@ -70,7 +70,7 @@ next_section: faq
             <p>To remove an image click the 'remove' icon, in the top right corner of the currently inserted image.
             This will present you with the blank image upload box for you to re-insert a new image.</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>
