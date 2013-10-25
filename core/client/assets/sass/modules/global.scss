@@ -257,7 +257,7 @@ mark {
 code, tt {
     font-family: $font-family-mono;
     font-size: 0.85em;
-    white-space: pre;
+    white-space: pre-wrap;
     background: lighten($lightbrown, 2%);
     border: 1px solid darken($lightbrown, 8%);
     border-radius: 2px;
