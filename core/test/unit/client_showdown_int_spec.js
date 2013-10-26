@@ -279,6 +279,17 @@ describe("Showdown client side converter", function () {
         });
     });
 
+    it("should NOT escape underscore inside of code/pre blocks", function() {
+        var testPhrase = {
+          input: "```\n_____\n```",
+          output: /^<pre><code>_____  \n<\/code><\/pre>$/
+        } ,
+        processedMarkup;
+
+        processedMarkup = converter.makeHtml(testPhrase.input);
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it("should NOT auto-link URLS inside of code/pre blocks", function () {
         var testPhrases = [
                 {
