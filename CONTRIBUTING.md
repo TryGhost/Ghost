@@ -19,22 +19,25 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 **Pre-requisites:**
 
 * node > 0.10 and < 0.11.4
-* ruby and the gems 'sass' and 'bourbon'
+* ruby and the gems 'sass' and 'bourbon' - you can use `bundle install` to install the gems
 * for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
 * for building docs: python and pygments
 
 
 ### Installation / Setup Instructions
 
+1. Check you have the pre-requisites listed above!
 1. Clone the git repo
-2. cd into the project folder
-3. Run `git submodule update --init`
-4. Run `npm install -g grunt-cli`
-5. Run `npm install`.
+1. cd into the project folder
+1. Run `git submodule update --init`
+1. Run `npm install -g grunt-cli`
+1. Run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-6. Run `grunt init` from the root - this generates the Bourbon directory, compiles SASS and compiles Handlebars templates
-7. Run `npm start` from the root to start the server.
+1. Run `grunt init` from the root - this generates the Bourbon directory, compiles SASS and compiles Handlebars templates
+1. Run `npm start` from the root to start the server.
+
+If something goes wrong, please see the [troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
 
 Front-end can be located at <http://localhost:2368>, Admin is at <http://localhost:2368/ghost/>.
 
@@ -74,7 +77,7 @@ Good, clear and consistent code styles are pivotal in the success of any softwar
 * Indent with 4 spaces
 * Max line length 120
 * Use unix line endings
-* Document as you go - we are using groc and jsdoc formats
+* Document as you go - we have groc although are not actively using it yet. Comments should be used to provide clarity.
 * Write tests, unit tests are written in Mocha using spec style, functional tests use Casper.js
 
 For more in depth information please read the official [Ghost Coding Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
