@@ -10,12 +10,20 @@ languages:
     - name: '한국의'
       key: 'ko'
 <<<<<<< HEAD
+<<<<<<< HEAD
     - name: 'Danish'
       key: 'da'
 =======
     - name: 'Français'
       key: 'fr'
 >>>>>>> Update config to add french
+=======
+    - name: 'Deutsch'
+      key: 'de'
+    - name: 'Français'
+      key: 'fr'
+
+>>>>>>> Started German translation
 port:         4478
 
 translations:
@@ -36,6 +44,7 @@ translations:
     translations: 'Translations'
     help:         'Help'
 <<<<<<< HEAD
+<<<<<<< HEAD
   da:
     site_title:   'Ghost guide'
     installation: 'Installation'
@@ -45,6 +54,15 @@ translations:
     translations: 'Oversættelser'
     help:         'Hjælp'
 =======
+=======
+  de:
+    site_title:   'Ghost-Handbuch'
+    installation: 'Installation'
+    usage:        'Anwendung'
+    email:        'E-Mail'
+    themes:       'Themen'
+    help:         'Hilfe'
+>>>>>>> Started German translation
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
