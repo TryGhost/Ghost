@@ -178,7 +178,8 @@
         renderItem: function (item) {
             var itemView = new Ghost.Views.Notification({ model: item }),
                 height,
-                $notification = $(itemView.render().el);
+                $notification = $(itemView.render().el),
+                self = this;
 
             this.$el.append($notification);
             height = $notification.hide().outerHeight(true);
@@ -187,6 +188,16 @@
                     .css({height: "auto"})
                     .fadeIn(250);
             });
+            if (itemView.model.options) {
+                // Initiate functions for buttons here so models don't get tied up.
+                this.$el.on('click', '.js-notification-button-accept', function (e) {
+                    itemView.model.options.accept.func.call(this);
+                    self.closePassive(e);
+                }).on('click', '.js-notification-button-reject', function (e) {
+                    itemView.model.options.reject.func.call(this);
+                    self.closePassive(e);
+                });
+            }
         },
         addItem: function (item) {
             this.model.push(item);
