@@ -8,6 +8,8 @@ languages:
       key: 'es'
     - name: '中文'
       key: 'cn'
+    - name: 'Deutsch'
+      key: 'de'
 port:         4478
 
 translations:
@@ -25,6 +27,13 @@ translations:
     email:        '邮件设置'
     themes:       '主题'
     help:         '帮助'
+  de:
+    site_title:   'Ghost-Handbuch'
+    installation: 'Installation'
+    usage:        'Anwendung'
+    email:        'E-Mail'
+    themes:       'Themen'
+    help:         'Hilfe'
 
 # If running locally, simply comment out the line below to make all urls relative
 
