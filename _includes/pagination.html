@@ -1,6 +1,6 @@
 <nav class="section-nav text-center">
     {% if page.prev_section != null %}
-      <a href="{{ site.url }}/{{page.chapter}}/{{ page.prev_section }}/"
+      <a href="{{ site.url }}{% if page.lang %}/{{ page.lang }}{% endif %}/{{page.chapter}}/{{ page.prev_section }}/"
          class="btn btn-prev btn-primary" title="{{ page.prev_section | capitalize  }}">
        Back
       </a>
@@ -9,7 +9,7 @@
     {% endif %}
 
     {% if page.next_section != null %}
-      <a href="{{ site.url }}/{{page.chapter}}/{{ page.next_section }}/"
+      <a href="{{ site.url }}{% if page.lang %}/{{ page.lang }}{% endif %}/{{page.chapter}}/{{ page.next_section }}/"
          class="btn btn-next btn-primary" title="{{ page.next_section | capitalize }}">
         Next
       </a>
