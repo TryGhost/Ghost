@@ -856,7 +856,7 @@ nav {
 }
 
 .post-setting {
-    min-width: 260px;
+    min-width: 380px;
     border-bottom: 1px solid #35393b;
 
     &:first-child {
@@ -874,7 +874,7 @@ nav {
 
 .post-setting-label {
     float: left;
-    width: 26%;
+    width: 28%;
     text-align: right;
     padding: 10px 2%;
     border-right: 1px solid #35393b;
@@ -882,7 +882,7 @@ nav {
 
 .post-setting-field {
     float: left;
-    width: 64%;
+    width: 62%;
     padding: 8px 2%;
 
     input:focus {

@@ -466,6 +466,15 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             String(rendered).should.equal('Post Title');
         });
+
+        it('can return meta title of a post', function () {
+            var rendered = handlebars.helpers.meta_title.call(
+                {path: '/nice-post', post: {title: 'Post Title', meta_title: 'Meta Title'}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('Meta Title');
+        });
     });
 
     describe("meta_description helper", function () {
@@ -481,13 +490,13 @@ describe('Core Helpers', function () {
             String(rendered).should.equal('Just a blogging platform.');
         });
 
-        it('can return empty description on post', function () {
+        it('can return meta description on post', function () {
             var rendered = handlebars.helpers.meta_description.call(
-                {path: '/nice-post', post: {title: 'Post Title'}}
+                {path: '/nice-post', post: {title: 'Post Title', meta_description: 'Description'}}
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('');
+            String(rendered).should.equal('Description');
         });
 
     });

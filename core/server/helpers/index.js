@@ -280,7 +280,7 @@ coreHelpers = function (ghost) {
                 blog = ghost.blogGlobals();
                 title = blog.title;
             } else {
-                title = this.post ? this.post.title : '';
+                title = this.post ? this.post.meta_title || this.post.title : '';
             }
         }
 
@@ -297,7 +297,7 @@ coreHelpers = function (ghost) {
                 blog = ghost.blogGlobals();
                 description = blog.description;
             } else {
-                description = '';
+                description = this.post ? this.post.meta_description || '' : '';
             }
         }
 
