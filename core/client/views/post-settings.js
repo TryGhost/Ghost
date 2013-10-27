@@ -24,7 +24,7 @@
 
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
-                pubDate = this.model ? this.model.get('published_at') : 'Not Published',
+                pubDate = this.model ? this.model.get('published_at') || 'Not Published' : 'Not Published',
                 $pubDateEl = this.$('.post-setting-date');
 
             $('.post-setting-slug').val(slug);
@@ -87,14 +87,15 @@
                 displayDateFormat = 'DD MMM YY',
                 errMessage = '',
                 pubDate = self.model.get('published_at'),
-                pubDateMoment = moment(pubDate, parseDateFormats),
+                pubDateMoment = moment(pubDate),
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
                 newPubDateMoment = moment(newPubDate, parseDateFormats);
 
             // Ensure the published date has changed
-            if (newPubDate.length === 0 || pubDateMoment.isSame(newPubDateMoment)) {
-                pubDateEl.value = pubDate === undefined ? 'Not Published' : pubDateMoment.format(displayDateFormat);
+            if (newPubDate.length === 0 || newPubDate === 'Not Published'
+                    || (moment.isMoment(pubDateMoment) && pubDateMoment.isSame(newPubDateMoment, 'day'))) {
+                pubDateEl.value = pubDate === null ? 'Not Published' : pubDateMoment.format(displayDateFormat);
                 return;
             }
 
@@ -123,7 +124,7 @@
                 published_at: newPubDateMoment.hour(12).toDate()
             }, {
                 success : function (model, response, options) {
-                    pubDateEl.value = moment(model.get('published_at'), parseDateFormats).format(displayDateFormat);
+                    pubDateEl.value = moment(model.get('published_at')).format(displayDateFormat);
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: 'Publish date successfully changed to <strong>' + pubDateEl.value + '</strong>.',
