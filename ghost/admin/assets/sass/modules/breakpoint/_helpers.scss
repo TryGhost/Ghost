@@ -1,0 +1,151 @@
+//////////////////////////////
+// Converts the input value to Base EMs
+//////////////////////////////
+@function breakpoint-to-base-em($value) {
+  $value-unit: unit($value);
+
+  // Will convert relative EMs into root EMs.
+  @if $breakpoint-base-font-size and type-of($breakpoint-base-font-size) == 'number' and $value-unit == 'em' {
+    $base-unit: unit($breakpoint-base-font-size);
+
+    @if $base-unit == 'px' or $base-unit == '%' or $base-unit == 'em' or $base-unit == 'pt' {
+      @return base-conversion($value) / base-conversion($breakpoint-base-font-size) * 1em;
+    }
+    @else {
+      @warn '#{$breakpoint-base-font-size} is not set in valid units for font size!';
+      @return false;
+    }
+  }
+  @else {
+    @return base-conversion($value);
+  }
+}
+
+@function base-conversion($value) {
+  $unit: unit($value);
+
+  @if $unit == 'px' {
+    @return $value / 16px * 1em;
+  }
+  @else if $unit == '%' {
+    @return $value / 100% * 1em;
+  }
+  @else if $unit == 'em' {
+    @return $value;
+  }
+  @else if $unit == 'pt' {
+    @return $value / 12pt * 1em;
+  }
+  @else {
+    @return $value;
+//    @warn 'Everything is terrible! What have you done?!';
+  }
+}
+
+//////////////////////////////
+// Returns whether the feature can have a min/max pair
+//////////////////////////////
+$breakpoint-min-max-features: 'color',
+                              'color-index',
+                              'aspect-ratio',
+                              'device-aspect-ratio',
+                              'device-height',
+                              'device-width',
+                              'height',
+                              'monochrome',
+                              'resolution',
+                              'width';
+
+@function breakpoint-min-max($feature) {
+  @each $item in $breakpoint-min-max-features {
+    @if $feature == $item {
+      @return true;
+    }
+  }
+  @return false;
+}
+
+//////////////////////////////
+// Returns whether the feature can have a string value
+//////////////////////////////
+$breakpoint-string-features:  'orientation',
+                              'scan',
+                              'color',
+                              'aspect-ratio',
+                              'device-aspect-ratio',
+                              'pointer',
+                              'luminosity';
+
+@function breakpoint-string-value($feature) {
+  @each $item in $breakpoint-string-features {
+    @if breakpoint-min-max($item) {
+      @if $feature == 'min-#{$item}' or $feature == 'max-#{$item}' {
+        @return true;
+      }
+    }
+    @else if $feature == $item {
+      @return true;
+    }
+  }
+  @return false;
+}
+
+//////////////////////////////
+// Returns whether the feature is a media type
+//////////////////////////////
+$breakpoint-media-types:  'all',
+                          'braille',
+                          'embossed',
+                          'handheld',
+                          'print',
+                          'projection',
+                          'screen',
+                          'speech',
+                          'tty',
+                          'tv';
+
+@function breakpoint-is-media($feature) {
+  @each $media in $breakpoint-media-types {
+    @if ($feature == $media) or ($feature == 'not #{$media}') or ($feature == 'only #{$media}') {
+      @return true;
+    }
+  }
+
+  @return false;
+}
+
+//////////////////////////////
+// Returns whether the feature can stand alone
+//////////////////////////////
+$breakpoint-single-string-features: 'color',
+                                    'color-index',
+                                    'grid',
+                                    'monochrome';
+
+@function breakpoint-single-string($feature) {
+  @each $item in $breakpoint-single-string-features {
+    @if $feature == $item {
+      @return true;
+    }
+  }
+  @return false;
+}
+
+//////////////////////////////
+// Returns whether the feature
+//////////////////////////////
+@function breakpoint-is-resolution($feature) {
+  $resolutions: 'device-pixel-ratio', 'dpr';
+
+  @if $breakpoint-resolutions {
+    $resolutions: append($resolutions, 'resolution');
+  }
+
+  @each $reso in $resolutions {
+    @if index($feature, $reso) or index($feature, 'min-#{$reso}') or index($feature, 'max-#{$reso}') {
+      @return true;
+    }
+  }
+
+  @return false;
+}

@@ -1,0 +1,133 @@
+//////////////////////////////
+// Private Breakpoint Variables
+//////////////////////////////
+$private-breakpoint-context-holder: ();
+$private-breakpoint-context-placeholder: 0;
+
+//////////////////////////////
+// Breakpoint Has Context
+// Returns whether or not you are inside a Breakpoint query
+//////////////////////////////
+@function breakpoint-has-context() {
+  @if length($private-breakpoint-context-placeholder) {
+    @return true;
+  }
+  @else {
+    @return false;
+  }
+}
+
+
+//////////////////////////////
+// Breakpoint Get Context
+// $feature: Input feature to get it's current MQ context. Returns false if no context
+//////////////////////////////
+@function breakpoint-get-context($feature) {
+  @each $context in $private-breakpoint-context-holder {
+    @if $feature == nth($context, 1) {
+      // strip feature name
+      $values: ();
+      @for $i from 2 through length($context) {
+        $values: append($values, nth($context, $i), comma);
+      }
+
+      $length: length($values) + 1;
+      @for $i from $length through $private-breakpoint-context-placeholder {
+        // Apply the Default Media type if feature is media
+        @if $feature == 'media' {
+          $values: append($values, $breakpoint-default-media, comma);
+        }
+        @else {
+          $values: append($values, false, comma);
+        }
+      }
+
+      @return $values;
+    }
+  }
+
+  @return false;
+}
+
+//////////////////////////////
+// Private function to set context
+//////////////////////////////
+@function private-breakpoint-set-context($feature, $value) {
+  @if $value == 'monochrome' {
+    $feature: 'monochrome';
+  }
+
+  $placeholder-plus-one: ($private-breakpoint-context-placeholder + 1);
+
+  $holder: ();
+
+  @if $private-breakpoint-context-placeholder == 1 {
+    $holder: ($feature $value);
+    $private-breakpoint-context-holder: append($private-breakpoint-context-holder, $holder, comma);
+    @return true;
+
+  } @else {
+    $feature-used: false;
+    @each $context in $private-breakpoint-context-holder {
+      @if nth($context, 1) == $feature {
+        $feature-used: $context;
+      }
+    }
+
+    @if $feature-used != false {
+      $holder: $feature;
+      @for $i from 2 through $placeholder-plus-one {
+        @if $i <= length($feature-used)  {
+          $holder: append($holder, nth($feature-used, $i), space);
+        } @elseif $i < $placeholder-plus-one {
+          $holder: append($holder, false, space);
+        } @else {
+          $holder: append($holder, $value, space);
+        }
+      }
+    }
+    @elseif $feature-used == false {
+      $holder: $feature;
+      @for $i from 2 through $placeholder-plus-one {
+        @if $i < $placeholder-plus-one {
+          // Apply the Default Media type if feature is media
+          @if $feature == 'media' {
+            $holder: append($holder, $breakpoint-default-media, space);
+          }
+          @else {
+            $holder: append($holder, false, space);
+          }
+
+        } @else {
+          $holder: append($holder, $value, space);
+        }
+      }
+    }
+
+    // Rebuild context
+    $rebuild: ();
+    @if $feature-used != false {
+      @each $context in $private-breakpoint-context-holder {
+        @if nth($context, 1) == nth($holder, 1) {
+          $rebuild: append($rebuild, $holder, comma);
+        } @else {
+          $rebuild: append($rebuild, $context, comma);
+        }
+      }
+
+    } @else {
+      $rebuild: append($private-breakpoint-context-holder, $holder, comma);
+    }
+    $private-breakpoint-context-holder: $rebuild;
+  }
+
+  @return true;
+}
+
+//////////////////////////////
+// Private function to reset context
+//////////////////////////////
+@mixin private-breakpoint-reset-contexts {
+  $private-breakpoint-context-holder: ();
+  $private-breakpoint-context-placeholder: 0;
+}
