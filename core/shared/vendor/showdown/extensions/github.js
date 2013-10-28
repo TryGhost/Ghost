@@ -19,7 +19,7 @@
                 // GFM newline and underscore modifications, happen BEFORE showdown
                 type    : 'lang',
                 filter  : function (text) {
-                    var preExtractions = {},
+                    var extractions = {},
                         imageMarkdownRegex = /^(?:\{(.*?)\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
                         hashID = 0;
 
@@ -30,13 +30,25 @@
                     // Extract pre blocks
                     text = text.replace(/<pre>[\s\S]*?<\/pre>/gim, function (x) {
                         var hash = hashId();
-                        preExtractions[hash] = x;
+                        extractions[hash] = x;
                         return "{gfm-js-extract-pre-" + hash + "}";
                     }, 'm');
+
+                    // Extract code blocks
+                    text = text.replace(/```[\s\S]*```/gim, function (x) {
+                        var hash = hashId();
+                        extractions[hash] = x;
+                        return "{gfm-js-extract-code-" + hash + "}";
+                    }, 'm');
+
 
                     //prevent foo_bar and foo_bar_baz from ending up with an italic word in the middle
                     text = text.replace(/(^(?! {4}|\t)\w+_\w+_\w[\w_]*)/gm, function (x) {
                         return x.replace(/_/gm, '\\_');
+                    });
+
+                    text = text.replace(/\{gfm-js-extract-code-([0-9]+)\}/gm, function (x, y) {
+                        return extractions[y];
                     });
 
                     // in very clear cases, let newlines become <br /> tags
@@ -54,7 +66,7 @@
                     });
 
                     text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {
-                        return "\n\n" + preExtractions[y];
+                        return "\n\n" + extractions[y];
                     });
 
 
