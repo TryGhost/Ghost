@@ -93,6 +93,7 @@
                 data: {
                     status: 'all',
                     page: (self.collection.currentPage + 1),
+                    where: { page: 'all' },
                     orderBy: ['updated_at', 'DESC']
                 }
             }).then(function onSuccess(response) {
@@ -135,6 +136,7 @@
 
         initialize: function () {
             this.listenTo(Backbone, 'blog:activeItem', this.checkActive);
+            this.listenTo(this.model, 'change:page', this.render);
             this.listenTo(this.model, 'destroy', this.removeItem);
         },
 

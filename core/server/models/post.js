@@ -20,7 +20,7 @@ Post = ghostBookshelf.Model.extend({
     permittedAttributes: [
         'id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
         'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
-        'published_at', 'published_by'
+        'page', 'published_at', 'published_by'
     ],
 
     defaults: function () {
@@ -225,12 +225,16 @@ Post = ghostBookshelf.Model.extend({
         opts = _.extend({
             page: 1,
             limit: 15,
-            where: {},
+            where: { page: false },
             status: 'published',
             orderBy: ['published_at', 'DESC']
         }, opts);
 
         postCollection = Posts.forge();
+
+        if (opts.where && opts.where.page === 'all') {
+            delete opts.where.page;
+        }
 
         // Unless `all` is passed as an option, filter on
         // the status provided.

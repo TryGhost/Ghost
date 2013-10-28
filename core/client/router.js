@@ -31,7 +31,7 @@
         blog: function () {
             var posts = new Ghost.Collections.Posts();
             NProgress.start();
-            posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
+            posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'], where: { page: 'all' } } }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
                 NProgress.done();
             });
