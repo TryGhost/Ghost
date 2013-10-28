@@ -1,4 +1,4 @@
-/*globals casper, __utils__ */
+/*globals Ghost, casper, __utils__ */
 
 /**
  * Casper Tests
@@ -71,11 +71,11 @@ casper.on('remote.message', function (msg) {
     casper.echo('GOT CONSOLE LOG: ' + msg);
 });
 
-casper.on('error', function (msg, trace) {
+casper.on('error', function (msg) {
     casper.echo('GOT ERROR, ' + msg);
 });
 
-casper.on("page.error", function (msg, trace) {
+casper.on("page.error", function (msg) {
     this.echo("GOT PAGE ERROR: " + msg, "ERROR");
 });
 
@@ -85,7 +85,7 @@ casper.test.on("fail", function captureFailure() {
     casper.capture(new Date().getTime() + '_' + filename);
 });
 
-var CasperTest = (function() {
+var CasperTest = (function () {
 
     var _beforeDoneHandler,
         _noop = function noop() { },
@@ -98,7 +98,7 @@ var CasperTest = (function() {
         casper.thenOpen(url + 'signout/');
 
         casper.waitForResource(/ghost\/sign/);
-        
+
         casper.run(done);
     });
 
@@ -119,7 +119,7 @@ var CasperTest = (function() {
 
                     _isUserRegistered = true;
                 }
-                
+
                 /* Ensure we're logged out at the start of every test or we may get
                    unexpected failures. */
                 CasperTest.Routines.logout.run(test);
@@ -138,8 +138,7 @@ var CasperTest = (function() {
             suite = expect;
 
             casper.test.begin(testName, runTest);
-        }
-        else {
+        } else {
             casper.test.begin(testName, expect, runTest);
         }
     }
@@ -148,8 +147,7 @@ var CasperTest = (function() {
     function beforeDone(fn) {
         if (fn) {
             _beforeDoneHandler = fn;
-        }
-        else {
+        } else {
             _beforeDoneHandler = _noop;
         }
     }
