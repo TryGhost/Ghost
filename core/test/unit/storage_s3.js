@@ -34,8 +34,12 @@ describe('S3 File Storage', function() {
         sinon.stub(fs, 'createReadStream').returns('STREAM');
 
         config = {
-            bucket: 'BUCKET',
-            region: 'REGION'
+            s3: {
+                bucket: 'BUCKET',
+                region: 'REGION',
+                accessKeyId: 'ACCESSKEYID',
+                secretAccessKey: 'SECRET'
+            }
         };
 
         image = {
@@ -78,7 +82,13 @@ describe('S3 File Storage', function() {
     it('should set AWS region', function (done) {
         s3Store.save(null, image, config).then(function (url) {
             awsConfigUpdate.calledOnce.should.be.true;
-            awsConfigUpdate.args[0][0].should.eql({ region: 'REGION'});
+            var expectedConfig = {
+                region: 'REGION',
+                accessKeyId: 'ACCESSKEYID',
+                secretAccessKey: 'SECRET'
+            };
+
+            awsConfigUpdate.args[0][0].should.eql(expectedConfig);
             return done();
         }); 
     });

@@ -41,8 +41,12 @@ config = {
         },
         images: {
             store: 'localfilesystem', // 'localfilesystem' or 's3'
-            bucket: '', // Used for S3 storage only eg. my-bucket.com
-            region: 'us-east-1' // Used for S3 storage only
+            s3 : {
+                bucket: '', // eg. my-bucket.com
+                region: 'us-east-1',
+                accessKeyId: 'akid',
+                secretAccessKey: 'secret'
+            }
         }
     },
 
@@ -64,7 +68,17 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
+        },
+        images: {
+            store: 'localfilesystem', // 'localfilesystem' or 's3'
+            s3 : {
+                bucket: '', // eg. my-bucket.com
+                region: 'us-east-1',
+                accessKeyId: 'akid',
+                secretAccessKey: 'secret'
+            }
         }
+
     },
 
     // **Developers only need to edit below here**
@@ -83,7 +97,17 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
+        },
+        images: {
+            store: 'localfilesystem',
+            s3 : {
+                bucket: '',
+                region: 'us-east-1',
+                accessKeyId: 'akid',
+                secretAccessKey: 'secret'
+            }
         }
+
     },
 
     // ### Travis
@@ -99,6 +123,15 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2368'
+        },
+        images: {
+            store: 'localfilesystem',
+            s3 : {
+                bucket: '',
+                region: 'us-east-1',
+                accessKeyId: 'akid',
+                secretAccessKey: 'secret'
+            }
         }
     }
 };

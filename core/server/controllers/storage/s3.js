@@ -10,14 +10,20 @@ var s3ImageStore = {
         var saved = when.defer(),
             path = 'ghost/images/',
             key = path + image.hash,
-            fullUrl = 'https://s3.amazonaws.com/' + config.bucket + '/' + key,
+            fullUrl = 'https://s3.amazonaws.com/' + config.s3.bucket + '/' + key,
             stream = fs.createReadStream(image.path),
-            s3 = new AWS.S3();
+            s3 = null;
 
-        AWS.config.update({region: config.region});
+        AWS.config.update({
+            region: config.s3.region,
+            accessKeyId: config.s3.accessKeyId,
+            secretAccessKey: config.s3.secretAccessKey
+        });
+
+        s3 = new AWS.S3();
 
         // TODO optimise by checking if object exists using headObject
-        s3.client.putObject({Bucket: config.bucket, Key: key, Body: stream}).
+        s3.client.putObject({ Bucket: config.s3.bucket, Key: key, Body: stream }).
             on('complete', function (res) {
                 if (res.error) {
                     errors.logError(res.error);
