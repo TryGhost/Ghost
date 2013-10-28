@@ -250,4 +250,34 @@
 
     }//.preview-post
 
+    .no-posts-box {
+        position: relative;
+        height: 90%;
+        margin: 0px auto;
+        padding: 0px;
+        display: table;
+        z-index: 600;
+        @include breakpoint($tablet) {
+            position: fixed;
+            top: 45%;
+            left: 50%;
+        }
+
+        .no-posts {
+            vertical-align: middle;
+            display: table-cell;
+            text-align: center;
+            @include breakpoint($tablet) {
+                display: block;
+                position: relative;
+                left: -50%;
+            }
+
+            h3 {
+                color: $brown;
+                font-weight: 200;
+                font-size: 2em;
+            }
+        }
+    }//.no-posts-box
 }//.manage
