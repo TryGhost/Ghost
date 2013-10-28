@@ -111,7 +111,7 @@ Whilst you're working on your branch on your own, you can do all the commits you
 - Run `git log master..your-branch-name` to see how many commits there are on your branch
 - Run `git rebase -i HEAD~#` where # is the number of commits you have done on your branch
 
-Use the interactive rebase to edit your history. Unless you have good reason to keep more than one commit, I recommend marking the first commit with 'r' and the others with 's'. This lets you keep the first commit only, but change the message. You commit message(s) should follow the pattern described in the [notes](https://github.com/TryGhost/Ghost/wiki/Git-workflow#notes-on-writing-good-commit-messages) above. The first line of your commit message will appear in the change log which goes out to our VIPs with each pre-release, so please keep that in mind.
+Use the interactive rebase to edit your history. Unless you have good reason to keep more than one commit, I recommend marking the first commit with 'r' and the others with 's'. This lets you keep the first commit only, but change the message. Your commit message(s) should follow the pattern described in the [notes](https://github.com/TryGhost/Ghost/wiki/Git-workflow#notes-on-writing-good-commit-messages) above. The first line of your commit message will appear in the change log which goes out to our VIPs with each pre-release, so please keep that in mind.
 
 ### Check it passes the tests
 
