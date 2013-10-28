@@ -119,25 +119,14 @@ coreHelpers = function (ghost) {
     // Note that the standard {{#each tags}} implementation is unaffected by this helper
     // and can be used for more complex templates.
     ghost.registerThemeHelper('tags', function (options) {
-        var separator = ', ',
-            prefix,
-            output,
-            tagNames;
+        var separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
+            prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
+            suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
+            output = '',
+            tagNames = _.pluck(this.tags, 'name');
 
-        if (_.isString(options.hash.separator)) {
-            separator = options.hash.separator;
-        }
-
-        if (_.isString(options.hash.prefix)) {
-            prefix = options.hash.prefix;
-        }
-
-        tagNames = _.pluck(this.tags, 'name');
-
-        if (tagNames.length && prefix) {
-            output = prefix + tagNames.join(separator);
-        } else {
-            output = tagNames.join(separator);
+        if (tagNames.length) {
+            output = prefix + tagNames.join(separator) + suffix;
         }
 
         return output;

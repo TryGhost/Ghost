@@ -443,10 +443,34 @@ describe('Core Helpers', function () {
             String(rendered).should.equal('on haunted, ghost');
         });
 
-        it('does not add prefix if no tags exist', function () {
+        it('can add a single suffix to multiple tags', function () {
+            var tags = [{name: 'haunted'}, {name: 'ghost'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {suffix: ' forever'}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('haunted, ghost forever');
+        });
+
+        it('can add a prefix and suffix to multiple tags', function () {
+            var tags = [{name: 'haunted'}, {name: 'ghost'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {suffix: ' forever', prefix: 'on '}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('on haunted, ghost forever');
+        });
+
+        it('does not add prefix or suffix if no tags exist', function () {
             var rendered = handlebars.helpers.tags.call(
                     {},
-                    {"hash": {prefix: 'on '}}
+                    {"hash": {prefix: 'on ', suffix: ' forever'}}
                 );
 
             should.exist(rendered);
