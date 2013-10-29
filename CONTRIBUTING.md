@@ -18,7 +18,7 @@ If you think you've found a problem with Ghost, or you'd like to make a request 
 
 **Pre-requisites:**
 
-* node > 0.10 and < 0.11.4
+* node 0.10.x
 * ruby and the gems 'sass' and 'bourbon' - you can use `bundle install` to install the gems
 * for running functional tests: phantomjs 1.9.* and casperjs 1.1.* ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
 * for building docs: python and pygments
