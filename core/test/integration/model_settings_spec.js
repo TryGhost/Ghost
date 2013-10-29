@@ -1,5 +1,5 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('./testUtils'),
+var testUtils = require('../unit/testUtils'),
     should = require('should'),
     _ = require("underscore"),
 
