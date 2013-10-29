@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - "0.10"
+env:
+  - DB=sqlite3
+  - DB=mysql
 git:
   submodules: false
 before_install:
@@ -12,6 +15,7 @@ before_install:
   - git checkout tags/1.1-beta1
   - export PATH=$PATH:`pwd`/bin
   - cd -
+  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_travis'; fi
 before_script:
   - phantomjs --version
   - casperjs --version

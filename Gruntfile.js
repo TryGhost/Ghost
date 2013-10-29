@@ -498,7 +498,7 @@ var path           = require('path'),
         grunt.initConfig(cfg);
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
+            process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
         });
 
         grunt.registerTask('loadConfig', function () {
