@@ -227,6 +227,7 @@
                 message: this.notificationMap[status],
                 status: 'passive'
             });
+            Ghost.currentView.setEditorDirty(false);
         },
 
         reportSaveError: function (response, model, status) {
@@ -447,6 +448,10 @@
             return this.uploadMgr.getEditorValue();
         },
 
+        setEditorDirty: function (dirty) {
+            return this.uploadMgr.setEditorDirty(dirty);
+        },
+
         initUploads: function () {
             var filestorage = $('#entry-markdown-content').data('filestorage');
             this.$('.js-drop-zone').upload({editor: true, fileStorage: filestorage});
@@ -657,15 +662,30 @@
             return value;
         }
 
+        function unloadDirtyMessage() {
+            return "==============================\n\n" +
+                   "Hey there! It looks like you're in the middle of writing" +
+                   " something and you haven't saved all of your content." +
+                   "\n\nSave before you go!\n\n" +
+                   "==============================";
+        }
+
+        function setEditorDirty(dirty) {
+            window.onbeforeunload = dirty ? unloadDirtyMessage : null;
+        }
+
         // Public API
         _.extend(this, {
             getEditorValue: getEditorValue,
-            handleUpload: handleUpload
+            handleUpload: handleUpload,
+            setEditorDirty: setEditorDirty
         });
 
         // initialise
         editor.on('change', function (cm, changeObj) {
             /*jslint unparam:true*/
+            setEditorDirty(true);
+
             var linesChanged = _.range(changeObj.from.line, changeObj.from.line + changeObj.text.length);
 
             _.each(linesChanged, function (ln) {
