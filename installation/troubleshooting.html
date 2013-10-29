@@ -6,6 +6,7 @@ heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
 permalink: /installation/troubleshooting/
 chapter: installation
+section: troubleshooting
 prev_section: upgrading
 ---
 
