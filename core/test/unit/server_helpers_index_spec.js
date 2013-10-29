@@ -29,7 +29,7 @@ describe('Core Helpers', function () {
 
         it('can render content', function () {
             var html = "Hello World",
-                rendered = handlebars.helpers.content.call({html: html});
+                rendered = helpers.content.call({html: html});
 
             should.exist(rendered);
             rendered.string.should.equal(html);
@@ -38,7 +38,7 @@ describe('Core Helpers', function () {
         it('can truncate html by word', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
-                    handlebars.helpers.content
+                    helpers.content
                         .call(
                             {html: html},
                             {"hash":{"words": 2}}
@@ -52,7 +52,7 @@ describe('Core Helpers', function () {
         it('can truncate html by character', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
-                    handlebars.helpers.content
+                    helpers.content
                         .call(
                             {html: html},
                             {"hash":{"characters": 8}}
@@ -72,14 +72,14 @@ describe('Core Helpers', function () {
 
         it("Returns the full name of the author from the context",function() {
             var data = {"author":{"name":"abc123"}},
-                result = handlebars.helpers.author.call(data);
+                result = helpers.author.call(data);
 
             String(result).should.equal("abc123");
         });
 
         it("Returns a blank string where author data is missing",function() {
             var data = {"author": null},
-                result = handlebars.helpers.author.call(data);
+                result = helpers.author.call(data);
 
             String(result).should.equal("");
         });
@@ -110,7 +110,7 @@ describe('Core Helpers', function () {
 
         it('can render excerpt', function () {
             var html = "Hello World",
-                rendered = handlebars.helpers.excerpt.call({html: html});
+                rendered = helpers.excerpt.call({html: html});
 
             should.exist(rendered);
             rendered.string.should.equal(html);
@@ -123,7 +123,7 @@ describe('Core Helpers', function () {
                         + "< test > those<<< test >>> who mistake it &lt;for&gt; binary.",
                 expected = "There are 10 types of people in the world: those who understand trinary, those who don't "
                          + "and those>> who mistake it &lt;for&gt; binary.",
-                rendered = handlebars.helpers.excerpt.call({html: html});
+                rendered = helpers.excerpt.call({html: html});
 
             should.exist(rendered);
             rendered.string.should.equal(expected);
@@ -134,7 +134,7 @@ describe('Core Helpers', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 expected = "Hello World",
                 rendered = (
-                    handlebars.helpers.excerpt.call(
+                    helpers.excerpt.call(
                         {html: html},
                         {"hash": {"words": 2}}
                     )
@@ -148,7 +148,7 @@ describe('Core Helpers', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 expected = "Hello Wo",
                 rendered = (
-                    handlebars.helpers.excerpt.call(
+                    helpers.excerpt.call(
                         {html: html},
                         {"hash": {"characters": 8}}
                     )
@@ -164,35 +164,48 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.body_class);
         });
 
-        it('can render class string', function () {
-            var rendered = handlebars.helpers.body_class.call({});
-            should.exist(rendered);
+        it('can render class string', function (done) {
+            helpers.body_class.call({}).then(function (rendered) {
+                should.exist(rendered);
 
-            rendered.string.should.equal('home-template');
+                rendered.string.should.equal('home-template');
+
+                done();
+            }, done);
         });
 
-        it('can render class string for context', function () {
-            var rendered1 = handlebars.helpers.body_class.call({path: '/'}),
-                rendered2 = handlebars.helpers.body_class.call({path: '/a-post-title'}),
-                rendered3 = handlebars.helpers.body_class.call({path: '/page/4'});
+        it('can render class string for context', function (done) {
+            when.all([
+                helpers.body_class.call({path: '/'}),
+                helpers.body_class.call({path: '/a-post-title'}),
+                helpers.body_class.call({path: '/page/4'})
+            ]).then(function (rendered) {
+                rendered.length.should.equal(3);
 
-            should.exist(rendered1);
-            should.exist(rendered2);
-            should.exist(rendered3);
+                should.exist(rendered[0]);
+                should.exist(rendered[1]);
+                should.exist(rendered[2]);
 
-            rendered1.string.should.equal('home-template');
-            rendered2.string.should.equal('post-template');
-            rendered3.string.should.equal('archive-template');
+                rendered[0].string.should.equal('home-template');
+                rendered[1].string.should.equal('post-template');
+                rendered[2].string.should.equal('archive-template');
+
+                done();
+            });
         });
 
-        it('can render class for static page', function () {
-            var rendered = handlebars.helpers.body_class.call(
-                    {post: {page: true}},
-                    {path: '/'}
-                );
+        it('can render class for static page', function (done) {
+            helpers.body_class.call({
+                    path: '/',
+                    post: {
+                        page: true
+                    }
+                }).then(function (rendered) {
+                    should.exist(rendered);
+                    rendered.string.should.equal('home-template page');
 
-            should.exist(rendered);
-            rendered.string.should.equal('home-template page');
+                    done();
+                }, done);
         });
     });
 
@@ -201,19 +214,23 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.post_class);
         });
 
-        it('can render class string', function () {
-            var rendered = handlebars.helpers.post_class.call({});
-            should.exist(rendered);
-
-            rendered.string.should.equal('post');
+        it('can render class string', function (done) {
+            helpers.post_class.call({}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('post');
+                done();
+            });
         });
 
-        it('can render featured class', function () {
-            var post = { featured: true },
-                rendered = handlebars.helpers.post_class.call(post);
+        it('can render featured class', function (done) {
+            var post = { featured: true };
 
-            should.exist(rendered);
-            rendered.string.should.equal('post featured');
+            helpers.post_class.call(post).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('post featured');
+
+                done();
+            }, done);
         });
     });
 
@@ -222,16 +239,20 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.ghost_head);
         });
 
-        it('returns meta tag string', function () {
-            var rendered = handlebars.helpers.ghost_head.call({version: "0.3.0"});
-            should.exist(rendered);
-            rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+        it('returns meta tag string', function (done) {
+            helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');    
+
+                done();
+            });
         });
 
         it('returns meta tag string even if version is invalid', function () {
-            var rendered = handlebars.helpers.ghost_head.call({version: "0.9"});
-            should.exist(rendered);
-            rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+            var rendered = helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+            });
         });
     });
 
@@ -240,10 +261,14 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.ghost_foot);
         });
 
-        it('returns meta tag string', function () {
-            var rendered = handlebars.helpers.ghost_foot.call();
-            should.exist(rendered);
-            rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.js"></script>');
+        it('returns meta tag string', function (done) {
+            helpers.ghost_foot.call().then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.js"></script>');
+
+                done();
+            });
+            
         });
     });
 
@@ -253,7 +278,7 @@ describe('Core Helpers', function () {
         });
 
         it('should return a the slug with a prefix slash if the context is a post', function () {
-            var rendered = handlebars.helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug"});
+            var rendered = helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug"});
             should.exist(rendered);
             rendered.should.equal('/slug/');
         });
@@ -263,7 +288,7 @@ describe('Core Helpers', function () {
                     return { url: 'http://testurl.com' };
                 }),
 
-                rendered = handlebars.helpers.url.call(
+                rendered = helpers.url.call(
                     {html: 'content', markdown: "ff", title: "title", slug: "slug"},
                     {hash: { absolute: 'true'}}
                 );
@@ -275,10 +300,10 @@ describe('Core Helpers', function () {
         });
 
         it('should return empty string if not a post', function () {
-            handlebars.helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({html: 'content', title: "title", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).should.equal('');
-            handlebars.helpers.url.call({html: 'content', markdown: "ff", title: "title"}).should.equal('');
+            helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).should.equal('');
+            helpers.url.call({html: 'content', title: "title", slug: "slug"}).should.equal('');
+            helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).should.equal('');
+            helpers.url.call({html: 'content', markdown: "ff", title: "title"}).should.equal('');
         });
     });
 
@@ -288,9 +313,9 @@ describe('Core Helpers', function () {
         });
 
         it('can return a valid url', function () {
-            handlebars.helpers.pageUrl(1).should.equal('/');
-            handlebars.helpers.pageUrl(2).should.equal('/page/2/');
-            handlebars.helpers.pageUrl(50).should.equal('/page/50/');
+            helpers.pageUrl(1).should.equal('/');
+            helpers.pageUrl(2).should.equal('/page/2/');
+            helpers.pageUrl(50).should.equal('/page/50/');
         });
     });
 
@@ -307,7 +332,7 @@ describe('Core Helpers', function () {
         it('can render single page with no pagination necessary', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
+                rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
                 should.exist(rendered);
                 // strip out carriage returns and compare.
                 rendered.string.should.match(paginationRegex);
@@ -322,7 +347,7 @@ describe('Core Helpers', function () {
         it('can render first page of many with older posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
+                rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
                 rendered.string.should.match(paginationRegex);
@@ -337,7 +362,7 @@ describe('Core Helpers', function () {
         it('can render middle pages of many with older and newer posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
+                rendered = helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
                 rendered.string.should.match(paginationRegex);
@@ -353,7 +378,7 @@ describe('Core Helpers', function () {
         it('can render last page of many with newer posts link', function (done) {
             var rendered;
             helpers.loadCoreHelpers(ghost).then(function () {
-                rendered = handlebars.helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
+                rendered = helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
                 rendered.string.should.match(paginationRegex);
@@ -370,7 +395,7 @@ describe('Core Helpers', function () {
             helpers.loadCoreHelpers(ghost).then(function () {
                 var runErrorTest = function (data) {
                     return function () {
-                        handlebars.helpers.pagination.call(data);
+                        helpers.pagination.call(data);
                     };
                 };
 
@@ -485,43 +510,49 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.meta_title);
         });
 
-        it('can return blog title', function () {
-            var rendered = handlebars.helpers.meta_title.call({path: '/'});
+        it('can return blog title', function (done) {
+            helpers.meta_title.call({path: '/'}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('Ghost');
 
-            should.exist(rendered);
-            String(rendered).should.equal('Ghost');
+                done();
+            }, done);
         });
 
-        it('can return title of a post', function () {
-            var rendered = handlebars.helpers.meta_title.call(
-                {path: '/nice-post', post: {title: 'Post Title'}}
-            );
+        it('can return title of a post', function (done) {
+            var post = {path: '/nice-post', post: {title: 'Post Title'}};
+            helpers.meta_title.call(post).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('Post Title');
 
-            should.exist(rendered);
-            String(rendered).should.equal('Post Title');
+                done();
+            }, done);
         });
     });
 
-    describe("meta_description helper", function () {
+    describe("meta_description helper", function (done) {
 
         it('has loaded meta_description helper', function () {
             should.exist(handlebars.helpers.meta_description);
         });
 
         it('can return blog description', function () {
-            var rendered = handlebars.helpers.meta_description.call({path: '/'});
+            helpers.meta_description.call({path: '/'}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('Just a blogging platform.');
 
-            should.exist(rendered);
-            String(rendered).should.equal('Just a blogging platform.');
+                done();
+            }, done);
         });
 
-        it('can return empty description on post', function () {
-            var rendered = handlebars.helpers.meta_description.call(
-                {path: '/nice-post', post: {title: 'Post Title'}}
-            );
+        it('can return empty description on post', function (done) {
+            var post = {path: '/nice-post', post: {title: 'Post Title'}};
+            helpers.meta_description.call(post).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('');
 
-            should.exist(rendered);
-            String(rendered).should.equal('');
+                done();
+            }, done);
         });
 
     });

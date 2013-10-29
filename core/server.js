@@ -445,22 +445,30 @@ when(ghost.init()).then(function () {
         loading.resolve();
     }
 
-    // ## Start Ghost App
-    if (getSocket()) {
-        // Make sure the socket is gone before trying to create another
-        fs.unlink(getSocket(), function (err) {
+    // Expose the express server on the ghost instance.
+    ghost.server = server;
+
+    // Initialize plugins then start the server
+    ghost.initPlugins().then(function () {
+
+        // ## Start Ghost App
+        if (getSocket()) {
+            // Make sure the socket is gone before trying to create another
+            fs.unlink(getSocket(), function (err) {
+                server.listen(
+                    getSocket(),
+                    startGhost
+                );
+                fs.chmod(getSocket(), '0744');
+            });
+
+        } else {
             server.listen(
-                getSocket(),
+                ghost.config().server.port,
+                ghost.config().server.host,
                 startGhost
             );
-            fs.chmod(getSocket(), '0744');
-        });
+        }
 
-    } else {
-        server.listen(
-            ghost.config().server.port,
-            ghost.config().server.host,
-            startGhost
-        );
-    }
-}, errors.logAndThrowError);
+    });
+}).otherwise(errors.logAndThrowError);
