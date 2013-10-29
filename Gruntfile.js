@@ -152,7 +152,10 @@ var path           = require('path'),
                             'core/*.js',
                             'core/server/**/*.js'
                         ]
-                    }
+                    },
+                    exclude: [
+                        'config.js'
+                    ]
                 },
                 client: {
                     directives: {
