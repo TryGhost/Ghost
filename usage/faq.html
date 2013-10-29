@@ -5,6 +5,7 @@ meta_description: An in depth guide to using the Ghost blogging platform. Got Gh
 heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
+section: faq
 permalink: /usage/faq/
 prev_section: writing
 ---
