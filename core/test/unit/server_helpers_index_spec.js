@@ -41,7 +41,7 @@ describe('Core Helpers', function () {
                     helpers.content
                         .call(
                             {html: html},
-                            {"hash":{"words": 2}}
+                            {"hash": {"words": 2}}
                         )
                 );
 
@@ -55,7 +55,7 @@ describe('Core Helpers', function () {
                     helpers.content
                         .call(
                             {html: html},
-                            {"hash":{"characters": 8}}
+                            {"hash": {"characters": 8}}
                         )
                 );
 
@@ -70,14 +70,14 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.author);
         });
 
-        it("Returns the full name of the author from the context",function() {
-            var data = {"author":{"name":"abc123"}},
+        it("Returns the full name of the author from the context", function () {
+            var data = {"author": {"name": "abc123"}},
                 result = helpers.author.call(data);
 
             String(result).should.equal("abc123");
         });
 
-        it("Returns a blank string where author data is missing",function() {
+        it("Returns a blank string where author data is missing", function () {
             var data = {"author": null},
                 result = helpers.author.call(data);
 
@@ -88,11 +88,11 @@ describe('Core Helpers', function () {
 
     describe('encode Helper', function () {
 
-        it('has loaded encode helper', function() {
+        it('has loaded encode helper', function () {
             should.exist(handlebars.helpers.encode);
         });
 
-        it('can escape URI', function() {
+        it('can escape URI', function () {
             var uri = "$pecial!Charact3r(De[iver]y)Foo #Bar",
                 expected = "%24pecial!Charact3r(De%5Biver%5Dy)Foo%20%23Bar",
                 escaped = handlebars.helpers.encode(uri);
@@ -196,16 +196,16 @@ describe('Core Helpers', function () {
 
         it('can render class for static page', function (done) {
             helpers.body_class.call({
-                    path: '/',
-                    post: {
-                        page: true
-                    }
-                }).then(function (rendered) {
-                    should.exist(rendered);
-                    rendered.string.should.equal('home-template page');
+                path: '/',
+                post: {
+                    page: true
+                }
+            }).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('home-template page');
 
-                    done();
-                }, done);
+                done();
+            }, done);
         });
     });
 
@@ -242,7 +242,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string', function (done) {
             helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');    
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
 
                 done();
             });
@@ -268,7 +268,6 @@ describe('Core Helpers', function () {
 
                 done();
             });
-            
         });
     });
 
