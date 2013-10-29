@@ -471,4 +471,4 @@ when(ghost.init()).then(function () {
         }
 
     });
-}, errors.logAndThrowError);
+}).otherwise(errors.logAndThrowError);

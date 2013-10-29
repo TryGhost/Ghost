@@ -353,34 +353,33 @@ Ghost.prototype.doFilter = function (name, args) {
 
 // Initialise plugins.  Will load from config.activePlugins by default
 Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    pluginsToLoad = pluginsToLoad || JSON.parse(this.settings('activePlugins'));
-
     var self = this;
 
-    // If no activePlugins defined in config settings, look in database settings.
     if (!_.isArray(pluginsToLoad)) {
-        // The value will be resolved in the promise
-        pluginsToLoad = models.Settings.read("activePlugins").then(function (activePluginsSetting) {
-            var settingValue = activePluginsSetting.get('value') || '[]';
 
-            try {
-                // We have to parse the value because it's a string
-                settingValue = JSON.parse(settingValue) || [];
-            } catch (e) {
-                return when.reject(new Error("Failed to parse activePlugins setting value: " + e.message));
-            }
-
-            // Resolve with the array value
-            return when.resolve(settingValue);
-        });
+        try {
+            // We have to parse the value because it's a string
+            pluginsToLoad = JSON.parse(this.settings('activePlugins')) || [];
+        } catch (e) {
+            errors.logError(
+                'Failed to parse activePlugins setting value: ' + e.message,
+                'Your plugins will not be loaded.',
+                'Check your settings table for typos in the activePlugins value. It should look like: ["plugin-1", "plugin2"] (double quotes required).'
+            );
+            return when.resolve();
+        }
     }
 
-    return when(pluginsToLoad).then(function (pluginsToLoadValue) {
-        return plugins.init(self, pluginsToLoad).then(function (loadedPlugins) {
-            // Extend the loadedPlugins onto the available plugins
-            _.extend(self.availablePlugins, loadedPlugins);
-        });
-    }, errors.logAndThrowError);
+    return plugins.init(self, pluginsToLoad).then(function (loadedPlugins) {
+        // Extend the loadedPlugins onto the available plugins
+        _.extend(self.availablePlugins, loadedPlugins);
+    }).otherwise(function (err) {
+        errors.logError(
+            err.message || err,
+            'The plugin will not be loaded',
+            'Check with the plugin creator, or read the plugin documentation for more details on plugin requirements'
+        );
+    });
 };
 
 module.exports = Ghost;
