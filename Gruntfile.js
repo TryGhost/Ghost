@@ -857,7 +857,6 @@ var path           = require('path'),
                 'handlebars',
                 'concat',
                 'express:dev',
-                'open',
                 'watch'
             ]);
 
