@@ -8,7 +8,7 @@ languages:
     - name: 'Español'
       key: 'es'
     - name: '中文'
-      key: 'cn'
+      key: 'zh'
 port:         4478
 
 translations:
@@ -19,7 +19,7 @@ translations:
     email:        'Email'
     themes:       'temas'
     help:         'ayudar'
-  cn:
+  zh:
     site_title:   'Ghost使用指南'
     installation: '安装'
     usage:        '使用'

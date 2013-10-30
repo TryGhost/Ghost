@@ -6,6 +6,7 @@ heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
 permalink: /installation/windows/
 chapter: installation
+section: windows
 prev_section: mac
 next_section: linux
 ---

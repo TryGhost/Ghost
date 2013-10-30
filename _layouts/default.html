@@ -14,7 +14,10 @@
   <meta name="description" content="{{ page.meta_description }}" />
   {% endif %}
 
-  <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+  <link rel="canonical" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">
+  {% for lang in site.languages %}
+  <link rel="alternate" hreflang="{{ lang.key }}" href="{{ site.url }}/{% if lang.key != 'en' %}{{ lang.key }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">
+  {% endfor %}
 
   <link rel="stylesheet" href="{{ site.url }}/assets/css/bootstrap.css" >
   <link rel="stylesheet" href="{{ site.url }}/assets/css/main.css">
@@ -96,6 +99,20 @@
             {% endif %}
           </a>
         </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if page.lang %}
+          <li>
+            <a href="{{ site.url }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">English</a>
+          </li>
+        {% endif %}
+        {% for lang in site.languages %}
+          {% if lang.key != page.lang and lang.key != 'en' %}
+            <li>
+              <a href="{{ site.url }}/{{ lang.key }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">{{ lang.name }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
       </ul>
     </div>
   </nav>
