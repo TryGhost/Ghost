@@ -4,7 +4,11 @@
 var configLoader = require('./core/config-loader.js'),
     error        = require('./core/server/errorHandling');
 
-// If no env is set, default to development
+/**
+ * Define node user environment. If no env is set, default to development.
+ *
+ * @type {string}
+ */
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 configLoader.loadConfig().then(function () {
