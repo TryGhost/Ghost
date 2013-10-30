@@ -115,7 +115,7 @@ function ghostLocals(req, res, next) {
 
     if (res.isAdmin) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
-            _.extend(res.locals,  {
+            _.extend(res.locals, {
                 currentUser: {
                     name: currentUser.name,
                     email: currentUser.email,

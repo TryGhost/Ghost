@@ -8,11 +8,14 @@ var fs      = require('fs'),
     configexample = path.join(appRoot, 'config.example.js'),
     config = path.join(appRoot, 'config.js');
 
+/**
+ * Check for config file and copy from config.example.js
+ * if one doesn't exist.
+ * @return {Promise} promise object
+ */
 function writeConfigFile() {
     var written = when.defer();
 
-    /* Check for config file and copy from config.example.js
-        if one doesn't exist. After that, start the server. */
     fs.exists(configexample, function checkTemplate(templateExists) {
         var read,
             write;
@@ -39,6 +42,15 @@ function writeConfigFile() {
     return written.promise;
 }
 
+/**
+ * Ensures we have a config object that:
+ *     * Exists
+ *     * Has a valid url property
+ *     * Has a database property
+ *     * Has properly configured the server host, post, and socket
+ * @return {Promise} Upon successful validation the promise
+ *                   will be resolved, otherwise it'll be rejected.
+ */
 function validateConfigEnvironment() {
     var envVal = process.env.NODE_ENV || 'undefined',
         hasHostAndPort,
@@ -51,7 +63,6 @@ function validateConfigEnvironment() {
     } catch (ignore) {
 
     }
-
 
     // Check if we don't even have a config
     if (!config) {
@@ -84,6 +95,15 @@ function validateConfigEnvironment() {
     return when.resolve();
 }
 
+/**
+ * Checks for a config file and copies it from config.example.js
+ * if it doesn't exist.
+ *
+ * Validates that we have a proper config object for use in our server.
+ *
+ * After that start the server.
+ * @return {Promise} Resolved when above conditions are met
+ */
 exports.loadConfig = function () {
     var loaded = when.defer();
     /* Check for config file and copy from config.example.js
