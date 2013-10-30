@@ -227,6 +227,7 @@
                 message: this.notificationMap[status],
                 status: 'passive'
             });
+            Ghost.currentView.setEditorDirty(false);
         },
 
         reportSaveError: function (response, model, status) {
@@ -447,6 +448,10 @@
             return this.uploadMgr.getEditorValue();
         },
 
+        setEditorDirty: function (dirty) {
+            return this.uploadMgr.setEditorDirty(dirty);
+        },
+
         initUploads: function () {
             var filestorage = $('#entry-markdown-content').data('filestorage');
             this.$('.js-drop-zone').upload({editor: true, fileStorage: filestorage});
@@ -656,14 +661,25 @@
             return value;
         }
 
+        function unloadDirtyMessage() {
+            return 'PLACEHOLDER MESSAGE';
+        }
+
+        function setEditorDirty(dirty) {
+            window.onbeforeunload = dirty ? unloadDirtyMessage : null;
+        }
+
         // Public API
         _.extend(this, {
             getEditorValue: getEditorValue,
-            handleUpload: handleUpload
+            handleUpload: handleUpload,
+            setEditorDirty: setEditorDirty
         });
 
         // initialise
         editor.on('change', function (cm, changeObj) {
+            setEditorDirty(true);
+
             var linesChanged = _.range(changeObj.from.line, changeObj.from.line + changeObj.text.length);
 
             _.each(linesChanged, function (ln) {
