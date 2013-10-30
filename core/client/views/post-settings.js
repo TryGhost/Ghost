@@ -150,7 +150,6 @@
         },
 
         toggleStaticPage: function (e) {
-            e.preventDefault();
             var pageEl = $(e.currentTarget),
                 page = this.model ? !this.model.get('page') : false;
 
