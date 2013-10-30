@@ -30,7 +30,8 @@
         "downsize": "0.0.2",
         "validator": "1.4.0",
         "rss": "0.2.0",
-        "nodemailer": "~0.5.2"
+        "nodemailer": "~0.5.2",
+        "aws-sdk": "1.9.0"
     },
     "devDependencies": {
         "grunt": "~0.4.1",

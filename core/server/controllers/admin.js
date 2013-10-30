@@ -48,23 +48,25 @@ function setSelected(list, name) {
 }
 
 adminControllers = {
+    'get_config': function () {
+        // allows unit testing
+        return ghost.config();
+    },
     'get_storage': function () {
-        // TODO get storage choice from config
-        var storageChoice = 'localfilesystem.js';
+        var storageChoice = adminControllers.get_config().images.store;
         return require('./storage/' + storageChoice);
     },
     'uploader': function (req, res) {
 
         var type = req.files.uploadimage.type,
-            storage = adminControllers.get_storage(),
-            rootToUrl = '/'; // TODO for local storage this works, for external storage not
+            storage = adminControllers.get_storage();
 
         if (type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif') {
             return res.send(404, 'Invalid filetype');
         }
 
         storage
-            .save(new Date().getTime(), req.files.uploadimage, rootToUrl)
+            .save(new Date().getTime(), req.files.uploadimage, adminControllers.get_config().images)
             .then(function (url) {
 
                 // delete the temporary file
