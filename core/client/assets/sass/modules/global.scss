@@ -1338,11 +1338,13 @@ main {
         color: $brown;
         text-decoration: none;
     }
+
     .image-cancel {
         @include icon($i-x, 16px);
         position: absolute;
+        z-index: 300;
         color: white;
-        text-shadow: rgba(0,0,0,0.3) 0 0 3px;
+        text-shadow: rgba(0,0,0,0.6) 0 0 3px;
         top: 10px;
         right: 10px;
         text-decoration: none;
@@ -1352,6 +1354,7 @@ main {
             color: white;
         }
     }
+
     input {
         &.main{
             position: absolute;
@@ -1368,6 +1371,7 @@ main {
                 right: 9999px;
             }
         }
+
         &.url{
             font: -webkit-small-control;
             box-sizing: border-box;
@@ -1385,6 +1389,7 @@ main {
             -moz-transition: all 0.15s ease-in-out;
         }
     }
+
     .progress {
         position: relative;
         top: -22px;
@@ -1411,6 +1416,7 @@ main {
         top: -40px;
         font-size: 16px;
     }
+
     .bar {
         height: 12px;
         background: $blue;
@@ -1419,6 +1425,7 @@ main {
             background: $red;
         }
     }
+
 }
 
 .pre-image-uploader {
@@ -1458,6 +1465,7 @@ main {
     .image-cancel {
         @include icon($i-trash, 11px);
         position: absolute;
+        z-index: 300;
         top: 10px;
         right: 10px;
         padding: 8px;
