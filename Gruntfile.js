@@ -237,6 +237,10 @@ var path           = require('path'),
                         'core/test/unit/**/export_spec.js',
                         'core/test/unit/**/import_spec.js'
                     ]
+                },
+
+                integration: {
+                    src: ['core/test/integration/**/model*_spec.js']
                 }
             },
 
@@ -498,7 +502,7 @@ var path           = require('path'),
         grunt.initConfig(cfg);
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
+            process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
         });
 
         grunt.registerTask('loadConfig', function () {
@@ -865,9 +869,11 @@ var path           = require('path'),
 
         grunt.registerTask('test-unit', 'Run unit tests', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:all']);
 
+        grunt.registerTask('test-integration', 'Run integration tests', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:integration']);
+
         grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs']);
 
-        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-functional']);
 
         grunt.registerTask('docs', 'Generate Docs', ['groc']);
 
