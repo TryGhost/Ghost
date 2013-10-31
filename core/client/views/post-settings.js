@@ -70,6 +70,7 @@
                 slug: newSlug
             }, {
                 success : function (model, response, options) {
+                    /*jslint unparam:true*/
                     // Repopulate slug in case it changed on the server (e.g. 'new-slug-2')
                     slugEl.value = model.get('slug');
                     Ghost.notifications.addItem({
@@ -79,6 +80,7 @@
                     });
                 },
                 error : function (model, xhr) {
+                    /*jslint unparam:true*/
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -131,6 +133,7 @@
                 published_at: newPubDateMoment.hour(12).toDate()
             }, {
                 success : function (model, response, options) {
+                    /*jslint unparam:true*/
                     pubDateEl.value = moment(model.get('published_at'), parseDateFormats).format(displayDateFormat);
                     Ghost.notifications.addItem({
                         type: 'success',
@@ -139,6 +142,7 @@
                     });
                 },
                 error : function (model, xhr) {
+                    /*jslint unparam:true*/
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -158,6 +162,7 @@
                 page: page
             }, {
                 success : function (model, response, options) {
+                    /*jslint unparam:true*/
                     pageEl.prop('checked', page);
                     Ghost.notifications.addItem({
                         type: 'success',
@@ -166,6 +171,7 @@
                     });
                 },
                 error : function (model, xhr) {
+                    /*jslint unparam:true*/
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),

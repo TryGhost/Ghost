@@ -95,6 +95,7 @@ errors = {
     },
 
     logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {
+        /*jslint unparam:true*/
         var self = this;
 
         return function () {
@@ -107,6 +108,7 @@ errors = {
     },
 
     renderErrorPage: function (code, err, req, res, next) {
+        /*jslint unparam:true*/
 
         function parseStack(stack) {
             if (!_.isString(stack)) {

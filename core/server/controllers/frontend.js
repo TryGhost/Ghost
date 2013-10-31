@@ -128,11 +128,13 @@ frontendControllers = {
 
                         //set img src to absolute url
                         content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            /*jslint unparam:true*/
                             p1 = url.resolve(siteUrl, p1);
                             return "src='" + p1 + "' ";
                         });
                         //set a href to absolute url
                         content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            /*jslint unparam:true*/
                             p1 = url.resolve(siteUrl, p1);
                             return "href='" + p1 + "' ";
                         });

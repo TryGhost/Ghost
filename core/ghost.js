@@ -157,6 +157,7 @@ Ghost.prototype.init = function () {
             self.dbHash = dbhash.attributes.value;
             return dbhash.attributes.value;
         }).otherwise(function (error) {
+            /*jslint unparam:true*/
             // this is where all the "first run" functionality should go
             var dbhash = uuid.v4();
             return when(models.Settings.add({key: 'dbHash', value: dbhash, type: 'core'})).then(function () {

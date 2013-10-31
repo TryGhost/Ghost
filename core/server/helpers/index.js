@@ -66,6 +66,7 @@ coreHelpers.encode = function (context, str) {
 // context.
 //
 coreHelpers.pageUrl = function (context, block) {
+    /*jslint unparam:true*/
     return context === 1 ? '/' : ('/page/' + context + '/');
 };
 
@@ -101,6 +102,7 @@ coreHelpers.url = function (options) {
 // if the author could not be determined.
 //
 coreHelpers.author = function (context, options) {
+    /*jslint unparam:true*/
     return this.author ? this.author.name : '';
 };
 
@@ -196,6 +198,7 @@ coreHelpers.excerpt = function (options) {
 //
 // Returns the config value for fileStorage.
 coreHelpers.fileStorage = function (context, options) {
+    /*jslint unparam:true*/
     if (coreHelpers.ghost.config().hasOwnProperty('fileStorage')) {
         return coreHelpers.ghost.config().fileStorage.toString();
     }
@@ -232,6 +235,7 @@ coreHelpers.ghostScriptTags = function () {
  */
 
 coreHelpers.body_class = function (options) {
+    /*jslint unparam:true*/
     var classes = [],
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
@@ -259,6 +263,7 @@ coreHelpers.body_class = function (options) {
 };
 
 coreHelpers.post_class = function (options) {
+    /*jslint unparam:true*/
     var classes = ['post'],
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         featured = this.post && this.post.featured ? this.post.featured : this.featured || false,
@@ -283,6 +288,7 @@ coreHelpers.post_class = function (options) {
 };
 
 coreHelpers.ghost_head = function (options) {
+    /*jslint unparam:true*/
     var head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -299,6 +305,7 @@ coreHelpers.ghost_head = function (options) {
 };
 
 coreHelpers.ghost_foot = function (options) {
+    /*jslint unparam:true*/
     var foot = [];
     foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
 
@@ -309,6 +316,7 @@ coreHelpers.ghost_foot = function (options) {
 };
 
 coreHelpers.meta_title = function (options) {
+    /*jslint unparam:true*/
     var title,
         blog;
     if (_.isString(this.path)) {
@@ -327,6 +335,7 @@ coreHelpers.meta_title = function (options) {
 };
 
 coreHelpers.meta_description = function (options) {
+    /*jslint unparam:true*/
     var description,
         blog;
 
@@ -366,6 +375,7 @@ coreHelpers.e = function (key, defaultString, options) {
 };
 
 coreHelpers.json = function (object, options) {
+    /*jslint unparam:true*/
     return JSON.stringify(object);
 };
 
@@ -447,6 +457,7 @@ coreHelpers.paginationTemplate = null;
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
 coreHelpers.pagination = function (options) {
+    /*jslint unparam:true*/
     if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
         errors.logAndThrowError('pagination data is not an object or is a function');
         return;

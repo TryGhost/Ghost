@@ -70,6 +70,7 @@ function redirectToDashboard(req, res, next) {
 }
 
 function redirectToSignup(req, res, next) {
+    /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
             return res.redirect('/ghost/signup/');
@@ -85,6 +86,7 @@ function redirectToSignup(req, res, next) {
 // plus the local messages, as they have already been added at this point
 // otherwise they'd appear one too many times
 function cleanNotifications(req, res, next) {
+    /*jslint unparam:true*/
     ghost.notifications = _.reject(ghost.notifications, function (notification) {
         return notification.status === 'passive';
     });
@@ -141,6 +143,7 @@ function ghostLocals(req, res, next) {
 // ### DisableCachedResult Middleware
 // Disable any caching until it can be done properly
 function disableCachedResult(req, res, next) {
+    /*jslint unparam:true*/
     res.set({
         'Cache-Control': 'no-cache, must-revalidate',
         'Expires': 'Sat, 26 Jul 1997 05:00:00 GMT'
@@ -165,6 +168,7 @@ function whenEnabled(setting, fn) {
 // ### InitViews Middleware
 // Initialise Theme or Admin Views
 function initViews(req, res, next) {
+    /*jslint unparam:true*/
     var hbsOptions;
 
     if (!res.isAdmin) {
@@ -189,7 +193,7 @@ function initViews(req, res, next) {
 // ### Activate Theme
 // Helper for manageAdminAndTheme
 function activateTheme() {
-    var stackLocation = _.indexOf(server.stack, _.find(server.stack, function (stackItem, key) {
+    var stackLocation = _.indexOf(server.stack, _.find(server.stack, function (stackItem) {
         return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
     }));
 
@@ -341,10 +345,12 @@ when(ghost.init()).then(function () {
     // ### Admin routes
     /* TODO: put these somewhere in admin */
     server.get(/^\/logout\/?$/, function redirect(req, res) {
+        /*jslint unparam:true*/
         res.redirect(301, '/signout/');
     });
     server.get(/^\/signout\/?$/, admin.logout);
     server.get('/ghost/login/', function redirect(req, res) {
+        /*jslint unparam:true*/
         res.redirect(301, '/ghost/signin/');
     });
     server.get('/ghost/signin/', redirectToSignup, redirectToDashboard, admin.login);
@@ -365,9 +371,11 @@ when(ghost.init()).then(function () {
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
+        /*jslint unparam:true*/
         res.redirect('/ghost/');
     });
     server.get(/^\/(ghost$\/?)/, auth, function (req, res) {
+        /*jslint unparam:true*/
         res.redirect('/ghost/');
     });
     server.get('/ghost/', redirectToSignup, auth, admin.index);
@@ -455,6 +463,7 @@ when(ghost.init()).then(function () {
         if (getSocket()) {
             // Make sure the socket is gone before trying to create another
             fs.unlink(getSocket(), function (err) {
+                /*jslint unparam:true*/
                 server.listen(
                     getSocket(),
                     startGhost

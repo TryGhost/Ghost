@@ -10,6 +10,7 @@
     // ----------
     Ghost.Views.Blog = Ghost.View.extend({
         initialize: function (options) {
+            /*jslint unparam:true*/
             this.listenTo(this.collection, 'request', function () {
                 NProgress.start();
             });
@@ -32,7 +33,7 @@
             'click .content-list-content'    : 'scrollHandler'
         },
 
-        initialize: function (options) {
+        initialize: function () {
             this.$('.content-list-content').scrollClass({target: '.content-list', offset: 10});
             this.listenTo(this.collection, 'remove', this.showNext);
             this.listenTo(this.collection, 'add', this.renderPost);
@@ -97,6 +98,7 @@
                     orderBy: ['updated_at', 'DESC']
                 }
             }).then(function onSuccess(response) {
+                /*jslint unparam:true*/
                 self.render();
                 self.isLoading = false;
             }, function onError(e) {
@@ -197,7 +199,7 @@
             'click .unfeatured' : 'toggleFeatured'
         },
 
-        initialize: function (options) {
+        initialize: function () {
             this.listenTo(Backbone, 'blog:activeItem', this.setActivePreview);
         },
 
@@ -224,7 +226,7 @@
             model.save({
                 featured: featured
             }, {
-                success : function (model, response, options) {
+                success : function () {
                     featuredEl.removeClass("featured unfeatured").addClass(featured ? "featured" : "unfeatured");
                     Ghost.notifications.addItem({
                         type: 'success',
@@ -233,6 +235,7 @@
                     });
                 },
                 error : function (model, xhr) {
+                    /*jslint unparam:true*/
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),

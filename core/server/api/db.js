@@ -13,6 +13,7 @@ var Ghost         = require('../../ghost'),
 
 db = {
     export: function (req, res) {
+        /*jslint unparam:true*/
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
             var fileName = path.resolve(__dirname + '/../../server/data/export/exported-' + (new Date().getTime()) + '.json');

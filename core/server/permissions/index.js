@@ -17,6 +17,7 @@ function hasActionsMap() {
     // Just need to find one key in the actionsMap
 
     return _.any(exported.actionsMap, function (val, key) {
+        /*jslint unparam:true*/
         return Object.hasOwnProperty(key);
     });
 }
