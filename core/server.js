@@ -337,6 +337,9 @@ when(ghost.init()).then(function () {
     // #### Import/Export
     server.get('/ghost/api/v0.1/db/', auth, api.db['export']);
     server.post('/ghost/api/v0.1/db/', auth, api.db['import']);
+    // #### Update
+    server.get('/ghost/api/v0.1/update/', auth, api.update.check);
+    server.post('/ghost/api/v0.1/update/', auth, api.update.run);
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */

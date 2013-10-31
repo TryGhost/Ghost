@@ -7,6 +7,7 @@ var Ghost        = require('../../ghost'),
     errors       = require('../errorHandling'),
     permissions  = require('../permissions'),
     db           = require('./db'),
+    update       = require('./update'),
     canThis      = permissions.canThis,
 
     ghost        = new Ghost(),
@@ -401,10 +402,13 @@ requestHandler = function (apiMethod) {
 };
 
 // Public API
-module.exports.posts = posts;
-module.exports.users = users;
-module.exports.tags = tags;
-module.exports.notifications = notifications;
-module.exports.settings = settings;
-module.exports.db = db.db;
-module.exports.requestHandler = requestHandler;
+module.exports = {
+    posts: posts,
+    users: users,
+    tags: tags,
+    notifications: notifications,
+    settings: settings,
+    db: db.db,
+    update: update,
+    requestHandler: requestHandler
+};
