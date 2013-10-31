@@ -116,6 +116,7 @@
             });
         },
         saveSuccess: function (model, response, options) {
+            /*jslint unparam:true*/
             Ghost.notifications.clearEverything();
             // TODO: better messaging here?
             Ghost.notifications.addItem({
@@ -125,6 +126,7 @@
             });
         },
         saveError: function (model, xhr) {
+            /*jslint unparam:true*/
             Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',

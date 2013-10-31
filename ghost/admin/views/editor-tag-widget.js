@@ -84,7 +84,7 @@
                     });
                 }
 
-                $(".tag-input").one("blur", function (e) {
+                $(".tag-input").one("blur", function () {
 
                     if (publishBar.hasClass("extended-tags") && !$(':hover').last().hasClass("tag")) {
                         publishBar.css("top", "auto").animate({"height": "40px"}, 300, "swing", function () {

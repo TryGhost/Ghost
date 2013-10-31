@@ -67,6 +67,7 @@
                         'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
                     },
                     add: function (e, data) {
+                        /*jslint unparam:true*/
                         $dropzone.find('.js-fileupload').removeClass('right');
                         $dropzone.find('.js-url, button.centre').remove();
                         $progress.find('.js-upload-progress-bar').removeClass('fail');
@@ -83,6 +84,7 @@
                     },
                     dropZone: settings.fileStorage ? $dropzone : null,
                     progressall: function (e, data) {
+                        /*jslint unparam:true*/
                         var progress = parseInt(data.loaded / data.total * 100, 10);
                         if (!settings.editor) {$progress.find('div.js-progress').css({"position": "absolute", "top": "40px"}); }
                         if (settings.progressbar) {
@@ -91,6 +93,7 @@
                         }
                     },
                     fail: function (e, data) {
+                        /*jslint unparam:true*/
                         $dropzone.trigger("uploadfailure", [data.result]);
                         $dropzone.find('.js-upload-progress-bar').addClass('fail');
                         if (data.jqXHR.status === 413) {
@@ -109,6 +112,7 @@
                         });
                     },
                     done: function (e, data) {
+                        /*jslint unparam:true*/
                         self.complete(data.result);
                     }
                 });

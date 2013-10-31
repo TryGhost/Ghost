@@ -207,6 +207,7 @@
                     },
                     url: Ghost.settings.apiRoot + '/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
+                    /*jslint unparam:true*/
                     bbSelf.$el.slideUp(250, function () {
                         $(this).show().css({height: "auto"});
                         $(self).remove();
@@ -239,6 +240,7 @@
                 },
                 url: Ghost.settings.apiRoot + '/notifications/' + $(self).data('id')
             }).done(function (result) {
+                /*jslint unparam:true*/
                 var height = bbSelf.$('.js-notification').outerHeight(true),
                     $parent = $(self).parent();
                 bbSelf.$el.css({height: height});
