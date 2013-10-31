@@ -76,7 +76,7 @@ describe("Mail", function () {
         should.exist(ghost.mail);
         ghost.mail.should.have.property('init');
         ghost.mail.should.have.property('transport');
-        ghost.mail.should.have.property('send').and.be.a('function');
+        ghost.mail.should.have.property('send').and.be.a.function;
     });
 
     it('should setup SMTP transport on initialization', function (done) {
@@ -84,7 +84,7 @@ describe("Mail", function () {
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SMTP');
-            ghost.mail.transport.sendMail.should.be.a('function');
+            ghost.mail.transport.sendMail.should.be.a.function;
             done();
         }).then(null, done);
     });
@@ -94,7 +94,7 @@ describe("Mail", function () {
         ghost.mail.init(ghost).then(function(){
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
-            ghost.mail.transport.sendMail.should.be.a('function');
+            ghost.mail.transport.sendMail.should.be.a.function;
             done();
         }).then(null, done);
     });
