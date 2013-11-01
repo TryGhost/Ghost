@@ -47,11 +47,10 @@ var path           = require('path'),
                 build: buildDirectory,
                 nightlyBuild: path.join(buildDirectory, 'nightly'),
                 weeklyBuild: path.join(buildDirectory, 'weekly'),
-                buildBuild: path.join(buildDirectory, 'build'),
+                releaseBuild: path.join(buildDirectory, 'release'),
                 dist: distDirectory,
                 nightlyDist: path.join(distDirectory, 'nightly'),
                 weeklyDist: path.join(distDirectory, 'weekly'),
-                buildDist: path.join(distDirectory, 'build'),
                 releaseDist: path.join(distDirectory, 'release')
             },
             buildType: 'Build',
@@ -118,14 +117,6 @@ var path           = require('path'),
                     options: {
                         node_env: 'testing'
                     }
-                }
-            },
-
-            // Open the site in a browser
-            open: {
-                server: {
-                    // TODO: Load this port from config?
-                    path: 'http://127.0.0.1:2368'
                 }
             },
 
@@ -300,8 +291,8 @@ var path           = require('path'),
             },
 
             clean: {
-                build: {
-                    src: ['<%= paths.buildBuild %>/**']
+                release: {
+                    src: ['<%= paths.releaseBuild %>/**']
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
@@ -323,11 +314,11 @@ var path           = require('path'),
                         dest: '<%= paths.weeklyBuild %>/<%= pkg.version %>/'
                     }]
                 },
-                build: {
+                release: {
                     files: [{
                         expand: true,
                         src: buildGlob,
-                        dest: '<%= paths.buildBuild %>/'
+                        dest: '<%= paths.releaseBuild %>/'
                     }]
                 }
             },
@@ -349,20 +340,12 @@ var path           = require('path'),
                     cwd: '<%= paths.weeklyBuild %>/<%= pkg.version %>/',
                     src: ['**']
                 },
-                build: {
-                    options: {
-                        archive: '<%= paths.buildDist %>/Ghost-Build.zip'
-                    },
-                    expand: true,
-                    cwd: '<%= paths.buildBuild %>/',
-                    src: ['**']
-                },
                 release: {
                     options: {
                         archive: '<%= paths.releaseDist %>/Ghost-<%= pkg.version %>.zip'
                     },
                     expand: true,
-                    cwd: '<%= paths.buildBuild %>/',
+                    cwd: '<%= paths.releaseBuild %>/',
                     src: ['**']
                 }
             },
@@ -793,6 +776,9 @@ var path           = require('path'),
             });
         });
 
+        // ## Tools for packaging builds - these can be weeklies, nightlies or releases
+
+        /* These tools are currently unused
         grunt.registerTask('nightly',
             'Nightly builds\n' +
             ' - Do our standard build steps (sass, handlebars, etc)\n' +
@@ -815,43 +801,47 @@ var path           = require('path'),
                 'compress:nightly'
             ]);
 
-        grunt.registerTask('weekly', [
-            'setCurrentBuildType:Weekly',
-            'shell:bourbon',
-            'sass:compress',
-            'handlebars',
-            'concat',
-            'uglify',
-            'bump:build',
-            'updateCurrentPackageInfo',
-            'changelog',
-            'copy:weekly',
-            'compress:weekly'
-        ]);
+        grunt.registerTask('weekly',
+            'Weekly builds\n' +
+            ' - Do our standard build steps (sass, handlebars, etc)\n' +
+            ' - Bump patch version in package.json, commit, tag and push\n' +
+            ' - Generate changelog for the past 14 releases\n' +
+            ' - Copy files to build-folder/#/#{version} directory\n' +
+            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
+            ' - Zip files in build folder to dist-folder/#{version} directory',
+            [
+                'setCurrentBuildType:Weekly',
+                'shell:bourbon',
+                'sass:compress',
+                'handlebars',
+                'concat',
+                'uglify',
+                'bump:build',
+                'updateCurrentPackageInfo',
+                'changelog',
+                'copy:weekly',
+                'compress:weekly'
+            ]);
+        */
 
-        grunt.registerTask('build', [
-            'shell:bourbon',
-            'sass:compress',
-            'handlebars',
-            'concat',
-            'uglify',
-            'changelog',
-            'clean:build',
-            'copy:build',
-            'compress:build'
-        ]);
-
-        grunt.registerTask('release', [
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'changelog',
-            'clean:build',
-            'copy:build',
-            'compress:release'
-        ]);
+        grunt.registerTask('release',
+            'Release task - creates a final built zip\n' +
+            ' - Do our standard build steps (sass, handlebars, etc)\n' +
+            ' - Generate changelog for the past 14 releases\n' +
+            ' - Copy files to release-folder/#/#{version} directory\n' +
+            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
+            ' - Zip files in release-folder to dist-folder/#{version} directory',
+            [
+                'shell:bourbon',
+                'sass:compress',
+                'handlebars',
+                'concat',
+                'uglify',
+                'changelog',
+                'clean:release',
+                'copy:release',
+                'compress:release'
+            ]);
 
         grunt.registerTask('dev',
             'Dev Mode; watch files and restart server on changes',
@@ -863,8 +853,8 @@ var path           = require('path'),
                 'watch'
             ]);
 
-        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
-        grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
+
+        // ## Running the test suites
 
         grunt.registerTask('test-unit', 'Run unit tests', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:all']);
 
@@ -874,13 +864,22 @@ var path           = require('path'),
 
         grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-functional']);
 
+
+        // ## Documentation
+
         grunt.registerTask('docs', 'Generate Docs', ['groc']);
 
-        // TODO: Production build task that minifies with uglify:prod
-        grunt.registerTask('prod', ['sass:compress', 'handlebars', 'concat', 'uglify']);
+
+        // ## Tools for building assets
+
+        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
+        grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
+
+        // Before running in production mode
+        grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', ['sass:compress', 'handlebars', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;
