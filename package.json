@@ -48,7 +48,7 @@
         "sqlite3": "2.1.19",
         "underscore": "1.5.2",
         "validator": "1.4.0",
-        "when": "2.2.1"
+        "when": "2.5.1"
     },
     "optionalDependencies": {
         "mysql": "2.0.0-alpha9"
