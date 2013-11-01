@@ -287,7 +287,7 @@ Ghost.prototype.registerAsyncThemeHelper = function (name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
         // Wrap the function passed in with a when.resolve so it can
         // return either a promise or a value
-        when.resolve(fn(options)).then(function (result) {
+        when.resolve(fn.call(this, options)).then(function (result) {
             cb(result);
         }).otherwise(function (err) {
             errors.logAndThrowError(err, "registerAsyncThemeHelper: " + name);
