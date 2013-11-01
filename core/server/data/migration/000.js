@@ -23,7 +23,7 @@ var when    = require('when'),
             updated_at: {maxlength: 0, nullable: true},
             updated_by: {maxlength: 0, nullable: true},
             published_at: {maxlength: 0, nullable: true},
-            published_by: {maxlength: 0, nullable: true},
+            published_by: {maxlength: 0, nullable: true}
         },
         users: {
             id: {maxlength: 0, nullable: false},
@@ -46,7 +46,7 @@ var when    = require('when'),
             created_at: {maxlength: 0, nullable: false},
             created_by: {maxlength: 0, nullable: false},
             updated_at: {maxlength: 0, nullable: true},
-            updated_by: {maxlength: 0, nullable: true},
+            updated_by: {maxlength: 0, nullable: true}
         },
         roles: {
             id: {maxlength: 0, nullable: false},
@@ -56,12 +56,12 @@ var when    = require('when'),
             created_at: {maxlength: 0, nullable: false},
             created_by: {maxlength: 0, nullable: false},
             updated_at: {maxlength: 0, nullable: true},
-            updated_by: {maxlength: 0, nullable: true},
+            updated_by: {maxlength: 0, nullable: true}
         },
         roles_users: {
             id: {maxlength: 0, nullable: false},
             role_id: {maxlength: 0, nullable: false},
-            user_id: {maxlength: 0, nullable: false},
+            user_id: {maxlength: 0, nullable: false}
         },
         permissions: {
             id: {maxlength: 0, nullable: false},
@@ -73,17 +73,17 @@ var when    = require('when'),
             created_at: {maxlength: 0, nullable: false},
             created_by: {maxlength: 0, nullable: false},
             updated_at: {maxlength: 0, nullable: true},
-            updated_by: {maxlength: 0, nullable: true},
+            updated_by: {maxlength: 0, nullable: true}
         },
         permissions_users: {
             id: {maxlength: 0, nullable: false},
             user_id: {maxlength: 0, nullable: false},
-            permission_id: {maxlength: 0, nullable: false},
+            permission_id: {maxlength: 0, nullable: false}
         },
         permissions_roles: {
             id: {maxlength: 0, nullable: false},
             role_id: {maxlength: 0, nullable: false},
-            permission_id: {maxlength: 0, nullable: false},
+            permission_id: {maxlength: 0, nullable: false}
         },
         settings: {
             id: {maxlength: 0, nullable: false},
@@ -94,7 +94,7 @@ var when    = require('when'),
             created_at: {maxlength: 0, nullable: false},
             created_by: {maxlength: 0, nullable: false},
             updated_at: {maxlength: 0, nullable: true},
-            updated_by: {maxlength: 0, nullable: true},
+            updated_by: {maxlength: 0, nullable: true}
         },
         tags: {
             id: {maxlength: 0, nullable: false},
@@ -108,12 +108,12 @@ var when    = require('when'),
             created_at: {maxlength: 0, nullable: false},
             created_by: {maxlength: 0, nullable: false},
             updated_at: {maxlength: 0, nullable: true},
-            updated_by: {maxlength: 0, nullable: true},
+            updated_by: {maxlength: 0, nullable: true}
         },
         posts_tags: {
             id: {maxlength: 0, nullable: false},
             post_id: {maxlength: 0, nullable: false},
-            tag_id: {maxlength: 0, nullable: false},
+            tag_id: {maxlength: 0, nullable: false}
         }
     };
 

@@ -12,7 +12,7 @@ var Ghost         = require('../../ghost'),
     db;
 
 db = {
-    export: function (req, res) {
+    'export': function (req, res) {
         /*jslint unparam:true*/
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
@@ -38,7 +38,8 @@ db = {
             });
         });
     },
-    import: function (req, res) {
+    'import': function (req, res) {
+        var notification;
 
         if (!req.files.importfile || req.files.importfile.size === 0 || req.files.importfile.name.indexOf('json') === -1) {
             /**
@@ -49,7 +50,7 @@ db = {
              * - If the size is 0
              * - If the name doesn't have json in it
              */
-            var notification = {
+            notification = {
                 type: 'error',
                 message:  "Must select a .json file to import",
                 status: 'persistent',
@@ -124,7 +125,7 @@ db = {
                     });
             })
             .then(function importSuccess() {
-                var notification = {
+                notification = {
                     type: 'success',
                     message: "Data imported. Log in with the user details you imported",
                     status: 'persistent',
@@ -141,7 +142,7 @@ db = {
 
             }, function importFailure(error) {
                 // Notify of an error if it occurs
-                var notification = {
+                notification = {
                     type: 'error',
                     message: error.message || error,
                     status: 'persistent',
@@ -152,7 +153,7 @@ db = {
                     res.redirect('/ghost/debug/');
                 });
             });
-    },
+    }
 };
 
 module.exports.db = db;

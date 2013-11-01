@@ -66,7 +66,7 @@
         "grunt-contrib-watch": "~0.5.3",
         "grunt-express-server": "~0.4.2",
         "grunt-groc": "~0.3.0",
-        "grunt-jslint": "~1.0.0",
+        "grunt-jslint": "~1.1.1",
         "grunt-mocha-cli": "~1.0.6",
         "grunt-open": "~0.2.2",
         "grunt-shell": "~0.3.1",
