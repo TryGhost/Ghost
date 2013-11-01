@@ -1,10 +1,10 @@
 ---
 lang: br
 layout: default
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Como instalar o Ghost no seu Servidor - Ghost Docs
+meta_description: Tudo o que você precisa saber para colocar sua plataforma Ghost funcionando no seu ambiente local, ou em um ambiente remoto.
+heading: Instalando o Ghost &amp; Começando
+subheading: Os primeiros passos para configurar o seu Blog pela primeira vez.
 permalink: /br/installation/mac/
 chapter: installation
 prev_section: installation
@@ -17,36 +17,36 @@ next_section: windows
 
         <section id="content" class="col-lg-9">
 
-            <h1 id="install-mac">Installing on Mac</h1>
+            <h1 id="install-mac">Instalando no Mac</h1>
 
-            <p>To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".</p>
+            <p>Para instalar o Node.js e o Ghost no seu mac, você terá que abrir uma janela do Terminal. Você pode abrir essa janela digitando "Terminal" na busca do Spotlight.</p>
 
-            <h3>Install Node</h3>
+            <h3>Instalando o Node.js</h3>
 
             <ul>
-                <li>On <a href="http://nodejs.org">http://nodejs.org</a> press install, a '.pkg' file will be downloaded</li>
-                <li>Click on the download to open the installer, this is going to install both node and npm.</li>
-                <li>Click through the installer, finally entering your password and clicking 'install software'.</li>
-                <li>Once the installer is complete, go into your open Terminal window and type <code>echo $PATH</code> to check that '/usr/local/bin/' is in your path.</li>
+                <li>Abra <a href="http://nodejs.org">http://nodejs.org</a> clique "install", irá iniciar o download de um arquivo '.pkg'</li>
+                <li>Abra o instalador. Ele irá instalar o Node.js e o npm</li>
+                <li>Avance na instalação, finalizando com sua senha e clicando em "Instalar Aplicativo".</li>
+                <li>Uma vez que a instalação foi concluida, abra uma janela do Terminal e escreva <code>echo $PATH</code> para verificar que '/usr/local/bin/' está escrito.</li>
             </ul>
 
-            <p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
+            <p class="note"><strong>Nota:</strong> Se '/usr/local/bin' não aparecer no seu $PATH, veja o <a href="#export-path">guia de resolução de problemas</a> para descobrir como adicionar</p>
 
-            <p>If you get stuck you can watch the whole <a href="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif" title="Install Node on Mac">process in action here</a>.</p>
+            <p>Se você ficar perdido, você pode assistir <a href="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif" title="Install Node on Mac">o processo aqui</a>.</p>
 
-            <h3>Install and Run Ghost</h3>
+            <h3>Instalando e Rodando o Ghost</h3>
 
             <ul>
-                <li>Log in to <a href="http://ghost.org">http://ghost.org</a>, and then click the blue 'Download Ghost Source Code' button.</li>
-                <li>On the downloads page, press the button to download the latest zip file.</li>
-                <li>Click on the arrow next to the newly downloaded file, and choose 'show in finder'.</li>
-                <li>In finder, double-click on the downloaded zip file to extract it.</li>
-                <li>Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.</li>
-                <li>In the new terminal tab type <code>npm install --production</code> <span class="note">note the two dashes</span></li>
-                <li>When npm is finished installing, type <code>npm start</code> to start Ghost in development mode</li>
-                <li>In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog</li>
-                <li>Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.</li>
-                <li>See the <a href="/usage">usage docs</a> for instructions on the next steps</li>
+                <li>Autentique-se em <a href="http://ghost.org">http://ghost.org</a>, e depois clique no botão 'Download Ghost Source Code'.</li>
+                <li>Na página de Downloads, clique para fazer o download do arquivo zip mais recente.</li>
+                <li>Clique na seta proxima ao arquivo que foi feito download e clique em 'exibir no finder'.</li>
+                <li>No finder, clique duas vezes no arquivo zip para extrai-lo.</li>
+                <li>Depois, pegue a pasta extraída 'ghost-#.#.#' e arraste para a barra de abas do seu terminal. Isso fará com que seja criada uma nova aba na pasta do Ghost.</li>
+                <li>Na nova janela do terminal, escreva <code>npm install --production</code> <span class="note">Não esqueça os dois traços</span></li>
+                <li>Quando o npm terminal a instalação, escreva <code>npm start</code> para iniciar o Ghost em modo de desenvolvimento</li>
+                <li>No seu navegador, navegue para <code class="path">127.0.0.1:2368</code> para acessar o seu Ghost Blog</li>
+                <li>Altere a url para <code class="path">127.0.0.1:2368/ghost</code> e crie seu usuário administrador para se autenticar com seu Ghost.</li>
+                <li>Veja o <a href="/usage">manual de uso</a> para maiores instruções sobre os próximos passos</li>
             </ul>
 
             <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif" />
