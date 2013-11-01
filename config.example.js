@@ -82,12 +82,32 @@ config = {
 
     // ### Travis
     // Automated testing run through GitHub
-    travis: {
+    'travis-sqlite3': {
         url: 'http://127.0.0.1:2368',
         database: {
             client: 'sqlite3',
             connection: {
                 filename: path.join(__dirname, '/content/data/ghost-travis.db')
+            }
+        },
+        server: {
+            host: '127.0.0.1',
+            port: '2368'
+        }
+    },
+
+    // ### Travis
+    // Automated testing run through GitHub
+    'travis-mysql': {
+        url: 'http://127.0.0.1:2368',
+        database: {
+            client: 'mysql',
+            connection: {
+                host     : '127.0.0.1',
+                user     : 'travis',
+                password : '',
+                database : 'ghost-travis',
+                charset  : 'utf8'
             }
         },
         server: {
