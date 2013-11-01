@@ -30,13 +30,13 @@ function _ConvertPhrase(testPhrase) {
 describe("Github showdown extensions", function () {
 
     it("should export an array of methods for processing", function () {
-        github.should.be.a("function");
-        github().should.be.an.instanceof(Array);
+        github.should.be.a.function;
+        github().should.be.an.Array;
 
         github().forEach(function (processor) {
-            processor.should.be.a("object");
+            processor.should.be.an.Object;
             processor.should.have.property("type");
-            processor.type.should.be.a("string");
+            processor.type.should.be.a.String;
         });
 
     });

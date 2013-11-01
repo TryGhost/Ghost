@@ -17,15 +17,15 @@ describe("Ghostdown showdown extensions", function () {
 
     it("should export an array of methods for processing", function () {
 
-        ghostdown.should.be.a("function");
+        ghostdown.should.be.a.function;
         ghostdown().should.be.an.instanceof(Array);
 
         ghostdown().forEach(function (processor) {
-            processor.should.be.a("object");
+            processor.should.be.an.Object;
             processor.should.have.property("type");
             processor.should.have.property("filter");
-            processor.type.should.be.a("string");
-            processor.filter.should.be.a("function");
+            processor.type.should.be.a.String;
+            processor.filter.should.be.a.function;
         });
     });
 

@@ -83,7 +83,7 @@ describe('Tag Model', function () {
             }).then(function () {
                 return PostModel.read({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
             }).then(function (postWithoutTag) {
-                postWithoutTag.related('tags').should.be.empty;
+                postWithoutTag.related('tags').length.should.equal(0);
                 done();
             }).then(null, done);
         });

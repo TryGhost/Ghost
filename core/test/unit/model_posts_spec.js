@@ -73,8 +73,8 @@ describe('Post Model', function () {
             results.length.should.be.above(0);
             firstPost = results.models[0].toJSON();
 
-            firstPost.author.should.be.a('object');
-            firstPost.user.should.be.a('object');
+            firstPost.author.should.be.an.Object;
+            firstPost.user.should.be.an.Object;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.user.name.should.equal(DataGenerator.Content.users[0].name);
 
@@ -89,8 +89,8 @@ describe('Post Model', function () {
             should.exist(result);
             firstPost = result.toJSON();
 
-            firstPost.author.should.be.a('object');
-            firstPost.user.should.be.a('object');
+            firstPost.author.should.be.an.Object;
+            firstPost.user.should.be.an.Object;
             firstPost.author.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
             firstPost.user.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
 
