@@ -16,6 +16,7 @@
      * @returns {boolean}
      */
     $.expr[":"].containsExact = function (obj, index, meta, stack) {
+        /*jslint unparam:true*/
         return (obj.textContent || obj.innerText || $(obj).text() || "") === meta[3];
     };
 

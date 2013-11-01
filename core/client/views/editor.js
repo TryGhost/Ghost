@@ -650,6 +650,7 @@
             var value = editor.getValue();
 
             _.each(markerMgr.markers, function (marker, id) {
+                /*jslint unparam:true*/
                 value = value.replace(markerMgr.getMarkerRegexForId(id), '');
             });
 
@@ -664,6 +665,7 @@
 
         // initialise
         editor.on('change', function (cm, changeObj) {
+            /*jslint unparam:true*/
             var linesChanged = _.range(changeObj.from.line, changeObj.from.line + changeObj.text.length);
 
             _.each(linesChanged, function (ln) {

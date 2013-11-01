@@ -79,6 +79,7 @@ adminControllers = {
             });
     },
     'login': function (req, res) {
+        /*jslint unparam:true*/
         res.render('login', {
             bodyClass: 'ghost-login',
             hideNavbar: true,
@@ -122,6 +123,7 @@ adminControllers = {
 
     },
     'signup': function (req, res) {
+        /*jslint unparam:true*/
         res.render('signup', {
             bodyClass: 'ghost-signup',
             hideNavbar: true,
@@ -152,6 +154,7 @@ adminControllers = {
     },
 
     'forgotten': function (req, res) {
+        /*jslint unparam:true*/
         res.render('forgotten', {
             bodyClass: 'ghost-forgotten',
             hideNavbar: true,
@@ -204,6 +207,7 @@ adminControllers = {
         });
     },
     'index': function (req, res) {
+        /*jslint unparam:true*/
         res.render('content', {
             bodyClass: 'manage',
             adminNav: setSelected(adminNavbar, 'content')
@@ -223,6 +227,7 @@ adminControllers = {
         }
     },
     'content': function (req, res) {
+        /*jslint unparam:true*/
         res.render('content', {
             bodyClass: 'manage',
             adminNav: setSelected(adminNavbar, 'content')
@@ -246,6 +251,7 @@ adminControllers = {
     },
     'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
         index: function (req, res) {
+            /*jslint unparam:true*/
             res.render('debug', {
                 bodyClass: 'settings',
                 adminNav: setSelected(adminNavbar, 'settings')

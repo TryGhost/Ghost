@@ -141,8 +141,6 @@ var path           = require('path'),
                         nomen: true,
                         // allow to do statements
                         todo: true,
-                        // allow unused parameters
-                        unparam: true,
                         // don't require use strict pragma
                         sloppy: true
                     },
@@ -163,9 +161,7 @@ var path           = require('path'),
                         // allow dangling underscores in var names
                         nomen: true,
                         // allow to do statements
-                        todo: true,
-                         // allow unused parameters
-                        unparam: true
+                        todo: true
                     },
                     files: {
                         src: 'core/client/**/*.js'
@@ -542,6 +538,7 @@ var path           = require('path'),
                     stdio: 'inherit'
                 }
             }, function (error, result, code) {
+                /*jslint unparam:true*/
                 if (error) {
                     grunt.fail.fatal(result.stdout);
                 }
@@ -670,6 +667,7 @@ var path           = require('path'),
                 data.replace(
                     commitRegex,
                     function (wholeCommit, hash, author, email, date, message) {
+                        /*jslint unparam:true*/
 
                         // The author name and commit message may have trailing space.
                         author = author.trim();
@@ -780,6 +778,7 @@ var path           = require('path'),
 
                 when.reduce(tags,
                     function (prev, tag, idx) {
+                        /*jslint unparam:true*/
                         return when.promise(function (resolve) {
                             processTag(tag, function (releaseData) {
                                 resolve(prev + '\n' + releaseData);

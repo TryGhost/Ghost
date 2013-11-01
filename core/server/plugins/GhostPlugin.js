@@ -16,6 +16,7 @@ GhostPlugin = function (ghost) {
  * @parameter {Ghost} The current Ghost app instance
  */
 GhostPlugin.prototype.install = function (ghost) {
+    /*jslint unparam:true*/
     return;
 };
 
@@ -25,6 +26,7 @@ GhostPlugin.prototype.install = function (ghost) {
  * @parameter {Ghost} The current Ghost app instance
  */
 GhostPlugin.prototype.uninstall = function (ghost) {
+    /*jslint unparam:true*/
     return;
 };
 
@@ -34,6 +36,7 @@ GhostPlugin.prototype.uninstall = function (ghost) {
  * @parameter {Ghost} The current Ghost app instance
  */
 GhostPlugin.prototype.activate = function (ghost) {
+    /*jslint unparam:true*/
     return;
 };
 
@@ -43,6 +46,7 @@ GhostPlugin.prototype.activate = function (ghost) {
  * @parameter {Ghost} The current Ghost app instance
  */
 GhostPlugin.prototype.deactivate = function (ghost) {
+    /*jslint unparam:true*/
     return;
 };
 

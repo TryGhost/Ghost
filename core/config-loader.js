@@ -24,12 +24,14 @@ function writeConfigFile() {
         // Copy config.example.js => config.js
         read = fs.createReadStream(configexample);
         read.on('error', function (err) {
+            /*jslint unparam:true*/
             return errors.logError(new Error('Could not open config.example.js for read.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
         read.on('end', written.resolve);
 
         write = fs.createWriteStream(config);
         write.on('error', function (err) {
+            /*jslint unparam:true*/
             return errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
 

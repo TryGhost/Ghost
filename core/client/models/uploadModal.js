@@ -8,7 +8,7 @@
             type: 'action',
             style: ["wide"],
             animation: 'fade',
-            afterRender: function (id) {
+            afterRender: function () {
                 var filestorage = $('#' + this.options.model.id).data('filestorage');
                 this.$('.js-drop-zone').upload({fileStorage: filestorage});
             },

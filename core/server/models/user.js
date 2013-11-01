@@ -121,6 +121,7 @@ User = ghostBookshelf.Model.extend({
             // Add this user to the admin role (assumes admin = role_id: 1)
             return userData.roles().attach(1);
         }).then(function (addedUserRole) {
+            /*jslint unparam:true*/
             // Return the added user as expected
 
             return when.resolve(userData);
@@ -157,6 +158,7 @@ User = ghostBookshelf.Model.extend({
                 return user;
             }, errors.logAndThrowError);
         }, function (error) {
+            /*jslint unparam:true*/
             return when.reject(new Error('There is no user with that email address.'));
         });
     },
@@ -211,6 +213,7 @@ User = ghostBookshelf.Model.extend({
             user.save({password: hash});
             return { user: user, newPassword: newPassword };
         }, function (error) {
+            /*jslint unparam:true*/
             return when.reject(new Error('There is no user by that email address. Check again.'));
         });
     },
