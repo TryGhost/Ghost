@@ -45,15 +45,15 @@ function setSelected(list, name) {
 
 adminControllers = {
     'get_storage': function () {
-        // TODO get storage choice from config
+        // TODO this is where the check for storage plugins should go
+        // Local file system is the default 
         var storageChoice = 'localfilesystem.js';
         return require('./storage/' + storageChoice);
     },
     'uploader': function (req, res) {
         var type = req.files.uploadimage.type,
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            storage = adminControllers.get_storage(),
-            rootToUrl = '/'; // TODO for local storage this works, for external storage not
+            storage = adminControllers.get_storage();
 
         if ((type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif')
                 || (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.gif')) {
@@ -61,7 +61,7 @@ adminControllers = {
         }
 
         storage
-            .save(new Date().getTime(), req.files.uploadimage, rootToUrl)
+            .save(new Date().getTime(), req.files.uploadimage)
             .then(function (url) {
 
                 // delete the temporary file

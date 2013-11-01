@@ -1,6 +1,5 @@
 /*globals describe, beforeEach, it*/
-var testUtils = require('./testUtils'),
-    fs = require('fs-extra'),
+var fs = require('fs-extra'),
     should = require('should'),
     sinon = require('sinon'),
     when = require('when'),
@@ -11,8 +10,7 @@ var testUtils = require('./testUtils'),
 describe('Admin Controller', function() {
     describe('uploader', function() {
 
-        var req;
-        var res;
+        var req, res, storage;
 
         beforeEach(function() {
             req = {
@@ -27,7 +25,13 @@ describe('Admin Controller', function() {
                 send: function(){}
             };
 
-            // localfilesystem.save = sinon.stub().returns(when('URL'));
+            storage = sinon.stub();
+            storage.save = sinon.stub().returns(when('URL'));
+            sinon.stub(admin, 'get_storage').returns(storage);
+        });
+
+        afterEach(function () {
+            admin.get_storage.restore();
         });
 
         describe('can not upload invalid file', function() {
@@ -60,14 +64,10 @@ describe('Admin Controller', function() {
                 req.files.uploadimage.name = 'IMAGE.jpg';
                 req.files.uploadimage.type = 'image/jpeg';
                 sinon.stub(fs, 'unlink').yields();
-                var storage = sinon.stub();
-                storage.save = sinon.stub().returns(when('URL'));
-                sinon.stub(admin, 'get_storage').returns(storage);
             });
 
             afterEach(function() {
                 fs.unlink.restore();
-                admin.get_storage.restore();
             });
 
             it('can upload jpg', function(done) {
@@ -115,6 +115,15 @@ describe('Admin Controller', function() {
                 sinon.stub(res, 'send', function(data) {
                     fs.unlink.calledOnce.should.be.true;
                     fs.unlink.args[0][0].should.equal('/tmp/TMPFILEID');
+                    return done();
+                });
+
+                admin.uploader(req, res);
+            });
+
+            it('should send correct url', function(done) {
+                sinon.stub(res, 'send', function(data) {
+                    data.should.equal('URL');
                     return done();
                 });
 
