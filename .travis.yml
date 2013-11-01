@@ -4,9 +4,8 @@ node_js:
 env:
   - DB=sqlite3
   - DB=mysql
-git:
-  submodules: false
 before_install:
+  - git submodule update --init
   - gem update --system
   - gem install sass bourbon
   - npm install -g grunt-cli
