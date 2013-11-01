@@ -193,7 +193,7 @@
             this.renderItem(item);
         },
         clearEverything: function () {
-            this.$el.find('.js-notification.notification-passive').remove();
+            this.$el.find('.js-notification.notification-passive').parent().remove();
         },
         removeItem: function (e) {
             e.preventDefault();
@@ -218,6 +218,7 @@
                     $(this)
                         .show()
                         .css({height: "auto"})
+                        .parent()
                         .remove();
                 });
             }

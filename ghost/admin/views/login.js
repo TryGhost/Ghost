@@ -45,6 +45,7 @@
                         window.location.href = msg.redirect;
                     },
                     error: function (xhr) {
+                        Ghost.notifications.clearEverything();
                         Ghost.notifications.addItem({
                             type: 'error',
                             message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -102,6 +103,7 @@
                         window.location.href = msg.redirect;
                     },
                     error: function (xhr) {
+                        Ghost.notifications.clearEverything();
                         Ghost.notifications.addItem({
                             type: 'error',
                             message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -153,6 +155,7 @@
                         window.location.href = msg.redirect;
                     },
                     error: function (xhr) {
+                        Ghost.notifications.clearEverything();
                         Ghost.notifications.addItem({
                             type: 'error',
                             message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
