@@ -258,6 +258,9 @@ var path           = require('path'),
             shell: {
                 bourbon: {
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
+                },
+                coverage: {
+                    command: './node_modules/mocha/bin/mocha --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js'
                 }
             },
 
@@ -871,6 +874,11 @@ var path           = require('path'),
         grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs']);
 
         grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-functional']);
+
+
+        // ## Coverage report for Unit and Integration Tests
+
+        grunt.registerTask('test-coverage', 'Generate unit and integration tests coverage report', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'shell:coverage']);
 
 
         // ## Documentation
