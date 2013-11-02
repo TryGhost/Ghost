@@ -3,6 +3,11 @@ _site/
 .DS_Store
 *.swp
 
+.sass-cache/
+config.js
+content/
+core/
+node_modules/
 
 .idea/*
 *.iml
