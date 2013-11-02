@@ -9,7 +9,7 @@ languages:
     - name: '中文'
       key: 'cn'
     - name: 'Português'
-      key: 'br'
+      key: 'pt-BR'
 port:         4478
 
 translations:
@@ -27,7 +27,7 @@ translations:
     email:        '邮件设置'
     themes:       '主题'
     help:         '帮助'
-  br:
+  pt-BR:
     site_title:   'Guia Ghost'
     installation: 'Instalação'
     usage:        'Uso'
