@@ -120,6 +120,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             .replace(/(\s|\.)/g, '-')
             // Convert 2 or more dashes into a single dash
             .replace(/-+/g, '-')
+            // Replace accents
+            .replace(/[àáâãäå]/, 'a')
+            .replace(/æ/, 'ae')
+            .replace(/ç/, 'c')
+            .replace(/[èéêë]/, 'e')
+            .replace(/[ìíîï]/, 'i')
+            .replace(/ñ/, 'n')
+            .replace(/[òóôõö]/, 'o')
+            .replace(/œ/, 'oe')
+            .replace(/[ùúûü]/, 'u')
+            .replace(/[ýÿ]/, 'y')
             // Make the whole thing lowercase
             .toLowerCase();
 
