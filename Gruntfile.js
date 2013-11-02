@@ -872,14 +872,13 @@ var path           = require('path'),
 
         // ## Tools for building assets
 
-        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
 
         // Before running in production mode
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['sass:compress', 'handlebars', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;
