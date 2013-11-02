@@ -48,14 +48,12 @@ localfilesystem = {
             month = m.format('MMM'),
             year =  m.format('YYYY'),
             target_dir = path.join('content/images', year, month),
-            target_path = path.join(target_dir, image.name),
             ext = path.extname(image.name),
             basename = path.basename(image.name, ext).replace(/[\W]/gi, '_');
 
         getUniqueFileName(target_dir, basename, ext, null, function (filename) {
-
             nodefn.call(fs.mkdirs, target_dir).then(function () {
-                return nodefn.call(fs.copy, image.path, target_path);
+                return nodefn.call(fs.copy, image.path, filename);
             }).then(function () {
                 // The src for the image must be in URI format, not a file system path, which in Windows uses \
                 // For local file system storage can use relative path so add a slash                        
