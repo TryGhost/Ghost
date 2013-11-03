@@ -1,5 +1,5 @@
 /*globals describe, it, before, beforeEach, afterEach */
-var testUtils = require('../unit/testUtils'),
+var testUtils = require('../unit/utils'),
     should = require('should'),
     errors = require('../../server/errorHandling'),
 

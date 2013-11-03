@@ -1,5 +1,5 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../unit/testUtils'),
+var testUtils = require('../unit/utils'),
     _ = require("underscore"),
     when = require('when'),
     sequence = require('when/sequence'),

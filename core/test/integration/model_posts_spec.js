@@ -1,5 +1,5 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../unit/testUtils'),
+var testUtils = require('../unit/utils'),
     should = require('should'),
     _ = require('underscore'),
     when = require('when'),
@@ -310,8 +310,7 @@ describe('Post Model', function () {
         }).then(function (newPost) {
 
             should.exist(newPost);
-
-            newPost.get('published_at').should.equal(previousPublishedAtDate);
+            newPost.get('published_at').should.equal(previousPublishedAtDate.getTime());
 
             done();
 

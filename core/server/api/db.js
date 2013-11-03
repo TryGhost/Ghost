@@ -156,4 +156,4 @@ db = {
     }
 };
 
-module.exports.db = db;
+module.exports = db;
