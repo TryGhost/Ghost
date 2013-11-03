@@ -430,7 +430,7 @@ when(ghost.init()).then(function () {
             });
         } else {
             console.log(
-                "Ghost is running...".green,
+                ("Ghost is running in " + process.env.NODE_ENV + "...").green,
                 "\nListening on",
                 getSocket() || ghost.config().server.host + ':' + ghost.config().server.port,
                 "\nUrl configured as:",

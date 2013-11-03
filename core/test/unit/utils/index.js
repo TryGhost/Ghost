@@ -15,22 +15,14 @@ function clearData() {
 }
 
 function insertDefaultFixtures() {
-    var promises = [];
-
-    promises.push(insertDefaultUser());
-    promises.push(insertPosts());
-
-    return when.all(promises);
+    return when(insertDefaultUser()
+           .then(insertPosts()));
 }
 
 function insertPosts() {
-    var promises = [];
-
-    promises.push(knex('posts').insert(DataGenerator.forKnex.posts));
-    promises.push(knex('tags').insert(DataGenerator.forKnex.tags));
-    promises.push(knex('posts_tags').insert(DataGenerator.forKnex.posts_tags));
-
-    return when.all(promises);
+    return when(knex('posts').insert(DataGenerator.forKnex.posts)
+           .then(knex('tags').insert(DataGenerator.forKnex.tags)
+           .then(knex('posts_tags').insert(DataGenerator.forKnex.posts_tags))));
 }
 
 function insertMorePosts() {
@@ -58,15 +50,12 @@ function insertMorePosts() {
 
 function insertDefaultUser() {
     var users = [],
-        userRoles = [],
-        u_promises = [];
+        userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
-    u_promises.push(knex('users').insert(users));
     userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
-    u_promises.push(knex('roles_users').insert(userRoles));
-
-    return when.all(u_promises);
+    return when(knex('users').insert(users))
+           .then(knex('roles_users').insert(userRoles));
 }
 
 module.exports = {
