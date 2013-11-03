@@ -1,19 +1,23 @@
-var Ghost         = require('../../ghost'),
-    dataExport    = require('../data/export'),
+var dataExport    = require('../data/export'),
     dataImport    = require('../data/import'),
-    api           = require('../api'),
     fs            = require('fs-extra'),
     path          = require('path'),
     when          = require('when'),
     nodefn        = require('when/node/function'),
     _             = require('underscore'),
 
-    ghost         = new Ghost(),
-    db;
+    GhostDatabase;
 
-db = {
+GhostDatabase = function (ghost, api) {
+    this.ghost = ghost;
+    this.api = api;
+};
+
+_.extend(GhostDatabase.prototype, {
     'export': function (req, res) {
         /*jslint unparam:true*/
+        var self = this;
+
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
             var fileName = path.resolve(__dirname + '/../../server/data/export/exported-' + (new Date().getTime()) + '.json');
@@ -30,16 +34,18 @@ db = {
                 type: 'error',
                 message: error.message || error,
                 status: 'persistent',
-                id: 'per-' + (ghost.notifications.length + 1)
+                id: 'per-' + (self.ghost.notifications.length + 1)
             };
 
-            return api.notifications.add(notification).then(function () {
+            return self.api.notifications.add(notification).then(function () {
                 res.redirect('/ghost/debug/');
             });
         });
     },
-    'import': function (req, res) {
-        var notification;
+
+    import: function (req, res) {
+        var self = this,
+            notification;
 
         if (!req.files.importfile || req.files.importfile.size === 0 || req.files.importfile.name.indexOf('json') === -1) {
             /**
@@ -54,85 +60,38 @@ db = {
                 type: 'error',
                 message:  "Must select a .json file to import",
                 status: 'persistent',
-                id: 'per-' + (ghost.notifications.length + 1)
+                id: 'per-' + (self.ghost.notifications.length + 1)
             };
 
-            return api.notifications.add(notification).then(function () {
+            return self.api.notifications.add(notification).then(function () {
                 res.redirect('/ghost/debug/');
             });
         }
 
-        // Get the current version for importing
-        api.settings.read({ key: 'databaseVersion' })
-            .then(function (setting) {
-                return when(setting.value);
-            }, function () {
-                return when('001');
-            })
-            .then(function (databaseVersion) {
-                // Read the file contents
-                return nodefn.call(fs.readFile, req.files.importfile.path)
-                    .then(function (fileContents) {
-                        var importData,
-                            error = "",
-                            constraints = require('../data/migration/' + databaseVersion).constraints,
-                            constraintkeys = _.keys(constraints);
+        // Read the file contents, parse them
+        return nodefn.call(fs.readFile, req.files.importfile.path)
+            .then(function (fileContents) {
+                var importData;
 
-                        // Parse the json data
-                        try {
-                            importData = JSON.parse(fileContents);
-                        } catch (e) {
-                            return when.reject(new Error("Failed to parse the import file"));
-                        }
+                // Parse the json data
+                try {
+                    importData = JSON.parse(fileContents);
+                } catch (e) {
+                    return when.reject(new Error("Failed to parse the import file"));
+                }
 
-                        if (!importData.meta || !importData.meta.version) {
-                            return when.reject(new Error("Import data does not specify version"));
-                        }
-
-                        _.each(constraintkeys, function (constkey) {
-                            _.each(importData.data[constkey], function (elem) {
-                                var prop;
-                                for (prop in elem) {
-                                    if (elem.hasOwnProperty(prop)) {
-                                        if (constraints[constkey].hasOwnProperty(prop)) {
-                                            if (elem.hasOwnProperty(prop)) {
-                                                if (!_.isNull(elem[prop])) {
-                                                    if (elem[prop].length > constraints[constkey][prop].maxlength) {
-                                                        error += error !== "" ? "<br>" : "";
-                                                        error += "Property '" + prop + "' exceeds maximum length of " + constraints[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
-                                                    }
-                                                } else {
-                                                    if (!constraints[constkey][prop].nullable) {
-                                                        error += error !== "" ? "<br>" : "";
-                                                        error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            error += error !== "" ? "<br>" : "";
-                                            error += "Property '" + prop + "' is not allowed (element:" + constkey + " / id:" + elem.id + ")";
-                                        }
-                                    }
-                                }
-                            });
-                        });
-
-                        if (error !== "") {
-                            return when.reject(new Error(error));
-                        }
-                        // Import for the current version
-                        return dataImport(databaseVersion, importData);
-                    });
+                // Run through our constraint check and import (uses current db version)
+                return self.importJSONData(importData);
             })
             .then(function importSuccess() {
                 notification = {
                     type: 'success',
                     message: "Data imported. Log in with the user details you imported",
                     status: 'persistent',
-                    id: 'per-' + (ghost.notifications.length + 1)
+                    id: 'per-' + (self.ghost.notifications.length + 1)
                 };
 
-                return api.notifications.add(notification).then(function () {
+                return self.api.notifications.add(notification).then(function () {
                     delete req.session.user;
                     res.set({
                         "X-Cache-Invalidate": "/*"
@@ -146,14 +105,80 @@ db = {
                     type: 'error',
                     message: error.message || error,
                     status: 'persistent',
-                    id: 'per-' + (ghost.notifications.length + 1)
+                    id: 'per-' + (self.ghost.notifications.length + 1)
                 };
 
-                return api.notifications.add(notification).then(function () {
+                return self.api.notifications.add(notification).then(function () {
                     res.redirect('/ghost/debug/');
                 });
             });
-    }
-};
+    },
 
-module.exports.db = db;
+    getVersion: function () {
+        // Get the current database version
+        return this.api.settings.read({ key: 'databaseVersion' })
+            .then(function (setting) {
+                return when(setting.value);
+            }, function () {
+                return when('001');
+            });
+    },
+
+    importJSONData: function (importData, databaseVersion) {
+        databaseVersion = databaseVersion || this.getVersion();
+
+        var self = this;
+
+        return when(databaseVersion).then(function (databaseVersionValue) {
+            var error = "",
+                constraints = require('../data/migration/' + databaseVersionValue).constraints,
+                constraintkeys = _.keys(constraints);
+
+            if (!importData.meta || !importData.meta.version) {
+                return when.reject(new Error("Import data does not specify version"));
+            }
+
+            _.each(constraintkeys, function (constkey) {
+                _.each(importData.data[constkey], function (elem) {
+                    var prop;
+                    for (prop in elem) {
+                        if (elem.hasOwnProperty(prop)) {
+                            if (constraints[constkey].hasOwnProperty(prop)) {
+                                if (elem.hasOwnProperty(prop)) {
+                                    if (!_.isNull(elem[prop])) {
+                                        if (elem[prop].length > constraints[constkey][prop].maxlength) {
+                                            error += error !== "" ? "<br>" : "";
+                                            error += "Property '" + prop + "' exceeds maximum length of " + constraints[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
+                                        }
+                                    } else {
+                                        if (!constraints[constkey][prop].nullable) {
+                                            error += error !== "" ? "<br>" : "";
+                                            error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
+                                        }
+                                    }
+                                }
+                            } else {
+                                error += error !== "" ? "<br>" : "";
+                                error += "Property '" + prop + "' is not allowed (element:" + constkey + " / id:" + elem.id + ")";
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (error) {
+                return when.reject(new Error(error));
+            }
+
+            // Import for the current version
+            return self._doDataImport(databaseVersionValue, importData);
+        });
+    },
+
+    _doDataImport: function (databaseVersionValue, importData) {
+        // This method is just here to enable cleaner unit testing by allowing us to stub this method
+        return dataImport(databaseVersionValue, importData);
+    }
+});
+
+module.exports = GhostDatabase;
