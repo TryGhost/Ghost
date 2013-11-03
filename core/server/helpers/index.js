@@ -46,7 +46,7 @@ coreHelpers.date = function (context, options) {
 
 //
 // ### URI Encoding helper
-// 
+//
 // *Usage example:*
 // `{{encode uri}}`
 //
@@ -58,10 +58,10 @@ coreHelpers.encode = function (context, str) {
 };
 
 // ### Page URL Helper
-// 
+//
 // *Usage example:*
 // `{{pageUrl 2}}`
-// 
+//
 // Returns the URL for the page specified in the current object
 // context.
 //
@@ -297,6 +297,9 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
     head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+    if (this.path) {
+        head.push('<link rel="canonical" href="' + coreHelpers.ghost.config().url + this.path + '" />');
+    }
 
     return coreHelpers.ghost.doFilter('ghost_head', head).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n' + item; }, '');
