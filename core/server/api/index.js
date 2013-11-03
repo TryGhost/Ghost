@@ -6,7 +6,7 @@ var Ghost        = require('../../ghost'),
     when         = require('when'),
     errors       = require('../errorHandling'),
     permissions  = require('../permissions'),
-    db           = require('./db'),
+    GhostDatabase = require('./db'),
     canThis      = permissions.canThis,
 
     ghost        = new Ghost(),
@@ -20,7 +20,8 @@ var Ghost        = require('../../ghost'),
     settingsObject,
     settingsCollection,
     settingsFilter,
-    filteredUserAttributes = ['password', 'created_by', 'updated_by'];
+    filteredUserAttributes = ['password', 'created_by', 'updated_by'],
+    exportedApi;
 
 // ## Posts
 posts = {
@@ -400,11 +401,16 @@ requestHandler = function (apiMethod) {
     };
 };
 
+exportedApi = {
+    posts: posts,
+    users: users,
+    tags: tags,
+    notifications: notifications,
+    settings: settings,
+    requestHandler: requestHandler
+};
+
+exportedApi.db = new GhostDatabase(ghost, exportedApi);
+
 // Public API
-module.exports.posts = posts;
-module.exports.users = users;
-module.exports.tags = tags;
-module.exports.notifications = notifications;
-module.exports.settings = settings;
-module.exports.db = db.db;
-module.exports.requestHandler = requestHandler;
+module.exports = exportedApi;
