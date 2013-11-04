@@ -28,8 +28,8 @@ User = ghostBookshelf.Model.extend({
 
     permittedAttributes: [
         'id', 'uuid', 'name', 'slug', 'password', 'email', 'image', 'cover', 'bio', 'website', 'location',
-        'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'created_at', 'created_by',
-        'updated_at', 'updated_by'
+        'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'last_login', 'created_at',
+        'created_by', 'updated_at', 'updated_by'
     ],
 
     validate: function () {

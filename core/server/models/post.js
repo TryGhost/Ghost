@@ -341,9 +341,19 @@ Post = ghostBookshelf.Model.extend({
     },
 
     add: function (newPostData, options) {
-        return ghostBookshelf.Model.add.call(this, newPostData, options).tap(function (post) {
+        var self = this;
+        return ghostBookshelf.Model.add.call(this, newPostData, options).then(function (post) {
             // associated models can't be created until the post has an ID, so run this after
-            return post.updateTags(newPostData.tags);
+            return when(post.updateTags(newPostData.tags)).then(function () {
+                return self.findOne({status: 'all', id: post.id});
+            });
+        });
+    },
+    edit: function (editedPost, options) {
+        var self = this;
+
+        return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (editedObj) {
+            return self.findOne({status: 'all', id: editedObj.id});
         });
     },
     destroy: function (_identifier, options) {
