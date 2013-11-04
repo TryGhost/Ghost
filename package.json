@@ -72,8 +72,8 @@
         "grunt-update-submodules": "~0.2.0",
         "matchdep": "~0.3.0",
         "mocha": "~1.13.0",
+        "request": "~2.27.0",
         "should": "~2.0.2",
-        "sinon": "~1.7.3",
-        "request": "~2.27.0"
+        "sinon": "~1.7.3"
     }
 }
