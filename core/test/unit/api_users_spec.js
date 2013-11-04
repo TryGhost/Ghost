@@ -22,7 +22,6 @@ describe('User API', function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
         testUtils.initData()
             .then(function () {
                 testUtils.insertDefaultFixtures();
@@ -97,7 +96,7 @@ describe('User API', function () {
                 response.should.be.json;
                 putBody.should.exist;
                 putBody.website.should.eql(changedValue);
-                
+
                 testUtils.API.checkResponse (putBody, expectedProperties);
                 done();
             });

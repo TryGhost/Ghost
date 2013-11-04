@@ -25,7 +25,6 @@ describe('Post API', function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
         testUtils.initData()
             .then(function () {
                 testUtils.insertDefaultFixtures();
@@ -164,7 +163,7 @@ describe('Post API', function () {
         });
     });
 
-    
+
     it('can\'t retrieve non existent post', function (done) {
         request.get(testUtils.API.getApiURL('posts/99/'), function (error, response, body) {
             response.should.have.status(404);
@@ -191,7 +190,7 @@ describe('Post API', function () {
                 response.should.be.json;
                 putBody.should.exist;
                 putBody.title.should.eql(changedValue);
-                
+
                 testUtils.API.checkResponse (putBody, expectedPostProperties);
                 done();
             });

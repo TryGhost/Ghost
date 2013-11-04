@@ -21,7 +21,6 @@ describe('Tag API', function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
         testUtils.initData()
             .then(function () {
                 testUtils.insertDefaultFixtures();
