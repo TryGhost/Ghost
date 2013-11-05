@@ -212,7 +212,7 @@ Post = ghostBookshelf.Model.extend({
      //     }
 
     /*
-     * @params opts
+     * @params {JSON Object} opts
      */
     findPage: function (opts) {
         var postCollection;
