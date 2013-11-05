@@ -8,9 +8,8 @@ var testUtils = require('./utils'),
         'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
         'published_at', 'published_by', 'page', 'author', 'user', 'tags'];
 
-
-
 request = request.defaults({jar:true})
+
 
 describe('Post API', function () {
 
@@ -25,20 +24,24 @@ describe('Post API', function () {
     });
 
     beforeEach(function (done) {
-        testUtils.initData()
+         testUtils.initData()
             .then(function () {
-                testUtils.insertDefaultFixtures();
+                return testUtils.insertDefaultFixtures();
             })
             .then(function () {
                 // do a get request to get the CSRF token first
                 request.get(testUtils.API.getSigninURL(), function (error, response, body) {
+                    response.should.have.status(200);
                     var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
                     pattern_meta.should.exist;
                     csrfToken = body.match(pattern_meta)[1];
-                    request.post({uri:testUtils.API.getSigninURL(),
-                            headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
-                        done();
-                    }).form({email: user.email, password: user.password});
+                    setTimeout((function() {
+                        request.post({uri:testUtils.API.getSigninURL(),
+                                headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
+                            response.should.have.status(200);
+                            done();
+                        }).form({email: user.email, password: user.password});
+                    }), 2000);
                 });
             }, done);
     });

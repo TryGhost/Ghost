@@ -15,14 +15,17 @@ function clearData() {
 }
 
 function insertDefaultFixtures() {
-    return when(insertDefaultUser()
-           .then(insertPosts()));
+    return when(insertDefaultUser().then(function(){
+            return insertPosts();
+        }));
 }
 
 function insertPosts() {
-    return when(knex('posts').insert(DataGenerator.forKnex.posts)
-           .then(knex('tags').insert(DataGenerator.forKnex.tags)
-           .then(knex('posts_tags').insert(DataGenerator.forKnex.posts_tags))));
+    return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
+                return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
+                    return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
+                });
+            }));
 }
 
 function insertMorePosts() {
@@ -54,8 +57,9 @@ function insertDefaultUser() {
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
     userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
-    return when(knex('users').insert(users))
-           .then(knex('roles_users').insert(userRoles));
+    return when(knex('users').insert(users).then(function () {
+            return knex('roles_users').insert(userRoles);
+        }));
 }
 
 module.exports = {
