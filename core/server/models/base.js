@@ -6,6 +6,7 @@ var ghostBookshelf,
     uuid      = require('node-uuid'),
     config    = require('../../../config'),
     Validator = require('validator').Validator,
+    unidecode = require('unidecode'),
     sanitize  = require('validator').sanitize;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
@@ -125,6 +126,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
+        // Remove non ascii characters
+        slug = unidecode(slug);
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
             .test(slug) ? slug + '-post' : slug;
