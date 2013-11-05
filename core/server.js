@@ -30,45 +30,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // ##Custom Middleware
 
-// ### Auth Middleware
-// Authenticate a request by redirecting to login if not logged in.
-// We strip /ghost/ out of the redirect parameter for neatness
-function auth(req, res, next) {
-    if (!req.session.user) {
-        var path = req.path.replace(/^\/ghost\/?/gi, ''),
-            redirect = '',
-            msg;
-
-        if (path !== '') {
-            msg = {
-                type: 'error',
-                message: 'Please Sign In',
-                status: 'passive',
-                id: 'failedauth'
-            };
-            // let's only add the notification once
-            if (!_.contains(_.pluck(ghost.notifications, 'id'), 'failedauth')) {
-                ghost.notifications.push(msg);
-            }
-            redirect = '?r=' + encodeURIComponent(path);
-        }
-        return res.redirect('/ghost/signin/' + redirect);
-    }
-
-    next();
-}
-
-
-// Check if we're logged in, and if so, redirect people back to dashboard
-// Login and signup forms in particular
-function redirectToDashboard(req, res, next) {
-    if (req.session.user) {
-        return res.redirect('/ghost/');
-    }
-
-    next();
-}
-
+// Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
@@ -79,30 +41,6 @@ function redirectToSignup(req, res, next) {
     }).otherwise(function (err) {
         return next(new Error(err));
     });
-}
-
-// While we're here, let's clean up on aisle 5
-// That being ghost.notifications, and let's remove the passives from there
-// plus the local messages, as they have already been added at this point
-// otherwise they'd appear one too many times
-function cleanNotifications(req, res, next) {
-    /*jslint unparam:true*/
-    ghost.notifications = _.reject(ghost.notifications, function (notification) {
-        return notification.status === 'passive';
-    });
-    next();
-}
-
-// ## AuthApi Middleware
-// Authenticate a request to the API by responding with a 401 and json error details
-function authAPI(req, res, next) {
-    if (!req.session.user) {
-        // TODO: standardize error format/codes/messages
-        res.json(401, { error: 'Please sign in' });
-        return;
-    }
-
-    next();
 }
 
 // ### GhostLocals Middleware
@@ -138,31 +76,6 @@ function ghostLocals(req, res, next) {
     } else {
         next();
     }
-}
-
-// ### DisableCachedResult Middleware
-// Disable any caching until it can be done properly
-function disableCachedResult(req, res, next) {
-    /*jslint unparam:true*/
-    res.set({
-        'Cache-Control': 'no-cache, must-revalidate',
-        'Expires': 'Sat, 26 Jul 1997 05:00:00 GMT'
-    });
-
-    next();
-}
-
-// ### whenEnabled Middleware
-// Selectively use middleware
-// From https://github.com/senchalabs/connect/issues/676#issuecomment-9569658
-function whenEnabled(setting, fn) {
-    return function settingEnabled(req, res, next) {
-        if (server.enabled(setting)) {
-            fn(req, res, next);
-        } else {
-            next();
-        }
-    };
 }
 
 // ### InitViews Middleware
@@ -203,7 +116,7 @@ function activateTheme() {
     server.set('activeTheme', ghost.settings('activeTheme'));
     server.enable(server.get('activeTheme'));
     if (stackLocation) {
-        server.stack[stackLocation].handle = whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost));
+        server.stack[stackLocation].handle = middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost));
     }
 
     // Update user error template
@@ -275,10 +188,10 @@ when(ghost.init()).then(function () {
     server.use(manageAdminAndTheme);
 
     // Admin only config
-    server.use('/ghost', whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
+    server.use('/ghost', middleware.whenEnabled('admin', express['static'](path.join(__dirname, '/client/assets'))));
 
     // Theme only config
-    server.use(whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
+    server.use(middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
 
     // Add in all trailing slashes
     server.use(slashes());
@@ -297,7 +210,7 @@ when(ghost.init()).then(function () {
     // local data
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
-    server.use(cleanNotifications);
+    server.use(middleware.cleanNotifications);
 
      // set the view engine
     server.set('view engine', 'hbs');
@@ -320,27 +233,27 @@ when(ghost.init()).then(function () {
     // ### API routes
     /* TODO: auth should be public auth not user auth */
     // #### Posts
-    server.get('/ghost/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.browse));
-    server.post('/ghost/api/v0.1/posts', authAPI, disableCachedResult, api.requestHandler(api.posts.add));
-    server.get('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.read));
-    server.put('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.edit));
-    server.del('/ghost/api/v0.1/posts/:id', authAPI, disableCachedResult, api.requestHandler(api.posts.destroy));
+    server.get('/ghost/api/v0.1/posts', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.browse));
+    server.post('/ghost/api/v0.1/posts', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.add));
+    server.get('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.read));
+    server.put('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.edit));
+    server.del('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.destroy));
     // #### Settings
-    server.get('/ghost/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.browse));
-    server.get('/ghost/api/v0.1/settings/:key/', authAPI, disableCachedResult, api.requestHandler(api.settings.read));
-    server.put('/ghost/api/v0.1/settings/', authAPI, disableCachedResult, api.requestHandler(api.settings.edit));
+    server.get('/ghost/api/v0.1/settings/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.browse));
+    server.get('/ghost/api/v0.1/settings/:key/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.read));
+    server.put('/ghost/api/v0.1/settings/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.edit));
     // #### Users
-    server.get('/ghost/api/v0.1/users/', authAPI, disableCachedResult, api.requestHandler(api.users.browse));
-    server.get('/ghost/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.read));
-    server.put('/ghost/api/v0.1/users/:id/', authAPI, disableCachedResult, api.requestHandler(api.users.edit));
+    server.get('/ghost/api/v0.1/users/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.browse));
+    server.get('/ghost/api/v0.1/users/:id/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.read));
+    server.put('/ghost/api/v0.1/users/:id/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.edit));
     // #### Tags
-    server.get('/ghost/api/v0.1/tags/', authAPI, disableCachedResult, api.requestHandler(api.tags.all));
+    server.get('/ghost/api/v0.1/tags/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.tags.all));
     // #### Notifications
-    server.del('/ghost/api/v0.1/notifications/:id', authAPI, disableCachedResult, api.requestHandler(api.notifications.destroy));
-    server.post('/ghost/api/v0.1/notifications/', authAPI, disableCachedResult, api.requestHandler(api.notifications.add));
+    server.del('/ghost/api/v0.1/notifications/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.notifications.destroy));
+    server.post('/ghost/api/v0.1/notifications/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.notifications.add));
     // #### Import/Export
-    server.get('/ghost/api/v0.1/db/', auth, api.db['export']);
-    server.post('/ghost/api/v0.1/db/', auth, api.db['import']);
+    server.get('/ghost/api/v0.1/db/', middleware.auth, api.db['export']);
+    server.post('/ghost/api/v0.1/db/', middleware.auth, api.db['import']);
 
     // ### Admin routes
     /* TODO: put these somewhere in admin */
@@ -353,32 +266,32 @@ when(ghost.init()).then(function () {
         /*jslint unparam:true*/
         res.redirect(301, '/ghost/signin/');
     });
-    server.get('/ghost/signin/', redirectToSignup, redirectToDashboard, admin.login);
-    server.get('/ghost/signup/', redirectToDashboard, admin.signup);
-    server.get('/ghost/forgotten/', redirectToDashboard, admin.forgotten);
+    server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
+    server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
+    server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
     server.post('/ghost/forgotten/', admin.resetPassword);
     server.post('/ghost/signin/', admin.auth);
     server.post('/ghost/signup/', admin.doRegister);
-    server.post('/ghost/changepw/', auth, admin.changepw);
-    server.get('/ghost/editor(/:id)/', auth, admin.editor);
-    server.get('/ghost/editor/', auth, admin.editor);
-    server.get('/ghost/content/', auth, admin.content);
-    server.get('/ghost/settings*', auth, admin.settings);
-    server.get('/ghost/debug/', auth, admin.debug.index);
+    server.post('/ghost/changepw/', middleware.auth, admin.changepw);
+    server.get('/ghost/editor(/:id)/', middleware.auth, admin.editor);
+    server.get('/ghost/editor/', middleware.auth, admin.editor);
+    server.get('/ghost/content/', middleware.auth, admin.content);
+    server.get('/ghost/settings*', middleware.auth, admin.settings);
+    server.get('/ghost/debug/', middleware.auth, admin.debug.index);
 
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
-    server.post('/ghost/upload/', auth, admin.uploader);
+    server.post('/ghost/upload/', middleware.auth, admin.uploader);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
         /*jslint unparam:true*/
         res.redirect('/ghost/');
     });
-    server.get(/^\/(ghost$\/?)/, auth, function (req, res) {
+    server.get(/^\/(ghost$\/?)/, middleware.auth, function (req, res) {
         /*jslint unparam:true*/
         res.redirect('/ghost/');
     });
-    server.get('/ghost/', redirectToSignup, auth, admin.index);
+    server.get('/ghost/', redirectToSignup, middleware.auth, admin.index);
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */
