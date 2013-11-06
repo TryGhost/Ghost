@@ -54,7 +54,7 @@ next_section: linux
 
             <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif" title="Install Ghost on Windows - Part 2" />
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

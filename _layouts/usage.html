@@ -1,0 +1,18 @@
+---
+layout: default
+---
+ 
+<div class="container">
+    <div class="row">
+
+        {% include subnav/usage.html %}
+
+        <section id="content" class="col-lg-9">
+            {{ content }}
+            
+            {% if page.next_section or page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>

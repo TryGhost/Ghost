@@ -323,7 +323,7 @@ esac
 
             <p>Documentation on using nginx as a reverse proxy on their way.</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

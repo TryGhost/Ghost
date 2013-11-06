@@ -122,7 +122,7 @@ next_section: troubleshooting
             <p>You do <strong>not</strong> need to restart the server or Ghost.</p>
 
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

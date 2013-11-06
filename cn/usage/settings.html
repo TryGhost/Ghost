@@ -63,7 +63,7 @@ next_section: managing
 
             <p class="note"><strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.</p>
 
-            {% if page.next_section || page.prev_section %}
+            {% if page.next_section or page.prev_section %}
                 {% include pagination.html %}
             {% endif %}
         </section>

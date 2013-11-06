@@ -1,6 +1,7 @@
 pygments:     true
 permalinks: pretty
 relative_permalinks: false
+markdown: redcarpet
 languages:
     - name: 'English'
       key: 'en'
