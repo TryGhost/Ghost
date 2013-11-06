@@ -228,6 +228,18 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
+    it('can generate slugs without non-ascii characters', function (done) {
+        var newPost = {
+            title: 'भुते धडकी भरवणारा आहेत',
+            markdown: 'Test Content 1'
+        };
+
+        PostModel.add(newPost).then(function (createdPost) {
+            createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
+            done();
+        })
+    });
+
     it('detects duplicate slugs before saving', function (done) {
         var firstPost = {
                 title: 'First post',
