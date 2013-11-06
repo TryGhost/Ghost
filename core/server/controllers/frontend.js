@@ -66,7 +66,12 @@ frontendControllers = {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
                 ghost.doFilter('prePostsRender', post).then(function (post) {
-                    res.render('post', {post: post});
+                    var paths = ghost.paths().availableThemes[ghost.settings('activeTheme')];
+                    if (post.page && paths.hasOwnProperty('page')) {
+                        res.render('page', {post: post});
+                    } else {
+                        res.render('post', {post: post});
+                    }
                 });
             } else {
                 next();
