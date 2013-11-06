@@ -280,6 +280,13 @@ when(ghost.init()).then(function () {
     // Theme only config
     server.use(whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
 
+    // set the view engine
+    server.set('view engine', 'hbs');
+
+    // Initialise the views
+    server.use(initViews);
+    server.use('/sitemap.xml', frontend.sitemap);
+
     // Add in all trailing slashes
     server.use(slashes());
 
@@ -298,12 +305,6 @@ when(ghost.init()).then(function () {
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
     server.use(cleanNotifications);
-
-     // set the view engine
-    server.set('view engine', 'hbs');
-
-     // Initialise the views
-    server.use(initViews);
 
     // process the application routes
     server.use(server.router);
