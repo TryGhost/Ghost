@@ -58,3 +58,7 @@ config.js
 
 # Built asset files
 /core/built
+
+# Coverage reports
+coverage_integration.html
+coverage_unit.html

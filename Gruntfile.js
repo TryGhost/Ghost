@@ -258,6 +258,15 @@ var path           = require('path'),
             shell: {
                 bourbon: {
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
+                },
+                jscoverage: {
+                    command: 'jscoverage core core-cov'
+                },
+                mocha_unit_coverage: {
+                    command: 'NODE_ENV=testing APP_COVERAGE=1 ./node_modules/.bin/mocha --timeout 15000 --reporter html-cov > coverage_unit.html ./core-cov/test/unit'
+                },
+                mocha_integration_coverage: {
+                    command: 'NODE_ENV=testing APP_COVERAGE=1 ./node_modules/.bin/mocha --timeout 15000 --reporter html-cov > coverage_integration.html ./core-cov/test/integration'
                 }
             },
 
@@ -303,6 +312,9 @@ var path           = require('path'),
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
+                },
+                jscoverage: {
+                    src: ['core-cov']
                 }
             },
 
@@ -871,6 +883,11 @@ var path           = require('path'),
         grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs']);
 
         grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-functional']);
+
+
+        // ## Coverage report for Unit and Integration Tests
+
+        grunt.registerTask('test-coverage', 'Generate unit and integration tests coverage report', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'shell:jscoverage', 'shell:mocha_unit_coverage', 'shell:mocha_integration_coverage', 'clean:jscoverage']);
 
 
         // ## Documentation
