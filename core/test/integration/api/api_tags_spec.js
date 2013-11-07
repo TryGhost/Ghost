@@ -2,9 +2,7 @@
 var testUtils = require('../../utils'),
     should = require('should'),
     _ = require('underscore'),
-    request = require('request'),
-    expectedProperties = ['id', 'uuid', 'name', 'slug', 'description', 'parent_id',
-        'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'];
+    request = require('request');
 
 request = request.defaults({jar:true})
 
@@ -52,11 +50,12 @@ describe('Tag API', function () {
     it('can retrieve all tags', function (done) {
         request.get(testUtils.API.getApiURL('tags/'), function (error, response, body) {
             response.should.have.status(200);
+            should.not.exist(response.headers['x-cache-invalidate']);
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
             jsonResponse.should.exist;
             jsonResponse.should.have.length(5);
-            testUtils.API.checkResponse (jsonResponse[0], expectedProperties);
+            testUtils.API.checkResponse(jsonResponse[0], 'tag');
             done();
         });
     });

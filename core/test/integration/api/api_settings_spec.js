@@ -2,10 +2,7 @@
 var testUtils = require('../../utils'),
     should = require('should'),
     _ = require('underscore'),
-    request = require('request'),
-    // TODO: remove databaseVersion
-    expectedProperties = ['databaseVersion', 'title', 'description', 'email', 'logo', 'cover', 'defaultLang',
-        'postsPerPage', 'forceI18n', 'activeTheme', 'activePlugins', 'installedPlugins', 'availableThemes'];
+    request = require('request');
 
 request = request.defaults({jar:true})
 
@@ -54,22 +51,24 @@ describe('Settings API', function () {
     it('can retrieve all settings', function (done) {
         request.get(testUtils.API.getApiURL('settings/'), function (error, response, body) {
             response.should.have.status(200);
+            should.not.exist(response.headers['x-cache-invalidate']);
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
             jsonResponse.should.exist;
 
-            testUtils.API.checkResponse (jsonResponse, expectedProperties);
+            testUtils.API.checkResponse(jsonResponse, 'settings');
             done();
         });
     });
     it('can retrieve a setting', function (done) {
         request.get(testUtils.API.getApiURL('settings/title/'), function (error, response, body) {
             response.should.have.status(200);
+            should.not.exist(response.headers['x-cache-invalidate']);
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
 
             jsonResponse.should.exist;
-            testUtils.API.checkResponse (jsonResponse, ['key','value']);
+            testUtils.API.checkResponseValue(jsonResponse, ['key','value']);
             jsonResponse.key.should.eql('title');
             done();
         });
@@ -78,10 +77,11 @@ describe('Settings API', function () {
     it('can\'t retrieve non existent setting', function (done) {
         request.get(testUtils.API.getApiURL('settings/testsetting/'), function (error, response, body) {
             response.should.have.status(404);
+            should.not.exist(response.headers['x-cache-invalidate']);
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
             jsonResponse.should.exist;
-            testUtils.API.checkResponse (jsonResponse, ['error']);
+            testUtils.API.checkResponseValue(jsonResponse, ['error']);
             done();
         });
     });
@@ -97,10 +97,11 @@ describe('Settings API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                 response.should.have.status(200);
+                response.headers['x-cache-invalidate'].should.eql('/*');
                 response.should.be.json;
                 putBody.should.exist;
                 putBody.title.should.eql(changedValue);
-                testUtils.API.checkResponse (putBody, expectedProperties);
+                testUtils.API.checkResponse(putBody, 'settings');
                 done();
             });
         });
@@ -117,8 +118,9 @@ describe('Settings API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                 response.should.have.status(404);
+                should.not.exist(response.headers['x-cache-invalidate']);
                 response.should.be.json;
-                testUtils.API.checkResponse (putBody, ['error']);
+                testUtils.API.checkResponseValue(putBody, ['error']);
                 done();
             });
         });
