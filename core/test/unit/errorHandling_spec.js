@@ -1,5 +1,5 @@
 /*globals describe, beforeEach, it*/
-var testUtils = require('./utils'),
+var testUtils = require('../utils'),
     should = require('should'),
     when = require('when'),
     sinon = require('sinon'),

@@ -1,12 +1,12 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('../unit/utils'),
+var testUtils = require('../../utils'),
     should = require('should'),
     when = require('when'),
     _ = require('underscore'),
-    errors = require('../../server/errorHandling'),
+    errors = require('../../../server/errorHandling'),
 
     // Stuff we are testing
-    Models = require('../../server/models');
+    Models = require('../../../server/models');
 
 
 describe('User Model', function run() {

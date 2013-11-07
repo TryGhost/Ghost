@@ -5,7 +5,7 @@
  */
 
 /*globals describe, it */
-var testUtils = require('./utils'),
+var testUtils = require('../utils'),
     should = require('should'),
 
     // Stuff we are testing

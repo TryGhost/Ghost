@@ -1,8 +1,8 @@
-var knex = require('../../../server/models/base').knex,
+var knex = require('../../server/models/base').knex,
     when = require('when'),
-    migration = require("../../../server/data/migration/"),
-    Settings = require('../../../server/models/settings').Settings,
-    DataGenerator = require('../fixtures/data-generator'),
+    migration = require("../../server/data/migration/"),
+    Settings = require('../../server/models/settings').Settings,
+    DataGenerator = require('./fixtures/data-generator'),
     API = require('./api');
 
 function initData() {
