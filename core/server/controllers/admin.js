@@ -1,10 +1,9 @@
 var Ghost         = require('../../ghost'),
     _             = require('underscore'),
-    fs            = require('fs-extra'),
     path          = require('path'),
     api           = require('../api'),
-    moment        = require('moment'),
     errors        = require('../errorHandling'),
+    storage       = require('../storage'),
 
     ghost         = new Ghost(),
     dataProvider  = ghost.dataProvider,
@@ -44,35 +43,20 @@ function setSelected(list, name) {
 }
 
 adminControllers = {
-    'get_storage': function () {
-        // TODO this is where the check for storage plugins should go
-        // Local file system is the default 
-        var storageChoice = 'localfilesystem.js';
-        return require('./storage/' + storageChoice);
-    },
     'uploader': function (req, res) {
         var type = req.files.uploadimage.type,
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
-            storage = adminControllers.get_storage();
+            store = storage.get_storage();
 
         if ((type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif')
                 || (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.gif')) {
             return res.send(415, 'Unsupported Media Type');
         }
 
-        storage
-            .save(new Date().getTime(), req.files.uploadimage)
+        store
+            .save(req.files.uploadimage)
             .then(function (url) {
-
-                // delete the temporary file
-                // TODO convert to promise using nodefn
-                fs.unlink(req.files.uploadimage.path, function (e) {
-                    if (e) {
-                        return errors.logError(e);
-                    }
-
-                    return res.send(url);
-                });
+                return res.send(url);
             })
             .otherwise(function (e) {
                 return errors.logError(e);
