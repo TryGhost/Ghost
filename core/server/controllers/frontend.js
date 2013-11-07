@@ -4,13 +4,14 @@
 
 /*global require, module */
 
-var Ghost  = require('../../ghost'),
-    api    = require('../api'),
-    RSS    = require('rss'),
-    _      = require('underscore'),
-    errors = require('../errorHandling'),
-    when   = require('when'),
-    url    = require('url'),
+var Ghost   = require('../../ghost'),
+    api     = require('../api'),
+    RSS     = require('rss'),
+    Sitemap = require('../helpers/sitemap'),
+    _       = require('underscore'),
+    errors  = require('../errorHandling'),
+    when    = require('when'),
+    url     = require('url'),
 
 
     ghost  = new Ghost(),
@@ -77,6 +78,37 @@ frontendControllers = {
                 next();
             }
 
+        }).otherwise(function (err) {
+            return next(new Error(err));
+        });
+    },
+    'sitemap': function (res, next) {
+        // Max of 50,000 SEO pages
+        // @todo this should be switched to use a sitemap index
+        var siteUrl = ghost.config().url,
+            options = { limit: 49999 },
+            sitemap;
+
+        api.posts.browse(options).then(function (page) {
+            sitemap = new Sitemap();
+
+            var home = {
+                loc: siteUrl + '/',
+                changefreq: 'hourly'
+            };
+            sitemap.item(home);
+
+            ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
+                posts.forEach(function (post) {
+                    var item = {
+                        loc: siteUrl + '/' + post.slug + '/',
+                        lastmod: post.published_at
+                    };
+                    sitemap.item(item);
+                });
+                res.set('Content-Type', 'text/xml');
+                res.send(sitemap.xml());
+            });
         }).otherwise(function (err) {
             return next(new Error(err));
         });
