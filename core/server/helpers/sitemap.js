@@ -10,18 +10,19 @@ function Sitemap(options, items) {
     this.attr = options.attr || {
         'xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9',
         'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-        'xsi_schemaLocation': 'http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd'
+        'xsi:schemaLocation': 'http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd'
     };
 
     this.items = items || [];
 
-    this.item = function(options) {
+    this.item = function (options) {
         options = options || {};
 
-        var item = [ { loc: options.loc || '' } ];
+        var item = [ { loc: options.loc || '' }],
+            date;
 
         if (options.lastmod) {
-            var date = new Date(options.lastmod).toISOString();
+            date = new Date(options.lastmod).toISOString();
             item.push({ lastmod: date });
         }
 
@@ -30,7 +31,7 @@ function Sitemap(options, items) {
         }
 
         if (options.priority) {
-            item.push({ priority: options.priotiy });
+            item.push({ priority: options.priority });
         }
 
         this.items.push(item);
@@ -38,27 +39,21 @@ function Sitemap(options, items) {
         return this;
     };
 
-    this.xml = function(indent) {
-        return '<?xml version="' + this.version + '" encoding="' + this.encoding + '"?>\n' + XML(generateXML(this), indent);
-    }
+    this.xml = function (indent) {
+        var urlset = [];
 
-}
+        if (this.attr) {
+            urlset.push({ '_attr': this.attr });
+        }
 
-function generateXML(data) {
+        if (this.items) {
+            this.items.forEach(function (item) {
+                urlset.push({ url: item });
+            });
+        }
 
-    var urlset = [];
-
-    if (data.attr) {
-        urlset.push({ '_attr': data.attr });
-    }
-
-    if (data.items) {
-        data.items.forEach(function (item) {
-            urlset.push({ url: item });
-        });
-    }
-
-    return { urlset: urlset };
+        return '<?xml version="' + this.version + '" encoding="' + this.encoding + '"?>\n' + XML({ urlset: urlset }, indent);
+    };
 
 }
 

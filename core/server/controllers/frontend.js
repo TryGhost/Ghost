@@ -82,7 +82,7 @@ frontendControllers = {
             return next(new Error(err));
         });
     },
-    'sitemap': function (req, res, next) {
+    'sitemap': function (res, next) {
         // Max of 50,000 SEO pages
         // @todo this should be switched to use a sitemap index
         var siteUrl = ghost.config().url,
