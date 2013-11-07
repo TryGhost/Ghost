@@ -1,12 +1,12 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../unit/utils'),
+var testUtils = require('../../utils'),
     _ = require("underscore"),
     when = require('when'),
     sequence = require('when/sequence'),
     should = require('should'),
 
     // Stuff we are testing
-    Models = require('../../server/models');
+    Models = require('../../../server/models');
 
 describe('Tag Model', function () {
 
