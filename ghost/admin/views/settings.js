@@ -110,10 +110,6 @@
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
-
-            this.$('input').iCheck({
-                checkboxClass: 'icheckbox_ghost'
-            });
         },
         saveSuccess: function (model, response, options) {
             /*jslint unparam:true*/
