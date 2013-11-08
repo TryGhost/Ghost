@@ -379,7 +379,7 @@ var path           = require('path'),
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
                             'core/shared/vendor/moment.js',
 
-                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
+                            'core/client/assets/vendor/jquery.icheck.js',
 
                             'core/shared/vendor/jquery/jquery.ui.widget.js',
                             'core/shared/vendor/jquery/jquery.iframe-transport.js',
