@@ -6,6 +6,7 @@ meta_description: An in depth guide to using the Ghost blogging platform. Got Gh
 heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
+section: settings
 permalink: /example_translation/usage/settings/
 prev_section: configuration
 next_section: managing
