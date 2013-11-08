@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,11 +7,10 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: managing
-permalink: /example_translation/usage/managing/
+permalink: /zh/usage/managing/
 prev_section: settings
 next_section: writing
 ---
-
 
 ##  Managing your blog <a id="managing"></a>
 
@@ -45,4 +44,3 @@ To change the "Slug" or "Publish date" of a post once published;
 2.  Click "Delete".
 3.  Accept the Modal
 <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/deletePost.gif" />
- 

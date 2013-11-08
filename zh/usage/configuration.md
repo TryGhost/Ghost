@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,11 +7,10 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: configuration
-permalink: /example_translation/usage/configuration/
+permalink: /zh/usage/configuration/
 prev_section: usage
 next_section: settings
 ---
-
 
 ## Configuring Ghost <a id="configuration"></a>
 
@@ -46,4 +45,3 @@ Or if you're used to using `npm start` you could use the slightly easier to reme
 ### Why use `npm install --production`?
 
 We have been asked a few times why, if Ghost starts in development mode by default, does the installation documentation say to run `npm install --production`? This is a good question! If you don't include `--production` when installing Ghost, nothing bad will happen, but it will install a tonne of extra packages which are only useful for people who want to develop Ghost core itself. This also requires that you have one particular package, `grunt-cli` installed globally, which has to be done with `npm install -g grunt-cli`, it's an extra step and it's not needed if you just want to run Ghost as a blog.
-

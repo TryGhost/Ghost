@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,7 +7,7 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: settings
-permalink: /example_translation/usage/settings/
+permalink: /zh/usage/settings/
 prev_section: configuration
 next_section: managing
 ---
@@ -51,4 +51,3 @@ These are the settings that control your user / author profile.
 <p class="note">
     <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
 </p>
-

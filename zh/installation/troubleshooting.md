@@ -1,16 +1,15 @@
 ---
-lang: example_translation
+lang: zh
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/troubleshooting/
+permalink: /zh/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
 prev_section: upgrading
 ---
-
 
 # Troubleshooting & FAQ <a id="troubleshooting"></a>
 
@@ -46,4 +45,3 @@ prev_section: upgrading
         </ul>
     </dd>
 </dl>
-

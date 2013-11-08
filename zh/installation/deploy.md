@@ -1,11 +1,11 @@
 ---
-lang: example_translation
+lang: zh
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/deploy/
+permalink: /zh/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
@@ -279,4 +279,3 @@ Documentation on using node forever, and how to daemonize Ghost on ubuntu coming
 ## Setting up Ghost with a domain name
 
 Documentation on using nginx as a reverse proxy on their way.
-

@@ -1,10 +1,11 @@
 ---
-lang: cn
+lang: zh
 layout: translations
 meta_title: How to Translate Ghost - Ghost Docs
 meta_description: A guide on how to help translate Ghost
 heading: Translating Ghost
 subheading: A guide on how to help translate Ghost
+chapter: translations
 ---
 
 {% raw %}

@@ -1,12 +1,11 @@
 ---
-lang: example_translation
+lang: zh
 layout: mail
 meta_title: Ghost Mail Configuration - Ghost Docs
 meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
 heading: Setting up Email
 chapter: mail
 ---
-
 
 ## Mail Configuration <a id="email-config"></a>
 

@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,7 +7,7 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: writing
-permalink: /example_translation/usage/writing/
+permalink: /zh/usage/writing/
 prev_section: managing
 next_section: faq
 ---
@@ -63,4 +63,3 @@ To title your image, all you need to do is place your title text inbetween the s
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
 To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
-

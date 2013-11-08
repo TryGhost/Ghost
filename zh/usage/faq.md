@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,10 +7,9 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: faq
-permalink: /example_translation/usage/faq/
+permalink: /zh/usage/faq/
 prev_section: writing
 ---
-
 
 ## FAQ <a id="faq"></a>
 
@@ -21,4 +20,3 @@ Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned
 ### How do I insert images into a post?
 
 Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
-

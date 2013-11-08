@@ -1,17 +1,16 @@
 ---
-lang: example_translation
+lang: zh
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/mac/
+permalink: /zh/installation/mac/
 chapter: installation
 section: mac
 prev_section: installation
 next_section: windows
 ---
-
 
 # Installing on Mac <a id="install-mac"></a>
 
@@ -42,4 +41,3 @@ If you get stuck you can watch the whole [process in action here](https://s3-eu-
 *   See the [usage docs](/usage) for instructions on the next steps
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
-
