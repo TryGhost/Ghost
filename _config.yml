@@ -18,6 +18,7 @@ translations:
     usage:        'uso'
     email:        'Email'
     themes:       'temas'
+    translations: 'translations'
     help:         'ayudar'
   zh:
     site_title:   'Ghost使用指南'
@@ -25,6 +26,7 @@ translations:
     usage:        '使用'
     email:        '邮件设置'
     themes:       '主题'
+    translations: 'translations'
     help:         '帮助'
 
 # If running locally, simply comment out the line below to make all urls relative
