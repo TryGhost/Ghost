@@ -45,6 +45,57 @@ h1:before, h2:before {
     position: relative;
 }
 
+
+/* ==========================================================================
+   Navigation - filling in styles that are not in Ghost's version of
+   bootstrap.css (even though it is v3.0.0) but are in Twitter's version of
+   Bootstrap v3.0.0. This is to get .navbar-right working in the expected
+   manner to enable cross-linking between language versions.
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .navbar-right .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-collapse {
+    width: auto;
+    border-top: 0;
+    box-shadow: none;
+  }
+  .navbar-collapse.collapse {
+    display: block !important;
+    height: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  .navbar-collapse.in {
+    overflow-y: auto;
+  }
+  .navbar-collapse .navbar-nav.navbar-left:first-child {
+    margin-left: -15px;
+  }
+  .navbar-collapse .navbar-nav.navbar-right:last-child {
+    margin-right: -15px;
+  }
+  .navbar-collapse .navbar-text:last-child {
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-left {
+    float: left !important;
+  }
+  .navbar-right {
+    float: right !important;
+  }
+}
+
+
 /* ==========================================================================
    Navigation
    ========================================================================== */

@@ -3,6 +3,8 @@ layout: quickstart
 meta_title: Ghost Quickstart
 heading: Ghost Quickstart
 subheading: Get up and running with Ghost.
+chapter: quickstart
+section: quickstart
 ---
 
 # Overview <a id="overview"></a>
