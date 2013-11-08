@@ -379,8 +379,6 @@ var path           = require('path'),
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
                             'core/shared/vendor/moment.js',
 
-                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
-
                             'core/shared/vendor/jquery/jquery.ui.widget.js',
                             'core/shared/vendor/jquery/jquery.iframe-transport.js',
                             'core/shared/vendor/jquery/jquery.fileupload.js',
@@ -435,8 +433,6 @@ var path           = require('path'),
                             'core/shared/vendor/backbone/backbone.js',
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
                             'core/shared/vendor/moment.js',
-
-                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
 
                             'core/shared/vendor/jquery/jquery.ui.widget.js',
                             'core/shared/vendor/jquery/jquery.iframe-transport.js',

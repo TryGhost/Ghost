@@ -7,7 +7,6 @@
  * General
  * Buttons
  * Split Buttons
- * iCheck jQuery Plugin Styles
  *
  */
 
@@ -441,72 +440,5 @@ input[type="reset"] {
         background: lighten($darkgrey, 4%);
         &:hover {background: $darkgrey;}
     }
-}
-
-
-/* =============================================================================
-   iCheck jQuery Plugin Styles
-   ============================================================================= */
-.icheckbox_ghost,
-.iradio_ghost {
-    @include box-sizing(border-box);
-    display: block;
-    width: 16px;
-    height: 16px;
-    float: left;
-    margin: 2px 0 0 0;
-    padding: 0;
-    margin-right: 6px;
-    background: none;
-    border: none;
-    box-shadow: none;
-    border-radius: 2px;
-    @include transition(
-        border ease 0.25s,
-        background ease 0.2s
-    );
-}
-
-.icheckbox_ghost {
-    border: 1px solid darken($lightbrown, 5%);
-}
-.icheckbox_ghost.hover {
-    border: $brown 1px solid;
-}
-.icheckbox_ghost.checked {
-    background: $blue;
-    border: $blue 1px solid;
-    padding:0;
-    @include icon($i-check, 12px, #fff) {
-        position: relative;
-        top: -4px;
-        left: -1px
-    }
-}
-.icheckbox_ghost.disabled {
-    border: 1px solid $lightbrown;
-}
-.icheckbox_ghost.checked.disabled {
-    background: $lightbrown;
-}
-
-.iradio_ghost {
-    border-radius: 11px;
-    border: 1px solid darken($lightbrown, 5%);
-}
-.iradio_ghost.hover {
-    border: $blue 2px solid;
-}
-.iradio_ghost.checked {
-    background: $blue;
-    border: none;
-    @include icon($i-check, 1em, #fff);
-}
-.iradio_ghost.disabled {
-    border: 1px solid $lightbrown;
-    cursor: default;
-}
-.iradio_ghost.checked.disabled {
-    background: $lightbrown;
 }
 
