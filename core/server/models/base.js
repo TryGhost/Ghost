@@ -126,7 +126,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
+        slug = new RegExp("^(" + config[process.env.NODE_ENV].adminRoot.replace(/\//, "") + "|ghost|ghost\\-admin|admin|wp\\-admin|wp\\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$", "g")
             .test(slug) ? slug + '-post' : slug;
 
         //if slug is empty after trimming use "post"

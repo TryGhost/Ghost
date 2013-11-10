@@ -68,6 +68,17 @@ function validateConfigEnvironment() {
         return when.reject();
     }
 
+    // Check that our url is valid
+    if (!config.adminRoot) {
+        errors.logError(new Error('Your adminRoot configuration in config.js is invalid.'), config.adminRoot, 'Please make sure this is a valid path before restarting');
+        return when.reject();
+    }
+    parsedUrl = url.parse(config.url + config.adminRoot);
+    if (!parsedUrl.pathname || parsedUrl.queryString) {
+        errors.logError(new Error('Your adminRoot configuration in config.js is invalid.'), config.adminRoot, 'Please make sure this is a valid path before restarting');
+        return when.reject();
+    }
+
     // Check that we have database values
     if (!config.database) {
         errors.logError(new Error('Your database configuration in config.js is invalid.'), JSON.stringify(config.database), 'Please make sure this is a valid Bookshelf database configuration');
