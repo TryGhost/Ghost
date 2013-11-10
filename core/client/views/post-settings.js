@@ -134,7 +134,7 @@
             }, {
                 success : function (model, response, options) {
                     /*jslint unparam:true*/
-                    pubDateEl.value = moment(model.get('published_at'), parseDateFormats).format(displayDateFormat);
+                    pubDateEl.value = moment(model.get('published_at')).format(displayDateFormat);
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: 'Publish date successfully changed to <strong>' + pubDateEl.value + '</strong>.',

@@ -1,11 +1,11 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('../unit/testUtils'),
+var testUtils = require('../../utils'),
     should = require('should'),
     _ = require("underscore"),
 
     // Stuff we are testing
-    Models = require('../../server/models'),
-    knex = require('../../server/models/base').knex;
+    Models = require('../../../server/models'),
+    knex = require('../../../server/models/base').knex;
 
 describe('Settings Model', function () {
 

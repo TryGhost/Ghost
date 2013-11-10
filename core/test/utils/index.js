@@ -3,7 +3,7 @@ var knex = require('../../server/models/base').knex,
     migration = require("../../server/data/migration/"),
     Settings = require('../../server/models/settings').Settings,
     DataGenerator = require('./fixtures/data-generator'),
-    API = require('./utils/api');
+    API = require('./api');
 
 function initData() {
     return migration.init();
@@ -15,22 +15,17 @@ function clearData() {
 }
 
 function insertDefaultFixtures() {
-    var promises = [];
-
-    promises.push(insertDefaultUser());
-    promises.push(insertPosts());
-
-    return when.all(promises);
+    return when(insertDefaultUser().then(function(){
+            return insertPosts();
+        }));
 }
 
 function insertPosts() {
-    var promises = [];
-
-    promises.push(knex('posts').insert(DataGenerator.forKnex.posts));
-    promises.push(knex('tags').insert(DataGenerator.forKnex.tags));
-    promises.push(knex('posts_tags').insert(DataGenerator.forKnex.posts_tags));
-
-    return when.all(promises);
+    return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
+                return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
+                    return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
+                });
+            }));
 }
 
 function insertMorePosts() {
@@ -58,15 +53,13 @@ function insertMorePosts() {
 
 function insertDefaultUser() {
     var users = [],
-        userRoles = [],
-        u_promises = [];
+        userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
-    u_promises.push(knex('users').insert(users));
     userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
-    u_promises.push(knex('roles_users').insert(userRoles));
-
-    return when.all(u_promises);
+    return when(knex('users').insert(users).then(function () {
+            return knex('roles_users').insert(userRoles);
+        }));
 }
 
 module.exports = {

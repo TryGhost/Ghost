@@ -1,5 +1,5 @@
 /*globals describe, before, beforeEach, it*/
-var testUtils = require('./testUtils'),
+var testUtils = require('../utils'),
     should = require('should'),
     sinon = require('sinon'),
     when = require('when'),
@@ -10,8 +10,8 @@ var testUtils = require('./testUtils'),
     Ghost = require('../../ghost');
 
 describe("Ghost API", function () {
-    var testTemplatePath = 'core/test/unit/fixtures/',
-        themeTemplatePath = 'core/test/unit/fixtures/theme',
+    var testTemplatePath = 'core/test/utils/fixtures/',
+        themeTemplatePath = 'core/test/utils/fixtures/theme',
         sandbox,
         ghost;
 

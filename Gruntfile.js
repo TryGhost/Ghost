@@ -200,7 +200,11 @@ var path           = require('path'),
                 },
 
                 api: {
-                    src: ['core/test/unit/**/api*_spec.js']
+                    src: ['core/test/integration/**/api*_spec.js']
+                },
+
+                model: {
+                    src: ['core/test/integration/**/model*_spec.js']
                 },
 
                 client: {
@@ -227,7 +231,10 @@ var path           = require('path'),
                 },
 
                 integration: {
-                    src: ['core/test/integration/**/model*_spec.js']
+                    src: [
+                        'core/test/integration/**/model*_spec.js',
+                        'core/test/integration/**/api*_spec.js'
+                    ]
                 }
             },
 
@@ -482,6 +489,7 @@ var path           = require('path'),
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
             process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
+            cfg.express.test.options.node_env = process.env.NODE_ENV;
         });
 
         grunt.registerTask('loadConfig', function () {
@@ -872,14 +880,13 @@ var path           = require('path'),
 
         // ## Tools for building assets
 
-        // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
 
         // Before running in production mode
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['sass:compress', 'handlebars', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat']);
     };
 
 module.exports = configureGrunt;

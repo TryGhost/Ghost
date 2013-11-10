@@ -127,14 +127,12 @@ module.exports = {
     // Only do this if we have no database at all
     migrateUpFreshDb: function () {
         var migration = require('./' + initialVersion);
-
         return migration.up().then(function () {
             // Load the fixtures
-            return fixtures.populateFixtures();
-
-        }).then(function () {
-            // Initialise the default settings
-            return Settings.populateDefaults();
+            return fixtures.populateFixtures().then(function () {
+                // Initialise the default settings
+                return Settings.populateDefaults();
+            });
         });
     },
 

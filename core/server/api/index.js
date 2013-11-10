@@ -20,7 +20,7 @@ var Ghost        = require('../../ghost'),
     settingsObject,
     settingsCollection,
     settingsFilter,
-    filteredUserAttributes = ['password', 'created_by', 'updated_by'];
+    filteredUserAttributes = ['password', 'created_by', 'updated_by', 'last_login'];
 
 // ## Posts
 posts = {
@@ -28,6 +28,7 @@ posts = {
 
     // **takes:** filter / pagination parameters
     browse: function browse(options) {
+
         // **returns:** a promise for a page of posts in a json object
         //return dataProvider.Post.findPage(options);
         return dataProvider.Post.findPage(options).then(function (result) {
@@ -57,8 +58,8 @@ posts = {
                 omitted.user = _.omit(omitted.user, filteredUserAttributes);
                 return omitted;
             }
+            return when.reject({errorCode: 404, message: 'Post not found'});
 
-            return null;
         });
     },
 
@@ -68,13 +69,28 @@ posts = {
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
         if (!this.user) {
-            return when.reject("You do not have permission to edit this post.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
         }
-
-        return canThis(this.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData);
+        var self = this;
+        return canThis(self.user).edit.post(postData.id).then(function () {
+            return dataProvider.Post.edit(postData).then(function (result) {
+                if (result) {
+                    var omitted = result.toJSON();
+                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                    omitted.user = _.omit(omitted.user, filteredUserAttributes);
+                    return omitted;
+                }
+                return when.reject({errorCode: 404, message: 'Post not found'});
+            }).otherwise(function (error) {
+                return dataProvider.Post.findOne({id: postData.id, status: 'all'}).then(function (result) {
+                    if (!result) {
+                        return when.reject({errorCode: 404, message: 'Post not found'});
+                    }
+                    return when.reject({message: error.message});
+                });
+            });
         }, function () {
-            return when.reject("You do not have permission to edit this post.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
         });
     },
 
@@ -84,13 +100,13 @@ posts = {
     add: function add(postData) {
         // **returns:** a promise for the resulting post in a json object
         if (!this.user) {
-            return when.reject("You do not have permission to add posts.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
         }
 
         return canThis(this.user).create.post().then(function () {
             return dataProvider.Post.add(postData);
         }, function () {
-            return when.reject("You do not have permission to add posts.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
         });
     },
 
@@ -100,11 +116,11 @@ posts = {
     destroy: function destroy(args) {
         // **returns:** a promise for a json response with the id of the deleted post
         if (!this.user) {
-            return when.reject("You do not have permission to remove posts.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
         }
 
         return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id})).then(function (result) {
+            return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = {};
                     deletedObj.id = result.id;
@@ -113,7 +129,7 @@ posts = {
                 });
             });
         }, function () {
-            return when.reject("You do not have permission to remove posts.");
+            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
         });
     }
 };
@@ -157,7 +173,7 @@ users = {
                 return omitted;
             }
 
-            return null;
+            return when.reject({errorCode: 404, message: 'User not found'});
         });
     },
 
@@ -167,7 +183,13 @@ users = {
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
         userData.id = this.user;
-        return dataProvider.User.edit(userData);
+        return dataProvider.User.edit(userData).then(function (result) {
+            if (result) {
+                var omitted = _.omit(result.toJSON(), filteredUserAttributes);
+                return omitted;
+            }
+            return when.reject({errorCode: 404, message: 'User not found'});
+        });
     },
 
     // #### Add
@@ -289,6 +311,7 @@ settings = {
         // **returns:** a promise for a settings json object
         if (ghost.settings()) {
             return when(ghost.settings()).then(function (settings) {
+                //TODO: omit where type==core
                 return settingsObject(settingsFilter(settings, options.type));
             }, errors.logAndThrowError);
         }
@@ -305,7 +328,7 @@ settings = {
         if (ghost.settings()) {
             return when(ghost.settings()[options.key]).then(function (setting) {
                 if (!setting) {
-                    return when.reject("Unable to find setting: " + options.key);
+                    return when.reject({errorCode: 404, message: 'Unable to find setting: ' + options.key});
                 }
                 var res = {};
                 res.key = options.key;
@@ -333,11 +356,18 @@ settings = {
                     ghost.updateSettingsCache(settings);
                     return settingsObject(settingsFilter(ghost.settings(), type));
                 });
-            }, errors.logAndThrowError);
+            }).otherwise(function (error) {
+                return dataProvider.Settings.read(key.key).then(function (result) {
+                    if (!result) {
+                        return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
+                    }
+                    return when.reject({message: error.message});
+                });
+            });
         }
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
-                return when.reject("Unable to find setting: " + key);
+                return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
             }
             if (!_.isString(value)) {
                 value = JSON.stringify(value);
@@ -356,20 +386,18 @@ settings = {
 function invalidateCache(req, res, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
-        endpoint = parsedUrl[3],
-        id = parsedUrl[4],
-        cacheInvalidate;
+        endpoint = parsedUrl[4],
+        id = parsedUrl[5],
+        cacheInvalidate,
+        jsonResult = result.toJSON ? result.toJSON() : result;
+
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         if (endpoint === 'settings' || endpoint === 'users') {
             cacheInvalidate = "/*";
         } else if (endpoint === 'posts') {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
-            if (id) {
-                if (result.toJSON) {
-                    cacheInvalidate += ', /' + result.toJSON().slug + '/';
-                } else {
-                    cacheInvalidate += ', /' + result.slug + '/';
-                }
+            if (id && jsonResult.slug) {
+                cacheInvalidate += ', /' + jsonResult.slug + '/';
             }
         }
         if (cacheInvalidate) {
@@ -394,8 +422,9 @@ requestHandler = function (apiMethod) {
             invalidateCache(req, res, result);
             res.json(result || {});
         }, function (error) {
-            error = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
-            res.json(400, error);
+            var errorCode = error.errorCode || 500,
+                errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
+            res.json(errorCode, errorMsg);
         });
     };
 };
@@ -406,5 +435,5 @@ module.exports.users = users;
 module.exports.tags = tags;
 module.exports.notifications = notifications;
 module.exports.settings = settings;
-module.exports.db = db.db;
+module.exports.db = db;
 module.exports.requestHandler = requestHandler;

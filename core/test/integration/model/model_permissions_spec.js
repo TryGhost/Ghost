@@ -1,10 +1,10 @@
 /*globals describe, it, before, beforeEach, afterEach */
-var testUtils = require('../unit/testUtils'),
+var testUtils = require('../../utils'),
     should = require('should'),
-    errors = require('../../server/errorHandling'),
+    errors = require('../../../server/errorHandling'),
 
     // Stuff we are testing
-    Models = require('../../server/models');
+    Models = require('../../../server/models');
 
 describe("Permission Model", function () {
 
