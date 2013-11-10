@@ -24,7 +24,7 @@ config = {
         //      }
         //  },
         // ```
-
+        adminRoot: '/ghost',
         database: {
             client: 'sqlite3',
             connection: {

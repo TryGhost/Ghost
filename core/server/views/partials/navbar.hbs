@@ -3,7 +3,7 @@
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
             {{#each adminNav}}
-                <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="/ghost{{path}}">{{name}}</a></li>
+                <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="{{@settings.adminRoot}}{{path}}">{{name}}</a></li>
             {{/each}}
 
             <li id="usermenu" class="subnav">
@@ -12,7 +12,7 @@
                     <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
                 </a>
                 <ul class="overlay">
-                    <li class="usermenu-profile"><a href="/ghost/settings/user/">Your Profile</a></li>
+                    <li class="usermenu-profile"><a href="{{@settings.adminRoot}}/settings/user/">Your Profile</a></li>
                     <li class="divider"></li>
                     <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
                     <li class="divider"></li>

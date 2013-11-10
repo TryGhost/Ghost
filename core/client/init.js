@@ -46,7 +46,7 @@
         Backbone.history.start({
             pushState: true,
             hashChange: false,
-            root: '/ghost'
+            root: this.settings.adminRoot
         });
     };
 

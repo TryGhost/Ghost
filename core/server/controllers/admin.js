@@ -100,8 +100,8 @@ adminControllers = {
             loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
                 req.session.user = user.id;
-                res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                    + decodeURIComponent(req.body.redirect) : '/ghost/'});
+                res.json(200, {redirect: req.body.redirect ? ghost.config().adminRoot
+                    + decodeURIComponent(req.body.redirect) : ghost.config().adminRoot + '/'});
             }, function (error) {
                 res.json(401, {error: error.message});
             });
@@ -145,7 +145,7 @@ adminControllers = {
                 if (req.session.user === undefined) {
                     req.session.user = user.id;
                 }
-                res.json(200, {redirect: '/ghost/'});
+                res.json(200, {redirect: ghost.config().adminRoot + '/'});
             });
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
@@ -186,7 +186,7 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: '/ghost/signin/'});
+                res.json(200, {redirect: Ghost.config().adminRoot + '/signin/'});
             });
 
         }, function failure(error) {
@@ -203,7 +203,7 @@ adminControllers = {
         };
 
         return api.notifications.add(notification).then(function () {
-            res.redirect('/ghost/signin/');
+            res.redirect(ghost.config().adminRoot + '/signin/');
         });
     },
     'index': function (req, res) {
@@ -238,8 +238,7 @@ adminControllers = {
         // TODO: Centralise list/enumeration of settings panes, so we don't
         // run into trouble in future.
         var allowedSections = ['', 'general', 'user'],
-            section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
-
+            section = req.url.replace(new RegExp("(^" + ghost.escapeRegexp(ghost.config().adminRoot) + "\/settings[\/]*|\/$)", "ig"), '');
         if (allowedSections.indexOf(section) < 0) {
             return next();
         }

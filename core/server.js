@@ -35,7 +35,8 @@ if (process.env.NODE_ENV === 'development') {
 // We strip /ghost/ out of the redirect parameter for neatness
 function auth(req, res, next) {
     if (!req.session.user) {
-        var path = req.path.replace(/^\/ghost\/?/gi, ''),
+        var pathReplaceRe = new RegExp("^" + ghost.escapeRegexp(ghost.config().adminRoot) + "/?", "gi"),
+            path = req.path.replace(pathReplaceRe, ''),
             redirect = '',
             msg;
 
@@ -52,7 +53,7 @@ function auth(req, res, next) {
             }
             redirect = '?r=' + encodeURIComponent(path);
         }
-        return res.redirect('/ghost/signin/' + redirect);
+        return res.redirect(ghost.config().adminRoot + '/signin/' + redirect);
     }
 
     next();
@@ -63,7 +64,7 @@ function auth(req, res, next) {
 // Login and signup forms in particular
 function redirectToDashboard(req, res, next) {
     if (req.session.user) {
-        return res.redirect('/ghost/');
+        return res.redirect(ghost.config().adminRoot + '/');
     }
 
     next();
@@ -73,7 +74,7 @@ function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
-            return res.redirect('/ghost/signup/');
+            return res.redirect(ghost.config().adminRoot + '/signup/');
         }
         next();
     }).otherwise(function (err) {
@@ -183,7 +184,9 @@ function initViews(req, res, next) {
         server.engine('hbs', hbs.express3(hbsOptions));
         server.set('views', ghost.paths().activeTheme);
     } else {
-        server.engine('hbs', hbs.express3({partialsDir: ghost.paths().adminViews + 'partials'}));
+        hbsOptions = {partialsDir: ghost.paths().adminViews + 'partials',
+                      templateOptions: {data: {settings: {adminRoot: ghost.config().adminRoot}}}};
+        server.engine('hbs', hbs.express3(hbsOptions));
         server.set('views', ghost.paths().adminViews);
     }
 
@@ -215,7 +218,8 @@ function activateTheme() {
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
     // TODO improve this regex
-    res.isAdmin = /(^\/ghost\/)/.test(req.url);
+    res.isAdmin = new RegExp("(^\/ghost\/|" +  ghost.escapeRegexp(ghost.config().adminRoot) + "/)").test(req.url);
+
     if (res.isAdmin) {
         server.enable('admin');
         server.disable(server.get('activeTheme'));
@@ -285,8 +289,8 @@ when(ghost.init()).then(function () {
 
     server.use(express.json());
     server.use(express.urlencoded());
-    server.use('/ghost/upload/', express.multipart());
-    server.use('/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
+    server.use(ghost.config().adminRoot + '/upload/', express.multipart());
+    server.use(ghost.config().adminRoot + '/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
     server.use('/ghost/api/v0.1/db/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
@@ -349,36 +353,39 @@ when(ghost.init()).then(function () {
         res.redirect(301, '/signout/');
     });
     server.get(/^\/signout\/?$/, admin.logout);
-    server.get('/ghost/login/', function redirect(req, res) {
+    server.get(ghost.config().adminRoot + '/login/', function redirect(req, res) {
         /*jslint unparam:true*/
-        res.redirect(301, '/ghost/signin/');
+        res.redirect(301, ghost.config().adminRoot + '/signin/');
     });
-    server.get('/ghost/signin/', redirectToSignup, redirectToDashboard, admin.login);
-    server.get('/ghost/signup/', redirectToDashboard, admin.signup);
-    server.get('/ghost/forgotten/', redirectToDashboard, admin.forgotten);
-    server.post('/ghost/forgotten/', admin.resetPassword);
-    server.post('/ghost/signin/', admin.auth);
-    server.post('/ghost/signup/', admin.doRegister);
-    server.post('/ghost/changepw/', auth, admin.changepw);
-    server.get('/ghost/editor(/:id)/', auth, admin.editor);
-    server.get('/ghost/editor/', auth, admin.editor);
-    server.get('/ghost/content/', auth, admin.content);
-    server.get('/ghost/settings*', auth, admin.settings);
-    server.get('/ghost/debug/', auth, admin.debug.index);
+    server.get(ghost.config().adminRoot + '/signin/', redirectToSignup, redirectToDashboard, admin.login);
+    server.get(ghost.config().adminRoot + '/signup/', redirectToDashboard, admin.signup);
+    server.get(ghost.config().adminRoot + '/forgotten/', redirectToDashboard, admin.forgotten);
+    server.post(ghost.config().adminRoot + '/forgotten/', admin.resetPassword);
+    server.post(ghost.config().adminRoot + '/signin/', admin.auth);
+    server.post(ghost.config().adminRoot + '/signup/', admin.doRegister);
+    server.post(ghost.config().adminRoot + '/changepw/', auth, admin.changepw);
+    server.get(ghost.config().adminRoot + '/editor(/:id)/', auth, admin.editor);
+    server.get(ghost.config().adminRoot + '/editor/', auth, admin.editor);
+
+    server.get(ghost.config().adminRoot + '/editor(/:id)/', auth, admin.editor);
+    server.get(ghost.config().adminRoot + '/editor/', auth, admin.editor);
+    server.get(ghost.config().adminRoot + '/content/', auth, admin.content);
+    server.get(ghost.config().adminRoot + '/settings*', auth, admin.settings);
+    server.get(ghost.config().adminRoot + '/debug/', auth, admin.debug.index);
 
     // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
-    server.post('/ghost/upload/', auth, admin.uploader);
+    server.post(ghost.config().adminRoot + '/upload/', auth, admin.uploader);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
         /*jslint unparam:true*/
-        res.redirect('/ghost/');
+        res.redirect(ghost.config().adminRoot + '/');
     });
-    server.get(/^\/(ghost$\/?)/, auth, function (req, res) {
+    server.get(new RegExp("^/(" + ghost.config().adminRoot.replace(/\//, "") + "$\/?)"), auth, function (req, res) {
         /*jslint unparam:true*/
-        res.redirect('/ghost/');
+        res.redirect(ghost.config().adminRoot + '/');
     });
-    server.get('/ghost/', redirectToSignup, auth, admin.index);
+    server.get(ghost.config().adminRoot + '/', redirectToSignup, auth, admin.index);
 
     // ### Frontend routes
     /* TODO: dynamic routing, homepage generator, filters ETC ETC */

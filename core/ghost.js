@@ -383,4 +383,10 @@ Ghost.prototype.initPlugins = function (pluginsToLoad) {
     });
 };
 
+// Helper function to escape regular expressions. Useful for using URLs in RegExps.
+Ghost.prototype.escapeRegexp = function (str) {
+    var specialChars = new RegExp("[.*+?|()\\[\\]{}\\\\]", "g"); // .*+?|()[]{}\
+    return str.replace(specialChars, "\\$&");
+};
+
 module.exports = Ghost;

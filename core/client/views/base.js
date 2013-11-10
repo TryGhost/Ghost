@@ -22,11 +22,12 @@
         },
 
         render: function () {
+            var templateData = this.templateData();
             if (_.isFunction(this.beforeRender)) {
                 this.beforeRender();
             }
-
-            this.$el.html(this.template(this.templateData()));
+            templateData.settings = {adminRoot: Ghost.settings.adminRoot};
+            this.$el.html(this.template(templateData));
 
             if (_.isFunction(this.afterRender)) {
                 this.afterRender();
