@@ -97,14 +97,14 @@
                 displayDateFormat = 'DD MMM YY',
                 errMessage = '',
                 pubDate = self.model.get('published_at'),
-                pubDateMoment = moment(pubDate, parseDateFormats),
+                pubDateMoment = moment(pubDate),
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
                 newPubDateMoment = moment(newPubDate, parseDateFormats);
 
             // Ensure the published date has changed
-            if (newPubDate.length === 0 || pubDateMoment.isSame(newPubDateMoment)) {
-                pubDateEl.value = pubDate === undefined ? 'Not Published' : pubDateMoment.format(displayDateFormat);
+            if (newPubDate.length === 0 || (moment.isMoment(pubDateMoment) && pubDateMoment.isSame(newPubDateMoment, 'day'))) {
+                pubDateEl.value = pubDate === null ? 'Not Published' : pubDateMoment.format(displayDateFormat);
                 return;
             }
 
