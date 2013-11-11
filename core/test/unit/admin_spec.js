@@ -1,8 +1,9 @@
 /*globals describe, beforeEach, it*/
-var fs = require('fs-extra'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
+var fs      = require('fs-extra'),
+    should  = require('should'),
+    sinon   = require('sinon'),
+    when    = require('when'),
+    storage = require('../../server/storage'),
 
     // Stuff we are testing
     admin = require('../../server/controllers/admin');
@@ -10,7 +11,7 @@ var fs = require('fs-extra'),
 describe('Admin Controller', function () {
     describe('uploader', function () {
 
-        var req, res, storage;
+        var req, res, store;
 
         beforeEach(function () {
             req = {
@@ -26,20 +27,22 @@ describe('Admin Controller', function () {
                 }
             };
 
-            storage = sinon.stub();
-            storage.save = sinon.stub().returns(when('URL'));
-            sinon.stub(admin, 'get_storage').returns(storage);
+            store = sinon.stub();
+            store.save = sinon.stub().returns(when('URL'));
+            store.exists = sinon.stub().returns(when(true));
+            store.destroy = sinon.stub().returns(when());
+            sinon.stub(storage, 'get_storage').returns(store);
         });
 
         afterEach(function () {
-            admin.get_storage.restore();
+            storage.get_storage.restore();
         });
 
         describe('can not upload invalid file', function () {
             it('should return 415 for invalid file type', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.FILE';
-                req.files.uploadimage.type = 'application/octet-stream'
+                req.files.uploadimage.type = 'application/octet-stream';
                 admin.uploader(req, res);
                 res.send.calledOnce.should.be.true;
                 res.send.args[0][0].should.equal(415);
@@ -106,16 +109,6 @@ describe('Admin Controller', function () {
                 req.files.uploadimage.type = 'image/gif';
                 sinon.stub(res, 'send', function (data) {
                     data.should.not.equal(415);
-                    return done();
-                });
-
-                admin.uploader(req, res);
-            });
-
-            it('should not leave temporary file when uploading', function (done) {
-                sinon.stub(res, 'send', function (data) {
-                    fs.unlink.calledOnce.should.be.true;
-                    fs.unlink.args[0][0].should.equal('/tmp/TMPFILEID');
                     return done();
                 });
 
