@@ -1,4 +1,4 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, beforeEach, afterEach, it*/
 var fs      = require('fs-extra'),
     should  = require('should'),
     sinon   = require('sinon'),
@@ -54,7 +54,7 @@ describe('Admin Controller', function () {
             it('should return 415 for invalid file type', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.jpg';
-                req.files.uploadimage.type = 'application/octet-stream'
+                req.files.uploadimage.type = 'application/octet-stream';
                 admin.uploader(req, res);
                 res.send.calledOnce.should.be.true;
                 res.send.args[0][0].should.equal(415);

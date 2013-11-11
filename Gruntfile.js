@@ -21,6 +21,7 @@ var path           = require('path'),
         '!node_modules/**',
         '!core/test/**',
         '!core/client/assets/sass/**',
+        '!core/server/data/export/exported*',
         '!**/*.db*',
         '!*.db*',
         '!.sass*',
@@ -32,7 +33,8 @@ var path           = require('path'),
         '!CONTRIBUTING.md',
         '!SECURITY.md',
         '!.travis.yml',
-        '!Gemfile*'
+        '!Gemfile*',
+        '!*.html'
     ],
 
     configureGrunt = function (grunt) {
@@ -878,7 +880,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-integration', 'Run integration tests', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:integration', 'express:test:stop']);
 
-        grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'express:test', 'spawn-casperjs', 'express:test:stop']);
+        grunt.registerTask('test-functional', 'Run casperjs tests only', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'spawn-casperjs', 'express:test:stop']);
 
         grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-functional']);
 
