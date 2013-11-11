@@ -152,7 +152,7 @@ up = function () {
             t.string('slug', constraints.users.slug.maxlength).notNull().unique();
             t.string('password', constraints.users.password.maxlength).notNull();
             t.string('email', constraints.users.email.maxlength).notNull().unique();
-            t.bool('gravatar'),
+            t.bool('gravatar');
             t.text('image').nullable();                                 // max-length 2000
             t.text('cover').nullable();                                 // max-length 2000
             t.string('bio', constraints.users.bio.maxlength).nullable();

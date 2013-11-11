@@ -80,30 +80,27 @@ User = ghostBookshelf.Model.extend({
     permissions: function () {
         return this.belongsToMany(Permission);
     },
-    gravatar: function() {
+    gravatar: function () {
 
-        if(this.changed.gravatar == 1 || this.changed.email){
+        if (this.changed.gravatar === 1 || this.changed.email) {
             // TODO set default to "d=404" and attempt to http get the avatar url.
             // If 404 response set image to '' and turn off gravatar on user
 
             var defaultUrl = "http://blog.ghost.org";
 
-            var gravatarUrl = 'http://www.gravatar.com/avatar/' +
-                                crypto.createHash('md5').update(this.get('email').toLowerCase().trim()).digest('hex') +
-                                "?d=" + defaultUrl + "/shared/img/user-image.png";
-
-            return gravatarUrl;
+            return 'http://www.gravatar.com/avatar/' +
+                    crypto.createHash('md5').update(this.get('email').toLowerCase().trim()).digest('hex') +
+                    "?d=" + defaultUrl + "/shared/img/user-image.png";
         }
 
-        if(this.changed.gravatar == 0){
-            if(this.changed.image){
+        if (this.changed.gravatar === 0) {
+            if (this.changed.image) {
                 return this.changed.image;
-            } else {
-                return '';
             }
+            return '';
         }
 
-        if(this.changed.image){
+        if (this.changed.image) {
             return this.changed.image;
         }
 

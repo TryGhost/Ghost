@@ -279,9 +279,9 @@
                         data[key] = this.$('.js-upload-target').attr('src');
                     }
 
-                    if(key == 'image'){
+                    if (key === 'image') {
                         data.gravatar = 0;
-                        $('#user-gravatar').prop('checked', false)
+                        $('#user-gravatar').prop('checked', false);
                     }
 
                     self.model.save(data, {
