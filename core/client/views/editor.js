@@ -448,8 +448,16 @@
             return this.uploadMgr.getEditorValue();
         },
 
+        unloadDirtyMessage: function () {
+            return "==============================\n\n" +
+                "Hey there! It looks like you're in the middle of writing" +
+                " something and you haven't saved all of your content." +
+                "\n\nSave before you go!\n\n" +
+                "==============================";
+        },
+
         setEditorDirty: function (dirty) {
-            return this.uploadMgr.setEditorDirty(dirty);
+            window.onbeforeunload = dirty ? this.unloadDirtyMessage : null;
         },
 
         initUploads: function () {
@@ -465,6 +473,7 @@
             var self = this;
             this.editor.setOption("readOnly", false);
             this.editor.on('change', function () {
+                self.setEditorDirty(true);
                 self.renderPreview();
             });
         },
@@ -662,30 +671,16 @@
             return value;
         }
 
-        function unloadDirtyMessage() {
-            return "==============================\n\n" +
-                   "Hey there! It looks like you're in the middle of writing" +
-                   " something and you haven't saved all of your content." +
-                   "\n\nSave before you go!\n\n" +
-                   "==============================";
-        }
-
-        function setEditorDirty(dirty) {
-            window.onbeforeunload = dirty ? unloadDirtyMessage : null;
-        }
 
         // Public API
         _.extend(this, {
             getEditorValue: getEditorValue,
-            handleUpload: handleUpload,
-            setEditorDirty: setEditorDirty
+            handleUpload: handleUpload
         });
 
         // initialise
         editor.on('change', function (cm, changeObj) {
             /*jslint unparam:true*/
-            setEditorDirty(true);
-
             var linesChanged = _.range(changeObj.from.line, changeObj.from.line + changeObj.text.length);
 
             _.each(linesChanged, function (ln) {
