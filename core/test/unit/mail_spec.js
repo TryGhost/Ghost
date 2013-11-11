@@ -81,7 +81,7 @@ describe("Mail", function () {
 
     it('should setup SMTP transport on initialization', function (done) {
         fakeConfig.mail = SMTP;
-        ghost.mail.init(ghost).then(function(){
+        ghost.mail.init(ghost).then(function () {
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SMTP');
             ghost.mail.transport.sendMail.should.be.a.function;
@@ -91,7 +91,7 @@ describe("Mail", function () {
 
     it('should setup sendmail transport on initialization', function (done) {
         fakeConfig.mail = SENDMAIL;
-        ghost.mail.init(ghost).then(function(){
+        ghost.mail.init(ghost).then(function () {
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
             ghost.mail.transport.sendMail.should.be.a.function;
@@ -101,7 +101,7 @@ describe("Mail", function () {
 
     it('should fallback to sendmail if no config set', function (done) {
         fakeConfig.mail = null;
-        ghost.mail.init(ghost).then(function(){
+        ghost.mail.init(ghost).then(function () {
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
             ghost.mail.transport.options.path.should.eql(fakeSendmail);
@@ -111,7 +111,7 @@ describe("Mail", function () {
 
     it('should fallback to sendmail if config is empty', function (done) {
         fakeConfig.mail = {};
-        ghost.mail.init(ghost).then(function(){
+        ghost.mail.init(ghost).then(function () {
             ghost.mail.should.have.property('transport');
             ghost.mail.transport.transportType.should.eql('SENDMAIL');
             ghost.mail.transport.options.path.should.eql(fakeSendmail);
@@ -123,7 +123,7 @@ describe("Mail", function () {
         fakeConfig.mail = {};
         ghost.mail.detectSendmail.restore();
         sandbox.stub(ghost.mail, "detectSendmail", when.reject);
-        ghost.mail.init(ghost).then(function(){
+        ghost.mail.init(ghost).then(function () {
             should.not.exist(ghost.mail.transport);
             done();
         }).then(null, done);
@@ -133,8 +133,10 @@ describe("Mail", function () {
         fakeConfig.mail = {};
         ghost.mail.detectSendmail.restore();
         ghost.mail.isWindows.restore();
-        sandbox.stub(ghost.mail, 'isWindows', function(){ return true });
-        ghost.mail.init(ghost).then(function(){
+        sandbox.stub(ghost.mail, 'isWindows', function () {
+            return true;
+        });
+        ghost.mail.init(ghost).then(function () {
             should.not.exist(ghost.mail.transport);
             done();
         }).then(null, done);
@@ -143,8 +145,8 @@ describe("Mail", function () {
     it('should fail to send messages when no transport is set', function (done) {
         ghost.mail.detectSendmail.restore();
         sandbox.stub(ghost.mail, "detectSendmail", when.reject);
-        ghost.mail.init(ghost).then(function(){
-            ghost.mail.send().then(function(){
+        ghost.mail.init(ghost).then(function () {
+            ghost.mail.send().then(function () {
                 should.fail();
                 done();
             }, function (err) {
@@ -168,5 +170,4 @@ describe("Mail", function () {
             done();
         });
     });
-
 });

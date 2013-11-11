@@ -7,22 +7,23 @@ var fs = require('fs-extra'),
     // Stuff we are testing
     admin = require('../../server/controllers/admin');
 
-describe('Admin Controller', function() {
-    describe('uploader', function() {
+describe('Admin Controller', function () {
+    describe('uploader', function () {
 
         var req, res, storage;
 
-        beforeEach(function() {
+        beforeEach(function () {
             req = {
-                    files: {
-                        uploadimage: {
-                            path: "/tmp/TMPFILEID"
-                        }
+                files: {
+                    uploadimage: {
+                        path: "/tmp/TMPFILEID"
                     }
-                };
+                }
+            };
 
             res = {
-                send: function(){}
+                send: function () {
+                }
             };
 
             storage = sinon.stub();
@@ -34,8 +35,8 @@ describe('Admin Controller', function() {
             admin.get_storage.restore();
         });
 
-        describe('can not upload invalid file', function() {
-            it('should return 415 for invalid file type', function() {
+        describe('can not upload invalid file', function () {
+            it('should return 415 for invalid file type', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.FILE';
                 req.files.uploadimage.type = 'application/octet-stream'
@@ -46,8 +47,8 @@ describe('Admin Controller', function() {
             });
         });
 
-        describe('can not upload file with valid extension but invalid type', function() {
-            it('should return 415 for invalid file type', function() {
+        describe('can not upload file with valid extension but invalid type', function () {
+            it('should return 415 for invalid file type', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.jpg';
                 req.files.uploadimage.type = 'application/octet-stream'
@@ -58,20 +59,20 @@ describe('Admin Controller', function() {
             });
         });
 
-        describe('valid file', function() {
+        describe('valid file', function () {
 
-            beforeEach(function() {
+            beforeEach(function () {
                 req.files.uploadimage.name = 'IMAGE.jpg';
                 req.files.uploadimage.type = 'image/jpeg';
                 sinon.stub(fs, 'unlink').yields();
             });
 
-            afterEach(function() {
+            afterEach(function () {
                 fs.unlink.restore();
             });
 
-            it('can upload jpg', function(done) {
-                sinon.stub(res, 'send', function(data) {
+            it('can upload jpg', function (done) {
+                sinon.stub(res, 'send', function (data) {
                     data.should.not.equal(415);
                     return done();
                 });
@@ -79,9 +80,9 @@ describe('Admin Controller', function() {
                 admin.uploader(req, res);
             });
 
-            it('cannot upload jpg with incorrect extension', function(done) {
+            it('cannot upload jpg with incorrect extension', function (done) {
                 req.files.uploadimage.name = 'IMAGE.xjpg';
-                sinon.stub(res, 'send', function(data) {
+                sinon.stub(res, 'send', function (data) {
                     data.should.equal(415);
                     return done();
                 });
@@ -89,10 +90,10 @@ describe('Admin Controller', function() {
                 admin.uploader(req, res);
             });
 
-            it('can upload png', function(done) {
+            it('can upload png', function (done) {
                 req.files.uploadimage.name = 'IMAGE.png';
                 req.files.uploadimage.type = 'image/png';
-                sinon.stub(res, 'send', function(data) {
+                sinon.stub(res, 'send', function (data) {
                     data.should.not.equal(415);
                     return done();
                 });
@@ -100,10 +101,10 @@ describe('Admin Controller', function() {
                 admin.uploader(req, res);
             });
 
-            it('can upload gif', function(done) {
+            it('can upload gif', function (done) {
                 req.files.uploadimage.name = 'IMAGE.gif';
                 req.files.uploadimage.type = 'image/gif';
-                sinon.stub(res, 'send', function(data) {
+                sinon.stub(res, 'send', function (data) {
                     data.should.not.equal(415);
                     return done();
                 });
@@ -111,8 +112,8 @@ describe('Admin Controller', function() {
                 admin.uploader(req, res);
             });
 
-            it('should not leave temporary file when uploading', function(done) {
-                sinon.stub(res, 'send', function(data) {
+            it('should not leave temporary file when uploading', function (done) {
+                sinon.stub(res, 'send', function (data) {
                     fs.unlink.calledOnce.should.be.true;
                     fs.unlink.args[0][0].should.equal('/tmp/TMPFILEID');
                     return done();
@@ -121,8 +122,8 @@ describe('Admin Controller', function() {
                 admin.uploader(req, res);
             });
 
-            it('should send correct url', function(done) {
-                sinon.stub(res, 'send', function(data) {
+            it('should send correct url', function (done) {
+                sinon.stub(res, 'send', function (data) {
                     data.should.equal('URL');
                     return done();
                 });
@@ -132,4 +133,3 @@ describe('Admin Controller', function() {
         });
     });
 });
-

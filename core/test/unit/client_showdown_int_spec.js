@@ -8,13 +8,14 @@
 var testUtils = require('../utils'),
     should = require('should'),
 
-    // Stuff we are testing
+// Stuff we are testing
     Showdown = require('showdown'),
     github = require('../../shared/vendor/showdown/extensions/github'),
     ghostdown = require('../../client/assets/vendor/showdown/extensions/ghostdown'),
     converter = new Showdown.converter({extensions: [ghostdown, github]});
 
 describe("Showdown client side converter", function () {
+    /*jslint regexp: true */
 
     it("should replace showdown strike through with html", function () {
         var testPhrase = {input: "~~foo_bar~~", output: /^<p><del>foo_bar<\/del><\/p>$/},
@@ -224,29 +225,29 @@ describe("Showdown client side converter", function () {
     });
 
     /* No ref-style for now
-    it("should convert reference format image", function () {
-        var testPhrases = [
-                {
-                    input: "![Google][1]\n\n[1]: http://dsurl.stuff/something.jpg",
-                    output: /^<section.*?<img.*?src="http:\/\/dsurl.stuff\/something.jpg"\/>.*?<\/section>$/,
-                },
-                {
-                    input: "![Google][1]\n\n[1]: http://dsurl.stuff/something.jpg \"some text\"",
-                    output: /^<section.*?<img.*?src="http:\/\/dsurl.stuff\/something.jpg"\/>.*?<\/section>$/
-                },
-                {
-                    input: "[http://www.google.co.uk]: http://www.google.co.uk\n\n![Hello][http://www.google.co.uk]",
-                    output: /^<section.*?<img.*?src="http:\/\/www.google.co.uk"\/>.*?<\/section>$/
-                }
-            ],
-            processedMarkup;
+     it("should convert reference format image", function () {
+     var testPhrases = [
+     {
+     input: "![Google][1]\n\n[1]: http://dsurl.stuff/something.jpg",
+     output: /^<section.*?<img.*?src="http:\/\/dsurl.stuff\/something.jpg"\/>.*?<\/section>$/,
+     },
+     {
+     input: "![Google][1]\n\n[1]: http://dsurl.stuff/something.jpg \"some text\"",
+     output: /^<section.*?<img.*?src="http:\/\/dsurl.stuff\/something.jpg"\/>.*?<\/section>$/
+     },
+     {
+     input: "[http://www.google.co.uk]: http://www.google.co.uk\n\n![Hello][http://www.google.co.uk]",
+     output: /^<section.*?<img.*?src="http:\/\/www.google.co.uk"\/>.*?<\/section>$/
+     }
+     ],
+     processedMarkup;
 
-        testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
-            processedMarkup.should.match(testPhrase.output);
-        });
-    });
-    */
+     testPhrases.forEach(function (testPhrase) {
+     processedMarkup = converter.makeHtml(testPhrase.input);
+     processedMarkup.should.match(testPhrase.output);
+     });
+     });
+     */
 
     it("should NOT auto-link URL in HTML", function () {
         var testPhrases = [
@@ -279,12 +280,12 @@ describe("Showdown client side converter", function () {
         });
     });
 
-    it("should NOT escape underscore inside of code/pre blocks", function() {
+    it("should NOT escape underscore inside of code/pre blocks", function () {
         var testPhrase = {
-          input: "```\n_____\n```",
-          output: /^<pre><code>_____  \n<\/code><\/pre>$/
-        } ,
-        processedMarkup;
+                input: "```\n_____\n```",
+                output: /^<pre><code>_____  \n<\/code><\/pre>$/
+            },
+            processedMarkup;
 
         processedMarkup = converter.makeHtml(testPhrase.input);
         processedMarkup.should.match(testPhrase.output);
@@ -351,7 +352,7 @@ describe("Showdown client side converter", function () {
 
     it("should show placeholder for image markdown", function () {
         var testPhrases = [
-                {input:  "![image and another,/ image](http://dsurl stuff)", output: /^<section.*?section>\n*$/},
+                {input: "![image and another,/ image](http://dsurl stuff)", output: /^<section.*?section>\n*$/},
                 {input: "![image and another,/ image]", output: /^<section.*?section>\n*$/},
                 {input: "![]()", output: /^<section.*?section>\n*$/},
                 {input: "![]", output: /^<section.*?section>\n*$/}
@@ -367,15 +368,15 @@ describe("Showdown client side converter", function () {
     it("should have placeholder with image ONLY if image URL is present and valid", function () {
         var testPhrases = [
                 {
-                    input:  "![image stuff](http://dsurl.stuff/something.jpg)",
+                    input: "![image stuff](http://dsurl.stuff/something.jpg)",
                     output: /^<section.*?<img class="js-upload-target.*?<\/section>$/
                 },
                 {input: "![]", output: /<img class="js-upload-target"/, not: true},
                 {input: "![]", output: /^<section.*?<\/section>$/},
                 {input: "![]()", output: /<img class="js-upload-target"/, not: true},
                 {input: "![]()", output: /^<section.*?<\/section>$/},
-                {input: "![]", output:  /<img class="js-upload-target"/, not: true},
-                {input: "![]", output:  /^<section.*?<\/section>$/}
+                {input: "![]", output: /<img class="js-upload-target"/, not: true},
+                {input: "![]", output: /^<section.*?<\/section>$/}
             ],
             processedMarkup;
 
@@ -390,29 +391,29 @@ describe("Showdown client side converter", function () {
     });
 
     /* No ref-style for now
-    it("should have placeholder with image if image reference is present", function () {
-        var testPhrases = [
-                {
-                    input: "![alt][id]\n\n[id]: http://dsurl.stuff/something.jpg",
-                    output:  /^<section.*?<img class="js-upload-target.*?<\/section>$/
-                },
-                {input: "![][]", output: /^<section.*?<\/section>$/},
-                {input: "![][]",  output:  /<img class="js-upload-target"/, not: true},
-                {input: "![][id]", output: /^<section.*?<\/section>$/},
-                {input: "![][id]",  output:  /<img class="js-upload-target"/, not: true}
-            ],
-            processedMarkup;
+     it("should have placeholder with image if image reference is present", function () {
+     var testPhrases = [
+     {
+     input: "![alt][id]\n\n[id]: http://dsurl.stuff/something.jpg",
+     output:  /^<section.*?<img class="js-upload-target.*?<\/section>$/
+     },
+     {input: "![][]", output: /^<section.*?<\/section>$/},
+     {input: "![][]",  output:  /<img class="js-upload-target"/, not: true},
+     {input: "![][id]", output: /^<section.*?<\/section>$/},
+     {input: "![][id]",  output:  /<img class="js-upload-target"/, not: true}
+     ],
+     processedMarkup;
 
-        testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
-            if (testPhrase.not) {
-                processedMarkup.should.not.match(testPhrase.output);
-            } else {
-                processedMarkup.should.match(testPhrase.output);
-            }
-        });
-    });
-    */
+     testPhrases.forEach(function (testPhrase) {
+     processedMarkup = converter.makeHtml(testPhrase.input);
+     if (testPhrase.not) {
+     processedMarkup.should.not.match(testPhrase.output);
+     } else {
+     processedMarkup.should.match(testPhrase.output);
+     }
+     });
+     });
+     */
 
     it("should correctly output link and image markdown without autolinks", function () {
         var testPhrases = [
@@ -437,7 +438,7 @@ describe("Showdown client side converter", function () {
                     output: /^<section.*?((?!<a href=\'http:\/\/google.co.uk\/kitten.jpg\').)*<\/section>$/
                 },
                 {
-                    input:  "![image stuff](http://dsurl.stuff/something)",
+                    input: "![image stuff](http://dsurl.stuff/something)",
                     output: /^<section.*?((?!<a href=\'http:\/\/dsurl.stuff\/something\').)*<\/section>$/
                 }
             ],

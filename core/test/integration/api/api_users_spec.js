@@ -30,8 +30,8 @@ describe('User API', function () {
                     var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
                     pattern_meta.should.exist;
                     csrfToken = body.match(pattern_meta)[1];
-                    setTimeout((function() {
-                        request.post({uri:testUtils.API.getSigninURL(),
+                    setTimeout((function () {
+                        request.post({uri: testUtils.API.getSigninURL(),
                                 headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
                             response.should.have.status(200);
                             done();

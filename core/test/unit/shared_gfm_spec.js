@@ -28,6 +28,7 @@ function _ConvertPhrase(testPhrase) {
 
 
 describe("Github showdown extensions", function () {
+    /*jslint regexp: true */
 
     it("should export an array of methods for processing", function () {
         github.should.be.a.function;
