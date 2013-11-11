@@ -62,7 +62,13 @@ translations:
     email:        'E-Mail'
     themes:       'Themen'
     help:         'Hilfe'
+<<<<<<< HEAD
 >>>>>>> Started German translation
+=======
+    deploy:       'Einsetzen'
+    upgrading:    'Aktualisieren' 
+    troubleshooting: 'Problembehebung'
+>>>>>>> Translate Installation & Mail to German and apply updates
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
