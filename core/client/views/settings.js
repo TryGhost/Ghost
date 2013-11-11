@@ -278,6 +278,12 @@
                     } else {
                         data[key] = this.$('.js-upload-target').attr('src');
                     }
+
+                    if (key === 'image') {
+                        data.gravatar = 0;
+                        $('#user-gravatar').prop('checked', false);
+                    }
+
                     self.model.save(data, {
                         success: self.saveSuccess,
                         error: self.saveError
@@ -325,6 +331,7 @@
             var self = this,
                 userName = this.$('#user-name').val(),
                 userEmail = this.$('#user-email').val(),
+                userGravatar = this.$('#user-gravatar').is(':checked') ? 1 : 0,
                 userLocation = this.$('#user-location').val(),
                 userWebsite = this.$('#user-website').val(),
                 userBio = this.$('#user-bio').val();
@@ -356,6 +363,7 @@
                 this.model.save({
                     'name':             userName,
                     'email':            userEmail,
+                    'gravatar':         userGravatar,
                     'location':         userLocation,
                     'website':          userWebsite,
                     'bio':              userBio
