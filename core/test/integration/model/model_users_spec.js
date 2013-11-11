@@ -4,6 +4,7 @@ var testUtils = require('../../utils'),
     when = require('when'),
     _ = require('underscore'),
     errors = require('../../../server/errorHandling'),
+    sinon = require('sinon'),
 
     // Stuff we are testing
     Models = require('../../../server/models');
@@ -32,14 +33,48 @@ describe('User Model', function run() {
         });
 
         it('can add first', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            var userData = testUtils.DataGenerator.forModel.users[0],
+                gravatarStub =  sinon.stub(UserModel, 'gravatarLookup', function (userData) {
+                    return when.resolve(userData);
+                });
 
             UserModel.add(userData).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
+                gravatarStub.restore();
+                done();
+            }).then(null, done);
+        });
 
+        it('can find gravatar', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[4],
+                gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
+                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404'
+                    return when.resolve(userData);
+                });
+
+            UserModel.add(userData).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('uuid').should.equal(true);
+                createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
+                gravatarStub.restore();
+                done();
+            }).then(null, done);
+        });
+
+        it('can handle no gravatar', function(done) {
+            var userData = testUtils.DataGenerator.forModel.users[0],
+                gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
+                    return when.resolve(userData);
+                });
+
+            UserModel.add(userData).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('uuid').should.equal(true);
+                should.not.exist(createdUser.image);
+                gravatarStub.restore();
                 done();
             }).then(null, done);
         });

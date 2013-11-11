@@ -71,6 +71,12 @@ DataGenerator.Content = {
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
             password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+        },
+        {
+            name: 'Ivan Email',
+            slug: 'ivan-email',
+            email: 'info@ghost.org',
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
         }
     ]
 };
@@ -201,8 +207,8 @@ DataGenerator.forModel = (function () {
     users = _.map(DataGenerator.Content.users, function (user) {
         var user = _.pick(user, 'name', 'email');
 
-        return _.defaults({ 
-            password: 'Sl1m3rson' 
+        return _.defaults({
+            password: 'Sl1m3rson'
         }, user);
     });
 
