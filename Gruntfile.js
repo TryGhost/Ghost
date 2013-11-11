@@ -260,7 +260,14 @@ var path           = require('path'),
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
                 },
                 coverage: {
-                    command: './node_modules/mocha/bin/mocha --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js'
+                    command: function () {
+                        // will work on windows only if mocha is globally installed
+                        var cmd = !!process.platform.match(/^win/) ? 'mocha' : './node_modules/mocha/bin/mocha';
+                        return cmd + ' --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js';
+                    },
+                    execOptions: {
+                        env: 'NODE_ENV=' + process.env.NODE_ENV
+                    }
                 }
             },
 
