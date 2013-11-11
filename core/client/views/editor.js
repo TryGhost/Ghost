@@ -100,9 +100,6 @@
                 self.updatePost();
             });
             this.listenTo(this.model, 'change:status', this.render);
-            this.listenTo(this.model, 'change:id', function (m) {
-                Backbone.history.navigate('/editor/' + m.id + '/');
-            });
         },
 
         toggleStatus: function () {
@@ -279,6 +276,7 @@
     Ghost.Views.Editor = Ghost.View.extend({
 
         initialize: function () {
+            var self = this;
 
             // Add the container view for the Publish Bar
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
@@ -287,6 +285,13 @@
             this.$('#entry-markdown').text(this.model.get('markdown'));
 
             this.listenTo(this.model, 'change:title', this.renderTitle);
+            this.listenTo(this.model, 'change:id', function (m) {
+                // This is a special case for browsers which fire an unload event when using navigate. The id change
+                // happens before the save success and can cause the unload alert to appear incorrectly on first save
+                // The id only changes in the event that the save has been successful, so this workaround is safes
+                self.setEditorDirty(false);
+                Backbone.history.navigate('/editor/' + m.id + '/');
+            });
 
             this.initMarkdown();
             this.renderPreview();
