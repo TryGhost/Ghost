@@ -100,9 +100,6 @@
                 self.updatePost();
             });
             this.listenTo(this.model, 'change:status', this.render);
-            this.listenTo(this.model, 'change:id', function (m) {
-                Backbone.history.navigate('/editor/' + m.id + '/');
-            });
         },
 
         toggleStatus: function () {
@@ -227,6 +224,7 @@
                 message: this.notificationMap[status],
                 status: 'passive'
             });
+            Ghost.currentView.setEditorDirty(false);
         },
 
         reportSaveError: function (response, model, status) {
@@ -278,6 +276,7 @@
     Ghost.Views.Editor = Ghost.View.extend({
 
         initialize: function () {
+            var self = this;
 
             // Add the container view for the Publish Bar
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
@@ -286,6 +285,13 @@
             this.$('#entry-markdown').text(this.model.get('markdown'));
 
             this.listenTo(this.model, 'change:title', this.renderTitle);
+            this.listenTo(this.model, 'change:id', function (m) {
+                // This is a special case for browsers which fire an unload event when using navigate. The id change
+                // happens before the save success and can cause the unload alert to appear incorrectly on first save
+                // The id only changes in the event that the save has been successful, so this workaround is safes
+                self.setEditorDirty(false);
+                Backbone.history.navigate('/editor/' + m.id + '/');
+            });
 
             this.initMarkdown();
             this.renderPreview();
@@ -447,6 +453,18 @@
             return this.uploadMgr.getEditorValue();
         },
 
+        unloadDirtyMessage: function () {
+            return "==============================\n\n" +
+                "Hey there! It looks like you're in the middle of writing" +
+                " something and you haven't saved all of your content." +
+                "\n\nSave before you go!\n\n" +
+                "==============================";
+        },
+
+        setEditorDirty: function (dirty) {
+            window.onbeforeunload = dirty ? this.unloadDirtyMessage : null;
+        },
+
         initUploads: function () {
             var filestorage = $('#entry-markdown-content').data('filestorage');
             this.$('.js-drop-zone').upload({editor: true, fileStorage: filestorage});
@@ -460,6 +478,7 @@
             var self = this;
             this.editor.setOption("readOnly", false);
             this.editor.on('change', function () {
+                self.setEditorDirty(true);
                 self.renderPreview();
             });
         },
@@ -656,6 +675,7 @@
 
             return value;
         }
+
 
         // Public API
         _.extend(this, {
