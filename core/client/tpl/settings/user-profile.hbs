@@ -39,6 +39,12 @@
             </div>
 
             <div class="form-group">
+                <label for"user-email">Use Gravatar</label>
+                <input type="checkbox" {{#if gravatar}}checked{{/if}} id="user-gravatar"/>
+                <p>Use <a href="http://gravatar.com">Gravatar</a> profile picture</p>
+            </div>
+
+            <div class="form-group">
                 <label for="user-location">Location</label>
                 <input type="text" value="{{location}}" id="user-location" />
                 <p>Where in the world do you live?</p>

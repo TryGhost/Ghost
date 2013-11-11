@@ -9,7 +9,8 @@ var User,
     Posts          = require('./post').Posts,
     ghostBookshelf = require('./base'),
     Role           = require('./role').Role,
-    Permission     = require('./permission').Permission;
+    Permission     = require('./permission').Permission,
+    crypto         = require('crypto');
 
 
 function validatePasswordLength(password) {
@@ -27,7 +28,7 @@ User = ghostBookshelf.Model.extend({
     tableName: 'users',
 
     permittedAttributes: [
-        'id', 'uuid', 'name', 'slug', 'password', 'email', 'image', 'cover', 'bio', 'website', 'location',
+        'id', 'uuid', 'name', 'slug', 'password', 'email', 'gravatar', 'image', 'cover', 'bio', 'website', 'location',
         'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'last_login', 'created_at',
         'created_by', 'updated_at', 'updated_by'
     ],
@@ -63,6 +64,7 @@ User = ghostBookshelf.Model.extend({
         this.set('location', this.sanitize('location'));
         this.set('website', this.sanitize('website'));
         this.set('bio', this.sanitize('bio'));
+        this.set('image', this.gravatar());
 
         return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
@@ -77,6 +79,36 @@ User = ghostBookshelf.Model.extend({
 
     permissions: function () {
         return this.belongsToMany(Permission);
+    },
+    gravatar: function() {
+
+        if(this.changed.gravatar == 1 || this.changed.email){
+            // TODO set default to "d=404" and attempt to http get the avatar url.
+            // If 404 response set image to '' and turn off gravatar on user
+
+            var defaultUrl = "http://blog.ghost.org";
+
+            var gravatarUrl = 'http://www.gravatar.com/avatar/' +
+                                crypto.createHash('md5').update(this.get('email').toLowerCase().trim()).digest('hex') +
+                                "?d=" + defaultUrl + "/shared/img/user-image.png";
+
+            return gravatarUrl;
+        }
+
+        if(this.changed.gravatar == 0){
+            if(this.changed.image){
+                return this.changed.image;
+            } else {
+                return '';
+            }
+        }
+
+        if(this.changed.image){
+            return this.changed.image;
+        }
+
+        return this.get('image');
+
     }
 
 }, {

@@ -46,7 +46,7 @@ function setSelected(list, name) {
 adminControllers = {
     'get_storage': function () {
         // TODO this is where the check for storage plugins should go
-        // Local file system is the default 
+        // Local file system is the default
         var storageChoice = 'localfilesystem.js';
         return require('./storage/' + storageChoice);
     },
@@ -139,7 +139,8 @@ adminControllers = {
         api.users.add({
             name: name,
             email: email,
-            password: password
+            password: password,
+            gravatar: true
         }).then(function (user) {
             api.settings.edit('email', email).then(function () {
                 if (req.session.user === undefined) {
