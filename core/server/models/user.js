@@ -82,7 +82,7 @@ User = ghostBookshelf.Model.extend({
     },
     gravatar: function () {
 
-        if (this.changed.gravatar === 1 || this.changed.email) {
+        if (this.changed.gravatar === 1 || (this.changed.email && this.get('gravatar'))) {
             // TODO set default to "d=404" and attempt to http get the avatar url.
             // If 404 response set image to '' and turn off gravatar on user
 
