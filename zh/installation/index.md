@@ -4,7 +4,7 @@ layout: installation
 meta_title: 如何在服务器上安装Ghost - Ghost中文文档
 meta_description: 这里详细讲述如何在你本地或远程环境中安装Ghost博客平台。
 heading: 安装Ghost &amp; 开始尝试
-subheading: 安装这个新的博客平台的第一步。
+subheading: 开始搭建新的博客的第一步
 chapter: installation
 next_section: mac
 ---

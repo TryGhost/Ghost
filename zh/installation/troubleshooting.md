@@ -1,47 +1,49 @@
 ---
 lang: zh
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 如何在服务器上安装Ghost - Ghost中文文档
+meta_description: 这里详细讲述如何在你本地或远程环境中安装Ghost博客平台。
+heading: 安装Ghost &amp; 开始尝试
+subheading: 开始搭建新的博客的第一步
 permalink: /zh/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
 prev_section: upgrading
 ---
 
-# Troubleshooting & FAQ <a id="troubleshooting"></a>
+
+# 纠错 & 常见问题 <a id="troubleshooting"></a>
 
 <dl>
-    <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
-    <dd>You can add it by doing the following:
+    <dt id="export-path">'/usr/local/bin' 没有添加到 $PATH</dt>
+    <dd>你可以使用以下步骤添加它：
         <ul>
-            <li>In your terminal window type <code>cd ~</code>, this will take you to your home directory</li>
-            <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
-            <li>You should see a file called <code class="path">.profile</code> or <code class="path">.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
-            <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
-            <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
-            <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
+            <li>在你的终端窗口中输入 <code>cd ~</code>，切换到主目录</li>
+            <li>然后输入 <code>ls -al</code> 显示当前文件夹内所有文件，包括隐藏的文件</li>
+            <li>你应该看到一个名为 <code class="path">.profile</code> 或者 <code class="path">.bash_profile</code> 的文件。如果没有，输入  <code>touch .bash_profile</code> 创建一个文件</li>
+            <li>下一步，输入 <code>open -a Textedit .bash_profile</code> 用 Textedit 打开这个文件</li>
+            <li>添加 <code>export PATH=$PATH:/usr/local/bin/</code> 到这个文件的尾部并保存</li>
+            <li>这个新设定将会在一个新的终端启动时载入，所以打开一个新的终端标签页或窗口，输入 <code>echo $PATH</code> 可以看到 '/usr/local/bin/' 现在就存在了</li>
         </ul>
     </dd>
-    <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+    <dt id="sqlite3-errors">SQLite3 没有安装</dt>
     <dd>
-        <p>The SQLite3 package comes with pre-built binaries for the most common architectures. If you are using a less popular linux or other unix flavor, you may find that SQLite3 will give you a 404 as it cannot find a binary for your platform.</p>
-        <p>This can be fixed by forcing SQLite3 to compile. This will require python & gcc. Try it out by running <code>npm install sqlite3 --build-from-source</code></p>
-        <p>If it won't build you're probably missing one of the python or gcc dependencies, on linux try running <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> and <code>sudo apt-get install python-software-properties python g++ make</code> before retrying the build from source.</p>
-        <p>For more information about building the binaries please see: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
-        <p>Once you have successfully built a binary for your platform, please follow the <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instructions here</a> to submit the binary to the node-sqlite project, so that future users won't have the same problem.</p>
+        <p>SQLite3 包采用的预构建的二进制文件适应大多数架构。如果你使用的不常用的 linux   或者 unix 版本，你可能发现 SQLite3 报 404 错误，也就是说系统找不到这个二进制文件。</p>
+        <p>可以强制编译 SQLite3 解决这个问题。这样的话需要 python & gcc ，尝试运行 <code>npm install sqlite3 --build-from-source</code>。</p>
+        <p>如果你缺失 python 或者 gcc 组件，在 linux 下运行 <code>sudo npm install -g node-gyp</code>， <code>sudo apt-get install build-essential</code> 和 <code>sudo apt-get install python-software-properties python g++ make</code> 然后再重新尝试从源代码编译。</p>
+        <p>更多关于构建二进制文件的信息参阅： <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
+        <p>一旦你成功在你的平台上构建了二进制文件，按照 <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">这里的说明</a> 的步骤提交你的 node-sqlite 项目，所以未来的开发者就不会遇到同样的问题了。</p>
     </dd>
-    <dt id="image-uploads">I can't upload images</dt>
+    <dt id="image-uploads">不能上传文件</dt>
     <dd>
-        <p>If you're on a DigitalOcean Droplet setup when Ghost was at v0.3.2, or you're using nginx on some other platform, you may find you cannot upload images.</p>
-        <p>What's actually happening, is you cannot upload images bigger than 1MB (try a small image, it should work). That's a pretty small limit!</p>
-        <p>To increase the limit you need to edit your nginx config file, and set the limit to something else.</p>
+        <p>如果你在 DigitalOcean Droplet 上安装 Ghost v0.3.2 时，并且在一些平台上使用了 nginx，你可能发现不能上传图片。</p>
+        <p>实际情况是，你不能上传超过 1MB 的图片（尝试上传小的图片），这只是一个小限制而已。</p>
+        <p>为了增加更多的限制，你可以去编辑 nginx 配置文件，设置某些限制。</p>
         <ul>
-            <li>Log into your server, and type <code>sudo nano /etc/nginx/conf.d/default.conf</code> to open your config file.</li>
-            <li>After the <code>server_name</code> line, add the following: <code>client_max_body_size 10M;</code></li>
-            <li>Finally, press <kbd>ctrl</kbd> + <kbd>x</kbd> to exit. Nano will ask you if you want to save, type <kbd>y</kbd> for yes, and press <kbd>enter</kbd> to save the file.</li>
+            <li>登陆到你的服务器，然后输入 <code>sudo nano /etc/nginx/conf.d/default.conf</code> 打开你的配置文件</li>
+            <li>在 <code>server_name</code> 下一行，添加如下代码： <code>client_max_body_size 10M;</code></li>
+            <li>最后， <kbd>ctrl</kbd> + <kbd>x</kbd> 退出。Nano 将会询问你是否保存，输入 <kbd>y</kbd> 确认，然后按下 <kbd>enter</kbd> 保存文件</li>
         </ul>
     </dd>
 </dl>
+
