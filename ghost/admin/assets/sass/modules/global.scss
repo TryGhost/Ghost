@@ -911,6 +911,14 @@ nav {
    ========================================================================== */
 
 #notifications {
+    @include breakpoint($biggerthan-mobile) {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 980;
+        width: 300px;
+    }
+
     @include breakpoint($mobile) {
         position: fixed;
         top: 0;
@@ -925,17 +933,6 @@ nav {
 }
 
 %notification, .notification {
-    @include box-sizing(border-box);
-    width: 100%;
-    min-height: 40px;
-    padding: 10px 43px 10px 57px;
-    margin: 0 0 15px 0;
-    color: rgba(255,255,255,0.9);
-    background: $blue;
-    position:relative;
-    box-shadow: $shadow;
-    @include transform(translateZ(0));
-
     @include icon($i-notification) {
         position: absolute;
         top: 0;
@@ -948,6 +945,18 @@ nav {
         color: rgba(255,255,255,0.8);
         background: rgba(0,0,0,0.1);
     };
+    @include box-sizing(border-box);
+    width: 100%;
+    min-height: 40px;
+    padding: 10px 43px 10px 57px;
+    margin: 0 0 15px 0;
+    color: rgba(255,255,255,0.9);
+    background: $blue;
+    position:relative;
+    box-shadow: $shadow;
+    @include transform(translateZ(0));
+
+    @include breakpoint($mobile) {margin-bottom: 1px;}
 
     .close {
         @include icon-after($i-close) {
@@ -1187,7 +1196,7 @@ main {
     right:0;
     z-index: 400;
     height: 40px;
-    padding: 12px 15px;
+    padding: 10px 15px;
     text-transform: uppercase;
     color: $brown;
     //Transparent gradient to make bg fade out as it goes out the top.
