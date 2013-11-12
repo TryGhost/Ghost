@@ -7,8 +7,6 @@ var express     = require('express'),
     fs          = require('fs'),
     slashes     = require('connect-slashes'),
     errors      = require('./server/errorHandling'),
-    admin       = require('./server/controllers/admin'),
-    frontend    = require('./server/controllers/frontend'),
     api         = require('./server/api'),
     plugins     = require('./server/plugins'),
     path        = require('path'),
@@ -17,6 +15,7 @@ var express     = require('express'),
     helpers     = require('./server/helpers'),
     middleware  = require('./server/middleware'),
     storage     = require('./server/storage'),
+    routes      = require('./server/routes'),
     packageInfo = require('../package.json'),
 
 // Variables
@@ -31,19 +30,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // ##Custom Middleware
-
-// Redirect to signup if no users are currently created
-function redirectToSignup(req, res, next) {
-    /*jslint unparam:true*/
-    api.users.browse().then(function (users) {
-        if (users.length === 0) {
-            return res.redirect('/ghost/signup/');
-        }
-        next();
-    }).otherwise(function (err) {
-        return next(new Error(err));
-    });
-}
 
 // ### GhostLocals Middleware
 // Expose the standard locals that every external page should have available,
@@ -233,77 +219,12 @@ when(ghost.init()).then(function () {
     server.use(errors.error500);
 
     // ## Routing
-
-    // ### API routes
-    /* TODO: auth should be public auth not user auth */
-    // #### Posts
-    server.get('/ghost/api/v0.1/posts', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.browse));
-    server.post('/ghost/api/v0.1/posts', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.add));
-    server.get('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.read));
-    server.put('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.edit));
-    server.del('/ghost/api/v0.1/posts/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.posts.destroy));
-    // #### Settings
-    server.get('/ghost/api/v0.1/settings/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.browse));
-    server.get('/ghost/api/v0.1/settings/:key/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.read));
-    server.put('/ghost/api/v0.1/settings/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.settings.edit));
-    // #### Users
-    server.get('/ghost/api/v0.1/users/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.browse));
-    server.get('/ghost/api/v0.1/users/:id/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.read));
-    server.put('/ghost/api/v0.1/users/:id/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.users.edit));
-    // #### Tags
-    server.get('/ghost/api/v0.1/tags/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.tags.all));
-    // #### Notifications
-    server.del('/ghost/api/v0.1/notifications/:id', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.notifications.destroy));
-    server.post('/ghost/api/v0.1/notifications/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.notifications.add));
-    // #### Import/Export
-    server.get('/ghost/api/v0.1/db/', middleware.auth, api.db['export']);
-    server.post('/ghost/api/v0.1/db/', middleware.auth, api.db['import']);
-
-    // ### Admin routes
-    /* TODO: put these somewhere in admin */
-    server.get(/^\/logout\/?$/, function redirect(req, res) {
-        /*jslint unparam:true*/
-        res.redirect(301, '/signout/');
-    });
-    server.get(/^\/signout\/?$/, admin.logout);
-    server.get('/ghost/login/', function redirect(req, res) {
-        /*jslint unparam:true*/
-        res.redirect(301, '/ghost/signin/');
-    });
-    server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
-    server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
-    server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
-    server.post('/ghost/forgotten/', admin.resetPassword);
-    server.post('/ghost/signin/', admin.auth);
-    server.post('/ghost/signup/', admin.doRegister);
-    server.post('/ghost/changepw/', middleware.auth, admin.changepw);
-    server.get('/ghost/editor(/:id)/', middleware.auth, admin.editor);
-    server.get('/ghost/editor/', middleware.auth, admin.editor);
-    server.get('/ghost/content/', middleware.auth, admin.content);
-    server.get('/ghost/settings*', middleware.auth, admin.settings);
-    server.get('/ghost/debug/', middleware.auth, admin.debug.index);
-
-    // We don't want to register bodyParser globally b/c of security concerns, so use multipart only here
-    server.post('/ghost/upload/', middleware.auth, admin.uploader);
-
-    // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
-        /*jslint unparam:true*/
-        res.redirect('/ghost/');
-    });
-    server.get(/^\/(ghost$\/?)/, middleware.auth, function (req, res) {
-        /*jslint unparam:true*/
-        res.redirect('/ghost/');
-    });
-    server.get('/ghost/', redirectToSignup, middleware.auth, admin.index);
-
-    // ### Frontend routes
-    /* TODO: dynamic routing, homepage generator, filters ETC ETC */
-    server.get('/rss/', frontend.rss);
-    server.get('/rss/:page/', frontend.rss);
-    server.get('/page/:page/', frontend.homepage);
-    server.get('/:slug/', frontend.single);
-    server.get('/', frontend.homepage);
+    // Set up API routes
+    routes.api(server);
+    // Set up Admin routes
+    routes.admin(server);
+    // Set up Frontend routes
+    routes.frontend(server);
 
     // Are we using sockets? Custom socket or the default?
     function getSocket() {
