@@ -9,7 +9,9 @@ var User,
     Posts          = require('./post').Posts,
     ghostBookshelf = require('./base'),
     Role           = require('./role').Role,
-    Permission     = require('./permission').Permission;
+    Permission     = require('./permission').Permission,
+    http           = require('http'),
+    crypto         = require('crypto');
 
 
 function validatePasswordLength(password) {
@@ -113,6 +115,9 @@ User = ghostBookshelf.Model.extend({
         }).then(function (hash) {
             // Assign the hashed password
             userData.password = hash;
+            // LookupGravatar
+            return self.gravatarLookup(userData);
+        }).then(function (userData) {
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData);
         }).then(function (addedUser) {
@@ -245,6 +250,25 @@ User = ghostBookshelf.Model.extend({
 
                 return when.resolve(allPerms);
             }, errors.logAndThrowError);
+    },
+
+    gravatarLookup: function (userData) {
+        var gravatarUrl = 'http://www.gravatar.com/avatar/' +
+                            crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
+                            "?d=404",
+            checkPromise = when.defer();
+
+        http.get(gravatarUrl, function (res) {
+            if (res.statusCode !== 404) {
+                userData.image = gravatarUrl;
+            }
+            checkPromise.resolve(userData);
+        }).on('error', function () {
+            //Error making request just continue.
+            checkPromise.resolve(userData);
+        });
+
+        return checkPromise.promise;
     }
 
 });
