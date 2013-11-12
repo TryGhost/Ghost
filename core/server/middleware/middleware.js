@@ -1,7 +1,7 @@
 
 var _           = require('underscore'),
     express     = require('express'),
-    Ghost       = require('../ghost'),
+    Ghost       = require('../../ghost'),
     path        = require('path'),
     ghost       = new Ghost();
 

@@ -1,6 +1,6 @@
 var admin       = require('../controllers/admin'),
     api         = require('../api'),
-    middleware  = require('../middleware');
+    middleware  = require('../middleware').middleware;
 
 // Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {

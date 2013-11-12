@@ -1,4 +1,4 @@
-var middleware  = require('../middleware'),
+var middleware  = require('../middleware').middleware,
     api         = require('../api');
 
 module.exports = function (server) {
