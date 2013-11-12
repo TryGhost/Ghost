@@ -99,7 +99,7 @@
                         if (data.jqXHR.status === 413) {
                             $dropzone.find('div.js-fail').text("The image you uploaded was too big.");
                         } else if (data.jqXHR.status === 415) {
-                            $dropzone.find('div.js-fail').text("The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF.");
+                            $dropzone.find('div.js-fail').text("The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.");
                         } else {
                             $dropzone.find('div.js-fail').text("Something went wrong :(");
                         }
