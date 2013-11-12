@@ -402,6 +402,19 @@ body.zen {
 
     @include breakpoint($netbook) {font-weight: normal;}
 
+    .post-settings {
+        &:hover,
+        &.active {
+            color: $lightgrey;
+        }
+    }
+
+    .post-settings-menu {
+        position: absolute;
+        bottom: 44px;
+        right: -3px;
+    }
+
     button {
         min-height: 30px;
         height: 30px;
@@ -615,28 +628,6 @@ body.zen {
     z-index: 1;
 }
 
-.entry-settings {
-    @include icon($i-settings, 14px);
-    @include box-sizing(border-box);
-    display: inline-block;
-    padding: 0 10px;
-    color: $midgrey;
-    @include transition;
-    position: relative;
-    top: 1px;
-
-    &:hover,
-    &.active {
-        color: $lightgrey;
-    }
-}
-
-.entry-settings-menu {
-    position: absolute;
-    bottom: 44px;
-    right: -3px;
-}
-
 #entry-actions {
     margin-right: 6px;
     position: relative;
@@ -651,12 +642,15 @@ body.zen {
 /* =============================================================================
    Markdown Help Modal
    ============================================================================= */
+
 .markdown-help-container{
     padding-bottom: 20px;
 }
+
 .modal-markdown-help-table {
     margin-top: 0;
 }
+
 
 /* =============================================================================
    CodeMirror

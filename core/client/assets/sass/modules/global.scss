@@ -318,7 +318,7 @@ table {
         padding: 8px;
         line-height: 20px;
         text-align: left;
-        vertical-align: top;
+        vertical-align: middle;
         border-top: 1px solid $lightbrown;
     }
 
@@ -834,77 +834,96 @@ nav {
    Post Settings
    ========================================================================== */
 
+.post-settings {
+    @include icon($i-settings, 14px);
+    @include box-sizing(border-box);
+    display: inline-block;
+    padding: 0 10px;
+    color: $midgrey;
+    @include transition;
+    position: relative;
+    top: 1px;
+
+    &:hover,
+    &.active {
+        color: $darkgrey;
+    }
+}
+
 .post-settings-menu {
+    padding-top: 0;
     text-transform: none;
 
-    li {
-        a {
-            padding: 10px 15px;
+    table {
+        margin: 0;
+    }
 
-            &:before {
-                font-size: 11px;
-                line-height: 1em;
-                margin-right: 1em;
+    td {
+        padding: 0;
+        border-top: none;
+        border-bottom: lighten($grey, 5%) 1px solid;
+    }
+
+    .post-setting-label {
+        padding: 8px 10px 8px 15px;
+        border-right: lighten($grey, 5%) 1px solid;
+        text-align: right;
+    }
+
+    %label {
+        position: static;
+        width: auto;
+        font-weight: normal;
+        color: $midgrey;
+        white-space: nowrap;
+    }
+
+    input {
+        width: 200px;
+        margin: 0;
+
+        @include breakpoint(550px) { width: 200px; }
+
+        &[type="text"] {
+            border: none;
+            padding: 8px 0 8px 10px;
+            color: $lightgrey;
+            border-radius: 0;
+            background: transparent;
+
+            &:focus {
+                background: $grey;
+                border: none;
             }
         }
     }
 
+    .post-setting-item {
+        position: relative;
+        padding: 7px;
+    }
+
+    .checkbox {
+        @include position(absolute, 9px 0 0 10px);
+        margin-top: 0;
+        width: 18px;
+        border: lighten($grey, 10%) 1px solid;
+        background: $grey;
+    }
+
     .delete {
-        @include icon($i-trash) { position: relative; top: -2px; };
+        display: block;
+        padding: 10px 15px;
+        @include icon($i-trash) { 
+            position: relative; 
+            top: -1px; 
+            margin-right: 10px 
+        };
 
         &:hover { background: $red; }
     }
 }
 
-.post-setting {
-    min-width: 300px;
-    border-bottom: 1px solid #35393b;
-
-    &:first-child {
-        margin-top: -6px;
-    }
-
-    input {
-        width: 100%;
-        background: none;
-        border: none;
-        color: #e2edf2;
-        line-height: 1.68em;
-    }
-}
-
-.post-setting-label {
-    float: left;
-    width: 26%;
-    text-align: right;
-    padding: 10px 2%;
-    border-right: 1px solid #35393b;
-}
-
-.post-setting-field {
-    float: left;
-    width: 64%;
-    padding: 8px 2%;
-
-    input:focus {
-        outline: none;
-    }
-}
-
-.post-settings {
-    @include icon($i-settings, 14px);
-    padding: 5px;
-    /* margin-right: -5px;*/
-}
-
-.post-setting-calendar {
-    @include icon-after($i-calendar, 18px);
-    width: 18px;
-    height: 18px;
-    position: absolute;
-    margin-top: -25px; /* This doesn't work in FF */
-    right: 10px;
-}
 
 /* ==========================================================================
    Notifications
@@ -1223,7 +1242,7 @@ main {
         }
     }
 
-    span {
+    small {
         font-size: 0.85em;
     }
 
