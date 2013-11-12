@@ -12,7 +12,7 @@ prev_section: deploy
 next_section: troubleshooting
 ---
 
-# 更新 Ghost
+# 更新 Ghost <a id="upgrade"></a>
 
 更新 Ghost 是非常简单的。
 
@@ -30,7 +30,7 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 
 记住，Ghost 默认将所有的自定义数据，主题，图片等存储到 <code class="path">content</code> 目录下，所以确保此目录安全！只替换 <code class="path">core</code> 目录和根目录下的文件，一切就会正常。
 
-## 备份
+## 备份 <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
@@ -39,7 +39,7 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 
 <p class="note"><strong>注意:</strong> 如果你喜欢的话，你也可以通过复制 <code class="path">content/data</code> 实现数据库的备份。但是 <strong>记住</strong> 要先停止 Ghost 后再去复制。</p>
 
-## 如何更新
+## 如何更新 <a id="how-to"></a>
 
 如何更新本地机器上的 Ghost 呢？
 
@@ -53,11 +53,11 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 *   运行 `npm install --production` 
 *   最后，重启 Ghost 使改变生效
 
-## 使用命令行
+## 使用命令行 <a id="cli"></a>
 
 <p class="note"><strong>备份！</strong> 总是在更新前执行一次备份。首先请阅读 <a href="#backing-up">备份指南</a> 。</p>
 
-### 在 mac 上使用命令行
+### 在 mac 上使用命令行 <a id="cli-mac"></a>
 
 下面的截屏视频显示了如何按步更新 Ghost ，在从下载了 zip 文件到 <code class="path">~/Downloads</code> 并且安装 Ghost到 <code class="path">~/ghost</code> 的前提下。<span class="note">**注意：**`~`在 mac 和 linux 中表示用户主目录。</span>
 
@@ -76,7 +76,7 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 *   `npm install --production` - 安装 Ghost
 *   `npm start` - 启动 Ghost
 
-### 在 linux 上使用命令行
+### 在 linux 上使用命令行 <a id="cli-server"></a>
 
 *   首先你需要知道最新版本 Ghost 的 URL。通常为 `http://ghost.org/zip/ghost-latest.zip` 
 *   通过 `wget http://ghost.org/zip/ghost-latest.zip` 下载最新的 zip 文件（或者带着版本号的 Ghost 文件的 URL）
@@ -86,7 +86,7 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 
 **此外**， [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) 也介绍了如何在 linux 上更新 Ghost。
 
-### 如何更新 DigitalOcean Droplet
+### 如何更新 DigitalOcean Droplet <a id="digitalocean"></a>
 
 <p class="note"><strong>备份！</strong> 总是在更新前执行一次备份。首先请阅读 <a href="#backing-up">备份指南</a> 。</p>
 
@@ -98,7 +98,7 @@ Ghost 安装后，有一个与左边图片相似的文件夹结构，包括两�
 *   运行 `npm install` 安装最新的依赖包
 *   最后，使用 `service ghost restart` 重启 Ghost 使改变生效
 
-## 怎样更新 Node.js 到最新版本
+## 怎样更新 Node.js 到最新版本 <a id="upgrading-node"></a>
 
 如果你最初已经从 [Node.js](nodejs.org) 安装了 Node.js 了，你可以通过下载并安装最新版本的 Node.js 实现更新。这样新版本会覆盖之前安装的旧版本。
 
