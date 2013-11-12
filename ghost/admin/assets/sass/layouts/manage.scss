@@ -229,12 +229,12 @@
         .post-controls {
             float:right;
             position: relative;
+        }
 
-            ul {
-                position: absolute;
-                top:15px;
-                right:-10px;
-            }
+        .post-settings-menu {
+            position: absolute;
+            top: 35px;
+            right: -3px;
         }
 
         .post-edit {

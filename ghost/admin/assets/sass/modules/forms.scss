@@ -5,9 +5,9 @@
  * Table of Contents:
  *
  * General
+ * Checkboxes
  * Buttons
  * Split Buttons
- * iCheck jQuery Plugin Styles
  *
  */
 
@@ -16,43 +16,32 @@
    General
    ============================================================================= */
 
+%label {
+   display: inline-block;
+   position: absolute;
+   top: 0.5em;
+   left: 0;
+   width: 120px;
+   font-weight: bold;
+   color: $brown;
+   text-align: right;
+
+   @include breakpoint(550px) {
+       display: block;
+       position: relative;
+       top: auto;
+       left: auto;
+       width: auto;
+       margin-bottom: 5px;
+       text-align: left;
+   }
+}
+
 form {
 
-    fieldset {
-        border: none;
-        margin: 0 0 3em 0;
-        padding: 0;
-    }
-
-    legend {
-        display: block;
-        width: 100%;
-        margin: 2em 0;
-        border-bottom:$lightbrown 1px solid;
-        font-size: 1.2em;
-        line-height: 2.0em;
-        color: $brown;
-    }
-
-    label {
-        display: inline-block;
-        position: absolute;
-        top: 0.5em;
-        left: 0;
-        width: 120px;
-        font-weight: bold;
-        color: $brown;
-        text-align: right;
-
-        @include breakpoint(550px) {
-            display: block;
-            position: relative;
-            top: auto;
-            left: auto;
-            width: auto;
-            margin-bottom: 5px;
-            text-align: left;
-        }
+    label, 
+    .label {
+        @extend %label;
     }
 
     p {
@@ -61,93 +50,136 @@ form {
         margin: 0;
     }
 
-    input, textarea, select {
-        @include box-sizing(border-box);
-        width: 276px;
-        padding: 5px 7px;
-        margin: 0;
-        outline: 0;
-        font-size: 1.1em;
-        line-height: 1.4em;
-        background: #fff;
-        border: darken($lightbrown, 5%) 1px solid;
-        border-radius: $rounded;
-        @include transition(all 0.15s ease-in-out);
-
-        @include breakpoint(550px) {
-            width: 100%;
-        }
-    }
-
-    textarea {
-        width: 100%;
-        max-width: 340px;
-        min-width: 250px;
-        height: auto;
-        min-height: 80px;
-    }
-
-    input, select, textarea {
-        margin-bottom: 5px;
-    }
-
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="search"]:focus,
-    input[type="tel"]:focus,
-    input[type="url"]:focus,
-    input[type="password"]:focus,
-    input[type="number"]:focus,
-    input[type="date"]:focus,
-    input[type="month"]:focus,
-    input[type="week"]:focus,
-    input[type="time"]:focus,
-    input[type="datetime"]:focus,
-    input[type="datetime-local"]:focus,
-    textarea:focus {
-        border: $brown 1px solid;
-        background: #fff;
-        outline: none;
-        outline-width: 0;
-    }
-
-    select {
-        @include box-sizing(border-box);
-        width: 270px;
-        height: 30px;
-        line-height: 30px;
-
-        @include breakpoint(550px) {
-            width: 100%;
-        }
-    }
-
-    .radio input[type="radio"],
-    .checkbox input[type="checkbox"] {
-        float: left;
-        width:auto;
-        margin-right: 6px;
-        margin-top: 4px;
-        font-size: 1em;
-    }
-
-    .radio, .checkbox {
-        width: auto;
-        margin: 5px 0;
-        font-weight: normal;
-        padding:0.55em 0;
-        cursor: pointer;
-    }
-
-    .form-group {
-        position: relative;
-        margin: 1.5em 0;
-        padding-left: 140px;
-
-        @include breakpoint(550px) { padding-left: 0; }
-    }
-
 }//form
+
+fieldset {
+    border: none;
+    margin: 0 0 3em 0;
+    padding: 0;
+}
+
+legend {
+    display: block;
+    width: 100%;
+    margin: 2em 0;
+    border-bottom:$lightbrown 1px solid;
+    font-size: 1.2em;
+    line-height: 2.0em;
+    color: $brown;
+}
+
+input, textarea, select {
+    @include box-sizing(border-box);
+    width: 276px;
+    padding: 5px 7px;
+    margin: 0;
+    outline: 0;
+    font-size: 1.1em;
+    line-height: 1.4em;
+    background: #fff;
+    border: darken($lightbrown, 5%) 1px solid;
+    border-radius: $rounded;
+    @include transition(all 0.15s ease-in-out);
+
+    @include breakpoint(550px) {
+        width: 100%;
+    }
+}
+
+textarea {
+    width: 100%;
+    max-width: 340px;
+    min-width: 250px;
+    height: auto;
+    min-height: 80px;
+}
+
+input, select, textarea {
+    margin-bottom: 5px;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="week"]:focus,
+input[type="time"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus {
+    border: $brown 1px solid;
+    background: #fff;
+    outline: none;
+    outline-width: 0;
+}
+
+select {
+    @include box-sizing(border-box);
+    width: 270px;
+    height: 30px;
+    line-height: 30px;
+
+    @include breakpoint(550px) {
+        width: 100%;
+    }
+}
+
+.form-group {
+    position: relative;
+    margin: 1.5em 0;
+    padding-left: 140px;
+
+    @include breakpoint(550px) { padding-left: 0; }
+}
+
+/* =============================================================================
+   Checkboxes
+   ============================================================================= */
+
+// Hide the default checkbox
+input[type="checkbox"] {
+    display: none;
+}
+
+// Turn the label element into a fake checkbox
+.checkbox {
+    @include box-sizing(border-box);
+    position: relative;
+    top: auto;
+    margin-top: 0.5em;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: $rounded;
+    background: lighten($lightbrown, 5%);
+    border: darken($lightbrown, 5%) 1px solid;
+    @include transition(all 0.2s ease);
+    
+    // Create a checkmark, hidden by default
+    &:after {
+        opacity: 0;
+        content: "";
+        position: absolute;
+        width: 7px;
+        height: 3px;
+        top: 5px;
+        left: 4px;
+        border: 3px solid #fff;
+        border-top: none;
+        border-right: none;
+        @include transform(rotate(-45deg));
+    }
+}
+
+// If the checkbox is checked, show the the :after element
+input[type=checkbox]:checked + .checkbox { background: $green; border: lighten($green, 10%); }
+input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
 
 
 /* =============================================================================
@@ -441,72 +473,5 @@ input[type="reset"] {
         background: lighten($darkgrey, 4%);
         &:hover {background: $darkgrey;}
     }
-}
-
-
-/* =============================================================================
-   iCheck jQuery Plugin Styles
-   ============================================================================= */
-.icheckbox_ghost,
-.iradio_ghost {
-    @include box-sizing(border-box);
-    display: block;
-    width: 16px;
-    height: 16px;
-    float: left;
-    margin: 2px 0 0 0;
-    padding: 0;
-    margin-right: 6px;
-    background: none;
-    border: none;
-    box-shadow: none;
-    border-radius: 2px;
-    @include transition(
-        border ease 0.25s,
-        background ease 0.2s
-    );
-}
-
-.icheckbox_ghost {
-    border: 1px solid darken($lightbrown, 5%);
-}
-.icheckbox_ghost.hover {
-    border: $brown 1px solid;
-}
-.icheckbox_ghost.checked {
-    background: $blue;
-    border: $blue 1px solid;
-    padding:0;
-    @include icon($i-check, 12px, #fff) {
-        position: relative;
-        top: -4px;
-        left: -1px
-    }
-}
-.icheckbox_ghost.disabled {
-    border: 1px solid $lightbrown;
-}
-.icheckbox_ghost.checked.disabled {
-    background: $lightbrown;
-}
-
-.iradio_ghost {
-    border-radius: 11px;
-    border: 1px solid darken($lightbrown, 5%);
-}
-.iradio_ghost.hover {
-    border: $blue 2px solid;
-}
-.iradio_ghost.checked {
-    background: $blue;
-    border: none;
-    @include icon($i-check, 1em, #fff);
-}
-.iradio_ghost.disabled {
-    border: 1px solid $lightbrown;
-    cursor: default;
-}
-.iradio_ghost.checked.disabled {
-    background: $lightbrown;
 }
 
