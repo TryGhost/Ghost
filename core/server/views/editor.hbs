@@ -11,7 +11,7 @@
 
     <section class="entry-markdown active">
         <header class="floatingheader">
-            Markdown
+            <small>Markdown</small>
             <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content" data-filestorage={{fileStorage}}>
@@ -21,7 +21,7 @@
 
     <section class="entry-preview">
         <header class="floatingheader">
-            Preview <span class="entry-word-count js-entry-word-count">0 words</span>
+            <small>Preview <span class="entry-word-count js-entry-word-count">0 words</span></small>
         </header>
         <section class="entry-preview-content">
             <div class="rendered-markdown">
@@ -40,36 +40,41 @@
             <ul class="suggestions overlay"></ul>
         </section>
         <div class="right">
-
+            
             <section id="entry-controls">
-                <a class="entry-settings" href="#" data-toggle=".entry-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
-                <ul class="post-settings-menu entry-settings-menu menu-right overlay">
-                    <li class="post-setting">
-                        <div class="post-setting-label">
-                            <label for="url">URL</label>
-                        </div>
-                        <div class="post-setting-field">
-                            <input id="url" class="post-setting-slug" type="text" value="" />
-                        </div>
-                    </li>
-                    <li class="post-setting">
-                        <div class="post-setting-label">
-                            <label for="pub-date">Pub Date</label>
-                        </div>
-                        <div class="post-setting-field">
-                            <input id="pub-date" class="post-setting-date" type="text" value=""><!--<span class="post-setting-calendar"></span>-->
-                        </div>
-                    </li>
-                    <li class="post-setting">
-                        <div class="post-setting-label">
-                            <label for="static-page">Static Page</label>
-                        </div>
-                        <div class="post-setting-field">
-                            <input id="static-page" class="post-setting-static-page" type="checkbox" value="">
-                        </div>
-                    </li>
-                    <li><a href="#" class="delete hidden">Delete This Post</a></li>
-                </ul>
+                <a class="post-settings" href="#" data-toggle=".post-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
+                <div class="post-settings-menu menu-right overlay">
+                    <form>
+                        <table class="plain">
+                            <tr class="post-setting">
+                                <td class="post-setting-label">
+                                    <label for="url">URL</label>
+                                </td>
+                                <td class="post-setting-field">
+                                    <input id="url" class="post-setting-slug" type="text" value="" />
+                                </td>
+                            </tr>
+                            <tr class="post-setting">
+                                <td class="post-setting-label">
+                                    <label for="pub-date">Pub Date</label>
+                                </td>
+                                <td class="post-setting-field">
+                                    <input id="pub-date" class="post-setting-date" type="text" value=""><!--<span class="post-setting-calendar"></span>-->
+                                </td>
+                            </tr>
+                            <tr class="post-setting">
+                                <td class="post-setting-label">
+                                    <span class="label">Static Page</span>
+                                </td>
+                                <td class="post-setting-item">
+                                    <input id="static-page" class="post-setting-static-page" type="checkbox" value="">
+                                    <label class="checkbox" for="static-page"></label>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                    <a class="delete" href="#">Delete This Post</a>
+                </div>
             </section>
 
             <section id="entry-actions" class="js-publish-splitbutton splitbutton-save">
