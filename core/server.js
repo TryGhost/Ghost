@@ -301,6 +301,8 @@ when(ghost.init()).then(function () {
     server.get('/rss/', frontend.rss);
     server.get('/rss/:page/', frontend.rss);
     server.get('/page/:page/', frontend.homepage);
+    //HACK: Workaround for Wordpress routing and historical URL preservation
+    server.get('/:year/:month/:day/:slug/', frontend.single);
     server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
 
