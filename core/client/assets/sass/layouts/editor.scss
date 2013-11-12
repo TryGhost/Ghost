@@ -18,6 +18,12 @@
 
 .editor {
 
+    #notifications {
+        @include breakpoint($biggerthan-mobile) {
+            bottom: 40px;
+        }
+    }
+
     // The main post title
     .entry-title {
         @extend %box;
