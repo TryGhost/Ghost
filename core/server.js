@@ -10,6 +10,7 @@ var express     = require('express'),
     admin       = require('./server/controllers/admin'),
     frontend    = require('./server/controllers/frontend'),
     api         = require('./server/api'),
+    plugins     = require('./server/plugins'),
     path        = require('path'),
     hbs         = require('express-hbs'),
     Ghost       = require('./ghost'),
@@ -373,7 +374,7 @@ when(ghost.init()).then(function () {
     ghost.server = server;
 
     // Initialize plugins then start the server
-    ghost.initPlugins().then(function () {
+    plugins.init(ghost).then(function () {
 
         // ## Start Ghost App
         if (getSocket()) {

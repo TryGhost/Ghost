@@ -1,6 +1,7 @@
 
 var _           = require('underscore'),
     when        = require('when'),
+    errors      = require('../errorHandling'),
     ghostApi,
     loader      = require('./loader'),
     GhostPlugin = require('./GhostPlugin');
@@ -34,7 +35,21 @@ function saveInstalledPlugins(installedPlugins) {
 module.exports = {
     GhostPlugin: GhostPlugin,
 
-    init: function (ghost, pluginsToLoad) {
+    init: function (ghost) {
+        var pluginsToLoad;
+
+        try {
+            // We have to parse the value because it's a string
+            pluginsToLoad = JSON.parse(ghost.settings('activePlugins')) || [];
+        } catch (e) {
+            errors.logError(
+                'Failed to parse activePlugins setting value: ' + e.message,
+                'Your plugins will not be loaded.',
+                'Check your settings table for typos in the activePlugins value. It should look like: ["plugin-1", "plugin2"] (double quotes required).'
+            );
+            return when.resolve();
+        }
+
         // Grab all installed plugins, install any not already installed that are in pluginsToLoad.
         return getInstalledPlugins().then(function (installedPlugins) {
             var loadedPlugins = {},
@@ -64,8 +79,14 @@ module.exports = {
                 // Save our installed plugins to settings
                 return saveInstalledPlugins(_.keys(loadedPlugins));
             }).then(function () {
-                // Return the hash of all loaded plugins
-                return when.resolve(loadedPlugins);
+                // Extend the loadedPlugins onto the available plugins
+                _.extend(ghost.availablePlugins, loadedPlugins);
+            }).otherwise(function (err) {
+                errors.logError(
+                    err.message || err,
+                    'The plugin will not be loaded',
+                    'Check with the plugin creator, or read the plugin documentation for more details on plugin requirements'
+                );
             });
         });
     }
