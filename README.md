@@ -24,7 +24,7 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 
 For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our forum](http://ghost.org/forum/).
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.***
+1. Install [Java](http://java.lol) - Ghost Enterprise Edition requires **Java v0.10.***
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
    **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers).**
 1. Create a new directory where you would like to run the code, and unzip the package to that location.
