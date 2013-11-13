@@ -11,7 +11,7 @@ prev_section: deploy
 next_section: troubleshooting
 ---
 
-# Upgrading Ghost
+# Upgrading Ghost <a id="upgrade"></a>
 
 Upgrading Ghost is super straightforward.
 
@@ -29,7 +29,7 @@ Upgrading Ghost is matter of replacing the old files with the new files, re-runn
 
 Remember, by default Ghost stores all your custom data, themes, images, etc in the <code class="path">content</code> directory, so take care to keep this safe! Replace only the files in <code class="path">core</code> and the root, and all will be fine.
 
-## Backing Up
+## Backing Up <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
@@ -39,7 +39,7 @@ Remember, by default Ghost stores all your custom data, themes, images, etc in t
 <p class="note"><strong>Note:</strong> You can, if you like, take a copy of your database from <code class="path">content/data</code> but <strong>be warned</strong> you should not do this whilst Ghost is running. Please stop it first.</p>
 
 
-## How to Upgrade
+## How to Upgrade <a id="how-to"></a>
 
 How to upgrade on your local machine
 
@@ -53,11 +53,11 @@ How to upgrade on your local machine
 *   Run `npm install --production`
 *   Finally, Restart Ghost so that the changes take effect
 
-## Command line only
+## Command line only <a id="cli"></a>
 
 <p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
 
-### Command line only on mac
+### Command line only on mac <a id="cli-mac"></a>
 
 The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note">**Note:** `~` means the user's home directory on mac and linux</span>
 
@@ -76,7 +76,7 @@ The steps in the screencast are:
 *   `npm install --production` - install Ghost
 *   `npm start` - start Ghost
 
-### Command line only on linux servers
+### Command line only on linux servers <a id="cli-server"></a>
 
 *   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
 *   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
@@ -86,7 +86,7 @@ The steps in the screencast are:
 
 **Additionally**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) also has instructions for upgrading Ghost on linux servers.
 
-### How to update a DigitalOcean Droplet
+### How to update a DigitalOcean Droplet <a id="digitalocean"></a>
 
 <p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
 
@@ -98,7 +98,7 @@ The steps in the screencast are:
 *   Run `npm install` to get any new dependencies
 *   Finally, restart Ghost so that the changes take effect using `service ghost restart`
 
-## How to upgrade Node.js to the latest version
+## How to upgrade Node.js to the latest version <a id="upgrading-node"></a>
 
 If you originally installed Node.js from the [Node.js](nodejs.org) website, you can upgrade Node.js to the latest version by downloading and running the latest installer. This will replace your current version with the new version.
 
