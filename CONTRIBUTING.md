@@ -111,8 +111,9 @@ new or different dependency, a refactor, or an improvement to a feature, etc  - 
 
 1. **Use the GitHub search** and check someone else didn't get there first
 2. Take a moment to think about the best way to make a case for, and explain what you're thinking. Are you sure 
-this shouldn't really be a [bug report](#bug-reports) or a [feature request](#feature-requests)?
-What's the context? What problem are you solving? Why is what you are suggesting better than what's already there?
+this shouldn't really be a [bug report](#bug-reports) or a [feature request](#feature-requests)? Is it really one
+idea or is it many? What's the context? What problem are you solving? Why is what you are suggesting better than
+what's already there? Does it fit with the Roadmap? 
 
 
 <a name="pull-requests"></a>
@@ -123,8 +124,8 @@ all the guidelines on:
 
 * [code standards](https://github.com/TryGhost/Ghost/wiki/Code-standards)
 * [commit messages](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages)
-* [cleaning-up history](https://github.com/TryGhost/Ghost/wiki/Git-workflow#clean-history)
-* [not breaking the build](https://github.com/TryGhost/Ghost/wiki/Git-workflow#build-passes)
+* [cleaning-up history](https://github.com/TryGhost/Ghost/wiki/Git-workflow#clean-up-history)
+* [not breaking the build](https://github.com/TryGhost/Ghost/wiki/Git-workflow#check-it-passes-the-tests)
 
 ##### Need Help?
 
