@@ -97,6 +97,7 @@ Once you've created your new account, you can configure the settings in Ghost's 
 mail: {
     transport: 'SMTP',
     options: {
+        service: 'Gmail',
         auth: {
             user: 'youremail@gmail.com',
             pass: 'yourpassword'
