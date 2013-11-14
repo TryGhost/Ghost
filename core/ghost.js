@@ -14,7 +14,6 @@ var config      = require('../config'),
     Polyglot    = require('node-polyglot'),
     Mailer      = require('./server/mail'),
     models      = require('./server/models'),
-    plugins     = require('./server/plugins'),
     requireTree = require('./server/require-tree'),
     permissions = require('./server/permissions'),
     uuid        = require('node-uuid'),
@@ -350,37 +349,6 @@ Ghost.prototype.doFilter = function (name, args) {
     });
 
     return when.pipeline(priorityCallbacks, args);
-};
-
-// Initialise plugins.  Will load from config.activePlugins by default
-Ghost.prototype.initPlugins = function (pluginsToLoad) {
-    var self = this;
-
-    if (!_.isArray(pluginsToLoad)) {
-
-        try {
-            // We have to parse the value because it's a string
-            pluginsToLoad = JSON.parse(this.settings('activePlugins')) || [];
-        } catch (e) {
-            errors.logError(
-                'Failed to parse activePlugins setting value: ' + e.message,
-                'Your plugins will not be loaded.',
-                'Check your settings table for typos in the activePlugins value. It should look like: ["plugin-1", "plugin2"] (double quotes required).'
-            );
-            return when.resolve();
-        }
-    }
-
-    return plugins.init(self, pluginsToLoad).then(function (loadedPlugins) {
-        // Extend the loadedPlugins onto the available plugins
-        _.extend(self.availablePlugins, loadedPlugins);
-    }).otherwise(function (err) {
-        errors.logError(
-            err.message || err,
-            'The plugin will not be loaded',
-            'Check with the plugin creator, or read the plugin documentation for more details on plugin requirements'
-        );
-    });
 };
 
 module.exports = Ghost;
