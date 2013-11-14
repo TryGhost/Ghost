@@ -48,8 +48,8 @@ adminControllers = {
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
             store = storage.get_storage();
 
-        if ((type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif')
-                || (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.gif')) {
+        if ((type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/gif' && type !== 'image/svg+xml')
+                || (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.gif' && ext !== '.svg' && ext !== '.svgz')) {
             return res.send(415, 'Unsupported Media Type');
         }
 
