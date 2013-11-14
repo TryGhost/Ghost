@@ -264,7 +264,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string', function (done) {
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.js"></script>');
+                rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.min.js"></script>');
 
                 done();
             });
