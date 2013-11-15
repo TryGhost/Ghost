@@ -303,6 +303,10 @@ when(ghost.init()).then(function () {
     server.get('/rss/:page/', frontend.rss);
     server.get('/page/:page/', frontend.homepage);
     server.get('/:slug/', frontend.single);
+
+		//built in legacy Wordpress support
+		server.get('/:year/:month/:day/:slug/', frontend.single);
+		server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
 
     // Are we using sockets? Custom socket or the default?
