@@ -1,16 +1,16 @@
 ---
 lang: it
 layout: quickstart
-meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+meta_title: Primi passi con Ghost
+heading: Primi passi con Ghost
+subheading: Diventa operativo con Ghost.
 chapter: quickstart
 section: quickstart
 ---
 
-# Overview <a id="overview"></a>
+# Panoramica <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+La Guida ai Primi passi con Ghost è indicata a coloro che hanno già familiarità con [Node](http://nodejs.org), o tecnologie simili come ruby on rails. Se sei nuovo da queste parti, è consigliabile cominciare dalla [Guida all'installazione](/installation.html).
 
 ## Get Ghost running locally <a id="ghost-local"></a>
 
