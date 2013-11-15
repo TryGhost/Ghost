@@ -1,7 +1,7 @@
 ---
 lang: da
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
+meta_title: S&aring;dan bruger du Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
 heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
@@ -9,11 +9,11 @@ chapter: usage
 next_section: configuration
 ---
 
-## Overview <a id="overview"></a>
+## Oversigt <a id="overview"></a>
 
 Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
 
-### First run
+### Første gang
 
 If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:
 
@@ -25,7 +25,7 @@ If you are running Ghost for the very first time, then you need to create your a
 
 That's it! You can now start writing blog posts.
 
-#### Messages
+#### Beskeder
 
 On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:
 
