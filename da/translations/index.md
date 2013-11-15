@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: da
 layout: translations
 meta_title: How to Translate Ghost - Ghost Docs
 meta_description: A guide on how to help translate Ghost
@@ -34,13 +34,13 @@ You should now be in the Ghost directory in your Terminal / Command Prompt. If y
 
 After following how to get the most recent Ghost documentation.
 
-1. Duplicate the <code class="path">/example_translation/</code> folder.
+1. Duplicate the <code class="path">/da/</code> folder.
 2. Rename the duplicated folder to your appropriate language code ([IETF language tag](http://en.wikipedia.org/wiki/IETF_language_tag)). e.g. <code class="path">en</code> or <code class="path">pt_BR</code>
 <p class="note">
 If you're unsure of your language code, feel free to ask on the [forum](http://ghost.org/forum).
 </p>
-3. Update all the `lang: example_translation` fields at the top of each <code class="path">.md</code> file in your new directory to the same language code as your new directory.
-4. Update all the `permalink: /example_translation/*` fields at the the top of the <code class="path">.md</code> files that require it (not in all the files), to `permalink: /your_language_code/*`. <span class="note">Be sure to keep the content where `*` is, the same.</span>
+3. Update all the `lang: da` fields at the top of each <code class="path">.md</code> file in your new directory to the same language code as your new directory.
+4. Update all the `permalink: /da/*` fields at the the top of the <code class="path">.md</code> files that require it (not in all the files), to `permalink: /your_language_code/*`. <span class="note">Be sure to keep the content where `*` is, the same.</span>
 5. Add your language and translations to the <code class="path">_config.yml</code> file. Follow the format already present, and remember to use the country code you have used in the above steps.
 5. Start translating the <code class="path">.md</code> files in your new directory :)
 

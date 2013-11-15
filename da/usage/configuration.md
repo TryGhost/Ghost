@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: da
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
@@ -7,7 +7,7 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: configuration
-permalink: /example_translation/usage/configuration/
+permalink: /da/usage/configuration/
 prev_section: usage
 next_section: settings
 ---

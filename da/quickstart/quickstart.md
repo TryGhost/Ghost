@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: da
 layout: quickstart
 meta_title: Ghost Quickstart
 heading: Ghost Quickstart
