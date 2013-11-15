@@ -3,8 +3,7 @@ var _           = require('underscore'),
     when        = require('when'),
     errors      = require('../errorHandling'),
     ghostApi,
-    loader      = require('./loader'),
-    GhostPlugin = require('./GhostPlugin');
+    loader      = require('./loader');
 
 function getInstalledPlugins() {
     if (!ghostApi) {
@@ -33,8 +32,6 @@ function saveInstalledPlugins(installedPlugins) {
 }
 
 module.exports = {
-    GhostPlugin: GhostPlugin,
-
     init: function (ghost) {
         var pluginsToLoad;
 
