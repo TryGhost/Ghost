@@ -9,6 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Italiano'
+      key: 'it'
 port:         4478
 
 translations:
@@ -28,6 +30,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  it:
+    site_title:   'Guida a Ghost'
+    installation: 'Installazione'
+    usage:        'Utilizzo'
+    email:        'Email'
+    themes:       'Temi'
+    translations: 'Traduzioni'
+    help:         'Aiuto'
 
 # If running locally, simply comment out the line below to make all urls relative
 
