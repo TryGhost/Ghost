@@ -196,7 +196,7 @@ errors = {
             if (!err || !(err instanceof Error)) {
                 next();
             }
-            errors.renderErrorPage(500, err, req, res, next);
+            errors.renderErrorPage(err.status || 500, err, req, res, next);
         } else {
             res.send(err.status || 500, err);
         }
