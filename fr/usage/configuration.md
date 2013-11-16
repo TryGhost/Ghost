@@ -7,7 +7,7 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: configuration
-permalink: /example_translation/usage/configuration/
+permalink: /fr/usage/configuration/
 prev_section: usage
 next_section: settings
 ---

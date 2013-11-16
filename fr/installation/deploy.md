@@ -1,41 +1,41 @@
 ---
 lang: fr
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/deploy/
+meta_title: Comment installer Ghost sur votre serveur - Doc Ghost
+meta_description: Tout ce que vous devez savoir pour faire fonctionner votre plateforme de blog Ghost sur votre environnement local ou distant.
+heading: Installation de Ghost &amp; Démarrage
+subheading: Premières étapes pour paramétrer votre nouveau blog pour la première fois.
+permalink: /fr/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## Mettre en place Ghost <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Vous êtes prêts à mettre en place Ghost ? Excellent !
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+La première décision que vous devez faire est de savoir si voulez installer et configurer Ghost vous-même, ou si vous préférez utiliser un installateur.
 
-### Installers
+### Installateurs
 
-There are a couple of options for simple installers at the moment:
+Il y a plusieurs options pour installer simplement Ghost :
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   Déployer vers les nuages avec [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   Lancer Ghost avec [des déploiements Rackspace](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   Être opérationnel avec un [Droplet DigitalOcean](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### Paramétrage manuel
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Vous allez avoir besoin d'un hébergement qui dispose déjà ou vous permet d'installer [Node.js](http://nodejs.org).
+    C'est à dire quelque chose comme une instance ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) ou n'importe quel autre hébergement disposant du'un accès SSH et qui vous permet d'installer Node.js. Il en existe beaucoup et ils peuvent être peu chers.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Ce qui ne fonctionnera pas pour le moment, ce sont les hébergements mutualisés dans le style cPanel, qui sont habituellement spécifiques à l'hébergement de fichiers PHP. Malgré tout, certains de ces hébergements offrent déjà Ruby, et sont donc susceptibles d'offrir Node.js dans un futur proche.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>Malheureusement, beaucoup d'hébergements spécifiques à Node, tels que **Nodejitsu** et **Heroku** ne sont "PAS" compatibles avec Ghost. Ils fonctionneront dans un premier temps, mais supprimeront des fichiers et toutes les images envoyées et votre base de données vont disparaître. Heroku supporte MySQL et il vous est possible de l'utiliser, mais vous perdrez quand même les images envoyées.
 
-The following links contain instructions on how to get up and running with:
+Les liens suivants contiennent des instructions sur comment être opérationnel avec :
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
@@ -44,34 +44,34 @@ The following links contain instructions on how to get up and running with:
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
 *   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
 
-## Making Ghost run forever
+## Faire tourner en permanence Ghost 
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+La méthode décrite précédemment pour démarrer Ghost est `npm start`. C'est une bonne manière de faire du développement local et des tests, mais si vous démarrez Ghost à l'aide de cette ligne de commande, Ghost se fermera dès que vous fermerez la fenêtre du terminal ou que vous vous déconnecterez du SSH. Pour éviter que Ghost se ferme, vous devez lancer Ghost en tant que service. Il y a deux manières de faire.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+Vous pouvez utiliser `forever` pour lancer Ghost en tâche de fond. `forever` prendra également soin de votre Ghost et redémarrera le processus node si celui-ci crashe.
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   Pour installer `forever`, tapez `npm install forever -g`
+*   Pour lancer Ghost en utilisant  `forever` depuis le répertoire d'installation, tapez `NODE_ENV=production forever start index.js`
+*   Pour stopper Ghost, tapez `forever stop index.js`
+*   Pour vérifier si Ghost est actuellement lancé, tapez `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Les distributions Linux populaires &mdash; telles que Fedora, Debian et Ubuntu &mdash; maintiennent un paquet pour Supervisor : un système de contrôle de procesus qui vous permet de lancer Ghost au démarrage sans utiliser d'init scripts. Contrairement à un init script, Supervisor est portable entre les distributions Linux et leurs versions.
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Installez Supervisor](http://supervisord.org/installing.html) pour votre distribution Linux. En général, cela sera :
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   La plupart des autres distributions: `easy_install supervisor`
+*   Assurez que Supervisor est lancé, en lancant la commande `service supervisor start`
+*   Créez le script de démarrage pour votre Ghost. Généralement, celui-ci se trouvera dans `/etc/supervisor/conf.d/ghost.conf` Par exemple:
 
     ```
     [program:ghost]
-    command = node /path/to/ghost/index.js
-    directory = /path/to/ghost
+    command = node /chemin/vers/ghost/index.js
+    directory = /chemin/vers/ghost
     user = ghost
     autostart = true
     autorestart = true
@@ -80,16 +80,16 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Lancez Ghost en utilisant Supervisor : `supervisorctl start ghost`
+*   Pour arrêter Ghost : `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+Vous pouvez consulter la [documentation pour Supervisor](http://supervisord.org) pour de plus amples informations.
 
 ### Init Script
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Les systèmes Linux utilisent des init scripts (scripts d'initialisation) pour effectuer certaines actions au démarrage du système. Ces scripts résident dans /etc/init.d. Pour faire tourner en permanence Ghost et même survivre à un redémarrage système, vous pouvez mettre en place un init script. L'exemple suivant fonctionnera sur Ubuntu et a été testé sous **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following content:
+*   Créez le fichier /etc/init.d/ghost avec le contenu suivant :
 
     ```
     #! /bin/sh
@@ -264,19 +264,17 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     :
     ```
 
-*   Change the execution permission for the init script by typing
+*   Changez les permissions d'éxécution du unit script en tapant
         `chmod 755 /etc/init.d/ghost`
-*   Use the script:
+*   Utilisation du script:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
-*   To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: `update-rc.d ghost defaults` and `update-rc.d ghost enable`
+    *   démarrage : `service ghost start`
+    *   arrêt : `service ghost stop`
+    *   redémarrage : `service ghost restart`
+    *   statut : `service ghost status`
+*   Pour lancer Ghost au démarrage du système, le init script créé doit être enregistré pour le démarrage. Tapez les deux commandes suivantes dans une ligne de commande : `update-rc.d ghost defaults` et `update-rc.d ghost enable`
 
-Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!
+## Mettre en place Ghost avec un nom de domaine
 
-## Setting up Ghost with a domain name
-
-Documentation on using nginx as a reverse proxy on their way.
+La documentation sur comment utiliser nginx en tant que proxy inversé arrive bientôt !
 

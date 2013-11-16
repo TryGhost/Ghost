@@ -7,7 +7,7 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 section: faq
-permalink: /example_translation/usage/faq/
+permalink: /fr/usage/faq/
 prev_section: writing
 ---
 
