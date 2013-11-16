@@ -21,7 +21,8 @@ frontendControllers = {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             postsPerPage = parseInt(ghost.settings('postsPerPage'), 10),
-            options = {};
+            options = {},
+            featuredOptions = {};
 
         // No negative pages
         if (isNaN(pageParam) || pageParam < 1) {
@@ -40,23 +41,30 @@ frontendControllers = {
             options.limit = postsPerPage;
         }
 
-        api.posts.browse(options).then(function (page) {
-            var maxPage = page.pages;
+        featuredOptions.limit = 5;
 
-            // A bit of a hack for situations with no content.
-            if (maxPage === 0) {
-                maxPage = 1;
-                page.pages = 1;
-            }
+        api.posts.featured(featuredOptions).then(function (featuredPosts) {
 
-            // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? '/' : ('/page/' + maxPage + '/'));
-            }
+            api.posts.browse(options).then(function (page) {
+                var maxPage = page.pages;
 
-            // Render the page of posts
-            ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
-                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
+                // A bit of a hack for situations with no content.
+                if (maxPage === 0) {
+                    maxPage = 1;
+                    page.pages = 1;
+                }
+
+                // If page is greater than number of pages we have, redirect to last page
+                if (pageParam > maxPage) {
+                    return res.redirect(maxPage === 1 ? '/' : ('/page/' + maxPage + '/'));
+                }
+
+                // Render the page of posts
+                ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
+                    res.render('index', {posts: posts, featuredPosts: featuredPosts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
+                });
+            }).otherwise(function (err) {
+                return next(new Error(err));
             });
         }).otherwise(function (err) {
             return next(new Error(err));

@@ -177,6 +177,52 @@ Post = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
+    // ### findFeatured
+    // find all Featured posts
+    findFeatured : function(opts) {
+        var postCollection;
+
+        opts = _.extend({
+            limit: 15,
+            where: { featured: 1 },
+            status: 'published',
+            orderBy: ['published_at', 'DESC']
+        }, opts);
+
+        postCollection = Posts.forge();
+
+
+
+        // Unless `all` is passed as an option, filter on
+        // the status provided.
+        if (opts.status !== 'all') {
+            opts.where.status = opts.status;
+        }
+
+        // If there are where conditionals specified, add those
+        // to the query.
+        if (opts.where) {
+            postCollection.query('where', opts.where);
+        }
+
+        opts.withRelated = [ 'author', 'user', 'tags' ];
+
+        // Set the limit & offset for the query, fetching
+        // with the opts (to specify any eager relations, etc.)
+        // Omitting the `page`, `limit`, `where` just to be sure
+        // aren't used for other purposes.
+        return postCollection
+            .query('limit', opts.limit)
+            .query('offset', 0)
+            .query('orderBy', opts.orderBy[0], opts.orderBy[1])
+            .fetch(_.omit(opts, 'limit', 'where', 'status', 'orderBy'))
+            .then(function (collection) {
+                return collection.toJSON()
+                
+            }, errors.logAndThrowError);
+
+    },
+
     // #### findOne
     // Extends base model findOne to eager-fetch author and user relationships.
     findOne: function (args, options) {
