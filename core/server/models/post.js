@@ -179,7 +179,7 @@ Post = ghostBookshelf.Model.extend({
 
     // ### findFeatured
     // find all Featured posts
-    findFeatured : function(opts) {
+    findFeatured : function (opts) {
         var postCollection;
 
         opts = _.extend({
@@ -217,8 +217,7 @@ Post = ghostBookshelf.Model.extend({
             .query('orderBy', opts.orderBy[0], opts.orderBy[1])
             .fetch(_.omit(opts, 'limit', 'where', 'status', 'orderBy'))
             .then(function (collection) {
-                return collection.toJSON()
-                
+                return collection.toJSON();
             }, errors.logAndThrowError);
 
     },
