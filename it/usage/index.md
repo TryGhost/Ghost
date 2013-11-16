@@ -1,41 +1,41 @@
 ---
 lang: it
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Come usare Ghost - Documentazione Ghost
+meta_description: Una guida approfondita all'utilizzo della piattaforma di blogging Ghost. Hai Ghost ma non sai da dove cominciare? Parti da qui!
+heading: Usare Ghost
+subheading: Configura la tua installazione
 chapter: usage
 next_section: configuration
 ---
 
-## Overview <a id="overview"></a>
+## Panoramica <a id="overview"></a>
 
-Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
+Probabilmente a questo punto sei riuscito ad installare Ghost e a farlo funzionare, quindi sei pronto per un po' di blogging. Le sezioni seguenti ti guideranno nel conoscere tutto quello che riguarda Ghost, in modo da prendere familiarità con ogni cosa, e configurarlo adeguatamente.
 
-### First run
+### Primo lancio
 
-If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:
+Se hai appena lanciato Ghost, allora hai bisogno di creare un utente admin. Apri un browser e vai sulla home del tuo blog, dopodichè cambia l'URL in <code class="path">&lt;la tua URL&gt;/ghost/signup/</code>. Dovresti vedere una schermata come la seguente:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
 
-*   Fill in your **Full Name** as the name you want to appear as the author of blog posts.
-*   Then enter your **Email Address** - make sure it's valid, and carefully enter a sensible **Password** (it needs to be at least 8 characters long).
-*   Hit the big blue **Sign Up** button, and you will be logged in to your blog.
+*   Il **Full Name** (nome completo) sarà il nome che apparirà come autore dei post sul blog.
+*   Inserisci l'**Email Address** (indirizzo email) - assicurati che sia valido, ed inserisci una **Password** sicura (deve essere di almeno 8 caratteri).
+*   Clicca il grosso pulsante blu **Sign Up**, e sarai loggato nel tuo blog.
 
-That's it! You can now start writing blog posts.
+Ecco fatto! Ora puoi cominciare a scrivere post!
 
-#### Messages
+#### Messaggi
 
-On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:
+La prima volta che lanci Ghost dovresti vedere un messaggio informativo di colore blu nella parte alta dello schermo, come questo:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
 
-It let's you know some information about the way Ghost is configured, such as which environment you've started it in, and what you've got your URL set to. Jump to the [configuration](/usage/configuration/) section to find out more about environments, and how to configure Ghost. You won't be able to get rid of this message until you log in (this is a bug we're working on), but once you have, and you're familiar with the info, close it by pressing the x. It won't appear again.
+Ti mostra alcune informazioni circa la configurazione di Ghost, come l'ambiente con il quale è stato lanciato, e quale URL hai settato. Vai alla sezione [configurazione](/usage/configuration/) per avere più informazioni sugli ambienti e su come configurare Ghost. Non potrai sbarazzarti del messaggio fino a che non farai il login (è un bug al quale stiamo lavorando), ma una volta che lo hai fatto, e hai presto familiarità con le informazioni mostrate, chiudilo premendo la x. Non apparirà nuovamente.
 
-You may also see an orange warning message with regard to email:
+Potresti anche vedere un messaggio arancione in relazione alle mail:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
 
-This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the [email documentation](/mail) at some point, and learn about configuring Ghost to send email. This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!
+Questo non è di impedimento per la normale operatività del tuo blog, quindi puoi cominciare a scrivere, ma prima o poi considera di dare un'occhiata alla [documentazione email](/mail), e scopri come configurare Ghost per mandare email. Al momento serve solo per mandarti una mail nel caso tu smarrisca la password. Non è importante per il blogging, ma decisamente utile se mai ne dovessi avere bisogno!
 
