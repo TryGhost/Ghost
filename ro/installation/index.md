@@ -1,38 +1,38 @@
 ---
 lang: ro
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Cum să instalezi Ghost pe serverul tău - Documentație Ghost
+meta_description: Tot ce trebuie să știi pentru a rula Ghost din mediul tău local sau remote.
+heading: Instalare Ghost &amp; Noțiuni de bază
+subheading: Primii pași pentru setarea noului tău blog pentru prima dată.
 chapter: installation
 next_section: mac
 ---
 
-## Overview <a id="overview"></a>
+## Prezentare generală <a id="overview"></a>
 
-The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.
+Documentația Ghost este într-un proces continuu de îmbunătățire. Dacă ai probleme sau sugestii, te rog să ne anunți.
 
-Ghost is built on [Node.js](http://nodejs.org), and requires version `0.10.*` (latest stable version).
+Ghost se bazează pe [Node.js](http://nodejs.org) și necesită versiunea `0.10.*` (cea mai recentă versiune stabilă).
 
-Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.
+Rularea Ghost locală pe calculatorul tău este simplă, dar este nevoie să instalezi Node.js înainte.
 
-### What is Node.js?
+### Ce este Node.js?
 
-[Node.js](http://nodejs.org) is a modern platform for building fast, scalable and efficient web applications.
-    Over the past 20 years, the web has evolved from a collection of static pages into a platform capable of supporting complex web applications like Gmail and facebook.
-    JavaScript is the programming language which has enabled this progress.
+[Node.js](http://nodejs.org) este o platformă modernă pentru construirea aplicațiilor web rapide, scalabile și eficiente.
+	De-a lungul ultimilor 20 de ani, web-ul a evoluat de la o colecție de pagini statice la o platformă capabilă să susțină aplicații web complexe, precum Gmail și facebook.
+	JavaScript este limbajul de programare care a permis acest progres.
 
-[Node.js](http://nodejs.org) provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.
+[Node.js](http://nodejs.org) ne furnizează posibilitatea de a scrie cod JavaScript pe server. În trecut JavaScript a existat doar în browser și era nevoie de un al doilea limbaj de programare, precum PHP, pentru a programa server side. Având o aplicație web scrisă într-un singur limbaj de programare este un beneficiu major și acest lucru face Nodejs accesibil dezvoltatorilor care ar fi putut rămâne pe partea client.
 
-The way that [Node.js](http://nodejs.org) makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
-    The following sections detail how to install Ghost locally on [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) or [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) or alternatively will help you get Ghost deployed on a [server or hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy) account.
+[Node.js](http://nodejs.org) face acest lucru posibil prin împachetarea motorului JavaScript din Chrome. Asta înseamnă că poți instala Ghost pe calculatorul tău foarte rapid și ușor.
+	Următoarele secțiuni detaliază instalarea Ghost local pe [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) sau [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) sau alternativ te va ajuta să instalezi Ghost pe un [server sau hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy).
 
-### Getting started
+### Primii pași
 
-If you don't fancy following instructions on installing Node.js and Ghost manually, the lovely people over at [BitNami](http://bitnami.com/) have created [Ghost installers](http://bitnami.com/stack/ghost) for all major platforms.
+Dacă nu-ți place să instalezi manual Node.js și Ghost, oamenii minunați de la [BitNami](http://bitnami.com/) au creeat [instalări Ghost]((http://bitnami.com/stack/ghost)) pentru toate platformele.
 
-I want to install Ghost on:
+Vreau să instalez Ghost pe:
 
 <div class="text-center install-ghost">
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/" class="btn btn-success btn-large">Mac</a>
@@ -40,12 +40,11 @@ I want to install Ghost on:
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
 </div>
 
-If you've already decided to deploy Ghost to your server or hosting account, that's great news! The following documentation will walk you through various options for deploying Ghost, from manual setups, to one-click installers.
+Dacă deja te-ai decis să instalezi Ghost pe serverul sau contul tău de hosting, minunat! Capitolele următoare te rog ghida prin opțiunile de instalare Ghost, de la instalarea manuala la instalarea printr-un singur click.
 
 <div class="text-center install-ghost">
-    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Get Ghost Live</a>
+    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Descarcă Ghost Live</a>
 </div>
 
-Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our [upgrading documentation](/installation/upgrading/).
-    If you get stuck, checkout the [troubleshooting guide]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), or if that doesn't help, please get in touch via the [Ghost forum](http://ghost.org/forum) where the Ghost staff and community are on hand to help you with any problems.
-
+Ține minte că Ghost este foarte nou și echipa lucrează foarte rapid la caracteristici noi. Dacă ai nevoie să aduci Ghost la cea mai recentă versiune, urmează [ghidul de update](/installation/upgrading/).
+	Dacă te împotmolești, uită-te și la [ghidul de rezolvare a problemelor]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/) sau dacă asta nu te ajută, te rog să iei legătura via [forumul Ghost](http://ghost.org/forum) unde comunitatea Ghost este pregătită să te ajute cu orice problemă.

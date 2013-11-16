@@ -1,15 +1,15 @@
 ---
 lang: ro
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Cum se folosește Ghost - Documentație Ghost
+meta_description: Un ghid complet pentru utilizarea platformei de blogging Ghost. Vrei să folosești Ghost dar nu știi cum să incepi? Începe aici!
+heading: Folosirea Ghost
+subheading: Cum să te descurci și să-ți creezi mediul cum vrei
 chapter: usage
 next_section: configuration
 ---
 
-## Overview <a id="overview"></a>
+## Prezentare generală <a id="overview"></a>
 
 Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
 
