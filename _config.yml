@@ -9,8 +9,13 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+<<<<<<< HEAD
     - name: 'Danish'
       key: 'da'
+=======
+    - name: 'Français'
+      key: 'fr'
+>>>>>>> Update config to add french
 port:         4478
 
 translations:
@@ -30,6 +35,7 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+<<<<<<< HEAD
   da:
     site_title:   'Ghost guide'
     installation: 'Installation'
@@ -38,6 +44,16 @@ translations:
     themes:       'Temaer'
     translations: 'Oversættelser'
     help:         'Hjælp'
+=======
+  fr:
+    site_title:   'Guide Ghost'
+    installation: 'Installation'
+    usage:        'Usage'
+    email:        'Email'
+    themes:       'Thèmes'
+    translations: 'Traductions'
+    help:         'Aide'
+>>>>>>> Update config to add french
 
 # If running locally, simply comment out the line below to make all urls relative
 
