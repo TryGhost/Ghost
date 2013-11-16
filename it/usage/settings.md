@@ -1,10 +1,10 @@
 ---
 lang: it
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Come usare Ghost - Documentazione Ghost
+meta_description: Una guida approfondita all'utilizzo della piattaforma di blogging Ghost. Hai Ghost ma non sai da dove cominciare? Parti da qui!
+heading: Usare Ghost
+subheading: Configura la tua installazione
 chapter: usage
 section: settings
 permalink: /it/usage/settings/
@@ -12,43 +12,43 @@ prev_section: configuration
 next_section: managing
 ---
 
-##  Ghost Settings <a id="settings"></a>
+##  Configurazione di Ghost <a id="settings"></a>
 
-Go to <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
+Visita <code class="path">&lt;la tua URL&gt;/ghost/settings/</code>.
 
-After you are finished adjusting the settings the "Save" button *must* be pressed, this will save your changes.
+Una volta che hai finito di modificare i settaggi, il pulsante "Save" **deve** essere premuto, in modo che i cambiamenti vengano salvati.
 
-You can check your changes by visiting the Blog URL.
+Puoi verificare le tue modifiche visitando il tuo Blog.
 
-### Blog Settings (<code class="path">/general/</code>)
+### Configurazione del Blog (<code class="path">/general/</code>)
 
-These are the Blog specific settings.
+Questi sono i settaggi specifici del Blog.
 
-*   **Blog Title**: Changes your Blog's title. Theme reference `@blog.title`.
-*   **Blog Description**: Changes your Blog's description. Theme reference `@blog.description`.
-*   **Blog Logo**: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference `@blog.logo`.
-*   **Blog Cover**: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference `@blog.cover`.
-*   **Email Address**: This is the email admin notifications are sent too. It *must* be a valid email.
-*   **Posts per page**: This is how many posts are displayed per page. This should be a numeric value.
-*   **Theme**: This will list all the themes in your <code class="path">content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
+*   **Blog Title**: Cambia il titolo del Blog. Variabile nei temi `@blog.title`.
+*   **Blog Description**: Cambia la descrizione del Blog. Variabile nei temi `@blog.description`.
+*   **Blog Logo**: Carica un logo per il Blog nei formati '.png', '.jpg' o '.gif'. Variabile nei temi `@blog.logo`.
+*   **Blog Cover**: Carica un'immagine di cover per il Blog nei formati '.png', '.jpg' o '.gif'. Variabile nei temi `@blog.cover`.
+*   **Email Address**: Questo è l'indirizzo email al quale vengono mandate notifiche di sistema. **Deve** essere un indirizzo email valido.
+*   **Posts per page**: Il numero di post mostrati in ogni pagina. Deve essere un valore numerico.
+*   **Theme**: Una lista di temi presenti nella cartella <code class="path">content/themes</code>. Selezionane uno dal dropdown per cambiare il look del Blog.
 
-### User Settings (<code class="path">/user/</code>)
+### Configurazione dell'Utente (<code class="path">/user/</code>)
 
-These are the settings that control your user / author profile.
+Questi sono i settaggi relativi al profilo utente/autore.
 
-*   **Your Name**: This is your name that will be used to credit you when you publish a post. Theme reference (post) `author.name`.
-*   **Cover Image**: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.cover`.
-*   **Display Picture**: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.image`.
-*   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
-*   **Location**: This should be your current location. Theme reference (post) `author.location`.
-*   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Your Name**: Il nome dell'autore mostrato nei post. Variabile nei temi (post) `author.name`.
+*   **Cover Image**: L'immagine cover del tuo profilo, nei formati '.png', '.jpg' o '.gif'. Variabile nei temi (post) `author.cover`.
+*   **Display Picture**: La tua immagine personale, nei formati '.png', '.jpg' o '.gif'. Variabile nei temi (post) `author.image`.
+*   **Email Address**: Questa email sarà il tuo indirizzo pubblico e anche quello al quale verranno mandate notifiche. Variabile nei temi (post) `author.email`.
+*   **Location**: La tua posizione attuale. Variabile nei temi (post) `author.location`.
+*   **Website**: L'URL del tuo sito personale o il tuo profilo su un social network. Variabile nei temi (post) `author.website`.
+*   **Bio**: Puoi parlare brevemente di te, descriviti in 200 caratteri. Variabile nei temi (post) `author.bio`.
 
-#### Changing your password
+#### Cambiare la password
 
-1.  Fill out the input boxes with the appropriate password (current / new password).
-2.  Now click **Change Password**.
+1.  Riempi i campi di testo con le password richieste (attuale / nuova password).
+2.  Poi clicca **Change Password**.
 <p class="note">
-    <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
+    <strong>Nota:</strong> La password viene cambiata solo se premi il pulsante "Change Password", il pulsante "Save" non modifica la password.
 </p>
 
