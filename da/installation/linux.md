@@ -1,10 +1,10 @@
 ---
 lang: da
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: S&aring;dan installerer du Ghost p&aring; din server - Ghost dokumentation
+meta_description: Alt du har behov for, for at f&aring; Ghost blogging platform op og k&oslash;re p&aring; din lokale maskine eller server eller hosting service.
+heading: Installation af Ghost &amp; Kom i gang
+subheading: De f&oslash;rste trin til at f&aring; oprettet din nye blog for f&oslash;rste gang.
 permalink: /da/installation/linux/
 chapter: installation
 section: linux
@@ -13,29 +13,29 @@ next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# Installation på Linux <a id="install-linux"></a>
 
-### Install Node
+### Installer Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   Download enten `.tar.gz` arkivet fra [http://nodejs.org](http://nodejs.org), eller hvis du foretræker at følge instruktionerne til hvordan du [installerer fra en package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) istedet.
+*   Dobbelttjek at du har Node og npm installeret ved at skrive `node -v` og `npm -v` i et terminalvindue
 
-### Install and Run Ghost
+### Installer og kør Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
-*   In a terminal window, change directory to the root of the extracted Ghost folder
-*   In the terminal type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin
+*   Log ind på [http://ghost.org](http://ghost.org), og klik på den blå 'Download Ghost Source Code' knap
+*   På download siden skal du tryk på knappen for at hente den nyeste zip fil og pak derefter filen ud der hvor du vil køre Ghost fra
+*   I et terminalvindue skal du skift mappe til roden af den udpakkede Ghost mappe
+*   I et terminalvindue skriver du `npm install --production` <span class="note">vær opmærksom på de to bindestreger</span>
+*   Når npm er færdig med at installere skriver du `npm start` for at starte Ghost i udviklingstilstand
+*   I en browser går du inde på <code class="path">127.0.0.1:2368</code> for at se din nyinstallerede Ghost blog
+*   Skift url til <code class="path">127.0.0.1:2368/ghost</code> og opret din admin bruger for at logge ind i Ghost administrationen
 
-If you are using linux as a guest OS or through SSH and only have the terminal, then:
+Benytter du linux som et gæste OS eller gennem SSH og kun har terminalen skal du istedet gør følgende:
 
-*   Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'
-*   In the terminal use `wget url-of-ghost.zip` to download Ghost
-*   Unzip the archive with `unzip -uo Ghost-#.#.#.zip -d ghost`, and then `cd ghost`
-*   Type `npm install --production` to install Ghost <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   Ghost will now be running on localhost
+*   Benyt dit normale operativsystem til at finde URL'en til Ghost zip filen (den ændrer sig for hver version), gem url'en men ændr '/zip/' til '/archives/'
+*   I terminalen benyt `wget url-of-ghost.zip` for at hente Ghost
+*   Pak filerne ud med `unzip -uo Ghost-#.#.#.zip -d ghost`, og derefter `cd ghost`
+*   Skriv `npm install --production` for at installere Ghost <span class="note">vær opmærksom på de to bindestreger</span>
+*   Når npm er færdig med at installere skriver du `npm start` for at starte Ghost i udviklingstilstand
+*   Ghost kører nu på localhost
 
