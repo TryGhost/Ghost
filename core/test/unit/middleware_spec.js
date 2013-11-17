@@ -30,7 +30,7 @@ describe('Middleware', function () {
             req.path = '';
 
             middleware.auth(req, res, null);
-            assert(res.redirect.calledWith('/ghost/signin/'));
+            assert(res.redirect.calledWithMatch('/ghost/signin/'));
             return done();
         });
 
@@ -40,7 +40,7 @@ describe('Middleware', function () {
             req.path = '/ghost/' + path;
 
             middleware.auth(req, res, null);
-            assert(res.redirect.calledWith('/ghost/signin/?r=' + encodeURIComponent(path)));
+            assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
             return done();
         });
 
@@ -50,11 +50,11 @@ describe('Middleware', function () {
             req.path = '/ghost/' + path;
 
             middleware.auth(req, res, null);
-            assert(res.redirect.calledWith('/ghost/signin/?r=' + encodeURIComponent(path)));
+            assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
             assert.equal(ghost.notifications.length, 1);
 
             middleware.auth(req, res, null);
-            assert(res.redirect.calledWith('/ghost/signin/?r=' + encodeURIComponent(path)));
+            assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
             assert.equal(ghost.notifications.length, 1);
 
             return done();
@@ -119,7 +119,7 @@ describe('Middleware', function () {
             req.session.user = {};
 
             middleware.redirectToDashboard(req, res, null);
-            assert(res.redirect.calledWith('/ghost/'));
+            assert(res.redirect.calledWithMatch('/ghost/'));
             return done();
         });
 

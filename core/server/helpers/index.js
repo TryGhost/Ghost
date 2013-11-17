@@ -1,13 +1,14 @@
 var _               = require('underscore'),
     moment          = require('moment'),
     downsize        = require('downsize'),
+    path            = require('path'),
     when            = require('when'),
     hbs             = require('express-hbs'),
     errors          = require('../errorHandling'),
     models          = require('../models'),
     packageInfo     = require('../../../package.json'),
     version         = packageInfo.version,
-    scriptTemplate  = _.template("<script src='/built/scripts/<%= name %>?v=<%= version %>'></script>"),
+    scriptTemplate  = _.template("<script src='<%= source %>?v=<%= version %>'></script>"),
     isProduction    = process.env.NODE_ENV === 'production',
     coreHelpers     = {},
     registerHelpers;
@@ -88,10 +89,16 @@ coreHelpers.url = function (options) {
             day: function () { return self.created_at.getDate(); },
             slug: function () { return self.slug; },
             id: function () { return self.id; }
-        };
+        },
+        blog = coreHelpers.ghost.blogGlobals(),
+        isAbsolute = options && options.hash.absolute;
 
-    if (options && options.hash.absolute) {
-        output += coreHelpers.ghost.config().url;
+    if (isAbsolute) {
+        output += blog.url;
+    }
+
+    if (blog.path !== '/') {
+        output += blog.path;
     }
 
     if (models.isPost(this)) {
@@ -219,7 +226,8 @@ coreHelpers.fileStorage = function (context, options) {
 };
 
 coreHelpers.ghostScriptTags = function () {
-    var scriptFiles = [];
+    var scriptFiles = [],
+        blog = coreHelpers.ghost.blogGlobals();
 
     if (isProduction) {
         scriptFiles.push("ghost.min.js");
@@ -235,7 +243,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            name: fileName,
+            source: path.join(blog.path, '/built/scripts/', fileName),
             version: version
         });
     });
@@ -253,9 +261,9 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.path) && this.path.match(/\/page/)) {
+    if (_.isString(this.ghostRoot) && this.ghostRoot.match(/\/page/)) {
         classes.push('archive-template');
-    } else if (!this.path || this.path === '/' || this.path === '') {
+    } else if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '') {
         classes.push('home-template');
     } else {
         classes.push('post-template');
@@ -302,17 +310,18 @@ coreHelpers.post_class = function (options) {
 
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
-    var head = [],
+    var blog = coreHelpers.ghost.blogGlobals(),
+        head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
-        trimmedVersion = this.version,
-        blog = coreHelpers.ghost.blogGlobals();
+        trimmedVersion = this.version;
 
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
-    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="/rss/">');
-    if (this.path) {
-        head.push('<link rel="canonical" href="' + coreHelpers.ghost.config().url + this.path + '" />');
+
+    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + path.join(blog.path, '/rss/') + '">');
+    if (this.ghostRoot) {
+        head.push('<link rel="canonical" href="' + coreHelpers.ghost.blogGlobals().url + this.ghostRoot + '" />');
     }
 
     return coreHelpers.ghost.doFilter('ghost_head', head).then(function (head) {
@@ -324,7 +333,7 @@ coreHelpers.ghost_head = function (options) {
 coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
     var foot = [];
-    foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
+    foot.push('<script src="' + coreHelpers.ghost.blogGlobals().url + '/shared/vendor/jquery/jquery.js"></script>');
 
     return coreHelpers.ghost.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
@@ -336,8 +345,8 @@ coreHelpers.meta_title = function (options) {
     /*jslint unparam:true*/
     var title,
         blog;
-    if (_.isString(this.path)) {
-        if (!this.path || this.path === '/' || this.path === '' || this.path.match(/\/page/)) {
+    if (_.isString(this.ghostRoot)) {
+        if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
             blog = coreHelpers.ghost.blogGlobals();
             title = blog.title;
         } else {
@@ -356,8 +365,8 @@ coreHelpers.meta_description = function (options) {
     var description,
         blog;
 
-    if (_.isString(this.path)) {
-        if (!this.path || this.path === '/' || this.path === '' || this.path.match(/\/page/)) {
+    if (_.isString(this.ghostRoot)) {
+        if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
             blog = coreHelpers.ghost.blogGlobals();
             description = blog.description;
         } else {
