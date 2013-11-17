@@ -41,6 +41,9 @@ function setup(server) {
         // set the view engine
         server.set('view engine', 'hbs');
 
+        // set the configured URL
+        server.set('ghost root', ghost.blogGlobals().path);
+
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
 
