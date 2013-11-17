@@ -32,6 +32,13 @@ describe("Showdown client side converter", function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it("should not touch underscores in hyperlinks", function () {
+        var testPhrase = {input: "http://en.wikipedia.org/wiki/Tourism_in_Germany", output: /^<p><a href=\'http:\/\/en.wikipedia.org\/wiki\/Tourism_in_Germany\'>http:\/\/en.wikipedia.org\/wiki\/Tourism_in_Germany<\/a><\/p>$/},
+            processedMarkup = converter.makeHtml(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
 // Currently failing - fixing this causes other issues
 //    it("should not create italic words between lines", function () {
 //        var testPhrase = {input: "foo_bar\nbar_foo", output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},

@@ -21,6 +21,7 @@
                 filter  : function (text) {
                     var extractions = {},
                         imageMarkdownRegex = /^(?:\{(.*?)\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
+			uriRegex = /^(?!mailto:)(?:(?:https?|ftp):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[0-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))|localhost)(?::\d{2,5})?(?:\/[^\s]*)?$/gim,
                         hashID = 0;
 
                     function hashId() {
@@ -49,6 +50,11 @@
 
                     text = text.replace(/\{gfm-js-extract-code-([0-9]+)\}/gm, function (x, y) {
                         return extractions[y];
+                    });
+
+		    // Prevent http://google.com/foo_bar_baz from italicizing URL contents
+                    text = text.replace(uriRegex, function (x) {
+                        return x.replace(/_/gm, '\\_');
                     });
 
                     // in very clear cases, let newlines become <br /> tags
