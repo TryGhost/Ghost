@@ -48,6 +48,21 @@ describe('User Model', function run() {
             }).then(null, done);
         });
 
+        it('can lowercase email', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[2],
+                gravatarStub =  sinon.stub(UserModel, 'gravatarLookup', function (userData) {
+                    return when.resolve(userData);
+                });
+
+            UserModel.add(userData).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('uuid').should.equal(true);
+                createdUser.attributes.email.should.eql(userData.email.toLocaleLowerCase(), "email address correct");
+                gravatarStub.restore();
+                done();
+            }).then(null, done);
+        });
+
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
