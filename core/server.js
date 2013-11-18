@@ -396,4 +396,6 @@ when(ghost.init()).then(function () {
         }
 
     });
-}).otherwise(errors.logAndThrowError);
+}, function (err) {
+    errors.logErrorAndExit(err);
+});

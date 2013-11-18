@@ -48,9 +48,8 @@ describe("Import", function () {
         it("imports data from 000", function (done) {
             var exportData;
 
-            // initialise database to version 000 - confusingly we have to set the max version to be one higher
-            // than the migration version we want. Could just use migrate from fresh here... but this is more explicit
-            migration.migrateUpFromVersion('000', '001').then(function () {
+            // migrate to current version
+            migration.migrateUp().then(function () {
                 // Load the fixtures
                 return fixtures.populateFixtures();
             }).then(function () {
