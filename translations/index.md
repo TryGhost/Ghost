@@ -74,4 +74,5 @@ To update a translation you can simply follow the steps in "Adding your translat
 
 **Coming soon**
 
+Please do not send in translations for Ghost just yet, we are still setting up the best way to do this. We really don't want to throw away anyone's work.
 {% endraw %}
