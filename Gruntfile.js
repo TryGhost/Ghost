@@ -66,13 +66,13 @@ var path           = require('path'),
                 },
                 sass: {
                     files: [
-                        '<%= paths.adminAssets %>/sass/**/*'
+                        '<%= paths.adminAssets %>/sass/**/*',
                         'content/themes/**/sass/**/*',
-                        'content/themes/**/scss/**/*',
+                        'content/themes/**/scss/**/*'
                     ],
                     tasks: [
                         'sass:admin',
-                        'sass:themes',
+                        'sass:themes'
                     ]
                 },
                 concat: {
@@ -88,9 +88,9 @@ var path           = require('path'),
                 livereload: {
                     files: [
                         // Theme CSS
-                        'content/themes/casper/css/*.css',
+                        'content/themes/**/css/*.css',
                         // Theme JS
-                        'content/themes/casper/js/*.js',
+                        'content/themes/**/js/*.js',
                         // Admin CSS
                         '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
@@ -116,7 +116,6 @@ var path           = require('path'),
                 options: {
                     script: 'index.js'
                 },
-
                 dev: {
                     options: {
                         //output: 'Express server listening on address:.*$'
@@ -265,7 +264,7 @@ var path           = require('path'),
                 themes: {
                     files: grunt.file.expandMapping([
                         "content/themes/**/src/**/*.sass",
-                        "!content/themes/**/src/**/_*.sass",
+                        "!content/themes/**/src/**/_*.sass"
                       ], '', {
                       expand: true,
                       ext: '.css',
