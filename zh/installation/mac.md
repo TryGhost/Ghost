@@ -24,7 +24,7 @@ next_section: windows
 *   点击安装程序，最后输入你的密码，并点击 “安装软件”
 *   一旦安装成功，在终端窗口中输入 `echo $PATH` 检查 '/usr/local/bin/' 路径已经存在于环境变量中
 
-<p class="note"><strong>注意:</strong> 如果 '/usr/local/bin' 没有添加到 $PATH 环境变量， 查阅 <a href="#export-path">故障排除提示</a> 解决这个问题。</p>
+<p class="note"><strong>注意:</strong> 如果 '/usr/local/bin' 没有添加到 $PATH 环境变量， 查阅 <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">故障排除提示</a> 解决这个问题。</p>
 
 如果你遇到了困难，可以查阅 [这里](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac")
 
