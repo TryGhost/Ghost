@@ -265,15 +265,15 @@ var path           = require('path'),
                     files: grunt.file.expandMapping([
                         "content/themes/**/src/**/*.sass",
                         "!content/themes/**/src/**/_*.sass"
-                      ], '', {
-                      expand: true,
-                      ext: '.css',
-                      rename: function(base, src) {
-                        var re = /(content\/themes)\/(\w+)\/src\/s[a|c]ss/;
-                        var output = src.replace(re, '$1/$2/assets/css');
-                        //grunt.log.writeln("[base: "+base+"] [src:" + src + "] > " + output);
-                        return output
-                      }
+                    ], '', {
+                        expand: true,
+                        ext: '.css',
+                        rename: function (base, src) {
+                            var re = /(content\/themes)\/(\w+)\/src\/s[a|c]ss/,
+                                output = src.replace(re, '$1/$2/assets/css');
+                            grunt.log.writeln("[base: " + base + "] [src:" + src + "] > " + output);
+                            return output;
+                        }
                     })
                 }
             },
