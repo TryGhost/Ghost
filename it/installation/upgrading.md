@@ -1,10 +1,10 @@
 ---
 lang: it
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Come installare Ghost sul tuo server - Documentazione Ghost
+meta_description: Tutto il necessario per far funzionare la piattaforma di blogging Ghost in locale e in remoto.
+heading: Installazione di Ghost &amp; Primi passi
+subheading: I primi passi per installare il tuo nuovo blog per la prima volta.
 permalink: /it/installation/upgrading/
 chapter: installation
 section: upgrading
@@ -12,97 +12,97 @@ prev_section: deploy
 next_section: troubleshooting
 ---
 
-# Upgrading Ghost <a id="upgrade"></a>
+# Aggiornare Ghost <a id="upgrade"></a>
 
-Upgrading Ghost is super straightforward.
+Aggiornare Ghost è una vera passeggiata.
 
-There is a couple of different ways you might want to go about it. The following describes what needs to happen, and then covers the process step-by-step for both doing it [point-and-click style](#how-to) and via a [command line](#cli), so that you are free to choose the method you are most comfortable with.
+Ci sono un paio di modi. Verranno prima descritti i passi generici da seguire, e poi nel dettaglio come procedere in maniera [punta e clicca](#how-to) e [linea di comando](#cli), in modo che tu possa scegliere il metodo con il quale ti trovi meglio.
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fai un Backup!</strong> Prima di aggiornare è sempre bene effettuare un backup. Prima leggi <a href="#backing-up">come eseguire un backup</a>!</p>
 
-## Overview
+## Panoramica
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/folder-structure.png" style="float:left" />
 
-Ghost, once installed, has a folder structure similar to that shown on the left. There are two main directories <code class="path">content</code> and <code class="path">core</code>, plus some files in the root.
+Ghost, una volta installato, ha una struttura simile a quella mostrata sulla sinistra. Ci sono due cartelle principali <code class="path">content</code> e <code class="path">core</code>, più alcuni file nella root.
 
-Upgrading Ghost is matter of replacing the old files with the new files, re-running `npm install` to update the <code class="path">node_modules</code> folder and then restarting Ghost to make it all take affect.
+Aggiornare Ghost significa semplicemente sostituire i file vecchi con quelli nuovi, ri-eseguire `npm install` per aggiornare le dipendenze nella cartella <code class="path">node_modules</code> e poi far ripartire Ghost in modo che le modifiche abbiano effetto.
 
-Remember, by default Ghost stores all your custom data, themes, images, etc in the <code class="path">content</code> directory, so take care to keep this safe! Replace only the files in <code class="path">core</code> and the root, and all will be fine.
+Ricordati, Ghost di default salva tutti i tuoi dati (temi, immagini, etc) nella cartella <code class="path">content</code>, quindi fai attenzione a non toccarla! Sostituisci solo i file nella cartella <code class="path">core</code> e nella root, e tutto andrà bene.
 
-## Backing Up <a id="backing-up"></a>
+## Come eseguire un backup <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
-*   To backup all the data from your database, log into your Ghost install and go to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data. Job done
-*   To back up your custom themes and images, you need to take a copy of the files inside of <code class="path">content/themes</code> and <code class="path">content/images</code>
+*   Per fare il backup di tutti i tuoi dati nel database, fai il login in Ghost e vai alla pagina <code class="path">/ghost/debug/</code>. Premi il pulsante "Export" per scaricare un file JSON contenente tutti i tuoi dati. Fatto.
+*   Per fare il backup dei tuoi temi e le immagini che hai caricato, devi fare una copia di tutti i file che trovi nelle cartelle <code class="path">content/themes</code> e <code class="path">content/images</code>.
 
-<p class="note"><strong>Note:</strong> You can, if you like, take a copy of your database from <code class="path">content/data</code> but <strong>be warned</strong> you should not do this whilst Ghost is running. Please stop it first.</p>
+<p class="note"><strong>Nota:</strong> Se vuoi, puoi fare una copia del database direttamente dalla cartella <code class="path">content/data</code> ma Ghost <strong>non deve</strong> essere in esecuzione. Per favore, prima termina il processo.</p>
 
 
-## How to Upgrade <a id="how-to"></a>
+## Come effettuare l'aggiornamento <a id="how-to"></a>
 
-How to upgrade on your local machine
+Come fare l'aggiornamento sulla tua macchina locale.
 
-<p class="warn"><strong>WARNING:</strong> Do <strong>NOT</strong> copy and paste the entire Ghost folder over the top of an existing installation on mac. Do <strong>NOT</strong> choose <kbd>REPLACE</kbd> if uploading with Transmit or other FTP software, choose <strong>MERGE</strong>.</p>
+<p class="warn"><strong>ATTENZIONE:</strong> <strong>NON</strong> copiare e incollare tutta la cartella Ghost in un'installazione esistente su mac. <strong>NON</strong> scegliere <kbd>SOSTITUISCI</kbd> se stai facendo l'upload con transmit o altri software FTP, scegli <strong>UNISCI</strong>.</p>
 
-*   Download the latest version of Ghost from [Ghost.org](http://ghost.org/download/)
-*   Extract the zip file to a temporary location
-*   Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.
-*   Next replace the old <code class="path">core</code> directory with the new `core` directory
-*   For releases which include update to Casper (the default theme), replace the old <code class="path">content/themes/casper</code> directory with the new one
-*   Run `npm install --production`
-*   Finally, Restart Ghost so that the changes take effect
+*   Scarica l'ultima versione di Ghost da [Ghost.org](http://ghost.org/download/)
+*   Estrai lo zip in una posizione temporanea
+*   Copia tutti i file che stanno nella root e incollali nella tua installazione. I file sono: index.js, package.json, Gruntfile.js, config.example.js, la licenza e il readme
+*   Poi sostituisci la vecchia cartella <code class="path">core</code> con la nuova cartella `core`
+*   Per le release che includono un aggiornamento di Casper (il tema di default), sostituisci la vecchia cartella <code class="path">content/themes/casper</code> con quella nuova
+*   Esegui `npm install --production`
+*   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto
 
-## Command line only <a id="cli"></a>
+## Linea di comando <a id="cli"></a>
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fai un Backup!</strong> Prima di aggiornare è sempre bene effettuare un backup. Prima leggi <a href="#backing-up">come eseguire un backup</a>!</p>
 
-### Command line only on mac <a id="cli-mac"></a>
+### Linea di comando su mac <a id="cli-mac"></a>
 
-The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note">**Note:** `~` means the user's home directory on mac and linux</span>
+Lo screencast qua sotto mostra come aggiornare Ghost ponendo che il file zip sia stato scaricato nella cartella <code class="path">~/Downloads</code> e che Ghost sia installato in <code class="path">~/ghost</code>. <span class="note">**Nota:** `~` indica la cartella home su mac e linux</span>
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
 
-The steps in the screencast are:
+I passi nello screencast sono:
 
-*   <code class="path">cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved
-*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - unzip ghost into the folder <code class="path">ghost-0.3.3</code>
-*   <code class="path">cd ghost-0.3.3</code> - change directory into the <code class="path">ghost-0.3.3</code> directory
-*   `ls` - show all the files and folders inside this directory
-*   `cp *.md *.js *.txt *.json ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
-*   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to the <code class="path">~/ghost</code>
-*   `cp -R content/themes/casper ~/ghost/content/themes` - copy the <code class="path">casper</code> directory and all of its contents to <code class="path">~/ghost/content/themes</code>
-*   `cd ~/ghost` - change directory to the <code class="path">~/ghost</code> directory
-*   `npm install --production` - install Ghost
-*   `npm start` - start Ghost
+*   <code class="path">cd ~/Downloads</code> - spostati nella cartella Downloads dove è stata scaricata l'ultima versione di Ghost
+*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - estrai ghost nella cartella <code class="path">ghost-0.3.3</code>
+*   <code class="path">cd ghost-0.3.3</code> - spostati nella cartella <code class="path">ghost-0.3.3</code>
+*   `ls` - mostra tutti i file e le cartelle nella posizione corrente
+*   `cp *.md *.js *.txt *.json ~/ghost` - copia tutti i file .md .js .txt e .json da <code class="path">~/ghost</code>
+*   `cp -R core ~/ghost` - copia la cartella <code class="path">core</code> e tutto il suo contenuto all'interno di <code class="path">~/ghost</code>
+*   `cp -R content/themes/casper ~/ghost/content/themes` - copia la cartella <code class="path">casper</code> e tutto il suo contenuto all'interno di <code class="path">~/ghost/content/themes</code>
+*   `cd ~/ghost` - spostati nella cartella <code class="path">~/ghost</code>
+*   `npm install --production` - installa Ghost
+*   `npm start` - lancia Ghost
 
-### Command line only on linux servers <a id="cli-server"></a>
+### Linea di comando su server linux <a id="cli-server"></a>
 
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
-*   Run `npm install --production` to get any new dependencies
-*   Finally, restart Ghost so that the changes will take effect
+*   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
+*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quella corretta, se necessario)
+*   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+*   Esegui `npm install --production` per installare nuove dipendenze
+*   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto
 
-**Additionally**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) also has instructions for upgrading Ghost on linux servers.
+**Inoltre**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) fornisce ulteriori istruzioni su come installare Ghost su un server linux.
 
-### How to update a DigitalOcean Droplet <a id="digitalocean"></a>
+### Come aggiornare una Droplet su DigitalOcean <a id="digitalocean"></a>
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fai un Backup!</strong> Prima di aggiornare è sempre bene effettuare un backup. Prima leggi <a href="#backing-up">come eseguire un backup</a>!</p>
 
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Once you've got the URL for the latest version, in your Droplet console type `cd /var/www/` to change directory to where the Ghost codebase lives.
-*   Next, type `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d ghost`
-*   Make sure all of the files have the right permissions with `chown -R ghost:ghost ghost/*`
-*   Run `npm install` to get any new dependencies
-*   Finally, restart Ghost so that the changes take effect using `service ghost restart`
+*   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
+*   Nella console della tua droplet esegui `cd /var/www/` per spostarti dove c'è la tua installazione di Ghost
+*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quella corretta, se necessario)
+*   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+*   Assicurati che tutti i file abbiano i permessi corretti con `chown -R ghost:ghost ghost/*`
+*   Esegui `npm install` per installare nuove dipendenze
+*   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto con `service ghost restart`
 
-## How to upgrade Node.js to the latest version <a id="upgrading-node"></a>
+## Come aggiornare Node.js all'ultima versione <a id="upgrading-node"></a>
 
-If you originally installed Node.js from the [Node.js](nodejs.org) website, you can upgrade Node.js to the latest version by downloading and running the latest installer. This will replace your current version with the new version.
+Se hai installato Node.js dal sito [Node.js](nodejs.org), puoi effettuare l'aggiornamento semplicemente scaricando e lanciando l'installer più recente. La versione attualmente installata verrà sostituita dall'ultima versione.
 
-If you are on Ubuntu, or another linux distribution which uses `apt-get`, the command to upgrade node is the same as to install: `sudo apt-get install nodejs`.
+Se usi Ubuntu, od un'altra distribuzione linux dotata di `apt-get`, il comando per aggiornare node è uguale a quello per fare l'installazione: `sudo apt-get install nodejs`.
 
-You do **not** need to restart the server or Ghost.
+**Non** hai bisogno di riavviare il server o Ghost.
