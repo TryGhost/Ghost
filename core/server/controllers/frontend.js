@@ -59,7 +59,9 @@ frontendControllers = {
                 res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
         }).otherwise(function (err) {
-            return next(new Error(err));
+            var e = new Error(err.message);
+            e.status = err.errorCode;
+            return next(e);
         });
     },
     'single': function (req, res, next) {
@@ -78,7 +80,9 @@ frontendControllers = {
             }
 
         }).otherwise(function (err) {
-            return next(new Error(err));
+            var e = new Error(err.message);
+            e.status = err.errorCode;
+            return next(e);
         });
     },
     'rss': function (req, res, next) {
@@ -151,7 +155,9 @@ frontendControllers = {
                 });
             });
         }).otherwise(function (err) {
-            return next(new Error(err));
+            var e = new Error(err.message);
+            e.status = err.errorCode;
+            return next(e);
         });
     }
 };
