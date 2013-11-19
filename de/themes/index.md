@@ -1,51 +1,51 @@
 ---
 lang: de
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
+meta_title: Wie man Ghost Themes erstellt - Ghost Docs
+meta_description: Eine detaillierte Anleitung wie man Themes für die Ghost Blogging Plattform erstellt. Alles was du wissen musst um Themes für Ghost zu erstellen.
 heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+subheading: Leg los mit deinen eigenen Themes für Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Theme wechseln <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Du findest Ghost Themes in <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Wenn du ein anderes Theme als das Standard Theme Casper verwenden möchtest wirf einen Blick auf unsere [Marketplace Galerie](http://marketplace.ghost.org/). 
+Lade dir das Theme Paket deiner Wahl herunter, entpacke es und verschiebe es nach <code class="path">content/themes</code> neben Casper.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Wenn du dein eigenes erstellen möchtest empfehlen wir dir den casper Ordner zu kopieren und die Templates so anzupassen dass sie so aussehen und funktionieren wie du möchtest.
 
-To switch to your newly added theme:
+Um zu deinem neu erstellten Theme zu wechseln:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1. Starte Ghost neu. Zur Zeit bemerkt Ghost nicht dass du ein neues Theme in <code class="path">content/themes</code> hinzugefügt hast also musst du es neu starten.
+2. Logge dich in den Admin-Bereich von Ghost ein und navigiere zu <code class="path">/ghost/settings/general/</code>.
+3. Wähle dein Theme im "Theme" Auswahlfeld.
+4. Klicke "Save"
+5. Besuche das Frontend deines Blogs und staune über dein neues Theme.
 
+## Was ist Handlebars? <a id="what-is-handlebars"></a>
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+[Handlebars](http://handlebarsjs.com/) ist die Template Sprache die Ghost verwendet.
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+> Handlebars liefert dir die Fähigkeiten um semantische Templates effektiv und ohne Frustration zu erstellen.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+Wenn du darüber nachdenkst dein eigenes Theme zu erstellen solltest du dich vermutlich zuerst mit der Syntax von Handlebars vertraut machen. Lies dir die [Handlebars Dokumentation](http://handlebarsjs.com/expressions.html) durch oder sieh dir dieses [Tutorial von Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) an - du kannst dabei den ersten Abschnitt über Installation und Verwendung überspringen (diesen Teil haben wir für dich schon erledigt) und kannst dich sofort auf "Basic Expression" stürzen.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+## Über Ghost Themes <a id="about"></a>
 
-## About Ghost themes <a id="about"></a>
+Ghost Themes sind dafür gedacht einfach erstell- und wartbar zu sein. Sie befürworten eine klare Trennung zwischen Templates (das HTML) und jeder Geschäftslogik (JavaScript). Handlebars ist (fast) frei von Logik und unterstützt daher diese Trennung. Es bietet Hilfsmechanismen sodass die Geschäftslogik zur Anzeige von Inhalten stets getrennt und unabhängig bleibt. Diese Trennung erleichtert die Zusammenarbeit zwischen Designern und Entwicklern bei der Erstellung von Themes.
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Handlebar Templates sind hierarchisch (ein Template kann andere Templates erweitern) und unterstützt Teil-Templates. Ghost verwendet diese Features um doppelten Code zu verringern und den Fokus jedes einzelnen Templates darauf zu richten einen einizigen Job zu machen, aber den ordentlich.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+Wir hoffen dir gefällt diese Herangehensweise an die Erstellung von Themes.
 
-We really hope you'll enjoy our approach to theming.
+## Die Dateistruktur eines Ghost Themes <a id="file-structure"></a>
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
-
-The recommended file structure is:
+Die empfohlene Dateistruktur ist:
 
 ```
 .
@@ -56,101 +56,100 @@ The recommended file structure is:
 |   ├── /images
 |   ├── /js
 ├── default.hbs
-├── index.hbs [required]
-└── post.hbs [required]
+├── index.hbs [erforderlich]
+└── post.hbs [erforderlich]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+Vorerst gibt es keine Vorgabe dass default.hbs oder irgend einer der Ordner existiert. <code class="path">index.hbs</code> und <code class="path">post.hbs</code> sind erforderlich – Ghost wird ohne diese zwei Templates nicht funktionieren. <code class="path">partials</code> ist ein spezieller Ordner. Er sollte alle Teil-Templates enthalten die du auf deinem Blog verwenden möchtest, so kann <code class="path">list-post.hbs</code> z.B. dein Template zur Darstellung eines einzelnen Posts in einer Liste beinhalten welche du dann auf der Homepage und in zukünftigen Archiv & Tag-Seiten verwenden kannst. <code class="path">partials</code> ist außerdem der Ort an dem du Templates erstellen kannst um eingebaute Templates die von bestimmten Helfern wie der Paginierung verwendet werden zu überschreiben. Wenn du eine Datei <code class="path">pagination.hbs</code> erstellst kannst du darin dein eigenes HTML für die Paginierung erstellen.
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+Das ist das Basis-Template welches all die langweiligen HTML-Bereiche enthält die auf jeder Seite benötigt werden – die `<html>`, `<head>` und `<body>` Tags zusammen mit den `{{ghost_head}}` und `{{ghost_foot}}` Helfern, sowie dem restlichen HTML für Header und Footer.
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+Das Basis-Template beinhaltet die Handlebars Expression `{{{body}}}` die definiert wo der Inhalt der Templates die das Basis-Template erweitern eingefügt wird.
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+Seiten-Templates beinhaltet dann `{{!< default}}` in der allerersten Zeile um zu definieren dass sie das Basis-Template erweitern und dass ihr Inhalt an der Stelle in default.hbs wo `{{{body}}}` definiert ist eingefügt werden soll.
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+Dies ist das Template für die Homepage und erweitert <code class="path">default.hbs</code>. Die Homepage erhält eine Liste der Posts die angezeigt werden sollen und <code class="path">index.hbs</code> definiert wie jeder Post angezeigt werden soll.
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+In Casper (dem derzeitigen Standard-Theme) hat die Homepage einen größeren Header welcher die globalen Einstellung von `@blog` verwendet um Logo, Titel und Beschreibung des Blogs anzuzeigen. Darauf folgt mit Hilfe des `{{#foreach}}` Helfers eine Liste der letzten Posts.
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+Dies ist das Template für einen einzelnen Post welches ebenfalls <code class="path">default.hbs</code> erweitert.
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+In Casper (dem derzeitigen Standard-Theme) hat das Template für einzelne Posts einen eigenen Header, verwendet dabei ebenfalls die globalen Einstellung von `@blog` und verwendet dann `{{#post}}` um alle Post-Details anzuzeigen.
 
-### Post styling & previewing
+### Post Styling & Vorschau
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+Bitte beachte bei der Erstellung von Themes den Gültigkeitsbereich von Klassen und ganz besonders von deinen IDs um Konflikte zwischen den Haupt- und Post-Styles zu vermeiden. Man kann nie wissen wann ein Klassenname oder eine ID (wegen der Auto-Generierung der IDs für Überschriften) in einem Post verwendet wird. Deshalb ist es am besten alles immer auf einen bestimmten Bereich der Seite zu beschränken. So kann #meine-id z.B. unerwartete Auswirkungen haben, während #themename-meine-id deutlich sicherer wäre.
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghost hat das Ziel eine realistische Vorschau deiner Posts als Teil des Split-Screen Editors zu bieten wofür es jedoch notwendig ist die individuellen Styles eines Themes im Admin-Bereich zu laden. Dieses Feature ist bis jetzt nicht implementiert, aber wir empfehlen dringend deine Post Styles in einer eigenen Datei (post.css) getrennt von deinen anderen Styles (style.css) zu belassen um in Zukunft schnell von diesem Feature Gebrauch machen zu können.
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## Erstelle dein eigenes Theme <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+Erstelle dein eigenes Ghost Theme indem du entweder Casper kopierst oder im Ordner <code class="path">content/themes</code> einen neuen Ordner mit dem Namen deines Themes erstellst, z.B. mein-theme (Namen sollten klein geschrieben werden und nur Buchstaben, Zahlen und Bindestriche enthalten). Dann erstelle zwei leere Dateien in deinem Theme Ordner: index.hbs und post.hbs. Noch wird nichts angezeigt, aber das ist im Endeffekt bereits ein gültiges Theme.
 
-### The post list
+### Die Post Liste
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+<code class="path">index.hbs</code> erhält ein Objekt namens `posts` welches zusammen mit dem foreach Helfer benutzt werden kann um jeden Post auszugeben. Z.B.
 
 ```
 {{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
+// Hier sind wir im Kontext eines einzelnen Posts
+// Was auch immer wir hier einfügen wird für jeden Post ausgeführt
 {{/foreach}}
 ```
+Siehe auch den Abschnitt zum [`{{#foreach}}`](#foreach-helper) Helfer für mehr Details.
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+#### Paginierung
 
-#### Pagination
+Siehe auch den Abschnitt zum [`{{pagination}}`](#pagination-helper) Helfer.
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+### Einzelne Posts ausgeben
 
-### Outputting individual posts
+Sobald du im Kontext eines einzelnen Posts bist, entweder beim durchlaufen der Posts mit `foreach`oder innerhalb von <code class="path">post.hbs</code>, hast du Zugriff auf die Eigenschaften eines Posts.
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+Zur Zeit sind das:
 
-For the time being, these are:
+*   id – *Post ID*
+*   title – *Post Titel*
+*   url – *die relative URL eines Posts*
+*   content – *Post HTML*
+*   published_at – *Datum an dem der Post veröffentlicht wurde*
+*   author – *Komplette Details des Post Autors* (siehe weiter unten für mehr Details)
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
-
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+Jede dieser Eigenschaften kann mittels Standard Handlebar Expressions ausgegeben werden, z.B. `{{title}}`.
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>Anmerkungen:</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+        die content Eigenschaften wird überschrieben und mit dem <code>{{content}}</code> Helfer ausgegeben wodurch gewährleistet wird dass HTML sicher & korrekt ausgegeben wird. Wirf einen Blick auf den Bereich zum <a href="#content-helper"><code>{{content}}</code> Helfer</a> für mehr Informationen.
       </li>
       <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+die url Eigenschaft wird vom <code>{{url}}</code> Helfer bereitgestellt. Siehe den Abschnitt zum <a href="#url-helper"><code>{{url}}</code> Helfer</a> für mehr Informationen.
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### Post Autor
 
-When inside the context of a single post, the following author data is available:
+Innerhalb des Kontextes eines einzelnen Posts sind folgende Daten zum Autor verfügbar:
 
-*   `{{author.name}}` – the name of the author 
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – der Name des Autors
+*   `{{author.email}}` – die E-Mail Adresse des Autors
+*   `{{author.bio}}` – die Biografie des Autors
+*   `{{author.website}}` – die Webseite des Autors
+*   `{{author.image}}` – das Profilbild des Autors
+*   `{{author.cover}}` – das Coverbild des Autors
 
-You can use just`{{author}}` to output the author's name.
+Du kannst auch einfach `{{author}}` verwenden um den Namen des Autors auszugeben.
 
-This can also be done by using a block expression:
+All das kann auch mit einem Blockausdruck gemacht werden:
 
 ```
 {{#author}}
@@ -160,13 +159,13 @@ This can also be done by using a block expression:
 
 #### Post Tags
 
-When inside the context of a single post, the following tag data is available
+Innerhalb des Kontextes eines einzelnen Posts sind folgende Daten zu Tags verfügbar:
 
-*   `{{tag.name}}` – the name of the tag 
+*   `{{tag.name}}` – der Name des Tags
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+Du kannst `{{tags}}` verwenden um eine Liste von Komma-getrennten Tags auszugeben, oder, falls du das bevorzugst, dein eigenes Trennzeichen angeben `{{tags separator=""}}`
 
-This can also be done by using a block expression:
+All das kann auch mit einem Blockausdruck gemacht werden:
 
 ```
 <ul>
@@ -176,55 +175,55 @@ This can also be done by using a block expression:
 </ul>
 ```
 
-### Global Settings
+### Globale Einstellungen
 
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+Ghost Themes haben mittels `@blog` Zugriff auf einige globale Einstellungen.
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – die URL für dieses env in <code class="path">config.js</code>
+*   `{{@blog.title}}` – der Titel des Blogs von der Settings Seite
+*   `{{@blog.description}}` – die Beschreibung des Blogs von der Settings Seite
+*   `{{@blog.logo}}` – das Blog Logo von der Settings Seite
 
-## Built-in Helpers <a id="helpers"></a>
+## Eingebaute Helfer <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghost hat einige eingebaute Helfer die dir Werkzeuge zur Verfügung stellen die du brauchst um dein Theme zu erstellen. Helfer teilen sich in die zwei Gruppen Block- und Ausgabe-Helfer auf.
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[Block Helfer](http://handlebarsjs.com/block_helpers.html)** haben einen Anfang und Ende Tag z.B. `{{#foreach}}{{/foreach}}`. Der Kontext zwischen den Tags ändert sich und diese Helfer stellen dir außerdem zusätzliche Eigenschaften zur Verfügung auf die du mittels dem `@` Symbol zugreifen kannst.
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**Ausgabe Helfer** sehen sehr ähnlich wie Expressions zur Ausgabe von Daten aus z.B. `{{content}}`. Sie bereiten die Daten hilfreich auf bevor sie ausgegeben werden und bieten oft Optionen zur Ausgabe der Daten. Manche Ausgabe Helfer verwenden Templates um die Daten zu formatieren, ein bisschen wie Partials. Manche Ausgabe Helfer sind gleichzeitig Block Helfer und bieten eine Variation ihrer Funktionalität an.
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   Helfer Typ: Block
+*   Optionen: `columns` (Zahl)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}` ist ein spezieller Schleifen-Helfer für die Arbeit mit Listen von Posts. Standardmäßig fügt der each Helfer in Handlebars die privaten Eigenschaften `@index` für Arrays und `@key` für Objekte hinzu welche innerhalb der each Schleife verwendet werden können.
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach` erweitert das und fügt zusätzlich die privaten Eigenschaften `@first`, `@last`, `@even`, `@odd`, `@rowStart` und `@rowEnd` hinzu. Das kann man nutzen um komplexere Layouts für die Auflistung von Posts und anderer Inhalte zu erstellen. Einige Beispiele:
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+Das folgende Beispiel prüft ein Array oder Objekt z.B. `posts` und testet auf den ersten Eintrag.
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-        <div>First post</div>
+        <div>Erster Post</div>
     {{/if}}
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+Wir können `if` auch verschachteln um mehrere Eigenschaften zu überprüfen. In diesem Beispiel können wir den ersten und letzten Post getrennt von den anderen ausgeben.
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-    <div>First post</div>
+    <div>Erster Post</div>
     {{else}}
         {{#if @last}}
-            <div>Last post</div>
+            <div>Letzter Post</div>
         {{else}}
-            <div>All other posts</div>
+            <div>Alle anderen Posts</div>
         {{/if}}
     {{/if}}
 {{/foreach}}
@@ -232,137 +231,137 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+Das folgende Beispiel fügt eine Klasse für gerade und ungerade hinzu, was man für zebra striping von Inhalten verwenden kann.
 
 ```
 {{#foreach posts}}
-        <div class="{{#if @even}}even{{else}}odd{{/if}}">{{title}}</div>
+        <div class="{{#if @even}}gerade{{else}}ungerade{{/if}}">{{title}}</div>
 {{/foreach}}
 ```
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+Das folgende Beispiel zeigt wie man ein column Argument übergibt um Klassen für das erste und letzte Element in einer Zeile zu vergeben. Das ermöglicht Inhalte in einem Raster auszugeben.
 
 ```
 {{#foreach posts columns=3}}
-    <li class="{{#if @rowStart}}first{{/if}}{{#if @rowEnd}}last{{/if}}">{{title}}</li>
+    <li class="{{#if @rowStart}}erstes{{/if}}{{#if @rowEnd}}letztes{{/if}}">{{title}}</li>
 {{/foreach}}
 ```
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   Helfer Typ: Ausgabe
+*   Optionen: `words` (Zahl), `characters` (Zahl) [Standard alles anzeigen]
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}` ist ein sehr einfacher Helfer zur Ausgabe des Inhalts eines Posts. Er sorgt dafür dass HTML korrekt ausgegeben wird.
 
-You can limit the amount of HTML content to output by passing one of the options:
+Du kannst die Menge an ausgegebenem HTML beschränken indem du eine der folgenden Optionen übergibst:
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}` gibt nur 100 Zeichen HTML aus mit korrekt gefilterten Tags.
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   Helfer Typ: Ausgabe
+*   Optionen: `words` (Zahl), `characters` (Zahl) [Standard 50 Worte]
 
-`{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
+`{{excerpt}}` gibt den Inhalt aus aber entfernt jegliches HTML. Das ist hilfreich für Auszüge von Posts.
 
-You can limit the amount of text to output by passing one of the options:
+Du kannst die Menge an ausgegebenem Text durch folgende Optionen beschränken:
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters="140"}}` gibt 140 Zeichen Text aus.
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   Helfer Typ: Ausgabe
+*   Optionen: `format` (Datumsformat, Standard “MMM Do, YYYY”), `timeago` (Boolean)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}` ist ein Formatierungshelfer zur Ausgabe von Daten in verschiedenen Formatierungen. Du kannst entweder ein Datum und einen Formatierungsstring übergeben die verwendet werden um das Datum so auszugeben:
 
 ```
-// outputs something like 'July 11, 2013'
+// gibt etwas ähnliches wie 'July 11, 2013' aus
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+oder du kannst ein Datum und den timeago Schalter übergeben:
 
 ```
-// outputs something like '5 mins ago'
+// gibt etwas ähnliches wie '5 mins ago' aus
 {{date published_at timeago="true"}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+Wenn du `{{date}}` ohne ein Format aufrufst lautet die Standardformatierung “MMM Do, YYYY”.
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+Wenn du `{{date}}` im Kontext eines Posts aufrufst ohne ein Datum anzugeben ist der Standardwert `published_at`.
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+Wenn du `{{date}}` außerhalb des Kontexts eines Posts ohne Angabe eines Datums aufrufst ist der Standardwert das aktuelle Datum.
 
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date` verwendet [moment.js](http://momentjs.com/)  zur Formatierung der Daten. Eine komplette Erklärung aller verschiedenen Formatierungsstrings die du verwenden kannst findest du in dessen [Dokumentation](http://momentjs.com/docs/#/parsing/string-format/).
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   Helfer Typ: Ausgabe
+*   Optionen: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}` gibt die relative URL für einen Post aus wenn man sich im Kontext eines Posts befindet. Außerhalb des Post Kontexts gibt es nichts aus.
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+Du kannst den URL Helfer zwingen eine absolute URL auszugeben indem du die absolute Option verwendest, z.B. `{{url absolute="true"}}`
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   Helfer Typ: Ausgabe, verwendet Template
+*   Optionen: keine (kommt bald)
 
-`{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
+`{{pagination}}` ist ein Template Helfer der sofern verfügbar HTML für Links zu 'neueren Posts' und 'älteren Posts' ausgibt sowie anzeigt auf welcher Seite du dich befindest.
 
-You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
+Du kannst das HTML das dieser Helfer ausgibt überschreiben indem du eine Datei namens <code class="path">pagination.hbs</code> in <code class="path">content/themes/your-theme/partials</code> erstellst.
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+`{{body_class}}` – Gibt Klassen für den `<body>` Tag in <code class="path">default.hbs</code> aus was hilfreich ist um Styles für spezifische Seiten zu erstellen.
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
 
-`{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
+`{{post_class}}` – Gibt Klassen für den Post Container aus was hilfreich ist um Styles für Posts zu erstellen.
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
 
-`{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+`{{ghost_head}}` – Gehört direkt vor den `</head>` Tag in <code class="path">default.hbs</code> und wird verwendet um Meta Tags, Scripts und Styles auszugeben. Dafür wird es Hooks geben.
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
+`{{ghost_foot}}` – Gehört direkt vor den `</body>` Tag in <code class="path">default.hbs</code> und wird verwendet um Scripts auszugeben. Gibt standardmäßig jquery aus. Dafür wird es Hooks geben.
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
-
-`{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
+ 
+`{{meta_title}}` – Gibt den in Posts den Titelund sonst den Titel des Blogs aus. Wird verwendet um title Tags im `</head>` Block auszugeben, z.B. `<title>{{meta_title}}</title>`. Dafür wird es Hooks geben.
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Helfer Typ: Ausgabe
+*   Optionen: keine
 
-`{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+`{{meta_description}}` - Gibt (derzeit) nichts bei Posts und sonst die Beschreibung des Blogs aus. Wird verwendet um den description Meta Tag auszugeben,  z.B. `<meta name="description" content="{{meta_description}}" />`. Dafür wird es Hooks geben.
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## Themes Fehlerbehebung <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. Ich erhalte den Fehler Error: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+Überprüfe dass dein Theme Ordner korrekt benannte index.hbs und post.hbs beinhaltet da diese erforderlich sind.
 
 {% endraw %}
