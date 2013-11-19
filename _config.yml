@@ -9,6 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Danish'
+      key: 'da'
 port:         4478
 
 translations:
@@ -28,6 +30,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  da:
+    site_title:   'Ghost guide'
+    installation: 'Installation'
+    usage:        'Brug'
+    email:        'E-mail'
+    themes:       'Temaer'
+    translations: 'Oversættelser'
+    help:         'Hjælp'
 
 # If running locally, simply comment out the line below to make all urls relative
 
