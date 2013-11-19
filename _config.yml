@@ -9,6 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Romanian'
+      key: 'ro'
 port:         4478
 
 translations:
@@ -28,6 +30,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  ro:
+    site_title:   'Ghid Ghost'
+    installation: 'Instalare'
+    usage:        'Folosire'
+    email:        'Email'
+    themes:       'Teme'
+    translations: 'Traduceri'
+    help:         'Ajutor'
 
 # If running locally, simply comment out the line below to make all urls relative
 
