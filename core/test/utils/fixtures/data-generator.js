@@ -63,7 +63,7 @@ DataGenerator.Content = {
         {
             name: 'Jimothy Bogendath',
             slug: 'jimothy-bogendath',
-            email: 'jbogendath@example.com',
+            email: 'jbOgendAth@example.com',
             password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
         },
         {

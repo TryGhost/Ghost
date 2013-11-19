@@ -61,7 +61,7 @@ User = ghostBookshelf.Model.extend({
     saving: function () {
 
         this.set('name', this.sanitize('name'));
-        this.set('email', this.sanitize('email'));
+        this.set('email', this.sanitize('email').toLocaleLowerCase());
         this.set('location', this.sanitize('location'));
         this.set('website', this.sanitize('website'));
         this.set('bio', this.sanitize('bio'));
@@ -154,7 +154,7 @@ User = ghostBookshelf.Model.extend({
     // Finds the user by email, and checks the password
     check: function (_userdata) {
         return this.forge({
-            email: _userdata.email
+            email: _userdata.email.toLocaleLowerCase()
         }).fetch({require: true}).then(function (user) {
             return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                 if (!matched) {
