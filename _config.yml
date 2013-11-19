@@ -9,6 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Español'
+      key: 'es'
 port:         4478
 
 translations:
@@ -28,7 +30,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
-
+  es:
+    site_title:   'Guía Ghost'
+    installation: 'Instalación'
+    usage:        'Uso'
+    email:        'Email'
+    themes:       'Temas'
+    translations: 'Traducciones'
+    help:         'Ayuda' 
 # If running locally, simply comment out the line below to make all urls relative
 
 #url:          http://docs.ghost.org
