@@ -7,6 +7,7 @@ var Ghost         = require('../../ghost'),
     when          = require('when'),
     nodefn        = require('when/node/function'),
     _             = require('underscore'),
+    schema        = require('../data/schema'),
 
     ghost         = new Ghost(),
     db;
@@ -75,8 +76,7 @@ db = {
                     .then(function (fileContents) {
                         var importData,
                             error = "",
-                            constraints = require('../data/migration/' + databaseVersion).constraints,
-                            constraintkeys = _.keys(constraints);
+                            tableKeys = _.keys(schema);
 
                         // Parse the json data
                         try {
@@ -89,20 +89,20 @@ db = {
                             return when.reject(new Error("Import data does not specify version"));
                         }
 
-                        _.each(constraintkeys, function (constkey) {
+                        _.each(tableKeys, function (constkey) {
                             _.each(importData.data[constkey], function (elem) {
                                 var prop;
                                 for (prop in elem) {
                                     if (elem.hasOwnProperty(prop)) {
-                                        if (constraints[constkey].hasOwnProperty(prop)) {
+                                        if (schema[constkey].hasOwnProperty(prop)) {
                                             if (elem.hasOwnProperty(prop)) {
                                                 if (!_.isNull(elem[prop])) {
-                                                    if (elem[prop].length > constraints[constkey][prop].maxlength) {
+                                                    if (elem[prop].length > schema[constkey][prop].maxlength) {
                                                         error += error !== "" ? "<br>" : "";
-                                                        error += "Property '" + prop + "' exceeds maximum length of " + constraints[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
+                                                        error += "Property '" + prop + "' exceeds maximum length of " + schema[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
                                                     }
                                                 } else {
-                                                    if (!constraints[constkey][prop].nullable) {
+                                                    if (!schema[constkey][prop].nullable) {
                                                         error += error !== "" ? "<br>" : "";
                                                         error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
                                                     }
