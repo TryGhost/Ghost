@@ -22,7 +22,7 @@ La première décision que vous devez faire est de savoir si voulez installer et
 
 Il y a plusieurs options pour installer simplement Ghost :
 
-*   Déployer vers les nuages avec [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   Déployer sur le cloud avec [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
 *   Lancer Ghost avec [des déploiements Rackspace](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
 *   Être opérationnel avec un [Droplet DigitalOcean](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
@@ -65,7 +65,7 @@ Les distributions Linux populaires &mdash; telles que Fedora, Debian et Ubuntu &
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
     *   La plupart des autres distributions: `easy_install supervisor`
-*   Assurez que Supervisor est lancé, en lancant la commande `service supervisor start`
+*   Vérifiez que Supervisor est lancé, en lançant la commande `service supervisor start`
 *   Créez le script de démarrage pour votre Ghost. Généralement, celui-ci se trouvera dans `/etc/supervisor/conf.d/ghost.conf` Par exemple:
 
     ```
@@ -87,7 +87,7 @@ Vous pouvez consulter la [documentation pour Supervisor](http://supervisord.org)
 
 ### Init Script
 
-Les systèmes Linux utilisent des init scripts (scripts d'initialisation) pour effectuer certaines actions au démarrage du système. Ces scripts résident dans /etc/init.d. Pour faire tourner en permanence Ghost et même survivre à un redémarrage système, vous pouvez mettre en place un init script. L'exemple suivant fonctionnera sur Ubuntu et a été testé sous **Ubuntu 12.04**.
+Les systèmes Linux utilisent des init scripts (scripts d'initialisation) pour effectuer certaines actions au démarrage du système. Ces scripts résident dans /etc/init.d. Pour faire tourner Ghost en permanence, ou même le relancer après un redémarrage système, vous pouvez mettre en place un init script. L'exemple suivant fonctionnera sur Ubuntu et a été testé sous **Ubuntu 12.04**.
 
 *   Créez le fichier /etc/init.d/ghost avec le contenu suivant :
 

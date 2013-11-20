@@ -28,9 +28,9 @@ next_section: deploy
 *   Dans le terminal, tapez `npm install --production` <span class="note">notez les deux tirets</span>
 *   Quand NPM a fini d'installer, tapez `npm start` pour démarrer Ghost en mode développement
 *   Dans un navigateur, naviguez vers <code class="path">127.0.0.1:2368</code> pour consulter votre nouveau blog Ghost
-*   Changez l'URL vers <code class="path">127.0.0.1:2368/ghost</code> et créez votre utilisateur admin pour vous connecteur sur l'administration de Ghot
+*   Changez l'URL vers <code class="path">127.0.0.1:2368/ghost</code> et créez votre utilisateur admin pour vous connecteur sur l'administration de Ghost
 
-Si vous utilisez Ghost en tant que système d'exploitation invité ou à travers SSH et que vous ne disposez que d'un terminal, alors :
+Si vous utilisez Linux en tant que système distant ou à travers SSH et que vous ne disposez que d'un terminal, alors :
 
 *   Utilisez votre système d'exploitation normal pour trouver l'URL du fichier zip de Ghost (il change à chaque verion), sauvegardez l'URL mais changez '/zip/' pour '/archives/'
 *   Dans le terminal, utilisez `wget url-of-ghost.zip` pour télécharger Ghost

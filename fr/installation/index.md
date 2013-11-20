@@ -13,7 +13,7 @@ next_section: mac
 
 La documentation de Ghost est un travail en cours, il est mis à jour et amélioré régulièrement. Si vous êtes bloqués ou si vous avez des idées pour améliorer cette documentation, faites le nous savoir.
 
-Ghost est construit sur [Node.js](http://nodejs.org), et requiert la verion `0.10.*` (dernière versions table).
+Ghost est construit sur [Node.js](http://nodejs.org), et requiert la verion `0.10.*` (dernière version stable).
 
 Faire tourner Ghost localement sur votre ordinateur est très simple, mais requiert que vous installiez Node.js.
 
@@ -29,7 +29,7 @@ La manière avec laquelle [Node.js](http://nodejs.org) rend cela possible, est d
 
 ### Démarrage
 
-Si vous ne vous sentez pas à suivre les instructions sur comment installer Node.js et Ghost manuellement, de super personnes de chez [BitNami](http://bitnami.com/) ont créé [des installateurs Ghost](http://bitnami.com/stack/ghost) pour les plateformes majeures.
+Si vous ne vous sentez pas à suivre les instructions sur comment installer Node.js et Ghost manuellement, de chouettes personnes de chez [BitNami](http://bitnami.com/) ont créé [des installateurs Ghost](http://bitnami.com/stack/ghost) pour les plateformes majeures.
 
 Je veux installer Ghost sur :
 
@@ -45,6 +45,6 @@ Si vous vous êtes déjà décidé à deployer Ghost sur vos serveurs ou votre h
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Déployer Ghost</a>
 </div>
 
-Souvenez-vous que Ghost est tout nouveau, et l'équipe travaille dur pour offrir des fonctionnalités à un rytme effréné. Si vous avez besoin de mettre à jour Ghost à sa deernière version, visitez [la page mise à jour](/installation/upgrading/).
+Souvenez-vous que Ghost est tout nouveau, et l'équipe travaille dur pour offrir des fonctionnalités à un rythme effréné. Si vous avez besoin de mettre à jour Ghost à sa deernière version, visitez [la page mise à jour](/installation/upgrading/).
     Si vous êtes bloqué , visitez le [guide de dépannage]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), ou si cela n'aide pas, merci de rentrer en contact via le [forum Ghost](http://ghost.org/forum) où l'équipe et la communauté sont prêts à vous aider en cas de problème.
 
