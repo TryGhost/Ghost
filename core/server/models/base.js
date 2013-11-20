@@ -90,8 +90,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             slugTryCount = 1,
             // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
-                readOptions = _.extend(readOptions || {}, { slug: slugToFind });
-                return Model.read(readOptions).then(function (found) {
+                var args = {slug: slugToFind};
+                //status is needed for posts
+                if (readOptions && readOptions.status) {
+                    args.status = readOptions.status;
+                }
+                return Model.findOne(args, readOptions).then(function (found) {
                     var trimSpace;
 
                     if (!found) {
@@ -177,7 +181,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     edit: function (editedObj, options) {
         options = options || {};
         return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            return foundObj.save(editedObj);
+            return foundObj.save(editedObj, options);
         });
     },
 
@@ -192,7 +196,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     add: function (newObj, options) {
         options = options || {};
-        return this.forge(newObj).save(options);
+        return this.forge(newObj).save(null, options);
     },
 
     create: function () {

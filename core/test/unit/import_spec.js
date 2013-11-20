@@ -91,5 +91,105 @@ describe("Import", function () {
                 done();
             }).then(null, done);
         });
+
+        it("doesn't imports invalid post data from 000", function (done) {
+            var exportData;
+
+            // migrate to current version
+            migration.migrateUp().then(function () {
+                // Load the fixtures
+                return fixtures.populateFixtures();
+            }).then(function () {
+                // Initialise the default settings
+                return Settings.populateDefaults();
+            }).then(function () {
+                // export the version 000 data ready to import
+                // TODO: Should have static test data here?
+                return exporter();
+            }).then(function (exported) {
+                exportData = exported;
+                //change title to 151 characters
+                exportData.data.posts[0].title = new Array(152).join('a');
+                exportData.data.posts[0].tags = 'Tag';
+                return importer("000", exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }, function (error) {
+                error.should.eql('Error importing data: Post title maximum length is 150 characters.');
+                when.all([
+                    knex("users").select(),
+                    knex("posts").select(),
+                    knex("settings").select(),
+                    knex("tags").select()
+                ]).then(function (importedData) {
+                    should.exist(importedData);
+                    importedData.length.should.equal(4, 'Did not get data successfully');
+
+                    // we always have 0 users as there isn't one in fixtures
+                    importedData[0].length.should.equal(0, 'There should not be a user');
+                    // import no longer requires all data to be dropped, and adds posts
+                    importedData[1].length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+
+                    // test settings
+                    importedData[2].length.should.be.above(0, 'Wrong number of settings');
+                    _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("000", 'Wrong database version');
+
+                    // test tags
+                    importedData[3].length.should.equal(exportData.data.tags.length, 'no new tags');
+
+                    done();
+                });
+                
+            }).then(null, done);
+        });
+        it("doesn't imports invalid settings data from 000", function (done) {
+            var exportData;
+
+            // migrate to current version
+            migration.migrateUp().then(function () {
+                // Load the fixtures
+                return fixtures.populateFixtures();
+            }).then(function () {
+                // Initialise the default settings
+                return Settings.populateDefaults();
+            }).then(function () {
+                // export the version 000 data ready to import
+                // TODO: Should have static test data here?
+                return exporter();
+            }).then(function (exported) {
+                exportData = exported;
+                //change to blank settings key
+                exportData.data.settings[3].key = null;
+                return importer("000", exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }, function (error) {
+                error.should.eql('Error importing data: Setting key cannot be blank');
+                when.all([
+                    knex("users").select(),
+                    knex("posts").select(),
+                    knex("settings").select(),
+                    knex("tags").select()
+                ]).then(function (importedData) {
+                    should.exist(importedData);
+                    importedData.length.should.equal(4, 'Did not get data successfully');
+
+                    // we always have 0 users as there isn't one in fixtures
+                    importedData[0].length.should.equal(0, 'There should not be a user');
+                    // import no longer requires all data to be dropped, and adds posts
+                    importedData[1].length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+
+                    // test settings
+                    importedData[2].length.should.be.above(0, 'Wrong number of settings');
+                    _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("000", 'Wrong database version');
+
+                    // test tags
+                    importedData[3].length.should.equal(exportData.data.tags.length, 'no new tags');
+
+                    done();
+                });
+                
+            }).then(null, done);
+        });
     });
 });

@@ -95,7 +95,7 @@ Settings = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.read.call(this, _key);
     },
 
-    edit: function (_data) {
+    edit: function (_data, t) {
         var settings = this;
         if (!Array.isArray(_data)) {
             _data = [_data];
@@ -103,11 +103,12 @@ Settings = ghostBookshelf.Model.extend({
         return when.map(_data, function (item) {
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
-            return settings.forge({ key: item.key }).fetch().then(function (setting) {
+            return settings.forge({ key: item.key }).fetch({transacting: t}).then(function (setting) {
+
                 if (setting) {
-                    return setting.set('value', item.value).save();
+                    return setting.set('value', item.value).save(null, {transacting: t});
                 }
-                return settings.forge({ key: item.key, value: item.value }).save();
+                return settings.forge({ key: item.key, value: item.value }).save(null, {transacting: t});
 
             }, errors.logAndThrowError);
         });

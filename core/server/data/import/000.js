@@ -78,32 +78,32 @@ function preProcessPostTags(tableData) {
     return tableData;
 }
 
-function importTags(ops, tableData) {
+function importTags(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (tag) {
-        ops.push(models.Tag.read({name: tag.name}).then(function (_tag) {
+        ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
             if (!_tag) {
-                return models.Tag.add(tag);
+                return models.Tag.add(tag, {transacting: transaction});
             }
             return when.resolve(_tag);
         }));
     });
 }
 
-function importPosts(ops, tableData) {
+function importPosts(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (post) {
-        ops.push(models.Post.add(post));
+        ops.push(models.Post.add(post, {transacting: transaction}));
     });
 }
 
-function importUsers(ops, tableData) {
+function importUsers(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     tableData[0].id = 1;
-    ops.push(models.User.edit(tableData[0]));
+    ops.push(models.User.edit(tableData[0], {transacting: transaction}));
 }
 
-function importSettings(ops, tableData) {
+function importSettings(ops, tableData, transaction) {
     // for settings we need to update individual settings, and insert any missing ones
     // the one setting we MUST NOT update is the databaseVersion settings
     var blackList = ['databaseVersion'];
@@ -112,48 +112,72 @@ function importSettings(ops, tableData) {
         return blackList.indexOf(data.key) === -1;
     });
 
-    ops.push(models.Settings.edit(tableData));
+    ops.push(models.Settings.edit(tableData, transaction));
 }
 
 // No data needs modifying, we just import whatever tables are available
 Importer000.prototype.basicImport = function (data) {
     var ops = [],
         tableData = data.data;
+    return models.Base.transaction(function (t) {
 
-    // Do any pre-processing of relationships (we can't depend on ids)
-    if (tableData.posts_tags && tableData.posts && tableData.tags) {
-        tableData = preProcessPostTags(tableData);
-    }
+        // Do any pre-processing of relationships (we can't depend on ids)
+        if (tableData.posts_tags && tableData.posts && tableData.tags) {
+            tableData = preProcessPostTags(tableData);
+        }
 
-    // Import things in the right order:
-    if (tableData.tags && tableData.tags.length) {
-        importTags(ops, tableData.tags);
-    }
+        // Import things in the right order:
+        if (tableData.tags && tableData.tags.length) {
+            importTags(ops, tableData.tags, t);
+        }
 
-    if (tableData.posts && tableData.posts.length) {
-        importPosts(ops, tableData.posts);
-    }
+        if (tableData.posts && tableData.posts.length) {
+            importPosts(ops, tableData.posts, t);
+        }
 
-    if (tableData.users && tableData.users.length) {
-        importUsers(ops, tableData.users);
-    }
+        if (tableData.users && tableData.users.length) {
+            importUsers(ops, tableData.users, t);
+        }
 
-    if (tableData.settings && tableData.settings.length) {
-        importSettings(ops, tableData.settings);
-    }
+        if (tableData.settings && tableData.settings.length) {
+            importSettings(ops, tableData.settings, t);
+        }
 
-    /** do nothing with these tables, the data shouldn't have changed from the fixtures
-     *   permissions
-     *   roles
-     *   permissions_roles
-     *   permissions_users
-     *   roles_users
-     */
+        /** do nothing with these tables, the data shouldn't have changed from the fixtures
+         *   permissions
+         *   roles
+         *   permissions_roles
+         *   permissions_users
+         *   roles_users
+         */
 
-    return when.all(ops).then(function (results) {
-        return when.resolve(results);
-    }, function (err) {
-        return when.reject("Error importing data: " + err.message || err, err.stack);
+        // Write changes to DB, if successful commit, otherwise rollback
+        // when.all() does not work as expected, when.settle() does.
+        when.settle(ops).then(function (descriptors) {
+            var rej = false,
+                error = '';
+            descriptors.forEach(function (d) {
+                if (d.state === 'rejected') {
+                    error += _.isEmpty(error) ? '' : '</br>';
+                    if (!_.isEmpty(d.reason.clientError)) {
+                        error += d.reason.clientError;
+                    } else if (!_.isEmpty(d.reason.message)) {
+                        error += d.reason.message;
+                    }
+                    rej = true;
+                }
+            });
+            if (rej) {
+                t.rollback(error);
+            } else {
+                t.commit();
+            }
+        });
+    }).then(function () {
+        //TODO: could return statistics of imported items
+        return when.resolve();
+    }, function (error) {
+        return when.reject("Error importing data: " + error);
     });
 };
 
