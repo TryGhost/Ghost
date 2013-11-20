@@ -1,10 +1,10 @@
 ---
 lang: zh
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: 如何使用Ghost - Ghost 文档
+meta_description: 一个深入使用Ghost的向导。获得Ghost但不知道如何使用？从这里开始!
+heading: 使用 Ghost
+subheading: 寻找您的周围，设置您想要的方式
 chapter: usage
 section: writing
 permalink: /zh/usage/writing/
@@ -12,54 +12,55 @@ prev_section: managing
 next_section: faq
 ---
 
-##  Writing posts <a id="writing"></a>
+##  写文章<a id="writing"></a>
 
-Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.
+在Ghost中的写博客文章都用Markdown。Markdown使用标点符号和特殊字符格式标记文档的轻量级语言。它的语法是为了防止中断写作的流动，让您专注于内容，而不是它看起来如何。
 
-###  Markdown Guide <a id="markdown"></a>
 
-[Markdown](http://daringfireball.net/projects/markdown/) is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.
+###  Markdown指南<a id="markdown"></a>
 
-Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.
+[Markdown](http://daringfireball.net/projects/markdown/)是一种标记语言，旨在提高写作效率，并保证写作尽可能易读。
 
-####  Headers
+Ghost使用了Markdown默认的所有快捷方式加上我们自己的添置。下面列出了完整的快捷键列表。
 
-Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.
+####  标题
 
-*   H1 : `# Header 1`
-*   H2 : `## Header 2`
-*   H3 : `### Header 3`
-*   H4 : `#### Header 4`
-*   H5 : `##### Header 5`
-*   H6 : `###### Header 6`
+可以在标题内容前输入#设定标题。标题内容前#的数字决定标题的深度。标题深度从1至6。
 
-####  Text Styling
+*   H1 : `# 标题 1`
+*   H2 : `## 标题 2`
+*   H3 : `### 标题 3`
+*   H4 : `#### 标题 4`
+*   H5 : `##### 标题 5`
+*   H6 : `###### 标题 6`
 
-*   Links : `[Title](URL)`
-*   Bold : `**Bold**`
-*   Italic : `*Italic*`
-*   Paragraphs : Line space inbetween paragraphs
-*   Lists : `* An asterix on every new list item`
-*   Quotes : `> Quote`
-*   Code : `` `code` ``
+####  文本样式
+
+*   链接 : `[标题](URL)`
+*   粗体 : `**粗体**`
+*   斜体 : `*斜体*`
+*   段落 : 段落间行空间
+*   列表 : `* 每个列表项前的星号`
+*   引用 : `> 引用`
+*   代码 : `` `代码` ``
 *   HR : `==========`
 
-####  Images
+####  图片
 
-To insert an image into your post, you need to first enter `![]()` into the Markdown editor panel.
-This should create an image upload box in your preview panel.
+要在您的文章插入一个图像，你要先在Markdown编辑器面板中输入`![]()`。
+这会在预览面板中创建一个图像上传框。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png)
 
-You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup.
-If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+现在，您可以从桌面拖动和删除任何图像(.png, .gif, .jpg) 到图像上传框，把它列入您的文章中，或者点击图片上传框使用标准图像上传弹出窗口。 
+如果你想输入图片url，点击图像上传框左下方的'link'图标，这会为您提供插入图像的URL的功能。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png)
 
-To title your image, all you need to do is place your title text inbetween the square brackets, e.g; `![This is a title]()`. 
+给你的图片加上标题，你需要在方括号中填写你的标题文字，例如；`![This is a title]()`. 
 
-##### Removing Images
+##### 删除图片
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
-To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
+要删除图像，请在当前插入图像的右上角单击“remove”图标。这会给你提供空白的图片上传框让你重新插入一个新的图片。
