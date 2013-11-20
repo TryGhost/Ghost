@@ -283,7 +283,7 @@ describe('Core Helpers', function () {
         });
 
         it('should output an absolute URL if the option is present', function () {
-            var configStub = sinon.stub(ghost, "config", function () {
+            var configStub = sinon.stub(ghost, "blogGlobals", function () {
                     return { url: 'http://testurl.com' };
                 }),
 

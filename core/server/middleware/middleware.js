@@ -2,6 +2,7 @@
 var _           = require('underscore'),
     express     = require('express'),
     Ghost       = require('../../ghost'),
+    config      = require('../config'),
     path        = require('path'),
     ghost       = new Ghost();
 
@@ -100,20 +101,19 @@ var middleware = {
         };
     },
 
-    staticTheme: function (g) {
-        var ghost = g;
+    staticTheme: function () {
         return function blackListStatic(req, res, next) {
             if (isBlackListedFileType(req.url)) {
                 return next();
             }
 
-            return middleware.forwardToExpressStatic(ghost, req, res, next);
+            return middleware.forwardToExpressStatic(req, res, next);
         };
     },
 
     // to allow unit testing
-    forwardToExpressStatic: function (ghost, req, res, next) {
-        return express['static'](ghost.paths().activeTheme)(req, res, next);
+    forwardToExpressStatic: function (req, res, next) {
+        return express['static'](config.paths().activeTheme)(req, res, next);
     }
 };
 

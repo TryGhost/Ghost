@@ -3,7 +3,8 @@
 // modules to ensure config gets right setting.
 
 // Module dependencies
-var express      = require('express'),
+var config       = require('./server/config'),
+    express      = require('express'),
     when         = require('when'),
     _            = require('underscore'),
     semver       = require('semver'),
@@ -34,7 +35,7 @@ if (process.env.NODE_ENV === 'development') {
 // Finally it starts the http server.
 function setup(server) {
     when(ghost.init()).then(function () {
-        return helpers.loadCoreHelpers(ghost);
+        return helpers.loadCoreHelpers(ghost, config);
     }).then(function () {
 
         // ##Configuration
@@ -63,8 +64,8 @@ function setup(server) {
 
         // Are we using sockets? Custom socket or the default?
         function getSocket() {
-            if (ghost.config().server.hasOwnProperty('socket')) {
-                return _.isString(ghost.config().server.socket) ? ghost.config().server.socket : path.join(__dirname, '../content/', process.env.NODE_ENV + '.socket');
+            if (config().server.hasOwnProperty('socket')) {
+                return _.isString(config().server.socket) ? config().server.socket : path.join(__dirname, '../content/', process.env.NODE_ENV + '.socket');
             }
             return false;
         }
@@ -89,7 +90,7 @@ function setup(server) {
                 console.log(
                     "Ghost is running...".green,
                     "\nYour blog is now available on",
-                    ghost.config().url,
+                    config().url,
                     "\nCtrl+C to shut down".grey
                 );
 
@@ -105,9 +106,9 @@ function setup(server) {
                 console.log(
                     ("Ghost is running in " + process.env.NODE_ENV + "...").green,
                     "\nListening on",
-                    getSocket() || ghost.config().server.host + ':' + ghost.config().server.port,
+                    getSocket() || config().server.host + ':' + config().server.port,
                     "\nUrl configured as:",
-                    ghost.config().url,
+                    config().url,
                     "\nCtrl+C to shut down".grey
                 );
                 // ensure that Ghost exits correctly on Ctrl+C
@@ -144,8 +145,8 @@ function setup(server) {
 
             } else {
                 server.listen(
-                    ghost.config().server.port,
-                    ghost.config().server.host,
+                    config().server.port,
+                    config().server.host,
                     startGhost
                 );
             }

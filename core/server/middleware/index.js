@@ -7,6 +7,7 @@ var middleware = require('./middleware'),
     path        = require('path'),
     hbs         = require('express-hbs'),
     Ghost       = require('../../ghost'),
+    config      = require('../config'),
     storage     = require('../storage'),
     packageInfo = require('../../../package.json'),
     BSStore     = require('../../bookshelf-session'),
@@ -62,16 +63,16 @@ function initViews(req, res, next) {
         // self.globals is a hack til we have a better way of getting combined settings & config
         hbsOptions = {templateOptions: {data: {blog: ghost.blogGlobals()}}};
 
-        if (ghost.themeDirectories[ghost.settings('activeTheme')].hasOwnProperty('partials')) {
+        if (config.paths().availableThemes[ghost.settings('activeTheme')].hasOwnProperty('partials')) {
             // Check that the theme has a partials directory before trying to use it
-            hbsOptions.partialsDir = path.join(ghost.paths().activeTheme, 'partials');
+            hbsOptions.partialsDir = path.join(config.paths().activeTheme, 'partials');
         }
 
         ghost.server.engine('hbs', hbs.express3(hbsOptions));
-        ghost.server.set('views', ghost.paths().activeTheme);
+        ghost.server.set('views', config.paths().activeTheme);
     } else {
-        ghost.server.engine('hbs', hbs.express3({partialsDir: ghost.paths().adminViews + 'partials'}));
-        ghost.server.set('views', ghost.paths().adminViews);
+        ghost.server.engine('hbs', hbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+        ghost.server.set('views', config.paths().adminViews);
     }
 
     next();
@@ -90,7 +91,7 @@ function activateTheme() {
     ghost.server.set('activeTheme', ghost.settings('activeTheme'));
     ghost.server.enable(ghost.server.get('activeTheme'));
     if (stackLocation) {
-        ghost.server.stack[stackLocation].handle = middleware.whenEnabled(ghost.server.get('activeTheme'), middleware.staticTheme(ghost));
+        ghost.server.stack[stackLocation].handle = middleware.whenEnabled(ghost.server.get('activeTheme'), middleware.staticTheme());
     }
 
     // Update user error template
@@ -119,7 +120,7 @@ function manageAdminAndTheme(req, res, next) {
     // Check if the theme changed
     if (ghost.settings('activeTheme') !== ghost.server.get('activeTheme')) {
         // Change theme
-        if (!ghost.themeDirectories.hasOwnProperty(ghost.settings('activeTheme'))) {
+        if (!config.paths().availableThemes.hasOwnProperty(ghost.settings('activeTheme'))) {
             if (!res.isAdmin) {
                 // Throw an error if the theme is not available, but not on the admin UI
                 errors.logAndThrowError('The currently active theme ' + ghost.settings('activeTheme') + ' is missing.');
@@ -135,7 +136,7 @@ function manageAdminAndTheme(req, res, next) {
 module.exports = function (server) {
     var oneYear = 31536000000,
         root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
-        corePath = path.join(ghost.paths().appRoot, 'core');
+        corePath = path.join(config.paths().appRoot, 'core');
 
     // Logging configuration
     if (server.get('env') !== 'development') {
@@ -165,7 +166,7 @@ module.exports = function (server) {
     server.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
 
     // Theme only config
-    server.use(middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
+    server.use(middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme()));
 
     // Add in all trailing slashes
     server.use(slashes());

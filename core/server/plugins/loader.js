@@ -3,6 +3,7 @@ var path = require('path'),
     _    = require('underscore'),
     when = require('when'),
     createProxy = require('./proxy'),
+    config = require('../config'),
     ghostInstance,
     loader;
 
@@ -24,7 +25,7 @@ function getPluginRelativePath(name, relativeTo, ghost) {
     ghost = ghost || getGhostInstance();
     relativeTo = relativeTo || __dirname;
 
-    return path.relative(relativeTo, path.join(ghost.paths().pluginPath, name));
+    return path.relative(relativeTo, path.join(config.paths().pluginPath, name));
 }
 
 

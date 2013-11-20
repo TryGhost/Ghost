@@ -5,6 +5,7 @@
 /*global require, module */
 
 var Ghost  = require('../../ghost'),
+    config = require('../config'),
     api    = require('../api'),
     RSS    = require('rss'),
     _      = require('underscore'),
@@ -68,7 +69,7 @@ frontendControllers = {
         api.posts.read(_.pick(req.params, ['id', 'slug'])).then(function (post) {
             if (post) {
                 ghost.doFilter('prePostsRender', post).then(function (post) {
-                    var paths = ghost.paths().availableThemes[ghost.settings('activeTheme')];
+                    var paths = config.paths().availableThemes[ghost.settings('activeTheme')];
                     if (post.page && paths.hasOwnProperty('page')) {
                         res.render('page', {post: post});
                     } else {
@@ -87,7 +88,7 @@ frontendControllers = {
     },
     'rss': function (req, res, next) {
         // Initialize RSS
-        var siteUrl = ghost.config().url,
+        var siteUrl = config().url,
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             feed;
         //needs refact for multi user to not use first user as default
