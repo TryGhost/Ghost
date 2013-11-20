@@ -1,40 +1,39 @@
 ---
 lang: zh
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: 如何使用Ghost - Ghost 文档
+meta_description: 一个深入使用Ghost的向导。获得Ghost但不知道如何使用？从这里开始!
+heading: 使用 Ghost
+subheading: 寻找您的周围，设置您想要的方式
 chapter: usage
 next_section: configuration
 ---
 
-## Overview <a id="overview"></a>
+## 概述 <a id="overview"></a>
 
-Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
+希望到这一步，您已经安装和启用了Ghost，并且准备好了博客。以下的各节将引导您通过您需要知道的关于Ghost的所有内容，让您熟悉一切事情，建立您想要的博客。
 
-### First run
+### 第一步
 
-If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:
+如果您正在运行Ghost的第一次，那么您需要创建您的管理员用户帐户。在您最喜爱的浏览器中导航到您的新博客，然后将URL更改为<code class="path">&lt;your URL&gt;/ghost/signup/</code>。您应该看到一个这样的画面：
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
 
-*   Fill in your **Full Name** as the name you want to appear as the author of blog posts.
-*   Then enter your **Email Address** - make sure it's valid, and carefully enter a sensible **Password** (it needs to be at least 8 characters long).
-*   Hit the big blue **Sign Up** button, and you will be logged in to your blog.
+*   填写您的 **姓名** 作为您想要在博文作者中出现的名称。
+*   然后输入您的**电邮地址** - 确保它是有效的，并准确输入一个合理的**密码**（它需要至少8个字符长）。
+*   点击大的蓝色的 **Sign Up** 按钮, 您将会登入您的博客中。
 
-That's it! You can now start writing blog posts.
+这就是这样！您现在可以开始写博客文章。
 
-#### Messages
+#### 消息
 
-On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:
+在您第一次运行Ghost时您应该在屏幕的顶部看到一个蓝色的通知消息，看起来有点想这样：
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
 
-It let's you know some information about the way Ghost is configured, such as which environment you've started it in, and what you've got your URL set to. Jump to the [configuration](/usage/configuration/) section to find out more about environments, and how to configure Ghost. You won't be able to get rid of this message until you log in (this is a bug we're working on), but once you have, and you're familiar with the info, close it by pressing the x. It won't appear again.
+这使您了解一些关于Ghost的配置方式，比如您的运行环境和您设置的URL。跳转到[配置](/usage/configuration/) 部分以了解更多有关环境的信息和如何配置Ghost。您在登录前不能摆脱这条通知（这是一个错误，我们正在努力改正它），但是您一旦看完并熟悉了这条通知后，点击x关闭它。它就不会再次出现。
 
-You may also see an orange warning message with regard to email:
-
+您还可以看到关于电子邮件的橙色预警消息，：
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
 
-This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the [email documentation](/mail) at some point, and learn about configuring Ghost to send email. This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!
+这对于您建立博客不起决定性的作用，所以您可以开始编写博文，但是在某些时候浏览[电子邮件文档](/mail) 和了解配置Ghost来发送电子邮件来说是个好主意。它目前仅用于，在您忘记密码时向您发送一个复位电子邮件。它对于博客不重要，但如果您需要，它将真的很有用。

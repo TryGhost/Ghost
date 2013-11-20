@@ -1,22 +1,22 @@
 ---
 lang: zh
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: 如何使用Ghost - Ghost 文档
+meta_description: 一个深入使用Ghost的向导。获得Ghost但不知道如何使用？从这里开始!
+heading: 使用 Ghost
+subheading: 寻找您的周围，设置您想要的方式
 chapter: usage
 section: faq
 permalink: /zh/usage/faq/
 prev_section: writing
 ---
 
-## FAQ <a id="faq"></a>
+## 常见问题集 <a id="faq"></a>
 
-### (When) Will Ghost support feature X?
+### (何时) Ghost支持X功能吗？
 
-Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing and [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) on the [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+请参阅[Github wiki](https://github.com/TryGhost/Ghost/wiki)上的[Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) 列表和[Roadmap（路线图）](https://github.com/TryGhost/Ghost/wiki/Roadmap)
 
-### How do I insert images into a post?
+### 怎样给文章插入图片？
 
-Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
+在Ghost编辑器中图片上传是如何工作的完整说明，请参阅[Markdown指南](/usage/writing/#markdown)。
