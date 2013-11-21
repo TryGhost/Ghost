@@ -95,7 +95,9 @@ describe("Showdown client side converter", function () {
     it("should turn newlines into br tags in simple cases", function () {
         var testPhrases = [
                 {input: "fizz\nbuzz", output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
-                {input: "Hello world\nIt's a fine day", output: /^<p>Hello world <br \/>\nIt\'s a fine day<\/p>$/}
+                {input: "Hello world\nIt's a fine day", output: /^<p>Hello world <br \/>\nIt\'s a fine day<\/p>$/},
+                {input: "\"first\nsecond", output: /^<p>\"first <br \/>\nsecond<\/p>$/},
+                {input: "\'first\nsecond", output: /^<p>\'first <br \/>\nsecond<\/p>$/}
             ],
             processedMarkup;
 

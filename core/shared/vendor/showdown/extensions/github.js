@@ -52,7 +52,7 @@
                     });
 
                     // in very clear cases, let newlines become <br /> tags
-                    text = text.replace(/^[\w\<][^\n]*\n+/gm, function (x) {
+                    text = text.replace(/^[\w\<\"\'][^\n]*\n+/gm, function (x) {
                         return x.match(/\n{2}/) ? x : x.trim() + "  \n";
                     });
 
