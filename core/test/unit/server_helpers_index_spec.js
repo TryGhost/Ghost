@@ -277,7 +277,7 @@ describe('Core Helpers', function () {
         });
 
         it('should return a the slug with a prefix slash if the context is a post', function () {
-            var rendered = helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug"});
+            var rendered = helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)});
             should.exist(rendered);
             rendered.should.equal('/slug/');
         });
@@ -288,7 +288,7 @@ describe('Core Helpers', function () {
                 }),
 
                 rendered = helpers.url.call(
-                    {html: 'content', markdown: "ff", title: "title", slug: "slug"},
+                    {html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)},
                     {hash: { absolute: 'true'}}
                 );
 

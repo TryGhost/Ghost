@@ -1,4 +1,7 @@
-var frontend    = require('../controllers/frontend');
+var frontend    = require('../controllers/frontend'),
+    Ghost       = require('../../ghost'),
+
+    ghost       = new Ghost();
 
 module.exports = function (server) {
     // ### Frontend routes
@@ -6,6 +9,6 @@ module.exports = function (server) {
     server.get('/rss/', frontend.rss);
     server.get('/rss/:page/', frontend.rss);
     server.get('/page/:page/', frontend.homepage);
-    server.get('/:slug/', frontend.single);
+    server.get(ghost.settings('permalinks'), frontend.single);
     server.get('/', frontend.homepage);
 };

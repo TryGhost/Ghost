@@ -55,6 +55,13 @@
             </div>
 
             <div class="form-group">
+                <label for="permalinks">Dated Permalinks</label>
+                <input id="permalinks" name="general[permalinks]" type="checkbox" value="1" {{#if permalinks}}checked{{/if}}>
+                <label class="checkbox" for="permalinks"></label>
+                <p>Include date in your post's links</p>
+            </div>
+
+            <div class="form-group">
                 <label for="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
                     {{#each availableThemes}}

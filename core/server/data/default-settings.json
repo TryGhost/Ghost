@@ -44,6 +44,14 @@
                 "notNull": true,
                 "isIn": ["true", "false"]
             }
+        },
+        "permalinks": {
+            "defaultValue": "/:slug/",
+            "validations": {
+                "is": "^(/:?[a-z]+){1,}/$",
+                "regex": "(:id|:slug)",
+                "notContains": "/ghost/"
+            }
         }
     },
     "theme": {
