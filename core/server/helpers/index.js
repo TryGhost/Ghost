@@ -70,6 +70,25 @@ coreHelpers.pageUrl = function (context, block) {
     return context === 1 ? '/' : ('/page/' + context + '/');
 };
 
+// ### Check if a tag is contained on the tag list
+//
+// Usage example:*
+//
+// `{{#hasTag "test"}} {{tags}} {{else}} no tags {{/hasTag}}`
+//
+// @param  {String} name tag name to search on tag list
+// @return {String} list of tags formatted according to `tag` helper
+//
+coreHelpers.hasTag = function (name, options) {
+    if (_.isArray(this.tags) && !_.isEmpty(this.tags)) {
+        return (!_.isEmpty(_.filter(this.tags, function (tag) {
+            return (_.has(tag, "name") && tag.name === name);
+        }))) ? options.fn(this) : options.inverse(this);
+    }
+    return options.inverse(this);
+};
+
+
 // ### URL helper
 //
 // *Usage example:*
@@ -507,6 +526,8 @@ registerHelpers = function (ghost) {
     ghost.registerThemeHelper('author', coreHelpers.author);
 
     ghost.registerThemeHelper('tags', coreHelpers.tags);
+
+    ghost.registerThemeHelper('hasTag', coreHelpers.hasTag);
 
     ghost.registerThemeHelper('content', coreHelpers.content);
 
