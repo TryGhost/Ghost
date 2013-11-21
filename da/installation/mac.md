@@ -1,10 +1,10 @@
 ---
 lang: da
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Sådan installerer du Ghost på din server - Ghost dokumentation
+meta_description: Alt du har behov for, for at få Ghost blogging platform op og køre på din lokale maskine eller server eller hosting service.
+heading: Installation af Ghost &amp; Kom i gang
+subheading: De første trin til at få oprettet din nye blog for første gang.
 permalink: /da/installation/mac/
 chapter: installation
 section: mac
@@ -13,18 +13,18 @@ next_section: windows
 ---
 
 
-# Installing on Mac <a id="install-mac"></a>
+# Installation på Mac <a id="install-mac"></a>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+For at installere Node.js og Ghost på din mac skal du åbne et terminalvinduet. Du kan gøre det ved at åbne "spotlight" og skrive "Terminal".
 
-### Install Node
+### Installér Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   På [http://nodejs.org](http://nodejs.org) klik på install, en '.pkg' fil begynde at downloade
+*   Klik på den downloadet pakke for at begynde installation, dette vil installere både node og npm.
+*   Klik dig igennem installationen, til sidst skal du indtaste dit kodeord og klik 'install software'.
+*   Når installationen er færdig, åben dit terminalvindueog skriv `echo $PATH` for at kontollere at '/usr/local/bin/' er din sti.
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="note"><strong>Note:</strong> Hvis '/usr/local/bin' ikke er en del af din $PATH, se <a href="#export-path">fejlfindings tips</a> for at hvordan og tilføj det</p>
 
 If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
 
