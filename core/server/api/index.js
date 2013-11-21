@@ -43,6 +43,18 @@ posts = {
         });
     },
 
+    // #### List Featured Posts
+
+    // **takes:** nothing
+    featured : function featured(options) {
+        console.log('options:', options);
+        // **returns:** a promise for a list of posts which set featured in a json object
+        //return dataProvider.Post.findFeatured()
+        return dataProvider.Post.findFeatured(options).then(function (result) {
+            return result;
+        });
+    },
+
     // #### Read
 
     // **takes:** an identifier (id or slug?)
