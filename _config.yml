@@ -9,6 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Français'
+      key: 'fr'
     - name: 'Italiano'
       key: 'it'
 port:         4478
@@ -30,6 +32,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  fr:
+    site_title:   'Guide Ghost'
+    installation: 'Installation'
+    usage:        'Usage'
+    email:        'Email'
+    themes:       'Thèmes'
+    translations: 'Traductions'
+    help:         'Aide'
   it:
     site_title:   'Guida a Ghost'
     installation: 'Installazione'

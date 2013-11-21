@@ -24,7 +24,7 @@ Per installare Node.js e Ghost sul tuo mac avrai bisogno di un terminale. Puoi a
 *   Avanza nelle fasi di installazione ed alla fine inserisci la tua password e clicca 'install software'.
 *   Una volta che l'installazione è completata, torna nel terminale e scrivi `echo $PATH`. Assicurati che '/usr/local/bin/' sia nel tuo path.
 
-<p class="note"><strong>Nota:</strong> Se '/usr/local/bin' non è presente nel tuo $PATH, guarda i <a href="#export-path">consigli per risolvere i problemi</a> per capire come aggiungerlo.</p>
+<p class="note"><strong>Nota:</strong> Se '/usr/local/bin' non è presente nel tuo $PATH, dai un'occhiata alla <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">risoluzione dei problemi</a> per capire come aggiungerlo.</p>
 
 Se rimani bloccato puoi guardare [l'intero processo in azione qui](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Installa Node sul Mac").
 
