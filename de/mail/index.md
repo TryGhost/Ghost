@@ -73,7 +73,7 @@ Du kannst die Einstellungen für die development und production Environment's wi
 
 Du kannst dich für für Amazon's Simple Email Service unter <http://aws.amazon.com/ses/> registrieren. Sobald du das getan hast, wirst du einen Zugangsschlüssel und einen geheimen Schlüssel erhalten.
 
-Öffne Ghost's <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere du deiner Environment für die du Email einrichten willst und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
+Öffne Ghost's <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere zu deiner Environment für das du Email einrichten willst und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
 
 ```
 mail: {
@@ -87,7 +87,7 @@ mail: {
 
 ### Gmail <a id="gmail"></a>
 
-Es ist möglich, Gmail zum versenden aus Ghost zu verwenden. Falls du das planst, empfehlen wir dir einen [neuen Account](https://accounts.google.com/SignUp) für diesen Zweck zu erstellen, statt einen persönlichen Account zu verwenden.
+Es ist möglich, Gmail zum Versenden aus Ghost zu verwenden. Falls du das planst, empfehlen wir dir einen [neuen Account](https://accounts.google.com/SignUp) für diesen Zweck zu erstellen, statt einen persönlichen Account zu verwenden.
 
 Sobald du einen neuen Account erstellt hast, kannst du die Einstellungen in der <code class="path">config.js</code> vornehmen. Öffne sie in einem Editor deiner Wahl, navigiere zu der Environment, für die du Email einrichten willst und ändere sie folgendermaßen ab:
 
