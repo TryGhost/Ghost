@@ -4,7 +4,7 @@ layout: installation
 meta_title: Ghost auf deinem Server installieren - Ghost-Dokumentation
 meta_description: Alles was du wissen musst um deinen Ghost Blog lokal oder auf deinem Server starten zu können.
 heading: Ghost installieren &amp; Erste Schritte
-subheading: Was getan werden muss, um deinen neuen Blog zum ersten mal einzurichten.
+subheading: Was getan werden muss, um deinen neuen Blog zum ersten Mal einzurichten.
 permalink: /de/installation/mac/
 chapter: installation
 section: mac
