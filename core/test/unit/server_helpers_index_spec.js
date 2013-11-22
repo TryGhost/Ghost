@@ -555,4 +555,29 @@ describe('Core Helpers', function () {
         });
 
     });
+
+    describe("has_tag helper", function (done) {
+        var tags = [{name: 'haunted'}, {name: 'ghost'}];
+
+        it('has loaded has_tag helper', function () {
+            should.exist(handlebars.helpers.has_tag);
+        });
+
+        it('can call function if tag is found', function() {
+            helpers.has_tag.call({tags: tags}, 'haunted', {
+                fn: function(tags) {
+                    should.exist(tags);
+                }
+            });
+        });
+
+        it('can call inverse function if tag is not found', function() {
+            helpers.has_tag.call({tags: tags}, 'undefined', {
+                inverse: function(tags) {
+                    should.exist(tags);
+                }
+            });
+       });
+
+    });
 });

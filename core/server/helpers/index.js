@@ -453,6 +453,24 @@ coreHelpers.foreach = function (context, options) {
     return ret;
 };
 
+// ### Check if a tag is contained on the tag list
+//
+// Usage example:*
+//
+// `{{#has_tag "test"}} {{tags}} {{else}} no tags {{/has_tag}}`
+//
+// @param  {String} tag name to search on tag list
+// @return {String} list of tags formatted according to `tag` helper
+//
+coreHelpers.has_tag = function (name, options) {
+    if (_.isArray(this.tags) && !_.isEmpty(this.tags)) {
+        return (!_.isEmpty(_.filter(this.tags, function (tag) {
+            return (_.has(tag, "name") && tag.name === name);
+        }))) ? options.fn(this) : options.inverse(this);
+    }
+    return options.inverse(this);
+};
+
 // ## Template driven helpers
 // Template driven helpers require that their template is loaded before they can be registered.
 coreHelpers.paginationTemplate = null;
@@ -524,6 +542,8 @@ registerHelpers = function (ghost) {
     ghost.registerThemeHelper('foreach', coreHelpers.foreach);
 
     ghost.registerThemeHelper('helperMissing', coreHelpers.helperMissing);
+
+    ghost.registerThemeHelper('has_tag', coreHelpers.has_tag);
 
     ghost.registerAsyncThemeHelper('body_class', coreHelpers.body_class);
 
