@@ -190,7 +190,6 @@ coreHelpers.excerpt = function (options) {
         downsize(excerpt, truncateOptions)
     );
 };
-
 // ### Filestorage helper
 //
 // *Usage example:*
@@ -209,6 +208,7 @@ coreHelpers.ghostScriptTags = function () {
     var scriptFiles = [];
 
     if (isProduction) {
+        //scriptFiles.push("ghost.min.js");
         scriptFiles.push("ghost.min.js");
     } else {
         scriptFiles = [
@@ -356,7 +356,6 @@ coreHelpers.meta_description = function (options) {
         return new hbs.handlebars.SafeString(description.trim());
     });
 };
-
 /**
  * Localised string helpers
  *

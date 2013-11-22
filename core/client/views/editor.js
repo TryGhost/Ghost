@@ -205,6 +205,7 @@
 
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
+                image: $('#entry-image').val(),
                 // TODO: The content_raw getter here isn't great, shouldn't rely on currentView.
                 markdown: Ghost.currentView.getEditorValue()
             }, data));
@@ -282,9 +283,11 @@
             this.addSubview(new PublishBar({el: "#publish-bar", model: this.model})).render();
 
             this.$('#entry-title').val(this.model.get('title')).focus();
+            this.$('#entry-image').val(this.model.get('image')).focus();
             this.$('#entry-markdown').text(this.model.get('markdown'));
 
             this.listenTo(this.model, 'change:title', this.renderTitle);
+            this.listenTo(this.model, 'change:title', this.renderImage);
             this.listenTo(this.model, 'change:id', function (m) {
                 // This is a special case for browsers which fire an unload event when using navigate. The id change
                 // happens before the save success and can cause the unload alert to appear incorrectly on first save
@@ -379,6 +382,10 @@
 
         renderTitle: function () {
             this.$('#entry-title').val(this.model.get('title'));
+        },
+
+        renderImage: function() {
+            this.$('#entry-image').val(this.model.get('image'));
         },
 
         // This is a hack to remove iOS6 white space on orientation change bug
