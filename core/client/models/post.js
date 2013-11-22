@@ -12,8 +12,8 @@
 
         parse: function (resp) {
             if (resp.status) {
-                resp.published = !!(resp.status === 'published');
-                resp.draft = !!(resp.status === 'draft');
+                resp.published = resp.status === 'published';
+                resp.draft = resp.status === 'draft';
             }
             if (resp.tags) {
                 // TODO: parse tags into it's own collection on the model (this.tags)
