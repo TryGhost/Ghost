@@ -4,7 +4,7 @@ layout: installation
 meta_title: Ghost auf deinem Server installieren - Ghost-Dokumentation
 meta_description: Alles was du wissen musst um deinen Ghost Blog lokal oder auf deinem Server starten zu können.
 heading: Ghost installieren &amp; Erste Schritte
-subheading: Was getan werden muss, um deinen neuen Blog zum ersten mal einzurichten.
+subheading: Was getan werden muss, um deinen neuen Blog zum ersten Mal einzurichten.
 permalink: /de/installation/windows/
 chapter: installation
 section: windows
@@ -20,7 +20,7 @@ next_section: linux
 * Öffne die Datei, dann startet ein Installationsprogramm, das sowohl node als auch npm installieren wird.
 * Klicke dich durch die Installation bis dir mitgeteilt wird dass Node.js installiert wurde
 
-Falls du nicht mehr weiter weiß, kannst du dir den [ganzen Prozess hier anschauen](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Ghost auf Windows installieren").
+Falls du nicht mehr weiter weißt, kannst du dir den [ganzen Prozess hier anschauen](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Ghost auf Windows installieren").
 
 ### Ghost herunterladen und extrahieren
 
