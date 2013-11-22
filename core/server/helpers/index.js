@@ -291,12 +291,13 @@ coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
     var head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
-        trimmedVersion = this.version;
+        trimmedVersion = this.version,
+        blog = coreHelpers.ghost.blogGlobals();
 
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
-    head.push('<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="/rss/">');
     if (this.path) {
         head.push('<link rel="canonical" href="' + coreHelpers.ghost.config().url + this.path + '" />');
     }

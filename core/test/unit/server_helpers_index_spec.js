@@ -242,7 +242,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string', function (done) {
             helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
 
                 done();
             });
@@ -251,7 +251,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string even if version is invalid', function () {
             var rendered = helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/">');
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
             });
         });
     });
