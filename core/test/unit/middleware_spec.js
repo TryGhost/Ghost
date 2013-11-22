@@ -6,7 +6,7 @@ var assert          = require('assert'),
     _               = require('underscore'),
     express         = require('express'),
     Ghost           = require('../../ghost'),
-    middleware      = require('../../server/middleware');
+    middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {
 
