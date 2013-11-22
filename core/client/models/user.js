@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Models.User = Ghost.TemplateModel.extend({
+    Ghost.Models.User = Ghost.ProgressModel.extend({
         url: Ghost.settings.apiRoot + '/users/me/'
     });
 

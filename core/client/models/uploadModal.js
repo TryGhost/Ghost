@@ -1,7 +1,7 @@
 /*global Ghost, Backbone, $ */
 (function () {
     'use strict';
-    Ghost.Models.uploadModal = Ghost.TemplateModel.extend({
+    Ghost.Models.uploadModal = Backbone.Model.extend({
 
         options: {
             close: true,

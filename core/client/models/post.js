@@ -2,7 +2,7 @@
 (function () {
     'use strict';
 
-    Ghost.Models.Post = Ghost.TemplateModel.extend({
+    Ghost.Models.Post = Ghost.ProgressModel.extend({
 
         defaults: {
             status: 'draft'
