@@ -7,6 +7,7 @@ module.exports = {
     Permission: require('./permission').Permission,
     Settings: require('./settings').Settings,
     Tag: require('./tag').Tag,
+    Base: require('./base'),
     init: function () {
         return migrations.init();
     },
