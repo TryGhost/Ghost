@@ -13,15 +13,22 @@ var User,
     http           = require('http'),
     crypto         = require('crypto');
 
-
 function validatePasswordLength(password) {
     try {
-        ghostBookshelf.validator.check(password, "Your must be at least 8 characters long.").len(8);
+        ghostBookshelf.validator.check(password, "Your password must be at least 8 characters long.").len(8);
     } catch (error) {
         return when.reject(error);
     }
 
     return when.resolve();
+}
+
+function generatePasswordHash(password) {
+    // Generate a new salt
+    return nodefn.call(bcrypt.genSalt).then(function (salt) {
+        // Hash the provided password with bcrypt
+        return nodefn.call(bcrypt.hash, password, salt);
+    });
 }
 
 User = ghostBookshelf.Model.extend({
@@ -107,11 +114,8 @@ User = ghostBookshelf.Model.extend({
                 return when.reject(new Error('A user is already registered. Only one user for now!'));
             }
         }).then(function () {
-            // Generate a new salt
-            return nodefn.call(bcrypt.genSalt);
-        }).then(function (salt) {
-            // Hash the provided password with bcrypt
-            return nodefn.call(bcrypt.hash, _user.password, salt);
+            // Generate a new password hash
+            return generatePasswordHash(_user.password);
         }).then(function (hash) {
             // Assign the hashed password
             userData.password = hash;
@@ -205,21 +209,85 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    forgottenPassword: function (email) {
-        var newPassword = Math.random().toString(36).slice(2, 12), // This is magick
-            user = null;
+    generateResetToken: function (email, expires, dbHash) {
+        return this.forge({email: email.toLocaleLowerCase()}).fetch({require: true}).then(function (foundUser) {
+            var hash = crypto.createHash('sha256'),
+                text = "";
 
-        return this.forge({email: email}).fetch({require: true}).then(function (_user) {
-            user = _user;
-            return nodefn.call(bcrypt.genSalt);
-        }).then(function (salt) {
-            return nodefn.call(bcrypt.hash, newPassword, salt);
-        }).then(function (hash) {
-            user.save({password: hash});
-            return { user: user, newPassword: newPassword };
-        }, function (error) {
-            /*jslint unparam:true*/
-            return when.reject(new Error('There is no user by that email address. Check again.'));
+            // Token:
+            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
+
+            hash.update(String(expires));
+            hash.update(email.toLocaleLowerCase());
+            hash.update(foundUser.get('password'));
+            hash.update(String(dbHash));
+
+            text += [expires, email, hash.digest('base64')].join('|');
+
+            return new Buffer(text).toString('base64');
+        });
+    },
+
+    validateToken: function (token, dbHash) {
+        // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
+        var tokenText = new Buffer(token, 'base64').toString('ascii'),
+            parts,
+            expires,
+            email;
+
+        parts = tokenText.split('|');
+
+        // Check if invalid structure
+        if (!parts || parts.length !== 3) {
+            return when.reject(new Error("Invalid token structure"));
+        }
+
+        expires = parseInt(parts[0], 10);
+        email = parts[1];
+
+        if (isNaN(expires)) {
+            return when.reject(new Error("Invalid token expiration"));
+        }
+
+        // This is easy to fake, but still check anyway.
+        if (expires < Date.now()) {
+            return when.reject(new Error("Expired token"));
+        }
+
+        return this.generateResetToken(email, expires, dbHash).then(function (generatedToken) {
+            // Check for matching tokens
+            if (token === generatedToken) {
+                return when.resolve(email);
+            }
+
+            return when.reject(new Error("Invalid token"));
+        });
+    },
+
+    resetPassword: function (token, newPassword, ne2Password, dbHash) {
+        var self = this;
+
+        if (newPassword !== ne2Password) {
+            return when.reject(new Error("Your new passwords do not match"));
+        }
+
+        return validatePasswordLength(newPassword).then(function () {
+            // Validate the token; returns the email address from token
+            return self.validateToken(token, dbHash);
+        }).then(function (email) {
+            // Fetch the user by email, and hash the password at the same time.
+            return when.join(
+                self.forge({email: email.toLocaleLowerCase()}).fetch({require: true}),
+                generatePasswordHash(newPassword)
+            );
+        }).then(function (results) {
+            // Update the user with the new password hash
+            var foundUser = results[0],
+                passwordHash = results[1];
+
+            foundUser.save({password: passwordHash});
+
+            return foundUser;
         });
     },
 

@@ -5,6 +5,7 @@ var testUtils = require('../../utils'),
     _ = require('underscore'),
     errors = require('../../../server/errorHandling'),
     sinon = require('sinon'),
+    uuid = require('node-uuid'),
 
     // Stuff we are testing
     Models = require('../../../server/models');
@@ -221,6 +222,136 @@ describe('User Model', function run() {
                 done();
 
             }).then(null, done);
+        });
+
+        it('can generate reset token', function (done) {
+            // Expires in one minute
+            var expires = Date.now() + 60000,
+                dbHash = uuid.v4();
+
+            UserModel.browse().then(function (results) {
+
+                return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
+
+            }).then(function (token) {
+                should.exist(token);
+
+                token.length.should.be.above(0);
+
+                done();
+            }).then(null, done);
+        });
+
+        it('can validate a reset token', function (done) {
+            // Expires in one minute
+            var expires = Date.now() + 60000,
+                dbHash = uuid.v4();
+
+            UserModel.browse().then(function (results) {
+
+                return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
+
+            }).then(function (token) {
+                
+                return UserModel.validateToken(token, dbHash);
+
+            }).then(function () {
+
+                done();
+
+            }).then(null, done);
+        });
+
+        it('can reset a password with a valid token', function (done) {
+            // Expires in one minute
+            var origPassword,
+                expires = Date.now() + 60000,
+                dbHash = uuid.v4();
+
+            UserModel.browse().then(function (results) {
+
+                var firstUser = results.models[0],
+                    origPassword = firstUser.attributes.password;
+
+                should.exist(origPassword);
+
+                return UserModel.generateResetToken(firstUser.attributes.email, expires, dbHash);
+
+            }).then(function (token) {
+                
+                return UserModel.resetPassword(token, 'newpassword', 'newpassword', dbHash);
+
+            }).then(function (resetUser) {
+                var resetPassword = resetUser.get('password');
+
+                should.exist(resetPassword);
+
+                resetPassword.should.not.equal(origPassword);
+
+                done();
+            }).then(null, done);
+        });
+
+        it('doesn\'t allow expired timestamp tokens', function (done) {
+            var email,
+                // Expired one minute ago
+                expires = Date.now() - 60000,
+                dbHash = uuid.v4();
+
+            UserModel.browse().then(function (results) {
+
+                // Store email for later
+                email = results.models[0].attributes.email;
+
+                return UserModel.generateResetToken(email, expires, dbHash);
+
+            }).then(function (token) {
+                return UserModel.validateToken(token, dbHash);
+            }).then(function () {
+                throw new Error("Allowed expired token");
+            }, function (err) {
+
+                should.exist(err);
+
+                err.message.should.equal("Expired token");
+
+                done();
+            });
+        });
+
+        it('doesn\'t allow tampered timestamp tokens', function (done) {
+            // Expired one minute ago
+            var expires = Date.now() - 60000,
+                dbHash = uuid.v4();
+
+            UserModel.browse().then(function (results) {
+
+                return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
+
+            }).then(function (token) {
+                
+                var tokenText = new Buffer(token, 'base64').toString('ascii'),
+                    parts = tokenText.split('|'),
+                    fakeExpires,
+                    fakeToken;
+
+                fakeExpires = Date.now() + 60000;
+
+                fakeToken = [String(fakeExpires), parts[1], parts[2]].join('|');
+                fakeToken = new Buffer(fakeToken).toString('base64');
+
+                return UserModel.validateToken(fakeToken, dbHash);
+                
+            }).then(function () {
+                throw new Error("allowed invalid token");
+            }, function (err) {
+
+                should.exist(err);
+
+                err.message.should.equal("Invalid token");
+
+                done();
+            });
         });
     });
 

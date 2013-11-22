@@ -13,7 +13,8 @@
             'register/'        : 'register',
             'signup/'          : 'signup',
             'signin/'          : 'login',
-            'forgotten/'       : 'forgotten'
+            'forgotten/'       : 'forgotten',
+            'reset/:token/'     : 'reset'
         },
 
         signup: function () {
@@ -26,6 +27,10 @@
 
         forgotten: function () {
             Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-forgotten-box' });
+        },
+
+        reset: function (token) {
+            Ghost.currentView = new Ghost.Views.ResetPassword({ el: '.js-reset-box', token: token });
         },
 
         blog: function () {

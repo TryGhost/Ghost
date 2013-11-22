@@ -30,7 +30,9 @@ module.exports = function (server) {
     server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
     server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
-    server.post('/ghost/forgotten/', admin.resetPassword);
+    server.post('/ghost/forgotten/', admin.generateResetToken);
+    server.get('/ghost/reset/:token', admin.reset);
+    server.post('/ghost/reset/:token', admin.resetPassword);
     server.post('/ghost/signin/', admin.auth);
     server.post('/ghost/signup/', admin.doRegister);
     server.post('/ghost/changepw/', middleware.auth, admin.changepw);

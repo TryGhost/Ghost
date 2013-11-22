@@ -15,7 +15,8 @@
 
 .ghost-login,
 .ghost-signup,
-.ghost-forgotten {
+.ghost-forgotten,
+.ghost-reset {
     color: $midgrey;
     background: $darkgrey;
 
@@ -35,7 +36,8 @@
 
 .login-box,
 .signup-box,
-.forgotten-box {
+.forgotten-box,
+.reset-box {
     max-width: 530px;
     height: 90%;
     margin: 0 auto;
@@ -177,10 +179,10 @@
 
 
 /* =============================================================================
-   2. Signup
+   2. Signup and Reset
    ============================================================================= */
 
-#signup {
+#signup, #reset {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);

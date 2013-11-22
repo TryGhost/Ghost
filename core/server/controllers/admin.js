@@ -1,6 +1,7 @@
 var Ghost         = require('../../ghost'),
     _             = require('underscore'),
     path          = require('path'),
+    when          = require('when'),
     api           = require('../api'),
     errors        = require('../errorHandling'),
     storage       = require('../storage'),
@@ -94,7 +95,7 @@ adminControllers = {
         }
     },
     'changepw': function (req, res) {
-        api.users.changePassword({
+        return api.users.changePassword({
             currentUser: req.session.user,
             oldpw: req.body.password,
             newpw: req.body.newpassword,
@@ -104,7 +105,6 @@ adminControllers = {
         }, function (error) {
             res.send(401, {error: error.message});
         });
-
     },
     'signup': function (req, res) {
         /*jslint unparam:true*/
@@ -114,7 +114,6 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
-
     'doRegister': function (req, res) {
         var name = req.body.name,
             email = req.body.email,
@@ -134,9 +133,7 @@ adminControllers = {
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
         });
-
     },
-
     'forgotten': function (req, res) {
         /*jslint unparam:true*/
         res.render('forgotten', {
@@ -145,26 +142,27 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
-
-    'resetPassword': function (req, res) {
+    'generateResetToken': function (req, res) {
         var email = req.body.email;
 
-        api.users.forgottenPassword(email).then(function (user) {
-            var message = {
+        api.users.generateResetToken(email).then(function (token) {
+            var siteLink = '<a href="' + ghost.config().url + '">' + ghost.config().url + '</a>',
+                resetUrl = ghost.config().url + '/ghost/reset/' + token + '/',
+                resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
+                message = {
                     to: email,
-                    subject: 'Your new password',
-                    html: "<p><strong>Hello!</strong></p>" +
-                          "<p>You've reset your password. Here's the new one: " + user.newPassword + "</p>" +
-                          "<p>Ghost <br/>" +
-                          '<a href="' + ghost.config().url + '">' +
-                           ghost.config().url + '</a></p>'
+                    subject: 'Reset Password',
+                    html: '<p><strong>Hello!</strong></p>' +
+                          '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
+                          '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
+                          '<p>Ghost</p>'
                 };
 
             return ghost.mail.send(message);
         }).then(function success() {
             var notification = {
                 type: 'success',
-                message: 'Your password was changed successfully. Check your email for details.',
+                message: 'Check your email for further instructions',
                 status: 'passive',
                 id: 'successresetpw'
             };
@@ -174,8 +172,62 @@ adminControllers = {
             });
 
         }, function failure(error) {
+            // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
+            // TODO: It's debatable whether we want to just tell the user we sent the email in this case or not, we are giving away sensitive info here.
+            if (error && error.message === 'EmptyResponse') {
+                error.message = "Invalid email address";
+            }
+
             res.json(401, {error: error.message});
-        }).otherwise(errors.logAndThrowError);
+        });
+    },
+    'reset': function (req, res) {
+        // Validate the request token
+        var token = req.params.token;
+
+        api.users.validateToken(token).then(function () {
+            // Render the reset form
+            res.render('reset', {
+                bodyClass: 'ghost-reset',
+                hideNavbar: true,
+                adminNav: setSelected(adminNavbar, 'reset')
+            });
+        }).otherwise(function (err) {
+            // Redirect to forgotten if invalid token
+            var notification = {
+                type: 'error',
+                message: 'Invalid or expired token',
+                status: 'persistent',
+                id: 'errorinvalidtoken'
+            };
+
+            errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
+
+            return api.notifications.add(notification).then(function () {
+                res.redirect('/ghost/forgotten');
+            });
+        });
+    },
+    'resetPassword': function (req, res) {
+        var token = req.params.token,
+            newPassword = req.param('newpassword'),
+            ne2Password = req.param('ne2password');
+
+        api.users.resetPassword(token, newPassword, ne2Password).then(function () {
+            var notification = {
+                type: 'success',
+                message: 'Password changed successfully.',
+                status: 'passive',
+                id: 'successresetpw'
+            };
+
+            return api.notifications.add(notification).then(function () {
+                res.json(200, {redirect: '/ghost/signin/'});
+            });
+        }).otherwise(function (err) {
+            // TODO: Better error message if we can tell whether the passwords didn't match or something
+            res.json(401, {error: err.message});
+        });
     },
     'logout': function (req, res) {
         req.session = null;
