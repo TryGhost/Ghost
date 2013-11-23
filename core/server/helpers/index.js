@@ -80,14 +80,27 @@ coreHelpers.pageUrl = function (context, block) {
 // i.e. If inside a post context will return post permalink
 // absolute flag outputs absolute URL, else URL is relative
 coreHelpers.url = function (options) {
-    var output = '';
+    var output = '',
+        self = this,
+        tags = {
+            year: function () { return self.created_at.getFullYear(); },
+            month: function () { return self.created_at.getMonth() + 1; },
+            day: function () { return self.created_at.getDate(); },
+            slug: function () { return self.slug; },
+            id: function () { return self.id; }
+        };
 
     if (options && options.hash.absolute) {
         output += coreHelpers.ghost.config().url;
     }
 
     if (models.isPost(this)) {
-        output += '/' + this.slug + '/';
+        output += coreHelpers.ghost.settings('permalinks');
+        output = output.replace(/(:[a-z]+)/g, function (match) {
+            if (_.has(tags, match.substr(1))) {
+                return tags[match.substr(1)]();
+            }
+        });
     }
 
     return output;

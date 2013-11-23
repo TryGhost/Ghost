@@ -157,7 +157,8 @@
                 title = this.$('#blog-title').val(),
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
-                postsPerPage = this.$('#postsPerPage').val();
+                postsPerPage = this.$('#postsPerPage').val(),
+                permalinks = this.$('#permalinks').is(':checked') ? "/:year/:month/:day/:slug/" : "/:slug/";
 
             Ghost.Validate._errors = [];
             Ghost.Validate
@@ -185,7 +186,8 @@
                     description: description,
                     email: email,
                     postsPerPage: postsPerPage,
-                    activeTheme: this.$('#activeTheme').val()
+                    activeTheme: this.$('#activeTheme').val(),
+                    permalinks: permalinks
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
