@@ -20,7 +20,8 @@ var Ghost        = require('../../ghost'),
     settingsObject,
     settingsCollection,
     settingsFilter,
-    filteredUserAttributes = ['password', 'created_by', 'updated_by', 'last_login'];
+    filteredUserAttributes = ['password', 'created_by', 'updated_by', 'last_login'],
+    ONE_DAY = 86400000;
 
 // ## Posts
 posts = {
@@ -218,8 +219,19 @@ users = {
         return dataProvider.User.changePassword(userData);
     },
 
-    forgottenPassword: function forgottenPassword(email) {
-        return dataProvider.User.forgottenPassword(email);
+    generateResetToken: function generateResetToken(email) {
+        // TODO: Do we want to be able to pass this in?
+        var expires = Date.now() + ONE_DAY;
+
+        return dataProvider.User.generateResetToken(email, expires, ghost.dbHash);
+    },
+
+    validateToken: function validateToken(token) {
+        return dataProvider.User.validateToken(token, ghost.dbHash);
+    },
+
+    resetPassword: function resetPassword(token, newPassword, ne2Password) {
+        return dataProvider.User.resetPassword(token, newPassword, ne2Password, ghost.dbHash);
     }
 };
 
