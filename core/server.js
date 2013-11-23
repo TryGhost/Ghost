@@ -1,11 +1,9 @@
 // If no env is set, default to development
 // This needs to be above all other require()
 // modules to ensure config gets right setting.
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Module dependencies
-var configLoader = require('./config-loader.js'),
-    express      = require('express'),
+var express      = require('express'),
     when         = require('when'),
     _            = require('underscore'),
     semver       = require('semver'),
@@ -21,27 +19,14 @@ var configLoader = require('./config-loader.js'),
 
 // Variables
     ghost = new Ghost(),
-    init,
-    setup;
+    setup,
+    init;
 
 // If we're in development mode, require "when/console/monitor"
 // for help in seeing swallowed promise errors.
 if (process.env.NODE_ENV === 'development') {
     require('when/monitor/console');
 }
-
-// Initializes the ghost application.
-function init(app) {
-    if (!app) {
-        app = express();
-    }
-
-    configLoader.loadConfig().then(function () {
-        // The server and its dependencies require a populated config
-        setup(app);
-    }).otherwise(errors.logAndThrowError);
-}
-
 
 // Sets up the express server instance.
 // Instantiates the ghost singleton,
@@ -166,6 +151,16 @@ function setup(server) {
     }, function (err) {
         errors.logErrorAndExit(err);
     });
+}
+
+// Initializes the ghost application.
+function init(app) {
+    if (!app) {
+        app = express();
+    }
+
+    // The server and its dependencies require a populated config
+    setup(app);
 }
 
 module.exports = init;
