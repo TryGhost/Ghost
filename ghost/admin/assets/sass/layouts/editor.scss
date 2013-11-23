@@ -564,15 +564,18 @@ body.zen {
     }
 }
 
-.tag-input {
+input[type="text"].tag-input {
     display: inline-block;
+    padding: 0;
     vertical-align: top;
     color: $lightgrey;
     font-weight: 300;
     background: transparent;
     border: none;
 
-    &:focus {outline: none;}
+    &:focus {
+        outline: none;
+    }
 }
 
 .tag {
