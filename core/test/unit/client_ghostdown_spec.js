@@ -55,6 +55,15 @@ describe("Ghostdown showdown extensions", function () {
             });
     });
 
+    it("should allow 4 underscores", function () {
+        var processedMarkup =
+            ghostdown().reduce(function (prev, processor) {
+                return processor.filter(prev);
+            }, "Ghost ____");
+
+        processedMarkup.should.match(/Ghost\s(?:&#95;){4}$/);
+    });
+
     it("should correctly include an image", function () {
         [
             "![image and another,/ image](http://dsurl.stuff)",
