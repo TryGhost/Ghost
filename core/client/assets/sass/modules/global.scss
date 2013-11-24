@@ -1304,7 +1304,7 @@ main {
     @include baseline;
     position: relative;
     overflow:hidden;
-    padding: 55px 60px 65px 60px;
+    padding: 55px 60px;
     border: $lightbrown 3px dashed;
     width: 100%;
     height: auto;
@@ -1322,22 +1322,17 @@ main {
     }
     .description {
         margin-top: 10px;
-        margin-bottom: -40px;
-    }
-    .centre{
-        position: relative;
-        top: 50px;
-        display: block;
-        margin: 0 auto -6px auto;
     }
     .media {
         @include icon($i-image, 60px, darken($lightbrown, 3%)) {
-            display:inline-block;
+            display: inline-block;
+            vertical-align: initial;
             @include transition(transform 1s ease);
         }
     }
 
-    .image-url {
+    .image-url,
+    .image-upload {
         @include icon($i-link, 12px);
         line-height: 12px;
         padding: 10px;
@@ -1348,12 +1343,19 @@ main {
         color: $brown;
         text-decoration: none;
     }
+    .image-upload {
+      @include icon($i-image, 12px);
+    }
+
     .button-add {
         display: inline-block;
         position:relative;
         z-index: 700;
         color: #fff;
         padding-left:5px;
+    }
+    .button-save {
+      margin: 0 0 0 10px;
     }
 
     .image-webcam {
@@ -1380,8 +1382,8 @@ main {
             direction: ltr;
             cursor: pointer;
             &.right {
-                position: relative;
                 right: 9999px;
+                height: 0;
             }
         }
 
@@ -1389,12 +1391,11 @@ main {
             font: -webkit-small-control;
             box-sizing: border-box;
             width: 276px;
-            padding: 5px 7px;
-            margin: 0;
-            margin-top: -10px;
-            margin-bottom: -1px; outline: 0;
+            vertical-align: middle;
+            padding: 9px 7px;
+            margin: 10px 0;
+            outline: 0;
             font-size: 1.1em;
-            line-height: 1.4em;
             background: #fff;
             border: #e3e1d5 1px solid;
             border-radius: 4px;
@@ -1405,9 +1406,7 @@ main {
 
     .progress {
         position: relative;
-        top: -22px;
-        margin:  auto;
-        margin-bottom: -12px;
+        margin: -19px 0 44px 0;
         display: block;
         overflow: hidden;
         @include linear-gradient(to bottom, #f5f5f5, #f9f9f9);

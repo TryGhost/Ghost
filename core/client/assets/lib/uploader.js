@@ -69,7 +69,7 @@
                     add: function (e, data) {
                         /*jslint unparam:true*/
                         $dropzone.find('.js-fileupload').removeClass('right');
-                        $dropzone.find('.js-url, button.centre').remove();
+                        $dropzone.find('.js-url').remove();
                         $progress.find('.js-upload-progress-bar').removeClass('fail');
                         $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
                         $dropzone.find('span.media, div.description, a.image-url, a.image-webcam')
@@ -140,7 +140,7 @@
             },
 
             removeExtras: function () {
-                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel').remove();
+                $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-upload, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel').remove();
             },
 
             initWithDropzone: function () {
@@ -170,21 +170,21 @@
                 $dropzone.find('.js-cancel').on('click', function () {
                     $dropzone.find('.js-url').remove();
                     $dropzone.find('.js-fileupload').removeClass('right');
-                    $dropzone.find('button.centre').remove();
                     self.removeExtras();
                     self.initWithDropzone();
                 });
-                if (settings.editor) {
-                    $dropzone.find('div.description').after('<button class="js-button-accept button-save centre">Save</button>');
-                }
+
                 $dropzone.find('div.description').before($url);
+
+                if (settings.editor) {
+                    $dropzone.find('div.js-url').append('<button class="js-button-accept button-save">Save</button>');
+                }
 
                 $dropzone.find('.js-button-accept').on('click', function () {
                     val = $dropzone.find('.js-upload-url').val();
                     $dropzone.find('div.description').hide();
                     $dropzone.find('.js-fileupload').removeClass('right');
                     $dropzone.find('.js-url').remove();
-                    $dropzone.find('button.centre').remove();
                     if (val === "") {
                         $dropzone.trigger("uploadsuccess", 'http://');
                         self.initWithDropzone();
@@ -192,6 +192,15 @@
                         self.complete(val);
                     }
                 });
+
+                $dropzone.append('<a class="image-upload" title="Add image"><span class="hidden">Upload</span></a>');
+
+                $dropzone.find('a.image-upload').on('click', function () {
+                    $dropzone.find('.js-url').remove();
+                    $dropzone.find('.js-fileupload').removeClass('right');
+                    self.initWithDropzone();
+                });
+
             },
             initWithImage: function () {
                 var self = this;
