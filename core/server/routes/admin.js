@@ -1,13 +1,18 @@
 var admin       = require('../controllers/admin'),
     api         = require('../api'),
-    middleware  = require('../middleware').middleware;
+    middleware  = require('../middleware').middleware,
+    Ghost       = require('../../ghost'),
+    url         = require('url'),
+
+    ghost = new Ghost();
 
 // Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {
+    var root = ghost.server.get('ghost root').replace(/\/$/, '');
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
-            return res.redirect('/ghost/signup/');
+            return res.redirect(root + '/ghost/signup/');
         }
         next();
     }).otherwise(function (err) {
@@ -16,16 +21,17 @@ function redirectToSignup(req, res, next) {
 }
 
 module.exports = function (server) {
+    var root = server.get('ghost root').replace(/\/$/, '');
     // ### Admin routes
     /* TODO: put these somewhere in admin */
-    server.get(/^\/logout\/?$/, function redirect(req, res) {
+    server.get(/logout/, function redirect(req, res) {
         /*jslint unparam:true*/
-        res.redirect(301, '/signout/');
+        res.redirect(301, root + '/signout/');
     });
-    server.get(/^\/signout\/?$/, admin.logout);
+    server.get(/signout/, admin.logout);
     server.get('/ghost/login/', function redirect(req, res) {
         /*jslint unparam:true*/
-        res.redirect(301, '/ghost/signin/');
+        res.redirect(301, root + '/ghost/signin/');
     });
     server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
@@ -46,13 +52,13 @@ module.exports = function (server) {
     server.post('/ghost/upload/', middleware.auth, admin.uploader);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    server.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)/, function (req, res) {
+    server.get(/\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {
         /*jslint unparam:true*/
-        res.redirect('/ghost/');
+        res.redirect(root + '/ghost/');
     });
-    server.get(/^\/(ghost$\/?)/, middleware.auth, function (req, res) {
+    server.get(/\/(ghost$\/?)/, middleware.auth, function (req, res) {
         /*jslint unparam:true*/
-        res.redirect('/ghost/');
+        res.redirect(root + '/ghost/');
     });
     server.get('/ghost/', redirectToSignup, middleware.auth, admin.index);
 };

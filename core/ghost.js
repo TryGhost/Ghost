@@ -11,6 +11,7 @@ var config      = require('../config'),
     hbs         = require('express-hbs'),
     nodefn      = require('when/node/function'),
     _           = require('underscore'),
+    url         = require('url'),
     Polyglot    = require('node-polyglot'),
     Mailer      = require('./server/mail'),
     models      = require('./server/models'),
@@ -88,10 +89,18 @@ Ghost = function () {
             },
             dataProvider: models,
             blogGlobals:  function () {
+                var localPath = url.parse(instance.config().url).path;
+
+                // Remove trailing slash
+                if (localPath !== '/') {
+                    localPath = localPath.replace(/\/$/, '');
+                }
+
                 /* this is a bit of a hack until we have a better way to combine settings and config
                  * this data is what becomes globally available to themes */
                 return {
-                    url: instance.config().url,
+                    url: instance.config().url.replace(/\/$/, ''),
+                    path: localPath,
                     title: instance.settings('title'),
                     description: instance.settings('description'),
                     logo: instance.settings('logo'),
