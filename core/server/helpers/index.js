@@ -324,7 +324,7 @@ coreHelpers.ghost_head = function (options) {
 coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
     var foot = [];
-    foot.push('<script src="/shared/vendor/jquery/jquery.js"></script>');
+    foot.push('<script src="/shared/vendor/jquery/jquery.min.js"></script>');
 
     return coreHelpers.ghost.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
