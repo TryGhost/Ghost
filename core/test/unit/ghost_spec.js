@@ -34,6 +34,12 @@ describe("Ghost API", function () {
         sandbox.restore();
     });
 
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }, done);
+    });
+
     it("is a singleton", function () {
         var ghost2 = new Ghost();
 

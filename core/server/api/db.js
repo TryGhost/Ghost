@@ -133,7 +133,7 @@ db = {
                 };
 
                 return api.notifications.add(notification).then(function () {
-                    delete req.session.user;
+                    req.session.destroy();
                     res.set({
                         "X-Cache-Invalidate": "/*"
                     });

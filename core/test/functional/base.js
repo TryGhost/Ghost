@@ -24,7 +24,7 @@
 var host = casper.cli.options.host || 'localhost',
     noPort = casper.cli.options.noPort || false,
     port = casper.cli.options.port || '2368',
-    email = casper.cli.options.email || 'ghost@tryghost.org',
+    email = casper.cli.options.email || 'jbloggs@example.com',
     password = casper.cli.options.password || 'Sl1m3rson',
     url = "http://" + host + (noPort ? '/' : ":" + port + "/"),
     newUser = {

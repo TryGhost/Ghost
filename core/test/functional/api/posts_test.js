@@ -14,17 +14,12 @@ describe('Post API', function () {
     before(function (done) {
         testUtils.clearData()
             .then(function () {
-                done();
-            }, done);
-    });
-
-    beforeEach(function (done) {
-        testUtils.initData()
+                return testUtils.initData();
+            })
             .then(function () {
                 return testUtils.insertDefaultFixtures();
             })
             .then(function () {
-                // do a get request to get the CSRF token first
                 request.get(testUtils.API.getSigninURL(), function (error, response, body) {
                     response.should.have.status(200);
                     var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
@@ -32,19 +27,17 @@ describe('Post API', function () {
                     csrfToken = body.match(pattern_meta)[1];
                     setTimeout((function () {
                         request.post({uri: testUtils.API.getSigninURL(),
-                            headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
+                                headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
                             response.should.have.status(200);
-                            done();
+                            request.get(testUtils.API.getAdminURL(), function (error, response, body) {
+                                response.should.have.status(200);
+                                csrfToken = body.match(pattern_meta)[1];
+                                done();
+                            });
                         }).form({email: user.email, password: user.password});
                     }), 2000);
                 });
             }, done);
-    });
-
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }, done);
     });
 
     it('can retrieve all posts', function (done) {
@@ -114,6 +107,60 @@ describe('Post API', function () {
         });
     });
 
+
+    it('can\'t retrieve non existent post', function (done) {
+        request.get(testUtils.API.getApiURL('posts/99/'), function (error, response, body) {
+            response.should.have.status(404);
+            should.not.exist(response.headers['x-cache-invalidate']);
+            response.should.be.json;
+            var jsonResponse = JSON.parse(body);
+            jsonResponse.should.exist;
+            testUtils.API.checkResponseValue(jsonResponse, ['error']);
+            done();
+        });
+    });
+
+    it('can edit a post', function (done) {
+        request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+            var jsonResponse = JSON.parse(body),
+                changedValue = 'My new Title';
+            jsonResponse.should.exist;
+            jsonResponse.title = changedValue;
+
+            request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                headers: {'X-CSRF-Token': csrfToken},
+                json: jsonResponse}, function (error, response, putBody) {
+                response.should.have.status(200);
+                response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                response.should.be.json;
+                putBody.should.exist;
+                putBody.title.should.eql(changedValue);
+
+                testUtils.API.checkResponse(putBody, 'post');
+                done();
+            });
+        });
+    });
+
+    it('can\'t edit non existent post', function (done) {
+        request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+            var jsonResponse = JSON.parse(body),
+                changedValue = 'My new Title';
+            jsonResponse.title.exist;
+            jsonResponse.testvalue = changedValue;
+            jsonResponse.id = 99;
+            request.put({uri: testUtils.API.getApiURL('posts/99/'),
+                headers: {'X-CSRF-Token': csrfToken},
+                json: jsonResponse}, function (error, response, putBody) {
+                response.should.have.status(404);
+                should.not.exist(response.headers['x-cache-invalidate']);
+                response.should.be.json;
+                testUtils.API.checkResponseValue(putBody, ['error']);
+                done();
+            });
+        });
+    });
+
     it('can delete a post', function (done) {
         var deletePostId = 1;
         request.del({uri: testUtils.API.getApiURL('posts/' + deletePostId + '/'),
@@ -170,58 +217,5 @@ describe('Post API', function () {
         });
     });
 
-
-    it('can\'t retrieve non existent post', function (done) {
-        request.get(testUtils.API.getApiURL('posts/99/'), function (error, response, body) {
-            response.should.have.status(404);
-            should.not.exist(response.headers['x-cache-invalidate']);
-            response.should.be.json;
-            var jsonResponse = JSON.parse(body);
-            jsonResponse.should.exist;
-            testUtils.API.checkResponseValue(jsonResponse, ['error']);
-            done();
-        });
-    });
-
-    it('can edit a post', function (done) {
-        request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
-            var jsonResponse = JSON.parse(body),
-                changedValue = 'My new Title';
-            jsonResponse.should.exist;
-            jsonResponse.title = changedValue;
-
-            request.put({uri: testUtils.API.getApiURL('posts/1/'),
-                headers: {'X-CSRF-Token': csrfToken},
-                json: jsonResponse}, function (error, response, putBody) {
-                response.should.have.status(200);
-                response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
-                response.should.be.json;
-                putBody.should.exist;
-                putBody.title.should.eql(changedValue);
-
-                testUtils.API.checkResponse(putBody, 'post');
-                done();
-            });
-        });
-    });
-
-    it('can\'t edit non existent post', function (done) {
-        request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
-            var jsonResponse = JSON.parse(body),
-                changedValue = 'My new Title';
-            jsonResponse.title.exist;
-            jsonResponse.testvalue = changedValue;
-            jsonResponse.id = 99;
-            request.put({uri: testUtils.API.getApiURL('posts/99/'),
-                headers: {'X-CSRF-Token': csrfToken},
-                json: jsonResponse}, function (error, response, putBody) {
-                response.should.have.status(404);
-                should.not.exist(response.headers['x-cache-invalidate']);
-                response.should.be.json;
-                testUtils.API.checkResponseValue(putBody, ['error']);
-                done();
-            });
-        });
-    });
 
 });

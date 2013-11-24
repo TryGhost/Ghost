@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "000"
+            "defaultValue": "001"
         }
     },
     "blog": {

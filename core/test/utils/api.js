@@ -27,6 +27,9 @@ function getApiURL (route) {
 function getSigninURL () {
     return url.resolve(schema + host + ':' + port, 'ghost/signin/');
 }
+function getAdminURL () {
+    return url.resolve(schema + host + ':' + port, 'ghost/');
+}
 
 // make sure the API only returns expected properties only
 function checkResponse (jsonResponse, objectType) {
@@ -42,6 +45,7 @@ function checkResponseValue (jsonResponse, properties) {
 module.exports = {
     getApiURL: getApiURL,
     getSigninURL: getSigninURL,
+    getAdminURL: getAdminURL,
     checkResponse: checkResponse,
     checkResponseValue: checkResponseValue,
 };
