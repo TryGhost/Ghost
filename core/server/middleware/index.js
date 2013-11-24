@@ -9,6 +9,7 @@ var middleware = require('./middleware'),
     Ghost       = require('../../ghost'),
     storage     = require('../storage'),
     packageInfo = require('../../../package.json'),
+    BSStore     = require('../../bookshelf-session'),
 
     ghost = new Ghost();
 
@@ -166,8 +167,14 @@ module.exports = function (server) {
     server.use('/ghost/upload/', express.multipart());
     server.use('/ghost/upload/', express.multipart({uploadDir: corePath + '/content/images'}));
     server.use('/ghost/api/v0.1/db/', express.multipart());
-    server.use(express.cookieParser(ghost.dbHash));
-    server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
+
+    // Session handling
+    server.use(express.cookieParser());
+    server.use(express.session({
+        store: new BSStore(ghost.dataProvider),
+        secret: ghost.dbHash,
+        cookie: { maxAge: 12 * 60 * 60 * 1000 }
+    }));
 
     //enable express csrf protection
     server.use(express.csrf());

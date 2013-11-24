@@ -84,9 +84,13 @@ adminControllers = {
         if (!denied) {
             loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-                req.session.user = user.id;
-                res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                    + decodeURIComponent(req.body.redirect) : '/ghost/'});
+                req.session.regenerate(function (err) {
+                    if (!err) {
+                        req.session.user = user.id;
+                        res.json(200, {redirect: req.body.redirect ? '/ghost/'
+                            + decodeURIComponent(req.body.redirect) : '/ghost/'});
+                    }
+                });
             }, function (error) {
                 res.json(401, {error: error.message});
             });
@@ -125,10 +129,14 @@ adminControllers = {
             password: password
         }).then(function (user) {
             api.settings.edit('email', email).then(function () {
-                if (req.session.user === undefined) {
-                    req.session.user = user.id;
-                }
-                res.json(200, {redirect: '/ghost/'});
+                req.session.regenerate(function (err) {
+                    if (!err) {
+                        if (req.session.user === undefined) {
+                            req.session.user = user.id;
+                        }
+                        res.json(200, {redirect: '/ghost/'});
+                    }
+                });
             });
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
@@ -230,7 +238,7 @@ adminControllers = {
         });
     },
     'logout': function (req, res) {
-        req.session = null;
+        req.session.destroy();
         var notification = {
             type: 'success',
             message: 'You were successfully signed out',

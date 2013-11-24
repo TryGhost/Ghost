@@ -29,6 +29,12 @@ describe('Settings Model', function () {
         }, done);
     });
 
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }, done);
+    });
+
     describe('API', function () {
 
         it('can browse', function (done) {
@@ -67,7 +73,6 @@ describe('Settings Model', function () {
         });
 
         it('can edit single', function (done) {
-            var firstSetting;
 
             SettingsModel.browse().then(function (results) {
 
@@ -149,7 +154,7 @@ describe('Settings Model', function () {
         });
 
         it('can delete', function (done) {
-            var firstSettingId;
+            var settingId;
 
             SettingsModel.browse().then(function (results) {
 
@@ -157,9 +162,11 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                firstSettingId = results.models[0].id;
+                // dont't use results.models[0], since it will delete databaseversion
+                // which is used for testUtils.reset()
+                settingId = results.models[1].id;
 
-                return SettingsModel.destroy(firstSettingId);
+                return SettingsModel.destroy(settingId);
 
             }).then(function () {
 
@@ -172,7 +179,7 @@ describe('Settings Model', function () {
                 ids = _.pluck(newResults.models, "id");
 
                 hasDeletedId = _.any(ids, function (id) {
-                    return id === firstSettingId;
+                    return id === settingId;
                 });
 
                 hasDeletedId.should.equal(false);

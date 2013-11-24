@@ -16,16 +16,14 @@ var testUtils = require('../utils'),
 describe('Permissions', function () {
 
     before(function (done) {
-        testUtils.clearData()
-            .then(function () {
+        testUtils.clearData().then(function () {
                 done();
             }, done);
     });
 
     beforeEach(function (done) {
         testUtils.initData()
-            .then(testUtils.insertDefaultUser)
-            .then(function () {
+            .then(testUtils.insertDefaultUser).then(function () {
                 done();
             }, done);
     });
@@ -35,6 +33,12 @@ describe('Permissions', function () {
             .then(function () {
                 done();
             }, done);
+    });
+
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }, done);
     });
 
     var testPerms = [
