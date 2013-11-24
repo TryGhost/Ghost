@@ -35,7 +35,7 @@ var middleware = {
                 }
                 redirect = '?r=' + encodeURIComponent(path);
             }
-            return res.redirect('/ghost/signin/' + redirect);
+            return res.redirect(ghost.blogGlobals().url + '/ghost/signin/' + redirect);
         }
 
         next();
@@ -57,7 +57,7 @@ var middleware = {
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
         if (req.session.user) {
-            return res.redirect('/ghost/');
+            return res.redirect(ghost.blogGlobals().url + '/ghost/');
         }
 
         next();

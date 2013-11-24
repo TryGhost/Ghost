@@ -23,6 +23,7 @@ function ghostLocals(req, res, next) {
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
     res.locals.csrfToken = req.csrfToken();
+    res.locals.ghostRoot = req.path.replace(ghost.blogGlobals().path, '');
 
     if (res.isAdmin) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
@@ -99,7 +100,12 @@ function activateTheme() {
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
     // TODO improve this regex
-    res.isAdmin = /(^\/ghost\/)/.test(req.url);
+    if (ghost.blogGlobals().path === '/') {
+        res.isAdmin = /(^\/ghost\/)/.test(req.url);
+    } else {
+        res.isAdmin = new RegExp("^\\" + ghost.blogGlobals().path + "\\/ghost\\/").test(req.url);
+    }
+
     if (res.isAdmin) {
         ghost.server.enable('admin');
         ghost.server.disable(ghost.server.get('activeTheme'));
@@ -126,6 +132,7 @@ function manageAdminAndTheme(req, res, next) {
 
 module.exports = function (server) {
     var oneYear = 31536000000,
+        root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
         corePath = path.join(ghost.paths().appRoot, 'core');
 
     // Logging configuration
@@ -136,15 +143,15 @@ module.exports = function (server) {
     }
 
     // Favicon
-    server.use(express.favicon(corePath + '/shared/favicon.ico'));
+    server.use(root, express.favicon(corePath + '/shared/favicon.ico'));
 
     // Shared static config
-    server.use('/shared', express['static'](path.join(corePath, '/shared')));
+    server.use(root + '/shared', express['static'](path.join(corePath, '/shared')));
 
-    server.use('/content/images', storage.get_storage().serve());
+    server.use(root + '/content/images', storage.get_storage().serve());
 
     // Serve our built scripts; can't use /scripts here because themes already are
-    server.use('/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
+    server.use(root + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
         // Put a maxAge of one year on built scripts
         maxAge: oneYear
     }));
@@ -153,7 +160,7 @@ module.exports = function (server) {
     server.use(manageAdminAndTheme);
 
     // Admin only config
-    server.use('/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
+    server.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
 
     // Theme only config
     server.use(middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
@@ -163,9 +170,10 @@ module.exports = function (server) {
 
     server.use(express.json());
     server.use(express.urlencoded());
-    server.use('/ghost/upload/', express.multipart());
-    server.use('/ghost/upload/', express.multipart({uploadDir: corePath + '/content/images'}));
-    server.use('/ghost/api/v0.1/db/', express.multipart());
+
+    server.use(root + '/ghost/upload/', express.multipart());
+    server.use(root + '/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
+    server.use(root + '/ghost/api/v0.1/db/', express.multipart());
     server.use(express.cookieParser(ghost.dbHash));
     server.use(express.cookieSession({ cookie : { maxAge: 12 * 60 * 60 * 1000 }}));
 
@@ -180,7 +188,7 @@ module.exports = function (server) {
     server.use(initViews);
 
     // process the application routes
-    server.use(server.router);
+    server.use(root, server.router);
 
     // ### Error handling
     // 404 Handler

@@ -176,9 +176,9 @@ describe('Core Helpers', function () {
 
         it('can render class string for context', function (done) {
             when.all([
-                helpers.body_class.call({path: '/'}),
-                helpers.body_class.call({path: '/a-post-title'}),
-                helpers.body_class.call({path: '/page/4'})
+                helpers.body_class.call({ghostRoot: '/'}),
+                helpers.body_class.call({ghostRoot: '/a-post-title'}),
+                helpers.body_class.call({ghostRoot: '/page/4'})
             ]).then(function (rendered) {
                 rendered.length.should.equal(3);
 
@@ -196,7 +196,7 @@ describe('Core Helpers', function () {
 
         it('can render class for static page', function (done) {
             helpers.body_class.call({
-                path: '/',
+                ghostRoot: '/',
                 post: {
                     page: true
                 }
@@ -264,7 +264,7 @@ describe('Core Helpers', function () {
         it('returns meta tag string', function (done) {
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('<script src="/shared/vendor/jquery/jquery.js"></script>');
+                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js"><\/script>/);
 
                 done();
             });
@@ -510,7 +510,7 @@ describe('Core Helpers', function () {
         });
 
         it('can return blog title', function (done) {
-            helpers.meta_title.call({path: '/'}).then(function (rendered) {
+            helpers.meta_title.call({ghostRoot: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Ghost');
 
@@ -519,7 +519,7 @@ describe('Core Helpers', function () {
         });
 
         it('can return title of a post', function (done) {
-            var post = {path: '/nice-post', post: {title: 'Post Title'}};
+            var post = {ghostRoot: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Post Title');
@@ -536,7 +536,7 @@ describe('Core Helpers', function () {
         });
 
         it('can return blog description', function () {
-            helpers.meta_description.call({path: '/'}).then(function (rendered) {
+            helpers.meta_description.call({ghostRoot: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Just a blogging platform.');
 
@@ -545,7 +545,7 @@ describe('Core Helpers', function () {
         });
 
         it('can return empty description on post', function (done) {
-            var post = {path: '/nice-post', post: {title: 'Post Title'}};
+            var post = {ghostRoot: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('');
