@@ -10,6 +10,7 @@ CasperTest.begin("Ghost edit draft flow works correctly", 8, function suite(test
 
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
+        casper.sendKeys('#entry-image', testPost.image);
         casper.writeContentToCodeMirror(testPost.html);
     });
 
