@@ -4,6 +4,10 @@ node_js:
 env:
   - DB=sqlite3
   - DB=mysql
+  - DB=pg
+matrix:
+  allow_failures:
+    - env: DB=pg
 before_install:
   - git submodule update --init
   - gem update --system
@@ -15,6 +19,7 @@ before_install:
   - export PATH=$PATH:`pwd`/bin
   - cd -
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_travis'; fi
+  - if [ $DB == "pg" ]; then psql -c 'create database ghost_travis;' -U postgres; fi
 before_script:
   - phantomjs --version
   - casperjs --version
