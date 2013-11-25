@@ -580,4 +580,55 @@ describe('Core Helpers', function () {
        });
 
     });
+
+    describe("has_all_tags helper", function (done) {
+        var tags = [{name: 'haunted'}, {name: 'ghost'}];
+
+        it('has loaded has_all_tags helper', function () {
+            should.exist(handlebars.helpers.has_all_tags);
+        });
+
+        it('can call function if all tags are found', function() {
+            helpers.has_all_tags.apply({tags: tags}, ['haunted', 'ghost', {
+                fn: function(tags) {
+                    should.exist(tags);
+                }
+            }]);
+        });
+
+        it('can call inverse function if not tags found', function() {
+            helpers.has_all_tags.apply({tags: tags}, ['undefined', 'ghost', {
+                inverse: function(tags) {
+                    should.exist(tags);
+                }
+            }]);
+       });
+
+    });
+
+    describe("has_any_tag helper", function (done) {
+        var tags = [{name: 'haunted'}, {name: 'ghost'}];
+
+        it('has loaded has_any_tag helper', function () {
+            should.exist(handlebars.helpers.has_any_tag);
+        });
+
+        it('can call function if any of given tags are found', function() {
+            helpers.has_any_tag.apply({tags: tags}, ['haunted', 'undefined', {
+                fn: function(tags) {
+                    should.exist(tags);
+                }
+            }]);
+        });
+
+        it('can call inverse function if no tag is not found', function() {
+            helpers.has_any_tag.apply({tags: tags}, ['undefined', {
+                inverse: function(tags) {
+                    should.exist(tags);
+                }
+            }]);
+       });
+
+    });
+
 });

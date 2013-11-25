@@ -471,6 +471,42 @@ coreHelpers.has_tag = function (name, options) {
     return options.inverse(this);
 };
 
+// ### Check if a given tag list is enterely contained on the post tag list
+//
+// Usage example:*
+//
+// `{{#has_all_tags "oneTag" "otherTag" "anotherTag" }} {{tags}} {{else}} no tags {{/has_all_tags}}`
+//
+// @param  {String Array} One or more space separated strings of tags to search on the post tag list
+// @return {String} list of tags formatted according to `tag` helper
+//
+coreHelpers.has_all_tags = function () {
+    var opt = arguments[arguments.length - 1],
+        tagNames = _.pluck(this.tags, 'name');
+
+    return (_.filter(arguments, function (tag) {
+        return tagNames.indexOf(tag) !== -1;
+    })).length === (arguments.length - 1) ? opt.fn(this) : opt.inverse(this);
+};
+
+// ### Check if at least one tag is contained in tag list
+//
+// Usage example:*
+//
+// `{{#has_any_tag "oneTag" "otherTag" "anotherTag" }} {{tags}} {{else}} no tags {{/has_any_tag}}`
+//
+// @param  {String Array}  One or more space separated strings of tag name to search on the post tag list
+// @return {String} list of tags formatted according to `tag` helper
+//
+coreHelpers.has_any_tag = function () {
+    var opt = arguments[arguments.length - 1],
+        tagNames = _.pluck(this.tags, 'name');
+
+    return (_.filter(arguments, function (tag) {
+        return tagNames.indexOf(tag) !== -1;
+    })).length > 0 ? opt.fn(this) : opt.inverse(this);
+};
+
 // ## Template driven helpers
 // Template driven helpers require that their template is loaded before they can be registered.
 coreHelpers.paginationTemplate = null;
@@ -544,6 +580,10 @@ registerHelpers = function (ghost) {
     ghost.registerThemeHelper('helperMissing', coreHelpers.helperMissing);
 
     ghost.registerThemeHelper('has_tag', coreHelpers.has_tag);
+
+    ghost.registerThemeHelper('has_all_tags', coreHelpers.has_all_tags);
+
+    ghost.registerThemeHelper('has_any_tag', coreHelpers.has_any_tag);
 
     ghost.registerAsyncThemeHelper('body_class', coreHelpers.body_class);
 
