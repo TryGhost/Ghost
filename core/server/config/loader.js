@@ -1,10 +1,10 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
-    errors  = require('./server/errorHandling'),
+    errors  = require('../errorHandling'),
     path    = require('path'),
 
-    appRoot = path.resolve(__dirname, '../'),
+    appRoot = path.resolve(__dirname, '../../../'),
     configexample = path.join(appRoot, 'config.example.js'),
     config = path.join(appRoot, 'config.js');
 
@@ -49,7 +49,7 @@ function validateConfigEnvironment() {
         parsedUrl;
 
     try {
-        config = require('../config')[envVal];
+        config = require('../../../config')[envVal];
     } catch (ignore) {
 
     }
@@ -86,7 +86,7 @@ function validateConfigEnvironment() {
     return when.resolve();
 }
 
-exports.loadConfig = function () {
+function loadConfig() {
     var loaded = when.defer();
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
@@ -98,4 +98,6 @@ exports.loadConfig = function () {
         }
     });
     return loaded.promise;
-};
+}
+
+module.exports = loadConfig;

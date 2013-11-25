@@ -7,7 +7,8 @@ var testUtils = require('../utils'),
     _ = require('underscore'),
 
     // Stuff we are testing
-    Ghost = require('../../ghost');
+    config = require('../../server/config'),
+    Ghost  = require('../../ghost');
 
 describe("Ghost API", function () {
     var testTemplatePath = 'core/test/utils/fixtures/',
@@ -177,7 +178,7 @@ describe("Ghost API", function () {
         should.exist(ghost.loadTemplate, 'load template function exists');
 
         // In order for the test to work, need to replace the path to the template
-        pathsStub = sandbox.stub(ghost, "paths", function () {
+        pathsStub = sandbox.stub(config, "paths", function () {
             return {
                 // Forcing the theme path to be the same
                 activeTheme: path.join(process.cwd(), testTemplatePath),
@@ -209,7 +210,7 @@ describe("Ghost API", function () {
         should.exist(ghost.loadTemplate, 'load template function exists');
 
         // In order for the test to work, need to replace the path to the template
-        pathsStub = sandbox.stub(ghost, "paths", function () {
+        pathsStub = sandbox.stub(config, "paths", function () {
             return {
                 activeTheme: path.join(process.cwd(), themeTemplatePath),
                 helperTemplates: path.join(process.cwd(), testTemplatePath)

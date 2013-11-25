@@ -6,7 +6,7 @@ var path           = require('path'),
     spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
-    configLoader   = require('./core/config-loader.js'),
+    configLoader   = require('./core/server/config/loader'),
 
     buildGlob = [
         '**',
@@ -499,7 +499,7 @@ var path           = require('path'),
 
         grunt.registerTask('loadConfig', function () {
             var done = this.async();
-            configLoader.loadConfig().then(function () {
+            configLoader().then(function () {
                 done();
             });
         });

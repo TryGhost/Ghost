@@ -2,30 +2,23 @@
 // Defines core methods required to build the application
 
 // Module dependencies
-var config      = require('../config'),
-    when        = require('when'),
-    express     = require('express'),
-    errors      = require('./server/errorHandling'),
-    fs          = require('fs'),
-    path        = require('path'),
-    hbs         = require('express-hbs'),
-    nodefn      = require('when/node/function'),
-    _           = require('underscore'),
-    url         = require('url'),
-    Polyglot    = require('node-polyglot'),
-    Mailer      = require('./server/mail'),
-    models      = require('./server/models'),
-    requireTree = require('./server/require-tree'),
-    permissions = require('./server/permissions'),
-    uuid        = require('node-uuid'),
+var config        = require('./server/config'),
+    when          = require('when'),
+    express       = require('express'),
+    errors        = require('./server/errorHandling'),
+    fs            = require('fs'),
+    path          = require('path'),
+    hbs           = require('express-hbs'),
+    nodefn        = require('when/node/function'),
+    _             = require('underscore'),
+    url           = require('url'),
+    Polyglot      = require('node-polyglot'),
+    Mailer        = require('./server/mail'),
+    models        = require('./server/models'),
+    permissions   = require('./server/permissions'),
+    uuid          = require('node-uuid'),
 
 // Variables
-    appRoot           = path.resolve(__dirname, '../'),
-    themePath         = path.resolve(appRoot + '/content/themes'),
-    pluginPath        = path.resolve(appRoot + '/content/plugins'),
-    themeDirectories  = requireTree(themePath),
-    pluginDirectories = requireTree(pluginPath),
-
     Ghost,
     instance,
     defaults;
@@ -60,12 +53,6 @@ Ghost = function () {
         // Holds the filter hooks (that are built in to Ghost Core)
         instance.filters = [];
 
-        // Holds the theme directories temporarily
-        instance.themeDirectories = {};
-
-        // Holds the plugin directories temporarily
-        instance.pluginDirectories = {};
-
         // Holds the persistent notifications
         instance.notifications = [];
 
@@ -78,8 +65,6 @@ Ghost = function () {
         polyglot = new Polyglot();
 
         _.extend(instance, {
-            config: function () { return config[process.env.NODE_ENV]; },
-
             // there's no management here to be sure this has loaded
             settings: function (key) {
                 if (key) {
@@ -89,7 +74,7 @@ Ghost = function () {
             },
             dataProvider: models,
             blogGlobals:  function () {
-                var localPath = url.parse(instance.config().url).path;
+                var localPath = url.parse(config().url).path;
 
                 // Remove trailing slash
                 if (localPath !== '/') {
@@ -99,7 +84,7 @@ Ghost = function () {
                 /* this is a bit of a hack until we have a better way to combine settings and config
                  * this data is what becomes globally available to themes */
                 return {
-                    url: instance.config().url.replace(/\/$/, ''),
+                    url: config().url.replace(/\/$/, ''),
                     path: localPath,
                     title: instance.settings('title'),
                     description: instance.settings('description'),
@@ -108,27 +93,7 @@ Ghost = function () {
                 };
             },
             polyglot: function () { return polyglot; },
-            mail: new Mailer(),
-            getPaths: function () {
-                return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
-                    instance.themeDirectories = paths[0];
-                    instance.pluginDirectories = paths[1];
-                    return;
-                });
-            },
-            paths: function () {
-                return {
-                    'appRoot':          appRoot,
-                    'themePath':        themePath,
-                    'pluginPath':       pluginPath,
-                    'activeTheme':      path.join(themePath, !instance.settingsCache ? '' : instance.settingsCache.activeTheme.value),
-                    'adminViews':       path.join(appRoot, '/core/server/views/'),
-                    'helperTemplates':  path.join(appRoot, '/core/server/helpers/tpl/'),
-                    'lang':             path.join(appRoot, '/core/shared/lang/'),
-                    'availableThemes':  instance.themeDirectories,
-                    'availablePlugins': instance.pluginDirectories
-                };
-            }
+            mail: new Mailer()
         });
     }
     return instance;
@@ -146,7 +111,7 @@ Ghost.prototype.init = function () {
             '</strong>environment.',
 
             'Your URL is set to',
-            '<strong>' + self.config().url + '</strong>.',
+            '<strong>' + config().url + '</strong>.',
             'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
         ];
 
@@ -180,9 +145,11 @@ Ghost.prototype.init = function () {
         // Initialise the models
         self.dataProvider.init(),
         // Calculate paths
-        self.getPaths(),
-        // Initialise mail after first run
-        self.mail.init(self)
+        config.paths.updatePaths(),
+        // Initialise mail after first run,
+        // passing in config module to prevent
+        // circular dependencies.
+        self.mail.init(self, config)
     ).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -190,6 +157,8 @@ Ghost.prototype.init = function () {
         // Initialize the settings cache
         return self.updateSettingsCache();
     }).then(function () {
+        // Update path to activeTheme
+        config.paths.setActiveTheme(self);
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
@@ -229,7 +198,7 @@ Ghost.prototype.readSettingsResult = function (result) {
             settings[member.attributes.key] = val;
         }
     })).then(function () {
-        return when(instance.paths().availableThemes).then(function (themes) {
+        return when(config.paths().availableThemes).then(function (themes) {
             var themeKeys = Object.keys(themes),
                 res = [],
                 i,
@@ -269,7 +238,7 @@ Ghost.prototype.loadTemplate = function (name) {
     var self = this,
         templateFileName = name + '.hbs',
         // Check for theme specific version first
-        templatePath = path.join(this.paths().activeTheme, 'partials', templateFileName),
+        templatePath = path.join(config.paths().activeTheme, 'partials', templateFileName),
         deferred = when.defer();
 
     // Can't use nodefn here because exists just returns one parameter, true or false
@@ -277,7 +246,7 @@ Ghost.prototype.loadTemplate = function (name) {
     fs.exists(templatePath, function (exists) {
         if (!exists) {
             // Fall back to helpers templates location
-            templatePath = path.join(self.paths().helperTemplates, templateFileName);
+            templatePath = path.join(config.paths().helperTemplates, templateFileName);
         }
 
         self.compileTemplate(templatePath).then(deferred.resolve, deferred.reject);

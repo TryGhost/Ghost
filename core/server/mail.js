@@ -12,13 +12,16 @@ function GhostMailer(opts) {
 
 // ## E-mail transport setup
 // *This promise should always resolve to avoid halting Ghost::init*.
-GhostMailer.prototype.init = function (ghost) {
+GhostMailer.prototype.init = function (ghost, configModule) {
     this.ghost = ghost;
     // TODO: fix circular reference ghost -> mail -> api -> ghost, remove this late require
     this.api = require('./api');
+    // We currently pass in the config module to avoid
+    // circular references, similar to above.
+    this.config = configModule;
 
     var self = this,
-        config = ghost.config();
+        config = this.config();
 
     if (config.mail && config.mail.transport && config.mail.options) {
         this.createTransport(config);
@@ -95,7 +98,7 @@ GhostMailer.prototype.send = function (message) {
         return when.reject(new Error('Email Error: Incomplete message data.'));
     }
 
-    var from = this.ghost.config().mail.fromaddress || this.ghost.settings('email'),
+    var from = this.config().mail.fromaddress || this.ghost.settings('email'),
         to = message.to || this.ghost.settings('email'),
         sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
 

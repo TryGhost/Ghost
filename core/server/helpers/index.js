@@ -97,7 +97,7 @@ coreHelpers.url = function (options) {
         output += blog.url;
     }
 
-    if (blog.path !== '/') {
+    if (blog.path && blog.path !== '/') {
         output += blog.path;
     }
 
@@ -219,8 +219,8 @@ coreHelpers.excerpt = function (options) {
 // Returns the config value for fileStorage.
 coreHelpers.fileStorage = function (context, options) {
     /*jslint unparam:true*/
-    if (coreHelpers.ghost.config().hasOwnProperty('fileStorage')) {
-        return coreHelpers.ghost.config().fileStorage.toString();
+    if (coreHelpers.config().hasOwnProperty('fileStorage')) {
+        return coreHelpers.config().fileStorage.toString();
     }
     return "true";
 };
@@ -531,11 +531,14 @@ coreHelpers.helperMissing = function (arg) {
     errors.logError('Missing helper: "' + arg + '"');
 };
 
-registerHelpers = function (ghost) {
+registerHelpers = function (ghost, config) {
     var paginationHelper;
 
     // Expose this so our helpers can use it in their code.
     coreHelpers.ghost = ghost;
+
+    // And expose config
+    coreHelpers.config = config;
 
     ghost.registerThemeHelper('date', coreHelpers.date);
 

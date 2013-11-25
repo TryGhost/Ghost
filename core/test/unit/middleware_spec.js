@@ -277,9 +277,9 @@ describe('Middleware', function () {
                     url: 'myvalidfile.css'
                 };
 
-            middleware.staticTheme(ghostStub)(req, null, function (req, res, next) {
+            middleware.staticTheme(null)(req, null, function (reqArg, res, next) {
                 middleware.forwardToExpressStatic.calledOnce.should.be.true;
-                assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], ghostStub);
+                assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], req);
                 return done();
             });
         });
