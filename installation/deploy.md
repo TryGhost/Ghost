@@ -268,7 +268,11 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 *   Change the `GHOST_ROOT` variable to the path where you installed Ghost
 *   Change, if necessary, the `DAEMON` variable <span class="note">Check this with `which node`</span>
 *   Change the execution permission for the init script by typing
-        `chmod 755 /etc/init.d/ghost`
+
+    ```
+    $ chmod 755 /etc/init.d/ghost
+    ```
+
 *   Use the script:
 
     *   start: `service ghost start`
