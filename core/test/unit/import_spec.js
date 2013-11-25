@@ -209,7 +209,7 @@ describe("Import", function () {
 
                     done();
                 });
-                
+
             }).then(null, done);
         });
         it("doesn't import invalid settings data from 001", function (done) {
@@ -258,7 +258,7 @@ describe("Import", function () {
 
                     done();
                 });
-                
+
             }).then(null, done);
         });
     });

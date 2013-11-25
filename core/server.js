@@ -23,9 +23,13 @@ var express      = require('express'),
     init;
 
 // If we're in development mode, require "when/console/monitor"
-// for help in seeing swallowed promise errors.
+// for help in seeing swallowed promise errors, and log any
+// stderr messages from bluebird promises.
 if (process.env.NODE_ENV === 'development') {
     require('when/monitor/console');
+    process.stderr.on('data', function (msg) {
+        console.log(msg);
+    });
 }
 
 // Sets up the express server instance.
