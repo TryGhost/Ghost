@@ -65,8 +65,15 @@ var path           = require('path'),
                     tasks: ['handlebars']
                 },
                 sass: {
-                    files: ['<%= paths.adminAssets %>/sass/**/*'],
-                    tasks: ['sass:admin']
+                    files: [
+                        '<%= paths.adminAssets %>/sass/**/*',
+                        'content/themes/**/sass/**/*',
+                        'content/themes/**/scss/**/*'
+                    ],
+                    tasks: [
+                        'sass:admin',
+                        'sass:themes'
+                    ]
                 },
                 concat: {
                     files: [
@@ -81,9 +88,9 @@ var path           = require('path'),
                 livereload: {
                     files: [
                         // Theme CSS
-                        'content/themes/casper/css/*.css',
+                        'content/themes/**/css/*.css',
                         // Theme JS
-                        'content/themes/casper/js/*.js',
+                        'content/themes/**/js/*.js',
                         // Admin CSS
                         '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
@@ -109,7 +116,6 @@ var path           = require('path'),
                 options: {
                     script: 'index.js'
                 },
-
                 dev: {
                     options: {
                         //output: 'Express server listening on address:.*$'
@@ -251,6 +257,21 @@ var path           = require('path'),
                     files: {
                         '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
+                },
+                themes: {
+                    files: grunt.file.expandMapping([
+                        "content/themes/**/src/**/*.sass",
+                        "!content/themes/**/src/**/_*.sass"
+                    ], '', {
+                        expand: true,
+                        ext: '.css',
+                        rename: function (base, src) {
+                            var re = /(content\/themes)\/(\w+)\/src\/s[a|c]ss/,
+                                output = src.replace(re, '$1/$2/assets/css');
+                            grunt.log.writeln("[base: " + base + "] [src:" + src + "] > " + output);
+                            return output;
+                        }
+                    })
                 }
             },
 
