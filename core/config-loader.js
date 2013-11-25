@@ -3,10 +3,11 @@ var fs      = require('fs'),
     when    = require('when'),
     errors  = require('./server/errorHandling'),
     path    = require('path'),
+    _       = require("underscore"),
 
     appRoot = path.resolve(__dirname, '../'),
     configexample = path.join(appRoot, 'config.example.js'),
-    config = path.join(appRoot, 'config.js');
+    configFile = process.argv[2] || process.env.GHOST_CONFIG || path.join(appRoot, 'config.js');
 
 function writeConfigFile() {
     var written = when.defer();
@@ -29,7 +30,7 @@ function writeConfigFile() {
         });
         read.on('end', written.resolve);
 
-        write = fs.createWriteStream(config);
+        write = fs.createWriteStream(configFile);
         write.on('error', function (err) {
             /*jslint unparam:true*/
             return errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
@@ -49,7 +50,7 @@ function validateConfigEnvironment() {
         parsedUrl;
 
     try {
-        config = require('../config')[envVal];
+        config = require(configFile)[envVal];
     } catch (ignore) {
 
     }
@@ -83,19 +84,19 @@ function validateConfigEnvironment() {
         return when.reject();
     }
 
-    return when.resolve();
+    return when.resolve(config);
 }
 
 exports.loadConfig = function () {
-    var loaded = when.defer();
+    var loaded = when.defer(),
+        pendingConfig;
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
-    fs.exists(config, function checkConfig(configExists) {
-        if (configExists) {
-            validateConfigEnvironment().then(loaded.resolve).otherwise(loaded.reject);
-        } else {
-            writeConfigFile().then(validateConfigEnvironment).then(loaded.resolve).otherwise(loaded.reject);
+    fs.exists(configFile, function checkConfig(configExists) {
+        if (!configExists) {
+            pendingConfig = writeConfigFile();
         }
+        when(pendingConfig).then(validateConfigEnvironment).then(_.extend.bind(null, exports)).then(loaded.resolve).otherwise(loaded.reject);
     });
     return loaded.promise;
 };

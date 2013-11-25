@@ -2,7 +2,7 @@
 // Defines core methods required to build the application
 
 // Module dependencies
-var config      = require('../config'),
+var config      = require('./config-loader'),
     when        = require('when'),
     express     = require('express'),
     errors      = require('./server/errorHandling'),
