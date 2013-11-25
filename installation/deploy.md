@@ -279,9 +279,13 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     *   stop: `service ghost stop`
     *   restart: `service ghost restart`
     *   status: `service ghost status`
-*   To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: `update-rc.d ghost defaults` and `update-rc.d ghost enable`
+*   To start Ghost on system start the newly created init script has to be registered for start up.
+    Type the following two commands in command line: 
 
-Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!
+    ```
+    $ update-rc.d ghost defaults
+    $ update-rc.d ghost enable
+    ```
 
 ## Setting up Ghost with a domain name
 
