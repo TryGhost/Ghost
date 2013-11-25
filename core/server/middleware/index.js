@@ -24,7 +24,8 @@ function ghostLocals(req, res, next) {
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
     res.locals.csrfToken = req.csrfToken();
-    res.locals.ghostRoot = req.path.replace(ghost.blogGlobals().path, '');
+    // Strip off the subdir part of the path
+    res.locals.ghostRoot = req.path.replace(ghost.blogGlobals().path.replace(/\/$/, ''), '');
 
     if (res.isAdmin) {
         api.users.read({id: req.session.user}).then(function (currentUser) {
