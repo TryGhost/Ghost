@@ -289,5 +289,45 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 
 ## Setting up Ghost with a domain name
 
-Documentation on using nginx as a reverse proxy on their way.
+If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
+In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
 
+*   Install nginx
+
+    ```
+    $ sudo apt-get install nginx
+    ```
+    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+
+*   Configure your site
+
+    *   Create a new file in `/etc/nginx/sites-available/example.com`
+    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/example.com`)
+        and paste the following
+
+        ```
+        server {
+            listen 80;
+
+            server_name example.com;
+            root /var/www/ghost;
+
+            location / {
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   Host      $http_host;
+                proxy_pass         http://127.0.0.1:2368;
+            }
+        }
+
+        ```
+    *   Change `server_name` and `root` to fit your setup
+    *   Symlink your configuration in `sites-enabled`
+
+    ```
+    $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
+    ```
+    *   Restart nginx
+
+    ```
+    $ sudo service nginx restart
+    ```
