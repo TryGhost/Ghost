@@ -55,7 +55,8 @@
         "when": "2.5.1"
     },
     "optionalDependencies": {
-        "mysql": "2.0.0-alpha9"
+        "mysql": "2.0.0-alpha9",
+        "pg": "~2.6.2"
     },
     "devDependencies": {
         "blanket": "~1.1.5",
