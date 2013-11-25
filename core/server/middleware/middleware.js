@@ -1,3 +1,6 @@
+// # Custom Middleware
+// The following custom middleware functions are all unit testable, and have accompanying unit tests in
+// middleware_spec.js
 
 var _           = require('underscore'),
     express     = require('express'),
@@ -18,11 +21,12 @@ var middleware = {
     // We strip /ghost/ out of the redirect parameter for neatness
     auth: function (req, res, next) {
         if (!req.session.user) {
-            var path = req.path.replace(/^\/ghost\/?/gi, ''),
+            var reqPath = req.path.replace(/^\/ghost\/?/gi, ''),
+                root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
                 redirect = '',
                 msg;
 
-            if (path !== '') {
+            if (reqPath !== '') {
                 msg = {
                     type: 'error',
                     message: 'Please Sign In',
@@ -33,9 +37,9 @@ var middleware = {
                 if (!_.contains(_.pluck(ghost.notifications, 'id'), 'failedauth')) {
                     ghost.notifications.push(msg);
                 }
-                redirect = '?r=' + encodeURIComponent(path);
+                redirect = '?r=' + encodeURIComponent(reqPath);
             }
-            return res.redirect(ghost.blogGlobals().url + '/ghost/signin/' + redirect);
+            return res.redirect(root + '/ghost/signin/' + redirect);
         }
 
         next();
@@ -56,8 +60,10 @@ var middleware = {
     // Check if we're logged in, and if so, redirect people back to dashboard
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path;
+
         if (req.session.user) {
-            return res.redirect(ghost.blogGlobals().url + '/ghost/');
+            return res.redirect(root + '/ghost/');
         }
 
         next();
