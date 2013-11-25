@@ -67,7 +67,7 @@ CasperTest.begin('Infinite scrolling', 1, function suite(test) {
     });
 });
 
-CasperTest.begin("Posts can be marked as featured", 4, function suite(test) {
+CasperTest.begin("Posts can be marked as featured", 6, function suite(test) {
     // Create a sample post
     casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -80,8 +80,9 @@ CasperTest.begin("Posts can be marked as featured", 4, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForResource(/posts/, function checkPostWasCreated() {
-        test.assertExists('.notification-success', 'got success notification');
+    casper.waitForSelector('.notification-success', function () {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
     });
 
     // Begin test
@@ -99,7 +100,8 @@ CasperTest.begin("Posts can be marked as featured", 4, function suite(test) {
        this.click('.featured');
     });
 
-    casper.waitForResource(/posts/, function checkPostWasMarkedAsFeatured() {
-        test.assertExists('.notification-success', 'got success notification');
+    casper.waitForSelector('.notification-success', function () {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Post successfully marked as featured.');
     });
 });
