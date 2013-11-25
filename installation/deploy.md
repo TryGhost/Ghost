@@ -291,6 +291,7 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 
 If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
 In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
+It also assumes that Ghost is running in the background with one of the above mentioned ways.
 
 *   Install nginx
 
