@@ -1,37 +1,37 @@
 ---
 lang: de
 layout: mail
-meta_title: Ghost Email-Konfiguration - Ghost-Dokumentation
-meta_description: Wie du deinen Email-Server richtig konfigurierst und mit Ghost Emails verschickst
-heading: Email-Konfiguration
+meta_title: Ghost E-Mail-Konfiguration - Ghost-Dokumentation
+meta_description: Wie du deinen E-Mail-Server richtig konfigurierst und mit Ghost E-Mails verschickst
+heading: E-Mail-Konfiguration
 chapter: mail
 ---
 
-## Email-Konfiguration <a id="email-config"></a>
+## E-Mail-Konfiguration <a id="email-config"></a>
 
-Die folgenden Zeilen beschreiben, wie du Email in Ghost richtig konfigurierst. Ghost verwendet [Nodemailer](https://github.com/andris9/Nodemailer), deren Dokumentation enthält auch noch einige weitere Beispiele.
+Die folgenden Zeilen beschreiben, wie du E-Mail in Ghost richtig konfigurierst. Ghost verwendet [Nodemailer](https://github.com/andris9/Nodemailer), deren Dokumentation enthält auch noch einige weitere Beispiele.
 
 ### Moment, worum geht es?
 
-Falls du Erfahrung mit PHP hast, bist du es vermutlich gewöhnt dass Email wie durch Magie einfach funktioniert. In Node ist das anders, da es noch recht neu ist, fehlt es etwas an Feinschliff.
+Falls du Erfahrung mit PHP hast, bist du es vermutlich gewöhnt dass E-Mail wie durch Magie einfach funktioniert. In Node ist das anders, da es noch recht neu ist, fehlt es etwas an Feinschliff.
 
 ### Aber weshalb?
 
-Momentan versendet Ghost nur Emails, um dir ein neues Passwort zuzusenden falls du es vergessen solltest. Auch wenn das nicht nach viel klingt, unterschätze nicht wie nützlich das ist falls du es mal brauchen solltest.
+Momentan versendet Ghost nur E-Mails, um dir ein neues Passwort zuzusenden falls du es vergessen solltest. Auch wenn das nicht nach viel klingt, unterschätze nicht wie nützlich das ist falls du es mal brauchen solltest.
 
-Aber keine Angst, die Email-Einstellungen müssen nur einmalig vorgenommen werden und wir zeigen dir hier, wie das geht.
+Aber keine Angst, die E-Mail-Einstellungen müssen nur einmalig vorgenommen werden und wir zeigen dir hier, wie das geht.
 
 ## In Ordnung, wie mache ich es? <a id="how-to"></a>
 
-Als erstes benötigst du einen Account mit einem Email-Service. Wir empfehlen dir Mailgun, sie bieten einen kostenlosen Account der dir erlaubt mehr Mails zu versenden als die meisten Blogs mit Email-Subskriptionen jemals brauchen werden. Du kannst ebenfalls Gmail oder Amazon SES verwenden.
+Als erstes benötigst du einen Account mit einem E-Mail-Service. Wir empfehlen dir Mailgun, sie bieten einen kostenlosen Account, der dir erlaubt mehr Mails zu versenden als die meisten Blogs mit E-Mail-Abonnements jemals brauchen werden. Du kannst ebenfalls Gmail oder Amazon SES verwenden.
 
 Sobald du dich für einen Service entschieden hast, musst du die Einstellungen in Ghost's Konfigurationsdatei hinzufügen. Egal wo du Ghost installiert hast, die <code class="path">config.js</code> findest  immer im Überverzeichnis, wo auch die <code class="path">index.js</code> liegt. Falls du noch keine <code class="path">config.js</code> hast, kopiere die <code class="path">config.example.js</code> und benenne sie entsprechend um.
 
 ### Mailgun <a id="mailgun"></a>
 
-Gehe auf [mailgun.com](http://www.mailgun.com/) und registriere dir einen Account. Du benötigst dafür eine Email-Adresse und du musst entweder eine Domain oder eine Subdomain eingeben. Diese lässt sich später ändern, weshalb du einfach eine Subdomain mit einem Namen ähnlich zu dem deines Blogs erstellen könntest.
+Gehe auf [mailgun.com](http://www.mailgun.com/) und registriere dir einen Account. Du benötigst dafür eine E-Mail-Adresse und du musst entweder eine Domain oder eine Subdomain eingeben. Diese lässt sich später ändern, weshalb du einfach eine Subdomain mit einem Namen ähnlich zu dem deines Blogs erstellen könntest.
 
-Sobald du deine Email-Adresse verifiziert hast, kannst du auf das großartige Control Panel zugreifen Du benötigst nun deinen neuen Email-Nutzernamen und Passwort, welche Mailgun für dich angelegt hat, indem du auf deine Domain auf der rechten Seite klickst (sie unterscheiden sich von deinen bei der Registrierung eingegebenen). Im folgenden findest du einen kleinen Screencast, der dir zeigt wo du diese findest.
+Sobald du deine E-Mail-Adresse verifiziert hast, kannst du auf das großartige Kontrollzentrum zugreifen. Du benötigst nun deinen neuen E-Mail-Nutzernamen und das Passwort, das Mailgun für dich angelegt hat, indem du auf deine Domain auf der rechten Seite klickst (sie unterscheiden sich von deinen bei der Registrierung eingegebenen). Im Folgenden findest du einen kleinen Screencast, der dir zeigt, wo du diese findest.
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
 
@@ -50,7 +50,7 @@ transport: 'SMTP',
 }
 ```
 
-Füge deinen Nutzernamen zwischen die einfachen Anführungszeichen bei 'user' ein und dein Passwort bei 'pass'. Wenn man Mailgun für den Account 'tryghosttest' Account einrichtet, sieht es in etwa so aus:
+Füge deinen Nutzernamen zwischen die einfachen Anführungszeichen bei 'user' ein und dein Passwort bei 'pass'. Wenn man Mailgun für das Konto 'tryghosttest' einrichtet, sieht es in etwa so aus:
 
 ```
 mail: {
@@ -65,15 +65,15 @@ mail: {
 }
 ```
 
-Achte auf alle Kommas, Anführungszeicheichen und geschweifte Klammern. Falls eine falsch gesetzt ist, wirst du schräge Fehler bekommen.
+Achte auf alle Kommas, Anführungszeichen und geschweifte Klammern. Falls eine falsch gesetzt ist, wirst du schräge Fehler bekommen.
 
-Du kannst die Einstellungen für die development und production Environment's wiederverwenden, falls du beide hast.
+Du kannst die Einstellungen für die development- und production-Umgebungen wiederverwenden, falls du beide hast.
 
 ### Amazon SES <a id="ses"></a>
 
-Du kannst dich für für Amazon's Simple Email Service unter <http://aws.amazon.com/ses/> registrieren. Sobald du das getan hast, wirst du einen Zugangsschlüssel und einen geheimen Schlüssel erhalten.
+Du kannst dich für für Amazons Simple Email Service unter <http://aws.amazon.com/ses/> registrieren. Sobald du das getan hast, wirst du einen Zugangsschlüssel und einen geheimen Schlüssel erhalten.
 
-Öffne Ghost's <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere zu deiner Environment für das du Email einrichten willst und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
+Öffne Ghosts <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere zu deiner Umgebung, für die du E-Mail einrichten willst, und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
 
 ```
 mail: {
@@ -87,9 +87,9 @@ mail: {
 
 ### Gmail <a id="gmail"></a>
 
-Es ist möglich, Gmail zum Versenden aus Ghost zu verwenden. Falls du das planst, empfehlen wir dir einen [neuen Account](https://accounts.google.com/SignUp) für diesen Zweck zu erstellen, statt einen persönlichen Account zu verwenden.
+Es ist möglich, Gmail zum Versenden von E-Mails aus Ghost heraus zu verwenden. Falls du das planst, empfehlen wir dir einen [neuen Account](https://accounts.google.com/SignUp) für diesen Zweck zu erstellen, statt einen persönlichen Account zu verwenden.
 
-Sobald du einen neuen Account erstellt hast, kannst du die Einstellungen in der <code class="path">config.js</code> vornehmen. Öffne sie in einem Editor deiner Wahl, navigiere zu der Environment, für die du Email einrichten willst und ändere sie folgendermaßen ab:
+Sobald du einen neuen Account erstellt hast, kannst du die Einstellungen in der <code class="path">config.js</code> vornehmen. Öffne sie in einem Editor deiner Wahl, navigiere zu dem Environment, für das du E-Mail einrichten willst, und ändere es folgendermaßen:
 
 ```
 mail: {
@@ -106,10 +106,10 @@ mail: {
 
 ### Absender <a id="from"></a>
 
-Standardmäßig ist der Absender bei von Ghost versendeten Emails die Adresse, die auf der Einstellungseite eingetragen wurde. Falls du diese überschreiben willst, kann du sie auch in deiner <code class="path">config.js</code> eintragen.
+Standardmäßig ist der Absender bei von Ghost versendeten E-Mails die Adresse, die auf der Einstellungseite eingetragen wurde. Falls du diese überschreiben willst, kann du sie auch in deiner <code class="path">config.js</code> eintragen.
 
 ```
 mail: {
-    fromaddress: 'myemail@address.com',
+    fromaddress: 'meineemail@adresse.com',
 }
 ```
