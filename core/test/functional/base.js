@@ -95,7 +95,7 @@ var CasperTest = (function () {
     casper.test.tearDown(function (done) {
         casper.then(_beforeDoneHandler);
 
-        casper.thenOpen(url + 'signout/');
+        casper.thenOpen(url + 'ghost\/signout/');
 
         casper.waitForResource(/ghost\/sign/);
 
@@ -189,7 +189,7 @@ CasperTest.Routines = (function () {
     }
 
     function logout(test) {
-        casper.thenOpen(url + 'signout/');
+        casper.thenOpen(url + 'ghost\/signout/');
         // Wait for signin or signup
         casper.waitForResource(/ghost\/sign/);
     }
