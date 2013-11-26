@@ -129,17 +129,22 @@
 </main>
 
 <footer id="global-footer">
-    <!-- <div class="dropdown">
-        {% for item in site.languages %}
-        {% if page.lang == item.key %}
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class='icon down'></span>{{item.name}}</a>
+    <div class="dropdown">
+        {% if page.lang %}
+          <a class="dropdown-toggle" data-toggle="dropdown" href="{{ site.url }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}"><span class='icon down'></span>{% for lang in site.languages %}{% if lang.key == page.lang %}{{lang.name}}{% endif %}{% endfor %}</a>
+        {% else %}
+          <a class="dropdown-toggle" data-toggle="dropdown" href="{{ site.url }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}"><span class='icon down'></span>English</a>
+        {% endif %}
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+        {% for lang in site.languages %}
+        {% if lang.key != page.lang and lang.key != 'en' %}
+        <li><a href="{{ site.url }}/{{ lang.key }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">{{lang.name}}</a></li>
+        {% elsif page.lang and lang.key == 'en' %}
+        <li><a href="{{ site.url }}/{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">{{lang.name}}</a></li>
         {% endif %}
         {% endfor %}
-        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-            <li><a href="{{ site.url }}/">English</a></li>
-            <li><a href="{{ site.url }}/es/">Español</a></li>
         </ul>
-    </div> -->
+    </div>
   <p>Lovingly created and maintained by <a href="http://john.onolan.org">John O'Nolan</a> + <a href="http://erisds.co.uk">Hannah Wolfe</a> + an amazing group of <a href="https://github.com/TryGhost/Ghost/contributors">contributors</a>.</p>
     <hr>
   <p>All code copyright (C) 2013 The Ghost Foundation - Released under the <a href="http://tryghost.org/about/license.html">MIT</a> License.<br />
