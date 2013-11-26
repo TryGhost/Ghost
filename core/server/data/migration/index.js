@@ -142,10 +142,12 @@ function getTablesFromSqlite3() {
     });
 }
 
-// Basic suppport for PgSQL
-// Attention: not officially tested/supported
 function getTablesFromPgSQL() {
-    return knex.raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+    return knex.raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'").then(function (response) {
+        return _.flatten(_.map(response[0], function (entry) {
+            return _.values(entry);
+        }));
+    });
 }
 
 function getTablesFromMySQL() {
