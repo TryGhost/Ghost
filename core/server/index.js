@@ -3,20 +3,20 @@
 // modules to ensure config gets right setting.
 
 // Module dependencies
-var config       = require('./server/config'),
+var config       = require('./config'),
     express      = require('express'),
     when         = require('when'),
     _            = require('underscore'),
     semver       = require('semver'),
     fs           = require('fs'),
-    errors       = require('./server/errorHandling'),
-    plugins      = require('./server/plugins'),
+    errors       = require('./errorHandling'),
+    plugins      = require('./plugins'),
     path         = require('path'),
-    Ghost        = require('./ghost'),
-    helpers      = require('./server/helpers'),
-    middleware   = require('./server/middleware'),
-    routes       = require('./server/routes'),
-    packageInfo  = require('../package.json'),
+    Ghost        = require('../ghost'),
+    helpers      = require('./helpers'),
+    middleware   = require('./middleware'),
+    routes       = require('./routes'),
+    packageInfo  = require('../../package.json'),
 
 // Variables
     ghost = new Ghost(),

@@ -22,7 +22,7 @@
             "url": "https://raw.github.com/TryGhost/Ghost/master/LICENSE"
         }
     ],
-    "main": "./core/server",
+    "main": "./core/index",
     "scripts": {
         "start": "node index",
         "test": "grunt validate --verbose"
