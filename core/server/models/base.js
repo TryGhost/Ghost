@@ -4,14 +4,14 @@ var ghostBookshelf,
     moment    = require('moment'),
     _         = require('underscore'),
     uuid      = require('node-uuid'),
-    config    = require('../../../config'),
+    config    = require('../config'),
     Validator = require('validator').Validator,
     unidecode = require('unidecode'),
     sanitize  = require('validator').sanitize;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
-ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config[process.env.NODE_ENV].database);
-ghostBookshelf.client = config[process.env.NODE_ENV].database.client;
+ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
+ghostBookshelf.client = config().database.client;
 
 ghostBookshelf.validator = new Validator();
 
