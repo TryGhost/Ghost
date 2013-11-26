@@ -120,6 +120,16 @@ var middleware = {
     // to allow unit testing
     forwardToExpressStatic: function (req, res, next) {
         return express['static'](config.paths().activeTheme)(req, res, next);
+    },
+
+    conditionalCSRF: function (req, res, next) {
+        var csrf = express.csrf();
+        // CSRF is needed for admin only
+        if (res.isAdmin) {
+            csrf(req, res, next);
+            return;
+        }
+        next();
     }
 };
 

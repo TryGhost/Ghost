@@ -24,15 +24,28 @@ module.exports = function (server) {
     var root = server.get('ghost root').replace(/\/$/, '');
     // ### Admin routes
     /* TODO: put these somewhere in admin */
-    server.get(/logout/, function redirect(req, res) {
+    server.get('/logout/', function redirect(req, res) {
         /*jslint unparam:true*/
-        res.redirect(301, root + '/signout/');
+        res.redirect(301, root + '/ghost/signout/');
     });
-    server.get(/signout/, admin.logout);
+    server.get('/signout/', function redirect(req, res) {
+        /*jslint unparam:true*/
+        res.redirect(301, root + '/ghost/signout/');
+    });
+    server.get('/signin/', function redirect(req, res) {
+        /*jslint unparam:true*/
+        res.redirect(301, root + '/ghost/signin/');
+    });
+    server.get('/signup/', function redirect(req, res) {
+        /*jslint unparam:true*/
+        res.redirect(301, root + '/ghost/signup/');
+    });
     server.get('/ghost/login/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.redirect(301, root + '/ghost/signin/');
     });
+
+    server.get('/ghost/signout/', admin.logout);
     server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
     server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);

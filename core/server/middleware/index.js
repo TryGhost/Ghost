@@ -28,11 +28,11 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
-    res.locals.csrfToken = req.csrfToken();
     // Strip off the subdir part of the path
     res.locals.ghostRoot = req.path.replace(ghost.blogGlobals().path.replace(/\/$/, ''), '');
 
     if (res.isAdmin) {
+        res.locals.csrfToken = req.csrfToken();
         api.users.read({id: req.session.user}).then(function (currentUser) {
             _.extend(res.locals,  {
                 currentUser: {
@@ -187,11 +187,11 @@ module.exports = function (server) {
     server.use(express.session({
         store: new BSStore(ghost.dataProvider),
         secret: ghost.dbHash,
-        cookie: { maxAge: 12 * 60 * 60 * 1000 }
+        cookie: { path: '/ghost', maxAge: 12 * 60 * 60 * 1000 }
     }));
 
     //enable express csrf protection
-    server.use(express.csrf());
+    server.use(middleware.conditionalCSRF);
     // local data
     server.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
