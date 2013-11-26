@@ -16,6 +16,8 @@ var path              = require('path'),
 function getPaths() {
     return {
         'appRoot':          appRoot,
+        'config':           path.join(appRoot, 'config.js'),
+        'configExample':    path.join(appRoot, 'config.example.js'),
         'themePath':        themePath,
         'pluginPath':       pluginPath,
         'activeTheme':      path.join(themePath, activeTheme),
