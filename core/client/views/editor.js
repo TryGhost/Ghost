@@ -77,14 +77,35 @@
             'published': 'Update Post'
         },
 
-        notificationMap: {
-            'draft': 'Your post has been saved as a draft.',
-            'published': 'Your post has been published.'
-        },
+        //TODO: This has to be moved to the I18n localization file.
+        //This structure is supposed to be close to the i18n-localization which will be used soon. 
+        messageMap: {
+            errors: {
+                post: {
+                    published: {
+                        'published': 'Your post could not be updated.',
+                        'draft': 'Your post could not be saved as a draft.'
+                    },
+                    draft: {
+                        'published': 'Your post could not be published.',
+                        'draft': 'Your post could not be saved as a draft.'
+                    }
 
-        errorMap: {
-            'draft': 'Your post could not be saved as a draft.',
-            'published': 'Your post could not be published.'
+                }
+            },
+
+            success: {
+                post: {
+                    published: {
+                        'published': 'Your post has been updated.',
+                        'draft': 'Your post has been saved as a draft.'
+                    },
+                    draft: {
+                        'published': 'Your post has been published.',
+                        'draft': 'Your post has been saved as a draft.'
+                    }
+                }
+            }
         },
 
         initialize: function () {
@@ -119,10 +140,10 @@
             this.savePost({
                 status: keys[newIndex]
             }).then(function () {
-                self.reportSaveSuccess(status);
+                self.reportSaveSuccess(status, prevStatus);
             }, function (xhr) {
                 // Show a notification about the error
-                self.reportSaveError(xhr, model, status);
+                self.reportSaveError(xhr, model, status, prevStatus);
             });
         },
 
@@ -185,7 +206,7 @@
             this.savePost({
                 status: status
             }).then(function () {
-                self.reportSaveSuccess(status);
+                self.reportSaveSuccess(status, prevStatus);
                 // Refresh publish button and all relevant controls with updated status.
                 self.render();
             }, function (xhr) {
@@ -194,7 +215,7 @@
                 // Set appropriate button status
                 self.setActiveStatus(status, self.statusMap[status], prevStatus);
                 // Show a notification about the error
-                self.reportSaveError(xhr, model, status);
+                self.reportSaveError(xhr, model, status, prevStatus);
             });
         },
 
@@ -217,18 +238,18 @@
             return $.Deferred().reject();
         },
 
-        reportSaveSuccess: function (status) {
+        reportSaveSuccess: function (status, prevStatus) {
             Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'success',
-                message: this.notificationMap[status],
+                message: this.messageMap.success.post[prevStatus][status],
                 status: 'passive'
             });
             Ghost.currentView.setEditorDirty(false);
         },
 
-        reportSaveError: function (response, model, status) {
-            var message = this.errorMap[status];
+        reportSaveError: function (response, model, status, prevStatus) {
+            var message = this.messageMap.errors.post[prevStatus][status];
 
             if (response) {
                 // Get message from response
