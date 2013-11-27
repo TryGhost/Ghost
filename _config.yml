@@ -13,6 +13,8 @@ languages:
       key: 'de'
     - name: 'Français'
       key: 'fr'
+    - name: 'Polski'
+      key: 'pl'
 
 port:         4478
 
@@ -51,6 +53,14 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
+  pl:
+    site_title:   'Ghost Guide'
+    installation: 'Installation'
+    usage:        'Usage'
+    email:        'Email'
+    themes:       'Themes'
+    translations: 'Translations'
+    help:         'Help'
 
 # If running locally, simply comment out the line below to make all urls relative
 
