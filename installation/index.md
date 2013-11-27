@@ -37,6 +37,7 @@ I want to install Ghost on:
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/" class="btn btn-success btn-large">Mac</a>
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/" class="btn btn-success btn-large">Windows</a>
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
+    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/freebsd/„ class="btn btn-success btn-large">FreeBSD</a>
 </div>
 
 If you've already decided to deploy Ghost to your server or hosting account, that's great news! The following documentation will walk you through various options for deploying Ghost, from manual setups, to one-click installers.
