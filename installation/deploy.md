@@ -97,8 +97,9 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
       -o /etc/init.d/ghost
     ```
 
+*   Open the file with `nano /etc/init.d/ghost` and check the following:
 *   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Change, if necessary, the `DAEMON` variable <span class="note">Check this with `which node`</span>
+*   Check if the `DAEMON` variable is the same as the output of `which node`
 *   Change the execution permission for the init script by typing
 
     ```
