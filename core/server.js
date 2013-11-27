@@ -28,9 +28,6 @@ var config       = require('./server/config'),
 // stderr messages from bluebird promises.
 if (process.env.NODE_ENV === 'development') {
     require('when/monitor/console');
-    process.stderr.on('data', function (msg) {
-        console.log(msg);
-    });
 }
 
 // Sets up the express server instance.
