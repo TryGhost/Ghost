@@ -36,7 +36,7 @@
     });
 
     Ghost.Collections.Widgets = Ghost.ProgressCollection.extend({
-        // url: Ghost.settings.apiRoot + '/widgets/', // What will this be?
+        // url: Ghost.paths.apiRoot + '/widgets/', // What will this be?
         model: Ghost.Models.Widget
     });
 
