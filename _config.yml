@@ -22,6 +22,8 @@ languages:
       key: 'de'
     - name: 'Français'
       key: 'fr'
+    - name: 'Polski'
+      key: 'pl'
 
 >>>>>>> Started German translation
 port:         4478
@@ -77,7 +79,18 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
+<<<<<<< HEAD
 >>>>>>> Update config to add french
+=======
+  pl:
+    site_title:   'Ghost Guide'
+    installation: 'Installation'
+    usage:        'Usage'
+    email:        'Email'
+    themes:       'Themes'
+    translations: 'Translations'
+    help:         'Help'
+>>>>>>> Add Polish language files for translation
 
 # If running locally, simply comment out the line below to make all urls relative
 
