@@ -21,13 +21,12 @@ next_section: deploy
 
 ### Install and Run Ghost
 
+
+**If you are using Linux on your desktop follow these steps:**
+
 *   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
 *   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
-*   In a terminal window, change directory to the root of the extracted Ghost folder
-*   In the terminal type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin
+
 
 **If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
 
@@ -40,10 +39,33 @@ next_section: deploy
 *   Unzip the archive and change into the directory using the following:
 
     ```
-    $ unzip -uo ghost.zip -d ghost`; `cd ghost`
+    $ unzip -uo ghost.zip -d ghost
     ```
 
-*   Type `npm install --production` to install Ghost <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   Ghost will now be running on localhost
 
+**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+
+*   Change into the directory you extracted Ghost to with the following command:
+
+    ```
+    $ cd /path/to/ghost
+    ```
+
+*   To install Ghost type:
+
+    ```
+    npm install --production
+    ```
+    <span class="note">note the two dashes</span>
+
+*   When npm is finished installing, type the following to start Ghost in development mode: 
+
+    ```
+    $ npm start
+    ```
+
+*   Ghost will now be running on **127.0.0.1:2368**<br />
+    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+
+*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
+*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
