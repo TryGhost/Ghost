@@ -15,20 +15,20 @@
     <meta http-equiv="cleartype" content="on">
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" href="/ghost/img/touch-icon-iphone.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/ghost/img/touch-icon-ipad.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/ghost/img/small.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/ghost/img/medium.png" />
+    <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
+    <link rel="apple-touch-icon-precomposed" href="{{asset "img/touch-icon-iphone.png" ghost="true"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="{{asset "img/touch-icon-ipad.png" ghost="true"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="{{asset "img/small.png" ghost="true"}}" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="{{asset "img/medium.png" ghost="true"}}" />
 
     <meta name="application-name" content="Ghost"/>
     <meta name="msapplication-TileColor" content="#ffffff"/>
-    <meta name="msapplication-square70x70logo" content="/ghost/img/small.png"/>
-    <meta name="msapplication-square150x150logo" content="/ghost/img/medium.png"/>
-    <meta name="msapplication-square310x310logo" content="/ghost/img/large.png"/>
+    <meta name="msapplication-square70x70logo" content="{{asset "img/small.png" ghost="true"}}" />
+    <meta name="msapplication-square150x150logo" content="{{asset "img/medium.png" ghost="true"}}" />
+    <meta name="msapplication-square310x310logo" content="{{asset "img/large.png" ghost="true"}}" />
 
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700">
-    <link rel="stylesheet" href="/ghost/css/screen.css">
+    <link rel="stylesheet" href="{{asset "css/screen.css" ghost="true"}}">
     {{{block "pageStyles"}}}
 </head>
 <body class="{{bodyClass}}">
