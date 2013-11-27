@@ -29,11 +29,20 @@ next_section: deploy
 *   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
 *   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin
 
-If you are using linux as a guest OS or through SSH and only have the terminal, then:
+**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
 
-*   Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'
-*   In the terminal use `wget url-of-ghost.zip` to download Ghost
-*   Unzip the archive with `unzip -uo Ghost-#.#.#.zip -d ghost`, and then `cd ghost`
+*   Use the following command to download the latest release of Ghost:
+
+    ```
+    $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
+    ```
+
+*   Unzip the archive and change into the directory using the following:
+
+    ```
+    $ unzip -uo ghost.zip -d ghost`; `cd ghost`
+    ```
+
 *   Type `npm install --production` to install Ghost <span class="note">note the two dashes</span>
 *   When npm is finished installing, type `npm start` to start Ghost in development mode
 *   Ghost will now be running on localhost
