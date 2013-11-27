@@ -3,10 +3,11 @@ var fs      = require('fs'),
     when    = require('when'),
     errors  = require('../errorHandling'),
     path    = require('path'),
+    paths   = require('./paths'),
 
-    appRoot = path.resolve(__dirname, '../../../'),
-    configexample = path.join(appRoot, 'config.example.js'),
-    config = path.join(appRoot, 'config.js');
+    appRoot = paths().appRoot,
+    configexample = paths().configExample,
+    config = paths().config;
 
 function writeConfigFile() {
     var written = when.defer();
@@ -83,19 +84,19 @@ function validateConfigEnvironment() {
         return when.reject();
     }
 
-    return when.resolve();
+    return when.resolve(config);
 }
 
 function loadConfig() {
-    var loaded = when.defer();
+    var loaded = when.defer(),
+        pendingConfig;
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
     fs.exists(config, function checkConfig(configExists) {
-        if (configExists) {
-            validateConfigEnvironment().then(loaded.resolve).otherwise(loaded.reject);
-        } else {
-            writeConfigFile().then(validateConfigEnvironment).then(loaded.resolve).otherwise(loaded.reject);
+        if (!configExists) {
+            pendingConfig = writeConfigFile();
         }
+        when(pendingConfig).then(validateConfigEnvironment).then(loaded.resolve).otherwise(loaded.reject);
     });
     return loaded.promise;
 }

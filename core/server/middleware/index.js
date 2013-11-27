@@ -14,7 +14,7 @@ var middleware = require('./middleware'),
     config      = require('../config'),
     storage     = require('../storage'),
     packageInfo = require('../../../package.json'),
-    BSStore     = require('../../bookshelf-session'),
+    BSStore     = require('../bookshelf-session'),
 
     ghost = new Ghost();
 
