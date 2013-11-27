@@ -73,7 +73,8 @@ adminControllers = {
         });
     },
     'auth': function (req, res) {
-        var currentTime = process.hrtime()[0],
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            currentTime = process.hrtime()[0],
             denied = '';
         loginSecurity = _.filter(loginSecurity, function (ipTime) {
             return (ipTime.time + 2 > currentTime);
@@ -88,8 +89,12 @@ adminControllers = {
                 req.session.regenerate(function (err) {
                     if (!err) {
                         req.session.user = user.id;
-                        res.json(200, {redirect: req.body.redirect ? '/ghost/'
-                            + decodeURIComponent(req.body.redirect) : '/ghost/'});
+                        var redirect = root + '/ghost/';
+                        if (req.body.redirect) {
+                            redirect += decodeURIComponent(req.body.redirect);
+                        }
+
+                        res.json(200, {redirect: redirect});
                     }
                 });
             }, function (error) {
@@ -120,7 +125,8 @@ adminControllers = {
         });
     },
     'doRegister': function (req, res) {
-        var name = req.body.name,
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            name = req.body.name,
             email = req.body.email,
             password = req.body.password;
 
@@ -135,7 +141,7 @@ adminControllers = {
                         if (req.session.user === undefined) {
                             req.session.user = user.id;
                         }
-                        res.json(200, {redirect: '/ghost/'});
+                        res.json(200, {redirect: root + '/ghost/'});
                     }
                 });
             });
@@ -152,7 +158,8 @@ adminControllers = {
         });
     },
     'generateResetToken': function (req, res) {
-        var email = req.body.email;
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            email = req.body.email;
 
         api.users.generateResetToken(email).then(function (token) {
             var siteLink = '<a href="' + config().url + '">' + config().url + '</a>',
@@ -177,7 +184,7 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: '/ghost/signin/'});
+                res.json(200, {redirect: root + '/ghost/signin/'});
             });
 
         }, function failure(error) {
@@ -191,8 +198,9 @@ adminControllers = {
         });
     },
     'reset': function (req, res) {
-        // Validate the request token
-        var token = req.params.token;
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            // Validate the request token
+            token = req.params.token;
 
         api.users.validateToken(token).then(function () {
             // Render the reset form
@@ -213,12 +221,13 @@ adminControllers = {
             errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
 
             return api.notifications.add(notification).then(function () {
-                res.redirect('/ghost/forgotten');
+                res.redirect(root + '/ghost/forgotten');
             });
         });
     },
     'resetPassword': function (req, res) {
-        var token = req.params.token,
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            token = req.params.token,
             newPassword = req.param('newpassword'),
             ne2Password = req.param('ne2password');
 
@@ -231,7 +240,7 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: '/ghost/signin/'});
+                res.json(200, {redirect: root + '/ghost/signin/'});
             });
         }).otherwise(function (err) {
             // TODO: Better error message if we can tell whether the passwords didn't match or something
@@ -240,15 +249,17 @@ adminControllers = {
     },
     'logout': function (req, res) {
         req.session.destroy();
-        var notification = {
-            type: 'success',
-            message: 'You were successfully signed out',
-            status: 'passive',
-            id: 'successlogout'
-        };
+
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            notification = {
+                type: 'success',
+                message: 'You were successfully signed out',
+                status: 'passive',
+                id: 'successlogout'
+            };
 
         return api.notifications.add(notification).then(function () {
-            res.redirect('/ghost/signin/');
+            res.redirect(root + '/ghost/signin/');
         });
     },
     'index': function (req, res) {
