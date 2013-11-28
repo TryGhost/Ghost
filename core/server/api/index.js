@@ -428,9 +428,27 @@ requestHandler = function (apiMethod) {
         var options = _.extend(req.body, req.query, req.params),
             apiContext = {
                 user: req.session && req.session.user
-            };
+            },
+            root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            postRouteIndex,
+            i;
+
+        // If permalinks have changed, find old post route
+        if (req.body.permalinks && req.body.permalinks !== ghost.settings('permalinks')) {
+            for (i = 0; i < req.app.routes.get.length; i += 1) {
+                if (req.app.routes.get[i].path === root + ghost.settings('permalinks')) {
+                    postRouteIndex = i;
+                    break;
+                }
+            }
+        }
 
         return apiMethod.call(apiContext, options).then(function (result) {
+            // Reload post route
+            if (postRouteIndex) {
+                req.app.get(ghost.settings('permalinks'), req.app.routes.get.splice(postRouteIndex, 1)[0].callbacks);
+            }
+
             invalidateCache(req, res, result);
             res.json(result || {});
         }, function (error) {
