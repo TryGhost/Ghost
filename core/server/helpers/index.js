@@ -2,6 +2,7 @@ var _               = require('underscore'),
     moment          = require('moment'),
     downsize        = require('downsize'),
     path            = require('path'),
+    url             = require('url'),
     when            = require('when'),
     hbs             = require('express-hbs'),
     errors          = require('../errorHandling'),
@@ -243,7 +244,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            source: path.join(blog.path, '/built/scripts/', fileName),
+            source: url.resolve(blog.path, '/built/scripts/') + fileName,
             version: version
         });
     });
@@ -311,6 +312,7 @@ coreHelpers.post_class = function (options) {
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
     var blog = coreHelpers.ghost.blogGlobals(),
+        root = blog.path === '/' ? '' : blog.path,
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -319,7 +321,7 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
-    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + path.join(blog.path, '/rss/') + '">');
+    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + root + '/rss/' + '">');
     if (this.ghostRoot) {
         head.push('<link rel="canonical" href="' + coreHelpers.ghost.blogGlobals().url + this.ghostRoot + '" />');
     }

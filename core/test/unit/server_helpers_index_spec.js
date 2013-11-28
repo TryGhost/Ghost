@@ -171,7 +171,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('home-template');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can render class string for context', function (done) {
@@ -191,7 +191,7 @@ describe('Core Helpers', function () {
                 rendered[2].string.should.equal('archive-template');
 
                 done();
-            });
+            }).then(null, done);
         });
 
         it('can render class for static page', function (done) {
@@ -205,7 +205,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('home-template page');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
     });
 
@@ -219,7 +219,7 @@ describe('Core Helpers', function () {
                 should.exist(rendered);
                 rendered.string.should.equal('post');
                 done();
-            });
+            }).then(null, done);
         });
 
         it('can render featured class', function (done) {
@@ -230,7 +230,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('post featured');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
     });
 
@@ -245,14 +245,16 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
 
                 done();
-            });
+            }).then(null, done);
         });
 
-        it('returns meta tag string even if version is invalid', function () {
-            var rendered = helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
+        it('returns meta tag string even if version is invalid', function (done) {
+            helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
-            });
+
+                done();
+            }).then(null, done);
         });
     });
 
@@ -267,7 +269,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js"><\/script>/);
 
                 done();
-            });
+            }).then(null, done);
         });
     });
 
@@ -556,28 +558,28 @@ describe('Core Helpers', function () {
 
     });
 
-    describe("has_tag helper", function (done) {
+    describe("has_tag helper", function () {
         var tags = [{name: 'haunted'}, {name: 'ghost'}];
 
         it('has loaded has_tag helper', function () {
             should.exist(handlebars.helpers.has_tag);
         });
 
-        it('can call function if tag is found', function() {
+        it('can call function if tag is found', function () {
             helpers.has_tag.call({tags: tags}, 'haunted', {
-                fn: function(tags) {
+                fn: function (tags) {
                     should.exist(tags);
                 }
             });
         });
 
-        it('can call inverse function if tag is not found', function() {
+        it('can call inverse function if tag is not found', function () {
             helpers.has_tag.call({tags: tags}, 'undefined', {
-                inverse: function(tags) {
+                inverse: function (tags) {
                     should.exist(tags);
                 }
             });
-       });
+        });
 
     });
 });
