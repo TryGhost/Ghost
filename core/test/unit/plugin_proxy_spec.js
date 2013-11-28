@@ -2,10 +2,12 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require("underscore"),
+    helpers = require('../../server/helpers'),
+    filters = require('../../server/filters'),
 
     // Stuff we are testing
     createProxy = require('../../server/plugins/proxy');
-    
+
 describe('App Proxy', function () {
 
     var sandbox,
@@ -15,12 +17,6 @@ describe('App Proxy', function () {
         sandbox = sinon.sandbox.create();
 
         fakeGhost = {
-            registerFilter: sandbox.stub(),
-            unregisterFilter: sandbox.stub(),
-
-            registerThemeHelper: sandbox.stub(),
-            registerAsyncThemeHelper: sandbox.stub(),
-
             api: {
                 posts: {
                     browse: sandbox.stub(),
@@ -58,12 +54,12 @@ describe('App Proxy', function () {
         var proxy = createProxy(fakeGhost);
 
         should.exist(proxy.filters);
-        proxy.filters.register.should.equal(fakeGhost.registerFilter);
-        proxy.filters.unregister.should.equal(fakeGhost.unregisterFilter);
+        proxy.filters.register.should.equal(filters.registerFilter);
+        proxy.filters.unregister.should.equal(filters.unregisterFilter);
 
         should.exist(proxy.helpers);
-        proxy.helpers.register.should.equal(fakeGhost.registerThemeHelper);
-        proxy.helpers.registerAsync.should.equal(fakeGhost.registerAsyncThemeHelper);
+        proxy.helpers.register.should.equal(helpers.registerThemeHelper);
+        proxy.helpers.registerAsync.should.equal(helpers.registerAsyncThemeHelper);
 
         should.exist(proxy.api);
 
