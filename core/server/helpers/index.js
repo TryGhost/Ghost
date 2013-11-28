@@ -2,7 +2,6 @@ var _               = require('underscore'),
     moment          = require('moment'),
     downsize        = require('downsize'),
     path            = require('path'),
-    url             = require('url'),
     when            = require('when'),
     hbs             = require('express-hbs'),
     errors          = require('../errorHandling'),
@@ -244,7 +243,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            source: url.resolve(blog.path, '/built/scripts/') + fileName,
+            source: (blog.path === '/' ? '' : blog.path) + '/built/scripts/' + fileName,
             version: version
         });
     });
