@@ -115,4 +115,4 @@ GhostMailer.prototype.send = function (message) {
     });
 };
 
-module.exports = GhostMailer;
+module.exports = new GhostMailer();

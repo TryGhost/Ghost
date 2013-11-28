@@ -4,6 +4,7 @@ var Ghost         = require('../../ghost'),
     path          = require('path'),
     when          = require('when'),
     api           = require('../api'),
+    mailer        = require('../mail'),
     errors        = require('../errorHandling'),
     storage       = require('../storage'),
 
@@ -174,7 +175,7 @@ adminControllers = {
                           '<p>Ghost</p>'
                 };
 
-            return ghost.mail.send(message);
+            return mailer.send(message);
         }).then(function success() {
             var notification = {
                 type: 'success',

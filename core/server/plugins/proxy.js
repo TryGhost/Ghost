@@ -1,15 +1,17 @@
-var _ = require('underscore');
+var _           = require('underscore'),
+    helpers     = require('../helpers'),
+    filters     = require('../filters');
 
 function createProxy(ghost) {
 
     return {
         filters: {
-            register: ghost.registerFilter,
-            unregister: ghost.unregisterFilter
+            register: filters.registerFilter,
+            unregister: filters.unregisterFilter
         },
         helpers: {
-            register: ghost.registerThemeHelper,
-            registerAsync: ghost.registerAsyncThemeHelper
+            register: helpers.registerThemeHelper,
+            registerAsync: helpers.registerAsyncThemeHelper
         },
         api: {
             posts: _.pick(ghost.api.posts, 'browse', 'read'),

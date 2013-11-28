@@ -4,15 +4,15 @@
 
 /*global require, module */
 
-var Ghost  = require('../../ghost'),
-    config = require('../config'),
-    api    = require('../api'),
-    RSS    = require('rss'),
-    _      = require('underscore'),
-    errors = require('../errorHandling'),
-    when   = require('when'),
-    url    = require('url'),
-
+var Ghost   = require('../../ghost'),
+    config  = require('../config'),
+    api     = require('../api'),
+    RSS     = require('rss'),
+    _       = require('underscore'),
+    errors  = require('../errorHandling'),
+    when    = require('when'),
+    url     = require('url'),
+    filters = require('../../server/filters'),
 
     ghost  = new Ghost(),
     frontendControllers;
@@ -57,7 +57,7 @@ frontendControllers = {
             }
 
             // Render the page of posts
-            ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
+            filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
             });
         }).otherwise(function (err) {
@@ -69,7 +69,7 @@ frontendControllers = {
     'single': function (req, res, next) {
         api.posts.read(_.pick(req.params, ['id', 'slug'])).then(function (post) {
             if (post) {
-                ghost.doFilter('prePostsRender', post).then(function (post) {
+                filters.doFilter('prePostsRender', post).then(function (post) {
                     var paths = config.paths().availableThemes[ghost.settings('activeTheme')];
                     if (post.page && paths.hasOwnProperty('page')) {
                         res.render('page', {post: post});
@@ -128,7 +128,7 @@ frontendControllers = {
                     return res.redirect(root + '/rss/' + maxPage + '/');
                 }
 
-                ghost.doFilter('prePostsRender', page.posts).then(function (posts) {
+                filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
                         var item = {
                                 title:  _.escape(post.title),

@@ -3,7 +3,11 @@ var _           = require('underscore'),
     when        = require('when'),
     errors      = require('../errorHandling'),
     ghostApi,
-    loader      = require('./loader');
+    loader      = require('./loader'),
+    availablePlugins;
+
+// Holds the available plugins
+availablePlugins = {};
 
 function getInstalledPlugins() {
     if (!ghostApi) {
@@ -77,7 +81,7 @@ module.exports = {
                 return saveInstalledPlugins(_.keys(loadedPlugins));
             }).then(function () {
                 // Extend the loadedPlugins onto the available plugins
-                _.extend(ghost.availablePlugins, loadedPlugins);
+                _.extend(availablePlugins, loadedPlugins);
             }).otherwise(function (err) {
                 errors.logError(
                     err.message || err,
@@ -86,5 +90,6 @@ module.exports = {
                 );
             });
         });
-    }
+    },
+    availablePlugins: availablePlugins
 };

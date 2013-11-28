@@ -4,8 +4,11 @@ var _               = require('underscore'),
     path            = require('path'),
     when            = require('when'),
     hbs             = require('express-hbs'),
+    polyglot        = require('node-polyglot').instance,
+    template        = require('./template'),
     errors          = require('../errorHandling'),
     models          = require('../models'),
+    filters         = require('../filters'),
     packageInfo     = require('../../../package.json'),
     version         = packageInfo.version,
     scriptTemplate  = _.template("<script src='<%= source %>?v=<%= version %>'></script>"),
@@ -281,7 +284,7 @@ coreHelpers.ghostScriptTags = function () {
 };
 
 /*
- * Asynchronous Theme Helpers (Registered with ghost.registerAsyncThemeHelper)
+ * Asynchronous Theme Helpers (Registered with registerAsyncThemeHelper)
  */
 
 coreHelpers.body_class = function (options) {
@@ -306,7 +309,7 @@ coreHelpers.body_class = function (options) {
         classes.push('page');
     }
 
-    return coreHelpers.ghost.doFilter('body_class', classes).then(function (classes) {
+    return filters.doFilter('body_class', classes).then(function (classes) {
         var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(classString.trim());
     });
@@ -331,7 +334,7 @@ coreHelpers.post_class = function (options) {
         classes.push('page');
     }
 
-    return coreHelpers.ghost.doFilter('post_class', classes).then(function (classes) {
+    return filters.doFilter('post_class', classes).then(function (classes) {
         var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(classString.trim());
     });
@@ -354,7 +357,7 @@ coreHelpers.ghost_head = function (options) {
         head.push('<link rel="canonical" href="' + coreHelpers.ghost.blogGlobals().url + this.ghostRoot + '" />');
     }
 
-    return coreHelpers.ghost.doFilter('ghost_head', head).then(function (head) {
+    return filters.doFilter('ghost_head', head).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n' + item; }, '');
         return new hbs.handlebars.SafeString(headString.trim());
     });
@@ -365,7 +368,7 @@ coreHelpers.ghost_foot = function (options) {
     var foot = [];
     foot.push('<script src="' + coreHelpers.ghost.blogGlobals().url + '/shared/vendor/jquery/jquery.js"></script>');
 
-    return coreHelpers.ghost.doFilter('ghost_foot', foot).then(function (foot) {
+    return filters.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(footString.trim());
     });
@@ -384,7 +387,7 @@ coreHelpers.meta_title = function (options) {
         }
     }
 
-    return coreHelpers.ghost.doFilter('meta_title', title).then(function (title) {
+    return filters.doFilter('meta_title', title).then(function (title) {
         title = title || "";
         return new hbs.handlebars.SafeString(title.trim());
     });
@@ -404,7 +407,7 @@ coreHelpers.meta_description = function (options) {
         }
     }
 
-    return coreHelpers.ghost.doFilter('meta_description', description).then(function (description) {
+    return filters.doFilter('meta_description', description).then(function (description) {
         description = description || "";
         return new hbs.handlebars.SafeString(description.trim());
     });
@@ -424,7 +427,7 @@ coreHelpers.e = function (key, defaultString, options) {
     if (coreHelpers.ghost.settings('defaultLang') === 'en' && _.isEmpty(options.hash) && !coreHelpers.ghost.settings('forceI18n')) {
         output = defaultString;
     } else {
-        output = coreHelpers.ghost.polyglot().t(key, options.hash);
+        output = polyglot().t(key, options.hash);
     }
 
     return output;
@@ -561,6 +564,24 @@ coreHelpers.helperMissing = function (arg) {
     errors.logError('Missing helper: "' + arg + '"');
 };
 
+// Register a handlebars helper for themes
+function registerThemeHelper(name, fn) {
+    hbs.registerHelper(name, fn);
+}
+
+// Register an async handlebars helper for themes
+function registerAsyncThemeHelper(name, fn) {
+    hbs.registerAsyncHelper(name, function (options, cb) {
+        // Wrap the function passed in with a when.resolve so it can
+        // return either a promise or a value
+        when.resolve(fn.call(this, options)).then(function (result) {
+            cb(result);
+        }).otherwise(function (err) {
+            errors.logAndThrowError(err, "registerAsyncThemeHelper: " + name);
+        });
+    });
+}
+
 registerHelpers = function (ghost, config) {
     var paginationHelper;
 
@@ -570,54 +591,54 @@ registerHelpers = function (ghost, config) {
     // And expose config
     coreHelpers.config = config;
 
-    ghost.registerThemeHelper('asset', coreHelpers.asset);
+    registerThemeHelper('asset', coreHelpers.asset);
 
-    ghost.registerThemeHelper('author', coreHelpers.author);
+    registerThemeHelper('author', coreHelpers.author);
 
-    ghost.registerThemeHelper('content', coreHelpers.content);
+    registerThemeHelper('content', coreHelpers.content);
 
-    ghost.registerThemeHelper('date', coreHelpers.date);
+    registerThemeHelper('date', coreHelpers.date);
 
-    ghost.registerThemeHelper('e', coreHelpers.e);
+    registerThemeHelper('e', coreHelpers.e);
 
-    ghost.registerThemeHelper('encode', coreHelpers.encode);
+    registerThemeHelper('encode', coreHelpers.encode);
 
-    ghost.registerThemeHelper('excerpt', coreHelpers.excerpt);
+    registerThemeHelper('excerpt', coreHelpers.excerpt);
 
-    ghost.registerThemeHelper('fileStorage', coreHelpers.fileStorage);
+    registerThemeHelper('fileStorage', coreHelpers.fileStorage);
 
-    ghost.registerThemeHelper('foreach', coreHelpers.foreach);
+    registerThemeHelper('foreach', coreHelpers.foreach);
 
-    ghost.registerThemeHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
+    registerThemeHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
 
-    ghost.registerThemeHelper('has_tag', coreHelpers.has_tag);
+    registerThemeHelper('has_tag', coreHelpers.has_tag);
 
-    ghost.registerThemeHelper('helperMissing', coreHelpers.helperMissing);
+    registerThemeHelper('helperMissing', coreHelpers.helperMissing);
 
-    ghost.registerThemeHelper('json', coreHelpers.json);
+    registerThemeHelper('json', coreHelpers.json);
 
-    ghost.registerThemeHelper('pageUrl', coreHelpers.pageUrl);
+    registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 
-    ghost.registerThemeHelper('tags', coreHelpers.tags);
+    registerThemeHelper('tags', coreHelpers.tags);
 
-    ghost.registerThemeHelper('url', coreHelpers.url);
+    registerThemeHelper('url', coreHelpers.url);
 
-    ghost.registerAsyncThemeHelper('body_class', coreHelpers.body_class);
+    registerAsyncThemeHelper('body_class', coreHelpers.body_class);
 
-    ghost.registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
+    registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
 
-    ghost.registerAsyncThemeHelper('ghost_head', coreHelpers.ghost_head);
+    registerAsyncThemeHelper('ghost_head', coreHelpers.ghost_head);
 
-    ghost.registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
+    registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
 
-    ghost.registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
+    registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
 
-    ghost.registerAsyncThemeHelper('post_class', coreHelpers.post_class);
+    registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
-    paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
+    paginationHelper = template.loadTemplate('pagination').then(function (templateFn) {
         coreHelpers.paginationTemplate = templateFn;
 
-        ghost.registerThemeHelper('pagination', coreHelpers.pagination);
+        registerThemeHelper('pagination', coreHelpers.pagination);
     });
 
     // Return once the template-driven helpers have loaded
@@ -628,3 +649,5 @@ registerHelpers = function (ghost, config) {
 
 module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;
+module.exports.registerThemeHelper = registerThemeHelper;
+module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;

@@ -12,6 +12,8 @@ var config       = require('./config'),
     errors       = require('./errorHandling'),
     plugins      = require('./plugins'),
     path         = require('path'),
+    Polyglot     = require('node-polyglot'),
+    mailer       = require('./mail'),
     Ghost        = require('../ghost'),
     helpers      = require('./helpers'),
     middleware   = require('./middleware'),
@@ -35,8 +37,18 @@ if (process.env.NODE_ENV === 'development') {
 // helpers, routes, middleware, and plugins.
 // Finally it starts the http server.
 function setup(server) {
+
+    // Set up Polygot instance on the require module
+    Polyglot.instance = new Polyglot();
+
     when(ghost.init()).then(function () {
-        return helpers.loadCoreHelpers(ghost, config);
+        return when.join(
+            // Initialise mail after first run,
+            // passing in config module to prevent
+            // circular dependencies.
+            mailer.init(ghost, config),
+            helpers.loadCoreHelpers(ghost, config)
+        );
     }).then(function () {
 
         // ##Configuration
