@@ -1,10 +1,10 @@
 ---
 lang: it
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Come installare Ghost sul tuo server - Documentazione Ghost
+meta_description: Tutto il necessario per far funzionare la piattaforma di blogging Ghost in locale e in remoto.
+heading: Installazione di Ghost &amp; Primi passi
+subheading: I primi passi per installare il tuo nuovo blog per la prima volta.
 permalink: /it/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
@@ -15,34 +15,34 @@ prev_section: upgrading
 # Troubleshooting & FAQ <a id="troubleshooting"></a>
 
 <dl>
-    <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
-    <dd>You can add it by doing the following:
+    <dt id="export-path">'/usr/local/bin' non appare in $PATH</dt>
+    <dd>Puoi aggiungerlo come segue:
         <ul>
-            <li>In your terminal window type <code>cd ~</code>, this will take you to your home directory</li>
-            <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
-            <li>You should see a file called <code class="path">.profile</code> or <code class="path">.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
-            <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
+            <li>Da terminale digita <code>cd ~</code>, ti porterà alla tua cartella home</li>
+            <li>Ora digita <code>ls -al</code> per mostrare tutti i files e le sottocartelle in questa cartella, inclusi quelli nascosti</li>
+            <li>Dovresti vedere un file <code class="path">.profile</code> o <code class="path">.bash_profile</code> in caso contrario digita <code>touch .bash_profile</code> per crearlo</li>
+            <li>Successivamente digita <code>open -a Textedit .bash_profile</code> per aprire il file con Textedit.</li>
             <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
-            <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
+            <li>Questa nuova configurazione sarà caricata al prossimo all'avvio di una nuova finestra di terminale, quindi apri una nuova scheda o finestra di terminale e digita <code>echo $PATH</code> per verificare che '/usr/local/bin/' sia ora presente.</li>
         </ul>
     </dd>
-    <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+    <dt id="sqlite3-errors">SQLite3 non si installa</dt>
     <dd>
-        <p>The SQLite3 package comes with pre-built binaries for the most common architectures. If you are using a less popular linux or other unix flavor, you may find that SQLite3 will give you a 404 as it cannot find a binary for your platform.</p>
-        <p>This can be fixed by forcing SQLite3 to compile. This will require python & gcc. Try it out by running <code>npm install sqlite3 --build-from-source</code></p>
-        <p>If it won't build you're probably missing one of the python or gcc dependencies, on linux try running <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> and <code>sudo apt-get install python-software-properties python g++ make</code> before retrying the build from source.</p>
-        <p>For more information about building the binaries please see: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
-        <p>Once you have successfully built a binary for your platform, please follow the <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instructions here</a> to submit the binary to the node-sqlite project, so that future users won't have the same problem.</p>
+        <p>Il pacchetto SQLite3 comprende binari precompilati per le più comuni architetture. Se stai usando una distro linux meno popolare o altri sistemi unix-like, potresti ottenere da SQLite3 un errore 404 in quanto non è in grado di trovare i binari per la tua piattaforma.</p>
+        <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno python & gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
+        <p>In caso di errore probabilmente ti mancano dipendenze di python o di gcc, su linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
+        <p>Per ulteriori informazioni sulla compilazione consulta: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
+        <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instruzioni qui</a> per inoltrare i binari al progetto node-sqlite, in questo modo in futuro altri utenti non incorreranno nello stesso problema.</p>
     </dd>
-    <dt id="image-uploads">I can't upload images</dt>
+    <dt id="image-uploads">Non riesco a fare l'upload delle images</dt>
     <dd>
-        <p>If you're on a DigitalOcean Droplet setup when Ghost was at v0.3.2, or you're using nginx on some other platform, you may find you cannot upload images.</p>
-        <p>What's actually happening, is you cannot upload images bigger than 1MB (try a small image, it should work). That's a pretty small limit!</p>
-        <p>To increase the limit you need to edit your nginx config file, and set the limit to something else.</p>
+        <p>Se utilizzi una DigitalOcean Droplet con installato Ghost v0.3.2 o se usi nginx su altre piattaforme, potrebbe risultarti impossibile l'upload delle immagini.</p>
+        <p>In realtà non riesci a caricare immagini oltre 1MB (prova un'immagine più piccola, vedrai che funzionerà). Un limite piuttosto basso!</p>
+        <p>Per incrementare il limite devi modificare il file di configurazione di nginx impostando il nuovo limite.</p>
         <ul>
-            <li>Log into your server, and type <code>sudo nano /etc/nginx/conf.d/default.conf</code> to open your config file.</li>
-            <li>After the <code>server_name</code> line, add the following: <code>client_max_body_size 10M;</code></li>
-            <li>Finally, press <kbd>ctrl</kbd> + <kbd>x</kbd> to exit. Nano will ask you if you want to save, type <kbd>y</kbd> for yes, and press <kbd>enter</kbd> to save the file.</li>
+            <li>Accedi al tuo server e digita <code>sudo nano /etc/nginx/conf.d/default.conf</code> per aprire il file di configurazione.</li>
+            <li>Dopo la riga con <code>server_name</code> aggiungi: <code>client_max_body_size 10M;</code></li>
+            <li>Infine premi <kbd>ctrl</kbd> + <kbd>x</kbd> per uscire. Nano ti chiederà se vuoi salvare, quindi digita <kbd>y</kbd> per acconsentire e premi <kbd>enter</kbd> per salvare il file.</li>
         </ul>
     </dd>
 </dl>
