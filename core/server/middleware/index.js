@@ -89,6 +89,9 @@ function activateTheme() {
         return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
     }));
 
+    // Tell the paths to update
+    config.paths.setActiveTheme(ghost);
+
     // clear the view cache
     ghost.server.cache = {};
     ghost.server.disable(ghost.server.get('activeTheme'));
