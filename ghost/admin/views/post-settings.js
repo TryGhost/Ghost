@@ -102,25 +102,35 @@
                 pubDateMoment,
                 newPubDateMoment;
 
-            // Check for missing time stamp on current model
-            // If no time specified, add a 12:00
-            if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
-                pubDate += " 12:00";
+            // Ignore empty or unchanged dates
+            if (!newPubDate) {
+                return;
             }
 
-            pubDateMoment = moment(pubDate, parseDateFormats);
-
-            // Same for new date
-            if (!newPubDate.slice(-5).match(/\d+:\d\d/)) {
+            // Check for missing time stamp on new data
+            // If no time specified, add a 12:00
+            if (newPubDate && !newPubDate.slice(-5).match(/\d+:\d\d/)) {
                 newPubDate += " 12:00";
             }
 
             newPubDateMoment = moment(newPubDate, parseDateFormats);
 
-            // Ensure the published date has changed
-            if (newPubDate.length === 0 || pubDateMoment.isSame(newPubDateMoment)) {
-                pubDateEl.value = pubDate === undefined ? 'Not Published' : pubDateMoment.format(displayDateFormat);
-                return;
+            // If there was a published date already set
+            if (pubDate) {
+                 // Check for missing time stamp on current model
+                // If no time specified, add a 12:00
+                if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
+                    pubDate += " 12:00";
+                }
+
+                pubDateMoment = moment(pubDate, parseDateFormats);
+
+                 // Ensure the published date has changed
+                if (newPubDate.length === 0 || pubDateMoment.isSame(newPubDateMoment)) {
+                    // If it wasn't, reset it and return
+                    pubDateEl.value = pubDateMoment.format(displayDateFormat);
+                    return;
+                }
             }
 
             // Validate new Published date
@@ -141,7 +151,7 @@
                 });
 
                 // Reset back to original value and return
-                pubDateEl.value = pubDateMoment.format(displayDateFormat);
+                pubDateEl.value = pubDateMoment ? pubDateMoment.format(displayDateFormat) : '';
                 return;
             }
 
