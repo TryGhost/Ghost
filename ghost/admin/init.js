@@ -2,6 +2,16 @@
 (function () {
     'use strict';
 
+    function ghostPaths() {
+        var path = window.location.pathname,
+            root = path.substr(0, path.search('/ghost/'));
+
+        return {
+            ghostRoot: root,
+            apiRoot: root + '/ghost/api/v0.1'
+        };
+    }
+
     var Ghost = {
         Layout      : {},
         Views       : {},
@@ -9,9 +19,7 @@
         Models      : {},
         Validate    : new Validator(),
 
-        settings: {
-            apiRoot: '/ghost/api/v0.1'
-        },
+        paths: ghostPaths(),
 
         // This is a helper object to denote legacy things in the
         // middle of being transitioned.
@@ -46,7 +54,7 @@
         Backbone.history.start({
             pushState: true,
             hashChange: false,
-            root: '/ghost'
+            root: Ghost.paths.ghostRoot + '/ghost'
         });
     };
 

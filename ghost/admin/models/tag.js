@@ -3,6 +3,6 @@
     'use strict';
 
     Ghost.Collections.Tags = Ghost.ProgressCollection.extend({
-        url: Ghost.settings.apiRoot + '/tags/'
+        url: Ghost.paths.apiRoot + '/tags/'
     });
 }());

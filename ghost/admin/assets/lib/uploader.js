@@ -47,7 +47,7 @@
                         .attr({'src': '', "width": 'auto', "height": 'auto'});
 
                     $progress.animate({"opacity": 0}, 250, function () {
-                        $dropzone.find('span.media').after('<img class="fileupload-loading"  src="/ghost/img/loadingcat.gif" />');
+                        $dropzone.find('span.media').after('<img class="fileupload-loading"  src="' + Ghost.paths.ghostRoot + '/ghost/img/loadingcat.gif" />');
                         if (!settings.editor) {$progress.find('.fileupload-loading').css({"top": "56px"}); }
                     });
                     $dropzone.trigger("uploadsuccess", [result]);
@@ -62,7 +62,7 @@
                 var self = this;
 
                 $dropzone.find('.js-fileupload').fileupload().fileupload("option", {
-                    url: '/ghost/upload/',
+                    url: Ghost.paths.ghostRoot + '/ghost/upload/',
                     headers: {
                         'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
                     },
