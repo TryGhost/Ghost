@@ -10,8 +10,8 @@ var net             = require('net'),
     ghost           = new Ghost();
 
 describe('Server', function () {
-    var port = config['development'].server.port,
-        host = config['development'].server.host,
+    var port = config.testing.server.port,
+        host = config.testing.server.host,
         url = 'http://' + host + ':' + port;
 
 
