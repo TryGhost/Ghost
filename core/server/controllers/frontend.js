@@ -19,21 +19,22 @@ var Ghost  = require('../../ghost'),
 
 frontendControllers = {
     'homepage': function (req, res, next) {
-        // Parse the page number
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+            // Parse the page number
+            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             postsPerPage = parseInt(ghost.settings('postsPerPage'), 10),
             options = {};
 
         // No negative pages
         if (isNaN(pageParam) || pageParam < 1) {
             //redirect to 404 page?
-            return res.redirect('/');
+            return res.redirect(root + '/');
         }
         options.page = pageParam;
 
         // Redirect '/page/1/' to '/' for all teh good SEO
         if (pageParam === 1 && req.route.path === '/page/:page/') {
-            return res.redirect('/');
+            return res.redirect(root + '/');
         }
 
         // No negative posts per page, must be number
@@ -52,7 +53,7 @@ frontendControllers = {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? '/' : ('/page/' + maxPage + '/'));
+                return res.redirect(maxPage === 1 ? root + '/' : (root + '/page/' + maxPage + '/'));
             }
 
             // Render the page of posts
@@ -89,6 +90,7 @@ frontendControllers = {
     'rss': function (req, res, next) {
         // Initialize RSS
         var siteUrl = config().url,
+            root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             feed;
         //needs refact for multi user to not use first user as default
@@ -105,11 +107,11 @@ frontendControllers = {
 
             // No negative pages
             if (isNaN(pageParam) || pageParam < 1) {
-                return res.redirect('/rss/');
+                return res.redirect(root + '/rss/');
             }
 
-            if (pageParam === 1 && req.route.path === '/rss/:page/') {
-                return res.redirect('/rss/');
+            if (pageParam === 1 && req.route.path === root + '/rss/:page/') {
+                return res.redirect(root + '/rss/');
             }
 
             api.posts.browse({page: pageParam}).then(function (page) {
@@ -123,7 +125,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect('/rss/' + maxPage + '/');
+                    return res.redirect(root + '/rss/' + maxPage + '/');
                 }
 
                 ghost.doFilter('prePostsRender', page.posts).then(function (posts) {

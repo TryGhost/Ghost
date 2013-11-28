@@ -187,7 +187,7 @@ module.exports = function (server) {
     server.use(express.session({
         store: new BSStore(ghost.dataProvider),
         secret: ghost.dbHash,
-        cookie: { path: '/ghost', maxAge: 12 * 60 * 60 * 1000 }
+        cookie: { path: root + '/ghost', maxAge: 12 * 60 * 60 * 1000 }
     }));
 
     //enable express csrf protection

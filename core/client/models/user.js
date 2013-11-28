@@ -3,11 +3,11 @@
     'use strict';
 
     Ghost.Models.User = Ghost.ProgressModel.extend({
-        url: Ghost.settings.apiRoot + '/users/me/'
+        url: Ghost.paths.apiRoot + '/users/me/'
     });
 
 //    Ghost.Collections.Users = Backbone.Collection.extend({
-//        url: Ghost.settings.apiRoot + '/users/'
+//        url: Ghost.paths.apiRoot + '/users/'
 //    });
 
 }());

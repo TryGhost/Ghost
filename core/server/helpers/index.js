@@ -113,6 +113,35 @@ coreHelpers.url = function (options) {
     return output;
 };
 
+// ### Asset helper
+//
+// *Usage example:*
+// `{{asset src="css/screen.css"}}`
+// `{{asset src="css/screen.css" ghost="true"}}`
+//
+// Returns the path to the specified asset. The ghost
+// flag outputs the asset path for the Ghost admin
+coreHelpers.asset = function (context, options) {
+    var output = '',
+        subDir = coreHelpers.ghost.blogGlobals().path,
+        isAdmin = options && options.hash && options.hash.ghost;
+
+    if (subDir === '/') {
+        output += '/';
+    } else {
+        output += subDir + '/';
+    }
+
+    if (isAdmin) {
+        output += 'ghost/';
+    } else {
+        output += 'assets/';
+    }
+
+    output += context;
+    return new hbs.handlebars.SafeString(output);
+};
+
 // ### Author Helper
 //
 // *Usage example:*
@@ -541,47 +570,49 @@ registerHelpers = function (ghost, config) {
     // And expose config
     coreHelpers.config = config;
 
-    ghost.registerThemeHelper('date', coreHelpers.date);
-
-    ghost.registerThemeHelper('encode', coreHelpers.encode);
-
-    ghost.registerThemeHelper('pageUrl', coreHelpers.pageUrl);
-
-    ghost.registerThemeHelper('url', coreHelpers.url);
+    ghost.registerThemeHelper('asset', coreHelpers.asset);
 
     ghost.registerThemeHelper('author', coreHelpers.author);
 
-    ghost.registerThemeHelper('tags', coreHelpers.tags);
-
     ghost.registerThemeHelper('content', coreHelpers.content);
+
+    ghost.registerThemeHelper('date', coreHelpers.date);
+
+    ghost.registerThemeHelper('e', coreHelpers.e);
+
+    ghost.registerThemeHelper('encode', coreHelpers.encode);
 
     ghost.registerThemeHelper('excerpt', coreHelpers.excerpt);
 
     ghost.registerThemeHelper('fileStorage', coreHelpers.fileStorage);
 
-    ghost.registerThemeHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
-
-    ghost.registerThemeHelper('e', coreHelpers.e);
-
-    ghost.registerThemeHelper('json', coreHelpers.json);
-
     ghost.registerThemeHelper('foreach', coreHelpers.foreach);
 
-    ghost.registerThemeHelper('helperMissing', coreHelpers.helperMissing);
+    ghost.registerThemeHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
 
     ghost.registerThemeHelper('has_tag', coreHelpers.has_tag);
 
+    ghost.registerThemeHelper('helperMissing', coreHelpers.helperMissing);
+
+    ghost.registerThemeHelper('json', coreHelpers.json);
+
+    ghost.registerThemeHelper('pageUrl', coreHelpers.pageUrl);
+
+    ghost.registerThemeHelper('tags', coreHelpers.tags);
+
+    ghost.registerThemeHelper('url', coreHelpers.url);
+
     ghost.registerAsyncThemeHelper('body_class', coreHelpers.body_class);
 
-    ghost.registerAsyncThemeHelper('post_class', coreHelpers.post_class);
-
-    ghost.registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
-
-    ghost.registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
+    ghost.registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
 
     ghost.registerAsyncThemeHelper('ghost_head', coreHelpers.ghost_head);
 
-    ghost.registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
+    ghost.registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
+
+    ghost.registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
+
+    ghost.registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
     paginationHelper = ghost.loadTemplate('pagination').then(function (templateFn) {
         coreHelpers.paginationTemplate = templateFn;

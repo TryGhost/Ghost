@@ -221,7 +221,7 @@
                                     }).then(function () {
                                         // Redirect to content screen if deleting post from editor.
                                         if (window.location.pathname.indexOf('editor') > -1) {
-                                            window.location = '/ghost/content/';
+                                            window.location = Ghost.paths.ghostRoot + '/ghost/content/';
                                         }
                                         Ghost.notifications.addItem({
                                             type: 'success',

@@ -60,7 +60,7 @@
 
         editor: function (id) {
             var post = new Ghost.Models.Post();
-            post.urlRoot = Ghost.settings.apiRoot + '/posts';
+            post.urlRoot = Ghost.paths.apiRoot + '/posts';
             if (id) {
                 post.id = id;
                 post.fetch({ data: {status: 'all'}}).then(function () {

@@ -3,7 +3,7 @@
     'use strict';
 
     Ghost.Models.Themes = Backbone.Model.extend({
-        url: Ghost.settings.apiRoot + '/themes'
+        url: Ghost.paths.apiRoot + '/themes'
     });
 
 }());
