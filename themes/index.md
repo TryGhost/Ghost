@@ -269,7 +269,7 @@ You can limit the amount of HTML content to output by passing one of the options
 
 You can limit the amount of text to output by passing one of the options:
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters=140}}` will output 140 characters of text.
 
 ### <code>date</code> <a id="date-helper"></a>
 

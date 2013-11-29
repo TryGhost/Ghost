@@ -269,7 +269,7 @@ Du kannst die Menge an ausgegebenem HTML beschränken indem du eine der folgende
 
 Du kannst die Menge an ausgegebenem Text durch folgende Optionen beschränken:
 
-`{{excerpt characters="140"}}` gibt 140 Zeichen Text aus.
+`{{excerpt characters=140}}` gibt 140 Zeichen Text aus.
 
 ### <code>date</code> <a id="date-helper"></a>
 
