@@ -99,6 +99,7 @@ function activateTheme(activeTheme) {
     expressServer.enable(expressServer.get('activeTheme'));
     if (stackLocation) {
         expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
+        expressServer.stack[stackLocation].route = config.paths().webroot;
     }
 
     // set view engine

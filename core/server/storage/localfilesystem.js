@@ -31,7 +31,7 @@ localFileStore = _.extend(baseStore, {
             }).then(function () {
                 // The src for the image must be in URI format, not a file system path, which in Windows uses \
                 // For local file system storage can use relative path so add a slash
-                var fullUrl = ('/' + filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+                var fullUrl = (config.paths().webroot + '/' + filename).replace(new RegExp('\\' + path.sep, 'g'), '/');
                 return saved.resolve(fullUrl);
             }).otherwise(function (e) {
                 errors.logError(e);
