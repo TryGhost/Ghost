@@ -74,6 +74,32 @@ CasperTest.begin("Can't spam it", 3, function suite(test) {
     casper.wait(2000);
 }, true);
 
+
+CasperTest.begin("Login limit is in place", 3, function suite(test) {
+    casper.thenOpen(url + "ghost/signin/", function testTitle() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+    });
+
+    casper.waitForOpaque(".login-box",
+        function then() {
+            this.fill("#login", falseUser, true);
+        },
+        function onTimeout() {
+            test.fail('Sign in form didn\'t fade in.');
+        });
+
+    casper.wait(2100, function doneWait() {
+        this.fill("#login", falseUser, true);
+    });
+
+    casper.waitForText('remaining', function onSuccess() {
+        test.assert(true, 'The login limit is in place.');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'We did not trip the login limit.');
+    });
+}, true);
+
 CasperTest.begin("Can login to Ghost", 4, function suite(test) {
     casper.thenOpen(url + "ghost/login/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
