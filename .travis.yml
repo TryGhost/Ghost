@@ -19,7 +19,7 @@ before_install:
   - export PATH=$PATH:`pwd`/bin
   - cd -
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_travis'; fi
-  - if [ $DB == "pg" ]; then psql -c 'create database ghost_travis;' -U postgres; fi
+  - if [ $DB == "pg" ]; then npm install pg; psql -c 'create database ghost_travis;' -U postgres; fi
 before_script:
   - phantomjs --version
   - casperjs --version
