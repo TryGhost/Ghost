@@ -136,7 +136,7 @@ describe('Core Helpers', function () {
                 rendered = (
                     helpers.excerpt.call(
                         {html: html},
-                        {"hash": {"words": 2}}
+                        {"hash": {"words": "2"}}
                     )
                 );
 
@@ -150,7 +150,7 @@ describe('Core Helpers', function () {
                 rendered = (
                     helpers.excerpt.call(
                         {html: html},
-                        {"hash": {"characters": 8}}
+                        {"hash": {"characters": "8"}}
                     )
                 );
 
