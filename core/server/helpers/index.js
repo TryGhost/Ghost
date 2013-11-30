@@ -119,8 +119,8 @@ coreHelpers.url = function (options) {
 // ### Asset helper
 //
 // *Usage example:*
-// `{{asset src="css/screen.css"}}`
-// `{{asset src="css/screen.css" ghost="true"}}`
+// `{{asset "css/screen.css"}}`
+// `{{asset "css/screen.css" ghost="true"}}`
 //
 // Returns the path to the specified asset. The ghost
 // flag outputs the asset path for the Ghost admin
@@ -187,8 +187,8 @@ coreHelpers.tags = function (options) {
 //
 // *Usage example:*
 // `{{content}}`
-// `{{content words=20}}`
-// `{{content characters=256}}`
+// `{{content words="20"}}`
+// `{{content characters="256"}}`
 //
 // Turns content html into a safestring so that the user doesn't have to
 // escape it or tell handlebars to leave it alone with a triple-brace.
@@ -200,6 +200,9 @@ coreHelpers.tags = function (options) {
 coreHelpers.content = function (options) {
     var truncateOptions = (options || {}).hash || {};
     truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    _.keys(truncateOptions).map(function (key) {
+        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+    });
 
     if (truncateOptions.words || truncateOptions.characters) {
         return new hbs.handlebars.SafeString(
@@ -214,12 +217,12 @@ coreHelpers.content = function (options) {
 //
 // *Usage example:*
 // `{{excerpt}}`
-// `{{excerpt words=50}}`
-// `{{excerpt characters=256}}`
+// `{{excerpt words="50"}}`
+// `{{excerpt characters="256"}}`
 //
 // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
 //
-// Defaults to words=50
+// Defaults to words="50"
 //
 // **returns** SafeString truncated, HTML-free content.
 //
@@ -228,6 +231,9 @@ coreHelpers.excerpt = function (options) {
         excerpt;
 
     truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    _.keys(truncateOptions).map(function (key) {
+        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+    });
 
     /*jslint regexp:true */
     excerpt = String(this.html).replace(/<\/?[^>]+>/gi, '');
