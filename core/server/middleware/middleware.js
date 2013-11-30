@@ -158,6 +158,7 @@ var middleware = {
         };
     },
 
+
     staticTheme: function () {
         return function blackListStatic(req, res, next) {
             if (isBlackListedFileType(req.url)) {

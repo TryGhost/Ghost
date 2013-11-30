@@ -10,6 +10,7 @@ var _       = require('lodash'),
     errors  = require('../errorHandling'),
     config  = require('../config'),
     baseStore   = require('./base'),
+    assets        = require('../middleware/assets'),
 
     localFileStore;
 

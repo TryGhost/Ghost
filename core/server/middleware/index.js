@@ -11,12 +11,18 @@ var api         = require('../api'),
     hbs         = require('express-hbs'),
     middleware  = require('./middleware'),
     packageInfo = require('../../../package.json'),
+<<<<<<< HEAD
     path        = require('path'),
     slashes     = require('connect-slashes'),
     storage     = require('../storage'),
     url         = require('url'),
     when        = require('when'),
     _           = require('lodash'),
+=======
+    BSStore     = require('../bookshelf-session'),
+    models      = require('../models'),
+    assets      = require('./assets'),
+>>>>>>> Serving static assets via asset-rack
 
     expressServer,
     ONE_HOUR_S  = 60 * 60,
@@ -90,20 +96,23 @@ function initViews(req, res, next) {
 // ### Activate Theme
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
+<<<<<<< HEAD
     var hbsOptions,
         themePartials = path.join(config().paths.themePath, activeTheme, 'partials'),
         stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
             return stackItem.route === config().paths.subdir && stackItem.handle.name === 'settingEnabled';
         }));
+=======
+    var hbsOptions;
+>>>>>>> Serving static assets via asset-rack
 
     // clear the view cache
     expressServer.cache = {};
     expressServer.disable(expressServer.get('activeTheme'));
     expressServer.set('activeTheme', activeTheme);
     expressServer.enable(expressServer.get('activeTheme'));
-    if (stackLocation) {
-        expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
-    }
+
+    assets.theme.reload();
 
     // set view engine
     hbsOptions = { partialsDir: [ config().paths.helperTemplates ] };
@@ -210,7 +219,7 @@ function robots() {
                     if (err) {
                         return next(err);
                     }
-                    
+
                     content = {
                         headers: {
                             'Content-Type': 'text/plain',
@@ -252,6 +261,7 @@ module.exports = function (server, dbHash) {
         }
     }
 
+<<<<<<< HEAD
     // Favicon
     expressServer.use(subdir, express.favicon(corePath + '/shared/favicon.ico'));
 
@@ -278,6 +288,19 @@ module.exports = function (server, dbHash) {
 
     // Serve robots.txt if not found in theme
     expressServer.use(robots());
+=======
+    // First determine whether we're serving admin or theme content
+    expressServer.use(manageAdminAndTheme);
+
+    // Force SSL
+    server.use(checkSSL);
+
+    // Assets
+    expressServer.use(assets.ghost);
+
+    // Uploaded Assets
+    expressServer.use(root + '/content/images', storage.get_storage().serve());
+>>>>>>> Serving static assets via asset-rack
 
     // Add in all trailing slashes
     expressServer.use(slashes(true, {headers: {'Cache-Control': 'public, max-age=' + ONE_YEAR_S}}));

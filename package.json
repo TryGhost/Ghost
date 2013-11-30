@@ -31,6 +31,8 @@
     },
     "engineStrict": true,
     "dependencies": {
+        "asset-rack": "2.2.2",
+        "async": "0.2.9",
         "bcryptjs": "0.7.10",
         "bookshelf": "0.6.1",
         "busboy": "0.0.12",
