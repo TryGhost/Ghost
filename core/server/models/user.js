@@ -155,17 +155,53 @@ User = ghostBookshelf.Model.extend({
 
     },
 
+    setWarning: function (user) {
+        var status = user.get('status'),
+            regexp = /warn-(\d+)/i,
+            level;
+
+        if (status === 'active') {
+            user.set('status', 'warn-1');
+            level = 1;
+        } else {
+            level = parseInt(status.match(regexp)[1], 10) + 1;
+            if (level > 3) {
+                user.set('status', 'locked');
+            } else {
+                user.set('status', 'warn-' + level);
+            }
+        }
+        return when(user.save()).then(function () {
+            return 5 - level;
+        });
+    },
+
     // Finds the user by email, and checks the password
     check: function (_userdata) {
+        var self = this,
+            s;
         return this.forge({
             email: _userdata.email.toLocaleLowerCase()
         }).fetch({require: true}).then(function (user) {
-            return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
-                if (!matched) {
-                    return when.reject(new Error('Your password is incorrect'));
-                }
-                return user;
-            }, errors.logAndThrowError);
+            if (user.get('status') !== 'locked') {
+                return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
+                    if (!matched) {
+                        return when(self.setWarning(user)).then(function (remaining) {
+                            s = (remaining > 1) ? 's' : '';
+                            return when.reject(new Error('Your password is incorrect.<br>' +
+                                remaining + ' attempt' + s + ' remaining!'));
+                        });
+                    }
+
+                    return when(user.set('status', 'active').save()).then(function (user) {
+                        return user;
+                    });
+                }, errors.logAndThrowError);
+            }
+            return when.reject(new Error('Your account is locked due to too many ' +
+                'login attempts. Please reset your password to log in again by clicking ' +
+                'the "Forgotten password?" link!'));
+
         }, function (error) {
             /*jslint unparam:true*/
             return when.reject(new Error('There is no user with that email address.'));
@@ -285,7 +321,7 @@ User = ghostBookshelf.Model.extend({
             var foundUser = results[0],
                 passwordHash = results[1];
 
-            foundUser.save({password: passwordHash});
+            foundUser.save({password: passwordHash, status: 'active'});
 
             return foundUser;
         });
