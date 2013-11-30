@@ -6,42 +6,40 @@ var should = require('should'),
     filters = require('../../server/filters'),
 
     // Stuff we are testing
-    createProxy = require('../../server/plugins/proxy');
+    appProxy = require('../../server/plugins/proxy');
 
 describe('App Proxy', function () {
 
     var sandbox,
-        fakeGhost;
+        fakeApi;
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
 
-        fakeGhost = {
-            api: {
-                posts: {
-                    browse: sandbox.stub(),
-                    read: sandbox.stub(),
-                    edit: sandbox.stub(),
-                    add: sandbox.stub(),
-                    destroy: sandbox.stub()
-                },
-                users: {
-                    browse: sandbox.stub(),
-                    read: sandbox.stub(),
-                    edit: sandbox.stub()
-                },
-                tags: {
-                    all: sandbox.stub()
-                },
-                notifications: {
-                    destroy: sandbox.stub(),
-                    add: sandbox.stub()
-                },
-                settings: {
-                    browse: sandbox.stub(),
-                    read: sandbox.stub(),
-                    add: sandbox.stub()
-                }
+        fakeApi = {
+            posts: {
+                browse: sandbox.stub(),
+                read: sandbox.stub(),
+                edit: sandbox.stub(),
+                add: sandbox.stub(),
+                destroy: sandbox.stub()
+            },
+            users: {
+                browse: sandbox.stub(),
+                read: sandbox.stub(),
+                edit: sandbox.stub()
+            },
+            tags: {
+                all: sandbox.stub()
+            },
+            notifications: {
+                destroy: sandbox.stub(),
+                add: sandbox.stub()
+            },
+            settings: {
+                browse: sandbox.stub(),
+                read: sandbox.stub(),
+                add: sandbox.stub()
             }
         };
     });
@@ -51,38 +49,31 @@ describe('App Proxy', function () {
     });
 
     it('creates a ghost proxy', function () {
-        var proxy = createProxy(fakeGhost);
+        should.exist(appProxy.filters);
+        appProxy.filters.register.should.equal(filters.registerFilter);
+        appProxy.filters.unregister.should.equal(filters.unregisterFilter);
 
-        should.exist(proxy.filters);
-        proxy.filters.register.should.equal(filters.registerFilter);
-        proxy.filters.unregister.should.equal(filters.unregisterFilter);
+        should.exist(appProxy.helpers);
+        appProxy.helpers.register.should.equal(helpers.registerThemeHelper);
+        appProxy.helpers.registerAsync.should.equal(helpers.registerAsyncThemeHelper);
 
-        should.exist(proxy.helpers);
-        proxy.helpers.register.should.equal(helpers.registerThemeHelper);
-        proxy.helpers.registerAsync.should.equal(helpers.registerAsyncThemeHelper);
+        should.exist(appProxy.api);
 
-        should.exist(proxy.api);
+        should.exist(appProxy.api.posts);
+        should.not.exist(appProxy.api.posts.edit);
+        should.not.exist(appProxy.api.posts.add);
+        should.not.exist(appProxy.api.posts.destroy);
 
-        should.exist(proxy.api.posts);
-        proxy.api.posts.browse.should.equal(fakeGhost.api.posts.browse);
-        proxy.api.posts.read.should.equal(fakeGhost.api.posts.read);
-        should.not.exist(proxy.api.posts.edit);
-        should.not.exist(proxy.api.posts.add);
-        should.not.exist(proxy.api.posts.destroy);
+        should.not.exist(appProxy.api.users);
 
-        should.not.exist(proxy.api.users);
+        should.exist(appProxy.api.tags);
 
-        should.exist(proxy.api.tags);
-        proxy.api.tags.all.should.equal(fakeGhost.api.tags.all);
+        should.exist(appProxy.api.notifications);
+        should.not.exist(appProxy.api.notifications.destroy);
 
-        should.exist(proxy.api.notifications);
-        should.not.exist(proxy.api.notifications.destroy);
-        proxy.api.notifications.add.should.equal(fakeGhost.api.notifications.add);
-
-        should.exist(proxy.api.settings);
-        should.not.exist(proxy.api.settings.browse);
-        proxy.api.settings.read.should.equal(fakeGhost.api.settings.read);
-        should.not.exist(proxy.api.settings.add);
+        should.exist(appProxy.api.settings);
+        should.not.exist(appProxy.api.settings.browse);
+        should.not.exist(appProxy.api.settings.add);
 
     });
 });
