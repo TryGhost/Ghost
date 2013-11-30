@@ -44,7 +44,7 @@
         "moment": "2.4.0",
         "node-polyglot": "0.3.0",
         "node-uuid": "1.4.1",
-        "nodemailer": "0.5.13",
+        "nodemailer": "0.5.15",
         "rss": "0.2.1",
         "semver": "2.2.1",
         "showdown": "0.3.1",
