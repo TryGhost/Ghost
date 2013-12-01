@@ -2,6 +2,7 @@ var Ghost         = require('../../ghost'),
     config        = require('../config'),
     _             = require('underscore'),
     path          = require('path'),
+    url           = require('url'),
     when          = require('when'),
     api           = require('../api'),
     mailer        = require('../mail'),
@@ -164,7 +165,7 @@ adminControllers = {
 
         api.users.generateResetToken(email).then(function (token) {
             var siteLink = '<a href="' + config().url + '">' + config().url + '</a>',
-                resetUrl = config().url + '/ghost/reset/' + token + '/',
+                resetUrl = url.resolve(config().url, '/ghost/reset/') + token + '/',
                 resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
                 message = {
                     to: email,
