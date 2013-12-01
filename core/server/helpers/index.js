@@ -17,6 +17,8 @@ var _               = require('underscore'),
     coreHelpers     = {},
     registerHelpers;
 
+
+
 /**
  * [ description]
  * @todo ghost core helpers + a way for themes to register them
@@ -536,10 +538,6 @@ coreHelpers.has_tag = function (name, options) {
     return options.inverse(this);
 };
 
-// ## Template driven helpers
-// Template driven helpers require that their template is loaded before they can be registered.
-coreHelpers.paginationTemplate = null;
-
 // ### Pagination Helper
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
@@ -564,7 +562,7 @@ coreHelpers.pagination = function (options) {
         errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
         return;
     }
-    return new hbs.handlebars.SafeString(coreHelpers.paginationTemplate(this.pagination));
+    return template.execute('pagination', this.pagination);
 };
 
 coreHelpers.helperMissing = function (arg) {
@@ -574,13 +572,8 @@ coreHelpers.helperMissing = function (arg) {
     errors.logError('Missing helper: "' + arg + '"');
 };
 
-// Register a handlebars helper for themes
-function registerThemeHelper(name, fn) {
-    hbs.registerHelper(name, fn);
-}
-
-// Register an async handlebars helper for themes
-function registerAsyncThemeHelper(name, fn) {
+// Register an async handlebars helper for a given handlebars instance
+function registerAsyncHelper(hbs, name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
         // Wrap the function passed in with a when.resolve so it can
         // return either a promise or a value
@@ -592,12 +585,39 @@ function registerAsyncThemeHelper(name, fn) {
     });
 }
 
-registerHelpers = function (config) {
-    var paginationHelper;
+
+// Register a handlebars helper for themes
+function registerThemeHelper(name, fn) {
+    hbs.registerHelper(name, fn);
+}
+
+// Register an async handlebars helper for themes
+function registerAsyncThemeHelper(name, fn) {
+    registerAsyncHelper(hbs, name, fn);
+}
+
+// Register a handlebars helper for admin
+function registerAdminHelper(name, fn) {
+    coreHelpers.adminHbs.registerHelper(name, fn);
+}
+
+// Register an async handlebars helper for admin
+function registerAsyncAdminHelper(name, fn) {
+    registerAsyncHelper(coreHelpers.adminHbs, name, fn);
+}
+
+
+
+registerHelpers = function (config, adminHbs) {
 
     // And expose config
     coreHelpers.config = config;
 
+    // Expose hbs instance for admin
+    coreHelpers.adminHbs = adminHbs;
+
+
+    // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
 
     registerThemeHelper('author', coreHelpers.author);
@@ -622,6 +642,8 @@ registerHelpers = function (config) {
 
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 
+    registerThemeHelper('pagination', coreHelpers.pagination);
+
     registerThemeHelper('tags', coreHelpers.tags);
 
     registerAsyncThemeHelper('body_class', coreHelpers.body_class);
@@ -640,17 +662,13 @@ registerHelpers = function (config) {
 
     registerAsyncThemeHelper('url', coreHelpers.url);
 
-    paginationHelper = template.loadTemplate('pagination').then(function (templateFn) {
-        coreHelpers.paginationTemplate = templateFn;
 
-        registerThemeHelper('pagination', coreHelpers.pagination);
-    });
+    // Register admin helpers
+    registerAdminHelper('asset', coreHelpers.asset);
 
-    // Return once the template-driven helpers have loaded
-    return when.join(
-        paginationHelper
-    );
+    registerAdminHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
 };
+
 
 module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;

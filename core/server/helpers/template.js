@@ -1,42 +1,27 @@
 var templates     = {},
-    nodefn        = require('when/node/function'),
-    fs            = require('fs'),
     hbs           = require('express-hbs'),
-    errors        = require('../errorHandling'),
-    path          = require('path'),
-    when          = require('when'),
-    config        = require('../config'),
-    api           = require('../api');
+    errors        = require('../errorHandling');
 
 // ## Template utils
 
-// Compile a template for a handlebars helper
-templates.compileTemplate = function (templatePath) {
-    return nodefn.call(fs.readFile, templatePath).then(function (templateContents) {
-        return hbs.handlebars.compile(templateContents.toString());
-    }, errors.logAndThrowError);
-};
+// Execute a template helper
+// All template helpers are register as partial view.
+templates.execute = function (name, context) {
 
-// Load a template for a handlebars helper
-templates.loadTemplate = function (name) {
-    var templateFileName = name + '.hbs',
-        deferred = when.defer();
-    // Check for theme specific version first
-    return api.settings.read('activeTheme').then(function (activeTheme) {
-        var templatePath = path.join(config.paths().themePath, activeTheme.value, 'partials', templateFileName);
+    var partial = hbs.handlebars.partials[name];
 
-        // Can't use nodefn here because exists just returns one parameter, true or false
-        fs.exists(templatePath, function (exists) {
-            if (!exists) {
-                // Fall back to helpers templates location
-                templatePath = path.join(config.paths().helperTemplates, templateFileName);
-            }
+    if (partial === undefined) {
+        errors.logAndThrowError('Template ' + name + ' not found.');
+        return;
+    }
 
-            templates.compileTemplate(templatePath).then(deferred.resolve, deferred.reject);
-        });
+    // If the partial view is not compiled, it compiles and saves in handlebars
+    if (typeof partial === 'string') {
+        partial = hbs.handlebars.compile(partial);
+        hbs.handlebars.partials[name] = partial;
+    }
 
-        return deferred.promise;
-    });
+    return new hbs.handlebars.SafeString(partial(context));
 };
 
 module.exports = templates;
