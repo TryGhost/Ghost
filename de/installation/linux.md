@@ -21,19 +21,47 @@ next_section: deploy
 
 ### Ghost installieren und ausführen
 
+**Wenn du Linux als Desktop verwendest gehe wie folgt vor:**
+
 * Logge dich auf [http://ghost.org](http://ghost.org) ein und klicke auf dem blauen 'Download Ghost Source Code' button.
 * Klicke auf der Download-Seite auf den Button zum herunterladen der neuesten Zip-Datei und extrahiere sie an den Ort, von dem du Ghost starten willst
-* Wechsle in einem Terminal zu dem Pfad, in den du Ghost extrahiert hast
-* Gib nun `npm install --production` ein <span class="note">Achte auf die zwei Striche</span>
-* Sobald npm fertig ist, starte Ghost mittels `npm start` in den Entwicklungsmodus
-* Navigiere in einem Browser zu <code class="path">127.0.0.1:2368</code>, um deinen neuen Ghost Blog zu betrachten
-* Ersetze die URL mit <code class="path">127.0.0.1:2368/ghost</code> und erstelle deinen Administrator-Benutzer, um dich im Ghost-Backend anzumelden
 
-Falls du Linux als virtuelles Betriebssystem oder mittels SSH verwendest und nur ein Terminal zur Verfügung hast, kannst du folgendes tun:
+**Wenn du Linux als Gast-Betriebssystem verwendest oder über SHH und nur einen Terminal hast, dann:**
 
-* Verwende dein normales Betriebssystem, um die URL der Zip-Datei herauszufinden (sie verändert sich mit jeder Version). Speichere die URL, ändere allerdings '/zip/' zu '/archives/' ab
-* Verwende im Terminal `wget url-of-ghost.zip`, um Ghost herunterzuladen
-* Entpacke das Archiv mit `unzip -uo Ghost-#.#.#.zip -d ghost` und gib dann `cd ghost` ein
-* Gib nun `npm install --production` ein um Ghost zu installieren <span class="note">Achte auf die zwei Striche</span>
-* Sobald npm fertig ist, starte Ghost mittels `npm start` in den Entwicklungsmodus
-* Ghost läuft nun auf localhost
+*   Benutze folgenden Befehl um die neueste Version von Ghost zu bekommen:
+
+    ```
+    $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
+    ```
+
+*   Entpacke das Archiv mit folgendem Befehl:
+
+    ```
+    $ unzip -uo ghost.zip -d ghost
+    ```
+
+**Nachdem du Ghost erfolgrich entpackt hast, öffne einen Terminal, wenn noch nicht geöffnet, und fahre wie folgt fort:**
+
+*   Wechsle in einem Terminal zu dem Pfad, in den du Ghost extrahiert hast, mit foglendem Befehl:
+
+    ```
+    $ cd /path/to/ghost
+    ```
+
+*   Installiere Ghost mit:
+
+    ```
+    npm install --production
+    ```
+    <span class="note">Achte auf die zwei Striche</span>
+
+*   * Sobald npm fertig ist, starte Ghost im den Entwicklungsmodus mit:
+
+    ```
+    $ npm start
+    ```
+
+*   Ghost lauft nun unter **127.0.0.1:2368**<br />
+    <span class="note">Du kannst die IP-address und den Port in **config.js** anpassen</span>
+*   Navigiere in einem Browser zu <code class="path">127.0.0.1:2368</code>, um deinen neuen Ghost Blog zu betrachten
+*   Wechsel zu <code class="path">127.0.0.1:2368/ghost</code> und erstelle deinen Administrator-Benutzer, um dich im Ghost-Backend anzumelden
