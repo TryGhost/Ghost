@@ -1,7 +1,7 @@
 ---
 lang: de
 layout: themes
-meta_title: Wie man Ghost-Themes erstellt - Ghost Docs
+meta_title: Wie man Ghost-Themes erstellt - Ghost-Docs
 meta_description: Eine detaillierte Anleitung zur Erstellung von Themes für die Ghost-Bloggingplattform. Alles, was Du wissen musst, um Themes für Ghost zu erstellen.
 heading: Ghost-Themes
 subheading: Leg los mit Deinen eigenen Themes für Ghost
@@ -14,7 +14,7 @@ chapter: themes
 
 Du findest Ghost-Themes in <code class="path">content/themes/</code>
 
-Wenn Du ein anderes Theme als das Standard Theme "Casper" verwenden möchtest, wirf einen Blick auf unsere [Marketplace-Galerie](http://marketplace.ghost.org/).
+Wenn Du ein anderes Theme als das Standard-Theme "Casper" verwenden möchtest, wirf einen Blick auf unsere [Marketplace-Galerie](http://marketplace.ghost.org/).
 Lade Dir das Theme-Paket Deiner Wahl herunter, entpacke es und verschiebe es nach <code class="path">content/themes</code> neben Casper.
 
 Wenn Du Dein eigenes Theme erstellen möchtest, empfehlen wir Dir, den <code class="path">casper</code>-Ordner zu kopieren und die Templates so anzupassen, dass sie so aussehen und funktionieren, wie Du möchtest.
@@ -37,7 +37,7 @@ Wenn Du darüber nachdenkst, Dein eigenes Theme zu erstellen, solltest Du Dich v
 
 ## Über Ghost-Themes <a id="about"></a>
 
-Ghost-Themes sollen einfach erstell- und wartbar zu sein. Sie befürworten eine klare Trennung zwischen Templates (HTML) und jeder Geschäftslogik (JavaScript). Handlebars ist (fast) frei von Logik und unterstützt daher diese Trennung. Es bietet Hilfsmechanismen, sodass die Geschäftslogik zur Anzeige von Inhalten stets getrennt und unabhängig bleibt. Diese Trennung erleichtert die Zusammenarbeit zwischen Designer_innen und Entwickler_innen bei der Erstellung von Themes.
+Ghost-Themes sollen einfach erstell- und wartbar zu sein. Sie befürworten eine klare Trennung zwischen Templates (HTML) und jeder Geschäftslogik (JavaScript). Handlebars ist (fast) frei von Logik und unterstützt daher diese Trennung. Es bietet Hilfsmechanismen, sodass die Geschäftslogik zur Anzeige von Inhalten stets getrennt und unabhängig bleibt. Diese Trennung erleichtert die Zusammenarbeit zwischen DesignerInnen und EntwicklerInnen bei der Erstellung von Themes.
 
 Handlebar-Templates sind hierarchisch (ein Template kann andere Templates erweitern) und unterstützen Teil-Templates. Ghost verwendet diese Features, um doppelten Code zu verringern und den Fokus jedes einzelnen Templates darauf zu richten, einen einzigen Job zu machen (und diesen dafür ordentlich).
 
@@ -119,9 +119,9 @@ Zur Zeit sind das:
 *   url – *die relative URL eines Posts*
 *   content – *Post-HTML*
 *   published_at – *Datum, an dem der Post veröffentlicht wurde*
-*   author – *Komplette Details zum_r Postautor_in* (mehr Details siehe weiter unten)
+*   author – *Komplette Details zum/zur PostautorIn* (mehr Details siehe weiter unten)
 
-Jede dieser Eigenschaften kann mittels Standard Handlebar-Expressions ausgegeben werden, z.B. `{{title}}`.
+Jede dieser Eigenschaften kann mittels Standard-Handlebar-Expressions ausgegeben werden, z.B. `{{title}}`.
 
 <div class="note">
   <p>
@@ -135,18 +135,18 @@ Jede dieser Eigenschaften kann mittels Standard Handlebar-Expressions ausgegeben
   </p>
 </div>
 
-#### Postautor_in
+#### PostautorIn
 
-Innerhalb des Kontexts eines einzelnen Posts sind folgende Daten zum_r Autor_in verfügbar:
+Innerhalb des Kontexts eines einzelnen Posts sind folgende Daten zum/zur AutorIn verfügbar:
 
-*   `{{author.name}}` – der Name des_r Autor_in
-*   `{{author.email}}` – die E-Mail-Adresse des_r Autor_in
-*   `{{author.bio}}` – die Biografie des_r Autor_in
-*   `{{author.website}}` – die Webseite des_r Autor_in
-*   `{{author.image}}` – das Profilbild des_r Autor_in
-*   `{{author.cover}}` – das Coverbild des_r Autor_in
+*   `{{author.name}}` – der Name des/der AutorIn
+*   `{{author.email}}` – die E-Mail-Adresse des/der AutorIn
+*   `{{author.bio}}` – die Biografie des/der AutorIn
+*   `{{author.website}}` – die Webseite des/der AutorIn
+*   `{{author.image}}` – das Profilbild des/der AutorIn
+*   `{{author.cover}}` – das Coverbild des/der AutorIn
 
-Du kannst auch einfach `{{author}}` verwenden, um den Namen des_r Autor_in auszugeben.
+Du kannst auch einfach `{{author}}` verwenden, um den Namen des/der AutorIn auszugeben.
 
 All das kann auch mit einem Blockausdruck gemacht werden:
 
