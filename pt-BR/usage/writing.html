@@ -1,10 +1,10 @@
 ---
 lang: pt-BR
 layout: default
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Como Usar o Ghost - Ghost Docs
+meta_description: Um guia mais a fundo para usar a plataforma de blog Ghost. Escolheu o Ghost mas não sabe por onde começar? Comece aqui!
+heading: Usando o Ghost
+subheading: Encontrando seu caminho, e configurando do jeito que você quer
 chapter: usage
 permalink: /pt-BR/usage/writing/
 prev_section: managing
@@ -18,57 +18,56 @@ next_section: faq
 
         <section id="content" class="col-lg-9">
 
-            <h2 id="writing">Writing posts</h2>
+            <h2 id="writing">Escrevendo Artgios</h2>
 
-            <p>Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.</p>
+            <p>Arigos de blog no Ghost são escritos usando Markdown. O Markdown é uma sintaxe minimalista para marcação de documentos, usando pontuação e caracteres especiais. É uma sintaxe com inteção de previnir a interrupção do fluxo de escrita, permitindo que você se foque no conteúdo, ao invés de como ele se parece.</p>
 
-            <h3 id="markdown">Markdown Guide</h3>
+            <h3 id="markdown">Guia do Markdown</h3>
 
-            <p><a href="http://daringfireball.net/projects/markdown/">Markdown</a> is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.</p>
+            <p>O <a href="http://daringfireball.net/projects/markdown/">Markdown</a> é uma linguagem de marcação projetada para aumentar a eficiência em que você escreve, enquanto mantém a escrita o mais fácil de ler possível.</p>
 
-            <p>Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.</p>
+            <p>O Ghost usa todos os atalhos padrões do Markdown e mais alguns adicionais. A lista completa de atalhos está listada abaixo.</p>
 
-            <h4> Headers</h4>
+            <h4> Cabeçalhos</h4>
 
-            <p>Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.</p>
+            <p>Cabeçalhos podem ser configurados com uma tralha antes do texto. O número de tralhas antes do texto determina a profundidade do cabeçalho. Os cabeçalhos tem profundidades de 1 a 6.</p>
 
             <ul>
-            <li>H1 : <code># Header 1</code></li>
-            <li>H2 : <code>## Header 2</code></li>
-            <li>H3 : <code>### Header 3</code></li>
-            <li>H4 : <code>#### Header 4</code></li>
-            <li>H5 : <code>##### Header 5</code></li>
-            <li>H6 : <code>###### Header 6</code></li>
+            <li>H1 : <code># Cabeçalho 1</code></li>
+            <li>H2 : <code>## Cabeçalho 2</code></li>
+            <li>H3 : <code>### Cabeçalho 3</code></li>
+            <li>H4 : <code>#### Cabeçalho 4</code></li>
+            <li>H5 : <code>##### Cabeçalho 5</code></li>
+            <li>H6 : <code>###### Cabeçalho 6</code></li>
             </ul>
 
 
-            <h4> Text Styling</h4>
+            <h4> Estilo do Texto</h4>
 
             <ul>
-            <li>Links : <code>[Title](URL)</code></li>
-            <li>Bold : <code>**Bold**</code></li>
-            <li>Italic : <code>*Italic*</code></li>
-            <li>Paragraphs : Line space inbetween paragraphs</li>
-            <li>Lists : <code>* An asterix on every new list item</code></li>
-            <li>Quotes : <code>&gt; Quote</code></li>
-            <li>Code : <code>`code`</code></li>
+            <li>Links : <code>[Título](URL)</code></li>
+            <li>Negrito : <code>**Negrito**</code></li>
+            <li>Itálico : <code>*Itálico*</code></li>
+            <li>Paragráfos : Uma linha de espaço entre os paragráfos</li>
+            <li>Listas : <code>* Um asterísco em cada novo item da lista</code></li>
+            <li>Citações : <code>&gt; Citação</code></li>
+            <li>Código : <code>`codigo`</code></li>
             <li>HR : <code>==========</code></li>
             </ul>
 
 
-            <h4> Images</h4>
+            <h4> Imagens</h4>
 
-            <p>To insert an image into your post, you need to first enter <code>![]()</code> into the Markdown editor panel. This should create an image upload box in your preview panel.
+            <p>Para inserir uma imagem no seu artigo, você precisa primeiro escrever <code>![]()</code> dentro do painel do editor Markdown. Isso deve criar uma caia de envio de imagem no painel de visualização.
             <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png" />
-            You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup. If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+            Você pode agora arrastar e soltar qualquer imagem (.png, .gif, .jpg) do seu computador na caixa de envio de imagens para incluir ela no seu artigo, ou alternativamente clicar na caixa de envio de imagens para abrir o envio de imagem padrão do navegador. Se você prefeir incluir o endereço de uma imagem, link no botão 'link' no canto esquerdo inferior da caixa de envio de imagem, isso irá te dará a abilidade de inserir a URL da imagem.
             <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png" />
-            To title your image, all you need to do is place your title text inbetween the square brackets, e.g; <code>![This is a title]()</code>.
+            Para colocar um título na sua imagem, tudo que você precisa fazer é colocar o texto do título entre os colchetes. e.x; <code>![Isso é um título]()</code>.
             </p>
 
-            <h5>Removing Images</h5>
+            <h5>Removendo Imagens</h5>
             <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png" />
-            <p>To remove an image click the 'remove' icon, in the top right corner of the currently inserted image.
-            This will present you with the blank image upload box for you to re-insert a new image.</p>
+            <p>Para remover uma imagem, clique no ícone 'remover', no canto superior direito da imagem que está atualmente inserida. Isso irá apresentar uma caixa de envio de imagem em branco, para você reinserir uma nova imagem.</p>
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}
