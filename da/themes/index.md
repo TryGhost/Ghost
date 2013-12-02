@@ -1,18 +1,18 @@
 ---
 lang: da
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
+meta_title: S&aring;dan laver du Ghost temaer - Ghost dokumentation
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+heading: Ghost temaer
+subheading: Kom i gang med at oprette dine egne temaer til Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Skift af tema <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost temaer ligger i <code class="path">content/themes/</code>
 
 If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
 

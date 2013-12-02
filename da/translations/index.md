@@ -1,36 +1,36 @@
 ---
 lang: da
 layout: translations
-meta_title: How to Translate Ghost - Ghost Docs
-meta_description: A guide on how to help translate Ghost
-heading: Translating Ghost
-subheading: A guide on how to help translate Ghost
+meta_title: S&aring;dan overs&aelig;tter du Ghost - Ghost dokumentation
+meta_description: En guide til hvordan du hj&aelig;lper med at overs&aelig;tte Ghost
+heading: Overs&aelig;ttelse af Ghost
+subheading: En guide til hvordan du hj&aelig;lper med at overs&aelig;tte Ghost
 chapter: translations
 ---
 
 {% raw %}
 
-## Translating the Documentation <a id="doc-translating"></a>
+## Overs&aelig;ttelse af dokumentationen <a id="doc-translating"></a>
 
-### Getting the most recent Ghost docs
+### Hent den nyeste udgave af Ghost docs
 
-All of Ghost's documentation (<http://docs.ghost.org>) is located in the [<code class="path">gh-pages</code>](https://github.com/TryGhost/Ghost/tree/gh-pages) branch on the Ghost [GitHub repository](https://github.com/TryGhost/Ghost/).
+Hele Ghost's dokumentation (<http://docs.ghost.org>) ligger i grenen [<code class="path">gh-pages</code>](https://github.com/TryGhost/Ghost/tree/gh-pages) i Ghost's [GitHub repository](https://github.com/TryGhost/Ghost/).
 
-To start translating you will first need to 'fork' the [GitHub repository](https://github.com/TryGhost/Ghost/) branch to your own account. You can do this by clicking the 'fork' button in the top right corner of GitHub.
+For at starte med overs&aelig;ttelsen skal du f&oslash;rst oprette en 'fork' af vores [GitHub repository](https://github.com/TryGhost/Ghost/) gren til din egen konto. Det kan du g&oslash;re ved at klikke p&aring; 'fork' knappen i &oslash;verste h&oslash;jre hj&oslash;rne p&aring; GitHub.
 
-It looks like this: ![fork button](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/translations-GitHub-fork.png)
+Den ser s&aring;dan her ud: ![fork knap](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/translations-GitHub-fork.png)
 
-You should now be able to access you fork by navigating to <code class="path">github.com/\<your username\>/Ghost</code>.
+Derefter skulle du kunne se din fork ved at g&aring; ind p&aring; <code class="path">github.com/\<your username\>/Ghost</code>.
 
-Once you have verified you have a working fork, you will need to download it to your computer. To download the fork to your machine, you will need to follow these steps (in the Terminal / Command prompt);
+N&aring;r du har kontrolleret at du har en fork, der virker skal du hente den ned p&aring; din computer. For at downloade en fork til din maskine, skal du f&oslash;lge disse trin (i Terminal / Command prompt);
 
-1. Run `git clone https://github.com/<your username>/Ghost.git -b gh-pages`
-![GitHub Clone](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/translations-gitclone.png)
-2. Run `cd Ghost`
+1. K&oslash;r `git clone https://github.com/<your username>/Ghost.git -b gh-pages`
+![GitHub klon](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/translations-gitclone.png)
+2. K&oslash;r `cd Ghost`
 
-You should now be in the Ghost directory in your Terminal / Command Prompt. If you also open the Ghost folder in your directory browser of choice, you will see all the files for the Ghost documentation.
+Du burde nu v&aelig;re Ghost mappen i din Terminal / Command Prompt. If you also open the Ghost folder in your directory browser of choice, you will see all the files for the Ghost documentation.
 
-### Adding your translation
+### Tilf&oslash;jelse af din overs&aelig;ttelse
 
 After following how to get the most recent Ghost documentation.
 
@@ -60,19 +60,19 @@ If you're unsure of your language code, feel free to ask on the [forum](http://g
 
 To update a translation you can simply follow the steps in "Adding your translation", but ignoring all the setup and simply changing the required areas, or if you would prefer to follow a simpler alternative you can do it directly in [GitHub](http://github.com).
 
-#### In GitHub
+#### P&aring; GitHub
 
-1. Locate the file that needs changing in the <https://github.com/TryGhost/Ghost/tree/gh-pages> repository.
-2. Click on file
-3. Click 'Edit'
-4. Make your changes
-5. Add a sensible commit message e.g. "Updated Welsh 'usage' docs"
-6. Add a sensible description e.g. "Fixed a typo in the 'usage' docs where ..."
-7. Read over your submission
-8. Click "Propose this file change"
+1. Find filen der skal &aelig;ndres i <https://github.com/TryGhost/Ghost/tree/gh-pages> repository.
+2. Klik p&aring; filen
+3. Klik 'Rediger'
+4. Lav dine &aelig;ndringer
+5. Tilf&oslash;j en fornuftig commit besked eks. "Updated Welsh 'usage' docs"
+6. Tilf&oslash;j en fornuftig beskrivelse eks. "Fixed a typo in the 'usage' docs where ..."
+7. Kontroller din tilf&oslash;jelse
+8. Klik p&aring; "Propose this file change"
 9. Feel good.
 
-##  Translating the Ghost platform <a id="ghost-translating"></a>
+##  Overs&aelig;ttelse af Ghost platformen <a id="ghost-translating"></a>
 
 **Coming soon**
 

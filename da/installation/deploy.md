@@ -12,9 +12,9 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Få Ghost live <a id="deploy"></a>
+## F&aring; Ghost live <a id="deploy"></a>
 
-Er du klar til at få Ghost live? Perfekt!
+Er du klar til at f&aring; Ghost live? Perfekt!
 
 Den første beslutning du skal træffe, er om du vil installere og sætte Ghost op selv, eller om du foretrækker at benytte et installationsprogram.
 
@@ -24,7 +24,7 @@ Der er et par muligheder for simple installationsprogrammer i øjeblikket:
 
 *   Sæt det op i "skyen" med [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
 *   Kør Ghost med [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Få det op og køre med [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   F&aring; det op og køre med [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
 ### Manuel opsætning
 

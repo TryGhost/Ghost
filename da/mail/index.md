@@ -1,8 +1,8 @@
 ---
 lang: da
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
+meta_title: Ghost e-mail konfiguration - Ghost dokumentation
+meta_description: Sådan konfigurerer du din e-mail server og sender e-mails med Ghost blogging platform. Everything you need to know.
 heading: Setting up Email
 chapter: mail
 ---

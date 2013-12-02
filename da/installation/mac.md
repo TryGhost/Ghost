@@ -1,10 +1,10 @@
 ---
 lang: da
 layout: installation
-meta_title: Sådan installerer du Ghost på din server - Ghost dokumentation
-meta_description: Alt du har behov for, for at få Ghost blogging platform op og køre på din lokale maskine eller server eller hosting service.
-heading: Installation af Ghost &amp; Kom i gang
-subheading: De første trin til at få oprettet din nye blog for første gang.
+meta_title: S&aring;dan installerer du Ghost p&aring; din server - Ghost dokumentation
+meta_description: Alt du har behov for, for at f&aring; Ghost blogging platformen op og k&oslash;re p&aring; din lokale maskine eller hosting service.
+heading: Installation af Ghost &amp; kom godt i gang
+subheading: De f&oslash;rste trin til at oprette din nye blog for f&oslash;rste gang.
 permalink: /da/installation/mac/
 chapter: installation
 section: mac
@@ -13,20 +13,20 @@ next_section: windows
 ---
 
 
-# Installation på Mac <a id="install-mac"></a>
+# Installation p&aring; Mac <a id="install-mac"></a>
 
-For at installere Node.js og Ghost på din mac skal du åbne et terminalvinduet. Du kan gøre det ved at åbne "spotlight" og skrive "Terminal".
+For at installere Node.js og Ghost p&aring; din Mac skal du &aring;bne et terminalvindue. Du kan g&oslash;re det ved at &aring;bne "spotlight" og skrive "Terminal".
 
-### Installér Node
+### Installation af Node
 
-*   På [http://nodejs.org](http://nodejs.org) klik på install, en '.pkg' fil begynde at downloade
-*   Klik på den downloadet pakke for at begynde installation, dette vil installere både node og npm.
-*   Klik dig igennem installationen, til sidst skal du indtaste dit kodeord og klik 'install software'.
-*   Når installationen er færdig, åben dit terminalvindueog skriv `echo $PATH` for at kontollere at '/usr/local/bin/' er din sti.
+*   P&aring; [http://nodejs.org](http://nodejs.org) skal du klikke p&aring; install, og en '.pkg' fil hentes
+*   Klik p&aring; filen for at begynde installationen, dette installerer b&aring;de node og npm.
+*   Klik dig igennem installationen, inden du til sidst skal du indtaste dit kodeord og klikke p&aring; 'install software'.
+*   N&aring;r installationen er f&aelig;rdig, skal du &aring;bne dit terminalvindue og skrive `echo $PATH` for at kontollere at stien er '/usr/local/bin/'.
 
-<p class="note"><strong>Note:</strong> Hvis '/usr/local/bin' ikke er en del af din $PATH, se <a href="#export-path">fejlfindings tips</a> for at hvordan og tilføj det</p>
+<p class="note"><strong>Note:</strong> Hvis '/usr/local/bin' ikke er en del af din $PATH, se <a href="#export-path">fejlfindingsguiden</a> for at finde ud af hvordan du tilf&oslash;jer det</p>
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+K&oslash;rer du fast kan du se hele [processen her](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Installation af Node p&aring; Mac").
 
 ### Install and Run Ghost
 
