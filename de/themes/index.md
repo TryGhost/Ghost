@@ -17,7 +17,7 @@ Du findest Ghost-Themes in <code class="path">content/themes/</code>
 Wenn Du ein anderes Theme als das Standard Theme "Casper" verwenden möchtest, wirf einen Blick auf unsere [Marketplace-Galerie](http://marketplace.ghost.org/).
 Lade Dir das Theme-Paket Deiner Wahl herunter, entpacke es und verschiebe es nach <code class="path">content/themes</code> neben Casper.
 
-Wenn Du Dein eigenes Theme erstellen möchtest, empfehlen wir Dir, den casper-Ordner zu kopieren und die Templates so anzupassen, dass sie so aussehen und funktionieren, wie Du möchtest.
+Wenn Du Dein eigenes Theme erstellen möchtest, empfehlen wir Dir, den <code class="path">casper</code>-Ordner zu kopieren und die Templates so anzupassen, dass sie so aussehen und funktionieren, wie Du möchtest.
 
 Um zu Deinem neu erstellten Theme zu wechseln:
 
@@ -43,7 +43,7 @@ Handlebar-Templates sind hierarchisch (ein Template kann andere Templates erweit
 
 Wir hoffen, Dir gefällt diese Herangehensweise an die Erstellung von Themes.
 
-## Die Dateistruktur eines Ghost Themes <a id="file-structure"></a>
+## Die Dateistruktur eines Ghost-Themes <a id="file-structure"></a>
 
 Die empfohlene Dateistruktur ist:
 
@@ -60,7 +60,7 @@ Die empfohlene Dateistruktur ist:
 └── post.hbs [erforderlich]
 ```
 
-Vorerst gibt es keine Vorgabe, dass default.hbs oder einer der Ordner existieren müssen. <code class="path">index.hbs</code> und <code class="path">post.hbs</code> sind erforderlich – Ghost kann ohne diese zwei Templates nicht funktionieren. <code class="path">partials</code> ist ein spezieller Ordner. Er sollte alle Teil-Templates enthalten, die Du auf Deinem Blog verwenden möchtest. So kann <code class="path">list-post.hbs</code> z.B. Dein Template zur Darstellung eines einzelnen Posts in einer Liste beinhalten, welche Du dann auf der Homepage und in zukünftigen Archiv- & Tag-Seiten verwenden kannst. <code class="path">partials</code> ist außerdem der Ort, an dem Du Templates erstellen kannst, um eingebaute Templates die von bestimmten Helfern, wie der Paginierung, verwendet werden, zu überschreiben. Wenn Du eine Datei <code class="path">pagination.hbs</code> erstellst, kannst Du darin Dein eigenes HTML für die Paginierung erstellen.
+Vorerst gibt es keine Vorgabe, dass default.hbs oder einer der Ordner existieren müssen. <code class="path">index.hbs</code> und <code class="path">post.hbs</code> sind erforderlich – Ghost kann ohne diese beiden Templates nicht funktionieren. <code class="path">partials</code> ist ein spezieller Ordner. Er sollte alle Teil-Templates enthalten, die Du auf Deinem Blog verwenden möchtest. So kann <code class="path">list-post.hbs</code> z.B. Dein Template zur Darstellung eines einzelnen Posts in einer Liste beinhalten, welche Du dann auf der Homepage und in zukünftigen Archiv- & Tag-Seiten verwenden kannst. <code class="path">partials</code> ist außerdem der Ort, an dem Du Templates erstellen kannst, um eingebaute Templates die von bestimmten Helfern, wie der Paginierung, verwendet werden, zu überschreiben. Wenn Du eine Datei <code class="path">pagination.hbs</code> erstellst, kannst Du darin Dein eigenes HTML für die Paginierung erstellen.
 
 ### default.hbs
 
@@ -68,7 +68,7 @@ Dies ist das Basis-Template, welches all die langweiligen HTML-Bereiche enthält
 
 Das Basis-Template beinhaltet die Handlebars-Expression `{{{body}}}`, die definiert, wo der Inhalt der Templates, die das Basis-Template erweitern, eingefügt wird.
 
-Seiten-Templates beinhaltet `{{!< default}}` in der allerersten Zeile, um zu definieren, dass sie das Basis-Template erweitern und dass ihr Inhalt an der Stelle in default.hbs, an der `{{{body}}}` definiert ist, eingefügt werden soll.
+Seiten-Templates beinhaltet `{{!< default}}` in der allerersten Zeile, um zu definieren, dass sie das Basis-Template erweitern und dass ihr Inhalt an der Stelle in <code class="path">default.hbs</code>, an der `{{{body}}}` definiert ist, eingefügt werden soll.
 
 ### index.hbs
 
@@ -84,13 +84,13 @@ In Casper (dem derzeitigen Standard-Theme) hat das Template für einzelne Posts 
 
 ### Post-Styling & -Vorschau
 
-Bitte beachte bei der Erstellung von Themes den Gültigkeitsbereich von Klassen und ganz besonders den Deiner IDs, um Konflikte zwischen den Haupt- und Post-Styles zu vermeiden. Man kann nie wissen, wann ein Klassenname oder eine ID (aufgrund der Autogenerierung der IDs für Überschriften) in einem Post verwendet wird. Deshalb ist es am besten, alles immer auf einen bestimmten Bereich der Seite zu beschränken. So kann #meine-id z.B. unerwartete Auswirkungen haben, während #themename-meine-id deutlich sicherer wäre.
+Bitte beachte bei der Erstellung von Themes den Gültigkeitsbereich von Klassen und ganz besonders den Deiner IDs, um Konflikte zwischen den Haupt- und Post-Styles zu vermeiden. Man kann nie wissen, wann ein Klassenname oder eine ID (aufgrund der Autogenerierung der IDs für Überschriften) in einem Post verwendet wird. Deshalb ist es am besten, alles immer auf einen bestimmten Bereich der Seite zu beschränken. So kann ``#meine-id`` z.B. unerwartete Auswirkungen haben, während ``#themename-meine-id` deutlich sicherer wäre.
 
-Ghost hat das Ziel, eine realistische Vorschau Deiner Posts als Teil des Split-Screen Editors zu bieten, wofür es jedoch notwendig ist, die individuellen Styles eines Themes im Adminbereich zu laden. Dieses Feature ist bisher nicht implementiert, aber wir empfehlen dringend, Deine Post-Styles in einer eigenen Datei (post.css) getrennt von Deinen anderen Styles (style.css) zu belassen, um in Zukunft schnell von diesem Feature Gebrauch machen zu können.
+Ghost hat das Ziel, eine realistische Vorschau Deiner Posts als Teil des Split-Screen Editors zu bieten, wofür es jedoch notwendig ist, die individuellen Styles eines Themes im Adminbereich zu laden. Dieses Feature ist bisher nicht implementiert, aber wir empfehlen dringend, Deine Post-Styles in einer eigenen Datei (<code class="path">post.css</code>) getrennt von Deinen anderen Styles (<code class="path">style.css</code>) zu belassen, um in Zukunft schnell von diesem Feature Gebrauch machen zu können.
 
 ## Erstelle Dein eigenes Theme <a id="create-your-own"></a>
 
-Erstelle Dein eigenes Ghost-Theme, indem Du entweder Casper kopierst oder im Ordner <code class="path">content/themes</code> einen neuen Ordner mit dem Namen Deines Themes erstellst, z.B. mein-theme (Namen sollten kleingeschrieben werden und nur Buchstaben, Zahlen und Bindestriche enthalten). Dann erstelle zwei leere Dateien in Deinem Theme Ordner: index.hbs und post.hbs. Noch wird nichts angezeigt, doch dies ist im Endeffekt bereits ein gültiges Theme.
+Erstelle Dein eigenes Ghost-Theme, indem Du entweder Casper kopierst oder im Ordner <code class="path">content/themes</code> einen neuen Ordner mit dem Namen Deines Themes erstellst, z.B. <code class="path">mein-theme</code> (Namen sollten kleingeschrieben werden und nur Buchstaben, Zahlen und Bindestriche enthalten). Dann erstelle zwei leere Dateien in Deinem Theme Ordner: <code class="path">index.hbs</code> und <code class="path">post.hbs</code>. Noch wird nichts angezeigt, doch dies ist im Endeffekt bereits ein gültiges Theme.
 
 ### Die Post-Liste
 
@@ -361,6 +361,6 @@ Du kannst das HTML, das dieser Helfer ausgibt, überschreiben, indem Du eine Dat
 
 #### 1. Ich erhalte den Fehler 'Error: Failed to lookup view "index" or "post"'
 
-Überprüfe, dass Dein Themeordner die korrekt benannten Dateien index.hbs und post.hbs beinhaltet, da diese erforderlich sind.
+Überprüfe, dass Dein Themeordner die korrekt benannten Dateien <code class="path">index.hbs</code> und <code class="path">post.hbs</code> beinhaltet, da diese erforderlich sind.
 
 {% endraw %}
