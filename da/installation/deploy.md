@@ -2,9 +2,9 @@
 lang: da
 layout: installation
 meta_title: S&aring;dan installerer du Ghost p&aring; din server - Ghost dokumentation
-meta_description: Alt du har behov for, for at f&aring; Ghost blogging platform op og k&oslash;re p&aring; din lokale maskine eller server eller hosting service.
-heading: Installation af Ghost &amp; Kom i gang
-subheading: De f&oslash;rste trin til at f&aring; oprettet din nye blog for f&oslash;rste gang.
+meta_description: Alt du har behov for, for at f&aring; Ghost blogging platformen op og k&oslash;re p&aring; din lokale maskine eller hosting service.
+heading: Installation af Ghost &amp; kom godt i gang
+subheading: De f&oslash;rste trin til at oprette din nye blog for f&oslash;rste gang.
 permalink: /da/installation/deploy/
 chapter: installation
 section: deploy
@@ -12,21 +12,22 @@ prev_section: linux
 next_section: upgrading
 ---
 
+
 ## F&aring; Ghost live <a id="deploy"></a>
 
 Er du klar til at f&aring; Ghost live? Perfekt!
 
-Den første beslutning du skal træffe, er om du vil installere og sætte Ghost op selv, eller om du foretrækker at benytte et installationsprogram.
+Den f&oslash;rste beslutning du skal tr&aelig;ffe, er om du vil installere og s&aelig;tte Ghost op selv, eller om du foretr&aelig;kker at benytte et installationsprogram.
 
 ### Installationsprogram
 
-Der er et par muligheder for simple installationsprogrammer i øjeblikket:
+Der er et par muligheder for simple installationsprogrammer i &oslash;jeblikket:
 
-*   Sæt det op i "skyen" med [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Kør Ghost med [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   F&aring; det op og køre med [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   S&aelig;t det op i "skyen" med [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   K&oslash;r Ghost med [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   F&aring; det op og k&oslash;re med [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manuel opsætning
+### Manuel ops&aelig;tning
 
 You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
     This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.

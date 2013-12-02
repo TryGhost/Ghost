@@ -28,18 +28,18 @@ For at installere Node.js og Ghost p&aring; din Mac skal du &aring;bne et termin
 
 K&oslash;rer du fast kan du se hele [processen her](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Installation af Node p&aring; Mac").
 
-### Install and Run Ghost
+### Install&eacute;r and k&oslash; Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Log ind p&aring; [http://ghost.org](http://ghost.org), og klik p&aring; den bl&aring; 'Download Ghost Source Code' knap.
+*   P&aring; download siden skal du klikke p&aring; knappen for at hente den nyeste zip fil.
+*   Klik p&aring; pilen ved siden af den netop hentede fil og v&aelig;lg 'Vis i finder'.
+*   I finder skal du dobbeltklikke p&aring; den downloadede zip fil for at pakke den ud.
+*   Derefter skal du tr&aelig;kke den netop udpakkede 'ghost-#.#.#' mappe til tab baren p&aring; dit &aring;bne terminalvindue, det &aring;bner en ny terminal tab, som er &aring;bnet i den korrekte placering.
+*   I den nye terminal tab skriver du `npm install --production` <span class="note">bem&aelig;rk de to bindestreger</span>.
+*   N&aring;r npm er f&aelig;rdig med at installere, skriver du `npm start` for at starte Ghost i udviklingstilstand.
+*   I en browser g&aring;r du ind p&aring; <code class="path">127.0.0.1:2368</code> for at se din nye Ghost blog.
+*   &AElig;ndr URL'en til <code class="path">127.0.0.1:2368/ghost</code> og opret din admin bruger til at logge ind i Ghost administrationen.
+*   Se [brug](/usage) for instruktioner til de n&aelig;ste trin.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
 
