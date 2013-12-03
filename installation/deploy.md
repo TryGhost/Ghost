@@ -133,6 +133,15 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo update-rc.d ghost enable
     ```
 
+*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+
+    ```
+    $ sudo adduser USERNAME ghost
+    ```
+
+*   If you now restart your server Ghost should already be running for you.
+
+
 ## Setting up Ghost with a domain name
 
 If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
