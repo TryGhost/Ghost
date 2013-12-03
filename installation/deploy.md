@@ -157,16 +157,14 @@ It also assumes that Ghost is running in the background with one of the above me
 
 *   Configure your site
 
-    *   Create a new file in `/etc/nginx/sites-available/example.com`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/example.com`)
+    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
+    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
         and paste the following
 
         ```
         server {
             listen 80;
-
             server_name example.com;
-            root /var/www/ghost;
 
             location / {
                 proxy_set_header   X-Real-IP $remote_addr;
@@ -176,12 +174,14 @@ It also assumes that Ghost is running in the background with one of the above me
         }
 
         ```
-    *   Change `server_name` and `root` to fit your setup
-    *   Symlink your configuration in `sites-enabled`
+
+    *   Change `server_name` to your domain
+    *   Symlink your configuration in `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
+
     *   Restart nginx
 
     ```
