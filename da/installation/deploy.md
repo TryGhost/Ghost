@@ -29,45 +29,46 @@ Der er et par muligheder for simple installationsprogrammer i &oslash;jeblikket:
 
 ### Manuel ops&aelig;tning
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Du skal bruge et webhotel, der allerede har eller tillader at du installerer [Node.js](http://nodejs.org).
+    Det betyder plads i "skyen" ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) eller andre webhoteller, som har SSH (terminal) adgang og tillader at du installerer Node.js. Der er mange muligheder og til billige penge.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Det er i øjeblikket i vil virke er et cPanel lignende webhotel på delt server, da det normalt er rettet specifikt mod understøttelse af PHP. Selvom nogle tilbyder Ruby og derfor måske tilbyder Node.js i fremtiden, da de lidt ens.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>Desværre er der mange Node-specifike hosting services i "skyen" som **Nodejitsu** og **Heroku**, som **IKKE** kan køre Ghost. Til at starte med vil det fungere, men de sletter dine filer og derfor vil alle uploadede billeder og din database forsvinde. Heroku understøtter MySQL som du kan benytte, men du vil stadig miste dine uploadede billeder.
 
+Disse links indeholder vejledninger til hvordan du bliver kørende på:
 The following links contain instructions on how to get up and running with:
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - fra [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - fra [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - fra [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - fra [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - fra [Gregg Housh](http://0v.org/)
+*   ...kig på [installation forum](https://en.ghost.org/forum/installation) for flere guides ...
 
-## Making Ghost run forever
+## Få Ghost til at køre hele tiden
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+Den tidligere beskrevet metode for at starte Ghost er `npm start`. Det er en god måde at lave udvikling og tests lokalt, men hvis du starter Ghost via kommandolinje stopper det så snart du lukker terminalvinduet eller logger ud fra SSH. For at forhindre at Ghost stopper skal du køre Ghost som en service. Der er to måder at gøre det på.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+Du kan bruge `forever` til at køre Ghost som en "opgave" i baggrunden. `forever` tager sig også af din installation af Ghost og vil genstarte node processen, hvis den går ned.
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   For at installere `forever` skal du skrive `npm install forever -g`
+*   For at starte Ghost ved hjælp af `forever` fra Ghost's installationsmappe skal du skrive `NODE_ENV=production forever start index.js`
+*   For at stoppe Ghost skal du skrive `forever stop index.js`
+*   For at kontrollere at Ghost kører skal du skrive `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Populære Linux udgaver &mdash; som eks. Fedora, Debian og Ubuntu &mdash; veligeholder en udgave til Supervisor: Et process kontrol system, som tillader at du kan køre Ghost ved opstart uden brug af init scripts. I modsætning til et init script er Supervisor er flytbar mellem Linux udgaver og versioner.
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Install&eacute;r Supervisor](http://supervisord.org/installing.html) som krævet af din Linux udgave. Det vil typiske være:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   De fleste andre udgaver: `easy_install supervisor`
+    *   For at kontrollere at Supervisor kører skal du skrive `service supervisor start`
+    *   Opret opstarts scriptet til din Ghost installation. Typisk vil det indsættes i `/etc/supervisor/conf.d/ghost.conf` Eksempelvis:
 
     ```
     [program:ghost]
@@ -81,10 +82,10 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Start Ghost ved hjælp af Supervisor: `supervisorctl start ghost`
+*   For t stoppe Ghost: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+Du kan kigge i [Supervisor's dokumentation](http://supervisord.org) for flere informationer.
 
 ### Init Script
 

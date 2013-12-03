@@ -1,18 +1,17 @@
 ---
 lang: da
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost dokumentation
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: S&aring;dan installerer du Ghost p&aring; din server - Ghost dokumentation
+meta_description: Alt du har behov for, for at f&aring; Ghost blogging platformen op og k&oslash;re p&aring; din lokale maskine eller hosting service.
+heading: Installation af Ghost &amp; kom godt i gang
+subheading: De f&oslash;rste trin til at oprette din nye blog for f&oslash;rste gang.
 permalink: /da/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
 prev_section: upgrading
 ---
 
-
-# Troubleshooting & FAQ <a id="troubleshooting"></a>
+ejlfinding & Ofte stillede sp&oslash;rgsm&aring;l <a id="troubleshooting"></a>
 
 <dl>
     <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>

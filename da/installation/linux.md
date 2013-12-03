@@ -23,9 +23,9 @@ next_section: deploy
 ### Install&eacute;r and k&oslash; Ghost
 
 *   Log ind p&aring; [http://ghost.org](http://ghost.org), og klik p&aring; den bl&aring; 'Download Ghost Source Code' knap
-*   P&aring; download siden skal du tryk p&aring; knappen for at hente den nyeste zip fil og pak derefter filen ud der hvor du vil køre Ghost fra
+*   P&aring; download siden skal du tryk p&aring; knappen for at hente den nyeste zip fil og pak derefter filen ud der hvor du vil k&oslash;re Ghost fra
 *   I et terminalvindue skal du skift mappe til roden af den udpakkede Ghost mappe
-*   I et terminalvindue skriver du `npm install --production` <span class="note">vær opmærksom p&aring; de to bindestreger</span>
+*   I et terminalvindue skriver du `npm install --production` <span class="note">bem&aelig;rk de to bindestreger</span>
 *   N&aring;r npm er f&aelig;rdig med at installere skriver du `npm start` for at starte Ghost i udviklingstilstand
 *   I en browser g&aring;r du inde p&aring; <code class="path">127.0.0.1:2368</code> for at se din nyinstallerede Ghost blog
 *   Skift url til <code class="path">127.0.0.1:2368/ghost</code> og opret din admin bruger for at logge ind i Ghost administrationen
