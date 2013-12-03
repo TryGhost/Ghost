@@ -98,6 +98,18 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 *   Open the file with `nano /etc/init.d/ghost` and check the following:
 *   Change the `GHOST_ROOT` variable to the path where you installed Ghost
 *   Check if the `DAEMON` variable is the same as the output of `which node`
+*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+
+    ```
+    $ sudo useradd -r ghost -U
+    ```
+
+*   Let's also make sure the Ghost user can access the installation:
+
+    ```
+    $ sudo chown -R ghost:ghost /path/to/ghost
+    ```
+
 *   Change the execution permission for the init script by typing
 
     ```
