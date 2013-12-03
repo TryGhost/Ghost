@@ -134,7 +134,6 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     ```
 
 *   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
-
     ```
     $ sudo adduser USERNAME ghost
     ```
