@@ -88,12 +88,10 @@ You can see the [documentation for Supervisor](http://supervisord.org) for more 
 
 Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
 
-<span class="note">Depending on your system you might need to execute the following commands using `sudo`</span>
-
 *   Create the file /etc/init.d/ghost with the following command:
 
     ```
-    $ curl https://github.com/TryGhost/Ghost-Config/blob/master/init.d/ghost \
+    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
@@ -103,21 +101,24 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 *   Change the execution permission for the init script by typing
 
     ```
-    $ chmod 755 /etc/init.d/ghost
+    $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Use the script:
+*   Now you can control Ghost with the following commands:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
+    ```
+    $ sudo service ghost start
+    $ sudo service ghost stop
+    $ sudo service ghost restart
+    $ sudo service ghost status
+    ```
+
 *   To start Ghost on system start the newly created init script has to be registered for start up.
     Type the following two commands in command line: 
 
     ```
-    $ update-rc.d ghost defaults
-    $ update-rc.d ghost enable
+    $ sudo update-rc.d ghost defaults
+    $ sudo update-rc.d ghost enable
     ```
 
 ## Setting up Ghost with a domain name
