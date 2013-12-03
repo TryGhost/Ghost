@@ -88,37 +88,58 @@ You can see the [documentation for Supervisor](http://supervisord.org) for more 
 
 Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
 
-<span class="note">Depending on your system you might need to execute the following commands using `sudo`</span>
-
 *   Create the file /etc/init.d/ghost with the following command:
 
     ```
-    $ curl https://github.com/TryGhost/Ghost-Config/blob/master/init.d/ghost \
+    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
 *   Open the file with `nano /etc/init.d/ghost` and check the following:
 *   Change the `GHOST_ROOT` variable to the path where you installed Ghost
 *   Check if the `DAEMON` variable is the same as the output of `which node`
+*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+
+    ```
+    $ sudo useradd -r ghost -U
+    ```
+
+*   Let's also make sure the Ghost user can access the installation:
+
+    ```
+    $ sudo chown -R ghost:ghost /path/to/ghost
+    ```
+
 *   Change the execution permission for the init script by typing
 
     ```
-    $ chmod 755 /etc/init.d/ghost
+    $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Use the script:
+*   Now you can control Ghost with the following commands:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
+    ```
+    $ sudo service ghost start
+    $ sudo service ghost stop
+    $ sudo service ghost restart
+    $ sudo service ghost status
+    ```
+
 *   To start Ghost on system start the newly created init script has to be registered for start up.
     Type the following two commands in command line: 
 
     ```
-    $ update-rc.d ghost defaults
-    $ update-rc.d ghost enable
+    $ sudo update-rc.d ghost defaults
+    $ sudo update-rc.d ghost enable
     ```
+
+*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+    ```
+    $ sudo adduser USERNAME ghost
+    ```
+
+*   If you now restart your server Ghost should already be running for you.
+
 
 ## Setting up Ghost with a domain name
 
@@ -135,16 +156,14 @@ It also assumes that Ghost is running in the background with one of the above me
 
 *   Configure your site
 
-    *   Create a new file in `/etc/nginx/sites-available/example.com`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/example.com`)
+    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
+    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
         and paste the following
 
         ```
         server {
             listen 80;
-
             server_name example.com;
-            root /var/www/ghost;
 
             location / {
                 proxy_set_header   X-Real-IP $remote_addr;
@@ -154,12 +173,14 @@ It also assumes that Ghost is running in the background with one of the above me
         }
 
         ```
-    *   Change `server_name` and `root` to fit your setup
-    *   Symlink your configuration in `sites-enabled`
+
+    *   Change `server_name` to your domain
+    *   Symlink your configuration in `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
+
     *   Restart nginx
 
     ```
