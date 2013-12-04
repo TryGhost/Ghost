@@ -1,10 +1,10 @@
 ---
 lang: it
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Come usare Ghost - Documentazione Ghost
+meta_description: Una guida approfondita all'utilizzo della piattaforma di blogging Ghost. Hai Ghost ma non sai da dove cominciare? Parti da qui!
+heading: Usare Ghost
+subheading: Configura la tua installazione
 chapter: usage
 section: managing
 permalink: /it/usage/managing/
@@ -13,36 +13,37 @@ next_section: writing
 ---
 
 
-##  Managing your blog <a id="managing"></a>
+## Gestisci il tuo blog <a id="managing"></a>
 
-1.  Go to <code class="path">&lt;your URL&gt;/ghost/editor/</code>
-2.  Enter a Post Title
-3.  Enter your post content using [Markdown](http://daringfireball.net/projects/markdown/syntax)
-4.  Save your Post as "Draft" by clicking the 'Save Draft' button, or press Ctrl / CMD + S.<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/draft.gif)
+1. Vai su <code class="path">&lt;tuo indirizzo&gt;/ghost/editor/</code>
+2. Inserisci un Titolo per l'articolo
+3. Inserisci il contenuto del tuo articolo usando i [Markdown](http://daringfireball.net/projects/markdown/syntax)
+4. Salva il tuo articolo come "Bozza" (Draft)cliccando sul pulsante 'Salva Bozza', o premi Ctrl / CMD + S.<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/draft.gif)
 
-### Publish a Post
+### Pubblica un articolo
 
-Once you have written your Post.
+Una volta che hai ultimato il tuo articolo, vai nel 'Menu salvataggio'
 
-1.  Click the arrow next to "Save Draft"
-2.  Select "Publish Now"<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/publish.gif)
+1. Clicca sulla freccia vicino a "Salva Bozza"
+2. Seleziona "Pubblica ora"<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/publish.gif)
 
-This will set the save state to 'Publish Now' and the button will turn Red, once you press this button the Post will be published. To return the Post to a 'Draft' state;
+Questo salva l'articolo e setta il pulsante con la scritta 'Pubblica Ora' su sfondo rosso; premendo il pulsante, l'articolo  viene pubblicato.
+Per ri-impostare l'articolo come 'Bozza';
 
-1.  return to the 'Save Menu'.
-2.  Select "Unpublish".
-3.  Click the "Unpublish" button.
+1.  ritorna nel 'Menu salvataggio'.
+2.  Seleziona "Non pubblicare".
+3.  Clicca sul pulsante "Non pubblicare" per confermare.
 
-To change the "Slug" or "Publish date" of a post once published;
+Per cambiare "l'url" associato all'articolo pubblicato o la "Data di Pubblicazione" di un To change the "Slug" or "Publish date";
 
-1.  Click the 'Settings' icon.
-2.  Proceed to update the information as required (this will be saved automatically when you naviagte away).
+1. Clicca sull'icona'Impostazioni'.
+2. Aggiorna le informazioni d'interesse (queste saranno salvate automaticamente appena clicchi fuori dalle 'Impostazioni').
 <img style="max-width:100%;" src="hhttps://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" /> 
 
-### Delete a Post
+### Cancellare un Articolo
 
-1.  Navigate to the 'Settings' icon in either the 'Content' page or 'Editor' page.
-2.  Click "Delete".
-3.  Accept the Modal
+1. Cerca l'icona 'Impostazioni' nella pagina 'Contenuti' o nella pagina'Editor'.
+2. Clicca su "cancella".
+3. Nella finestra appena aperta, accetta.
 <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/deletePost.gif" />
  
