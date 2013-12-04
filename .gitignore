@@ -41,6 +41,7 @@ projectFilesBackup
 /core/server/data/export/exported*
 /docs
 /_site
+/content/tmp/*
 /content/data/*
 /content/plugins/**/*
 /content/themes/**/*

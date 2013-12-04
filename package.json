@@ -34,6 +34,7 @@
     "dependencies": {
         "bcryptjs": "0.7.10",
         "bookshelf": "0.6.1",
+        "busboy": "0.0.12",
         "colors": "0.6.2",
         "connect-slashes": "1.0.2",
         "downsize": "0.0.4",
