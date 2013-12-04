@@ -107,7 +107,8 @@ var path           = require('path'),
             // Start our server in development
             express: {
                 options: {
-                    script: 'index.js'
+                    script: 'index.js',
+                    output: 'Ghost is running'
                 },
 
                 dev: {
@@ -877,7 +878,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-api', 'Run functional api tests only', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
 
-        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-integration', 'test-api', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
 
 
         // ## Coverage report for Unit and Integration Tests
