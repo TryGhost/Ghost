@@ -1,7 +1,5 @@
 ---
 lang: it
----
-lang: it
 layout: usage
 meta_title: Come installare Ghost sul tuo server - Documentazione Ghost
 meta_description: Tutto il necessario per far funzionare la piattaforma di blogging Ghost in locale e in remoto.
