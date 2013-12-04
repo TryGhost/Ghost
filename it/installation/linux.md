@@ -1,10 +1,10 @@
 ---
 lang: it
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Come installare Ghost sul tuo server - Documentazione Ghost
+meta_description: Tutto il necessario per far funzionare la piattaforma di blogging Ghost in locale e in remoto.
+heading: Installazione di Ghost &amp; Primi passi
+subheading: I primi passi per installare il tuo nuovo blog per la prima volta.
 permalink: /it/installation/linux/
 chapter: installation
 section: linux
@@ -13,29 +13,28 @@ next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# Installazione su Linux <a id="install-linux"></a>
 
-### Install Node
+### Installare Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   Si può procedere in due modi: scaricare l'archivio `.tar.gz` da [http://nodejs.org](http://nodejs.org), oppure puoi seguire le istruzioni per [installare dal package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
+*   Controlla di avere Node e npm installati, digitando nel terminale, prima `node -v`, controllare di avere Node.js installato, e`npm -v` per verificare di aver installato npm.
 
-### Install and Run Ghost
+### Installare ed eseguire Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
-*   In a terminal window, change directory to the root of the extracted Ghost folder
-*   In the terminal type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin
+*  Registrati su [http://ghost.org](http://ghost.org), e clicca sul pulsante blu 'Scarica Ghost codice sorgente'(Download Ghost Source Code).
+*   Nella pagina dei download, premi il pulsante per scaricare l'ultimo file zip ed estrailo nella cartella da cui vuoi eseguire Ghost.
+*  Nel terminale, raggiungi ed entra nella cartella dove hai estratto Ghost.
+*  Nel terminale digita `npm install --production` <span class="note">nota i due trattini</span>.
+*  Quando nom ha ultimato l'installazione, digita `npm start` per avviare Ghost in modalità sviluppo(development mode).
+*   Nel browser, digita nella barra dell'url <code class="path">127.0.0.1:2368</code> per vedere il tuo blog Ghost fresco d'installazione.
+*  Cambia l'url con <code class="path">127.0.0.1:2368/ghost</code> e crea l'utente amministratore per loggarti come tale.
 
-If you are using linux as a guest OS or through SSH and only have the terminal, then:
+Se usi linux come utente ospite o attraverso il protocollo SSH e hai a disposizione solo il terminale, allora:
 
-*   Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'
-*   In the terminal use `wget url-of-ghost.zip` to download Ghost
-*   Unzip the archive with `unzip -uo Ghost-#.#.#.zip -d ghost`, and then `cd ghost`
-*   Type `npm install --production` to install Ghost <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   Ghost will now be running on localhost
-
+* Con il tuo sistema operativo, trova l'url del file Ghost zippato (cambia con ogni versione), salva l'url ma cambia '/zip/' con '/archives/'
+* Nel terminale digita `wget url-of-ghost.zip` per scaricare Ghost.
+*  Estrai l'archivio con `unzip -uo Ghost-#.#.#.zip -d ghost`, e successivamente digita `cd ghost`
+*  Digita `npm install --production` per installare Ghost <span class="note">nota i due trattini</span>
+* Quando npm ha ultimato l'installazione, digita `npm start` per avviare Ghost in modalità sviluppo (development mode).
+* Ghost è in esecuzione in locale (localhost)
