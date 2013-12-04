@@ -1,10 +1,12 @@
 ---
 lang: it
+---
+lang: it
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Come installare Ghost sul tuo server - Documentazione Ghost
+meta_description: Tutto il necessario per far funzionare la piattaforma di blogging Ghost in locale e in remoto.
+heading: Installazione di Ghost &amp; Primi passi
+subheading: I primi passi per installare il tuo nuovo blog per la prima volta.
 chapter: usage
 section: faq
 permalink: /it/usage/faq/
@@ -14,11 +16,10 @@ prev_section: writing
 
 ## FAQ <a id="faq"></a>
 
-### (When) Will Ghost support feature X?
+### (Quando) Ghost supporterà la caratteristica X?
 
-Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing and [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) on the [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+Per favore, guarda [Caratteristiche pianificate](https://github.com/TryGhost/Ghost/wiki/Planned-Features) ed la lista [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) oppure su [Github wiki](https://github.com/TryGhost/Ghost/wiki).
 
-### How do I insert images into a post?
+### Come posso inserire le immagini negli articoli?
 
-Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
-
+Per favore, guarda[La guida al Markdown](/usage/writing/#markdown) per una spiegazione completa, di come funziona l'editor di Ghost per caricare immagini.
