@@ -1,4 +1,4 @@
-/*globals casper, __utils__, url, user, falseUser */
+/*globals casper, __utils__, url, newUser, user, falseUser */
 
 CasperTest.begin('Ensure Session is Killed', 1, function suite(test) {
     casper.thenOpen(url + 'logout/', function (response) {
@@ -98,6 +98,9 @@ CasperTest.begin("Login limit is in place", 3, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'We did not trip the login limit.');
     });
+    // This test used login, add a wait to 
+    // ensure future tests don't get tripped up by this.
+    casper.wait(2000);
 }, true);
 
 CasperTest.begin("Can login to Ghost", 4, function suite(test) {
