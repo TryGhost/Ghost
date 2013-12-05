@@ -9,15 +9,8 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
-<<<<<<< HEAD
-<<<<<<< HEAD
     - name: 'Danish'
       key: 'da'
-=======
-    - name: 'Français'
-      key: 'fr'
->>>>>>> Update config to add french
-=======
     - name: 'Deutsch'
       key: 'de'
     - name: 'Français'
@@ -25,7 +18,6 @@ languages:
     - name: 'Polski'
       key: 'pl'
 
->>>>>>> Started German translation
 port:         4478
 
 translations:
@@ -45,18 +37,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
-<<<<<<< HEAD
-<<<<<<< HEAD
   da:
-    site_title:   'Ghost guide'
+    site_title:   'Ghost dokumentation'
     installation: 'Installation'
     usage:        'Brug'
     email:        'E-mail'
     themes:       'Temaer'
-    translations: 'Oversættelser'
+    translations: 'Overs&aelig;ttelser'
     help:         'Hjælp'
-=======
-=======
   de:
     site_title:   'Ghost-Handbuch'
     installation: 'Installation'
@@ -64,13 +52,9 @@ translations:
     email:        'E-Mail'
     themes:       'Themen'
     help:         'Hilfe'
-<<<<<<< HEAD
->>>>>>> Started German translation
-=======
     deploy:       'Einsetzen'
     upgrading:    'Aktualisieren' 
     troubleshooting: 'Problembehebung'
->>>>>>> Translate Installation & Mail to German and apply updates
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
@@ -79,9 +63,6 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
-<<<<<<< HEAD
->>>>>>> Update config to add french
-=======
   pl:
     site_title:   'Ghost Guide'
     installation: 'Installation'
@@ -90,7 +71,6 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
->>>>>>> Add Polish language files for translation
 
 # If running locally, simply comment out the line below to make all urls relative
 

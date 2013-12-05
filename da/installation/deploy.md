@@ -30,45 +30,44 @@ Der er et par muligheder for simple installationsprogrammer i &oslash;jeblikket:
 ### Manuel ops&aelig;tning
 
 Du skal bruge et webhotel, der allerede har eller tillader at du installerer [Node.js](http://nodejs.org).
-    Det betyder plads i "skyen" ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) eller andre webhoteller, som har SSH (terminal) adgang og tillader at du installerer Node.js. Der er mange muligheder og til billige penge.
+    Det betyder plads i "skyen" med ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) eller andre webhoteller, som har SSH (terminal) adgang og tillader at du installerer Node.js. Der er mange muligheder og til billige penge.
 
-Det er i øjeblikket i vil virke er et cPanel lignende webhotel på delt server, da det normalt er rettet specifikt mod understøttelse af PHP. Selvom nogle tilbyder Ruby og derfor måske tilbyder Node.js i fremtiden, da de lidt ens.
+Det er i &oslash;jeblikket i vil virke er et cPanel lignende webhotel p&aring; delt server, da det normalt er rettet specifikt mod underst&oslash;ttelse af PHP. Selvom nogle tilbyder Ruby og derfor m&aring;ske tilbyder Node.js i fremtiden, da de lidt ens.
 
-<p>Desværre er der mange Node-specifike hosting services i "skyen" som **Nodejitsu** og **Heroku**, som **IKKE** kan køre Ghost. Til at starte med vil det fungere, men de sletter dine filer og derfor vil alle uploadede billeder og din database forsvinde. Heroku understøtter MySQL som du kan benytte, men du vil stadig miste dine uploadede billeder.
+<p>Desv&aelig;rre er der mange Node-specifike hosting services i "skyen" som **Nodejitsu** og **Heroku**, som **IKKE** kan k&oslash;re Ghost. Til at starte med vil det fungere, men de sletter dine filer og derfor vil alle uploadede billeder og din database forsvinde. Heroku underst&oslash;tter MySQL som du kan benytte, men du vil stadig miste dine uploadede billeder.
 
-Disse links indeholder vejledninger til hvordan du bliver kørende på:
-The following links contain instructions on how to get up and running with:
+Disse links indeholder vejledninger til hvordan du bliver k&oslash;rende p&aring;:
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - fra [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - fra [Corbett Barr](http://ghosted.co)
 *   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - fra [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - fra [Gilbert Pellegrom](http://ghost.pellegrom.me/)
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - fra [Gregg Housh](http://0v.org/)
-*   ...kig på [installation forum](https://en.ghost.org/forum/installation) for flere guides ...
+*   ...kig p&aring; [installation forum](https://en.ghost.org/forum/installation) for flere guides ...
 
-## Få Ghost til at køre hele tiden
+## F&aring; Ghost til at k&oslash;re hele tiden
 
-Den tidligere beskrevet metode for at starte Ghost er `npm start`. Det er en god måde at lave udvikling og tests lokalt, men hvis du starter Ghost via kommandolinje stopper det så snart du lukker terminalvinduet eller logger ud fra SSH. For at forhindre at Ghost stopper skal du køre Ghost som en service. Der er to måder at gøre det på.
+Den tidligere beskrevet metode for at starte Ghost er `npm start`. Det er en god m&aring;de at lave udvikling og tests lokalt, men hvis du starter Ghost via kommandolinje stopper det s&aring; snart du lukker terminalvinduet eller logger ud fra SSH. For at forhindre at Ghost stopper skal du k&oslash;re Ghost som en service. Der er to m&aring;der at g&oslash;re det p&aring;.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-Du kan bruge `forever` til at køre Ghost som en "opgave" i baggrunden. `forever` tager sig også af din installation af Ghost og vil genstarte node processen, hvis den går ned.
+Du kan bruge `forever` til at k&oslash;re Ghost som en "opgave" i baggrunden. `forever` tager sig ogs&aring; af din installation af Ghost og vil genstarte node processen, hvis den g&aring;r ned.
 
 *   For at installere `forever` skal du skrive `npm install forever -g`
-*   For at starte Ghost ved hjælp af `forever` fra Ghost's installationsmappe skal du skrive `NODE_ENV=production forever start index.js`
+*   For at starte Ghost ved hj&aelig;lp af `forever` fra Ghost's installationsmappe skal du skrive `NODE_ENV=production forever start index.js`
 *   For at stoppe Ghost skal du skrive `forever stop index.js`
-*   For at kontrollere at Ghost kører skal du skrive `forever list`
+*   For at kontrollere at Ghost k&oslash;rer skal du skrive `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Populære Linux udgaver &mdash; som eks. Fedora, Debian og Ubuntu &mdash; veligeholder en udgave til Supervisor: Et process kontrol system, som tillader at du kan køre Ghost ved opstart uden brug af init scripts. I modsætning til et init script er Supervisor er flytbar mellem Linux udgaver og versioner.
+Popul&aelig;re Linux udgaver &mdash; som eks. Fedora, Debian og Ubuntu &mdash; veligeholder en udgave til Supervisor: Et process kontrol system, som tillader at du kan k&oslash;re Ghost ved opstart uden brug af init scripts. I mods&aelig;tning til et init script er Supervisor er flytbar mellem Linux udgaver og versioner.
 
-*   [Install&eacute;r Supervisor](http://supervisord.org/installing.html) som krævet af din Linux udgave. Det vil typiske være:
+*   [Install&eacute;r Supervisor](http://supervisord.org/installing.html) som kr&aelig;vet af din Linux udgave. Det vil typiske v&aelig;re:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
     *   De fleste andre udgaver: `easy_install supervisor`
-    *   For at kontrollere at Supervisor kører skal du skrive `service supervisor start`
-    *   Opret opstarts scriptet til din Ghost installation. Typisk vil det indsættes i `/etc/supervisor/conf.d/ghost.conf` Eksempelvis:
+    *   For at kontrollere at Supervisor k&oslash;rer skal du skrive `service supervisor start`
+    *   Opret opstarts scriptet til din Ghost installation. Typisk vil det inds&aelig;ttes i `/etc/supervisor/conf.d/ghost.conf` Eksempelvis:
 
     ```
     [program:ghost]
@@ -82,7 +81,7 @@ Populære Linux udgaver &mdash; som eks. Fedora, Debian og Ubuntu &mdash; velige
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost ved hjælp af Supervisor: `supervisorctl start ghost`
+*   Start Ghost ved hj&aelig;lp af Supervisor: `supervisorctl start ghost`
 *   For t stoppe Ghost: `supervisorctl stop ghost`
 
 Du kan kigge i [Supervisor's dokumentation](http://supervisord.org) for flere informationer.
