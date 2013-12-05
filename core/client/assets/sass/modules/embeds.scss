@@ -1,0 +1,4 @@
+/* We set a minimum height to reserve the space while we wait for Twitter to render the embeddable tweet */
+.twitter-tweet {
+  min-height: 165px;
+}
