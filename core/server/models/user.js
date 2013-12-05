@@ -188,7 +188,7 @@ User = ghostBookshelf.Model.extend({
                     if (!matched) {
                         return when(self.setWarning(user)).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                            return when.reject(new Error('Your password is incorrect.<br>' +
+                            return when.reject(new Error('Username or password is incorrect.<br>' +
                                 remaining + ' attempt' + s + ' remaining!'));
                         });
                     }
@@ -204,7 +204,7 @@ User = ghostBookshelf.Model.extend({
 
         }, function (error) {
             /*jslint unparam:true*/
-            return when.reject(new Error('There is no user with that email address.'));
+            return when.reject(new Error('Username or password is incorrect.'));
         });
     },
 
