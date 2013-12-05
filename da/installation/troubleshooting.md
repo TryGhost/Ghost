@@ -11,7 +11,7 @@ section: troubleshooting
 prev_section: upgrading
 ---
 
-ejlfinding & Ofte stillede sp&oslash;rgsm&aring;l <a id="troubleshooting"></a>
+# Fejlfinding & Ofte stillede sp&oslash;rgsm&aring;l <a id="troubleshooting"></a>
 
 <dl>
     <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
