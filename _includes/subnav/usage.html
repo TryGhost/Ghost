@@ -1,5 +1,5 @@
 {% assign chapter = "usage" %}
-{% assign items = "configuration settings managing writing faq" | split: ' ' %}
+{% assign items = "configuration settings managing writing" | split: ' ' %}
 
 {% if page.lang %}
     {% assign base_url = site.url | append: '/' | append: page.lang | append: '/' | append: chapter | append: '/' %}
@@ -31,11 +31,7 @@
                         {% if page.lang and site.translations.[page.lang].[item] %}
                             {{site.translations.[page.lang].[item]}}
                         {% else %}
-                            {% if item == 'faq' %}
-                                 FAQ
-                            {% else %}
-                                {{ item | capitalize }}
-                            {% endif %}
+                            {{ item | capitalize }}
                         {% endif %}
                     </a>
                 </li>

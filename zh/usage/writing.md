@@ -9,7 +9,6 @@ chapter: usage
 section: writing
 permalink: /zh/usage/writing/
 prev_section: managing
-next_section: faq
 ---
 
 ##  写文章<a id="writing"></a>
