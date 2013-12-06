@@ -14,22 +14,62 @@ var config       = require('./config'),
     path         = require('path'),
     Polyglot     = require('node-polyglot'),
     mailer       = require('./mail'),
-    Ghost        = require('../ghost'),
     helpers      = require('./helpers'),
     middleware   = require('./middleware'),
     routes       = require('./routes'),
     packageInfo  = require('../../package.json'),
+    models        = require('./models'),
+    permissions   = require('./permissions'),
+    uuid          = require('node-uuid'),
+    api           = require('./api'),
 
 // Variables
-    ghost = new Ghost(),
     setup,
-    init;
+    init,
+    dbHash;
 
 // If we're in development mode, require "when/console/monitor"
 // for help in seeing swallowed promise errors, and log any
 // stderr messages from bluebird promises.
 if (process.env.NODE_ENV === 'development') {
     require('when/monitor/console');
+}
+
+function doFirstRun() {
+    var firstRunMessage = [
+        'Welcome to Ghost.',
+        'You\'re running under the <strong>',
+        process.env.NODE_ENV,
+        '</strong>environment.',
+
+        'Your URL is set to',
+        '<strong>' + config().url + '</strong>.',
+        'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
+    ];
+
+    return api.notifications.add({
+        type: 'info',
+        message: firstRunMessage.join(' '),
+        status: 'persistent',
+        id: 'ghost-first-run'
+    });
+}
+
+function initDbHashAndFirstRun() {
+    return when(models.Settings.read('dbHash')).then(function (hash) {
+        // we already ran this, chill
+        // Holds the dbhash (mainly used for cookie secret)
+        dbHash = hash.attributes.value;
+        return dbHash;
+    }).otherwise(function (error) {
+        /*jslint unparam:true*/
+        // this is where all the "first run" functionality should go
+        var hash = uuid.v4();
+        return when(models.Settings.add({key: 'dbHash', value: hash, type: 'core'})).then(function () {
+            dbHash = hash;
+            return dbHash;
+        }).then(doFirstRun);
+    });
 }
 
 // Sets up the express server instance.
@@ -41,13 +81,36 @@ function setup(server) {
     // Set up Polygot instance on the require module
     Polyglot.instance = new Polyglot();
 
-    when(ghost.init()).then(function () {
+    // ### Initialisation
+    when.join(
+        // Initialise the models
+        models.init(),
+        // Calculate paths
+        config.paths.updatePaths(config().url)
+    ).then(function () {
+        // Populate any missing default settings
+        return models.Settings.populateDefaults();
+    }).then(function () {
+        // Initialize the settings cache
+        return api.init();
+    }).then(function () {
+        // We must pass the api and config object
+        // into this method due to circular dependencies.
+        return config.theme.update(api, config);
+    }).then(function () {
+        return when.join(
+            // Check for or initialise a dbHash.
+            initDbHashAndFirstRun(),
+            // Initialize the permissions actions and objects
+            permissions.init()
+        );
+    }).then(function () {
         return when.join(
             // Initialise mail after first run,
             // passing in config module to prevent
             // circular dependencies.
             mailer.init(),
-            helpers.loadCoreHelpers(ghost, config)
+            helpers.loadCoreHelpers(config)
         );
     }).then(function () {
 
@@ -56,13 +119,13 @@ function setup(server) {
         server.set('view engine', 'hbs');
 
         // set the configured URL
-        server.set('ghost root', ghost.blogGlobals().path);
+        server.set('ghost root', config.theme().path);
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         // ## Middleware
-        middleware(server);
+        middleware(server, dbHash);
 
         // ## Routing
 
@@ -138,11 +201,8 @@ function setup(server) {
 
         }
 
-        // Expose the express server on the ghost instance.
-        ghost.server = server;
-
         // Initialize plugins then start the server
-        plugins.init(ghost).then(function () {
+        plugins.init().then(function () {
 
             // ## Start Ghost App
             if (getSocket()) {

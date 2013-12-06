@@ -11,13 +11,13 @@ var middleware = require('./middleware'),
     api         = require('../api'),
     path        = require('path'),
     hbs         = require('express-hbs'),
-    Ghost       = require('../../ghost'),
     config      = require('../config'),
     storage     = require('../storage'),
     packageInfo = require('../../../package.json'),
     BSStore     = require('../bookshelf-session'),
+    models      = require('../models'),
 
-    ghost = new Ghost();
+    expressServer;
 
 // ##Custom Middleware
 
@@ -30,7 +30,7 @@ function ghostLocals(req, res, next) {
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
     // Strip off the subdir part of the path
-    res.locals.ghostRoot = req.path.replace(ghost.blogGlobals().path.replace(/\/$/, ''), '');
+    res.locals.ghostRoot = req.path.replace(config.theme().path.replace(/\/$/, ''), '');
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
@@ -74,19 +74,19 @@ function initViews(req, res, next) {
 
     if (!res.isAdmin) {
         // self.globals is a hack til we have a better way of getting combined settings & config
-        hbsOptions = {templateOptions: {data: {blog: ghost.blogGlobals()}}};
+        hbsOptions = {templateOptions: {data: {blog: config.theme()}}};
         api.settings.read('activeTheme').then(function (activeTheme) {
             if (config.paths().availableThemes[activeTheme.value].hasOwnProperty('partials')) {
                 // Check that the theme has a partials directory before trying to use it
                 hbsOptions.partialsDir = path.join(config.paths().themePath, activeTheme.value, 'partials');
             }
 
-            ghost.server.engine('hbs', hbs.express3(hbsOptions));
-            ghost.server.set('views', path.join(config.paths().themePath, activeTheme.value));
+            expressServer.engine('hbs', hbs.express3(hbsOptions));
+            expressServer.set('views', path.join(config.paths().themePath, activeTheme.value));
         });
     } else {
-        ghost.server.engine('hbs', hbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
-        ghost.server.set('views', config.paths().adminViews);
+        expressServer.engine('hbs', hbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+        expressServer.set('views', config.paths().adminViews);
     }
 
     next();
@@ -95,17 +95,17 @@ function initViews(req, res, next) {
 // ### Activate Theme
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
-    var stackLocation = _.indexOf(ghost.server.stack, _.find(ghost.server.stack, function (stackItem) {
+    var stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
         return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
     }));
 
     // clear the view cache
-    ghost.server.cache = {};
-    ghost.server.disable(ghost.server.get('activeTheme'));
-    ghost.server.set('activeTheme', activeTheme);
-    ghost.server.enable(ghost.server.get('activeTheme'));
+    expressServer.cache = {};
+    expressServer.disable(expressServer.get('activeTheme'));
+    expressServer.set('activeTheme', activeTheme);
+    expressServer.enable(expressServer.get('activeTheme'));
     if (stackLocation) {
-        ghost.server.stack[stackLocation].handle = middleware.whenEnabled(ghost.server.get('activeTheme'), middleware.staticTheme());
+        expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
     }
 
     // Update user error template
@@ -117,22 +117,22 @@ function activateTheme(activeTheme) {
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
     // TODO improve this regex
-    if (ghost.blogGlobals().path === '/') {
+    if (config.theme().path === '/') {
         res.isAdmin = /(^\/ghost\/)/.test(req.url);
     } else {
-        res.isAdmin = new RegExp("^\\" + ghost.blogGlobals().path + "\\/ghost\\/").test(req.url);
+        res.isAdmin = new RegExp("^\\" + config.theme().path + "\\/ghost\\/").test(req.url);
     }
 
     if (res.isAdmin) {
-        ghost.server.enable('admin');
-        ghost.server.disable(ghost.server.get('activeTheme'));
+        expressServer.enable('admin');
+        expressServer.disable(expressServer.get('activeTheme'));
     } else {
-        ghost.server.enable(ghost.server.get('activeTheme'));
-        ghost.server.disable('admin');
+        expressServer.enable(expressServer.get('activeTheme'));
+        expressServer.disable('admin');
     }
     api.settings.read('activeTheme').then(function (activeTheme) {
         // Check if the theme changed
-        if (activeTheme.value !== ghost.server.get('activeTheme')) {
+        if (activeTheme.value !== expressServer.get('activeTheme')) {
             // Change theme
             if (!config.paths().availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
@@ -147,79 +147,99 @@ function manageAdminAndTheme(req, res, next) {
     });
 }
 
-module.exports = function (server) {
+// Redirect to signup if no users are currently created
+function redirectToSignup(req, res, next) {
+    var root = expressServer.get('ghost root').replace(/\/$/, '');
+    /*jslint unparam:true*/
+    api.users.browse().then(function (users) {
+        if (users.length === 0) {
+            return res.redirect(root + '/ghost/signup/');
+        }
+        next();
+    }).otherwise(function (err) {
+        return next(new Error(err));
+    });
+}
+
+module.exports = function (server, dbHash) {
     var oneYear = 31536000000,
         root = config.paths().webroot,
         corePath = path.join(config.paths().appRoot, 'core');
 
+    // Cache express server instance
+    expressServer = server;
+    middleware.cacheServer(expressServer);
+
     // Logging configuration
-    if (server.get('env') !== 'development') {
-        server.use(express.logger());
+    if (expressServer.get('env') !== 'development') {
+        expressServer.use(express.logger());
     } else {
-        server.use(express.logger('dev'));
+        expressServer.use(express.logger('dev'));
     }
 
     // Favicon
-    server.use(root, express.favicon(corePath + '/shared/favicon.ico'));
+    expressServer.use(root, express.favicon(corePath + '/shared/favicon.ico'));
 
     // Shared static config
-    server.use(root + '/shared', express['static'](path.join(corePath, '/shared')));
+    expressServer.use(root + '/shared', express['static'](path.join(corePath, '/shared')));
 
-    server.use(root + '/content/images', storage.get_storage().serve());
+    expressServer.use(root + '/content/images', storage.get_storage().serve());
 
     // Serve our built scripts; can't use /scripts here because themes already are
-    server.use(root + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
+    expressServer.use(root + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
         // Put a maxAge of one year on built scripts
         maxAge: oneYear
     }));
 
     // First determine whether we're serving admin or theme content
-    server.use(manageAdminAndTheme);
+    expressServer.use(manageAdminAndTheme);
 
     // Admin only config
-    server.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
+    expressServer.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
 
     // Theme only config
-    server.use(middleware.whenEnabled(server.get('activeTheme'), middleware.staticTheme()));
+    expressServer.use(middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
 
     // Add in all trailing slashes
-    server.use(slashes());
+    expressServer.use(slashes());
 
-    server.use(express.json());
-    server.use(express.urlencoded());
+    expressServer.use(express.json());
+    expressServer.use(express.urlencoded());
 
-    server.use(root + '/ghost/upload/', express.multipart());
-    server.use(root + '/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
-    server.use(root + '/ghost/api/v0.1/db/', express.multipart());
+    expressServer.use(root + '/ghost/upload/', express.multipart());
+    expressServer.use(root + '/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
+    expressServer.use(root + '/ghost/api/v0.1/db/', express.multipart());
 
     // Session handling
-    server.use(express.cookieParser());
-    server.use(express.session({
-        store: new BSStore(ghost.dataProvider),
-        secret: ghost.dbHash,
+    expressServer.use(express.cookieParser());
+    expressServer.use(express.session({
+        store: new BSStore(models),
+        secret: dbHash,
         cookie: { path: root + '/ghost', maxAge: 12 * 60 * 60 * 1000 }
     }));
 
     //enable express csrf protection
-    server.use(middleware.conditionalCSRF);
+    expressServer.use(middleware.conditionalCSRF);
     // local data
-    server.use(ghostLocals);
+    expressServer.use(ghostLocals);
     // So on every request we actually clean out reduntant passive notifications from the server side
-    server.use(middleware.cleanNotifications);
+    expressServer.use(middleware.cleanNotifications);
 
      // Initialise the views
-    server.use(initViews);
+    expressServer.use(initViews);
 
     // process the application routes
-    server.use(root, server.router);
+    expressServer.use(root, expressServer.router);
 
     // ### Error handling
     // 404 Handler
-    server.use(errors.error404);
+    expressServer.use(errors.error404);
 
     // 500 Handler
-    server.use(errors.error500);
+    expressServer.use(errors.error500);
 };
 
 // Export middleware functions directly
 module.exports.middleware = middleware;
+// Expose middleware functions in this file as well
+module.exports.middleware.redirectToSignup = redirectToSignup;

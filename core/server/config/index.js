@@ -1,6 +1,11 @@
+// General entry point for all configuration data
+//
+// This file itself is a wrapper for the root level config.js file.
+// All other files that need to reference config.js should use this file.
 
 var loader        = require('./loader'),
     paths         = require('./paths'),
+    theme         = require('./theme'),
     ghostConfig;
 
 // Returns NODE_ENV config object
@@ -24,5 +29,6 @@ function loadConfig() {
 
 config.load = loadConfig;
 config.paths = paths;
+config.theme = theme;
 
 module.exports = config;

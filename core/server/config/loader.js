@@ -1,3 +1,9 @@
+// This file manages the root level config.js.
+// It will create config.js from config.exampe.js
+// if it doesn't exist and then always attempt to load
+// config.js into memory, error and quitting if config.js
+// has an improper format.
+
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),

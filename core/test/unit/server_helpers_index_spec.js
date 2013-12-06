@@ -10,23 +10,21 @@ var testUtils = require('../utils'),
     // Stuff we are testing
     handlebars = require('express-hbs').handlebars,
     helpers = require('../../server/helpers'),
-    Ghost = require('../../ghost');
+    config = require('../../server/config');
 
 describe('Core Helpers', function () {
 
     var ghost,
         sandbox,
-        blogGlobalsStub,
         apiStub;
 
     beforeEach(function (done) {
-        ghost = new Ghost();
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings , 'read', function () {
             return when({value: 'casper'});
         });
 
-        blogGlobalsStub = sandbox.stub(ghost, 'blogGlobals', function () {
+        config.theme = sandbox.stub(config, 'theme', function () {
             return {
                 path: '',
                 //url: 'http://127.0.0.1:2368',
@@ -36,7 +34,7 @@ describe('Core Helpers', function () {
             };
         });
 
-        helpers.loadCoreHelpers(ghost).then(function () {
+        helpers.loadCoreHelpers(config).then(function () {
             done();
         }, done);
     });
@@ -372,7 +370,7 @@ describe('Core Helpers', function () {
 
         it('can render single page with no pagination necessary', function (done) {
             var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
+            helpers.loadCoreHelpers().then(function () {
                 rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
                 should.exist(rendered);
                 // strip out carriage returns and compare.
@@ -387,7 +385,7 @@ describe('Core Helpers', function () {
 
         it('can render first page of many with older posts link', function (done) {
             var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
+            helpers.loadCoreHelpers().then(function () {
                 rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
@@ -402,7 +400,7 @@ describe('Core Helpers', function () {
 
         it('can render middle pages of many with older and newer posts link', function (done) {
             var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
+            helpers.loadCoreHelpers().then(function () {
                 rendered = helpers.pagination.call({pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
@@ -418,7 +416,7 @@ describe('Core Helpers', function () {
 
         it('can render last page of many with newer posts link', function (done) {
             var rendered;
-            helpers.loadCoreHelpers(ghost).then(function () {
+            helpers.loadCoreHelpers().then(function () {
                 rendered = helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
                 should.exist(rendered);
 
@@ -433,7 +431,7 @@ describe('Core Helpers', function () {
         });
 
         it('validates values', function (done) {
-            helpers.loadCoreHelpers(ghost).then(function () {
+            helpers.loadCoreHelpers().then(function () {
                 var runErrorTest = function (data) {
                     return function () {
                         helpers.pagination.call(data);
