@@ -47,10 +47,10 @@ posts = {
     // #### Read
 
     // **takes:** an identifier (id or slug?)
-    read: function read(args) {
+    read: function read(args, options) {
         // **returns:** a promise for a single post in a json object
 
-        return dataProvider.Post.findOne(args).then(function (result) {
+        return dataProvider.Post.findOne(args, options).then(function (result) {
             var omitted;
 
             if (result) {

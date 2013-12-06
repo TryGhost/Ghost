@@ -188,6 +188,7 @@ Post = ghostBookshelf.Model.extend({
 
     // #### findOne
     // Extends base model findOne to eager-fetch author and user relationships.
+
     findOne: function (args, options) {
         options = options || {};
 
@@ -200,9 +201,47 @@ Post = ghostBookshelf.Model.extend({
         }
 
         options.withRelated = [ 'author', 'user', 'tags' ];
-        return ghostBookshelf.Model.findOne.call(this, args, options);
-    },
+        return ghostBookshelf.Model.findOne.call(this, args, options).then(function (post) {
+            if (options.withPrevNext && post && !post.page) {
 
+                var postData = post.toJSON(),
+                    publishedAt = new Date(postData.published_at).getTime(),
+                    prev,
+                    next;
+
+                next = Post.forge().query(function (qb) {
+                    qb.where('status', '=', 'published')
+                        .andWhere('page', '=', 0)
+                        .andWhere('published_at', '>', publishedAt)
+                        .orderBy('published_at', 'asc')
+                        .limit(1);
+                }).fetch();
+
+                prev = Post.forge().query(function (qb) {
+                    qb.where('status', '=', 'published')
+                        .andWhere('page', '=', 0)
+                        .andWhere('published_at', '<', publishedAt)
+                        .orderBy('published_at', 'desc')
+                        .limit(1);
+                }).fetch();
+
+                return when.join(next, prev)
+                    .then(function (nextAndPrev) {
+                        if (nextAndPrev[0]) {
+                            post.relations.next = nextAndPrev[0];
+                        }
+                        if (nextAndPrev[1]) {
+                            post.relations.prev = nextAndPrev[1];
+                        }
+                        return post;
+                    });
+            }
+            if (post && !options.withPrevNext) {
+                return post;
+            }
+            return false;
+        });
+    },
      // #### findPage
      // Find results by page - returns an object containing the
      // information about the request (page, limit), along with the

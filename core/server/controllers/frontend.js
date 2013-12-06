@@ -66,8 +66,9 @@ frontendControllers = {
             return next(e);
         });
     },
+
     'single': function (req, res, next) {
-        api.posts.read(_.pick(req.params, ['id', 'slug'])).then(function (post) {
+        api.posts.read(_.pick(req.params, ['id', 'slug']), {withPrevNext: true}).then(function (post) {
             if (post) {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     var paths = config.paths().availableThemes[ghost.settings('activeTheme')];
