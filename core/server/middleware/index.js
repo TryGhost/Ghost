@@ -5,6 +5,7 @@
 var middleware = require('./middleware'),
     express     = require('express'),
     _           = require('underscore'),
+    url         = require('url'),
     slashes     = require('connect-slashes'),
     errors      = require('../errorHandling'),
     api         = require('../api'),
@@ -140,6 +141,30 @@ function manageAdminAndTheme(req, res, next) {
     next();
 }
 
+// checkSSL helper
+function redirectSSL(req, res, next) {
+    if (!req.secure && req.header('X-Forwarded-Proto').toLowerCase() !== 'https') {
+        return res.redirect(301, url.format({
+            protocol: 'https:',
+            hostname: req.host,
+            pathname: req.path,
+            query: req.query
+        }));
+    }
+    next();
+}
+
+// Check to see if we should 
+function checkSSL(req, res, next) {
+    var forceSSL = url.parse(ghost.config().url).protocol === 'https:' ? true : false,
+        forceAdminSSL = (res.isAdmin && ghost.config().forceAdminSSL);
+
+    if (forceSSL || forceAdminSSL) {
+        return redirectSSL(req, res, next);
+    }
+    next();
+}
+
 module.exports = function (server) {
     var oneYear = 31536000000,
         root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
@@ -168,6 +193,9 @@ module.exports = function (server) {
 
     // First determine whether we're serving admin or theme content
     server.use(manageAdminAndTheme);
+
+    // Force SSL
+    server.use(checkSSL);
 
     // Admin only config
     server.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
