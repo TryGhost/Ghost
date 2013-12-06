@@ -158,7 +158,7 @@
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
                 postsPerPage = this.$('#postsPerPage').val(),
-                permalinks = this.$('#permalinks').is(':checked') ? "/:year/:month/:day/:slug/" : "/:slug/";
+                permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/';
 
             Ghost.Validate._errors = [];
             Ghost.Validate
@@ -235,6 +235,7 @@
         templateName: 'settings/general',
 
         afterRender: function () {
+            this.$('#permalinks').prop('checked', this.model.get('permalinks') === '/:slug/' ? false : true);
             this.$('.js-drop-zone').upload();
             Settings.Pane.prototype.afterRender.call(this);
         }
