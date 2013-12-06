@@ -1,3 +1,4 @@
+exclude: [node_modules]
 pygments:     true
 permalinks: pretty
 relative_permalinks: false
