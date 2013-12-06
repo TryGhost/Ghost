@@ -144,6 +144,20 @@ describe('Core Helpers', function () {
             rendered.string.should.equal(expected);
         });
 
+        it('can truncate html with non-ascii characters by word', function () {
+            var html = "<p>Едквюэ опортэат <strong>праэчынт ючю но, квуй эю</strong></p>",
+                expected = "Едквюэ опортэат",
+                rendered = (
+                    helpers.excerpt.call(
+                        {html: html},
+                        {"hash": {"words": "2"}}
+                    )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
+
         it('can truncate html by character', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 expected = "Hello Wo",
