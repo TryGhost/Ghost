@@ -1,5 +1,4 @@
-var Ghost         = require('../../ghost'),
-    dataExport    = require('../data/export'),
+var dataExport    = require('../data/export'),
     dataImport    = require('../data/import'),
     api           = require('../api'),
     fs            = require('fs-extra'),
@@ -8,8 +7,8 @@ var Ghost         = require('../../ghost'),
     nodefn        = require('when/node/function'),
     _             = require('underscore'),
     schema        = require('../data/schema'),
+    config        = require('../config'),
 
-    ghost         = new Ghost(),
     db;
 
 db = {
@@ -27,15 +26,16 @@ db = {
             res.download(exportedFilePath, 'GhostData.json');
         }).otherwise(function (error) {
             // Notify of an error if it occurs
-            var notification = {
-                type: 'error',
-                message: error.message || error,
-                status: 'persistent',
-                id: 'per-' + (ghost.notifications.length + 1)
-            };
-
-            return api.notifications.add(notification).then(function () {
-                res.redirect('/ghost/debug/');
+            return api.notification.browse().then(function (notifications) {
+                var notification = {
+                    type: 'error',
+                    message: error.message || error,
+                    status: 'persistent',
+                    id: 'per-' + (notifications.length + 1)
+                };
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(config.paths().webroot + '/ghost/debug/');
+                });
             });
         });
     },
@@ -51,15 +51,16 @@ db = {
              * - If the size is 0
              * - If the name doesn't have json in it
              */
-            notification = {
-                type: 'error',
-                message:  "Must select a .json file to import",
-                status: 'persistent',
-                id: 'per-' + (ghost.notifications.length + 1)
-            };
-
-            return api.notifications.add(notification).then(function () {
-                res.redirect('/ghost/debug/');
+            return api.notification.browse().then(function (notifications) {
+                notification = {
+                    type: 'error',
+                    message:  "Must select a .json file to import",
+                    status: 'persistent',
+                    id: 'per-' + (notifications.length + 1)
+                };
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(config.paths().webroot + '/ghost/debug/');
+                });
             });
         }
 
@@ -125,32 +126,35 @@ db = {
                     });
             })
             .then(function importSuccess() {
-                notification = {
-                    type: 'success',
-                    message: "Data imported. Log in with the user details you imported",
-                    status: 'persistent',
-                    id: 'per-' + (ghost.notifications.length + 1)
-                };
+                return api.notification.browse().then(function (notifications) {
+                    notification = {
+                        type: 'success',
+                        message: "Data imported. Log in with the user details you imported",
+                        status: 'persistent',
+                        id: 'per-' + (notifications.length + 1)
+                    };
 
-                return api.notifications.add(notification).then(function () {
-                    req.session.destroy();
-                    res.set({
-                        "X-Cache-Invalidate": "/*"
+                    return api.notifications.add(notification).then(function () {
+                        req.session.destroy();
+                        res.set({
+                            "X-Cache-Invalidate": "/*"
+                        });
+                        res.redirect(config.paths().webroot + '/ghost/signin/');
                     });
-                    res.redirect('/ghost/signin/');
                 });
-
             }, function importFailure(error) {
-                // Notify of an error if it occurs
-                notification = {
-                    type: 'error',
-                    message: error.message || error,
-                    status: 'persistent',
-                    id: 'per-' + (ghost.notifications.length + 1)
-                };
+                return api.notification.browse().then(function (notifications) {
+                    // Notify of an error if it occurs
+                    notification = {
+                        type: 'error',
+                        message: error.message || error,
+                        status: 'persistent',
+                        id: 'per-' + (notifications.length + 1)
+                    };
 
-                return api.notifications.add(notification).then(function () {
-                    res.redirect('/ghost/debug/');
+                    return api.notifications.add(notification).then(function () {
+                        res.redirect(config.paths().webroot + '/ghost/debug/');
+                    });
                 });
             });
     }

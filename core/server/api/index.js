@@ -1,397 +1,19 @@
 // # Ghost Data API
 // Provides access to the data model
 
-var Ghost        = require('../../ghost'),
-    _            = require('underscore'),
-    when         = require('when'),
-    errors       = require('../errorHandling'),
-    permissions  = require('../permissions'),
-    db           = require('./db'),
-    canThis      = permissions.canThis,
-
-    ghost        = new Ghost(),
-    dataProvider = ghost.dataProvider,
-    posts,
-    users,
-    tags,
-    notifications,
-    settings,
+var _             = require('underscore'),
+    when          = require('when'),
+    errors        = require('../errorHandling'),
+    db            = require('./db'),
+    settings      = require('./settings'),
+    notifications = require('./notifications'),
+    dataProvider  = require('../models'),
+    config        = require('../config'),
+    posts         = require('./posts'),
+    users         = require('./users'),
+    tags          = require('./tags'),
     requestHandler,
-    settingsObject,
-    settingsCollection,
-    settingsFilter,
-    filteredUserAttributes = ['password', 'created_by', 'updated_by', 'last_login'],
-    ONE_DAY = 86400000;
-
-// ## Posts
-posts = {
-    // #### Browse
-
-    // **takes:** filter / pagination parameters
-    browse: function browse(options) {
-
-        // **returns:** a promise for a page of posts in a json object
-        //return dataProvider.Post.findPage(options);
-        return dataProvider.Post.findPage(options).then(function (result) {
-            var i = 0,
-                omitted = result;
-
-            for (i = 0; i < omitted.posts.length; i = i + 1) {
-                omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
-                omitted.posts[i].user = _.omit(omitted.posts[i].user, filteredUserAttributes);
-            }
-            return omitted;
-        });
-    },
-
-    // #### Read
-
-    // **takes:** an identifier (id or slug?)
-    read: function read(args) {
-        // **returns:** a promise for a single post in a json object
-
-        return dataProvider.Post.findOne(args).then(function (result) {
-            var omitted;
-
-            if (result) {
-                omitted = result.toJSON();
-                omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                return omitted;
-            }
-            return when.reject({errorCode: 404, message: 'Post not found'});
-
-        });
-    },
-
-    // #### Edit
-
-    // **takes:** a json object with all the properties which should be updated
-    edit: function edit(postData) {
-        // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
-        }
-        var self = this;
-        return canThis(self.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData).then(function (result) {
-                if (result) {
-                    var omitted = result.toJSON();
-                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                    omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                    return omitted;
-                }
-                return when.reject({errorCode: 404, message: 'Post not found'});
-            }).otherwise(function (error) {
-                return dataProvider.Post.findOne({id: postData.id, status: 'all'}).then(function (result) {
-                    if (!result) {
-                        return when.reject({errorCode: 404, message: 'Post not found'});
-                    }
-                    return when.reject({message: error.message});
-                });
-            });
-        }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
-        });
-    },
-
-    // #### Add
-
-    // **takes:** a json object representing a post,
-    add: function add(postData) {
-        // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
-        }
-
-        return canThis(this.user).create.post().then(function () {
-            return dataProvider.Post.add(postData);
-        }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
-        });
-    },
-
-    // #### Destroy
-
-    // **takes:** an identifier (id or slug?)
-    destroy: function destroy(args) {
-        // **returns:** a promise for a json response with the id of the deleted post
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
-        }
-
-        return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
-                return dataProvider.Post.destroy(args.id).then(function () {
-                    var deletedObj = {};
-                    deletedObj.id = result.id;
-                    deletedObj.slug = result.slug;
-                    return deletedObj;
-                });
-            });
-        }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
-        });
-    }
-};
-
-// ## Users
-users = {
-    // #### Browse
-
-    // **takes:** options object
-    browse: function browse(options) {
-        // **returns:** a promise for a collection of users in a json object
-
-        return dataProvider.User.browse(options).then(function (result) {
-            var i = 0,
-                omitted = {};
-
-            if (result) {
-                omitted = result.toJSON();
-            }
-
-            for (i = 0; i < omitted.length; i = i + 1) {
-                omitted[i] = _.omit(omitted[i], filteredUserAttributes);
-            }
-
-            return omitted;
-        });
-    },
-
-    // #### Read
-
-    // **takes:** an identifier (id or slug?)
-    read: function read(args) {
-        // **returns:** a promise for a single user in a json object
-        if (args.id === 'me') {
-            args = {id: this.user};
-        }
-
-        return dataProvider.User.read(args).then(function (result) {
-            if (result) {
-                var omitted = _.omit(result.toJSON(), filteredUserAttributes);
-                return omitted;
-            }
-
-            return when.reject({errorCode: 404, message: 'User not found'});
-        });
-    },
-
-    // #### Edit
-
-    // **takes:** a json object representing a user
-    edit: function edit(userData) {
-        // **returns:** a promise for the resulting user in a json object
-        userData.id = this.user;
-        return dataProvider.User.edit(userData).then(function (result) {
-            if (result) {
-                var omitted = _.omit(result.toJSON(), filteredUserAttributes);
-                return omitted;
-            }
-            return when.reject({errorCode: 404, message: 'User not found'});
-        });
-    },
-
-    // #### Add
-
-    // **takes:** a json object representing a user
-    add: function add(userData) {
-
-        // **returns:** a promise for the resulting user in a json object
-        return dataProvider.User.add(userData);
-    },
-
-    // #### Check
-    // Checks a password matches the given email address
-
-    // **takes:** a json object representing a user
-    check: function check(userData) {
-        // **returns:** on success, returns a promise for the resulting user in a json object
-        return dataProvider.User.check(userData);
-    },
-
-    // #### Change Password
-
-    // **takes:** a json object representing a user
-    changePassword: function changePassword(userData) {
-        // **returns:** on success, returns a promise for the resulting user in a json object
-        return dataProvider.User.changePassword(userData);
-    },
-
-    generateResetToken: function generateResetToken(email) {
-        // TODO: Do we want to be able to pass this in?
-        var expires = Date.now() + ONE_DAY;
-
-        return dataProvider.User.generateResetToken(email, expires, ghost.dbHash);
-    },
-
-    validateToken: function validateToken(token) {
-        return dataProvider.User.validateToken(token, ghost.dbHash);
-    },
-
-    resetPassword: function resetPassword(token, newPassword, ne2Password) {
-        return dataProvider.User.resetPassword(token, newPassword, ne2Password, ghost.dbHash);
-    }
-};
-
-tags = {
-    // #### All
-
-    // **takes:** Nothing yet
-    all: function browse() {
-        // **returns:** a promise for all tags which have previously been used in a json object
-        return dataProvider.Tag.findAll();
-    }
-};
-
-// ## Notifications
-notifications = {
-    // #### Destroy
-
-    // **takes:** an identifier (id)
-    destroy: function destroy(i) {
-        ghost.notifications = _.reject(ghost.notifications, function (element) {
-            return element.id === i.id;
-        });
-        // **returns:** a promise for remaining notifications as a json object
-        return when(ghost.notifications);
-    },
-
-    // #### Add
-
-    // **takes:** a notification object of the form
-    // ```
-    //  msg = {
-    //      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
-    //      message: 'This is an error', // A string. Should fit in one line.
-    //      status: 'persistent', // or 'passive'
-    //      id: 'auniqueid' // A unique ID
-    //  };
-    // ```
-    add: function add(notification) {
-        // **returns:** a promise for all notifications as a json object
-        return when(ghost.notifications.push(notification));
-    }
-};
-
-// ## Settings
-
-// ### Helpers
-// Turn a settings collection into a single object/hashmap
-settingsObject = function (settings) {
-    if (_.isObject(settings)) {
-        return _.reduce(settings, function (res, item, key) {
-            if (_.isArray(item)) {
-                res[key] = item;
-            } else {
-                res[key] = item.value;
-            }
-            return res;
-        }, {});
-    }
-    return (settings.toJSON ? settings.toJSON() : settings).reduce(function (res, item) {
-        if (item.toJSON) { item = item.toJSON(); }
-        if (item.key) { res[item.key] = item.value; }
-        return res;
-    }, {});
-};
-// Turn an object into a collection
-settingsCollection = function (settings) {
-    return _.map(settings, function (value, key) {
-        return { key: key, value: value };
-    });
-};
-
-// Filters an object based on a given filter object
-settingsFilter = function (settings, filter) {
-    return _.object(_.filter(_.pairs(settings), function (setting) {
-        if (filter) {
-            return _.some(filter.split(','), function (f) {
-                return setting[1].type === f;
-            });
-        }
-        return true;
-    }));
-};
-
-settings = {
-    // #### Browse
-
-    // **takes:** options object
-    browse: function browse(options) {
-        // **returns:** a promise for a settings json object
-        if (ghost.settings()) {
-            return when(ghost.settings()).then(function (settings) {
-                //TODO: omit where type==core
-                return settingsObject(settingsFilter(settings, options.type));
-            }, errors.logAndThrowError);
-        }
-    },
-
-    // #### Read
-
-    // **takes:** either a json object containing a key, or a single key string
-    read: function read(options) {
-        if (_.isString(options)) {
-            options = { key: options };
-        }
-
-        if (ghost.settings()) {
-            return when(ghost.settings()[options.key]).then(function (setting) {
-                if (!setting) {
-                    return when.reject({errorCode: 404, message: 'Unable to find setting: ' + options.key});
-                }
-                var res = {};
-                res.key = options.key;
-                res.value = setting.value;
-                return res;
-            }, errors.logAndThrowError);
-        }
-    },
-
-    // #### Edit
-
-     // **takes:** either a json object representing a collection of settings, or a key and value pair
-    edit: function edit(key, value) {
-        // Check for passing a collection of settings first
-        if (_.isObject(key)) {
-            //clean data
-            var type = key.type;
-            delete key.type;
-            delete key.availableThemes;
-
-            key = settingsCollection(key);
-            return dataProvider.Settings.edit(key).then(function (result) {
-                result.models = result;
-                return when(ghost.readSettingsResult(result)).then(function (settings) {
-                    ghost.updateSettingsCache(settings);
-                    return settingsObject(settingsFilter(ghost.settings(), type));
-                });
-            }).otherwise(function (error) {
-                return dataProvider.Settings.read(key.key).then(function (result) {
-                    if (!result) {
-                        return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
-                    }
-                    return when.reject({message: error.message});
-                });
-            });
-        }
-        return dataProvider.Settings.read(key).then(function (setting) {
-            if (!setting) {
-                return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
-            }
-            if (!_.isString(value)) {
-                value = JSON.stringify(value);
-            }
-            setting.set('value', value);
-            return dataProvider.Settings.edit(setting).then(function (result) {
-                ghost.settings()[_.first(result).attributes.key].value = _.first(result).attributes.value;
-                return settingsObject(ghost.settings());
-            }, errors.logAndThrowError);
-        });
-    }
-};
+    init;
 
 // ## Request Handlers
 
@@ -429,41 +51,49 @@ requestHandler = function (apiMethod) {
             apiContext = {
                 user: req.session && req.session.user
             },
-            root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
             postRouteIndex,
             i;
 
-        // If permalinks have changed, find old post route
-        if (req.body.permalinks && req.body.permalinks !== ghost.settings('permalinks')) {
-            for (i = 0; i < req.app.routes.get.length; i += 1) {
-                if (req.app.routes.get[i].path === root + ghost.settings('permalinks')) {
-                    postRouteIndex = i;
-                    break;
+        settings.read('permalinks').then(function (permalinks) {
+            // If permalinks have changed, find old post route
+            if (req.body.permalinks && req.body.permalinks !== permalinks) {
+                for (i = 0; i < req.app.routes.get.length; i += 1) {
+                    if (req.app.routes.get[i].path === config.paths().webroot + permalinks) {
+                        postRouteIndex = i;
+                        break;
+                    }
                 }
             }
-        }
 
-        return apiMethod.call(apiContext, options).then(function (result) {
-            // Reload post route
-            if (postRouteIndex) {
-                req.app.get(ghost.settings('permalinks'), req.app.routes.get.splice(postRouteIndex, 1)[0].callbacks);
-            }
+            return apiMethod.call(apiContext, options).then(function (result) {
+                // Reload post route
+                if (postRouteIndex) {
+                    req.app.get(permalinks, req.app.routes.get.splice(postRouteIndex, 1)[0].callbacks);
+                }
 
-            invalidateCache(req, res, result);
-            res.json(result || {});
-        }, function (error) {
-            var errorCode = error.errorCode || 500,
-                errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
-            res.json(errorCode, errorMsg);
+                invalidateCache(req, res, result);
+                res.json(result || {});
+            }, function (error) {
+                var errorCode = error.errorCode || 500,
+                    errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
+                res.json(errorCode, errorMsg);
+            });
         });
     };
 };
 
+init = function () {
+    return settings.updateSettingsCache();
+};
+
 // Public API
-module.exports.posts = posts;
-module.exports.users = users;
-module.exports.tags = tags;
-module.exports.notifications = notifications;
-module.exports.settings = settings;
-module.exports.db = db;
-module.exports.requestHandler = requestHandler;
+module.exports = {
+    posts: posts,
+    users: users,
+    tags: tags,
+    notifications: notifications,
+    settings: settings,
+    db: db,
+    requestHandler: requestHandler,
+    init: init
+};

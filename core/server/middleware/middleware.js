@@ -7,6 +7,7 @@ var _           = require('underscore'),
     Ghost       = require('../../ghost'),
     config      = require('../config'),
     path        = require('path'),
+    api         = require('../api'),
     ghost       = new Ghost();
 
 function isBlackListedFileType(file) {
@@ -23,26 +24,26 @@ var middleware = {
     auth: function (req, res, next) {
         if (!req.session.user) {
             var reqPath = req.path.replace(/^\/ghost\/?/gi, ''),
-                root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
                 redirect = '',
                 msg;
 
-            if (reqPath !== '') {
-                msg = {
-                    type: 'error',
-                    message: 'Please Sign In',
-                    status: 'passive',
-                    id: 'failedauth'
-                };
-                // let's only add the notification once
-                if (!_.contains(_.pluck(ghost.notifications, 'id'), 'failedauth')) {
-                    ghost.notifications.push(msg);
+            return api.notifications.browse().then(function (notifications) {
+                if (reqPath !== '') {
+                    msg = {
+                        type: 'error',
+                        message: 'Please Sign In',
+                        status: 'passive',
+                        id: 'failedauth'
+                    };
+                    // let's only add the notification once
+                    if (!_.contains(_.pluck(notifications, 'id'), 'failedauth')) {
+                        api.notifications.add(msg);
+                    }
+                    redirect = '?r=' + encodeURIComponent(reqPath);
                 }
-                redirect = '?r=' + encodeURIComponent(reqPath);
-            }
-            return res.redirect(root + '/ghost/signin/' + redirect);
+                return res.redirect(config.paths().webroot + '/ghost/signin/' + redirect);
+            });
         }
-
         next();
     },
 
@@ -61,10 +62,8 @@ var middleware = {
     // Check if we're logged in, and if so, redirect people back to dashboard
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
-        var root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path;
-
         if (req.session.user) {
-            return res.redirect(root + '/ghost/');
+            return res.redirect(config.paths().webroot + '/ghost/');
         }
 
         next();
@@ -76,10 +75,14 @@ var middleware = {
     // otherwise they'd appear one too many times
     cleanNotifications: function (req, res, next) {
         /*jslint unparam:true*/
-        ghost.notifications = _.reject(ghost.notifications, function (notification) {
-            return notification.status === 'passive';
+        api.notifications.browse().then(function (notifications) {
+            _.each(notifications, function (notification) {
+                if (notification.status === 'passive') {
+                    api.notifications.destroy(notification);
+                }
+            });
+            next();
         });
-        next();
     },
 
     // ### DisableCachedResult Middleware
@@ -119,7 +122,9 @@ var middleware = {
 
     // to allow unit testing
     forwardToExpressStatic: function (req, res, next) {
-        return express['static'](config.paths().activeTheme)(req, res, next);
+        api.settings.read('activeTheme').then(function (activeTheme) {
+            express['static'](path.join(config.paths().themePath, activeTheme.value))(req, res, next);
+        });
     },
 
     conditionalCSRF: function (req, res, next) {

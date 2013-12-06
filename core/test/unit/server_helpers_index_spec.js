@@ -1,10 +1,11 @@
 /*globals describe, beforeEach, it*/
 var testUtils = require('../utils'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
-    _ = require('underscore'),
-    path = require('path'),
+    should    = require('should'),
+    sinon     = require('sinon'),
+    when      = require('when'),
+    _         = require('underscore'),
+    path      = require('path'),
+    api       = require('../../server/api'),
 
     // Stuff we are testing
     handlebars = require('express-hbs').handlebars,
@@ -13,13 +14,35 @@ var testUtils = require('../utils'),
 
 describe('Core Helpers', function () {
 
-    var ghost;
+    var ghost,
+        sandbox,
+        blogGlobalsStub,
+        apiStub;
 
     beforeEach(function (done) {
         ghost = new Ghost();
+        sandbox = sinon.sandbox.create();
+        apiStub = sandbox.stub(api.settings , 'read', function () {
+            return when({value: 'casper'});
+        });
+
+        blogGlobalsStub = sandbox.stub(ghost, 'blogGlobals', function () {
+            return {
+                path: '',
+                //url: 'http://127.0.0.1:2368',
+                title: 'Ghost',
+                description: 'Just a blogging platform.',
+                url: 'http://testurl.com'
+            };
+        });
+
         helpers.loadCoreHelpers(ghost).then(function () {
             done();
         }, done);
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     describe('Content Helper', function () {
@@ -278,33 +301,36 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.url);
         });
 
-        it('should return a the slug with a prefix slash if the context is a post', function () {
-            var rendered = helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)});
-            should.exist(rendered);
-            rendered.should.equal('/slug/');
+        it('should return the slug with a prefix slash if the context is a post', function () {
+            helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('/slug/');
+            });
         });
 
         it('should output an absolute URL if the option is present', function () {
-            var configStub = sinon.stub(ghost, "blogGlobals", function () {
-                    return { url: 'http://testurl.com' };
-                }),
-
-                rendered = helpers.url.call(
+            helpers.url.call(
                     {html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)},
-                    {hash: { absolute: 'true'}}
-                );
-
-            should.exist(rendered);
-            rendered.should.equal('http://testurl.com/slug/');
-
-            configStub.restore();
+                    {hash: { absolute: 'true'}})
+            .then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/slug/');
+            });
         });
 
         it('should return empty string if not a post', function () {
-            helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).should.equal('');
-            helpers.url.call({html: 'content', title: "title", slug: "slug"}).should.equal('');
-            helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).should.equal('');
-            helpers.url.call({html: 'content', markdown: "ff", title: "title"}).should.equal('');
+            helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).then(function (rendered) {
+                rendered.should.equal('');
+            });
+            helpers.url.call({html: 'content', title: "title", slug: "slug"}).then(function (rendered) {
+                rendered.should.equal('');
+            });
+            helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).then(function (rendered) {
+                rendered.should.equal('');
+            });
+            helpers.url.call({html: 'content', markdown: "ff", title: "title"}).then(function (rendered) {
+                rendered.should.equal('');
+            });
         });
     });
 
