@@ -9,10 +9,15 @@ languages:
       key: 'zh'
     - name: '한국의'
       key: 'ko'
+    - name: 'Deutsch'
+      key: 'de'
     - name: 'Français'
       key: 'fr'
+    - name: 'Polski'
+      key: 'pl'
     - name: 'Italiano'
       key: 'it'
+
 port:         4478
 
 translations:
@@ -32,6 +37,16 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  de:
+    site_title:   'Ghost-Handbuch'
+    installation: 'Installation'
+    usage:        'Anwendung'
+    email:        'E-Mail'
+    themes:       'Themen'
+    help:         'Hilfe'
+    deploy:       'Einsetzen'
+    upgrading:    'Aktualisieren' 
+    troubleshooting: 'Problembehebung'
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
@@ -40,6 +55,14 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
+  pl:
+    site_title:   'Ghost Guide'
+    installation: 'Installation'
+    usage:        'Usage'
+    email:        'Email'
+    themes:       'Themes'
+    translations: 'Translations'
+    help:         'Help'
   it:
     site_title:   'Guida a Ghost'
     installation: 'Installazione'

@@ -1,5 +1,4 @@
 ---
-lang: example_translation
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
@@ -22,20 +21,51 @@ next_section: deploy
 
 ### Install and Run Ghost
 
+
+**If you are using Linux on your desktop follow these steps:**
+
 *   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
 *   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
-*   In a terminal window, change directory to the root of the extracted Ghost folder
-*   In the terminal type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin
 
-If you are using linux as a guest OS or through SSH and only have the terminal, then:
 
-*   Use your normal operating system to find the URL of the Ghost zip file (it changes with each version), save the url but change '/zip/' to '/archives/'
-*   In the terminal use `wget url-of-ghost.zip` to download Ghost
-*   Unzip the archive with `unzip -uo Ghost-#.#.#.zip -d ghost`, and then `cd ghost`
-*   Type `npm install --production` to install Ghost <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   Ghost will now be running on localhost
+**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
 
+*   Use the following command to download the latest release of Ghost:
+
+    ```
+    $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
+    ```
+
+*   Unzip the archive and change into the directory using the following:
+
+    ```
+    $ unzip -uo ghost.zip -d ghost
+    ```
+
+
+**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+
+*   Change into the directory you extracted Ghost to with the following command:
+
+    ```
+    $ cd /path/to/ghost
+    ```
+
+*   To install Ghost type:
+
+    ```
+    npm install --production
+    ```
+    <span class="note">note the two dashes</span>
+
+*   When npm is finished installing, type the following to start Ghost in development mode: 
+
+    ```
+    $ npm start
+    ```
+
+*   Ghost will now be running on **127.0.0.1:2368**<br />
+    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+
+*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
+*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin

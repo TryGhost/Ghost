@@ -88,194 +88,101 @@ You can see the [documentation for Supervisor](http://supervisord.org) for more 
 
 Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following content:
+*   Create the file /etc/init.d/ghost with the following command:
 
     ```
-    #! /bin/sh
-    ### BEGIN INIT INFO
-    # Provides:          ghost
-    # Required-Start:    $network $syslog
-    # Required-Stop:     $network $syslog
-    # Default-Start:     2 3 4 5
-    # Default-Stop:      0 1 6
-    # Short-Description: Ghost Blogging Platform
-    # Description:       Ghost: Just a blogging platform
-    ### END INIT INFO
+    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+      -o /etc/init.d/ghost
+    ```
 
-    # Do NOT "set -e"
+*   Open the file with `nano /etc/init.d/ghost` and check the following:
+*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
+*   Check if the `DAEMON` variable is the same as the output of `which node`
+*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
 
-    # PATH should only include /usr/* if it runs after the mountnfs.sh script
-    PATH=/sbin:/usr/sbin:/bin:/usr/bin
-    DESC="Ghost"
-    NAME=ghost
-    GHOST_ROOT=/var/www/ghost
-    GHOST_GROUP=ghost
-    GHOST_USER=ghost
-    DAEMON=/usr/bin/node
-    DAEMON_ARGS="$GHOST_ROOT/index.js"
-    PIDFILE=/var/opt/ghost/run/$NAME.pid
-    SCRIPTNAME=/etc/init.d/$NAME
-    export NODE_ENV=production
+    ```
+    $ sudo useradd -r ghost -U
+    ```
 
-    # Exit if the package is not installed
-    [ -x "$DAEMON" ] || exit 0
+*   Let's also make sure the Ghost user can access the installation:
 
-    # Read configuration variable file if it is present
-    [ -r /etc/default/$NAME ] && . /etc/default/$NAME
-
-    # Load the VERBOSE setting and other rcS variables
-    . /lib/init/vars.sh
-    # I like to know what is going on
-    VERBOSE = yes
-
-    # Define LSB log_* functions.
-    # Depend on lsb-base (>= 3.2-14) to ensure that this file is present
-    # and status_of_proc is working.
-    . /lib/lsb/init-functions
-
-    #
-    # Function that starts the daemon/service
-    #
-    do_start()
-    {
-        # Set up folder structure
-        mkdir -p /var/opt/ghost
-        mkdir -p /var/opt/ghost/run
-        chown -R ghost:ghost /var/opt/ghost
-        # Return
-        #   0 if daemon has been started
-        #   1 if daemon was already running
-        #   2 if daemon could not be started
-        start-stop-daemon --start --quiet \
-            --chuid $GHOST_USER:$GHOST_GROUP --chdir $GHOST_ROOT --background \
-            --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
-            || return 1
-        start-stop-daemon --start --quiet \
-            --chuid $GHOST_USER:$GHOST_GROUP --chdir $GHOST_ROOT --background \
-            --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS \
-            || return 2
-        # Add code here, if necessary, that waits for the process to be ready
-        # to handle requests from services started subsequently which depend
-        # on this one.  As a last resort, sleep for some time.
-    }
-
-    #
-    # Function that stops the daemon/service
-    #
-    do_stop()
-    {
-        # Return
-        #   0 if daemon has been stopped
-        #   1 if daemon was already stopped
-        #   2 if daemon could not be stopped
-        #   other if a failure occurred
-        start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 \
-            --pidfile $PIDFILE --name $NAME
-        RETVAL="$?"
-        [ "$RETVAL" = 2 ] && return 2
-        # Wait for children to finish too if this is a daemon that forks
-        # and if the daemon is only ever run from this initscript.
-        # If the above conditions are not satisfied then add some other code
-        # that waits for the process to drop all resources that could be
-        # needed by services started subsequently.  A last resort is to
-        # sleep for some time.
-        start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 \
-            --exec $DAEMON
-        [ "$?" = 2 ] && return 2
-        # Many daemons don't delete their pidfiles when they exit.
-        rm -f $PIDFILE
-        return "$RETVAL"
-    }
-
-    #
-    # Function that sends a SIGHUP to the daemon/service
-    #
-    do_reload() {
-        #
-        # If the daemon can reload its configuration without
-        # restarting (for example, when it is sent a SIGHUP),
-        # then implement that here.
-        #
-        start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE \
-            --name $NAME
-        return 0
-    }
-
-    case "$1" in
-    start)
-            [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-            do_start
-            case "$?" in
-                    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-                    2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-            esac
-            ;;
-    stop)
-            [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-            do_stop
-            case "$?" in
-                    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-                    2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-            esac
-            ;;
-    status)
-        status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-        ;;
-    #reload|force-reload)
-            #
-            # If do_reload() is not implemented then leave this commented out
-            # and leave 'force-reload' as an alias for 'restart'.
-            #
-            #log_daemon_msg "Reloading $DESC" "$NAME"
-            #do_reload
-            #log_end_msg $?
-            #;;
-    restart|force-reload)
-            #
-            # If the "reload" option is implemented then remove the
-            # 'force-reload' alias
-            #
-            log_daemon_msg "Restarting $DESC" "$NAME"
-            do_stop
-            case "$?" in
-            0|1)
-                    do_start
-                    do_start
-                    case "$?" in
-                            0) log_end_msg 0 ;;
-                            1) log_end_msg 1 ;; # Old process is still running
-                            *) log_end_msg 1 ;; # Failed to start
-                    esac
-                    ;;
-            *)
-                    # Failed to stop
-                    log_end_msg 1
-                    ;;
-            esac
-            ;;
-    *)
-            #echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
-            echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-            exit 3
-            ;;
-    esac
-
-    :
+    ```
+    $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
 *   Change the execution permission for the init script by typing
-        `chmod 755 /etc/init.d/ghost`
-*   Use the script:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
-*   To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: `update-rc.d ghost defaults` and `update-rc.d ghost enable`
+    ```
+    $ sudo chmod 755 /etc/init.d/ghost
+    ```
 
-Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!
+*   Now you can control Ghost with the following commands:
+
+    ```
+    $ sudo service ghost start
+    $ sudo service ghost stop
+    $ sudo service ghost restart
+    $ sudo service ghost status
+    ```
+
+*   To start Ghost on system start the newly created init script has to be registered for start up.
+    Type the following two commands in command line: 
+
+    ```
+    $ sudo update-rc.d ghost defaults
+    $ sudo update-rc.d ghost enable
+    ```
+
+*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+    ```
+    $ sudo adduser USERNAME ghost
+    ```
+
+*   If you now restart your server Ghost should already be running for you.
+
 
 ## Setting up Ghost with a domain name
 
-Documentation on using nginx as a reverse proxy on their way.
+If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
+In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
+It also assumes that Ghost is running in the background with one of the above mentioned ways.
 
+*   Install nginx
+
+    ```
+    $ sudo apt-get install nginx
+    ```
+    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+
+*   Configure your site
+
+    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
+    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        and paste the following
+
+        ```
+        server {
+            listen 80;
+            server_name example.com;
+
+            location / {
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   Host      $http_host;
+                proxy_pass         http://127.0.0.1:2368;
+            }
+        }
+
+        ```
+
+    *   Change `server_name` to your domain
+    *   Symlink your configuration in `sites-enabled`:
+
+    ```
+    $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
+    ```
+
+    *   Restart nginx
+
+    ```
+    $ sudo service nginx restart
+    ```
