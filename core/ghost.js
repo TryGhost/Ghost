@@ -11,6 +11,7 @@ var config        = require('./server/config'),
     models        = require('./server/models'),
     permissions   = require('./server/permissions'),
     uuid          = require('node-uuid'),
+    api           = require('./server/api'),
 
 // Variables
     Ghost,
@@ -27,39 +28,36 @@ Ghost = function () {
     if (!instance) {
         instance = this;
 
-        // Holds the persistent notifications
-        instance.notifications = [];
+        instance.globals = {};
 
         // Holds the dbhash (mainly used for cookie secret)
         instance.dbHash = undefined;
 
         _.extend(instance, {
             // there's no management here to be sure this has loaded
-            settings: function (key) {
-                if (key) {
-                    return instance.settingsCache[key].value;
-                }
-                return instance.settingsCache;
-            },
             dataProvider: models,
             blogGlobals:  function () {
-                var localPath = url.parse(config().url).path;
-
-                // Remove trailing slash
-                if (localPath !== '/') {
-                    localPath = localPath.replace(/\/$/, '');
-                }
-
                 /* this is a bit of a hack until we have a better way to combine settings and config
                  * this data is what becomes globally available to themes */
-                return {
-                    url: config().url.replace(/\/$/, ''),
-                    path: localPath,
-                    title: instance.settings('title'),
-                    description: instance.settings('description'),
-                    logo: instance.settings('logo'),
-                    cover: instance.settings('cover')
-                };
+                return instance.globals;
+            },
+            getGlobals: function () {
+                return when.all([
+                    api.settings.read('title'),
+                    api.settings.read('description'),
+                    api.settings.read('logo'),
+                    api.settings.read('cover')
+                ]).then(function (globals) {
+
+                    instance.globals.path = config.paths().path;
+
+                    instance.globals.url = config().url;
+                    instance.globals.title = globals[0].value;
+                    instance.globals.description = globals[1].value;
+                    instance.globals.logo = globals[2] ? globals[2].value : '';
+                    instance.globals.cover = globals[3] ? globals[3].value : '';
+                    return;
+                });
             }
         });
     }
@@ -82,13 +80,12 @@ Ghost.prototype.init = function () {
             'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
         ];
 
-        self.notifications.push({
+        return api.notifications.add({
             type: 'info',
             message: firstRunMessage.join(' '),
             status: 'persistent',
             id: 'ghost-first-run'
         });
-        return when.resolve();
     }
 
     function initDbHashAndFirstRun() {
@@ -112,16 +109,17 @@ Ghost.prototype.init = function () {
         // Initialise the models
         self.dataProvider.init(),
         // Calculate paths
-        config.paths.updatePaths()
+        config.paths.updatePaths(config().url)
     ).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
     }).then(function () {
         // Initialize the settings cache
-        return self.updateSettingsCache();
+        return api.init();
     }).then(function () {
-        // Update path to activeTheme
-        config.paths.setActiveTheme(self);
+
+        return self.getGlobals();
+    }).then(function () {
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
@@ -129,62 +127,6 @@ Ghost.prototype.init = function () {
             permissions.init()
         );
     }).otherwise(errors.logAndThrowError);
-};
-
-// Maintain the internal cache of the settings object
-Ghost.prototype.updateSettingsCache = function (settings) {
-    var self = this;
-
-    settings = settings || {};
-
-    if (!_.isEmpty(settings)) {
-        _.map(settings, function (setting, key) {
-            self.settingsCache[key].value = setting.value;
-        });
-    } else {
-        // TODO: this should use api.browse
-        return when(models.Settings.findAll()).then(function (result) {
-            return when(self.readSettingsResult(result)).then(function (s) {
-                self.settingsCache = s;
-            });
-        });
-    }
-};
-
-Ghost.prototype.readSettingsResult = function (result) {
-    var settings = {};
-    return when(_.map(result.models, function (member) {
-        if (!settings.hasOwnProperty(member.attributes.key)) {
-            var val = {};
-            val.value = member.attributes.value;
-            val.type = member.attributes.type;
-            settings[member.attributes.key] = val;
-        }
-    })).then(function () {
-        return when(config.paths().availableThemes).then(function (themes) {
-            var themeKeys = Object.keys(themes),
-                res = [],
-                i,
-                item;
-            for (i = 0; i < themeKeys.length; i += 1) {
-                //do not include hidden files
-                if (themeKeys[i].indexOf('.') !== 0) {
-                    item = {};
-                    item.name = themeKeys[i];
-                    //data about files currently not used
-                    //item.details = themes[themeKeys[i]];
-                    if (themeKeys[i] === settings.activeTheme.value) {
-                        item.active = true;
-                    }
-                    res.push(item);
-                }
-            }
-            settings.availableThemes = {};
-            settings.availableThemes.value = res;
-            settings.availableThemes.type = 'theme';
-            return settings;
-        });
-    });
 };
 
 module.exports = Ghost;

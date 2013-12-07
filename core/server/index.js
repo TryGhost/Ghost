@@ -46,7 +46,7 @@ function setup(server) {
             // Initialise mail after first run,
             // passing in config module to prevent
             // circular dependencies.
-            mailer.init(ghost, config),
+            mailer.init(),
             helpers.loadCoreHelpers(ghost, config)
         );
     }).then(function () {

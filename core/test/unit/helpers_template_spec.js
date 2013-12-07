@@ -1,19 +1,19 @@
 /*globals describe, beforeEach, it*/
 var testUtils = require('../utils'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
-    _ = require('underscore'),
-    path = require('path'),
+    should    = require('should'),
+    sinon     = require('sinon'),
+    when      = require('when'),
+    _         = require('underscore'),
+    path      = require('path'),
 
     // Stuff we are testing
     config   = require('../../server/config'),
+    api      = require('../../server/api'),
     template = require('../../server/helpers/template');
 
 describe('Helpers Template', function () {
 
     var testTemplatePath = 'core/test/utils/fixtures/',
-        themeTemplatePath = 'core/test/utils/fixtures/theme',
         sandbox;
 
     beforeEach(function () {
@@ -48,26 +48,27 @@ describe('Helpers Template', function () {
         pathsStub = sandbox.stub(config, "paths", function () {
             return {
                 // Forcing the theme path to be the same
-                activeTheme: path.join(process.cwd(), testTemplatePath),
+                themePath: path.join(process.cwd(), testTemplatePath),
                 helperTemplates: path.join(process.cwd(), testTemplatePath)
             };
+        });
+        apiStub = sandbox.stub(api.settings , 'read', function () {
+            return when({value: 'casper'});
         });
 
         template.loadTemplate('test').then(function (templateFn) {
             compileSpy.restore();
             pathsStub.restore();
-
             // test that compileTemplate was called with the expected path
             compileSpy.calledOnce.should.equal(true);
             compileSpy.calledWith(path.join(process.cwd(), testTemplatePath, 'test.hbs')).should.equal(true);
-
             should.exist(templateFn);
             _.isFunction(templateFn).should.equal(true);
 
             templateFn().should.equal('<h1>HelloWorld</h1>');
 
             done();
-        }).then(null, done);
+        }).otherwise(done);
     });
 
     it("loads templates from themes first", function (done) {
@@ -79,15 +80,19 @@ describe('Helpers Template', function () {
         // In order for the test to work, need to replace the path to the template
         pathsStub = sandbox.stub(config, "paths", function () {
             return {
-                activeTheme: path.join(process.cwd(), themeTemplatePath),
+                // Forcing the theme path to be the same
+                themePath: path.join(process.cwd(), testTemplatePath),
                 helperTemplates: path.join(process.cwd(), testTemplatePath)
             };
+        });
+        apiStub = sandbox.stub(api.settings , 'read', function () {
+            return when({value: 'theme'});
         });
 
         template.loadTemplate('test').then(function (templateFn) {
             // test that compileTemplate was called with the expected path
             compileSpy.calledOnce.should.equal(true);
-            compileSpy.calledWith(path.join(process.cwd(), themeTemplatePath, 'partials', 'test.hbs')).should.equal(true);
+            compileSpy.calledWith(path.join(process.cwd(), testTemplatePath, 'theme', 'partials', 'test.hbs')).should.equal(true);
 
             should.exist(templateFn);
             _.isFunction(templateFn).should.equal(true);

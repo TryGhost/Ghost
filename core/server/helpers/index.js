@@ -13,6 +13,7 @@ var _               = require('underscore'),
     version         = packageInfo.version,
     scriptTemplate  = _.template("<script src='<%= source %>?v=<%= version %>'></script>"),
     isProduction    = process.env.NODE_ENV === 'production',
+    api             = require('../api'),
     coreHelpers     = {},
     registerHelpers;
 
@@ -95,25 +96,23 @@ coreHelpers.url = function (options) {
         },
         blog = coreHelpers.ghost.blogGlobals(),
         isAbsolute = options && options.hash.absolute;
-
-    if (isAbsolute) {
-        output += blog.url;
-    }
-
-    if (blog.path && blog.path !== '/') {
-        output += blog.path;
-    }
-
-    if (models.isPost(this)) {
-        output += coreHelpers.ghost.settings('permalinks');
-        output = output.replace(/(:[a-z]+)/g, function (match) {
-            if (_.has(tags, match.substr(1))) {
-                return tags[match.substr(1)]();
-            }
-        });
-    }
-
-    return output;
+    return api.settings.read('permalinks').then(function (permalinks) {
+        if (isAbsolute) {
+            output += blog.url;
+        }
+        if (blog.path && blog.path !== '/') {
+            output += blog.path;
+        }
+        if (models.isPost(self)) {
+            output += permalinks.value;
+            output = output.replace(/(:[a-z]+)/g, function (match) {
+                if (_.has(tags, match.substr(1))) {
+                    return tags[match.substr(1)]();
+                }
+            });
+        }
+        return output;
+    });
 };
 
 // ### Asset helper
@@ -429,14 +428,19 @@ coreHelpers.meta_description = function (options) {
  */
 coreHelpers.e = function (key, defaultString, options) {
     var output;
-
-    if (coreHelpers.ghost.settings('defaultLang') === 'en' && _.isEmpty(options.hash) && !coreHelpers.ghost.settings('forceI18n')) {
-        output = defaultString;
-    } else {
-        output = polyglot().t(key, options.hash);
-    }
-
-    return output;
+    when.all([
+        api.settings.read('defaultLang'),
+        api.settings.read('forceI18n')
+    ]).then(function (values) {
+        if (values[0].value === 'en'
+                && _.isEmpty(options.hash)
+                && _.isEmpty(values[1].value)) {
+            output = defaultString;
+        } else {
+            output = polyglot().t(key, options.hash);
+        }
+        return output;
+    });
 };
 
 coreHelpers.json = function (object, options) {
@@ -605,8 +609,6 @@ registerHelpers = function (ghost, config) {
 
     registerThemeHelper('date', coreHelpers.date);
 
-    registerThemeHelper('e', coreHelpers.e);
-
     registerThemeHelper('encode', coreHelpers.encode);
 
     registerThemeHelper('excerpt', coreHelpers.excerpt);
@@ -619,17 +621,15 @@ registerHelpers = function (ghost, config) {
 
     registerThemeHelper('has_tag', coreHelpers.has_tag);
 
-    registerThemeHelper('helperMissing', coreHelpers.helperMissing);
-
     registerThemeHelper('json', coreHelpers.json);
 
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 
     registerThemeHelper('tags', coreHelpers.tags);
 
-    registerThemeHelper('url', coreHelpers.url);
-
     registerAsyncThemeHelper('body_class', coreHelpers.body_class);
+
+    registerAsyncThemeHelper('e', coreHelpers.e);
 
     registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
 
@@ -640,6 +640,8 @@ registerHelpers = function (ghost, config) {
     registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
 
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
+
+    registerAsyncThemeHelper('url', coreHelpers.url);
 
     paginationHelper = template.loadTemplate('pagination').then(function (templateFn) {
         coreHelpers.paginationTemplate = templateFn;

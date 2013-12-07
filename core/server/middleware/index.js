@@ -5,6 +5,7 @@
 var middleware = require('./middleware'),
     express     = require('express'),
     _           = require('underscore'),
+    when        = require('when'),
     slashes     = require('connect-slashes'),
     errors      = require('../errorHandling'),
     api         = require('../api'),
@@ -33,24 +34,32 @@ function ghostLocals(req, res, next) {
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
-        api.users.read({id: req.session.user}).then(function (currentUser) {
+        when.all([
+            api.users.read({id: req.session.user}),
+            api.notifications.browse()
+        ]).then(function (values) {
+            var currentUser = values[0],
+                notifications = values[1];
+
             _.extend(res.locals,  {
                 currentUser: {
                     name: currentUser.name,
                     email: currentUser.email,
                     image: currentUser.image
                 },
-                messages: ghost.notifications
+                messages: notifications
             });
             next();
         }).otherwise(function () {
             // Only show passive notifications
-            _.extend(res.locals, {
-                messages: _.reject(ghost.notifications, function (notification) {
-                    return notification.status !== 'passive';
-                })
+            api.notifications.browse().then(function (notifications) {
+                _.extend(res.locals, {
+                    messages: _.reject(notifications, function (notification) {
+                        return notification.status !== 'passive';
+                    })
+                });
+                next();
             });
-            next();
         });
     } else {
         next();
@@ -66,14 +75,15 @@ function initViews(req, res, next) {
     if (!res.isAdmin) {
         // self.globals is a hack til we have a better way of getting combined settings & config
         hbsOptions = {templateOptions: {data: {blog: ghost.blogGlobals()}}};
+        api.settings.read('activeTheme').then(function (activeTheme) {
+            if (config.paths().availableThemes[activeTheme.value].hasOwnProperty('partials')) {
+                // Check that the theme has a partials directory before trying to use it
+                hbsOptions.partialsDir = path.join(config.paths().themePath, activeTheme.value, 'partials');
+            }
 
-        if (config.paths().availableThemes[ghost.settings('activeTheme')].hasOwnProperty('partials')) {
-            // Check that the theme has a partials directory before trying to use it
-            hbsOptions.partialsDir = path.join(config.paths().activeTheme, 'partials');
-        }
-
-        ghost.server.engine('hbs', hbs.express3(hbsOptions));
-        ghost.server.set('views', config.paths().activeTheme);
+            ghost.server.engine('hbs', hbs.express3(hbsOptions));
+            ghost.server.set('views', path.join(config.paths().themePath, activeTheme.value));
+        });
     } else {
         ghost.server.engine('hbs', hbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
         ghost.server.set('views', config.paths().adminViews);
@@ -84,25 +94,22 @@ function initViews(req, res, next) {
 
 // ### Activate Theme
 // Helper for manageAdminAndTheme
-function activateTheme() {
+function activateTheme(activeTheme) {
     var stackLocation = _.indexOf(ghost.server.stack, _.find(ghost.server.stack, function (stackItem) {
         return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
     }));
 
-    // Tell the paths to update
-    config.paths.setActiveTheme(ghost);
-
     // clear the view cache
     ghost.server.cache = {};
     ghost.server.disable(ghost.server.get('activeTheme'));
-    ghost.server.set('activeTheme', ghost.settings('activeTheme'));
+    ghost.server.set('activeTheme', activeTheme);
     ghost.server.enable(ghost.server.get('activeTheme'));
     if (stackLocation) {
         ghost.server.stack[stackLocation].handle = middleware.whenEnabled(ghost.server.get('activeTheme'), middleware.staticTheme());
     }
 
     // Update user error template
-    errors.updateActiveTheme(ghost.settings('activeTheme'));
+    errors.updateActiveTheme(activeTheme);
 }
 
  // ### ManageAdminAndTheme Middleware
@@ -123,26 +130,26 @@ function manageAdminAndTheme(req, res, next) {
         ghost.server.enable(ghost.server.get('activeTheme'));
         ghost.server.disable('admin');
     }
-
-    // Check if the theme changed
-    if (ghost.settings('activeTheme') !== ghost.server.get('activeTheme')) {
-        // Change theme
-        if (!config.paths().availableThemes.hasOwnProperty(ghost.settings('activeTheme'))) {
-            if (!res.isAdmin) {
-                // Throw an error if the theme is not available, but not on the admin UI
-                errors.logAndThrowError('The currently active theme ' + ghost.settings('activeTheme') + ' is missing.');
+    api.settings.read('activeTheme').then(function (activeTheme) {
+        // Check if the theme changed
+        if (activeTheme.value !== ghost.server.get('activeTheme')) {
+            // Change theme
+            if (!config.paths().availableThemes.hasOwnProperty(activeTheme.value)) {
+                if (!res.isAdmin) {
+                    // Throw an error if the theme is not available, but not on the admin UI
+                    errors.logAndThrowError('The currently active theme ' + activeTheme.value + ' is missing.');
+                }
+            } else {
+                activateTheme(activeTheme.value);
             }
-        } else {
-            activateTheme();
         }
-    }
-
-    next();
+        next();
+    });
 }
 
 module.exports = function (server) {
     var oneYear = 31536000000,
-        root = ghost.blogGlobals().path === '/' ? '' : ghost.blogGlobals().path,
+        root = config.paths().webroot,
         corePath = path.join(config.paths().appRoot, 'core');
 
     // Logging configuration

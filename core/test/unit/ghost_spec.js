@@ -44,22 +44,4 @@ describe("Ghost API", function () {
 
         should.strictEqual(ghost, ghost2);
     });
-
-    it("uses init() to initialize", function (done) {
-        var dataProviderInitMock = sandbox.stub(ghost.dataProvider, "init", function () {
-            return when.resolve();
-        });
-
-        should.not.exist(ghost.settings());
-
-        ghost.init().then(function () {
-
-            should.exist(ghost.settings());
-
-            dataProviderInitMock.called.should.equal(true);
-
-            done();
-        }, done);
-
-    });
 });

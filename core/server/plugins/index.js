@@ -2,19 +2,14 @@
 var _           = require('underscore'),
     when        = require('when'),
     errors      = require('../errorHandling'),
-    ghostApi,
+    api         = require('../api'),
     loader      = require('./loader'),
-    availablePlugins;
+    // Holds the available plugins
+    availablePlugins = {};
 
-// Holds the available plugins
-availablePlugins = {};
 
 function getInstalledPlugins() {
-    if (!ghostApi) {
-        ghostApi = require('../api');
-    }
-
-    return ghostApi.settings.read('installedPlugins').then(function (installed) {
+    return api.settings.read('installedPlugins').then(function (installed) {
         installed.value = installed.value || '[]';
 
         try {
@@ -31,7 +26,7 @@ function saveInstalledPlugins(installedPlugins) {
     return getInstalledPlugins().then(function (currentInstalledPlugins) {
         var updatedPluginsInstalled = _.uniq(installedPlugins.concat(currentInstalledPlugins));
 
-        return ghostApi.settings.edit('installedPlugins', updatedPluginsInstalled);
+        return api.settings.edit('installedPlugins', updatedPluginsInstalled);
     });
 }
 
@@ -41,7 +36,9 @@ module.exports = {
 
         try {
             // We have to parse the value because it's a string
-            pluginsToLoad = JSON.parse(ghost.settings('activePlugins')) || [];
+            api.settings.read('activePlugins').then(function (aPlugins) {
+                pluginsToLoad = JSON.parse(aPlugins.value) || [];
+            });
         } catch (e) {
             errors.logError(
                 'Failed to parse activePlugins setting value: ' + e.message,
