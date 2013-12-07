@@ -14,10 +14,11 @@ prev_section: writing
 
 ## FAQ <a id="faq"></a>
 
-### (Quando) Ghost supporterà la caratteristica X?
+### (Quando) sarà supportata da Ghost la funzionalità X?
 
-Per favore, guarda [Caratteristiche pianificate](https://github.com/TryGhost/Ghost/wiki/Planned-Features) ed la lista [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) oppure su [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+Ti invitiamo a consultare l'elenco di [Funzionalità Pianificate](https://github.com/TryGhost/Ghost/wiki/Planned-Features) e la [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) su [Github wiki](https://github.com/TryGhost/Ghost/wiki).
 
-### Come posso inserire le immagini negli articoli?
+### Come si inseriscono le immagini in un post?
 
-Per favore, guarda[La guida al Markdown](/usage/writing/#markdown) per una spiegazione completa, di come funziona l'editor di Ghost per caricare immagini.
+La [Guida a Markdown](/usage/writing/#markdown) contiene una spiegazione esaustiva su come caricare le immagini tramite l'editor di Ghost.
+

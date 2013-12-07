@@ -20,7 +20,7 @@ next_section: linux
 *   Clicca sul file scaricato per aprire il programma di installazione; così installi sia node.js che npm.
 *   Prosegui con le istruzioni mostrate dal programma di installazione, fino a quando sullo schermo non comparirà un messaggio che conferma l'installazione per Node.js.
 
-Se hai problemi in questa fase, guarda tutto [questo video](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows"), ti può aiutare.
+Se hai problemi in questa fase, guarda tutto [questo video](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Installa node su Windows"), ti può aiutare.
 
 ### Scarica ed estrai Ghost
 
@@ -29,7 +29,7 @@ Se hai problemi in questa fase, guarda tutto [questo video](https://s3-eu-west-1
 *   Clicca sulla freccia 'next' (avanti) per scaricare il file più recente, e scegli 'mostra nella cartella'.
 *   Quando si apre la cartella, clicca con il pulsante destro del mouse sul file zip scaricato e scegli 'Estrai tutto'.
 
-Se hai problemi, guarda il video per l'intero [processo passo dopo passo](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+Se hai problemi, guarda il video per l'intero [processo passo dopo passo](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Installare Ghost su Windows - Parte 1").
 
 ### Installa ed Esegui Ghost
 
@@ -41,4 +41,4 @@ Se hai problemi, guarda il video per l'intero [processo passo dopo passo](https:
 *   Nella barra dell'url, digita <code class="path">127.0.0.1:2368/ghost</code> e crea il tuo utente amministratore per loggarti e gestire la tua installazione di Ghost, in modalità sviluppo.
 *   Vedi la [documentazione di riferimento](/usage) per altre istruzioni successive
 
-{<1>}![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Installare Ghost su Windows - Parte 2")
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Installare Ghost su Windows - Parte 2")

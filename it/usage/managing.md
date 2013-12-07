@@ -34,7 +34,7 @@ Per ri-impostare l'articolo come 'Bozza';
 2.  Seleziona "Non pubblicare".
 3.  Clicca sul pulsante "Non pubblicare" per confermare.
 
-Per cambiare "l'url" associato all'articolo pubblicato o la "Data di Pubblicazione" di un To change the "Slug" or "Publish date";
+Per cambiare "l'url" associato all'articolo pubblicato o la "Data di Pubblicazione";
 
 1. Clicca sull'icona'Impostazioni'.
 2. Aggiorna le informazioni d'interesse (queste saranno salvate automaticamente appena clicchi fuori dalle 'Impostazioni').
