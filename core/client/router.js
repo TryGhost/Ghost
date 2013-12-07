@@ -6,15 +6,15 @@
 
         routes: {
             ''                 : 'blog',
-            'content/'         : 'blog',
-            'settings(/:pane)/' : 'settings',
-            'editor(/:id)/'     : 'editor',
-            'debug/'           : 'debug',
-            'register/'        : 'register',
-            'signup/'          : 'signup',
-            'signin/'          : 'login',
-            'forgotten/'       : 'forgotten',
-            'reset/:token/'     : 'reset'
+            'content(/)'         : 'blog',
+            'settings(/:pane)(/)' : 'settings',
+            'editor(/:id)(/)'     : 'editor',
+            'debug(/)'           : 'debug',
+            'register(/)'        : 'register',
+            'signup(/)'          : 'signup',
+            'signin(/)'          : 'login',
+            'forgotten(/)'       : 'forgotten',
+            'reset/:token(/)'     : 'reset'
         },
 
         signup: function () {
