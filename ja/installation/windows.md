@@ -1,10 +1,10 @@
 ---
 lang: ja
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Ghostをインストールするには - Ghost日本語ガイド
+meta_description: ブログプラットフォーム「Ghost」をローカルやリモート環境でセットアップするための手順です。
+heading: Ghostのインストール方法
+subheading: Ghostで新しいブログを作成するための手順です。
 permalink: /ja/installation/windows/
 chapter: installation
 section: windows
@@ -12,34 +12,34 @@ prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# WindowsにGhostをインストールする方法 <a id="install-windows"></a>
 
-### Install Node
+### Node.jsのインストール手順
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   [http://nodejs.org](http://nodejs.org)に行き、「Install」をクリック。.msiファイルがダウンロードされます。
+*   ダウンロードされたファイルをクリックすると、インストーラーが開きます。nodeとnpmをインストールするためのものです。
+*   Node.jsがインストールされたと表示されるまで、インストーラーの手順に従ってください。
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+ご不明な点がございましたら、[こちらの動画をご覧ください](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows")。
 
-### Download & Extract Ghost
+### Ghostのダウンロード手順
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   [http://ghost.org](http://ghost.org)にログイン(もしくは登録)し、「Download Ghost Source Code」と書かれた青いボタンをクリックします。
+*   ダウンロードボタンをクリックすると、最新版のzipファイルがダウンロードされます。
+*   ダウンロードされたzipファイルを含むフォルダーを表示します。
+*   zipファイルを右クリックし、「すべて展開」を選択します。
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+ご不明な点がございましたら、[こちらの動画をご覧ください](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1")。
 
-### Install and Run Ghost
+### Ghostのインストール手順と起動手順
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   スタートメニューから'Node.js'を探し、'Node.js Command Prompt'を開いてください。
+*   コマンドプロンプトを開いたらまず、ディレクトリをGhostをダウンロードしたフォルダーに変更する必要があります。`cd Downloads/ghost-#.#.#`と入力してください。(#をフォルダー名に合うようにあらかじめ変更してください)。
+*   次に、コマンドプロンプトに`npm install --production`と入力します。 <span class="note">ダッシュ記号が二つあることに注意してください。</span>
+*   npmがインストールを終了したら、`npm start`と入力すれば、Ghostが開発用モードで起動します。
+*   ブラウザで<code class="path">127.0.0.1:2368</code>を表示すれば、たった今作成されたGhostブログが表示されます。
+*   最後にブラウザで<code class="path">127.0.0.1:2368/ghost</code>を表示します。管理者アカウントを作成し、Ghostの管理画面に進めば完了です。
+*   [使い方ガイド](/usage)にお進みください。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
 
