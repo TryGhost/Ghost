@@ -31,7 +31,7 @@ function saveInstalledPlugins(installedPlugins) {
 }
 
 module.exports = {
-    init: function (ghost) {
+    init: function () {
         var pluginsToLoad;
 
         try {
@@ -60,14 +60,14 @@ module.exports = {
                 loadPromises = _.map(pluginsToLoad, function (plugin) {
                     // If already installed, just activate the plugin
                     if (_.contains(installedPlugins, plugin)) {
-                        return loader.activatePluginByName(plugin, ghost).then(function (loadedPlugin) {
+                        return loader.activatePluginByName(plugin).then(function (loadedPlugin) {
                             return recordLoadedPlugin(plugin, loadedPlugin);
                         });
                     }
 
                     // Install, then activate the plugin
-                    return loader.installPluginByName(plugin, ghost).then(function () {
-                        return loader.activatePluginByName(plugin, ghost);
+                    return loader.installPluginByName(plugin).then(function () {
+                        return loader.activatePluginByName(plugin);
                     }).then(function (loadedPlugin) {
                         return recordLoadedPlugin(plugin, loadedPlugin);
                     });

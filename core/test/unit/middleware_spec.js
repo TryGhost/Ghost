@@ -5,14 +5,13 @@ var assert          = require('assert'),
     when            = require('when'),
     _               = require('underscore'),
     express         = require('express'),
-    Ghost           = require('../../ghost'),
     api             = require('../../server/api');
     middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {
 
     describe('auth', function () {
-        var req, res, ghost = new Ghost();
+        var req, res;
 
         beforeEach(function (done) {
             req = {
@@ -199,11 +198,11 @@ describe('Middleware', function () {
     });
 
     describe('whenEnabled', function () {
-        var cbFn, ghost = new Ghost();
+        var cbFn, server;
 
         beforeEach(function () {
             cbFn = sinon.spy();
-            ghost.server = {
+            server = {
                 enabled: function (setting) {
                     if (setting === 'enabled') {
                         return true;
@@ -212,6 +211,7 @@ describe('Middleware', function () {
                     }
                 }
             };
+            middleware.cacheServer(server);
         });
 
         it('should call function if setting is enabled', function (done) {

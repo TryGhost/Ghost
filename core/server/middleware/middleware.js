@@ -4,16 +4,19 @@
 
 var _           = require('underscore'),
     express     = require('express'),
-    Ghost       = require('../../ghost'),
     config      = require('../config'),
     path        = require('path'),
     api         = require('../api'),
-    ghost       = new Ghost();
+    expressServer;
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
         ext = path.extname(file);
     return _.contains(blackListedFileTypes, ext);
+}
+
+function cacheServer(server) {
+    expressServer = server;
 }
 
 var middleware = {
@@ -102,7 +105,8 @@ var middleware = {
     // From https://github.com/senchalabs/connect/issues/676#issuecomment-9569658
     whenEnabled: function (setting, fn) {
         return function settingEnabled(req, res, next) {
-            if (ghost.server.enabled(setting)) {
+            // Set from server/middleware/index.js for now
+            if (expressServer.enabled(setting)) {
                 fn(req, res, next);
             } else {
                 next();
@@ -139,3 +143,4 @@ var middleware = {
 };
 
 module.exports = middleware;
+module.exports.cacheServer = cacheServer;

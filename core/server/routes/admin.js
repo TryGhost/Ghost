@@ -1,24 +1,7 @@
 var admin       = require('../controllers/admin'),
     api         = require('../api'),
     middleware  = require('../middleware').middleware,
-    Ghost       = require('../../ghost'),
-    url         = require('url'),
-
-    ghost = new Ghost();
-
-// Redirect to signup if no users are currently created
-function redirectToSignup(req, res, next) {
-    var root = ghost.server.get('ghost root').replace(/\/$/, '');
-    /*jslint unparam:true*/
-    api.users.browse().then(function (users) {
-        if (users.length === 0) {
-            return res.redirect(root + '/ghost/signup/');
-        }
-        next();
-    }).otherwise(function (err) {
-        return next(new Error(err));
-    });
-}
+    url         = require('url');
 
 module.exports = function (server) {
     var root = server.get('ghost root').replace(/\/$/, '');
@@ -46,7 +29,7 @@ module.exports = function (server) {
     });
 
     server.get('/ghost/signout/', admin.logout);
-    server.get('/ghost/signin/', redirectToSignup, middleware.redirectToDashboard, admin.login);
+    server.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.login);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
     server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
     server.post('/ghost/forgotten/', admin.generateResetToken);
@@ -73,5 +56,5 @@ module.exports = function (server) {
         /*jslint unparam:true*/
         res.redirect(root + '/ghost/');
     });
-    server.get('/ghost/', redirectToSignup, middleware.auth, admin.index);
+    server.get('/ghost/', middleware.redirectToSignup, middleware.auth, admin.index);
 };

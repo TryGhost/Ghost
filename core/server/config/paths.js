@@ -1,4 +1,5 @@
-
+// Contains all path information to be used throughout
+// the codebase.
 
 var path              = require('path'),
     when              = require('when'),
