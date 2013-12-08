@@ -70,6 +70,9 @@ translations:
     email:        'メール設定'
     themes:       'テーマ'
     help:         'ヘルプ'
+    deploy:       'デプロイ'
+    upgrading:    'アップグレード'
+    troubleshooting: 'トラブルシューティング'
 
 # If running locally, simply comment out the line below to make all urls relative
 
