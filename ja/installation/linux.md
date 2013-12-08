@@ -1,9 +1,10 @@
 ---
+lang: ja
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Ghostをインストールするには - Ghost日本語ガイド
+meta_description: ブログプラットフォーム「Ghost」をローカルやリモート環境でセットアップするための手順です。
+heading: Ghostのインストール方法
+subheading: Ghostで新しいブログを作成するための手順です。
 permalink: /ja/installation/linux/
 chapter: installation
 section: linux
@@ -12,60 +13,60 @@ next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# LinuxにGhostをインストールする方法 <a id="install-linux"></a>
 
-### Install Node
+### Node.jsのインストール手順
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   [http://nodejs.org](http://nodejs.org)から`.tar.gz`アーカイブをダウンロードするか、[パッケージマネージャからインストールする手順](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)を参照ください。
+*   インストールが完了したら、`node -v`、そして`npm -v`とターミナルで入力し、nodeとnpmがインストールされている事を確認ください。
 
-### Install and Run Ghost
-
-
-**If you are using Linux on your desktop follow these steps:**
-
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+### Ghostのインストール手順と起動手順
 
 
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
+**Linuxをあなたのデスクトップで利用しているのなら、次の手順を踏んでください:**
 
-*   Use the following command to download the latest release of Ghost:
+*   [http://ghost.org](http://ghost.org)にログイン(もしくは登録)し、「Download Ghost Source Code」と書かれた青いボタンをクリックします。
+*   ダウンロードボタンをクリックすると、最新版のzipファイルがダウンロードされますので、中身をGhostを起動したいディレクトリに移動させます。
+
+
+**LinuxをゲストOSとして利用しているか、SSH上で利用している場合、次の手順を踏んでください:**
+
+*   次のコマンドを入力して、Ghostの最新版をダウンロードします:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   アーカイブを展開し、展開されたディレクトリに移動します:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+**ファイルを展開したら、次の手順を踏んでください。まだターミナルを開いていなければ、開いてください:**
 
-*   Change into the directory you extracted Ghost to with the following command:
+*   Ghostのディレクトリに移動していなければ、次のコマンドで移動します:
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   次に、Ghostをインストールします:
 
     ```
     npm install --production
     ```
-    <span class="note">note the two dashes</span>
+    <span class="note">ダッシュ記号が二つあることに注意してください。</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode:
+*   npmがインストールを終了したら、次のコマンドを入力すればGhostが開発用モードで起動します:
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   Ghostが**127.0.0.1:2368**で開始されます。<br />
+    <span class="note">アドレスとポート番号は**config.js**で変更できます</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   ブラウザで<code class="path">127.0.0.1:2368</code>を表示すれば、たった今作成されたGhostブログが表示されます。
+*   最後にブラウザで<code class="path">127.0.0.1:2368/ghost</code>を表示します。管理者アカウントを作成し、Ghostの管理画面に進めば完了です。
