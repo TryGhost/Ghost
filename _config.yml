@@ -69,7 +69,6 @@ translations:
     usage:        '使い方'
     email:        'メール設定'
     themes:       'テーマ'
-    translations: '翻訳者の方へ'
     help:         'ヘルプ'
 
 # If running locally, simply comment out the line below to make all urls relative
