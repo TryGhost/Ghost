@@ -30,7 +30,7 @@ prev_section: upgrading
     <dd>
         <p>SQLite3パッケージは多くのプラットフォームで既にバイナリがインストールされています。しかし、もしバイナリが含まれていないマイナーなLinuxか他のUnix系OSをご使用でしたら、SQLite3が404エラーを吐き出す可能性があります。</p>
         <p>これはSQLite3を強制的にコンパイルすれば解決します。pythonとgccが必要です。<code>npm install sqlite3 --build-from-source</code>と入力してみてください</p>
-        <p>もし上記が失敗したら、pythonかgccがインストールされていないのかもしれません。Linuxでしたら、<code>sudo npm install -g node-gyp</code>、<code>sudo apt-get install build-essential</code>、<code>sudo apt-get install python-software-properties python g++ make</code>と入力してから再度コンパイルしてみてください。</p>
+        <p>もし上記が失敗したら、pythonかgccがインストールされていないのかもしれません。Linuxでしたら、<code>sudo npm install -g node-gyp</code>、 <code>sudo apt-get install build-essential</code>、 <code>sudo apt-get install python-software-properties python g++ make</code>と入力してから再度コンパイルしてみてください。</p>
         <p>バイナリのビルドについては、こちらのリンクが参考になります: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
         <p>バイナリのビルドが成功したら、<a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">こちらの手順</a>に従ってバイナリをnode-sqliteプロジェクトに追加してくれれば、次のユーザーの助けになります。</p>
     </dd>
