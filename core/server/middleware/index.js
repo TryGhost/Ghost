@@ -5,6 +5,7 @@
 var middleware = require('./middleware'),
     express     = require('express'),
     _           = require('underscore'),
+    url         = require('url'),
     when        = require('when'),
     slashes     = require('connect-slashes'),
     errors      = require('../errorHandling'),
@@ -161,6 +162,33 @@ function redirectToSignup(req, res, next) {
     });
 }
 
+// checkSSL helper
+function redirectSSL(req, res, next) {
+    // Check if X-Forarded-Proto headers are sent, if they are check for https. If they are not assume true to avoid infinite redirect loop.
+    // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
+    var httpsHeader = req.header('X-Forwarded-Proto') !== 'undefined' ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
+    if (!req.secure && !httpsHeader) {
+        return res.redirect(301, url.format({
+            protocol: 'https:',
+            hostname: url.parse(config().url).hostname,
+            pathname: req.path,
+            query: req.query
+        }));
+    }
+    next();
+}
+
+// Check to see if we should 
+function checkSSL(req, res, next) {
+    var forceSSL = url.parse(config().url).protocol === 'https:' ? true : false,
+        forceAdminSSL = (res.isAdmin && config().forceAdminSSL);
+
+    if (forceSSL || forceAdminSSL) {
+        return redirectSSL(req, res, next);
+    }
+    next();
+}
+
 module.exports = function (server, dbHash) {
     var oneYear = 31536000000,
         root = config.paths().webroot,
@@ -193,6 +221,9 @@ module.exports = function (server, dbHash) {
 
     // First determine whether we're serving admin or theme content
     expressServer.use(manageAdminAndTheme);
+
+    // Force SSL
+    server.use(checkSSL);
 
     // Admin only config
     expressServer.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
