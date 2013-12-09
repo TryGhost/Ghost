@@ -8,6 +8,7 @@ var dataExport    = require('../data/export'),
     _             = require('underscore'),
     schema        = require('../data/schema'),
     config        = require('../config'),
+    debugPath     = config.paths().webroot + '/ghost/debug/',
 
     db;
 
@@ -34,7 +35,7 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
                 return api.notifications.add(notification).then(function () {
-                    res.redirect(config.paths().webroot + '/ghost/debug/');
+                    res.redirect(debugPath);
                 });
             });
         });
@@ -59,7 +60,7 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
                 return api.notifications.add(notification).then(function () {
-                    res.redirect(config.paths().webroot + '/ghost/debug/');
+                    res.redirect(debugPath);
                 });
             });
         }
@@ -153,7 +154,7 @@ db = {
                     };
 
                     return api.notifications.add(notification).then(function () {
-                        res.redirect(config.paths().webroot + '/ghost/debug/');
+                        res.redirect(debugPath);
                     });
                 });
             });

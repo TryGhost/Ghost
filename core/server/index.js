@@ -150,7 +150,7 @@ function setup(server) {
         // Are we using sockets? Custom socket or the default?
         function getSocket() {
             if (config().server.hasOwnProperty('socket')) {
-                return _.isString(config().server.socket) ? config().server.socket : path.join(__dirname, '../content/', process.env.NODE_ENV + '.socket');
+                return _.isString(config().server.socket) ? config().server.socket : path.join(config.path().contentPath, process.env.NODE_ENV + '.socket');
             }
             return false;
         }

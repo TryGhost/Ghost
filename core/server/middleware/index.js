@@ -164,7 +164,7 @@ function redirectToSignup(req, res, next) {
 module.exports = function (server, dbHash) {
     var oneYear = 31536000000,
         root = config.paths().webroot,
-        corePath = path.join(config.paths().appRoot, 'core');
+        corePath = config.paths().corePath;
 
     // Cache express server instance
     expressServer = server;

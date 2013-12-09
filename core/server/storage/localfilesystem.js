@@ -8,10 +8,10 @@ var _       = require('underscore'),
     path    = require('path'),
     when    = require('when'),
     errors  = require('../errorHandling'),
+    config  = require('../config'),
     baseStore   = require('./base'),
 
-    localFileStore,
-    localDir = 'content/images';
+    localFileStore;
 
 localFileStore = _.extend(baseStore, {
     // ### Save
@@ -20,7 +20,7 @@ localFileStore = _.extend(baseStore, {
     // - returns a promise which ultimately returns the full url to the uploaded image
     'save': function (image) {
         var saved = when.defer(),
-            targetDir = this.getTargetDir(localDir);
+            targetDir = this.getTargetDir(config.paths().imagesRelPath);
 
         this.getUniqueFileName(this, image, targetDir).then(function (filename) {
             nodefn.call(fs.mkdirs, targetDir).then(function () {
@@ -55,7 +55,7 @@ localFileStore = _.extend(baseStore, {
 
     // middleware for serving the files
     'serve': function () {
-        return express['static'](path.join(__dirname, '/../../../', localDir));
+        return express['static'](config.paths().imagesPath);
     }
 });
 
