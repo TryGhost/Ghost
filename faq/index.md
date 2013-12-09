@@ -33,7 +33,7 @@ Anyone can contribute to Ghost via our [Github repository](https://github.com/Tr
 ### Is Ghost a CMS? <a id="is-ghost-a-cms"></a>
 **Ghost is a platform dedicated to one thing: Publishing.** It's beautifully designed, completely customisable and completely Open Source. Ghost allows you to write and publish your own blog, giving you the tools to make it easy and even fun to do. It's simple, elegant, and designed so that you can spend less time messing with making your blog work - and more time blogging.
 
-**Ghost is not a CMS.** We recommend [Wordpress](http://wordpress.org/) if you are looking for a CMS.
+**Ghost is not a CMS.** We recommend [WordPress](http://wordpress.org/) if you are looking for a CMS.
 
 ### Why NodeJS? <a id="why-nodejs"></a>
 Please see this [blog post](http://blog.ghost.org/hosted-platform-preview/) which explains the decision.
@@ -62,7 +62,7 @@ Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation
 ### Where's the dashboard? <a id="dashboard"></a>
 The Dashboard is currently in development and will be released in a future version of Ghost. The Dashboard is a key feature in Ghost and we wanted to get it perfect, therefore as it's still in development it is not currently implemented.
 
-The Dashboard will be heavily based on the App API, and will utilise Ghost's App abilities to allow for developers to add there own Widgets.
+The Dashboard will be heavily based on the App API, and will utilise Ghost's App abilities to allow for developers to add their own Widgets.
 
 Please see our [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) for more information.
 
@@ -70,14 +70,10 @@ Please see our [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) for mor
 ### Is Ghost going to have plugins? <a id="plugins"></a>
 Yes. Ghost calls them Apps. Please see our [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) for more information.
 
-### When will localization be available? <a id="localization"></a>
+### Will Ghost support localization? <a id="localization"></a>
 Yes. Please see our [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap#milestone-5---version-050) for more information.
 
 ### Why can I only have one user? <a id="only-one-user"></a>
 We are currently working on multi-user support in Ghost. Please see our [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap#milestone-5---version-050) for more information.
-
-### Will there be shortcodes? <a id="shortcodes"></a>
-
-This will be something that can be integrated via the App APIs.
 
 {% endraw %}
