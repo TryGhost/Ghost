@@ -15,6 +15,8 @@ languages:
       key: 'fr'
     - name: 'Polski'
       key: 'pl'
+    - name: '日本語'
+      key: 'ja'
 
 port:         4478
 
@@ -61,6 +63,16 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  ja:
+    site_title:   'Ghost日本語ガイド'
+    installation: 'インストール'
+    usage:        '使い方'
+    email:        'メール設定'
+    themes:       'テーマ'
+    help:         'ヘルプ'
+    deploy:       'デプロイ'
+    upgrading:    'アップグレード'
+    troubleshooting: 'トラブルシューティング'
 
 # If running locally, simply comment out the line below to make all urls relative
 
