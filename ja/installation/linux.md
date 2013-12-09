@@ -66,7 +66,7 @@ next_section: deploy
     ```
 
 *   Ghostが**127.0.0.1:2368**で開始されます。<br />
-    <span class="note">アドレスとポート番号は**config.js**で変更できます</span>
+    <span class="note">アドレスとポート番号は**config.js**で変更できます。</span>
 
 *   ブラウザで<code class="path">127.0.0.1:2368</code>を表示すれば、たった今作成されたGhostブログが表示されます。
 *   最後にブラウザで<code class="path">127.0.0.1:2368/ghost</code>を表示します。管理者アカウントを作成し、Ghostの管理画面に進めば完了です。

@@ -1,9 +1,10 @@
 ---
+lang: ja
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Ghostをインストールするには - Ghost日本語ガイド
+meta_description: ブログプラットフォーム「Ghost」をローカルやリモート環境でセットアップするための手順です。
+heading: Ghostのインストール方法
+subheading: Ghostで新しいブログを作成するための手順です。
 permalink: /ja/installation/deploy/
 chapter: installation
 section: deploy
@@ -11,61 +12,60 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## Ghostをデプロイする方法 <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Ghostをデプロイする方法はふたつあります。インストーラーを使うか、手動でインストールとセットアップを行う方法です。
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+### インストーラーを使うには
 
-### Installers
+Ghostのインストーラーを用意しているホスティングサービスは以下の通りです。
 
-There are a couple of options for simple installers at the moment:
+*   [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost)
+*   [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html)
+*   [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application)
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+### 手動でGhostをセットアップするには
 
-### Manual Setup
+手動セットアップには[Node.js](http://nodejs.org)があらかじめ導入されている、またはNode.jsをインストールできるホスティングサービスが必要です。
+    [Amazon EC2](http://aws.amazon.com/ec2/)、[DigitalOcean](http://www.digitalocean.com)、[Rackspace Cloud](http://www.rackspace.com/cloud/)などのクラウドサービスや、[Webfaction](https://www.webfaction.com/)、[Dreamhost](http://www.dreamhost.com/servers/vps/)などのVPSなど、SSHアクセスが可能で、Node.jsをインストールすることができるサービスなら問題ありません。他にもコストがかからないホスティングサービスは多々あります。
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+PHPで作ったサイトをcPanelで管理するタイプのホスティングサービスは現在サポートされていません。ただ、Rubyをサポートし始めたものもあるので、Rubyと共通点が多いNodeがサポートされる日が来ないとも限りません。
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+残念ながら、Node専用のクラウドホスティングサービス(例:**Nodejitsu**、**Heroku**)はGhostと**互換性がありません**。動かすことは可能ですが、サーバー上にファイルが保存できませんので、アップロードした画像やデータベースファイルがすぐ消されてしまいます。HerokuはMySQLをサポートしていますが、それでも画像の問題は解決できません。
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+それぞれのホスティングサービスに手動でGhostをセットアップするには、以下のリンクを参考にしてください:
 
-The following links contain instructions on how to get up and running with:
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - [howtoinstallghost.com](http://howtoinstallghost.com)作成
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - [Corbett Barr](http://ghosted.co)作成
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - [howtoinstallghost.com](http://howtoinstallghost.com)作成
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linuxサービス) - [Gilbert Pellegrom](http://ghost.pellegrom.me/)作成
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - [Gregg Housh](http://0v.org/)作成
+*   その他のサービスでの手順は[フォーラム内の「Installation」](https://en.ghost.org/forum/installation)をご覧ください。
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+## Ghostを終了しないようにするには
 
-## Making Ghost run forever
+以前のセクションで、Ghostの実行方法として`npm start`を紹介しました。これは開発環境やテスト環境では十分ですが、本番環境では不十分です。ターミナルウインドウを閉じたり、SSHからログアウトしてしまうとGhostが終了してしまうからです。これを解決するには、Ghostをサービスとして実行する必要があります。その方法を何通りか紹介します。
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
 
-### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
+### Foreverを使う場合 ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+ひとつめは、`forever`を使ってGhostをバックグラウンドタスクとして実行する方法です。 Ghostのプロセスが終了しても`forever`が自動で再起動してくれます。
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   `forever`をインストールするには、`npm install forever -g`と入力します。
+*   `forever`を実行するには、Ghostのディレクトリ内から`NODE_ENV=production forever start index.js`と入力します。
+*   Ghostを終了するには、`forever stop index.js`と入力します。
+*   Ghostが実行しているか確かめるには、`forever list`と入力します。
 
-### Supervisor ([http://supervisord.org/](http://supervisord.org/))
+### Supervisorを使う場合 ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Fedora、Debian、UbuntuなどのLinuxディストリビューションにはSupervisorというパッケージが存在します。Supervisorはプロセス管理システムで、起動スクリプトなしにシステムの起動時にGhostを実行することができます。起動スクリプトと違い、Linuxディストリビューションやバージョンが異なってもSupervisorの書き方は同じです。
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Supervisorをインストールします](http://supervisord.org/installing.html)。それぞれのLinuxディストリビューションによって方法が異なります:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   その他のディストリビューション: `easy_install supervisor`
+*   Supervisorを実行します: `service supervisor start`
+*   Ghost用に起動スクリプトを作成します。多くの場合、`/etc/supervisor/conf.d/ghost.conf`に次のように書きます:
 
     ```
     [program:ghost]
@@ -79,44 +79,44 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Supervisorを使ってGhostを実行します: `supervisorctl start ghost`
+*   Ghostを終了するには: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+詳しくは[Supervisorのドキュメンテーション](http://supervisord.org)を参照ください。
 
-### Init Script
+### 起動スクリプトを使う場合
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Linuxはブート時に/etc/init.d内にある起動スクリプトを参照します。Ghostを常に稼動状態にし、リブート時にも自動で起動させるため、起動スクリプトを作るという方法もあります。以下の例はUbuntu用の起動スクリプトです。**Ubuntu 12.04**で動作確認されています。
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   /etc/init.d/ghostというファイルを作成します:
 
     ```
     $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   同ファイルを`nano /etc/init.d/ghost`で編集します。
+*   `GHOST_ROOT`変数をGhostをインストールしたディレクトリに変更します。
+*   `DAEMON`変数が`which node`の実行結果と一致するようにします。
+*   起動スクリプトは独自のユーザーアカウントとグループで実行されますので、ユーザーアカウントとグループを作成します:
 
     ```
     $ sudo useradd -r ghost -U
     ```
 
-*   Let's also make sure the Ghost user can access the installation:
+*   このユーザーに、Ghostディレクトリへのアクセス許可を与えます:
 
     ```
     $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
-*   Change the execution permission for the init script by typing
+*   起動スクリプトのパーミッションを変更します:
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   これで、Ghostを次のように操作することができるようになります:
 
     ```
     $ sudo service ghost start
@@ -125,40 +125,37 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line:
+*   システム起動時にGhostを起動するには、この起動スクリプトを登録する必要があります。次のコマンドを実行してください:
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
 
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+*   最後に、ユーザーにファイル変更の権限を与えるため、ghostグループにユーザーを追加します:
+
     ```
     $ sudo adduser USERNAME ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   サーバーを再起動すれば、Ghostが実行されているはずです。
 
 
-## Setting up Ghost with a domain name
+## Ghostを独自ドメイン名で使う
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
+Webサーバーをプロキシとしてセットアップすれば、あなたのGhostブログを独自ドメイン名で公開できます。この例では、**Ubuntu 12.04**上で**nginx**をウェブサーバーとして運用することを前提とします。また、上記したいずれかの方法で、Ghostがバックグラウンドで常に実行されていることも前提とします。
 
-*   Install nginx
+*   nginxをインストール
 
     ```
     $ sudo apt-get install nginx
     ```
-    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+    <span class="note">nginxと、それに必要なディレクトリや設定ファイルがインストールされます。</span>
 
-*   Configure your site
+*   設定を変更する
 
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   `/etc/nginx/sites-available/ghost.conf`というファイルを作成します。
+    *   このファイルをテキストエディターで開き(`sudo nano /etc/nginx/sites-available/ghost.conf`)、以下をコピペしてください。
 
         ```
         server {
@@ -174,14 +171,14 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   `server_name`をあなたのドメイン名に変更します。
+    *   `sites-enabled`にsymlinkを作ります:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
 
-    *   Restart nginx
+    *   nginxを再起動します。
 
     ```
     $ sudo service nginx restart
