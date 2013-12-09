@@ -1,10 +1,10 @@
 ---
 lang: ja
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Ghostをインストールするには - Ghost日本語ガイド
+meta_description: ブログプラットフォーム「Ghost」をローカルやリモート環境でセットアップするための手順です。
+heading: Ghostのインストール方法
+subheading: Ghostで新しいブログを作成するための手順です。
 permalink: /ja/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
@@ -12,37 +12,37 @@ prev_section: upgrading
 ---
 
 
-# Troubleshooting & FAQ <a id="troubleshooting"></a>
+# トラブルシューティングとFAQ <a id="troubleshooting"></a>
 
 <dl>
-    <dt id="export-path">'/usr/local/bin' doesn't appear in my $PATH</dt>
-    <dd>You can add it by doing the following:
+    <dt id="export-path">'/usr/local/bin'が$PATHに含まれていません</dt>
+    <dd>下記の手順で追加してください:
         <ul>
-            <li>In your terminal window type <code>cd ~</code>, this will take you to your home directory</li>
-            <li>Now type <code>ls -al</code> to show all the files and folders in this directory, including hidden ones</li>
-            <li>You should see a file called <code class="path">.profile</code> or <code class="path">.bash_profile</code> if not type <code>touch .bash_profile</code> to create a file</li>
-            <li>Next, type <code>open -a Textedit .bash_profile</code> to open the file with Textedit.</li>
-            <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
-            <li>This new setting will get loaded when a new terminal starts, so open a new terminal tab or window and type <code>echo $PATH</code> to see that '/usr/local/bin/' is now present.</li>
+            <li>ターミナルに<code>cd ~</code>と入力し、ホームディレクトリに移動します。</li>
+            <li><code>ls -al</code>と入力してこのフォルダーにある全ての(隠しファイルを含む)ファイルとフォルダーを表示します。</li>
+            <li><code class="path">.profile</code>か<code class="path">.bash_profile</code>というファイルが存在するはずです。もし見つからなければ <code>touch .bash_profile</code>と入力して作成してください。</li>
+            <li>次に、<code>open -a Textedit .bash_profile</code>と入力してこのファイルをTexteditで開きます。</li>
+            <li>ファイルの最後の行に<code>export PATH=$PATH:/usr/local/bin/</code>と追加し、保存します。</li>
+            <li>新しいターミナルのタブかウインドウを開けば設定が更新されます。そこでもう一度<code>echo $PATH</code>と入力し、'/usr/local/bin/'が表示されているかどうか確認ください。</li>
         </ul>
     </dd>
-    <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+    <dt id="sqlite3-errors">SQLite3がインストールできません</dt>
     <dd>
-        <p>The SQLite3 package comes with pre-built binaries for the most common architectures. If you are using a less popular linux or other unix flavor, you may find that SQLite3 will give you a 404 as it cannot find a binary for your platform.</p>
-        <p>This can be fixed by forcing SQLite3 to compile. This will require python & gcc. Try it out by running <code>npm install sqlite3 --build-from-source</code></p>
-        <p>If it won't build you're probably missing one of the python or gcc dependencies, on linux try running <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> and <code>sudo apt-get install python-software-properties python g++ make</code> before retrying the build from source.</p>
-        <p>For more information about building the binaries please see: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
-        <p>Once you have successfully built a binary for your platform, please follow the <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instructions here</a> to submit the binary to the node-sqlite project, so that future users won't have the same problem.</p>
+        <p>SQLite3パッケージは多くのプラットフォームで既にバイナリがインストールされています。しかし、もしバイナリが含まれていないマイナーなLinuxか他のUnix系OSをご使用でしたら、SQLite3が404エラーを吐き出す可能性があります。</p>
+        <p>これはSQLite3を強制的にコンパイルすれば解決します。pythonとgccが必要です。<code>npm install sqlite3 --build-from-source</code>と入力してみてください</p>
+        <p>もし上記が失敗したら、pythonかgccがインストールされていないのかもしれません。Linuxでしたら、<code>sudo npm install -g node-gyp</code>、<code>sudo apt-get install build-essential</code>、<code>sudo apt-get install python-software-properties python g++ make</code>と入力してから再度コンパイルしてみてください。</p>
+        <p>バイナリのビルドについては、こちらのリンクが参考になります: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
+        <p>バイナリのビルドが成功したら、<a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">こちらの手順</a>に従ってバイナリをnode-sqliteプロジェクトに追加してくれれば、次のユーザーの助けになります。</p>
     </dd>
-    <dt id="image-uploads">I can't upload images</dt>
+    <dt id="image-uploads">画像がアップロードできません</dt>
     <dd>
-        <p>If you're on a DigitalOcean Droplet setup when Ghost was at v0.3.2, or you're using nginx on some other platform, you may find you cannot upload images.</p>
-        <p>What's actually happening, is you cannot upload images bigger than 1MB (try a small image, it should work). That's a pretty small limit!</p>
-        <p>To increase the limit you need to edit your nginx config file, and set the limit to something else.</p>
+        <p>もしあなたがDigitalOceanのDropletをGhostのv0.3.2で利用していた場合、もしくはnginxを他のプラットフォームで利用していた場合、画像のアップロードが失敗することがあります。</p>
+        <p>この原因は、画像サイズの上限が1MBに設定されているからです。小さい画像なら成功するはずです。</p>
+        <p>上限を増やすには、nginxの設定ファイルを編集する必要があります。</p>
         <ul>
-            <li>Log into your server, and type <code>sudo nano /etc/nginx/conf.d/default.conf</code> to open your config file.</li>
-            <li>After the <code>server_name</code> line, add the following: <code>client_max_body_size 10M;</code></li>
-            <li>Finally, press <kbd>ctrl</kbd> + <kbd>x</kbd> to exit. Nano will ask you if you want to save, type <kbd>y</kbd> for yes, and press <kbd>enter</kbd> to save the file.</li>
+            <li>サーバーにログインし、<code>sudo nano /etc/nginx/conf.d/default.conf</code>と入力して設定ファイルを開きます。</li>
+            <li><code>server_name</code>の次の行に、こう追加します: <code>client_max_body_size 10M;</code></li>
+            <li><kbd>ctrl</kbd> + <kbd>x</kbd>でエディタを終了しようとすると、ファイルを保存するか聞かれますので、<kbd>y</kbd>と入力して保存し、<kbd>enter</kbd>を押して完了します。</li>
         </ul>
     </dd>
 </dl>
