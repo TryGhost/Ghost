@@ -1,3 +1,4 @@
+exclude: [node_modules]
 pygments:     true
 permalinks: pretty
 relative_permalinks: false
@@ -27,6 +28,7 @@ translations:
     themes:       '主题'
     translations: '翻译'
     help:         '帮助'
+    faq:          'FAQ'
   ko:
     site_title:   'Ghost Guide'
     installation: 'Installation'
@@ -35,6 +37,7 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+    faq:          'FAQ'
   de:
     site_title:   'Ghost-Handbuch'
     installation: 'Installation'
@@ -45,6 +48,7 @@ translations:
     deploy:       'Einsetzen'
     upgrading:    'Aktualisieren' 
     troubleshooting: 'Problembehebung'
+    faq:          'FAQ'
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
@@ -53,6 +57,7 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
+    faq:          'FAQ'
   pl:
     site_title:   'Ghost Guide'
     installation: 'Installation'
@@ -61,6 +66,7 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+    faq:          'FAQ'
 
 # If running locally, simply comment out the line below to make all urls relative
 

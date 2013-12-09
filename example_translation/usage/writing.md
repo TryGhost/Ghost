@@ -9,7 +9,6 @@ chapter: usage
 section: writing
 permalink: /example_translation/usage/writing/
 prev_section: managing
-next_section: faq
 ---
 
 ##  Writing posts <a id="writing"></a>
