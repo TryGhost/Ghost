@@ -1,9 +1,9 @@
 ---
 lang: ja
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Ghostのメール設定 - Ghost日本語ガイド
+meta_description: Ghostプラットフォームからメールを送るための手順です。
+heading: Ghostのメール設定
 chapter: mail
 ---
 

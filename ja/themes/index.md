@@ -1,10 +1,10 @@
 ---
 lang: ja
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Ghostのテーマを作成するには - Ghost日本語ガイド
+meta_description: Ghostのテーマを作成する手順です。
+heading: Ghostのテーマの作成方法
+subheading: あなたオリジナルのテーマを作成するための手順です。
 chapter: themes
 ---
 

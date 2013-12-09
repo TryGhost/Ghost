@@ -1,10 +1,10 @@
 ---
 lang: ja
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Ghostの使い方 - Ghost日本語ガイド
+meta_description: Ghostの利用方法を解説します。Ghostをセットアップしたら後にご覧ください。
+heading: Ghostの使い方
+subheading: 利用方法や、カスタマイズの手順を紹介します。
 chapter: usage
 section: faq
 permalink: /ja/usage/faq/
