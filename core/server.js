@@ -264,11 +264,10 @@ when(ghost.init()).then(function () {
     server.use(whenEnabled(server.get('activeTheme'), middleware.staticTheme(ghost)));
 
     // Add in all trailing slashes except api calls
-    server.use(function(req, res, next){
-        if(req.url.substring(0,5) !== "/api/"){
+    server.use(function (req, res, next) {
+        if (req.url.substring(0, 5) !== "/api/") {
             slashes()(req, res, next);
-        }
-        else{
+        } else {
             next();
         }
     });
