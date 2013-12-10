@@ -4,7 +4,7 @@ var testUtils = require('../../utils'),
     _ = require('underscore'),
     request = require('request');
 
-request = request.defaults({jar:true})
+request = request.defaults({jar:true});
 
 describe('Post API', function () {
 
@@ -55,13 +55,27 @@ describe('Post API', function () {
     });
 
     it('can retrieve a post', function (done) {
-        request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+        request.get(testUtils.API.getApiURL('posts/5/'), function (error, response, body) {
             response.should.have.status(200);
             should.not.exist(response.headers['x-cache-invalidate']);
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
             jsonResponse.should.exist;
             testUtils.API.checkResponse(jsonResponse, 'post');
+            jsonResponse.page.should.eql(0);
+            done();
+        });
+    });
+
+    it('can retrieve a static page', function (done) {
+        request.get(testUtils.API.getApiURL('posts/6/'), function (error, response, body) {
+            response.should.have.status(200);
+            should.not.exist(response.headers['x-cache-invalidate']);
+            response.should.be.json;
+            var jsonResponse = JSON.parse(body);
+            jsonResponse.should.exist;
+            testUtils.API.checkResponse(jsonResponse, 'post');
+            jsonResponse.page.should.eql(1);
             done();
         });
     });

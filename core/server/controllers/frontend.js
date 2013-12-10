@@ -72,7 +72,7 @@ frontendControllers = {
             if (post) {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
-                        var paths = config.paths().availableThemes[activeTheme];
+                        var paths = config.paths().availableThemes[activeTheme.value];
                         if (post.page && paths.hasOwnProperty('page')) {
                             res.render('page', {post: post});
                         } else {
