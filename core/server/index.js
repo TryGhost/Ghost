@@ -94,9 +94,9 @@ function setup(server) {
         // Initialize the settings cache
         return api.init();
     }).then(function () {
-        // We must pass the api and config object
+        // We must pass the api.settings object
         // into this method due to circular dependencies.
-        return config.theme.update(api, config);
+        return config.theme.update(api.settings);
     }).then(function () {
         return when.join(
             // Check for or initialise a dbHash.
@@ -117,9 +117,6 @@ function setup(server) {
         // ##Configuration
         // set the view engine
         server.set('view engine', 'hbs');
-
-        // set the configured URL
-        server.set('ghost root', config.theme().path);
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});

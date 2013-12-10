@@ -1,10 +1,11 @@
 var admin       = require('../controllers/admin'),
     api         = require('../api'),
+    config      = require('../config'),
     middleware  = require('../middleware').middleware,
     url         = require('url');
 
 module.exports = function (server) {
-    var root = server.get('ghost root').replace(/\/$/, '');
+    var root = config.paths().webroot;
     // ### Admin routes
     /* TODO: put these somewhere in admin */
     server.get('/logout/', function redirect(req, res) {

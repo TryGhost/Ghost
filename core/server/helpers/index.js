@@ -94,14 +94,14 @@ coreHelpers.url = function (options) {
             slug: function () { return self.slug; },
             id: function () { return self.id; }
         },
-        blog = coreHelpers.config.theme(),
+        path = coreHelpers.config.paths().path,
         isAbsolute = options && options.hash.absolute;
     return api.settings.read('permalinks').then(function (permalinks) {
         if (isAbsolute) {
-            output += blog.url;
+            output += coreHelpers.config().url;
         }
-        if (blog.path && blog.path !== '/') {
-            output += blog.path;
+        if (path && path !== '/') {
+            output += path;
         }
         if (models.isPost(self)) {
             output += permalinks.value;
@@ -125,7 +125,7 @@ coreHelpers.url = function (options) {
 // flag outputs the asset path for the Ghost admin
 coreHelpers.asset = function (context, options) {
     var output = '',
-        subDir = coreHelpers.config.theme().path,
+        subDir = coreHelpers.config.paths().path,
         isAdmin = options && options.hash && options.hash.ghost;
 
     if (subDir === '/') {
@@ -264,7 +264,7 @@ coreHelpers.fileStorage = function (context, options) {
 
 coreHelpers.ghostScriptTags = function () {
     var scriptFiles = [],
-        blog = coreHelpers.config.theme();
+        webroot = coreHelpers.config.paths().webroot;
 
     if (isProduction) {
         scriptFiles.push("ghost.min.js");
@@ -280,7 +280,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            source: (blog.path === '/' ? '' : blog.path) + '/built/scripts/' + fileName,
+            source: webroot + '/built/scripts/' + fileName,
             version: version
         });
     });
@@ -348,7 +348,7 @@ coreHelpers.post_class = function (options) {
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
     var blog = coreHelpers.config.theme(),
-        root = blog.path === '/' ? '' : blog.path,
+        root = coreHelpers.config.paths().webroot,
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -359,7 +359,7 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + root + '/rss/' + '">');
     if (this.ghostRoot) {
-        head.push('<link rel="canonical" href="' + coreHelpers.config.theme().url + this.ghostRoot + '" />');
+        head.push('<link rel="canonical" href="' + coreHelpers.config().url + this.ghostRoot + '" />');
     }
 
     return filters.doFilter('ghost_head', head).then(function (head) {
@@ -371,7 +371,7 @@ coreHelpers.ghost_head = function (options) {
 coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
     var foot = [];
-    foot.push('<script src="' + coreHelpers.config.theme().url + '/shared/vendor/jquery/jquery.js"></script>');
+    foot.push('<script src="' + coreHelpers.config().url + '/shared/vendor/jquery/jquery.js"></script>');
 
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');

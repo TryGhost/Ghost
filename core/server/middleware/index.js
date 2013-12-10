@@ -30,7 +30,7 @@ function ghostLocals(req, res, next) {
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
     // Strip off the subdir part of the path
-    res.locals.ghostRoot = req.path.replace(config.theme().path.replace(/\/$/, ''), '');
+    res.locals.ghostRoot = req.path.replace(config.paths().webroot, '');
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
@@ -117,10 +117,10 @@ function activateTheme(activeTheme) {
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
     // TODO improve this regex
-    if (config.theme().path === '/') {
+    if (config.paths().path === '/') {
         res.isAdmin = /(^\/ghost\/)/.test(req.url);
     } else {
-        res.isAdmin = new RegExp("^\\" + config.theme().path + "\\/ghost\\/").test(req.url);
+        res.isAdmin = new RegExp("^\\" + config.paths().path + "\\/ghost\\/").test(req.url);
     }
 
     if (res.isAdmin) {
@@ -149,7 +149,7 @@ function manageAdminAndTheme(req, res, next) {
 
 // Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {
-    var root = expressServer.get('ghost root').replace(/\/$/, '');
+    var root = config.paths().webroot;
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
