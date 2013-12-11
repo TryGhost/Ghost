@@ -13,37 +13,37 @@ next_section: settings
 ---
 
 
-## Configuring Ghost <a id="configuration"></a>
+## Ghostの高度な設定 <a id="configuration"></a>
 
-After you run Ghost for the first time, you'll find a file called `config.js` in the root directory of Ghost, along with the `index.js`. This file allows you to set environment level configuration for things like your URL, database, and mail settings.
+Ghostを一度でも起動すると、Ghostをインストールしたディレクトリに`config.js`と`index.js`というファイルがあることに気づくかもしれません。このファイルを編集することで、ブログのURLや、データベースの設定、メールの設定などの環境設定を行うことができます。
 
-If you haven't yet run Ghost for the first time, you won't have this file yet. You can create one by copying the `config.example.js` file - that's what Ghost does when it starts.
+Ghostを一度も起動したことがなければ、`config.js`はまだ作成されていません。`config.example.js`ファイルをコピーすることで作成することができます。(これは、Ghostが初回起動時に行っていることでもあります。)
 
-To configure your Ghost URL, mail or database settings, open `config.js` in your favourite editor, and start changing the settings for your desired environment. If environments aren't something you've come across yet, read the documentation below.
+GhostのブログURL、メールの設定、データベースの設定などを変更したい場合は、お好きなエディタで`config.js`を開き、設定変更を行ってください。設定が思い通りに行かない場合は、下記に続くドキュメントを参照してください。
 
-## About Environments <a id="environments"></a>
+## 環境について <a id="environments"></a>
 
-Node.js, and therefore Ghost, has the concept of environments built in. Environments allow you to create different configurations for different modes in which you might want to run Ghost. By default Ghost has two built-in modes: **development** and **production**.
+Node.jsやGhostには、環境に関する概念が組み込まれています。環境を変えることで、環境ごとに異なる設定でGhostを動かすことができます。Ghostにはデフォルトで**development**と**production**という二つの環境が組み込まれています。
 
-There are a few, very subtle differences between the two modes or environments. Essentially **development** is geared towards developing and particularly debugging Ghost. Meanwhile "production" is intended to be used when you're running Ghost publicly. The differences include things like what logging & error messaging is output, and also how much static assets are concatenated and minified. In **production**, you'll get just one JavaScript file containing all the code for the admin, in **development** you'll get several.
+この二つの環境にはほとんど違いはありません。基本的には、**development**環境は、Ghostのデバッグなど開発を行うための環境です。一方で、**production**環境はGhostを公に公開する環境を意図したものです。これらの環境の違いは、出力されるログメッセージやエラーメッセージの違い、静的ファイルがどの程度連結され圧縮されるかの違いなどです。**production**環境では一つのJavaScriptファイルで出力されるのに対し、**development**では複数のファイルで出力されるなどです。
 
-As Ghost progresses, these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the **production** environment. This perhaps begs the question, why **development** mode by default, if most people are going to want to run it in **production** mode? Ghost has **development** as the default because this is the environment that is best for debugging problems, which you're most likely to need when getting set up for the first time.
+Ghostが発展するにつれて、これらの違いはより顕著になり、公開されているブログが**production**環境で実行されることがますます重要になってくるでしょう。多くの人が**production**環境でブログを公開するのであれば、なぜデフォルトが**development**環境なの?と疑問に思うかもしれません。Ghostがデフォルトで**development**環境となっているのは、最初のセットアップ時に必要になるであろうデバッグ作業を行うのに最良の環境だからです。
 
-##  Using Environments <a id="using-env"></a>
+##  環境を指定する <a id="using-env"></a>
 
-In order to set Ghost to run under a different environment, you need to use an environment variable. For example if you normally start Ghost with `node index.js` you would use:
+環境変数を設定することで、Ghostを異なる環境で動作させることができます。例えば、普通`node index.js`と入力してGhostを起動するところを、以下のように入力し起動します。
 
 `NODE_ENV=production node index.js`
 
-Or if you normally use forever:
+foreverを使用しているのであれば、以下のようにします。
 
 `NODE_ENV=production forever start index.js`
 
-Or if you're used to using `npm start` you could use the slightly easier to remember:
+`npm start`を使用するのに慣れているのであれば、もう少し簡単に入力できます。
 
 `npm start --production`
 
-### Why use `npm install --production`?
+### どうして`npm install --production`を使用するのか?
 
-We have been asked a few times why, if Ghost starts in development mode by default, does the installation documentation say to run `npm install --production`? This is a good question! If you don't include `--production` when installing Ghost, nothing bad will happen, but it will install a tonne of extra packages which are only useful for people who want to develop Ghost core itself. This also requires that you have one particular package, `grunt-cli` installed globally, which has to be done with `npm install -g grunt-cli`, it's an extra step and it's not needed if you just want to run Ghost as a blog.
+Ghostのデフォルトの環境がdevelopment環境なのに、インストールのドキュメントでは`npm install --production`を使用しているのかなぜなのか?という質問をしばしば頂きます。Ghostのインストール時に`--production`と付けなくても、何も悪いことは起こりません。ただ、そうすることでGhostのコア機能を開発する人のためのパッケージも余分にインストールされてしまいます。また、グローバル環境に`grunt-cli`をインストールする作業も必要となります。これは`npm install -g grunt-cli`と実行することで解決しますが、Ghostをブログとして使用したいだけの人にとっては余計な作業となります。
 
