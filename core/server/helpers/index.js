@@ -398,6 +398,25 @@ coreHelpers.meta_title = function (options) {
     });
 };
 
+coreHelpers.meta_url = function (options) {
+    /*jslint unparam:true*/
+    var url,
+        blog;
+    blog = coreHelpers.config.theme();
+    if (_.isString(this.ghostRoot)) {
+        if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
+            url = blog.url;
+        } else {
+            url = blog.url + '/' + this.post.slug + '/';
+        }
+    }
+
+    return filters.doFilter('meta_url', url).then(function (url) {
+        url = url || "";
+        return new hbs.handlebars.SafeString(url.trim());
+    });
+};
+
 coreHelpers.meta_description = function (options) {
     /*jslint unparam:true*/
     var description,
@@ -635,6 +654,8 @@ registerHelpers = function (config) {
     registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
 
     registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
+
+    registerAsyncThemeHelper('meta_url', coreHelpers.meta_url);
 
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
