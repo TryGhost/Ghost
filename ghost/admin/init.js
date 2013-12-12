@@ -41,6 +41,13 @@
         return Backbone.oldsync(method, model, options, error);
     };
 
+    Backbone.oldModelProtoUrl = Backbone.Model.prototype.url;
+    //overwrite original url method to add slash to end of the url if needed.
+    Backbone.Model.prototype.url = function () {
+        var url = Backbone.oldModelProtoUrl.apply(this, arguments);
+        return url + (url.charAt(url.length - 1) === '/' ? '' : '/');
+    };
+
     Ghost.init = function () {
         // remove the temporary message which appears
         $('.js-msg').remove();
