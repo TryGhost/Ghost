@@ -155,7 +155,7 @@ function setup(server) {
                     packageInfo.engines.node.yellow,
                     "you are using version".red,
                     process.versions.node.yellow,
-                    "\nPlease go to http://nodejs.org to get the latest version".green
+                    "\nPlease go to http://nodejs.org to get a supported version".green
                 );
 
                 process.exit(0);
