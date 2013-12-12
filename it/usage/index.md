@@ -1,7 +1,7 @@
 ---
 lang: it
 layout: usage
-meta_title: Come Usare Ghost - Documentazione Ghost
+meta_title: Come usare Ghost - Documentazione Ghost
 meta_description: Una guida dettagliata sull'utilizzo di Ghost. Hai installato Ghost ma non sai come procedere? Inizia da qui!
 heading: Utilizzare Ghost
 subheading: Finding your way around, and getting set up the way you want
