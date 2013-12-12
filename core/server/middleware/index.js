@@ -70,22 +70,13 @@ function ghostLocals(req, res, next) {
 // Initialise Theme or Admin Views
 function initViews(req, res, next) {
     /*jslint unparam:true*/
-    var hbsOptions;
 
     if (!res.isAdmin) {
-        // self.globals is a hack til we have a better way of getting combined settings & config
-        hbsOptions = {templateOptions: {data: {blog: config.theme()}}};
-        api.settings.read('activeTheme').then(function (activeTheme) {
-            if (config.paths().availableThemes[activeTheme.value].hasOwnProperty('partials')) {
-                // Check that the theme has a partials directory before trying to use it
-                hbsOptions.partialsDir = path.join(config.paths().themePath, activeTheme.value, 'partials');
-            }
-
-            expressServer.engine('hbs', hbs.express3(hbsOptions));
-            expressServer.set('views', path.join(config.paths().themePath, activeTheme.value));
-        });
+        hbs.updateTemplateOptions({ data: {blog: config.theme()} });
+        expressServer.engine('hbs', expressServer.get('theme view engine'));
+        expressServer.set('views', path.join(config.paths().themePath, expressServer.get('activeTheme')));
     } else {
-        expressServer.engine('hbs', hbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+        expressServer.engine('hbs', expressServer.get('admin view engine'));
         expressServer.set('views', config.paths().adminViews);
     }
 
@@ -95,9 +86,10 @@ function initViews(req, res, next) {
 // ### Activate Theme
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
-    var stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
-        return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
-    }));
+    var hbsOptions,
+        stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
+            return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
+        }));
 
     // clear the view cache
     expressServer.cache = {};
@@ -107,6 +99,14 @@ function activateTheme(activeTheme) {
     if (stackLocation) {
         expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
     }
+
+    // set view engine
+    hbsOptions = { partialsDir: [ config.paths().helperTemplates ] };
+    if (config.paths().availableThemes[activeTheme].hasOwnProperty('partials')) {
+        // Check that the theme has a partials directory before trying to use it
+        hbsOptions.partialsDir.push(path.join(config.paths().themePath, activeTheme, 'partials'));
+    }
+    expressServer.set('theme view engine', hbs.express3(hbsOptions));
 
     // Update user error template
     errors.updateActiveTheme(activeTheme);

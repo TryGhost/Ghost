@@ -22,6 +22,7 @@ var config       = require('./config'),
     permissions   = require('./permissions'),
     uuid          = require('node-uuid'),
     api           = require('./api'),
+    hbs          = require('express-hbs'),
 
 // Variables
     setup,
@@ -105,24 +106,32 @@ function setup(server) {
             permissions.init()
         );
     }).then(function () {
-        return when.join(
-            // Initialise mail after first run,
-            // passing in config module to prevent
-            // circular dependencies.
-            mailer.init(),
-            helpers.loadCoreHelpers(config)
-        );
+        // Initialise mail after first run,
+        // passing in config module to prevent
+        // circular dependencies.
+        return mailer.init();
     }).then(function () {
+        var adminHbs;
 
         // ##Configuration
-        // set the view engine
-        server.set('view engine', 'hbs');
 
         // set the configured URL
         server.set('ghost root', config.theme().path);
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
+
+        // ## View engine
+        // set the view engine
+        server.set('view engine', 'hbs');
+
+        // Create a hbs instance for admin and init view engine
+        adminHbs = hbs.create();
+        server.set('admin view engine', adminHbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+
+        // Load helpers
+        helpers.loadCoreHelpers(config, adminHbs);
+
 
         // ## Middleware
         middleware(server, dbHash);
