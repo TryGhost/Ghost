@@ -37,5 +37,5 @@ Potresti anche vedere un messaggio di avviso arancione riguardante l'email:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
 
-Questo messaggio non &egrave; critico per impostare il tuo blog, ma sarebbe una buona idea leggere la [documentazione sull'email](/mail) ad un certo punto, ed imparare a configurare Ghost per inviare le email. Attualmente viene utilizzato solo per inviarti la mail quando resetti la password, nel caso l'avessi dimenticata. Non necessario per bloggare, ma molto utile nel caso ti dovesse servire!
+Questo messaggio non &egrave; critico per impostare il tuo blog, ma sarebbe una buona idea leggere la [documentazione sull'email](/mail), ed imparare a configurare Ghost per inviare le email. Attualmente viene utilizzato solo per inviarti la mail quando resetti la password, nel caso l'avessi dimenticata. Non necessario per bloggare, ma molto utile nel caso ti dovesse servire!
 
