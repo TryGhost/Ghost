@@ -33,33 +33,33 @@ next_section: settings
             <p>Node.js, e consequentemente o Ghost, trabalham com o conceito de criação em ambientes. Os ambientes permitem você criar diferentes configurações para modos diferentes no qual você pode querer rodar o Ghost.
                 Por padrão, o Ghost tem dois modos de criação: <strong>desenvolvimento</strong> e <strong>produção</strong>.</p>
 
-            <p>There are a few, very subtle differences between the two modes or environments. Essentially <strong>development</strong>  is geared towards developing and particularly debugging Ghost.
-                Meanwhile "production" is intended to be used when you're running Ghost publicly. The differences include things like what logging & error messaging is output, and also how much static assets are concatenated and minified.
-                In <strong>production</strong>, you'll get just one JavaScript file containing all the code for the admin, in <strong>development</strong>  you'll get several.</p>
+            <p>Existem algumas diferenças, muito sutis, entre os dois modos ou ambientes. Essencialmente o modo de<strong>desenvolvimento</strong> é voltado para o desenvolvimento e particularmente a depuração do Ghost.
+                Enquanto o modo "produção" é voltado para ser usado quando você está executando o Ghost publicamente. As diferênças incluem coisas como a maneira que o log e mensagens de erro são apresentados, e também o quanto os arquivos estáticos são concatenados e reduzidos.
+                No modo de <strong>produção</strong>, você terá apenas um arquivo de Javascript contendo todo o código para a administração, no modo <strong>desenvolvimento</strong> você terá vários.</p>
 
-            <p>As Ghost progresses, these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the <strong>production</strong> environment.
-                This perhaps begs the question, why <strong>development</strong> mode by default, if most people are going to want to run it in <strong>production</strong> mode?
-                Ghost has <strong>development</strong> as the default because this is the environment that is best for debugging problems, which you're most likely to need when getting set up for the first time.</p>
+            <p> Com o avanço do Ghost, essas diferenças irão crescer e se tornar mais evidentes e, portanto, torna-se cada vez mais importante que qualquer blog público seja executado no ambiente de <strong>produção</strong>.
+                Isto pode levantar uma questão, por que o modo de <strong>desenvolvimento</strong> é o padrão, se a maioria das pessoas vão querer executar no modo de <strong>produção</strong>?
+                O Ghost tem o modo de <strong>desenvolvimento</strong> como padrão, pois este é o melhor ambiente para depurar problemas, provavelmente é o que você vai mais precisar quando configurar pela primeira vez.</p>
 
-            <h2 id="using-env">Using Environments</h2>
+            <h2 id="using-env">Usando Ambientes</h2>
 
-            <p>In order to set Ghost to run under a different environment, you need to use an environment variable. For example if you normally start Ghost with <code>node index.js</code> you would use:</p>
+            <p>Para preparar o Ghost para executar em um ambiente diferente, você precisa usar uma variável de ambiente. Por exemplo, se você iniciar normalmente o Ghost com o <code>node index.js</code> você usuaria:</p>
 
             <p><code>NODE_ENV=production node index.js</code></p>
 
-            <p>Or if you normally use forever:</p>
+            <p>Ou se você normalmente sempre usar:</p>
 
             <p><code>NODE_ENV=production forever start index.js</code></p>
 
-            <p>Or if you're used to using <code>npm start</code> you could use the slightly easier to remember:</p>
+            <p>Ou se você está acostumado a usar <code>npm start</code>, você poderia usar o jeito mais fácil para lembrar:</p>
 
             <p><code>npm start --production</code></p>
 
-            <h3>Why use <code>npm install --production</code>?</h3>
+            <h3>Por que usar <code>npm install --production</code>?</h3>
 
-            <p>We have been asked a few times why, if Ghost starts in development mode by default, does the installation documentation say to run <code>npm install --production</code>?
-                This is a good question! If you don't include <code>--production</code> when installing Ghost, nothing bad will happen, but it will install a tonne of extra packages which are only useful for people who want to develop Ghost core itself.
-                This also requires that you have one particular package, <code>grunt-cli</code> installed globally, which has to be done with <code>npm install -g grunt-cli</code>, it's an extra step and it's not needed if you just want to run Ghost as a blog.</p>
+            <p>Nós fomos perguntados algumas vezes por que, se o Ghost é iniciado em modo de desenvolvimento por padrão, a documentação de instalação diz para executar <code>npm install --production</code>?
+                Essa é uma boa pergunta! Se você não incluir <code>--production</code> quando instalar o Ghost, nada de errado irá acontecer, mas será instalado uma grande quantidade de pacotes extras que é útil apenas para quem quer desenvolver o núcleo do Ghost.
+                Isso também requer que você tenha um pacote em particular, <code>grunt-cli</code> instalado globalmente, que tem que ser feito com <code>npm install -g grunt-cli</code>, é um passo extra e não é necessário se você quer apenar rodar o Ghost como um blog.</p>
             </p>
 
 
