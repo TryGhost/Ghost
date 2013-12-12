@@ -199,6 +199,43 @@ function setup(server) {
                 });
             }
 
+            // if you started it using sudo, it has root priveleges. we dont want that, lets go back the user who used sudo
+            // Find out which user used sudo through the environment variable
+            var uid = parseInt(process.env.SUDO_UID);
+            // Set our server's uid to that user
+            if (uid) {
+                process.setuid(uid);
+            }
+
+            /* 
+            *  Test for nosudo -- Remove this test (with comment) when merging 
+            *  1) With above code whoami should return correct user (the user who used sudo)
+            *  2) With above code commented out, whoami should return "root".
+            */
+            /*
+            var whoami = require('child_process').spawn('whoami');
+            var whoami_resp = "";
+            var whoami_error = '';
+
+            whoami.stdout.on('data', function (buffer) { 
+                whoami_resp += buffer.toString(); 
+            });
+            whoami.stderr.on('data', function (buffer) { 
+                whoami_error += buffer.toString(); 
+            });
+            whoami.on('close', function(code) { 
+                console.log('whoami', {
+                    stdout: whoami_resp,
+                    stderr: whoami_error,
+                    exit_code: code
+                });
+            }); 
+            */
+            /*
+            *  Test for sudo ends here
+            */
+
+
         }
 
         // Initialize plugins then start the server
