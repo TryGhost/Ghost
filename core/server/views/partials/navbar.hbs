@@ -8,7 +8,7 @@
 
             <li id="usermenu" class="subnav">
                 <a href="#" data-toggle="ul" class="dropdown">
-                    <img class="avatar" src="{{#if currentUser.image}}{{currentUser.image}}{{else}}{{asset "shared/img/user-image.png"}}{{/if}}" alt="Avatar" />
+                    <img class="avatar" src="{{#if currentUser.image}}{{currentUser.image}}{{else}}/shared/img/user-image.png{{/if}}" alt="Avatar" />
                     <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
                 </a>
                 <ul class="overlay">
