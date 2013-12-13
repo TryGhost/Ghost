@@ -12,19 +12,19 @@ prev_section: managing
 next_section: faq
 ---
 
-##  Writing posts <a id="writing"></a>
+##  記事を書く<a id="writing"></a>
 
-Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.
+Ghostの記事の投稿には、Markdown形式が使われています。Markdown形式では、記号やスペースを用いたミニマルな記法を用いることで、記事のフォーマットを整える事ができます。記事を書くことの邪魔をしないように設計されているため、見た目などの他のことよりも、より記事の内容に集中できます。
 
 ###  Markdown Guide <a id="markdown"></a>
 
-[Markdown](http://daringfireball.net/projects/markdown/) is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.
+[Markdown形式](http://daringfireball.net/projects/markdown/)は、読みやすさを維持しながらも、書くことに対する効率を高めるように設計されたマークアップ言語です。
 
-Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.
+GhostはMarkdownのデフォルトのショートカットに加え、独自のものをいくつか追加しています。完全なショートカットの一覧は以下に示しています。
 
-####  Headers
+####  ヘッダ
 
-Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.
+テキストの前にハッシュ記号(#)をつけることで、ヘッダとすることができます。付け加えるハッシュ記号の数でヘッダのレベルを決める事ができます。ヘッダレベルは1-6の間で使用できます。
 
 *   H1 : `# Header 1`
 *   H2 : `## Header 2`
@@ -33,34 +33,34 @@ Headers can be set using a hash before the title text. The number of hashes befo
 *   H5 : `##### Header 5`
 *   H6 : `###### Header 6`
 
-####  Text Styling
+####  テキストの装飾
 
-*   Links : `[Title](URL)`
-*   Bold : `**Bold**`
-*   Italic : `*Italic*`
-*   Paragraphs : Line space inbetween paragraphs
-*   Lists : `* An asterix on every new list item`
-*   Quotes : `> Quote`
-*   Code : `` `code` ``
-*   HR : `==========`
+*   リンク : `[タイトル](URL)`
+*   強調 : `**強調**`
+*   イタリック : `*イタリック*`
+*   文章 : 文章の間に空行を入れる
+*   リスト : `* 項目ごとにアスタリスク(*)をつける`
+*   引用 : `> 引用`
+*   コード : `` `コード` ``
+*   水平線 : `==========`
 
-####  Images
+####  画像
 
-To insert an image into your post, you need to first enter `![]()` into the Markdown editor panel.
-This should create an image upload box in your preview panel.
+記事の中に画像を入れるには、まず`![]()`と編集画面で入力してください。
+プレビュー画面に画像アップロードのためのボックスが表示されます。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png)
 
-You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup.
-If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+(.png, .gif, .jpg)形式の画像をこのボックスにドラッグアンドドロップすることで画像のアップロードができ、記事に画像を含めることができます。もしくはボックスをクリックすることで、画像アップロード用のポップアップ画面からのアップロードも行うことができます。
+もしも画像URLから画像を含めたい場合は、画像アップロードボックスの左下にある'link'アイコンをクリックしてください。こうすることで、画像URLを入力できます。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png)
 
-To title your image, all you need to do is place your title text inbetween the square brackets, e.g; `![This is a title]()`.
+画像のタイトルを入力するには、`![画像のタイトル]()`のように[]の間にテキストを入力してください。
 
-##### Removing Images
+##### 画像の削除
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
-To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
+画像を削除するためには、挿入した画像の右上部分にある'削除'アイコンをクリックしてください。再び画像の挿入が行えるように、画像アップロード用のボックスが空の状態で再び表示されます。
 
