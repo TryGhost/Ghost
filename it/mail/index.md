@@ -90,7 +90,7 @@ mail: {
 
 ### Gmail <a id="gmail"></a>
 
-&Egrave possibile utilizzare Gmail per inviare emial da Ghost. Se vuoi farlo, ti consigliamo di [creare un nuovo account](https://accounts.google.com/SignUp) per questo scopo, invece di utilizzare il tuo account personale.
+&Egrave; possibile utilizzare Gmail per inviare emial da Ghost. Se vuoi farlo, ti consigliamo di [creare un nuovo account](https://accounts.google.com/SignUp) per questo scopo, invece di utilizzare il tuo account personale.
 
 Appena avrai creato un nuovo account, puoi configurare il file di configurazione di Ghost, <code class="path">config.js</code>. Apri il file nel tuo editor preferito. Raggiungi l'ambiente in cui vuoi configurare la tua email, e configuralo come mostrato qui:
 
