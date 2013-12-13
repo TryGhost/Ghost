@@ -154,7 +154,10 @@ settings = {
                 result.models = result;
                 return when(readSettingsResult(result)).then(function (settings) {
                     updateSettingsCache(settings);
-                    return settingsObject(settingsFilter(settingsCache, type));
+                }).then(function () {
+                    return config.theme.update(settings).then(function () {
+                        return settingsObject(settingsFilter(settingsCache, type));
+                    });
                 });
             }).otherwise(function (error) {
                 return dataProvider.Settings.read(key.key).then(function (result) {
@@ -175,8 +178,11 @@ settings = {
             setting.set('value', value);
             return dataProvider.Settings.edit(setting).then(function (result) {
                 settingsCache[_.first(result).attributes.key].value = _.first(result).attributes.value;
-                return settingsObject(settingsCache);
-            }, errors.logAndThrowError);
+            }).then(function () {
+                return config.theme.update(settings).then(function () {
+                    return settingsObject(settingsCache);
+                });
+            }).otherwise(errors.logAndThrowError);
         });
     }
 };
