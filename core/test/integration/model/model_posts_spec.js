@@ -6,6 +6,7 @@ var testUtils = require('../../utils'),
     sequence = require('when/sequence'),
 
     // Stuff we are testing
+    DataGenerator = require('../../utils/fixtures/data-generator'),
     Models = require('../../../server/models');
 
 describe('Post Model', function () {
