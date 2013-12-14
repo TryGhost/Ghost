@@ -193,7 +193,10 @@
                     }
                 });
 
-                $dropzone.append('<a class="image-upload" title="Add image"><span class="hidden">Upload</span></a>');
+                // Only show the toggle icon if there is a dropzone mode to go back to
+                if (settings.fileStorage !== false) {
+                    $dropzone.append('<a class="image-upload" title="Add image"><span class="hidden">Upload</span></a>');
+                }
 
                 $dropzone.find('a.image-upload').on('click', function () {
                     $dropzone.find('.js-url').remove();
