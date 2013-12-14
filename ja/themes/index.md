@@ -21,7 +21,7 @@ Ghostのテーマは<code class="path">content/themes/</code>に配置されて�
 新しく追加されたテーマに変更するには、
 
 1.  Ghostを再起動する。今のところ、<code class="path">content/themes</code>に追加されたフォルダーは自動では検知されませんので、再起動が必要です。
-2.  Ghostの管理画面にログインし、<code class="path">/ghost/settings/general/</code>にアクセスする。
+2.  Ghostの管理画面にログインし、<code class="path">/ghost/settings/general/</code>にアクセスします。
 3.  テーマ名を'Theme'ドロップダウンから選択します。
 4.  'Save'をクリックします。
 5.  ブログにアクセスして、テーマが変更されていることを確かめます。
@@ -41,7 +41,7 @@ Ghostのテーマ作成・保守はシンプルにできるように設計され
 
 Handlebarsのテンプレートは階層制(テンプレートがテンプレートを継承できる)になっており、部分テンプレートもサポートしています。Ghostはこれらを活用し、コードの重複を防ぎ、それぞれのテンプレートに単一責任の原則を適用しています。構成がしっかりしているテーマは保守も容易ですし、上手く分離されたすればコンポーネントはテーマ間で再利用がしやすくなります。
 
-みなさんに「Ghostのテーマは扱いやすい」と思って頂けると嬉しいです。
+みなさんに「Ghostのテーマは扱いやすい」と思って頂けると幸いです。
 
 ## Ghostテーマのファイル構造 <a id="file-structure"></a>
 
@@ -60,11 +60,11 @@ Handlebarsのテンプレートは階層制(テンプレートがテンプレー
 └── post.hbs [required]
 ```
 
-現在のところ、default.hbsや他のフォルダーは無くても構いません。<code class="path">index.hbs</code>と<code class="path">post.hbs</code>は必ず必要で、無いとGhostが動きません。<code class="path">partials</code>は特殊なディレクトリで、部分テンプレートを使いたければここに配置してください。たとえば、<code class="path">list-post.hbs</code>が連続する記事のうちのひとつを表示するのであれば、ホームページに使えますし、いずれアーカイブページやタグページにも使えるでしょう。<code class="path">partials</code>は、あらかじめGhostに組み込まれているテンプレートを上書きするテンプレート(ページ分割など)の配置場所でもあります。<code class="path">pagination.hbs</code>ファイルを<code class="path">partials</code>に入れれば、独自のページ分割用のHTMLを使うことができます。
+現在のところ、default.hbsや他のフォルダーは無くても構いません。<code class="path">index.hbs</code>と<code class="path">post.hbs</code>は必ず必要です。無いとGhostが動きません。<code class="path">partials</code>は特殊なディレクトリです。部分テンプレートを使いたければここに配置してください。たとえば、<code class="path">list-post.hbs</code>が連続する記事のうちのひとつを表示する部分テンプレートなら、これはホームページに使えますし、いずれアーカイブページやタグページにも使えるでしょう。<code class="path">partials</code>は、あらかじめGhostに組み込まれているテンプレートを上書きするテンプレート(ページ分割など)の配置場所でもあります。<code class="path">pagination.hbs</code>ファイルを<code class="path">partials</code>に入れれば、ページの分割に独自のHTMLを使うことができます。
 
 ### default.hbs
 
-ベースとなるテンプレートで、全てのページに表示しないといけないHTMLが含まれています。`<html>`、 `<head>`、`<body>`タグや、`{{ghost_head}}`や`{{ghost_foot}}`ヘルパー、そしてサイト全体で使われるヘッダーやフッターが含まれます。
+ベースとなるテンプレートで、全てのページに表示されるHTMLが含まれています。`<html>`、 `<head>`、`<body>`タグや、`{{ghost_head}}`や`{{ghost_foot}}`ヘルパー、そしてサイト全体で使われるヘッダーやフッターが含まれます。
 
 default.hbsには`{{{body}}}`というHandlebarsのコードが含まれており、default.hbsを継承するテンプレートの内容が挿入される位置を示しています。テンプレートの最初の行に`{{!< default}}`と書けば、このテンプレートはdefault.hbsを継承することになり、ファイルの内容が`{{{body}}}`で指定された位置に挿入されます。
 
@@ -80,91 +80,92 @@ Casper(現段階のデフォルトテーマ)では、ホームページには大
 
 Casper(現段階のデフォルトテーマ)では、個別の記事にはそれぞれヘッダーがあり、こちらも`@blog`のグローバル設定と`{{#post}}`データアクセサを利用して記事の詳細をすべて表示します。
 
-### Post styling & previewing
+### 記事のスタイリングとプレビューについて
 
-Ghostのテーマを作成する際は、記事のCSSとその他のCSSが競合しないよう、クラスとIDのスコープに注意してください。記事の中でどんなクラスやID(見出し用に自動生成される)が使われるか分からないからです。なので、ページの違う部分を違うスコープにするべきです。#my-idは競合する可能性が高いですが、#themename-my-idは低いです。
+Ghostのテーマを作成する際は、記事のCSSとその他のCSSが競合しないよう、クラスとIDのスコープに注意してください。記事の中でどんなクラスやID(見出し用に自動生成される)が使われるか分からないので、ページを個別のスコープで区切るべきです。#my-idは競合する可能性が高いですが、#themename-my-idは低いです。
 
 Ghostの二画面エディタでは、実際の記事ページに近い、記事のプレビューが表示されます。しかし、プレビューを実際の記事ページと一致させるには、プレビュー用のCSSがテーマの一部として必要です。この機能はまだ実装されていませんが、実装された時に楽になるよう、記事用のCSSファイル(例:post.css)をテーマの他のCSS(例:style.css)と分けておくことを推奨します。
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## 独自のテーマを作成する <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+独自のテーマを作成するには、まずCaspterをコピーするか、もしくは新しく任意の名前のフォルダーを<code class="path">content/themes</code>に作成してください(例: my-themeなど。テーマ名はすべて小文字にし、文字・数字・ハイフンのみを使用してください)。新しくフォルダーを作成した場合、空のindex.hbsとpost.hbsファイルを中に作ってください。まだ何も表示されませんが、それでもれっきとしたテーマです。
 
-### The post list
+### 記事のリスト
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+<code class="path">index.hbs</code>には`posts`オブジェクトが渡され、foreachヘルパーを使って一つずつ記事を表示できます。例:
 
 ```
 {{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
+// 記事のコンテクストの中です。
+// ここに書かれることは個別の記事ごとに表示されます。
 {{/foreach}}
 ```
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
 
-#### Pagination
+詳しくは[`{{#foreach}}`](#foreach-helper)の欄をご覧ください。
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+#### ページ分割
 
-### Outputting individual posts
+詳しくは[`{{pagination}}`](#pagination-helper)の欄をご覧ください。
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+### 個別の記事を表示する
 
-For the time being, these are:
+記事のリストの`foreach`ループ内や、<code class="path">post.hbs</code>内で個別の記事を扱う際に、以下の記事の属性を取得することができます。
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+現段階で取得できるのは、以下の値です。
 
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+*   id – *記事のID*
+*   title – *記事のタイトル*
+*   url – *記事の相対URL*
+*   content – *記事のHTML*
+*   published_at – *記事が表示*
+*   author – *著者の詳細データ* (詳しくは下記を参照ください)
+
+これらはすべてHandlebarsの表現(例:`{{title}}`)で表示できます。
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>注意:</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+        content属性は<code>{{content}}</code>によって上書きされ表示されます。これにより、HTMLが安全にかつ正しく表示されます。詳しくは<a href="#content-helper"><code>{{content}}</code>ヘルパー</a>の欄を参照ください。
       </li>
       <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+        url属性は<code>{{url}}</code>ヘルパーによって出力されます。詳しくは<a href="#url-helper"><code>{{url}}</code>ヘルパー</a>の欄を参照ください。
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### 記事の著者について
 
-When inside the context of a single post, the following author data is available:
+個別の記事を扱う際に、下記の著者データを取得することができます:
 
-*   `{{author.name}}` – the name of the author
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – 著者の名前
+*   `{{author.email}}` – 著者のEメールアドレス
+*   `{{author.bio}}` – 著者の説明
+*   `{{author.website}}` – 著者のウェブサイト
+*   `{{author.image}}` – 著者のプロフィール画像
+*   `{{author.cover}}` – 著者のカバー画像
 
-You can use just`{{author}}` to output the author's name.
+著者の名前は`{{author}}`でも表示できます。
 
-This can also be done by using a block expression:
+ブロック表現を使うこともできます:
 
 ```
 {{#author}}
-    <a href="mailto:{{email}}">Email {{name}}</a>
+    <a href="mailto:{{email}}">{{name}}にメールする</a>
 {{/author}}
 ```
 
-#### Post Tags
+#### 記事のタグ
 
-When inside the context of a single post, the following tag data is available
+個別の記事を扱う際に、下記のタグデータを取得することができます:
 
-*   `{{tag.name}}` – the name of the tag
+*   `{{tag.name}}` – タグの名前
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+`{{tags}}`を使うとタグのリストがコンマで区切られて表示されます。`{{tags separator=""}}`を使えば好きな文字でタグを区切ることができます。
 
-This can also be done by using a block expression:
+ブロック表現を使うこともできます:
 
 ```
 <ul>
@@ -174,55 +175,55 @@ This can also be done by using a block expression:
 </ul>
 ```
 
-### Global Settings
+### グローバル設定
 
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+Ghostのテーマは`@blog`アクセサを通してグローバル設定にアクセスできます。
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – 現在の環境におけるブログのurl (<code class="path">config.js</code>で指定)
+*   `{{@blog.title}}` – ブログのタイトル (設定ページで指定)
+*   `{{@blog.description}}` – ブログの説明 (設定ページで指定)
+*   `{{@blog.logo}}` – ブログのロゴ (設定ページで指定)
 
-## Built-in Helpers <a id="helpers"></a>
+## Ghostに用意されているヘルパー <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghostはあらかじめテーマ作成用のヘルパーがいくつか用意されています。ブロックヘルパーと出力ヘルパーの二つがあります。
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[ブロックヘルパー](http://handlebarsjs.com/block_helpers.html)**には開始と終了タグがあります(例:`{{#foreach}}{{/foreach}}`)。タグの間はコンテクストが変更され、新しい属性に`@`でアクセスできるようになります。
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**出力ヘルパー**はデータを表示する表現と見た目は変わりません(例:`{{content}}`)。出力ヘルパーは、データを表示する前に変更を加えたり、データの表示方法をカスタマイズ可能にします。一部の出力ヘルパーは、部分テンプレートのようにテンプレートを利用してデータをHTMLフォーマットに変更します。ブロックヘルパーと兼用で使える出力ヘルパーもあります。
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   種類: ブロックヘルパー
+*   オプション: `columns` (数字)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}`は記事のリスト用のループへルパーです。デフォルトだと、Handlebarsのヘルパーは`@index`(配列)と`@key`(オブジェクト)などの属性を追加しますので、これらを使うこともできます。
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach`は、さらに`@first`、`@last`、`@even`、`@odd`、`@rowStart`、`@rowEnd`を配列・オブジェクト両方に追加します。これにより、複雑な表示方法を簡単にすることができます。詳しは下記をご覧ください。
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+例:配列かオブジェクト(例:`posts`)の中身を順にチェックし、一番目かどうかチェックします。
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-        <div>First post</div>
+        <div>一番目の記事</div>
     {{/if}}
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+`if`を使えば複数の属性をチェックすることができます。例:最初と最後の記事を他とは別に表示します。
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-    <div>First post</div>
+    <div>一番目の記事</div>
     {{else}}
         {{#if @last}}
-            <div>Last post</div>
+            <div>最後の記事</div>
         {{else}}
-            <div>All other posts</div>
+            <div>他の記事</div>
         {{/if}}
     {{/if}}
 {{/foreach}}
@@ -230,7 +231,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+例:偶数目の記事にeven、奇数目の記事にoddクラスを追加します。コンテンツを縞模様の背景にするのに便利です。
 
 ```
 {{#foreach posts}}
@@ -240,7 +241,7 @@ The following example adds a class of even or odd, which could be used for zebra
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+例:column(列)引数を追加すれば、それぞれの行の初めと最後の要素に別々な処置をすることができます。グリッドレイアウトを作るのに便利です。
 
 ```
 {{#foreach posts columns=3}}
@@ -250,112 +251,112 @@ The following example shows you how to pass in a column argument so that you can
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   種類: 出力ヘルパー
+*   オプション: `words` (数字), `characters` (数字) [デフォルトでは全て表示になります。]
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}`は記事の中身を表示するだけのヘルパーです。正しいHTMLが生成されるようになっています。
 
-You can limit the amount of HTML content to output by passing one of the options:
+表示される長さは、オプションで指定することができます。
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}`とすれば、はじめの100単語だけが表示されます。HTMLの開始・終了タグもきちんと一致するように作られています。
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   種類: 出力ヘルパー
+*   オプション: `words` (数字), `characters` (数字) [デフォルトでは50単語になります。]
 
-`{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
+`{{excerpt}}`は記事の中身をHTMLタグ無しで表示します。記事の抜粋に役立ちます。
 
-You can limit the amount of text to output by passing one of the options:
+表示される長さは、オプションで指定することができます。
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters="140"}}`とすれば、はじめの140文字だけが表示されます。
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   種類: 出力ヘルパー
+*   オプション: `format` (日付フォーマット。デフォルトは“MMM Do, YYYY”), `timeago` (ブーリアン)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}`は日付を様々なフォーマットで表示するためのヘルパーです。日付とフォーマット用の文字列を渡すことができます。
 
 ```
-// outputs something like 'July 11, 2013'
+// 例:'July 11, 2013'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+もしくは、日付とtimeago(現在時刻からどれくらい前か)フラグを渡すことができます:
 
 ```
-// outputs something like '5 mins ago'
+// 例:'5 mins ago'
 {{date published_at timeago="true"}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+`{{date}}`をフォーマット無しで使った場合、“MMM Do, YYYY”となります。
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+`{{date}}`を記事のコンテクスト内で使い、どの日付を使うか指定しない場合、`published_at`が使われます。
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+`{{date}}`を記事のコンテクスト外で使った場合、現在時刻が使われます。
 
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date`は日付のフォーマットに[moment.js](http://momentjs.com/)を使用しています。フォーマット用の文字列についての詳細については、moment.jsの[ドキュメンテーション](http://momentjs.com/docs/#/parsing/string-format/)をご覧ください。
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   種類: 出力ヘルパー
+*   オプション: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}`は、記事のコンテクスト内で使うと、記事の相対URLを表示します。記事のコンテクスト外だと何も表示されません。
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+強制的に絶対URLを表示させるには、absoluteオプションを利用してください。例:`{{url absolute="true"}}`
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   種類: 出力ヘルパー、テンプレートを利用
+*   オプション: 無し (もうすぐ追加されます)
 
-`{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
+`{{pagination}}`はテンプレートを利用して新しい記事と古い記事へのリンク(もし新しい記事や古い記事があれば)や、現在のページ番号を含むHTMLを出力します。
 
-You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
+このHTMLは<code class="path">content/themes/<テーマの名前>/partials</code>内に<code class="path">pagination.hbs</code>を追加することにより上書きすることができます。
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+`{{body_class}}` – <code class="path">default.hbs</code>内の`<body>`タグ用のクラス名を出力します。個別のページにスタイルを適用するのに適しています。
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
+`{{post_class}}` – 記事を含むタグ用のクラス名を出力します。個別の記事にスタイルを適用するのに適しています。
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+`{{ghost_head}}` – <code class="path">default.hbs</code>の`</head>`タグの直前に配置され、メタ属性、スクリプト、スタイルタグを出力するのに使います。いずれフックできるようになります。
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
+`{{ghost_foot}}` – <code class="path">default.hbs</code>の`</body>`タグの直前に配置され、スクリプトタグを出力するのに使います。デフォルトではjqueryを読み込んでいます。いずれフックできるようになります。
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
+`{{meta_title}}` – 記事ページでは記事のタイトル、それ以外ではブログのタイトルを出力します。`</head>`ブロック内にタイトルを出力するのに適しています (例: `<title>{{meta_title}}</title>`)。いずれフックできるようになります。
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   種類: 出力ヘルパー
+*   オプション: 無し
 
-`{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+`{{meta_description}}` - 記事ページでは今のところ何も表示されず、それ以外ではブログの説明を出力します。descriptionメタ属性を指定するのに適しています (例: `<meta name="description" content="{{meta_description}}" />`)。いずれフックできるようになります。
 
 ## テーマのトラブルシューティング <a id="troubleshooting"></a>
 
