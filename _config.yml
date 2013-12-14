@@ -17,6 +17,8 @@ languages:
       key: 'pl'
     - name: '日本語'
       key: 'ja'
+    - name: 'Svenska'
+      key: 'sv-SE'
 
 port:         4478
 
@@ -73,6 +75,16 @@ translations:
     deploy:       'デプロイ'
     upgrading:    'アップグレード'
     troubleshooting: 'トラブルシューティング'
+  sv-SE:
+    site_title:   'Ghostguide'
+    installation: 'Installation'
+    usage:        'Användning'
+    email:        'E-Post'
+    themes:       'Teman'
+    help:         'Hjälp'
+    deploy:       'Driftsättning'
+    upgrading:    'Uppgradering' 
+    troubleshooting: 'Felsökning'
 
 # If running locally, simply comment out the line below to make all urls relative
 
