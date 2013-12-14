@@ -10,42 +10,42 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## テーマの変更 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghostのテーマは<code class="path">content/themes/</code>に配置されています。
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+デフォルトのCasperテーマ以外を使用したければ、公式の[マーケットプレイス・ギャラリー](http://marketplace.ghost.org/)をご覧ください。お好きなテーマファイルをダウンロードして展開し、Casperディレクトリと同じように<code class="path">content/themes</code>に配置してください。
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+独自のテーマを作りたければ、Casperディレクトリをコピペして編集してみることを推奨します。
 
-To switch to your newly added theme:
+新しく追加されたテーマに変更するには、
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Ghostを再起動する。今のところ、<code class="path">content/themes</code>に追加されたフォルダーは自動では検知されませんので、再起動が必要です。
+2.  Ghostの管理画面にログインし、<code class="path">/ghost/settings/general/</code>にアクセスする。
+3.  テーマ名を'Theme'ドロップダウンから選択します。
+4.  'Save'をクリックします。
+5.  ブログにアクセスして、テーマが変更されていることを確かめます。
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Handlebarsとは? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars](http://handlebarsjs.com/)とは、Ghostが利用しているテンプレート言語です。
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebarsは、セマンティックなテンプレートを簡単に作成する機能を提供します。
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+もし独自のテーマを作成したければ、まずはHandlebarsのシンタックスに慣れたほうが良いでしょう。[Handlebarsのドキュメンテーション](http://handlebarsjs.com/expressions.html)、または[Treehouseのチュートリアル](http://blog.teamtreehouse.com/getting-started-with-handlebars-js)がおすすめです。チュートリアルをやる場合、Handlebarsのインストールと使い方の部分は読む必要はありません(Ghostに既にインストールされているからです)ので、'Basic Expressions'から始めてみてください。
 
-## About Ghost themes <a id="about"></a>
+## Ghostのテーマについて <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Ghostのテーマ作成・保守はシンプルにできるように設計されています。たとえば、テンプレート(HTML)とビジネスロジック(JavaScript)はハッキリと分離されています。Handlebarsは(ほぼ)ロジックが無く、関心の分離を規則としていますので、コンテンツを表示するためのビジネスロジックを独立させることができます。こうすることで、デザイナーと開発者が共同でテーマを作ることが容易になります。
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+Handlebarsのテンプレートは階層制(テンプレートがテンプレートを継承できる)になっており、部分テンプレートもサポートしています。Ghostはこれらを活用し、コードの重複を防ぎ、それぞれのテンプレートに単一責任の原則を適用しています。構成がしっかりしているテーマは保守も容易ですし、上手く分離されたすればコンポーネントはテーマ間で再利用がしやすくなります。
 
-We really hope you'll enjoy our approach to theming.
+みなさんに「Ghostのテーマは扱いやすい」と思って頂けると嬉しいです。
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Ghostテーマのファイル構造 <a id="file-structure"></a>
 
-The recommended file structure is:
+次のようなファイル構造を推奨します。
 
 ```
 .
@@ -60,33 +60,31 @@ The recommended file structure is:
 └── post.hbs [required]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+現在のところ、default.hbsや他のフォルダーは無くても構いません。<code class="path">index.hbs</code>と<code class="path">post.hbs</code>は必ず必要で、無いとGhostが動きません。<code class="path">partials</code>は特殊なディレクトリで、部分テンプレートを使いたければここに配置してください。たとえば、<code class="path">list-post.hbs</code>が連続する記事のうちのひとつを表示するのであれば、ホームページに使えますし、いずれアーカイブページやタグページにも使えるでしょう。<code class="path">partials</code>は、あらかじめGhostに組み込まれているテンプレートを上書きするテンプレート(ページ分割など)の配置場所でもあります。<code class="path">pagination.hbs</code>ファイルを<code class="path">partials</code>に入れれば、独自のページ分割用のHTMLを使うことができます。
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+ベースとなるテンプレートで、全てのページに表示しないといけないHTMLが含まれています。`<html>`、 `<head>`、`<body>`タグや、`{{ghost_head}}`や`{{ghost_foot}}`ヘルパー、そしてサイト全体で使われるヘッダーやフッターが含まれます。
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
-
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+default.hbsには`{{{body}}}`というHandlebarsのコードが含まれており、default.hbsを継承するテンプレートの内容が挿入される位置を示しています。テンプレートの最初の行に`{{!< default}}`と書けば、このテンプレートはdefault.hbsを継承することになり、ファイルの内容が`{{{body}}}`で指定された位置に挿入されます。
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+これはホームページ用のテンプレートで、<code class="path">default.hbs</code>を継承します。ホームページに表示される記事のリストが渡されますので、<code class="path">index.hbs</code>はそれぞれの記事がどのように表示されるべきかを決めます。
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+Casper(現段階のデフォルトテーマ)では、ホームページには大きなヘッダーがあり、`@blog`のグローバル設定を利用してブログのロゴ、タイトル、説明を表示します。それに続いて、`{{#foreach}}`ヘルパーを利用して最新の記事が順番に表示されます。
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+こちらは個別の記事を表示するためのテンプレートで、同じく<code class="path">default.hbs</code>を継承します。
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+Casper(現段階のデフォルトテーマ)では、個別の記事にはそれぞれヘッダーがあり、こちらも`@blog`のグローバル設定と`{{#post}}`データアクセサを利用して記事の詳細をすべて表示します。
 
 ### Post styling & previewing
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+Ghostのテーマを作成する際は、記事のCSSとその他のCSSが競合しないよう、クラスとIDのスコープに注意してください。記事の中でどんなクラスやID(見出し用に自動生成される)が使われるか分からないからです。なので、ページの違う部分を違うスコープにするべきです。#my-idは競合する可能性が高いですが、#themename-my-idは低いです。
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghostの二画面エディタでは、実際の記事ページに近い、記事のプレビューが表示されます。しかし、プレビューを実際の記事ページと一致させるには、プレビュー用のCSSがテーマの一部として必要です。この機能はまだ実装されていませんが、実装された時に楽になるよう、記事用のCSSファイル(例:post.css)をテーマの他のCSS(例:style.css)と分けておくことを推奨します。
 
 ## Creating Your Own Theme <a id="create-your-own"></a>
 
@@ -359,10 +357,10 @@ You can override the HTML output by the pagination helper by placing a file call
 
 `{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## テーマのトラブルシューティング <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. エラー: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+テーマフォルダー内には必ずindex.hbsとpost.hbsが必要です。名前のミスに注意してください。
 
 {% endraw %}
