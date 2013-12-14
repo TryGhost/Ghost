@@ -14,28 +14,29 @@ next_section: upgrading
 
 ## Getting Ghost Live <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Så du har bestämt dig för att komma igång med Ghost? Utmärkt!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+Det första beslutet du måste ta, är huruvida du vill installera Ghost manuellt, eller om du föredrar att använda ett installationsprogram.
 
-### Installers
+### Installationsprogram
 
-There are a couple of options for simple installers at the moment:
+Det finns ett antal olika alternativ för simpla installationsprogram för tillfället:   
+    
+*   Lansera din blogg i molnet med [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   Starta Ghost med [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   Kom igång med [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+### Manuell installation
 
-### Manual Setup
+Du kommer att behöva ett paket hos ett webbhotell som har eller tillåter dig att installera [Node.js](http://nodejs.org).
+    Det betyder något som till exempel ett moln ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) eller något annan tjänst som har SSH (terminal) access & tillåter dig att installera Node.js. Det finns många alternativ och de kan vara väldigt billiga.
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Vad som inte funkar för tillfället, är cPanel-liknande tjänster med delade servrar eftersom de för det mesta är designade för att vara värd för PHP. Ett antal tillåter Ruby, och kan eventuellt erbjuda Nose.js i framtiden eftersom de är någorlunda lika.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+Tråkigt nog så har många av de Node-specifika molnbaserade webbhotellen som **Nodejitsu** & **Heroku** ej stöd för Ghost. De kommer att fungera till en början, men kommer att ta bort dina filer och därigenom alla bilduppladdningar och din databas. Heroku stödjer MySQL som skulle möjliggöra användning, men du kommer fortfarande att förlora alla uppladdade bilder.
 
-The following links contain instructions on how to get up and running with:
+Följande länkar innehåller instruktioner för att komma igång med:
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
@@ -44,29 +45,30 @@ The following links contain instructions on how to get up and running with:
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
 *   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
 
-## Making Ghost run forever
+## Sätta igång Ghost med forever
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+Den tidigare beskrivna metoden för att starta Ghost är `npm start`. Detta är ett bra sätt att göra lokal utveckling och testning, men om du startar Ghost med kommandotolken kommer processen stängas av när du stänger fönstret för kommandotolken eller loggar ut från SSH. För att förhindra Ghost från att stängas av måste du köra Ghost som en tjänst. Det finns två sätt att åstadkomma detta.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+Du kan använda `forver`för att köra Ghost som en bakgrundsprocess. `forever` kommer även ta hand om din installation av Ghost och kommer att starta om processen i node om den kraschar.
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   För att installera `forever` skriv `npm install forever -g`
+*   För att starta Ghost med `forever` från installationsmappen för Ghost skriv `NODE_ENV=production forever start index.js`
+*   För att stoppa Ghost skriv `forever stop index.js`
+*   FÖr att tet om processen för Ghost är igång, skriv `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Populära Linuxdistributioner&mdash;som Fedora, Debian, and Ubuntu&mdash;upprätthåller ett paket för Supervisor: Ett processkontrolleringssytem som tillåter dig att köra Ghost vid uppstart utan att använda initieringsskript. Till skillnad från ett initieringsskript är Supervisor flyttbar mellan Linuxdistributioner och versioner.
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Installera Supervisor](http://supervisord.org/installing.html) som krävs för din Linuxdistribution. Normalt är detta:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
+    *   De flesta andra distributioner: `easy_install supervisor`
+*   Bekräfta att Supervisor är igång, genom att skriva `service supervisor start`
 *   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+*   Gör ett uppstartsskript för din Ghostinstallation. Normalt är denna lokaliserad i `/etc/supervisor/conf.d/ghost.conf` till exempel.
 
     ```
     [program:ghost]
@@ -80,44 +82,44 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Starta Ghost med Supervisor: `supervisorctl start ghost`
+*   Stäng av Ghost: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+Du kan läsa [dokumentationen för Supervisor](http://supervisord.org) för mer information.
 
-### Init Script
+### Initieringsskript
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Linuxsystem använder initieringsskript som körs vid uppstart av systemet. Dessa skript finns i `/etc/init.d`. För att få Ghost att köras för alltid och även överleva en omstart bör du ställa in ett initieringsskript som åstadkommer detta. Följande exempel fungerar på Ubuntu och är testat på **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   Skapa filen `/etc/init.d/ghost` with the following command:
 
     ```
     $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   Öpnna filen med `nano /etc/init.d/ghost` och stäm av följande:
+*   Att `GHOST_ROOT` variabeln är ändrad till den plats där du har installerat Ghost
+*   Att `DAEMON` variabeln är detsamma som utmatningen av `which node`
+*   Att initieringsskriptet är igång med sin egen Ghost-användare och grupp på ditt system, skapa dem med följande:
 
     ```
     $ sudo useradd -r ghost -U
     ```
 
-*   Let's also make sure the Ghost user can access the installation:
+*   Låt oss även säkra att användaren för Ghost har access till installationen:
 
     ```
     $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
-*   Change the execution permission for the init script by typing
+*   Ändra exekveringstillåtelserna för initieringsskriptet genom att skriva
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   Nu kan du kontrollera Ghost med följande kommandon:
 
     ```
     $ sudo service ghost start
@@ -126,40 +128,40 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line: 
+*   För att starta Ghost vid uppstart måste det nyligen skapade initieringsskriptet vara registrerat för uppstart.
+    Skriv följande två kommandon i kommandotolken:
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
 
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+*   Bekräfta att din användare kan ändra filer, config.js i Ghost-mappen till exempel, genom att tilldela dig till gruppen ghost.
     ```
     $ sudo adduser USERNAME ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   Om du nu startar om din server borde Ghost redan vara igång för dig.
 
 
-## Setting up Ghost with a domain name
+## Ställ in Ghost med ett domännamn
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
+Om du har ställt in Ghost för att köra för evigt kan du även ställa in en webbserver som en proxy för att expediera din blogg med din domän.
+I detta exemplet förutsätter vi att du använder **Ubuntu 12.04** och använder **nginx** som webbserver.
+Vi förutsätter även att Ghost körs i bakgrunden med en av de två ovannämnda sätten.
 
-*   Install nginx
+*   Installera nginx
 
     ```
     $ sudo apt-get install nginx
     ```
     <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
 
-*   Configure your site
+*   Konfigurera din webbserver
 
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   Skapa en ny fil i `/etc/nginx/sites-available/ghost.conf`
+    *   Öppna filen med en textredigerare (t.ex. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        och skriv in följande
 
         ```
         server {
@@ -175,14 +177,14 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   Ändra `server_name` till din domän
+    *   Symlänka din konfiguration i `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
 
-    *   Restart nginx
+    *   Starta om nginx
 
     ```
     $ sudo service nginx restart
