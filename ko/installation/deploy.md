@@ -61,14 +61,14 @@ Ghost를 사용하기 위해서는 호스팅 서비스가 [Node.js](http://nodej
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Fedora, Debian, Ubuntu와 같은 유명 리눅스 배포판에 계속 포함되어 있는 것이 감시자(Supervisor) 패키지입니다. 이것은 프로세스 컨트롤 시스템으로서 init 스크립트 없이 부팅하면서 Ghost가 실행되도록 해주지요. init script와 달리, Supervisor는 리눅스 배포판이나 버전을 가리지 않고 바로 옮겨서 사용 가능합니다. 
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Supervisor를 설치](http://supervisord.org/installing.html)합니다. 현재 리눅스 버전을 확인하세요. 일반적으로, 아래를 참고하면 됩니다:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   기타 리눅스 배포판: `easy_install supervisor`
+*   Supervisor가 구동되고 있는지 확인하세요. `service supervisor start`를 실행하세요.
+*  Ghost 설치를 위한 startup 스크립트를 작성합니다. 대개  `/etc/supervisor/conf.d/ghost.conf`에 다음과 같이 씁니다:
 
     ```
     [program:ghost]
@@ -82,16 +82,16 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Supervisor를 사용하여 Ghost 시작하기: `supervisorctl start ghost`
+*   Ghost 중지하기: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+더 자세한 내용은 [documentation for Supervisor](http://supervisord.org) 문서를 참고하세요.
 
 ### Init Script
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+리눅스 시스템은 부팅 시에 init script를 실행하도록 되어 있습니다. 이 스크립트들은 /etc/init.d 디렉토리에 위치합니다. Ghost를 상시 구동하도록 만들고 리부팅 되더라도 종료되지 않도록 하려면 init script를 수정하여 바로 그러한 일을 하도록 설정해주어야 합니다. 아래 스크립트 예시는 우분투에 사용될 스크립트이고 **Ubuntu 12.04**에서 테스트되었습니다.
 
-*   Create the file /etc/init.d/ghost with the following content:
+*  아래 내용을 넣어 /etc/init.d/ghost 라는 파일을 만들어주세요.
 
     ```
     #! /bin/sh
@@ -266,19 +266,19 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     :
     ```
 
-*   Change the execution permission for the init script by typing
+*   위의 init script의 실행 퍼미션을 755로 조정하기 위해 다음과 같이 타이핑합니다. 
         `chmod 755 /etc/init.d/ghost`
-*   Use the script:
+*   스크립트 실행하기:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
-*   To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: `update-rc.d ghost defaults` and `update-rc.d ghost enable`
+    *   실행: `service ghost start`
+    *   중지: `service ghost stop`
+    *   재실행: `service ghost restart`
+    *   상태체크: `service ghost status`
+*   Ghost가 시스템 부팅 시에 실행되도록 하려면 새로 작성한 init script가 등록되어 있어야 합니다. 아래 두 가지의 명령을 커맨드 라인에 타이핑하여 실행하세요. : `update-rc.d ghost defaults` 그리고 `update-rc.d ghost enable`
 
-Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!
+node를 항상 사용하도록 하는 방법과, 우분투에서 Ghost를 데몬Daemon으로 사용하는 방법(백그라운드 구동)에 관한 가이드 문서를 곧 공개하겠습니다!
 
-## Setting up Ghost with a domain name
+## Ghost에 도메인명 설정하기
 
-Documentation on using nginx as a reverse proxy on their way.
+nginx를 역프록시(reverse proxy)로 사용하는 가이드 문서도 곧 올라옵니다.
 
