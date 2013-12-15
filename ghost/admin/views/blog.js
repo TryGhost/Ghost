@@ -256,7 +256,7 @@
                 $(e.currentTarget).attr('target', '_blank');
             });
 
-            if (this.model !== 'undefined') {
+            if (this.model !== undefined) {
                 this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
             }
 
