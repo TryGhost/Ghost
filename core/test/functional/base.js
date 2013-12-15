@@ -58,10 +58,17 @@ casper.writeContentToCodeMirror = function (content) {
 
 casper.waitForOpaque = function (classname, then, timeout) {
     casper.waitFor(function checkOpaque() {
-        return this.evaluate(function (element) {
+        var value = this.evaluate(function (element) {
             var target = document.querySelector(element);
+            if (target === null) {
+                return null;
+            }
             return window.getComputedStyle(target).getPropertyValue('opacity') === "1";
         }, classname);
+        if (value !== true && value !== false) {
+            casper.test.fail('Unable to find element: ' + classname);
+        }
+        return value;
     }, then, timeout);
 };
 
