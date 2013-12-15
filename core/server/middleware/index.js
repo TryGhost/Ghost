@@ -166,7 +166,7 @@ function redirectToSignup(req, res, next) {
 function redirectSSL(req, res, next) {
     // Check if X-Forarded-Proto headers are sent, if they are check for https. If they are not assume true to avoid infinite redirect loop.
     // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
-    var httpsHeader = req.header('X-Forwarded-Proto') !== 'undefined' ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
+    var httpsHeader = req.header('X-Forwarded-Proto') !== undefined ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
     if (!req.secure && !httpsHeader) {
         return res.redirect(301, url.format({
             protocol: 'https:',
