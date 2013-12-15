@@ -106,12 +106,10 @@ function setup(server) {
             permissions.init()
         );
     }).then(function () {
-        // Initialise mail after first run,
-        // passing in config module to prevent
-        // circular dependencies.
+        // Initialize mail
         return mailer.init();
     }).then(function () {
-        var adminHbs;
+        var adminHbs = hbs.create();
 
         // ##Configuration
 
@@ -123,12 +121,10 @@ function setup(server) {
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        adminHbs = hbs.create();
         server.set('admin view engine', adminHbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
 
         // Load helpers
-        helpers.loadCoreHelpers(config, adminHbs);
-
+        helpers.loadCoreHelpers(adminHbs);
 
         // ## Middleware
         middleware(server, dbHash);
