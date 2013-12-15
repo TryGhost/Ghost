@@ -93,7 +93,7 @@ The steps in the screencast are:
 *   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
 *   Once you've got the URL for the latest version, in your Droplet console type `cd /var/www/` to change directory to where the Ghost codebase lives.
 *   Next, type `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d ghost`
+*   Unzip the archive with `unzip -uo ghost-latest.zip -d ghost`
 *   Make sure all of the files have the right permissions with `chown -R ghost:ghost ghost/*`
 *   Run `npm install` to get any new dependencies
 *   Finally, restart Ghost so that the changes take effect using `service ghost restart`
