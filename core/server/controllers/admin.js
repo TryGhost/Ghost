@@ -170,13 +170,15 @@ adminControllers = {
                 };
 
             return mailer.send(message);
-        }).then(function success() {
-            var notification = {
-                type: 'success',
-                message: 'Check your email for further instructions',
-                status: 'passive',
-                id: 'successresetpw'
-            };
+        }).then(function success(successmessage) {
+            var message = (mailer.transport.transportType !== 'DIRECT') ? 'Check your email for further instructions' :
+                        successmessage,
+                notification = {
+                    type: 'success',
+                    message: message,
+                    status: 'passive',
+                    id: 'successresetpw'
+                };
 
             return api.notifications.add(notification).then(function () {
                 res.json(200, {redirect: config.paths().webroot + '/ghost/signin/'});
