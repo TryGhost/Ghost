@@ -74,7 +74,7 @@ mail: {
 
 AmazonはSimple Email Serviceというメール送信サービスを提供しています: <http://aws.amazon.com/ses/> サインアップが完了すると、アクセスキーとシークレットキーが提供されます。
 
-次に、先ほどの<code class="path">config.js</code>ファイルを開き、開発(develoopment)環境と本番(production)環境それぞれの値の中に、アクセスキーとシークレットキーを書き加えてください:
+次に、先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、アクセスキーとシークレットキーを書き加えてください:
 
 ```
 mail: {
@@ -90,7 +90,7 @@ mail: {
 
 GhostからGmailを使ってEメールを送ることも可能です。その場合、個人用のアカウントのパスワードを使わないために、[新しいGmailアカウント](https://accounts.google.com/SignUp)を作成することをおすすめします。
 
-新しいアカウントを作成したら、先ほどの<code class="path">config.js</code>ファイルを開き、開発(develoopment)環境と本番(production)環境それぞれの値の中に、メールアドレスとパスワードを書き加えてください:
+新しいアカウントを作成したら、先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、メールアドレスとパスワードを書き加えてください:
 
 ```
 mail: {
