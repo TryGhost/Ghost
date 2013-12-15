@@ -14,7 +14,7 @@ next_section: managing
 
 ##  Ghostの設定について <a id="settings"></a>
 
-<code class="path">&lt;ブログのURL URL&gt;/ghost/settings/</code>にブラウザでアクセスしてください。
+<code class="path">&lt;ブログのURL&gt;/ghost/settings/</code>にブラウザでアクセスしてください。
 
 ブログの設定を変更したあとは*必ず*"Save"ボタンを押してください。そうすることで変更が保存されます。
 

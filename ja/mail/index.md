@@ -38,7 +38,7 @@ Mailgunを利用される場合は、[mailgun.com](http://www.mailgun.com/)に�
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
 
-これですべて完了です。先ほどの<code class="path">config.js</code>ファイルを開き、開発(develoopment)環境と本番(production)環境それぞれの値の中に、次のように書き加えてください:
+これですべて完了です。先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、次のように書き加えてください:
 
 ```
 mail: {
