@@ -12,7 +12,7 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## Komma igång med Ghost <a id="deploy"></a>
 
 Så du har bestämt dig för att komma igång med Ghost? Utmärkt!
 
@@ -51,12 +51,12 @@ Den tidigare beskrivna metoden för att starta Ghost är `npm start`. Detta är 
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-Du kan använda `forver`för att köra Ghost som en bakgrundsprocess. `forever` kommer även ta hand om din installation av Ghost och kommer att starta om processen i node om den kraschar.
+Du kan använda `forever`för att köra Ghost som en bakgrundsprocess. `forever` kommer även ta hand om din installation av Ghost och kommer att starta om processen i node om den kraschar.
 
 *   För att installera `forever` skriv `npm install forever -g`
 *   För att starta Ghost med `forever` från installationsmappen för Ghost skriv `NODE_ENV=production forever start index.js`
 *   För att stoppa Ghost skriv `forever stop index.js`
-*   FÖr att tet om processen för Ghost är igång, skriv `forever list`
+*   För att testa om processen för Ghost är igång, skriv `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
