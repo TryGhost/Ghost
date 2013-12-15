@@ -81,7 +81,7 @@ Ghostをアップグレードするには、古いファイルを新しいファ
 
 *   最新版のGhostを含むZipファイルのURLをコピーします。例: `http://ghost.org/zip/ghost-latest.zip`.
 *   Zipファイルを`wget http://ghost.org/zip/ghost-latest.zip`でダウンロードします(あらかじめURLを置き換えてコマンドを入力してください)。
-*   ダウンロードしたZipファイルを`unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`で展開します。
+*   ダウンロードしたZipファイルを`unzip -uo ghost-latest.*.zip -d path-to-your-ghost-install`で展開します。
 *   `npm install --production`と入力して必要なプログラムをインストールします。
 *   Ghostを再起動してください。
 
