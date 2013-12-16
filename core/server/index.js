@@ -57,19 +57,19 @@ function doFirstRun() {
 }
 
 function initDbHashAndFirstRun() {
-    return when(models.Settings.read('dbHash')).then(function (hash) {
+    return when(api.settings.read('dbHash')).then(function (hash) {
         // we already ran this, chill
         // Holds the dbhash (mainly used for cookie secret)
-        dbHash = hash.attributes.value;
-        return dbHash;
-    }).otherwise(function (error) {
-        /*jslint unparam:true*/
-        // this is where all the "first run" functionality should go
-        var hash = uuid.v4();
-        return when(models.Settings.add({key: 'dbHash', value: hash, type: 'core'})).then(function () {
-            dbHash = hash;
-            return dbHash;
-        }).then(doFirstRun);
+        dbHash = hash.value;
+
+        if (dbHash === null) {
+            var initHash = uuid.v4();
+            return when(api.settings.edit('dbHash', initHash)).then(function (settings) {
+                dbHash = settings.dbHash;
+                return dbHash;
+            }).then(doFirstRun);
+        }
+        return dbHash.value;
     });
 }
 

@@ -2,6 +2,9 @@
     "core": {
         "databaseVersion": {
             "defaultValue": "001"
+        },
+        "dbHash": {
+            "defaultValue": null
         }
     },
     "blog": {
