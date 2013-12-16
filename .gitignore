@@ -3,7 +3,7 @@ _site/
 .DS_Store
 *.swp
 
-
+CNAME
 .idea/*
 *.iml
 projectFilesBackup
