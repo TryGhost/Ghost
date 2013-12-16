@@ -95,6 +95,11 @@ h1:before, h2:before {
   }
 }
 
+/* This can be removed once bootstrap.css is up to date */
+.navbar-nav .caret, .navbar-nav a:hover .caret {
+    border-top-color: inherit;
+    border-bottom-color: inherit;
+}
 
 /* ==========================================================================
    Navigation
@@ -112,6 +117,13 @@ h1:before, h2:before {
 .navbar-nav > li > a {
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .navbar-brand, .navbar-nav > li > a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
 }
 
 .bs-sidenav li a {
@@ -316,6 +328,10 @@ span.warn {
 
 #global-footer a {
     color: #e2edf2;
+}
+
+#global-footer .caret {
+    border-top-color: #e2edf2;
 }
 
 #global-footer .dropdown {
