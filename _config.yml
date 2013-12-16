@@ -73,6 +73,11 @@ translations:
     deploy:       'デプロイ'
     upgrading:    'アップグレード'
     troubleshooting: 'トラブルシューティング'
+    configuration: '高度な設定'
+    settings:     'ブログの設定'
+    managing:     '記事の管理'
+    writing:      '記事を書く'
+    faq:          'Q&A'
 
 # If running locally, simply comment out the line below to make all urls relative
 

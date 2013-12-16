@@ -12,43 +12,43 @@ prev_section: configuration
 next_section: managing
 ---
 
-##  Ghost Settings <a id="settings"></a>
+##  Ghostの設定について <a id="settings"></a>
 
-Go to <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
+<code class="path">&lt;ブログのURL&gt;/ghost/settings/</code>にブラウザでアクセスしてください。
 
-After you are finished adjusting the settings the "Save" button *must* be pressed, this will save your changes.
+ブログの設定を変更したあとは*必ず*"Save"ボタンを押してください。そうすることで変更が保存されます。
 
-You can check your changes by visiting the Blog URL.
+ブログのURLにブラウザでアクセスすることで、変更を確認することができます。
 
-### Blog Settings (<code class="path">/general/</code>)
+### ブログの設定 (<code class="path">/general/</code>)
 
-These are the Blog specific settings.
+以下のものが、ブログに関わる設定です。
 
-*   **Blog Title**: Changes your Blog's title. Theme reference `@blog.title`.
-*   **Blog Description**: Changes your Blog's description. Theme reference `@blog.description`.
-*   **Blog Logo**: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference `@blog.logo`.
-*   **Blog Cover**: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference `@blog.cover`.
-*   **Email Address**: This is the email admin notifications are sent too. It *must* be a valid email.
-*   **Posts per page**: This is how many posts are displayed per page. This should be a numeric value.
-*   **Theme**: This will list all the themes in your <code class="path">content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
+*   **Blog Title**: あなたのブログのタイトルです。テーマからの参照時は`@blog.title`として参照されます。
+*   **Blog Description**: あなたのブログの説明です。テーマからの参照時は`@blog.description`として参照されます。
+*   **Blog Logo**: '.png', '.jpg', '.gif'のいずれかの形式でブログのロゴをアップロードできます。テーマからの参照時は`@blog.logo`として参照されます。
+*   **Blog Cover**: '.png', '.jpg', '.gif'のいずれかの形式でブログのカバー画像をアップロードできます。テーマからの参照時は`@blog.cover`として参照されます。
+*   **Email Address**: ここで設定したEmailアドレスは管理の通知用としても使用されます。*必ず*有効なEmailアドレスを入力してください。
+*   **Posts per page**: 1ページに表示する投稿の数を設定できます。必ず数値を入力してください。
+*   **Theme**: <code class="path">content/themes</code>ディレクトリにあるテーマを表示します。お好みのものを一つ選んでください。
 
-### User Settings (<code class="path">/user/</code>)
+### ユーザ設定 (<code class="path">/user/</code>)
 
-These are the settings that control your user / author profile.
+ユーザや著者のプロフィールのための設定です。
 
-*   **Your Name**: This is your name that will be used to credit you when you publish a post. Theme reference (post) `author.name`.
-*   **Cover Image**: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.cover`.
-*   **Display Picture**: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.image`.
-*   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
-*   **Location**: This should be your current location. Theme reference (post) `author.location`.
-*   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Your Name**: 記事投稿時にクレジットとして表示される名前です。テーマからの参照時は、(post) `author.name`として参照されます。
+*   **Cover Image**: '.png', '.jpg', '.gif'のいずれかの形式で、プロフィールのカバー画像をアップロードできます。テーマからの参照時は、(post) `author.cover`として参照されます。
+*   **Display Picture**: '.png', '.jpg', '.gif'のいずれかの形式であなたのプロフィール画像をアップロードできます。テーマからの参照時は、(post) `author.image`として参照されます。
+*   **Email Address**: このEmailアドレスは、あなたの公のEmailアドレスとして使用されると共に通知を受け取るために使用されます。テーマからの参照時は、(post) `author.email`として参照されます。
+*   **Location**: あなたの住んでいる場所を入力します。テーマからの参照時は、(post) `author.location`として参照されます。
+*   **Website**: この欄には、あなたの個人WebサイトのURLや、ソーシャルネットワークの個人ページのURLなどを入力してください。テーマからの参照時は、(post) `author.website`として参照されます。
+*   **Bio**: あなたについての説明を200文字以下で書くことができます。テーマからの参照時は、(post) `author.bio`として参照されます。
 
-#### Changing your password
+#### パスワードの変更
 
-1.  Fill out the input boxes with the appropriate password (current / new password).
-2.  Now click **Change Password**.
+1.  現在のパスワードと、新しいパスワードを入力してください。
+2.  **Change Password**ボタンをクリックしてください。
 <p class="note">
-    <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
+    <strong>注意:</strong> パスワード変更のためには、"パスワード変更"ボタンをクリックする必要があります。"Save"ボタンを押すだけではパスワードは変更されません。
 </p>
 
