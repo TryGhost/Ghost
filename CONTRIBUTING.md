@@ -178,7 +178,6 @@ developing Ghost.
 **Pre-requisites:**
 
 * Node 0.10.x
-* ruby and the gems 'sass' and 'bourbon' - you can use `bundle install` to install the gems
 * for running functional tests: phantomjs 1.9.x and casperjs 1.1.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
 * for building docs: python and pygments
@@ -191,6 +190,7 @@ developing Ghost.
 1. cd into the project folder
 1. Run `git submodule update --init`
 1. Run `npm install -g grunt-cli`
+1. Run `bundle install`
 1. Run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install 
 instructions below this list
