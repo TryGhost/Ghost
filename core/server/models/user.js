@@ -357,7 +357,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     gravatarLookup: function (userData) {
-        var gravatarUrl = 'http://www.gravatar.com/avatar/' +
+        var gravatarUrl = '//www.gravatar.com/avatar/' +
                             crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
                             "?d=404",
             checkPromise = when.defer();
