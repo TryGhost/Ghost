@@ -1,31 +1,35 @@
 ---
 lang: pl
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Jak zainstalować Ghosta na swoim serwerze - Dokument
+meta_description: Wszystko, czego potrzebujesz, aby uzyskać platformę blogową Ghost i uruchomić ją w środowisku lokalnym lub zdalnym.
+heading: Instalacja i pierwsze kroki z Ghostem
+subheading: Pierwsze kroki do instalacji Twojego nowego bloga po raz pierwszy.
 chapter: installation
 next_section: mac
 ---
 
-## Overview <a id="overview"></a>
+## Wstęp <a id="overview"></a>
 
-The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.
+Dokumentacja Ghosta jest w dużej mierze trakcie budowy, regularnie uzupełniana i ulepszana. Jeśli potrzebujesz pomocy lub chcesz zasugerować poprawki, skontaktuj się z nami.
 
-Ghost is built on [Node.js](http://nodejs.org), and requires version `0.10.*` (latest stable version).
+Ghost jest oparty o platformę [Node.js](http://nodejs.org) i wymaga wersji `0.10.*` (najnowszej stabilnej). 
 
-Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.
+Uruchomienie Ghosta lokalnie jest proste, jednak wymaga uprzedniej instalacji Node.js.
 
-### What is Node.js?
+### Czym jest Node.js?
 
-[Node.js](http://nodejs.org) is a modern platform for building fast, scalable and efficient web applications.
-    Over the past 20 years, the web has evolved from a collection of static pages into a platform capable of supporting complex web applications like Gmail and facebook.
-    JavaScript is the programming language which has enabled this progress.
+[Node.js](http://nodejs.org) jest nowoczesną platformą do budowy szybkich, skalowalnych i wydajnych aplikacji internetowych.
+	Przez ostatnie 20 lat sieć Internet wyewoluowała ze zbioru statycznych dokumentów w stronę platformy umożliwiającej działania kompleksowych aplikacji webowych takich jak Gmail czy Facebook.
+	JavaScript jest językiem programowania, który umożliwił taki postęp.
 
-[Node.js](http://nodejs.org) provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.
+[Node.js](http://nodejs.org) umożliwia pisanie kodu JavaScript po stronie serwera. W przeszłości język ten działał wyłącznie wewnątrz przeglądarki internetowej, zaś do programowania po stronie serwera niezbędny był drugi język, na przykład PHP. Posiadanie aplikacji napisanej w jednym języku programowania jest wielką korzyścią, która czyni Node.js bardziej dostępnym także dla developerów, którzy dotąd pracowali z kodem jedynie po stronie klienckiej.
 
-The way that [Node.js](http://nodejs.org) makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
+Sposób, w jaki jest to możliwe z [Node.js](http://nodejs.org), polega na opakowaniu silnika JavaScript z przeglądarki Google Chrome i uczynieniu go możliwym do instalacji wszędzie. Oznacza to, że możesz niezwykle łatwo i szybko zainstalować Ghosta na swoim komputerze
+
+		Poniższe sekcje opisują szczegółowo proces instalacji Ghosta lokalnie w systemie Max, Windows i Linux. Dowiesz się również, jak uruchomić Ghosta na serwerze lub koncie hostingowym.
+
+	
     The following sections detail how to install Ghost locally on [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) or [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) or alternatively will help you get Ghost deployed on a [server or hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy) account.
 
 ### Getting started
