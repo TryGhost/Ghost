@@ -1,6 +1,5 @@
 var dataExport    = require('../data/export'),
     dataImport    = require('../data/import'),
-    api           = require('../api'),
     fs            = require('fs-extra'),
     path          = require('path'),
     when          = require('when'),
@@ -9,8 +8,12 @@ var dataExport    = require('../data/export'),
     schema        = require('../data/schema'),
     config        = require('../config'),
     debugPath     = config.paths().webroot + '/ghost/debug/',
+    api           = {},
 
     db;
+
+api.notifications = require('./notifications');
+api.settings      = require('./settings');
 
 db = {
     'export': function (req, res) {
@@ -27,7 +30,7 @@ db = {
             res.download(exportedFilePath, 'GhostData.json');
         }).otherwise(function (error) {
             // Notify of an error if it occurs
-            return api.notification.browse().then(function (notifications) {
+            return api.notifications.browse().then(function (notifications) {
                 var notification = {
                     type: 'error',
                     message: error.message || error,
@@ -52,7 +55,7 @@ db = {
              * - If the size is 0
              * - If the name doesn't have json in it
              */
-            return api.notification.browse().then(function (notifications) {
+            return api.notifications.browse().then(function (notifications) {
                 notification = {
                     type: 'error',
                     message:  "Must select a .json file to import",
@@ -127,7 +130,7 @@ db = {
                     });
             })
             .then(function importSuccess() {
-                return api.notification.browse().then(function (notifications) {
+                return api.notifications.browse().then(function (notifications) {
                     notification = {
                         type: 'success',
                         message: "Data imported. Log in with the user details you imported",
@@ -144,7 +147,7 @@ db = {
                     });
                 });
             }, function importFailure(error) {
-                return api.notification.browse().then(function (notifications) {
+                return api.notifications.browse().then(function (notifications) {
                     // Notify of an error if it occurs
                     notification = {
                         type: 'error',
