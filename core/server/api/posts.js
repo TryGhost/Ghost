@@ -14,7 +14,6 @@ posts = {
     browse: function browse(options) {
 
         // **returns:** a promise for a page of posts in a json object
-        //return dataProvider.Post.findPage(options);
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
                 omitted = result;
