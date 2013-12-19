@@ -162,37 +162,41 @@ function redirectToSignup(req, res, next) {
     });
 }
 
-// checkSSL helper
-function redirectSSL(req, res, next) {
-    // Check if X-Forarded-Proto headers are sent, if they are check for https. If they are not assume true to avoid infinite redirect loop.
-    // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
-    var httpsHeader = req.header('X-Forwarded-Proto') !== undefined ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
-    if (!req.secure && !httpsHeader) {
-        return res.redirect(301, url.format({
-            protocol: 'https:',
-            hostname: url.parse(config().url).hostname,
-            pathname: req.path,
-            query: req.query
-        }));
+function isSSLrequired(isAdmin) {
+    var forceSSL = url.parse(config().url).protocol === 'https:' ? true : false,
+        forceAdminSSL = (isAdmin && config().forceAdminSSL);
+    if (forceSSL || forceAdminSSL) {
+        return true;
     }
-    next();
+    return false;
 }
 
-// Check to see if we should 
+// Check to see if we should use SSL
+// and redirect if needed
 function checkSSL(req, res, next) {
-    var forceSSL = url.parse(config().url).protocol === 'https:' ? true : false,
-        forceAdminSSL = (res.isAdmin && config().forceAdminSSL);
-
-    if (forceSSL || forceAdminSSL) {
-        return redirectSSL(req, res, next);
+    if (isSSLrequired(res.isAdmin)) {
+        // Check if X-Forarded-Proto headers are sent, if they are check for https.
+        // If they are not assume true to avoid infinite redirect loop.
+        // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
+        var httpsHeader = req.header('X-Forwarded-Proto') !== undefined ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
+        if (!req.secure && !httpsHeader) {
+            return res.redirect(301, url.format({
+                protocol: 'https:',
+                hostname: url.parse(config().url).hostname,
+                pathname: req.path,
+                query: req.query
+            }));
+        }
     }
     next();
 }
 
 module.exports = function (server, dbHash) {
-    var oneYear = 31536000000,
+    var oneHour = 60 * 60 * 1000,
+        oneYear = 365 * 24 * oneHour,
         root = config.paths().webroot,
-        corePath = config.paths().corePath;
+        corePath = config.paths().corePath,
+        cookie;
 
     // Cache express server instance
     expressServer = server;
@@ -223,7 +227,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(manageAdminAndTheme);
 
     // Force SSL
-    server.use(checkSSL);
+    expressServer.use(checkSSL);
 
     // Admin only config
     expressServer.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
@@ -242,11 +246,23 @@ module.exports = function (server, dbHash) {
     expressServer.use(root + '/ghost/api/v0.1/db/', express.multipart());
 
     // Session handling
+    cookie = {
+        path: root + '/ghost',
+        maxAge: 12 * oneHour
+    };
+
+    // if SSL is forced, add secure flag to cookie
+    // parameter is true, since cookie is used with admin only
+    if (isSSLrequired(true)) {
+        cookie.secure = true;
+    }
+
     expressServer.use(express.cookieParser());
     expressServer.use(express.session({
         store: new BSStore(models),
+        proxy: true,
         secret: dbHash,
-        cookie: { path: root + '/ghost', maxAge: 12 * 60 * 60 * 1000 }
+        cookie: cookie
     }));
 
     //enable express csrf protection
