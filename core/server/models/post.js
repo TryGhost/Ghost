@@ -224,30 +224,44 @@ Post = ghostBookshelf.Model.extend({
      * @params opts
      */
     findPage: function (opts) {
-        var postCollection;
+        var postCollection,
+            permittedOptions = ['page', 'limit', 'status', 'staticPages'];
+
+        // sanitize opts
+        opts = _.pick(opts, permittedOptions);
 
         // Allow findPage(n)
         if (_.isString(opts) || _.isNumber(opts)) {
             opts = {page: opts};
         }
 
+        // Without this we are automatically passing through any and all query strings
+        // to Bookshelf / Knex. Although the API requires auth, we should prevent this
+        // until such time as we can design the API properly and safely.
+        opts.where = {};
+
         opts = _.extend({
-            page: 1,
+            page: 1, // pagination page
             limit: 15,
-            where: { page: false },
-            status: 'published',
-            orderBy: ['published_at', 'DESC']
+            staticPages: false, // include static pages
+            status: 'published'
         }, opts);
 
         postCollection = Posts.forge();
 
-        if (opts.where && opts.where.page === 'all') {
-            delete opts.where.page;
+        if (opts.staticPages !== 'all') {
+            // convert string true/false to boolean
+            if (!_.isBoolean(opts.staticPages)) {
+                opts.staticPages = opts.staticPages === 'true' || opts.staticPages === '1' ? true : false;
+            }
+            opts.where.page = opts.staticPages;
         }
 
         // Unless `all` is passed as an option, filter on
         // the status provided.
         if (opts.status !== 'all') {
+            // make sure that status is valid
+            opts.status = _.indexOf(['published', 'draft'], opts.status) !== -1 ? opts.status : 'published';
             opts.where.status = opts.status;
         }
 
@@ -266,8 +280,10 @@ Post = ghostBookshelf.Model.extend({
         return postCollection
             .query('limit', opts.limit)
             .query('offset', opts.limit * (opts.page - 1))
-            .query('orderBy', opts.orderBy[0], opts.orderBy[1])
-            .fetch(_.omit(opts, 'page', 'limit', 'where', 'status', 'orderBy'))
+            .query('orderBy', 'status', 'ASC')
+            .query('orderBy', 'updated_at', 'DESC')
+            .query('orderBy', 'published_at', 'DESC')
+            .fetch(_.omit(opts, 'page', 'limit'))
             .then(function (collection) {
                 var qb;
 

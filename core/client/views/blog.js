@@ -94,8 +94,7 @@
                 data: {
                     status: 'all',
                     page: (self.collection.currentPage + 1),
-                    where: { page: 'all' },
-                    orderBy: ['updated_at', 'DESC']
+                    staticPages: 'all'
                 }
             }).then(function onSuccess(response) {
                 /*jslint unparam:true*/
