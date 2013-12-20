@@ -10,6 +10,7 @@ module.exports = function (server) {
     server.get('/ghost/api/v0.1/posts/:id', middleware.authAPI, api.requestHandler(api.posts.read));
     server.put('/ghost/api/v0.1/posts/:id', middleware.authAPI, api.requestHandler(api.posts.edit));
     server.del('/ghost/api/v0.1/posts/:id', middleware.authAPI, api.requestHandler(api.posts.destroy));
+    server.get('/ghost/api/v0.1/posts/getSlug/:title', middleware.authAPI, api.requestHandler(api.posts.getSlug));
     // #### Settings
     server.get('/ghost/api/v0.1/settings/', middleware.authAPI, api.requestHandler(api.settings.browse));
     server.get('/ghost/api/v0.1/settings/:key/', middleware.authAPI, api.requestHandler(api.settings.read));

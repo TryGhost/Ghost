@@ -21,6 +21,7 @@
                 this.listenTo(this.model, 'change:status', this.render);
                 this.listenTo(this.model, 'change:published_at', this.render);
                 this.listenTo(this.model, 'change:page', this.render);
+                this.listenTo(this.model, 'change:title', this.updateSlugPlaceholder);
             }
         },
 
@@ -49,6 +50,19 @@
             $pubDateEl.val(pubDate);
         },
 
+        // Requests a new slug when the title was changed
+        updateSlugPlaceholder: function () {
+            var title = this.model.get('title');
+
+            $.ajax({
+                url: Ghost.paths.apiRoot + '/posts/getSlug/' + encodeURIComponent(title),
+                success: function (result){
+                    // ToDo: Find better selector
+                    $('.post-setting-slug')[0].placeholder = result;
+                }
+            });
+        },
+
         selectSlug: function (e) {
             e.currentTarget.select();
         },
@@ -60,8 +74,8 @@
                 slugEl = e.currentTarget,
                 newSlug = slugEl.value;
 
-            // Ignore empty or unchanged slugs
-            if (newSlug.length === 0 || slug === newSlug) {
+            // Ignore unchanged slugs
+            if (slug === newSlug) {
                 slugEl.value = slug === undefined ? '' : slug;
                 return;
             }
@@ -101,11 +115,6 @@
                 newPubDate = pubDateEl.value,
                 pubDateMoment,
                 newPubDateMoment;
-
-            // Ignore empty or unchanged dates
-            if (!newPubDate) {
-                return;
-            }
 
             // Check for missing time stamp on new data
             // If no time specified, add a 12:00

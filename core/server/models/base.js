@@ -93,67 +93,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     sanitize: function (attr) {
         return sanitize(this.get(attr)).xss();
-    },
-
-    // #### generateSlug
-    // Create a string act as the permalink for an object.
-    generateSlug: function (Model, base, readOptions) {
-        var slug,
-            slugTryCount = 1,
-            // Look for a post with a matching slug, append an incrementing number if so
-            checkIfSlugExists = function (slugToFind) {
-                var args = {slug: slugToFind};
-                //status is needed for posts
-                if (readOptions && readOptions.status) {
-                    args.status = readOptions.status;
-                }
-                return Model.findOne(args, readOptions).then(function (found) {
-                    var trimSpace;
-
-                    if (!found) {
-                        return when.resolve(slugToFind);
-                    }
-
-                    slugTryCount += 1;
-
-                    // If this is the first time through, add the hyphen
-                    if (slugTryCount === 2) {
-                        slugToFind += '-';
-                    } else {
-                        // Otherwise, trim the number off the end
-                        trimSpace = -(String(slugTryCount - 1).length);
-                        slugToFind = slugToFind.slice(0, trimSpace);
-                    }
-
-                    slugToFind += slugTryCount;
-
-                    return checkIfSlugExists(slugToFind);
-                });
-            };
-
-        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = base.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
-            // Replace dots and spaces with a dash
-            .replace(/(\s|\.)/g, '-')
-            // Convert 2 or more dashes into a single dash
-            .replace(/-+/g, '-')
-            // Make the whole thing lowercase
-            .toLowerCase();
-
-        // Remove trailing hyphen
-        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
-        // Remove non ascii characters
-        slug = unidecode(slug);
-        // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
-            .test(slug) ? slug + '-post' : slug;
-
-        //if slug is empty after trimming use "post"
-        if (!slug) {
-            slug = 'post';
-        }
-        // Test for duplicate slugs.
-        return checkIfSlugExists(slug);
     }
 
 }, {
@@ -236,6 +175,67 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     'delete': function () {
         return this.destroy.apply(this, arguments);
+    },
+
+    // #### generateSlug
+    // Create a string act as the permalink for an object.
+    generateSlug: function (Model, base, readOptions) {
+        var slug,
+            slugTryCount = 1,
+        // Look for a post with a matching slug, append an incrementing number if so
+            checkIfSlugExists = function (slugToFind) {
+                var args = {slug: slugToFind};
+                //status is needed for posts
+                if (readOptions && readOptions.status) {
+                    args.status = readOptions.status;
+                }
+                return Model.findOne(args, readOptions).then(function (found) {
+                    var trimSpace;
+
+                    if (!found) {
+                        return when.resolve(slugToFind);
+                    }
+
+                    slugTryCount += 1;
+
+                    // If this is the first time through, add the hyphen
+                    if (slugTryCount === 2) {
+                        slugToFind += '-';
+                    } else {
+                        // Otherwise, trim the number off the end
+                        trimSpace = -(String(slugTryCount - 1).length);
+                        slugToFind = slugToFind.slice(0, trimSpace);
+                    }
+
+                    slugToFind += slugTryCount;
+
+                    return checkIfSlugExists(slugToFind);
+                });
+            };
+
+        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
+        slug = base.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+            // Replace dots and spaces with a dash
+            .replace(/(\s|\.)/g, '-')
+            // Convert 2 or more dashes into a single dash
+            .replace(/-+/g, '-')
+            // Make the whole thing lowercase
+            .toLowerCase();
+
+        // Remove trailing hyphen
+        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
+        // Remove non ascii characters
+        slug = unidecode(slug);
+        // Check the filtered slug doesn't match any of the reserved keywords
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
+            .test(slug) ? slug + '-post' : slug;
+
+        //if slug is empty after trimming use "post"
+        if (!slug) {
+            slug = 'post';
+        }
+        // Test for duplicate slugs.
+        return checkIfSlugExists(slug);
     }
 
 });

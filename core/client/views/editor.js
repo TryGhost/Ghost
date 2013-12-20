@@ -396,6 +396,9 @@
             if (rawTitle !== trimmedTitle) {
                 $title.val(trimmedTitle);
             }
+
+            // Trigger title change for post-settings.js
+            this.model.set('title', trimmedTitle);
         },
 
         renderTitle: function () {
