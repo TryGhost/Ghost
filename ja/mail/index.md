@@ -8,37 +8,37 @@ chapter: mail
 ---
 
 
-## Mail Configuration <a id="email-config"></a>
+## メールの設定について <a id="email-config"></a>
 
-The following documentation details how to configure email in Ghost. Ghost uses [Nodemailer](https://github.com/andris9/Nodemailer), their documentation contains even more examples.
+このページでは、GhostのEメール設定について解説します。さらに詳しいことは、Ghostが利用している[Nodemailer](https://github.com/andris9/Nodemailer)のドキュメンテーションを参考にしてください。
 
-### Wait what?
+### なぜメールの設定が必要なのですか?
 
-If you're familiar with PHP land, then you're probably very used to having email just magically work on your hosting platform. Node is a bit different, it's shiny and new and still a little rough around the edges in places.
+PHPの開発経験がある方は、なぜEメールの設定をする必要があるのか疑問に思われるかもしれません。Nodeは開発されて間もない言語ですので、たまに煩雑な設定を要することもあるのです。
 
-But don't fear, setting up your email is a one-time thing and we're here to walk you through it.
+しかし、メールの設定は一度終えてしまえば後は気にする必要はありません。早速見てみましょう。
 
-### But why?
+### メールの設定は絶対必要ですか?
 
-At the moment, the only thing Ghost uses email for is sending you an email with a new password if you forget yours. It's not much, but don't underestimate how useful that feature is if you ever happen to need it.
+現在、Ghostがメールを送るのは、ユーザーがパスワードを忘れて新しいパスワードをリクエストする時のみです。あまり使われない機能ですが、いざという時に機能していないと困ります。
 
-In the future, Ghost will also support setting up email-based subscriptions to your blogs. Emailing new users account details, and other little helpful features that depend on the ability to send mail.
+また近い将来、GhostにはEメールで購読を可能にする機能や、新規ユーザーにアカウント情報のメールを送信する機能など、Eメールを多用する機能が追加される予定です。今のうちにメールの設定を終えておきましょう。
 
-## Ok, so how do I do it? <a id="how-to"></a>
+## メールの設定方法 <a id="how-to"></a>
 
-The first thing you're going to need is an account with an email sending service. We highly recommend Mailgun. They have a nice free starter account which allows you to send more email than all but the most prolific email-subscription based blogs could manage. You could also use Gmail or Amazon SES.
+まず、メール送信サービスのアカウントが必要です。Mailgunが特におすすめです。Mailgunの無料のアカウントなら、ほとんどのブログで必要とするメールの送信量をカバーできます。他にはGmailやAmazon SESを利用することができます。
 
-Once you've decided on what email service to use, you need to add your settings to Ghost's config file. Wherever you have installed Ghost, you should find a <code class="path">config.js</code> file in the route directory along with <code class="path">index.js</code>. If you don't have a <code class="path">config.js</code> file yet, then copy <code class="path">config.example.js</code> and rename it.
+次に、Ghostの設定ファイルを変更する必要があります。Ghostがインストールされたディレクトリの中の<code class="path">index.js</code>と同じ階層に<code class="path">config.js</code>というファイルがあれば、それが設定ファイルです。<code class="path">config.js</code>がまだ無ければ、<code class="path">config.example.js</code>をコピーしてファイル名を変更してください。
 
-### Mailgun <a id="mailgun"></a>
+### Mailgunを使う場合 <a id="mailgun"></a>
 
-Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. You'll need to have an email address on hand, and it will ask you to either provide a domain name, or think up a subdomain. You can change this later, so for now why not register a subdomain similar to the name of the blog you're setting up.
+Mailgunを利用される場合は、[mailgun.com](http://www.mailgun.com/)に行き新しいアカウントを作成してください。メールアドレスと、ドメイン名、もしくはサブドメイン名を聞かれます。これは後から変更できますので、あなたのブログの名前と近いサブドメイン名を適当につけても構いません。
 
-Verify your email address with Mailgun, and then you'll have access to their lovely control panel. You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your domain on the right hand side… see the little screencast below to help you find your details.
+次に、EメールアドレスをMailgun上でVerify(確認)する必要があります。確認後、Mailgun内で先ほどのドメイン/サブドメイン名の設定ページに行き、SMTP Authenticationボックス内に表示されているLoginとPasswordをコピーします。下の動画で確認してみてください。
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
 
-Right, now you've got everything you need, it's time to open up your config file. Open your <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+これですべて完了です。先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、次のように書き加えてください:
 
 ```
 mail: {
@@ -53,7 +53,7 @@ transport: 'SMTP',
 }
 ```
 
-Put your 'Login' from mailgun between the quote marks next to 'user' and your 'Password' from mailgun inside the quotes next to 'pass'. If I was configuring mailgun for the 'tryghosttest' account, it would look like this:
+そして、先ほどコピーした'Login'を'user'の値に、'Password'を'pass'の値に設定します。我々のtryghosttestアカウントの例はこちらです:
 
 ```
 mail: {
@@ -68,15 +68,13 @@ mail: {
 }
 ```
 
-Keep an eye out for all of the colons, quotes and curly brackets. Misplace one of those and you'll find you get weird errors.
+「:」や「'」や「{}」などの記号が欠けていると正しく機能しませんので注意してください。
 
-You can reuse your settings for both your development and production environment if you have both.
+### Amazon SESを使う場合 <a id="ses"></a>
 
-### Amazon SES <a id="ses"></a>
+AmazonはSimple Email Serviceというメール送信サービスを提供しています: <http://aws.amazon.com/ses/> サインアップが完了すると、アクセスキーとシークレットキーが提供されます。
 
-You can sign up for an Amazon Simple Email Service account over at <http://aws.amazon.com/ses/>. Once you finish signing up, you'll be given an access key and a secret.
-
-Open Ghost's <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and add your Amazon credentials to your mail settings as shown below:
+次に、先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、アクセスキーとシークレットキーを書き加えてください:
 
 ```
 mail: {
@@ -88,11 +86,11 @@ mail: {
 }
 ```
 
-### Gmail <a id="gmail"></a>
+### Gmailを使う場合 <a id="gmail"></a>
 
-It is possible to use Gmail to send email from Ghost. If you are going to do this, we recommend that you [create a new account](https://accounts.google.com/SignUp) for the purpose, rather than using any existing personal email account details.
+GhostからGmailを使ってEメールを送ることも可能です。その場合、個人用のアカウントのパスワードを使わないために、[新しいGmailアカウント](https://accounts.google.com/SignUp)を作成することをおすすめします。
 
-Once you've created your new account, you can configure the settings in Ghost's <code class="path">config.js</code> file. Open the file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+新しいアカウントを作成したら、先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、メールアドレスとパスワードを書き加えてください:
 
 ```
 mail: {
@@ -106,9 +104,9 @@ mail: {
 }
 ```
 
-### From Address <a id="from"></a>
+### 差出人アドレス <a id="from"></a>
 
-By default the 'from' address for mail sent from Ghost will be set to the email address on the general settings page. If you want to override this to something different, you can also configure it in the <code class="path">config.js</code> file.
+デフォルトの設定だと、Ghostが送信するメールの差出人アドレスはGhost上のGeneral Settingsページで指定されたものになります。<code class="path">config.js</code>ファイルで、これを上書きすることができます。
 
 ```
 mail: {
