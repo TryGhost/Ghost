@@ -39,6 +39,9 @@ coreHelpers.date = function (context, options) {
         }
     }
 
+    // ensure that context is undefined, not null, as that can cause errors
+    context = context === null ? undefined : context;
+
     var f = options.hash.format || 'MMM Do, YYYY',
         timeago = options.hash.timeago,
         date;
