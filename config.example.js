@@ -8,7 +8,6 @@ config = {
     // ### Development **(default)**
     development: {
         // The url to use when providing links to the site, E.g. in RSS and email.
-        // must not contain a path suffix after the hostname - "subdirs" are not (yet) supported! 
         url: 'http://my-ghost-blog.com',
 
         // Example mail config
@@ -45,7 +44,6 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
-        // must not contain a path suffix after the hostname - "subdirs" are not (yet) supported! 
         url: 'http://my-ghost-blog.com',
         mail: {},
         database: {
