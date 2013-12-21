@@ -4,6 +4,7 @@
 
 var _           = require('underscore'),
     express     = require('express'),
+    busboy      = require('./ghost-busboy'),
     config      = require('../config'),
     path        = require('path'),
     api         = require('../api'),
@@ -139,7 +140,9 @@ var middleware = {
             return;
         }
         next();
-    }
+    },
+
+    busboy: busboy
 };
 
 module.exports = middleware;

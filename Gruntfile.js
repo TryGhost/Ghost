@@ -239,6 +239,10 @@ var path           = require('path'),
                     ]
                 },
 
+                storage: {
+                    src: ['core/test/unit/**/storage*_spec.js']
+                },
+
                 integration: {
                     src: ['core/test/integration/**/model*_spec.js']
                 },

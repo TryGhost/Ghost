@@ -237,9 +237,8 @@ module.exports = function (server, dbHash) {
     expressServer.use(express.json());
     expressServer.use(express.urlencoded());
 
-    expressServer.use(root + '/ghost/upload/', express.multipart());
-    expressServer.use(root + '/ghost/upload/', express.multipart({uploadDir: __dirname + '/content/images'}));
-    expressServer.use(root + '/ghost/api/v0.1/db/', express.multipart());
+    expressServer.use('/ghost/upload/', middleware.busboy);
+    expressServer.use('/ghost/api/v0.1/db/', middleware.busboy);
 
     // Session handling
     expressServer.use(express.cookieParser());
