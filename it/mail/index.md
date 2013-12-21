@@ -53,7 +53,7 @@ transport: 'SMTP',
 }
 ```
 
-Inserisci il "Login" di Mailgun fra le virgolette dopo "user" e la "Password" nelle virgolette dopo "pass". Se stessi configurado mailgun con l'account 'tryghosttest', otterresti questa configurazione:
+Inserisci il "Login" di Mailgun fra le virgolette dopo "user" e la "Password" nelle virgolette dopo "pass". Se stessi configurado MailGun con l'account 'tryghosttest', otterresti questa configurazione:
 
 ```
 mail: {
