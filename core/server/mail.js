@@ -17,7 +17,7 @@ function GhostMailer(opts) {
 GhostMailer.prototype.init = function () {
     var self = this;
     if (config().mail && config().mail.transport && config().mail.options) {
-        this.createTransport(config());
+        this.createTransport();
         return when.resolve();
     }
 
@@ -52,8 +52,8 @@ GhostMailer.prototype.detectSendmail = function () {
     });
 };
 
-GhostMailer.prototype.createTransport = function (config) {
-    this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options));
+GhostMailer.prototype.createTransport = function () {
+    this.transport = nodemailer.createTransport(config().mail.transport, _.clone(config().mail.options));
 };
 
 GhostMailer.prototype.usingSendmail = function () {
@@ -84,14 +84,17 @@ GhostMailer.prototype.emailDisabled = function () {
 
 // Sends an e-mail message enforcing `to` (blog owner) and `from` fields
 GhostMailer.prototype.send = function (message) {
+    var self = this;
+
     if (!this.transport) {
         return when.reject(new Error('Email Error: No e-mail transport configured.'));
     }
     if (!(message && message.subject && message.html)) {
         return when.reject(new Error('Email Error: Incomplete message data.'));
     }
-    api.settings.read('email').then(function (email) {
-        var from = config().mail.fromaddress || email.value,
+
+    return api.settings.read('email').then(function (email) {
+        var from = (config().mail && config().mail.fromaddress) || email.value,
             to = message.to || email.value;
 
         message = _.extend(message, {
@@ -100,7 +103,7 @@ GhostMailer.prototype.send = function (message) {
             generateTextFromHTML: true
         });
     }).then(function () {
-        var sendMail = nodefn.lift(this.transport.sendMail.bind(this.transport));
+        var sendMail = nodefn.lift(self.transport.sendMail.bind(self.transport));
         return sendMail(message);
     }).otherwise(function (error) {
         // Proxy the error message so we can add 'Email Error:' to the beginning to make it clearer.
