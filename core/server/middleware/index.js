@@ -118,12 +118,7 @@ function activateTheme(activeTheme) {
 // Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
-    // TODO improve this regex
-    if (config.paths().path === '/') {
-        res.isAdmin = /(^\/ghost\/)/.test(req.url);
-    } else {
-        res.isAdmin = new RegExp("^\\" + config.paths().path + "\\/ghost\\/").test(req.url);
-    }
+    res.isAdmin = req.url.lastIndexOf(config.paths().webroot + '/ghost/', 0) === 0;
 
     if (res.isAdmin) {
         expressServer.enable('admin');
