@@ -138,7 +138,7 @@
 
         initialize: function () {
             this.listenTo(Backbone, 'blog:activeItem', this.checkActive);
-            this.listenTo(this.model, 'change:page', this.render);
+            this.listenTo(this.model, 'change:page change:featured', this.render);
             this.listenTo(this.model, 'destroy', this.removeItem);
         },
 

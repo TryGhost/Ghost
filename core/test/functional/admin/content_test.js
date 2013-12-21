@@ -67,7 +67,7 @@ CasperTest.begin('Infinite scrolling', 1, function suite(test) {
     });
 });
 
-CasperTest.begin("Posts can be marked as featured", 6, function suite(test) {
+CasperTest.begin("Posts can be marked as featured", 12, function suite(test) {
     // Create a sample post
     casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -80,9 +80,11 @@ CasperTest.begin("Posts can be marked as featured", 6, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function () {
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
         test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
     });
 
     // Begin test
@@ -91,17 +93,40 @@ CasperTest.begin("Posts can be marked as featured", 6, function suite(test) {
     });
 
     // Mark as featured
-    casper.waitForSelector('.unfeatured' , function() {
-       this.click('.unfeatured');
+    casper.waitForSelector('.content-preview .unfeatured', function () {
+        this.click('.content-preview .unfeatured');
+    }, function onTimeOut() {
+        test.assert(false, 'The first post can\'t be marked as featured');
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Post successfully marked as featured.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    casper.waitForSelector('.content-list-content li:first-child .featured', function () {
+        test.assertExists('.content-preview .featured');
+        test.assert(true, 'got a featured star');
+        this.click('.notification-success .close');
+    }, function onTimeout() {
+        test.assert(false, 'No featured star appeard in the left pane');
     });
 
     // Mark as not featured
-    casper.waitForSelector('.featured' , function() {
-       this.click('.featured');
+    casper.waitWhileSelector('.notification-success', function waitForNoSuccess() {
+        this.click('.content-preview .featured');
+    }, function onTimeout() {
+        test.assert(false, 'Success notification wont go away:(');
     });
 
-    casper.waitForSelector('.notification-success', function () {
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Post successfully marked as featured.');
+        test.assertSelectorHasText('.notification-success', 'Post successfully marked as not featured.');
+        test.assertDoesntExist('.content-preview .featured');
+        test.assertDoesntExist('.content-list-content li:first-child .featured');
+    }, function onTimeout() {
+        test.assert(false, 'Success notification wont go away:(');
     });
 });
