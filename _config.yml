@@ -15,6 +15,8 @@ languages:
       key: 'fr'
     - name: 'Polski'
       key: 'pl'
+    - name: 'Italiano'
+      key: 'it'
     - name: '日本語'
       key: 'ja'
 
@@ -63,6 +65,14 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+  it:
+    site_title:   'Guida Ghost'
+    installation: 'Installazione'
+    usage:        'Utilizzo'
+    email:        'Email'
+    themes:       'Temi'
+    translations: 'Traduzioni'
+    help:         'Aiuto'
   ja:
     site_title:   'Ghost日本語ガイド'
     installation: 'インストール'
