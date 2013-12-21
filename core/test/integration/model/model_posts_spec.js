@@ -116,7 +116,7 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('can add, defaulting as a draft', function (done) {
+    it('can add, defaults are all correct', function (done) {
         var createdPostUpdatedDate,
             newPost = testUtils.DataGenerator.forModel.posts[2],
             newPostDB = testUtils.DataGenerator.Content.posts[2];
@@ -132,6 +132,14 @@ describe('Post Model', function () {
             createdPost.has('html').should.equal(true);
             createdPost.get('html').should.equal(newPostDB.html);
             createdPost.get('slug').should.equal(newPostDB.slug + '-2');
+            (!!createdPost.get('featured')).should.equal(false);
+            (!!createdPost.get('page')).should.equal(false);
+            createdPost.get('language').should.equal('en_US');
+            // testing for nulls
+            (createdPost.get('image') === null).should.equal(true);
+            (createdPost.get('meta_title') === null).should.equal(true);
+            (createdPost.get('meta_description') === null).should.equal(true);
+
             createdPost.get('created_at').should.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
@@ -155,6 +163,24 @@ describe('Post Model', function () {
             done();
         }).then(null, done);
 
+    });
+
+    it('can add, with previous published_at date', function (done) {
+        var previousPublishedAtDate = new Date(2013, 8, 21, 12);
+
+        PostModel.add({
+            status: 'published',
+            published_at: previousPublishedAtDate,
+            title: 'published_at test',
+            markdown: 'This is some content'
+        }).then(function (newPost) {
+
+            should.exist(newPost);
+            new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
+
+            done();
+
+        }).otherwise(done);
     });
 
     it('can trim title', function (done) {
@@ -238,7 +264,7 @@ describe('Post Model', function () {
         PostModel.add(newPost).then(function (createdPost) {
             createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
             done();
-        })
+        });
     });
 
     it('detects duplicate slugs before saving', function (done) {
@@ -312,24 +338,6 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('can create a new Post with a previous published_at date', function (done) {
-        var previousPublishedAtDate = new Date(2013, 8, 21, 12);
-
-        PostModel.add({
-            status: 'published',
-            published_at: previousPublishedAtDate,
-            title: 'published_at test',
-            markdown: 'This is some content'
-        }).then(function (newPost) {
-
-            should.exist(newPost);
-            //newPost.get('published_at').should.equal(previousPublishedAtDate.getTime());
-
-            done();
-
-        }).otherwise(done);
-    });
-
     it('can fetch a paginated set, with various options', function (done) {
         testUtils.insertMorePosts().then(function () {
 
@@ -354,12 +362,12 @@ describe('Post Model', function () {
             paginationResult.posts.length.should.equal(30);
             paginationResult.pages.should.equal(2);
 
-            return PostModel.findPage({limit: 10, page: 2, where: {language: 'fr'}});
+            return PostModel.findPage({limit: 10, staticPages: true});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(2);
+            paginationResult.page.should.equal(1);
             paginationResult.limit.should.equal(10);
-            paginationResult.posts.length.should.equal(10);
-            paginationResult.pages.should.equal(3);
+            paginationResult.posts.length.should.equal(1);
+            paginationResult.pages.should.equal(1);
 
             return PostModel.findPage({limit: 10, page: 2, status: 'all'});
         }).then(function (paginationResult) {
