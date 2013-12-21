@@ -99,6 +99,7 @@ function activateTheme(activeTheme) {
     expressServer.enable(expressServer.get('activeTheme'));
     if (stackLocation) {
         expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
+        expressServer.stack[stackLocation].route = config.paths().webroot;
     }
 
     // set view engine
@@ -237,8 +238,8 @@ module.exports = function (server, dbHash) {
     expressServer.use(express.json());
     expressServer.use(express.urlencoded());
 
-    expressServer.use('/ghost/upload/', middleware.busboy);
-    expressServer.use('/ghost/api/v0.1/db/', middleware.busboy);
+    expressServer.use(root + '/ghost/upload/', middleware.busboy);
+    expressServer.use(root + '/ghost/api/v0.1/db/', middleware.busboy);
 
     // Session handling
     expressServer.use(express.cookieParser());
