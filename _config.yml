@@ -7,7 +7,7 @@ languages:
       key: 'en'
     - name: '中文'
       key: 'zh'
-    - name: '한국의'
+    - name: '한국어'
       key: 'ko'
     - name: 'Deutsch'
       key: 'de'
@@ -30,13 +30,13 @@ translations:
     translations: '翻译'
     help:         '帮助'
   ko:
-    site_title:   'Ghost Guide'
-    installation: 'Installation'
-    usage:        'Usage'
-    email:        'Email'
-    themes:       'Themes'
-    translations: 'Translations'
-    help:         'Help'
+    site_title:   'Ghost 사용안내'
+    installation: '설치'
+    usage:        '사용법'
+    email:        '이메일'
+    themes:       '테마'
+    translations: '번역'
+    help:         '도움말'
   de:
     site_title:   'Ghost-Handbuch'
     installation: 'Installation'
@@ -45,7 +45,7 @@ translations:
     themes:       'Themen'
     help:         'Hilfe'
     deploy:       'Einsetzen'
-    upgrading:    'Aktualisieren' 
+    upgrading:    'Aktualisieren'
     troubleshooting: 'Problembehebung'
   fr:
     site_title:   'Guide Ghost'
@@ -73,11 +73,6 @@ translations:
     deploy:       'デプロイ'
     upgrading:    'アップグレード'
     troubleshooting: 'トラブルシューティング'
-    configuration: '高度な設定'
-    settings:     'ブログの設定'
-    managing:     '記事の管理'
-    writing:      '記事を書く'
-    faq:          'Q&A'
 
 # If running locally, simply comment out the line below to make all urls relative
 
