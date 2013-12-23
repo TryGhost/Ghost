@@ -16,7 +16,7 @@ next_section: settings
 
 在您第一次运行Ghost后，您会在Ghost的根目录中发现一个`config.js`文件 ，伴随着`index.js`文件。该文件允许您设置环境之类的配置信息，比如您的网址，数据库和邮件设置。
 
-如果尚未第一次运行Ghost，您不会有这个文件。您可以通过复制`config.example.js`创建一个文件 - 那是Ghost运行时创建的。 
+如果尚未第一次运行Ghost，您不会有这个文件。您可以通过复制`config.example.js`创建一个文件 - 那是Ghost一开始就创建的。 
 
 配置您的Ghost URL，邮件或数据库设置，您喜欢的编辑器打开 `config.js` ，并开始将设置改变为您想要的环境。如果环境您没有遇到，请阅读下面的文档。
 
@@ -44,4 +44,4 @@ Node.js和源于Node.js的Ghost具有内置环境的概念。环境允许您在�
 
 ### 为什么使用`npm install --production`？
 
-我们被问了几次为什么，当Ghost默认运行在开发模式，安装文档说运行 `npm install --production`？这是一个很好的问题！如果您在安装Ghost时不包含 `--production`，没什么不好会发生，但它会安装额外的仅仅是对想要开发Ghost核心的人有用的软件包。这也需要您有一个特定的包，使用`npm install -g grunt-cli`命令安装在全局中的`grunt-cli`包，如果您只是想作为一个博客运行Ghost的话，它是一个额外的步骤和它是不是必需的。 
+我们被问了好几次，为什么Ghost默认运行在开发模式，而安装文档却说运行 `npm install --production` ？这是一个很好的问题！如果您在安装Ghost时不包含  `--production` ，并不会产生什么问题，但它会安装额外的仅仅是对想要开发Ghost核心的人有用的软件包。这也需要您有一个特定的包，使用 `npm install -g grunt-cli` 命令安装在全局中的 `grunt-cli` 包，如果您只是想作为一个博客运行Ghost的话，它是不是必需的。 
