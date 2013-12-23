@@ -12,33 +12,30 @@ prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# 윈도우에 설치하기 <a id="install-windows"></a>
 
-### Install Node
+### Node 설치
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   [http://nodejs.org](http://nodejs.org)에서 INSTALL 버튼을 눌러 '.msi' 파일을 다운로드합니다.
+*   다운로드한 파일을 클릭해 인스톨러를 실행하면 Node와 Npm이 설치됩니다.
+*   인스톨러에서 계속 클릭해 Node.js 설치를 완료합니다.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+잘 안되나요? [전체 설치 과정](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "윈도우에 Node 설치하기")을 참조하시기 바랍니다.
 
-### Download & Extract Ghost
+### Ghost 다운로드 및 압축 해제
 
-*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   [downloads page](https://ghost.org/download/)에서 다운로드 버튼을 눌러 최신 zip 파일을 다운로드 합니다.
+*   탐색기에서 다운로드한 파일을 찾아 선택한 다음 마우스 오른쪽 버튼을 클릭해 'Extract all'을 선택합니다.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+잘 안되는 경우 [설치 과정](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "윈도우에 Ghost 설치하기 1부")을 참조할 수 있습니다.
 
-### Install and Run Ghost
+### Ghost 설치 및 실행
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
-
+*   시작 메뉴에서 'Node.js' 찾은 다음 'Node.js Command Prompt'를 선택합니다.
+*   Node 명령창에서 Ghost를 압축해제한 디렉터리로 이동해야 합니다. `cd Downloads/ghost-#.#.#`(# 부분은 다운로드한 Ghost 버전에 맞게 수정해야 합니다)를 입력합니다.
+*   그 다음, 명령창에서 `npm install --production`을 입력합니다. <span class="note">대시가 두 개인 것에 주의하세요.</span>
+*   Npm이 설치를 끝내면 `npm start`를 입력해 개발 모드로 Ghost를 시작합니다.
+*   브라우저 주소창에 <code class="path">127.0.0.1:2368</code>를 입력해 방금 설치한 Ghost 블로그를 확인합니다.
+*   주소창에서 URL을 <code class="path">127.0.0.1:2368/ghost</code>로 변경해 관리자 계정을 생성하고 Ghost 관리자로 로그인합니다.
+*   다음 단계 설명을 확인하려면 [사용법 문서](/usage)을 보시기 바랍니다.
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
-
