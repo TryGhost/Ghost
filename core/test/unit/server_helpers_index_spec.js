@@ -304,9 +304,9 @@ describe('Core Helpers', function () {
         });
 
         it('returns meta tag string', function (done) {
-            helpers.ghost_foot.call().then(function (rendered) {
+            helpers.ghost_foot.call({version: "0.9"}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js"><\/script>/);
+                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js\?v=0.9"><\/script>/);
 
                 done();
             }).then(null, done);
@@ -418,7 +418,7 @@ describe('Core Helpers', function () {
         });
 
         it('validates values', function () {
-            
+
             var runErrorTest = function (data) {
                 return function () {
                     helpers.pagination.call(data);
