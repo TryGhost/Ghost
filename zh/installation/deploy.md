@@ -277,5 +277,45 @@ Linux 系统在启动的时候会运行初始化脚本。这些脚本通常存�
 
 ## 配置 Ghost 域名
 
-使用 nginx 做反向代理的文档也即将发布。
+如果你已经让 Ghost 一直运行了，你也可以设置一个代理服务器让你的博客可以使用域名访问。以下的示例假定你的操作系统是 **Ubuntu 12.04** ，使用 **Nginx** 作为你的Web服务器，已经使用以上任意一种方法让 Ghost 在后台运行。
+
+*   安装 nginx
+
+    ```
+    $ sudo apt-get install nginx
+    ```
+    <span class="note">这个命令将会安装nginx并且设定好所有必需的目录和基础配置。</span>
+    
+*   配置你的站点
+
+    *   在 `/etc/nginx/sites-available` 创建一个 `ghost.conf` 文件
+    *   使用文本编辑器打开这个文件 (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        把以下内容复制进这个文件
+
+        ```
+        server {
+            listen 80;
+            server_name example.com;
+
+            location / {
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   Host      $http_host;
+                proxy_pass         http://127.0.0.1:2368;
+            }
+        }
+
+        ```
+
+    *   将 `server_name` 的值改为你的域名
+    *   把你的配置文件软链接到 `sites-enabled` 文件夹下:
+
+    ```
+    $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
+    ```
+
+    *   重启 nginx
+
+    ```
+    $ sudo service nginx restart
+    ```
 
