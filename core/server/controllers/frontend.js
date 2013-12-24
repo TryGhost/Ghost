@@ -143,7 +143,8 @@ frontendControllers = {
                                 title:  _.escape(post.title),
                                 guid: post.uuid,
                                 url: siteUrl + '/' + post.slug + '/',
-                                date: post.published_at
+                                date: post.published_at,
+                                categories: _.pluck(post.tags, 'name')
                             },
                             content = post.html;
 
