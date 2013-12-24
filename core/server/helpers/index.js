@@ -11,7 +11,7 @@ var _               = require('underscore'),
     filters         = require('../filters'),
     packageInfo     = require('../../../package.json'),
     version         = packageInfo.version,
-    scriptTemplate  = _.template("<script src='<%= source %>?v=<%= version %>'></script>"),
+    scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     isProduction    = process.env.NODE_ENV === 'production',
     api             = require('../api'),
     config          = require('../config'),
@@ -354,7 +354,7 @@ coreHelpers.post_class = function (options) {
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
     var blog = config.theme(),
-        root = config.paths().webroot,
+        webroot = config.paths().webroot,
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -363,7 +363,7 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
-    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + root + '/rss/' + '">');
+    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + webroot + '/rss/' + '">');
     if (this.ghostRoot) {
         head.push('<link rel="canonical" href="' + config().url + this.ghostRoot + '" />');
     }
@@ -376,8 +376,13 @@ coreHelpers.ghost_head = function (options) {
 
 coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
-    var foot = [];
-    foot.push('<script src="' + config().url + '/shared/vendor/jquery/jquery.js"></script>');
+    var foot = [],
+        webroot = config.paths().webroot;
+
+    foot.push(scriptTemplate({
+        source: (webroot === '/' ? '' : webroot) + '/shared/vendor/jquery/jquery.js',
+        version: this.version
+    }));
 
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
