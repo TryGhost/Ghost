@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
+meta_description: 블로깅 플래폼 Ghost를 여러분의 로컬 및 원격에서 설정하는 방법입니다. 
+heading: Ghost 설치 시작하기
+subheading: 여러분의 새로운 블로그를 설정하기 위한 첫 번째 단계입니다.
 permalink: /ko/installation/deploy/
 chapter: installation
 section: deploy
@@ -12,61 +12,63 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## Ghost 시작하기 <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Ghost 사용을 시작할 준비가 되셨나요? 좋습니다!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+가장 먼저 생각해야 할 것은, 여러분이 설치 과정을 직접할 것인가 아니면 자동 설치도구(Installer)의 도움을 받을 것인가를 결정하는 것입니다. 
 
-### Installers
+### 자동설치도구(Installers)
 
-There are a couple of options for simple installers at the moment:
+간편한 자동설치도구로 아래와 같은 방법이 있습니다. 
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost)를 사용하여 클라우드에 Deploy하기
+*   [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html)를 사용하여 Ghost 실행
+*   [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application) 사용하기
 
-### Manual Setup
+### 수동 설치
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Ghost를 사용하기 위해서는 호스팅 서비스가 [Node.js](http://nodejs.org)를 이미 지원하고 있거나 사용자가 원할 때 사용할 수 있도록 허락하는지 확인해야 합니다.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+다시 말해서 클라우드 서비스([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), 가상사설서버VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)), 또는 SSH (터미널) 접속이 가능하면서 Node.js 설치가 가능한 서비스에 Ghost를 설치할 수 있습니다. 둘러보면 지원하는 곳이 꽤 많이 있고 사용료도 저렴한 편입니다.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+현재 컨트롤패널(cPanel)을 사용하는 공유 호스팅 서비스에는 Ghost 설치가 불가능한데, 보통 이런 서비스들은 PHP만을 지원하기 때문이죠. 이런 호스팅 서비스 중에 가끔 Ruby를 지원하는 경우가 더러 있는데, 어느정도 비슷한 Node.js 를 장래에 혹시 지원해줄 가능성이 있기는 합니다.
 
-The following links contain instructions on how to get up and running with:
+<p>아쉽게도, **Nodejitsu**라든가 **Heroku**와 같은 Node 전용 호스팅 서비스는 Ghost와 **호환이 되지 않습니다.** 설치 후에 작동은 될테지만, 이내 파일과 이미지가 모두 삭제되고 데이터베이스가 사라질 것입니다. Heroku는 MySQL를 지원하므로 데이터를 보존할 수 있을지는 몰라도, 업로드한 이미지는 모두 삭제될 겁니다.
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+아래 링크를 참고하면 각 서비스에서 Ghost를 어떻게 설치하는지 자세히 알아볼 수 있습니다.
 
-## Making Ghost run forever
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - 출처: [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - 출처: [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - 출처: [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - 출처: [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - 출처: [Gregg Housh](http://0v.org/)
+*   ... [설치과정 관련 게시판installation forum](https://en.ghost.org/forum/installation)에도 참고할 정보가 있습니다.
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+## Ghost 접속상태 유지하기
+
+지금까지 설명한 Ghost 설치 방법은 'npm start'입니다. 이것은 로컬에서 프로그램을 개발하고 테스트해보기에는 좋은 방법이지만, 도스창에서 커맨드라인 입력하는 방식으로 Ghost를 시동하게 되면 여러분이 터미널 창을 종료하거나 SSH 접속을 종료할 때마다 Ghost는 작동을 중단하게 될 겁니다. Ghost가 중단되지 않도록 하기 위해서 여러분은 Ghost를 하나의 서비스로 운영해야 하죠. 방법은 두 가지가 있습니다. 
+
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+여러분은 `forever`를 이용하면 Ghost를 일종의 백그라운드 작업으로 사용할 수 있게 됩니다. `forever`는 또한 Ghost의 설치작업을 처리하고 node 작업이 실패하면 다시 시작하는 역할까지 맡아서 할 겁니다. 
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*  `forever`를 설치하기 위해서 `npm install forever -g`라고 타이핑을 하세요. 
+*   Ghost 설치폴더에서 `forever`를 사용하여 Ghost를 시작하려면 `NODE_ENV=production forever start index.js`라고 타이핑하세요.
+*   Ghost를 종료하려면 `forever stop index.js`라고 타이핑하세요.
+*   현재 Ghost가 실행되고 있는지 확인하려면 `forever list`라고 타이핑하세요.
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Fedora, Debian, Ubuntu와 같은 유명 리눅스 배포판에 계속 포함되어 있는 것이 감시자(Supervisor) 패키지입니다. 이것은 프로세스 컨트롤 시스템으로서 init 스크립트 없이 부팅하면서 Ghost가 실행되도록 해주지요. init script와 달리, Supervisor는 리눅스 배포판이나 버전을 가리지 않고 바로 옮겨서 사용 가능합니다. 
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Supervisor를 설치](http://supervisord.org/installing.html)합니다. 현재 리눅스 버전을 확인하세요. 일반적으로, 아래를 참고하면 됩니다:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   기타 리눅스 배포판: `easy_install supervisor`
+*   Supervisor가 구동되고 있는지 확인하세요. `service supervisor start`를 실행하세요.
+*  Ghost 설치를 위한 startup 스크립트를 작성합니다. 대개  `/etc/supervisor/conf.d/ghost.conf`에 다음과 같이 씁니다:
 
     ```
     [program:ghost]
@@ -80,16 +82,16 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Supervisor를 사용하여 Ghost 시작하기: `supervisorctl start ghost`
+*   Ghost 중지하기: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+더 자세한 내용은 [documentation for Supervisor](http://supervisord.org) 문서를 참고하세요.
 
 ### Init Script
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+리눅스 시스템은 부팅 시에 init script를 실행하도록 되어 있습니다. 이 스크립트들은 /etc/init.d 디렉토리에 위치합니다. Ghost를 상시 구동하도록 만들고 리부팅 되더라도 종료되지 않도록 하려면 init script를 수정하여 바로 그러한 일을 하도록 설정해주어야 합니다. 아래 스크립트 예시는 우분투에 사용될 스크립트이고 **Ubuntu 12.04**에서 테스트되었습니다.
 
-*   Create the file /etc/init.d/ghost with the following content:
+*  아래 내용을 넣어 /etc/init.d/ghost 라는 파일을 만들어주세요.
 
     ```
     #! /bin/sh
@@ -264,19 +266,18 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     :
     ```
 
-*   Change the execution permission for the init script by typing
+*   위의 init script의 실행 퍼미션을 755로 조정하기 위해 다음과 같이 타이핑합니다. 
         `chmod 755 /etc/init.d/ghost`
-*   Use the script:
+*   스크립트 실행하기:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
-*   To start Ghost on system start the newly created init script has to be registered for start up. Type the following two commands in command line: `update-rc.d ghost defaults` and `update-rc.d ghost enable`
+    *   실행: `service ghost start`
+    *   중지: `service ghost stop`
+    *   재실행: `service ghost restart`
+    *   상태체크: `service ghost status`
+*   Ghost가 시스템 부팅 시에 실행되도록 하려면 새로 작성한 init script가 등록되어 있어야 합니다. 아래 두 가지의 명령을 커맨드 라인에 타이핑하여 실행하세요. : `update-rc.d ghost defaults` 그리고 `update-rc.d ghost enable`
 
-Documentation on using node forever, and how to daemonize Ghost on ubuntu coming very soon!
+node를 항상 사용하도록 하는 방법과, 우분투에서 Ghost를 데몬Daemon으로 사용하는 방법(백그라운드 구동)에 관한 가이드 문서를 곧 공개하겠습니다!
 
-## Setting up Ghost with a domain name
+## Ghost에 도메인명 설정하기
 
-Documentation on using nginx as a reverse proxy on their way.
-
+nginx를 역프록시(reverse proxy)로 사용하는 가이드 문서도 곧 올라옵니다.
