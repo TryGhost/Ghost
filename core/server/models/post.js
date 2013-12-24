@@ -281,8 +281,8 @@ Post = ghostBookshelf.Model.extend({
             .query('limit', opts.limit)
             .query('offset', opts.limit * (opts.page - 1))
             .query('orderBy', 'status', 'ASC')
-            .query('orderBy', 'updated_at', 'DESC')
             .query('orderBy', 'published_at', 'DESC')
+            .query('orderBy', 'updated_at', 'DESC')
             .fetch(_.omit(opts, 'page', 'limit'))
             .then(function (collection) {
                 var qb;
