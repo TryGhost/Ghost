@@ -1,15 +1,16 @@
-var dataExport          = require('../data/export'),
-    dataImport          = require('../data/import'),
-    apiNotifications    = require('./notifications'),
-    apiSettings         = require('./settings'),
-    fs                  = require('fs-extra'),
-    path                = require('path'),
-    when                = require('when'),
-    nodefn              = require('when/node/function'),
-    _                   = require('underscore'),
-    schema              = require('../data/schema'),
-    config              = require('../config'),
-    debugPath           = config.paths().webroot + '/ghost/debug/',
+var dataExport       = require('../data/export'),
+    dataImport       = require('../data/import'),
+    dataProvider     = require('../models'),
+    apiNotifications = require('./notifications'),
+    apiSettings      = require('./settings'),
+    fs               = require('fs-extra'),
+    path             = require('path'),
+    when             = require('when'),
+    nodefn           = require('when/node/function'),
+    _                = require('underscore'),
+    schema           = require('../data/schema'),
+    config           = require('../config'),
+    debugPath        = config.paths().webroot + '/ghost/debug/',
 
     db;
 
@@ -158,6 +159,14 @@ db = {
                 });
             });
         });
+    },
+    'deleteAllContent': function () {
+        return when(dataProvider.deleteAllContent())
+            .then(function () {
+                return when.resolve({message: 'Successfully deleted all content from your blog.'});
+            }, function (error) {
+                return when.reject({errorCode: 500, message: error.message || error});
+            });
     }
 };
 

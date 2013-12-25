@@ -26,7 +26,7 @@ function invalidateCache(req, res, result) {
         jsonResult = result.toJSON ? result.toJSON() : result;
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
-        if (endpoint === 'settings' || endpoint === 'users') {
+        if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
             cacheInvalidate = "/*";
         } else if (endpoint === 'posts') {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
