@@ -134,8 +134,10 @@ var middleware = {
 
     conditionalCSRF: function (req, res, next) {
         var csrf = express.csrf();
+
+        // Adding a new user does not use CSRF while multiuser is not supported
         // CSRF is needed for admin only
-        if (res.isAdmin) {
+        if (res.isAdmin && !(req.method === 'POST' && req.url === config.paths().webroot + '/ghost/api/v0.1/users/')) {
             csrf(req, res, next);
             return;
         }

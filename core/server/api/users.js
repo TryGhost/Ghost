@@ -70,7 +70,16 @@ users = {
     add: function add(userData) {
 
         // **returns:** a promise for the resulting user in a json object
-        return dataProvider.User.add(userData);
+        return dataProvider.User.add(userData).then(function (user) {
+            if (userData.hasOwnProperty('title') && userData.hasOwnProperty('description')) {
+                return settings.edit('title', userData.title).then(function () {
+                    return settings.edit('description', userData.description);
+                }).then(function () {
+                    return user;
+                });
+            }
+            return user;
+        });
     },
 
     // #### Check

@@ -97,25 +97,31 @@ User = ghostBookshelf.Model.extend({
      * Hashes the password provided before saving to the database.
      */
     add: function (_user) {
-
         var self = this,
-            // Clone the _user so we don't expose the hashed password unnecessarily
+            // Clone the _user so we don't expose the unhashed password unnecessarily
             userData = _.extend({}, _user);
         /**
          * This only allows one user to be added to the database, otherwise fails.
          * @param  {object} user
          * @author javorszky
          */
-        return validatePasswordLength(userData.password).then(function () {
-            return self.forge().fetch();
-        }).then(function (user) {
+
+        return self.forge().fetch().then(function (user) {
             // Check if user exists
             if (user) {
                 return when.reject(new Error('A user is already registered. Only one user for now!'));
             }
         }).then(function () {
-            // Generate a new password hash
-            return generatePasswordHash(_user.password);
+            // Check if password or hash is present and generate a password hash
+            if (_user.password) {
+                return validatePasswordLength(userData.password).then(function () {
+                    return generatePasswordHash(_user.password);
+                });
+            }
+            if (_user.hashedPassword) {
+                return _user.hashedPassword;
+            }
+            return when.reject(new Error('No password or hashed password were provided.'));
         }).then(function (hash) {
             // Assign the hashed password
             userData.password = hash;

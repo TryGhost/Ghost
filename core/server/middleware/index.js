@@ -33,7 +33,8 @@ function ghostLocals(req, res, next) {
     // Strip off the subdir part of the path
     res.locals.ghostRoot = req.path.replace(config.paths().webroot, '');
 
-    if (res.isAdmin) {
+    // TODO: improve CSRF handling when API is released to the public
+    if (res.isAdmin && !(req.method === 'POST' && req.url === config.paths().webroot + '/ghost/api/v0.1/users/')) {
         res.locals.csrfToken = req.csrfToken();
         when.all([
             api.users.read({id: req.session.user}),
