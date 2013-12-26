@@ -92,7 +92,7 @@ function importTags(ops, tableData, transaction) {
 function importPosts(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (post) {
-        ops.push(models.Post.add(post, {transacting: transaction}));
+        ops.push(models.Post.add(post, {transacting: transaction, importing: true}));
     });
 }
 
