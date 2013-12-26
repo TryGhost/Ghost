@@ -87,7 +87,7 @@ function setup(server) {
         // Initialise the models
         models.init(),
         // Calculate paths
-        config.paths.updatePaths(config().url)
+        config.paths.update(config().url)
     ).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
@@ -97,7 +97,7 @@ function setup(server) {
     }).then(function () {
         // We must pass the api.settings object
         // into this method due to circular dependencies.
-        return config.theme.update(api.settings);
+        return config.theme.update(api.settings, config().url);
     }).then(function () {
         return when.join(
             // Check for or initialise a dbHash.

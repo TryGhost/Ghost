@@ -1,4 +1,4 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, beforeEach, afterEach, it*/
 var testUtils = require('../utils'),
     should    = require('should'),
     sinon     = require('sinon'),
@@ -22,14 +22,12 @@ describe('Core Helpers', function () {
     beforeEach(function (done) {
         var adminHbs = hbs.create();
         sandbox = sinon.sandbox.create();
-        apiStub = sandbox.stub(api.settings , 'read', function () {
+        apiStub = sandbox.stub(api.settings, 'read', function () {
             return when({value: 'casper'});
         });
 
         config.theme = sandbox.stub(config, 'theme', function () {
             return {
-                path: '',
-                //url: 'http://127.0.0.1:2368',
                 title: 'Ghost',
                 description: 'Just a blogging platform.',
                 url: 'http://testurl.com'
@@ -39,9 +37,9 @@ describe('Core Helpers', function () {
         helpers.loadCoreHelpers(adminHbs);
         // Load template helpers in handlebars
         hbs.express3({ partialsDir: [config.paths().helperTemplates] });
-        hbs.cachePartials(function(){
+        hbs.cachePartials(function () {
             done();
-        })
+        });
     });
 
     afterEach(function () {

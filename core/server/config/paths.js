@@ -18,7 +18,7 @@ var path              = require('path'),
     availablePlugins;
 
 
-function getPaths() {
+function paths() {
     return {
         'appRoot':          appRoot,
         'path':             localPath,
@@ -41,7 +41,7 @@ function getPaths() {
 
 // TODO: remove configURL and give direct access to config object?
 // TODO: not called when executing tests
-function updatePaths(configURL) {
+function update(configURL) {
     localPath = url.parse(configURL).path;
 
     // Remove trailing slash
@@ -56,6 +56,5 @@ function updatePaths(configURL) {
     });
 }
 
-module.exports = getPaths;
-
-module.exports.updatePaths = updatePaths;
+module.exports = paths;
+module.exports.update = update;
