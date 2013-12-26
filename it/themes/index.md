@@ -1,51 +1,51 @@
 ---
 lang: it
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Realizzare temi per Ghost - Documentazione Ghost
+meta_description: Una guida approfondita sulla realizzazione di temi per la piattaforma di blogging Ghost. Tutto quello che c'è da sapere sui temi per Ghost.
+heading: Temi per Ghost
+subheading: Inizia subito a creare i tuoi temi per Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Cambiare Tema <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+I temi di Ghost si trovano nella cartella <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Se vuoi usare un tema differente da quello di default (Casper), dai un'occhiata ai temi presenti nel [marketplace](http://marketplace.ghost.org/). Scarica il pacchetto del tema che preferisci, estrailo e spostalo in <code class="path">content/themes</code> affianco a Casper.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Se vuoi realizzare un tuo tema, è raccomandabile copiare (scegliendo un altro nome) la cartella di Casper e modificare direttamente i templates al suo interno.
 
-To switch to your newly added theme:
+Per utilizzare il nuovo tema:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Riavvia Ghost. Al momento, Ghost non è in grado di capire se è stata aggiunta una nuova cartella all'interno di <code class="path">content/themes</code> quindi è necessario riavviarlo
+2.  Fai il login nel Pannello di Amministrazione, e spostati nei Settaggi Generali (<code class="path">/ghost/settings/general/</code>)
+3.  Seleziona il tuo tema fra le opzioni del dropdown 'Theme'
+4.  Clicca 'Save'
+5.  Visita il Frontend e sbava davanti al tuo nuovo tema
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Cos'è Handlebars? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars](http://handlebarsjs.com/) è il linguaggio di templating usato da Ghost.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars ha tutte le potenzialità per permetterti di scrivere templates semantici senza sforzo.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+Se hai intenzione di realizzare un tuo tema, è bene che prima cominci a familiarizzare con la sintassi di Handlebars. Leggi la [documentazione di handlebars](http://handlebarsjs.com/expressions.html), o dai un'occhiata a questo [tutorial di Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – puoi saltare la prima parte relativa all'installazione (ci abbiamo pensato noi) e cominciare da ‘Basic Expressions’.
 
-## About Ghost themes <a id="about"></a>
+## Temi per Ghost <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+I temi per Ghost sono strutturati per essere semplici da sviluppare e mantenere. Viene posta particolare attenzione sulla separazione fra templates (HTML) e ogni altra business logic (JavaScript). Handlebars è (praticamente) logicless e favorisce questa separazione, tramite l'utilizzo di *helpers*, in modo che la logica legata a quale contenuti mostrare (business logic) rimanga separata e auto sufficiente. Questa separazione porta benefici nella collaborazione fra designers e developers quando si sviluppano temi.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+I templates Handlebars sono gerarchici (un template può estenderne un altro) ed inoltre supportano i partials. Ghost sfrutta queste caratteristiche per evitare duplicazione del codice, in modo che ogni singolo template svolga una sola funzione, e la svolga bene. Un tema ben strutturato sarà più facile da mantenere e mantenere i componenti separati permette di utilizzarli anche in altri temi.
 
-We really hope you'll enjoy our approach to theming.
+Ci auguriamo apprezzerai il nostro approccio nello sviluppare temi.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Organizzazione dei files in un Tema <a id="file-structure"></a>
 
-The recommended file structure is:
+La struttura raccomandata è la seguente:
 
 ```
 .
@@ -60,35 +60,35 @@ The recommended file structure is:
 └── post.hbs [required]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+Non è richiesto che default.hbs sia presente, nè che esista alcuna delle cartelle suggerite. <code class="path">index.hbs</code> e <code class="path">post.hbs</code> sono gli unici file richiesti – Ghost non funzionerà senza questi due templates. <code class="path">partials</code> è una cartella speciale. Dovrebbe contenere tutti i templates che hai intenzione di riutilizzare nel tuo tema, per esempio <code class="path">list-post.hbs</code> che potrebbe essere il template di un singolo post in un listing, che quindi riutilizzerai per la homepage, e in futuro per le pagine archivio e tags. <code class="path">partials</code> è anche la cartella che puoi utilizzare per sovrascrivere i templates di default usati da alcuni helpers, come la paginazione. Il file <code class="path">pagination.hbs</code> all'interno di <code class="path">partials</code>ti permetterebbe di personalizzare l'HTML relativo alla paginazione, ad esempio.
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+Questo è il template base che contiene il codice HTML che deve essere presente in ogni pagina – quindi i tag `<html>`, `<head>` e `<body>` tags insieme agli helpers `{{ghost_head}}` e `{{ghost_foot}}`, più il codice HTML necessario per avere un header ed un footer su ogni pagina.
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+Il template default contiene l'espressione handlebars `{{{body}}}` per indicare dove andrà a posizionarsi il contenuto dei templates che lo estendono.
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+I templates delle diverse pagine avranno quindi `{{!< default}}` all'inizio del file per specificare che estendono il template default, e che il loro contenuto dovrà apparire al posto di `{{{body}}}` nel template default.hbs.
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+Questo è il template della homepage, ed estende <code class="path">default.hbs</code>. Alla homepage viene passata una lista di post da mostrare, e <code class="path">index.hbs</code> definisce come verranno mostrati.
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+In Casper (il tema di default), la homepage ha un enorme header che usa la variabile globale `@blog` per mostrare il logo, titolo e descrizione del blog. Poi, usando l'helper `{{#foreach}}`, viene mostrata la lista di post.
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+Questo è il template per il post singolo, che a sua volta estende <code class="path">default.hbs</code>.
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+In Casper (il tema di default), il template del post singolo ha anch'esso un header, che utilizza la variabile globale `@blog`. Tutte le informazioni relative al post sono accessibili tramite `{{#post}}`, che viene usato per mostrare tutti i dettagli del singolo post.
 
-### Post styling & previewing
+### Stile e Anteprima del Post
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+Quando sviluppi temi per Ghost, fai attenzione alle classi, ed in particolare agli id, che utilizzi all'interno dell'HTML, in modo da evitare conflitti fra gli stili principali e quelli specifici di un post. Non puoi prevedere quali classi, ed in particolare quali id (Ghost genera automaticamente gli id per gli heading) verranno usati all'interno di un post. E' sempre meglio, quindi, essere il più specifici possibile, contestualizzando parti specifiche dellla pagina. Ad esempio, la regola #my-id potrebbe essere applicata ad elementi inaspettati, cosa che non succederebbe con #themename-my-id.
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghost ti permette di avere un'anteprima realistica dei tuoi post all'interno dell'editor, ma è necessario caricare gli stili relativi al singolo post anche all'interno del Pannello di Amministrazione. Questa funzionalità non è ancora implementata, ma è caldamente consigliato mantenere separati gli stili del singolo post da tutti gli altri presenti nel tuo tema. Potresti utilizzare, rispettivamente, post.css e style.css in modo che da sfruttare immediatamente questa funzionalità quando sarà disponibile.
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## Crea il tuo Tema <a id="create-your-own"></a>
 
 Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
 
