@@ -4,9 +4,7 @@
 var when          = require('when'),
 
 // Variables
-    theme,
-    themeConfig = {},
-    update;
+    themeConfig = {};
 
 
 function theme() {
@@ -18,7 +16,7 @@ function theme() {
 // If we were to require the api module here
 // there would be a race condition where the ./models/base
 // tries to access the config() object before it is created.
-function update(settings) {
+function update(settings, configUrl) {
     return when.all([
         settings.read('title'),
         settings.read('description'),
@@ -26,6 +24,7 @@ function update(settings) {
         settings.read('cover')
     ]).then(function (globals) {
 
+        themeConfig.url = configUrl;
         themeConfig.title = globals[0].value;
         themeConfig.description = globals[1].value;
         themeConfig.logo = globals[2] ? globals[2].value : '';

@@ -155,7 +155,7 @@ settings = {
                 return when(readSettingsResult(result)).then(function (settings) {
                     updateSettingsCache(settings);
                 }).then(function () {
-                    return config.theme.update(settings).then(function () {
+                    return config.theme.update(settings, config().url).then(function () {
                         return settingsObject(settingsFilter(settingsCache, type));
                     });
                 });
@@ -179,7 +179,7 @@ settings = {
             return dataProvider.Settings.edit(setting).then(function (result) {
                 settingsCache[_.first(result).attributes.key].value = _.first(result).attributes.value;
             }).then(function () {
-                return config.theme.update(settings).then(function () {
+                return config.theme.update(settings, config().url).then(function () {
                     return settingsObject(settingsCache);
                 });
             }).otherwise(errors.logAndThrowError);
