@@ -78,7 +78,8 @@
                     },
                     content: {
                         template: 'blank',
-                        title: 'Would you really like to delete all content from your blog?'
+                        title: 'Would you really like to delete all content from your blog?',
+                        text: '<p>This is permanent! No backups, no restores, no magic undo button. <br /> We warned you, ok?</p>'
                     }
                 }
             }));
