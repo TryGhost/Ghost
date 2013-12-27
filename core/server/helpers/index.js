@@ -133,10 +133,12 @@ coreHelpers.asset = function (context, options) {
 
     output += config.paths().subdir + '/';
 
-    if (isAdmin) {
-        output += 'ghost/';
-    } else {
-        output += 'assets/';
+    if (!context.match(/^shared/)) {
+        if (isAdmin) {
+            output += 'ghost/';
+        } else {
+            output += 'assets/';
+        }
     }
 
     output += context;
