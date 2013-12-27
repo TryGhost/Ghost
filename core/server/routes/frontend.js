@@ -9,6 +9,11 @@ module.exports = function (server) {
     server.get('/', frontend.homepage);
 
     api.settings.read('permalinks').then(function (permalinks) {
-        server.get(permalinks.value, frontend.single);
+        if (permalinks.value !== '/:slug/') {
+            server.get('/:slug/', frontend.page);
+            server.get(permalinks.value, frontend.post);
+        } else {
+            server.get(permalinks.value, frontend.single);
+        }
     });
 };
