@@ -94,7 +94,7 @@ Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init
 *   Lege die Datei /etc/init.d/ghost mit folgendem Befehl an:
 
     ```
-    $ curl https://github.com/TryGhost/Ghost-Config/blob/master/init.d/ghost \
+    $ curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
