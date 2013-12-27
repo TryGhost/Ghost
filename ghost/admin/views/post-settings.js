@@ -251,7 +251,8 @@
                     },
                     content: {
                         template: 'blank',
-                        title: 'Are you sure you want to delete this post?'
+                        title: 'Are you sure you want to delete this post?',
+                        text: '<p>This is permanent! No backups, no restores, no magic undo button. <br /> We warned you, ok?</p>'
                     }
                 }
             }));
