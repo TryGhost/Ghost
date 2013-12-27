@@ -11,7 +11,8 @@ function ghostBusBoy(req, res, next) {
         tmpDir,
         hasError = false;
 
-    if (req.method && req.method.match(/get/i)) {
+    // busboy is only used for POST requests
+    if (req.method && !req.method.match(/post/i)) {
         return next();
     }
 

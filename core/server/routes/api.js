@@ -26,4 +26,5 @@ module.exports = function (server) {
     // #### Import/Export
     server.get('/ghost/api/v0.1/db/', middleware.auth, api.db['export']);
     server.post('/ghost/api/v0.1/db/', middleware.auth, api.db['import']);
+    server.del('/ghost/api/v0.1/db/', middleware.authAPI, middleware.disableCachedResult, api.requestHandler(api.db.deleteAllContent));
 };
