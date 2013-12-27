@@ -90,67 +90,67 @@ Ghost ti permette di avere un'anteprima realistica dei tuoi post all'interno del
 
 ## Crea il tuo Tema <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+Crea il tuo tema copiando (scegliendo un altro nome) la cartella di Casper o creando un'altra cartella all'interno di <code class="path">content/themes</code> con il nome del tuo tema, ad esempio my-theme (i nomi devono essere in minuscolo e costituiti solo da lettere, numeri e trattini). A questo punto, all'interno della nuova cartella, crea due file vuoti: index.hbs and post.hbs. Non verrà mostrato nulla, ma questo è un tema valido a tutti gli effetti.
 
-### The post list
+### La lista di post
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+Ad <code class="path">index.hbs</code> viene passato un oggetto `posts` che può essere usato con l'helper foreach per mostrare una lista di post:
 
 ```
 {{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
+// qui abbiamo accesso ad ogni singolo post
+// tutto quello che inserisci qui verrà eseguito per ogni post
 {{/foreach}}
 ```
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+Guarda la sezione dedicata all'helper [`{{#foreach}}`](#foreach-helper) per maggiori informazioni.
 
-#### Pagination
+#### Paginazione
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+Guarda la sezione dedicata all'helper [`{{#pagination}}`](#pagination-helper).
 
-### Outputting individual posts
+### Mostrare i singoli post
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+Ciclando la lista di post con l'helper `foreach` o all'interno di <code class="path">post.hbs</code>, puoi accedere alle proprietà del singolo post.
 
-For the time being, these are:
+Per questioni di tempo, eccone un elenco:
 
 *   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
+*   title – *titolo post*
+*   url – *URL relativa del post*
 *   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+*   published_at – *data in cui è stato pubblicato il post*
+*   author – *dettagli sull'autore del post* (maggiori informazioni a seguire)
 
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+Tutte queste proprietà possono essere mostrate con i tag standard di handlebars, ad es. `{{title}}`.
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>Note:</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+        la proprietà content è sovrascritta dall'helper <code>{{content}}</code> che assicura che l'HTML sia corretto & sicuro. Guarda la sezione relativa all' <a href="#content-helper">helper <code>{{content}}</code></a> per maggiori informazioni.
       </li>
       <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+        la proprietà url con l'helper <code>{{url}}</code>. Guarda la sezione relativa all' <a href="#url-helper">helper <code>{{url}}</code></a> per maggiori informazioni.
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### Autore del Post
 
-When inside the context of a single post, the following author data is available:
+All'interno del singolo post, hai accesso alle seguenti informazioni relative all'autore:
 
-*   `{{author.name}}` – the name of the author 
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – il nome dell'autore
+*   `{{author.email}}` – l'indirizzo email dell'autore
+*   `{{author.bio}}` – la bio dell'autore
+*   `{{author.website}}` – il sito web dell'autore
+*   `{{author.image}}` – l'immagine di profilo dell'autore
+*   `{{author.cover}}` – l'immagine di copertina dell'autore
 
-You can use just`{{author}}` to output the author's name.
+Puoi usare semplicemente `{{author}}` per mostrare il nome dell'autore.
 
-This can also be done by using a block expression:
+Puoi ottenere lo stesso risultato utilizzando una block expression:
 
 ```
 {{#author}}
@@ -158,15 +158,15 @@ This can also be done by using a block expression:
 {{/author}}
 ```
 
-#### Post Tags
+#### Tags del Post
 
-When inside the context of a single post, the following tag data is available
+All'interno del singolo post, hai accesso alle seguenti informazioni relative ai tags:
 
-*   `{{tag.name}}` – the name of the tag 
+*   `{{tag.name}}` – il nome del tag
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+Puoi usare `{{tags}}` per mostrare la lista di tags separati da virgole o, se preferisci, specificare il separatore `{{tags separator=""}}`
 
-This can also be done by using a block expression:
+Puoi ottenere lo stesso risultato utilizzando una block expression:
 
 ```
 <ul>
@@ -176,55 +176,55 @@ This can also be done by using a block expression:
 </ul>
 ```
 
-### Global Settings
+### Variabili Globali
 
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+I temi in Ghost hanno accesso ad alcune variabili globali grazie al parametro `@blog`.
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – l'url specificata per l'ambiente corrente in <code class="path">config.js</code>
+*   `{{@blog.title}}` – il titolo del blog dalla pagina di configurazione
+*   `{{@blog.description}}` – la descrizione del blog dalla pagina di configurazione
+*   `{{@blog.logo}}` – il logo del blog dalla pagina di configurazione
 
-## Built-in Helpers <a id="helpers"></a>
+## Helpers predefiniti <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghost ha alcuni helpers predefiniti che ti forniscono gli strumenti necessari per sviluppare il tuo tema. Si distinguono in due tipi: block helpers e output helpers.
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** hanno un tag di apertura e uno di chiusura Es. `{{#foreach}}{{/foreach}}`. Il contesto cambia all'interno dei tags ed alcuni helpers forniscono proprietà addizionali alle quali puoi accedere tramite il simbolo `@`.
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**Output Helpers** somigliano molto ai tag canonici utilizzati per mostrare dei dati es. `{{content}}`. Svolgono operazioni utili sui dati prima che vengano mostrati, e spesso ti danno la possibilità di specificare il formato con il quale i dati dovranno essere mostrati. Alcuni di questi helpers utilizzano i templates per definire l'HTML con il quale verranno mostrati i dati, un po' come avviene con i partials. Alcuni output helpers possono essere usati anche come block helpers, fornendo ulteriori funzionalità.
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   Tipo Helper: block
+*   Opzioni: `columns` (numero)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}` è un helper speciale utilizzato per ciclare sulle liste di post. Di default, l'helper `each` di handlebars fornisce le variabili private `@index` per gli array e `@key` per gli oggetti, che possono essere usate all'interno del ciclo.
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach` estende questo helper, ed aggiunge le seguenti proprietà `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` sia agli array che agli oggetti. Sfruttandole, possono essere creati layout più complessi, sia per le liste di post che per altri tipi di contenuto. Guarda i seguenti esempi:
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+Posto di avere a disposizione un array o un oggetto chiamato `posts`, possiamo controllare quale sia il primo elemento.
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-        <div>First post</div>
+        <div>Primo post</div>
     {{/if}}
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+E' possibile anche annidare degli `if` per testare più proprietà. Qui siamo in grado di mostrare il primo e l'ultimo post separatamente dagli altri.
 
 ```
 {{#foreach posts}}
     {{#if @first}}
-    <div>First post</div>
+    <div>Primo post</div>
     {{else}}
         {{#if @last}}
-            <div>Last post</div>
+            <div>Ultimo post</div>
         {{else}}
-            <div>All other posts</div>
+            <div>Tutti gli altri post</div>
         {{/if}}
     {{/if}}
 {{/foreach}}
@@ -232,7 +232,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+E' possibile aggiungere una classe a seconda della posizione dell'elemento (pari o dispari), per creare contenuti zebrati:
 
 ```
 {{#foreach posts}}
@@ -242,7 +242,7 @@ The following example adds a class of even or odd, which could be used for zebra
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+Tramite l'opzione columns, puoi specificare da quante colonne è costituito il layout. E' possibile creare un layout a griglia utilizzando le seguenti proprietà per individuare gli elementi all'inizio ed alla fine di ogni riga.
 
 ```
 {{#foreach posts columns=3}}
@@ -252,117 +252,117 @@ The following example shows you how to pass in a column argument so that you can
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   Tipo Helper: output
+*   Opzioni: `words` (numero), `characters` (numero) [di default viene mostrato tutto]
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}` è un helper molto semplice utilizzato per mostrare il contenuto di un post. La sua funzione è assicurare che l'HTML venga mostrato correttamente.
 
-You can limit the amount of HTML content to output by passing one of the options:
+Puoi limitare il numero di parole o caratteri da mostrare tramite le opzioni:
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}` mostrerà soltanto 100 parole con i tag HTML correttamente posizionati.
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   Tipo Helper: output
+*   Options: `words` (numero), `characters` (numero) [di default mostra 50 parole]
 
-`{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
+`{{excerpt}}` mostra il contenuto rimuovendo tutto l'HTML. E' utile per creare un estratto di un post.
 
-You can limit the amount of text to output by passing one of the options:
+Puoi limitare il numero di parole o caratteri da mostrare tramite le opzioni:
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters="140"}}` mostrerà soltanto 140 caratteri di testo.
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   Tipo Helper: output
+*   Opzioni: `format` (formato data, default “MMM Do, YYYY”), `timeago` (boleano)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}` è un helper per mostrare le date in diversi formati. Puoi passargli come argomenti una data ed un formato in questo modo:
 
 ```
-// outputs something like 'July 11, 2013'
+// mostrerà qualcosa di simile a 'Luglio 11, 2013'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+Oppure puoi passargli una data e settare il flag timeago a true:
 
 ```
-// outputs something like '5 mins ago'
+// mostrerà qualcosa di simile a '5 minuti fa'
 {{date published_at timeago="true"}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+Se usi `{{date}}` senza un formato, il formato di default sarà “MMM Do, YYYY”.
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+Se usi `{{date}}` quando il contesto è un post e non specifichi nessuna data come argomento, verrà usata `published_at`.
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+Se usi `{{date}}` quando il contesto non è un post e non specifichi nessuna data come argomento, verrà usata la data corrente.
 
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date` utilizza [moment.js](http://momentjs.com/) per formattare le date. Guarda la [documentazione](http://momentjs.com/docs/#/parsing/string-format/) per una spiegazione esaustiva dei differenti formati utilizzabili.
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   Tipo Helper: output
+*   Opzioni: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+Quando il contesto è un post, `{{url}}` mostra la sua URL relativa. Se il contesto non è un post, non mostrerà nulla.
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+Puoi mostrare url assolute utilizzando l'opzione absolute, Es. `{{url absolute="true"}}`
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   Tipo Helper: output, template-driven
+*   Opzioni: nessuna (in lavorazione)
 
-`{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
+`{{pagination}}` è un helper template driven (con un template associato) che mostra i link ai 'post più recenti' e ai 'post più vecchi' se disponibili, oltre che alla pagina corrente..
 
-You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
+Puoi sovrascrivere l'HTML utilizzato dall'helper creando un file <code class="path">pagination.hbs</code> all'interno di <code class="path">content/themes/your-theme/partials</code>.
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Opzioni: nessuna
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+`{{body_class}}` – classi da utilizzare nel tag `<body>` all'interno di <code class="path">default.hbs</code>, utile per creare stili specifici per i diversi tipi di pagina.
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Options: nessuna
 
-`{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
+`{{post_class}}` – classi da utilizzare nell'elemento container dei post, utile per creare stili specifici per i diversi post.
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Options: nessuna
 
-`{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+`{{ghost_head}}` – da usare appena prima del tag `</head>` in <code class="path">default.hbs</code>, usato per mostrare meta tags, scripts and styles. Potrà essere modificato.
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Opzioni: nessuna
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
+`{{ghost_foot}}` – da usare appena prima del tag `</body>` in <code class="path">default.hbs</code>, usato per includere gli scripts. Di default include jquery nella pagina. Potrà essere modificato.
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Opzioni: nessuna
 
-`{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
+`{{meta_title}}` – mostra il titolo dei post per i post, o in alternativa il nome del blog. Usato per mostrare il tag title all'interno di `</head>`. Es. `<title>{{meta_title}}</title>`. Potrà essere modificato.
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipo Helper: output
+*   Opzioni: nessuna
 
-`{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+`{{meta_description}}` - al momento non mostra nulla per i post, per ogni altra pagina mostra la descrizione del blog. Usato per mostrare il tag meta description. Es. `<meta name="description" content="{{meta_description}}" />`. Potrà essere modificato.
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## Risoluzione dei problemi <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. Vedo questo errore: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+Controlla che all'interno della cartella del tuo tema siano presenti i file index.hbs and post.hbs.
 
 {% endraw %}
