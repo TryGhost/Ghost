@@ -10,7 +10,7 @@ var dataExport       = require('../data/export'),
     _                = require('underscore'),
     schema           = require('../data/schema'),
     config           = require('../config'),
-    debugPath        = config.paths().webroot + '/ghost/debug/',
+    debugPath        = config.paths().subdir + '/ghost/debug/',
 
     db;
 
@@ -142,7 +142,7 @@ db = {
                 res.set({
                     "X-Cache-Invalidate": "/*"
                 });
-                res.redirect(config.paths().webroot + '/ghost/signin/');
+                res.redirect(config.paths().subdir + '/ghost/signin/');
             });
         }).otherwise(function importFailure(error) {
             return apiNotifications.browse().then(function (notifications) {

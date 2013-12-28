@@ -57,7 +57,7 @@ requestHandler = function (apiMethod) {
             // If permalinks have changed, find old post route
             if (req.body.permalinks && req.body.permalinks !== permalinks) {
                 for (i = 0; i < req.app.routes.get.length; i += 1) {
-                    if (req.app.routes.get[i].path === config.paths().webroot + permalinks) {
+                    if (req.app.routes.get[i].path === config.paths().subdir + permalinks) {
                         postRouteIndex = i;
                         break;
                     }

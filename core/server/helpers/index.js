@@ -100,14 +100,12 @@ coreHelpers.url = function (options) {
             slug: function () { return self.slug; },
             id: function () { return self.id; }
         },
-        path = config.paths().path,
         isAbsolute = options && options.hash.absolute;
     return api.settings.read('permalinks').then(function (permalinks) {
         if (isAbsolute) {
-            output += config().url;
-        }
-        if (path && path !== '/') {
-            output += path;
+            output += config().url.replace(/\/$/, '');
+        } else {
+            output += config.paths().subdir;
         }
         if (models.isPost(self)) {
             output += permalinks.value;
@@ -131,14 +129,9 @@ coreHelpers.url = function (options) {
 // flag outputs the asset path for the Ghost admin
 coreHelpers.asset = function (context, options) {
     var output = '',
-        subDir = config.paths().path,
         isAdmin = options && options.hash && options.hash.ghost;
 
-    if (subDir === '/') {
-        output += '/';
-    } else {
-        output += subDir + '/';
-    }
+    output += config.paths().subdir + '/';
 
     if (isAdmin) {
         output += 'ghost/';
@@ -269,8 +262,7 @@ coreHelpers.fileStorage = function (context, options) {
 };
 
 coreHelpers.ghostScriptTags = function () {
-    var scriptFiles = [],
-        webroot = config.paths().webroot;
+    var scriptFiles = [];
 
     if (isProduction) {
         scriptFiles.push("ghost.min.js");
@@ -286,7 +278,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            source: webroot + '/built/scripts/' + fileName,
+            source: config.paths().subdir + '/built/scripts/' + fileName,
             version: version
         });
     });
@@ -354,7 +346,6 @@ coreHelpers.post_class = function (options) {
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
     var blog = config.theme(),
-        webroot = config.paths().webroot,
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -363,7 +354,9 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
-    head.push('<link rel="alternate" type="application/rss+xml" title="' + _.escape(blog.title)  + '" href="' + webroot + '/rss/' + '">');
+    head.push('<link rel="alternate" type="application/rss+xml" title="'
+        + _.escape(blog.title)  + '" href="' + config.paths().subdir + '/rss/' + '">');
+
     if (this.ghostRoot) {
         head.push('<link rel="canonical" href="' + config().url + this.ghostRoot + '" />');
     }
@@ -376,11 +369,10 @@ coreHelpers.ghost_head = function (options) {
 
 coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
-    var foot = [],
-        webroot = config.paths().webroot;
+    var foot = [];
 
     foot.push(scriptTemplate({
-        source: (webroot === '/' ? '' : webroot) + '/shared/vendor/jquery/jquery.js',
+        source: config.paths().subdir + '/shared/vendor/jquery/jquery.js',
         version: this.version
     }));
 
@@ -394,6 +386,7 @@ coreHelpers.meta_title = function (options) {
     /*jslint unparam:true*/
     var title,
         blog;
+
     if (_.isString(this.ghostRoot)) {
         if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
             blog = config.theme();

@@ -31,7 +31,7 @@ function ghostLocals(req, res, next) {
     res.locals.version = packageInfo.version;
     res.locals.path = req.path;
     // Strip off the subdir part of the path
-    res.locals.ghostRoot = req.path.replace(config.paths().webroot, '');
+    res.locals.ghostRoot = req.path.replace(config.paths().subdir, '');
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
@@ -99,7 +99,7 @@ function activateTheme(activeTheme) {
     expressServer.enable(expressServer.get('activeTheme'));
     if (stackLocation) {
         expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
-        expressServer.stack[stackLocation].route = config.paths().webroot;
+        expressServer.stack[stackLocation].route = config.paths().subdir;
     }
 
     // set view engine
@@ -118,7 +118,7 @@ function activateTheme(activeTheme) {
 // Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
-    res.isAdmin = req.url.lastIndexOf(config.paths().webroot + '/ghost/', 0) === 0;
+    res.isAdmin = req.url.lastIndexOf(config.paths().subdir + '/ghost/', 0) === 0;
 
     if (res.isAdmin) {
         expressServer.enable('admin');
@@ -146,11 +146,10 @@ function manageAdminAndTheme(req, res, next) {
 
 // Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {
-    var root = config.paths().webroot;
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
-            return res.redirect(root + '/ghost/signup/');
+            return res.redirect(config.paths().subdir + '/ghost/signup/');
         }
         next();
     }).otherwise(function (err) {
@@ -190,7 +189,7 @@ function checkSSL(req, res, next) {
 module.exports = function (server, dbHash) {
     var oneHour = 60 * 60 * 1000,
         oneYear = 365 * 24 * oneHour,
-        root = config.paths().webroot,
+        subdir = config.paths().subdir,
         corePath = config.paths().corePath,
         cookie;
 
@@ -206,15 +205,15 @@ module.exports = function (server, dbHash) {
     }
 
     // Favicon
-    expressServer.use(root, express.favicon(corePath + '/shared/favicon.ico'));
+    expressServer.use(subdir, express.favicon(corePath + '/shared/favicon.ico'));
 
     // Shared static config
-    expressServer.use(root + '/shared', express['static'](path.join(corePath, '/shared')));
+    expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared')));
 
-    expressServer.use(root + '/content/images', storage.get_storage().serve());
+    expressServer.use(subdir + '/content/images', storage.get_storage().serve());
 
     // Serve our built scripts; can't use /scripts here because themes already are
-    expressServer.use(root + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
+    expressServer.use(subdir + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
         // Put a maxAge of one year on built scripts
         maxAge: oneYear
     }));
@@ -226,7 +225,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(checkSSL);
 
     // Admin only config
-    expressServer.use(root + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
+    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
 
     // Theme only config
     expressServer.use(middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
@@ -237,12 +236,12 @@ module.exports = function (server, dbHash) {
     expressServer.use(express.json());
     expressServer.use(express.urlencoded());
 
-    expressServer.use(root + '/ghost/upload/', middleware.busboy);
-    expressServer.use(root + '/ghost/api/v0.1/db/', middleware.busboy);
+    expressServer.use(subdir + '/ghost/upload/', middleware.busboy);
+    expressServer.use(subdir + '/ghost/api/v0.1/db/', middleware.busboy);
 
     // Session handling
     cookie = {
-        path: root + '/ghost',
+        path: subdir + '/ghost',
         maxAge: 12 * oneHour
     };
 
@@ -271,7 +270,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(initViews);
 
     // process the application routes
-    expressServer.use(root, expressServer.router);
+    expressServer.use(subdir, expressServer.router);
 
     // ### Error handling
     // 404 Handler
