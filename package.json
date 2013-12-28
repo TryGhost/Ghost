@@ -77,6 +77,7 @@
         "grunt-update-submodules": "~0.2.0",
         "matchdep": "~0.3.0",
         "mocha": "~1.15.1",
+        "rewire": "~2.0.0",
         "request": "~2.29.0",
         "require-dir": "~0.1.0",
         "should": "~2.1.1",
