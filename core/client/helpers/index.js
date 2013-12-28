@@ -32,4 +32,22 @@
     Handlebars.registerHelper('url', function () {
         return Ghost.paths.subdir;
     });
+
+    Handlebars.registerHelper('asset', function (context, options) {
+        var output = '',
+            isAdmin = options && options.hash && options.hash.ghost;
+
+        output += Ghost.paths.subdir + '/';
+
+        if (!context.match(/^shared/)) {
+            if (isAdmin) {
+                output += 'ghost/';
+            } else {
+                output += 'assets/';
+            }
+        }
+
+        output += context;
+        return new Handlebars.SafeString(output);
+    });
 }());
