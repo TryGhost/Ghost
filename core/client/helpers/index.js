@@ -1,5 +1,4 @@
-/*globals Handlebars, moment
-*/
+/*globals Handlebars, moment, Ghost */
 (function () {
     'use strict';
     Handlebars.registerHelper('date', function (context, options) {
@@ -28,5 +27,9 @@
             date = moment(context).format(f);
         }
         return date;
+    });
+
+    Handlebars.registerHelper('url', function () {
+        return Ghost.paths.subdir;
     });
 }());

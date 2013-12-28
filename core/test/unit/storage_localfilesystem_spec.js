@@ -38,7 +38,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
             return done();
-        });
+        }).then(null, done);
     });
 
     it('should send correct path to image when original file has spaces', function (done) {
@@ -46,7 +46,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/AN_IMAGE.jpg');
             return done();
-        });
+        }).then(null, done);
     });
 
     it('should send correct path to image when date is in Jan 2014', function (done) {
@@ -55,7 +55,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2014/Jan/IMAGE.jpg');
             return done();
-        });
+        }).then(null, done);
     });
 
     it('should create month and year directory', function (done) {
@@ -97,7 +97,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE-1.jpg');
             return done();
-        });
+        }).then(null, done);
     });
 
     it('can upload five different images with the same name without overwriting the first', function (done) {
@@ -119,7 +119,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE-4.jpg');
             return done();
-        });
+        }).then(null, done);
     });
 
 
@@ -143,7 +143,7 @@ describe('Local File System Storage', function () {
             localfilesystem.save(image).then(function (url) {
                 url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
                 return done();
-            });
+            }).then(null, done);
         });
     });
 });

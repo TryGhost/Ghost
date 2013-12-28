@@ -33,7 +33,7 @@ frontendControllers = {
 
             // Redirect '/page/1/' to '/' for all teh good SEO
             if (pageParam === 1 && req.route.path === '/page/:page/') {
-                return res.redirect(config.paths().webroot + '/');
+                return res.redirect(config.paths().subdir + '/');
             }
 
             // No negative posts per page, must be number
@@ -54,7 +54,7 @@ frontendControllers = {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? config.paths().webroot + '/' : (config.paths().webroot + '/page/' + maxPage + '/'));
+                return res.redirect(maxPage === 1 ? config.paths().subdir + '/' : (config.paths().subdir + '/page/' + maxPage + '/'));
             }
 
             // Render the page of posts
@@ -116,11 +116,11 @@ frontendControllers = {
 
             // No negative pages
             if (isNaN(pageParam) || pageParam < 1) {
-                return res.redirect(config.paths().webroot + '/rss/');
+                return res.redirect(config.paths().subdir + '/rss/');
             }
 
-            if (pageParam === 1 && req.route.path === config.paths().webroot + '/rss/:page/') {
-                return res.redirect(config.paths().webroot + '/rss/');
+            if (pageParam === 1 && req.route.path === config.paths().subdir + '/rss/:page/') {
+                return res.redirect(config.paths().subdir + '/rss/');
             }
 
             api.posts.browse({page: pageParam}).then(function (page) {
@@ -134,7 +134,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect(config.paths().webroot + '/rss/' + maxPage + '/');
+                    return res.redirect(config.paths().subdir + '/rss/' + maxPage + '/');
                 }
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {

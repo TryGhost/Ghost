@@ -1,7 +1,7 @@
 // Holds all theme configuration information
 // that as mostly used by templates and handlebar helpers.
 
-var when          = require('when'),
+var when        = require('when'),
 
 // Variables
     themeConfig = {};
@@ -23,8 +23,8 @@ function update(settings, configUrl) {
         settings.read('logo'),
         settings.read('cover')
     ]).then(function (globals) {
-
-        themeConfig.url = configUrl;
+        // normalise the URL by removing any trailing slash
+        themeConfig.url = configUrl.replace(/\/$/, '');
         themeConfig.title = globals[0].value;
         themeConfig.description = globals[1].value;
         themeConfig.logo = globals[2] ? globals[2].value : '';

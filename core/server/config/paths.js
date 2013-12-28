@@ -21,8 +21,7 @@ var path              = require('path'),
 function paths() {
     return {
         'appRoot':          appRoot,
-        'path':             localPath,
-        'webroot':          localPath === '/' ? '' : localPath,
+        'subdir':           localPath === '/' ? '' : localPath,
         'config':           path.join(appRoot, 'config.js'),
         'configExample':    path.join(appRoot, 'config.example.js'),
         'contentPath':      contentPath,

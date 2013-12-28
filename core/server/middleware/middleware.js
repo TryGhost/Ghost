@@ -45,7 +45,7 @@ var middleware = {
                     }
                     redirect = '?r=' + encodeURIComponent(reqPath);
                 }
-                return res.redirect(config.paths().webroot + '/ghost/signin/' + redirect);
+                return res.redirect(config.paths().subdir + '/ghost/signin/' + redirect);
             });
         }
         next();
@@ -67,7 +67,7 @@ var middleware = {
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
         if (req.session.user) {
-            return res.redirect(config.paths().webroot + '/ghost/');
+            return res.redirect(config.paths().subdir + '/ghost/');
         }
 
         next();
