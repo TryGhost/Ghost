@@ -82,7 +82,9 @@ function importTags(ops, tableData, transaction) {
     _.each(tableData, function (tag) {
         ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
             if (!_tag) {
-                return models.Tag.add(tag, {transacting: transaction});
+                return models.Tag.add(tag, {transacting: transaction})
+                    // add pass-through error handling so that bluebird doesn't think we've dropped it
+                    .otherwise(function (error) { return when.reject(error); });
             }
             return when.resolve(_tag);
         }));
@@ -92,26 +94,35 @@ function importTags(ops, tableData, transaction) {
 function importPosts(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (post) {
-        ops.push(models.Post.add(post, {transacting: transaction, importing: true}));
+        ops.push(models.Post.add(post, {transacting: transaction, importing: true})
+            // add pass-through error handling so that bluebird doesn't think we've dropped it
+            .otherwise(function (error) { return when.reject(error); }));
     });
 }
 
 function importUsers(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
+    // don't override the users credentials
+    tableData = stripProperties(['id', 'email', 'password'], tableData);
     tableData[0].id = 1;
-    ops.push(models.User.edit(tableData[0], {transacting: transaction}));
+    ops.push(models.User.edit(tableData[0], {transacting: transaction})
+        // add pass-through error handling so that bluebird doesn't think we've dropped it
+        .otherwise(function (error) { return when.reject(error); }));
 }
 
 function importSettings(ops, tableData, transaction) {
     // for settings we need to update individual settings, and insert any missing ones
-    // the one setting we MUST NOT update is the databaseVersion settings
-    var blackList = ['databaseVersion'];
+    // settings we MUST NOT update are the databaseVersion, dbHash, and activeTheme
+    // as all of these will cause side effects which don't make sense for an import
+
+    var blackList = ['databaseVersion', 'dbHash', 'activeTheme'];
     tableData = stripProperties(['id'], tableData);
     tableData = _.filter(tableData, function (data) {
         return blackList.indexOf(data.key) === -1;
     });
 
-    ops.push(models.Settings.edit(tableData, transaction));
+    ops.push(models.Settings.edit(tableData, transaction)
+         // add pass-through error handling so that bluebird doesn't think we've dropped it
+         .otherwise(function (error) { return when.reject(error); }));
 }
 
 // No data needs modifying, we just import whatever tables are available
