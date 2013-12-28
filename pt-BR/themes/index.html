@@ -1,9 +1,9 @@
 ---
 lang: pt-BR
 layout: default
-meta_title: Theming Ghost
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Fazendo temas para o Ghost
+heading: Temas do Ghost
+subheading: Comece a criar seus próprios temas para o Ghost
 ---
 
 <div class="container">
@@ -11,47 +11,47 @@ subheading: Get started creating your own themes for Ghost
 <aside id="sidebar" class="col-lg-3">
     <nav class="bs-sidebar">
         <ul class="nav bs-sidenav">
-            <li class="active"><a href="#switching-theme">Switching Theme</a></li>
-            <li><a href="#what-is-handlebars">What is Handlebars?</a></li>
-            <li><a href="#about">About Ghost themes</a></li>
-            <li><a href="#file-structure">File Structure</a></li>
-            <li><a href="#create-your-own">Create your own</a></li>
-            <li><a href="#helpers">Built-in Helpers</a></li>
-            <li><a href="#troubleshooting">Troubleshooting Themes</a></li>
+            <li class="active"><a href="#switching-theme">Mudando de Tema</a></li>
+            <li><a href="#what-is-handlebars">O que são Handlebars?</a></li>
+            <li><a href="#about">Sobre os Temas do Ghost</a></li>
+            <li><a href="#file-structure">Estrutura de Arquivos</a></li>
+            <li><a href="#create-your-own">Criando seu Próprio</a></li>
+            <li><a href="#helpers">'Helpers' Integrados</a></li>
+            <li><a href="#troubleshooting">Solucionando Problemas com Temas</a></li>
         </ul>
     </nav>
 </aside>
 <section id="content" class="col-lg-9">
 {% raw %}
-<h2 id="switching-theme">Switching Theme</h2>
+<h2 id="switching-theme">Mudando de Tema</h2>
 
-<p>Ghost themes live in <code class="path">content/themes/</code></p>
-<p>If you want to use a different theme to the default Casper theme, check out the custom themes on our <a href="http://marketplace.ghost.org/">marketplace gallery</a>. Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.</p>
-<p>If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.</p>
-<p>To switch to your newly added theme:</p>
+<p>Os temas do Ghost vivem em <code class="path">content/themes/</code></p>
+<p>Se você quer usar um tema diferente do padrão Casper, dê uma olhada nos nossos temas personalizados na nosso <a href="http://marketplace.ghost.org/">marketplace gallery</a>. Baixe o tema de sua escolha, extraia ele e coloque em <code class="path">content/themes</code> ao lado do Casper.</p>
+<p>Se você quer fazer seu próprio, nós recomendamos copiar e renomear o diretório casper e editar os templates para parecerem e funcionarem da maneira que você quer.</p>
+<p>Para mudar para seu novo tema adicionado:</p>
 <ol>
-    <li>Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it</li>
-    <li>Login to your Ghost admin, and navigate to  <code class="path">/ghost/settings/general/</code></li>
-    <li>Select your Theme name in the 'Theme' options dropdown</li>
-    <li>Click 'Save'</li>
-    <li>Visit the frontend of your blog and marvel at the new theme</li>
+    <li>Reinicie o Ghost. Nesse momento o Ghost não sabe que você colocou uma nova pasta dentro de <code class="path">content/themes</code> então precisamos reiniciar ele</li>
+    <li>Entre na administração do Ghost e navegue para <code class="path">/ghost/settings/general/</code></li>
+    <li>Selecione o nome do tema nas opções 'Theme', no menu dropdown</li>
+    <li>Clique em 'Salvar'</li>
+    <li>Visite seu blog e Visit the frontend of your blog and maravilhe-se com seu novo tema.</li>
 </ol>
 
-<h2 id="what-is-handlebars">What is Handlebars?</h2>
+<h2 id="what-is-handlebars">O que são Handlebars?</h2>
 
-<p><a href="http://handlebarsjs.com/">Handlebars</a> is the templating language used by Ghost.</p>
-<blockquote><p>Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.</p></blockquote>
-<p>If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the <a href="http://handlebarsjs.com/expressions.html">handlebars documentation</a>, or checkout this <a href="http://blog.teamtreehouse.com/getting-started-with-handlebars-js">tutorial from Treehouse</a> – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.</p>
+<p><a href="http://handlebarsjs.com/">Handlebars</a> é a linguagem de templates usada pelo Ghost.</p>
+<blockquote><p>Handlebars fornece os poderes necessários para criar templates semânticos efetivamente e sem frustrações.</p></blockquote>
+<p>Se você está querendo começar a escrever seu próprio tema, você porovavelmente irá querer se familiarizar com a sintaxe do Handlebars primeiro. Dê uma lida na <a href="http://handlebarsjs.com/expressions.html">documentação do handlebars</a>, ou veja esse <a href="http://blog.teamtreehouse.com/getting-started-with-handlebars-js">tutorial do Treehouse</a> – você pode pular a primeira seção da instalação e uso (nós fizemos essa parte para você) e focar em ‘Basic Expressions’.</p>
 
-<h2 id="about">About Ghost themes</h2>
+<h2 id="about">Sobre os Temas do Ghost</h2>
 
-<p>Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.</p>
-<p>Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.</p>
-<p>We really hope you'll enjoy our approach to theming.</p>
+<p>Temas do Ghost são para ser simples de construir e manter. Ghost themes are intended to be simple to build and maintain. Eles deferem uma grande separação entre os templates (o HTML) e qualquer arquivo de lógica (JavaScript). Handlebars é (quase) sem lógica e reforça essa separação, fornecendo o mecanismo auxiliar para que a lógica para a exibição de conteúdo permaneça separada e independente. Esta separação se presta para facilitar a colaboração entre designers e desenvolvedores na construção de temas.</p>
+<p>Templates Handlebars são hierárquicos (um template pode extender outro template) e também suporta templates parciais. O Ghost usa essas funçòes para reduzir a duplicação de código e manter os templates individuais focados em fazer um único trabalho, e fazer isso bem. Uma boa estrutura de tema será fácil de atualizar e manter esses componentes separados faz ser muito mais fácil reusar esses arquivos pelos temas.</p>
+<p>Nós realmente esperamos que você vai desfrutar de nossa abordagem para fazer temas.</p>
 
-<h2 id="file-structure">The File Structure of a Ghost Theme</h2>
+<h2 id="file-structure">A Estrutura de Arquivos dos Temas do Ghost</h2>
 
-<p>The recommended file structure is:</p>
+<p>A estrutura recomendada é essa:</p>
             <pre>
 .
 ├── /assets
@@ -61,8 +61,8 @@ subheading: Get started creating your own themes for Ghost
 |   ├── /images
 |   ├── /js
 ├── default.hbs
-├── index.hbs [required]
-└── post.hbs [required]
+├── index.hbs [obrigatório]
+└── post.hbs [obrigatório]
             </pre>
 <p>For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive &amp; tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.</p>
 
