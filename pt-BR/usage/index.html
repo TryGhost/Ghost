@@ -20,36 +20,36 @@ next_section: configuration
 
             <p>Provavelmente nesse ponto você já tenha o Ghost instalado e executando, e você está pronto para blogar. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.</p>
 
-            <h3>First run</h3>
+            <h3>Primeira Execução</h3>
 
-            <p>If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:</p>
+            <p>Se você está rodando o Ghost pela primeira vez, você precisa criar sua conta de usuário administrador. Navegue para o seu novo blog no seu navegador favorito, e então mude a URL para <code class="path">&lt;your URL&gt;/ghost/signup/</code>. Você deve ver uma tela como essa:</p>
 
             <p><img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png" /></p>
 
             <ul>
-                <li>Fill in your <strong>Full Name</strong> as the name you want to appear as the author of blog posts.</li>
-                <li>Then enter your <strong>Email Address</strong> - make sure it's valid, and carefully enter a sensible <strong>Password</strong> (it needs to be at least 8 characters long).</li>
-                <li>Hit the big blue <strong>Sign Up</strong> button, and you will be logged in to your blog.</li>
+                <li>Digite seu <strong>Nome Completo</strong> como o nome que você quer que apareça como autor dos artigos do blog.</li>
+                <li>Entre então com seu <strong>Endereço de E-mail</strong> - tenha certeza que é válido, e com cuidado escolha uma <strong>Senha</strong> segura (ela precisa ter no mínimo 8 caracteres).</li>
+                <li>Aperte o grande botão azul <strong>Sign Up</strong>, e você será logado no blog.</li>
             </ul>
 
-            <p>That's it! You can now start writing blog posts.</p>
+            <p>É isso! Agora você pode começar a escrever artigos no blog.</p>
 
-            <h4>Messages</h4>
+            <h4>Mensagens</h4>
 
-            <p>On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:</p>
+            <p>Na primeira vez que você rodar o Ghost, você deve ver uma mensagem azul no topo da tela que irá se parecer mais ou menos com essa:</p>
 
             <p><img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png" /></p>
 
-            <p>It let's you know some information about the way Ghost is configured, such as which environment you've started it in, and what you've got your URL set to.
-                Jump to the <a href="/usage/configuration/">configuration</a> section to find out more about environments, and how to configure Ghost.
-                You won't be able to get rid of this message until you log in (this is a bug we're working on), but once you have, and you're familiar with the info, close it by pressing the x. It won't appear again.</p>
+            <p>Ela vai lhe passr algumas informações de como o Ghost está configurado, como o ambiente que você o iniciou e qual URL seu blog está configurado.
+                Vá para a seção <a href="/usage/configuration/">configuração</a> para saber um pouco mais sobre ambientes e como configurar o Ghost.
+                Você não será capaz de se livrar desta mensagem até você faça o login (esse é um problema que estamos trabalhando), mas uma vez que você fez e está familiarizado com a informação, feche-o pressionando o x. Ela não vai aparecer novamente.</p>
 
-            <p>You may also see an orange warning message with regard to email:</p>
+            <p>Você pode também ver uma mensagem laranja com uma consideração sobre o email:</p>
 
             <p><img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png" /></p>
 
-            <p>This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the <a href="/mail">email documentation</a> at some point, and learn about configuring Ghost to send email.
-            This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!</p>
+            <p>Isso não é crítico para configurar se ublog e começar a escrever, mas é uma boa ideia ir para a <a href="/mail">documentação de email</a> em algum ponto, e aprender a configurar o Ghost para enviar emails.
+            Isso atualmente só é usado para enviar um e-mail de redefinição caso você esqueça sua senha. Não é imortante para blogar, mas é muito realmente útil se um dia você precisar disso!</p>
 
             {% if page.next_section || page.prev_section %}
                 {% include pagination.html %}
