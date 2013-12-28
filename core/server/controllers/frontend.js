@@ -68,7 +68,7 @@ frontendControllers = {
         });
     },
     'single': function (req, res, next) {
-        api.posts.read(_.pick(req.params, ['id', 'slug'])).then(function (post) {
+        api.posts.read(_.pick(req.params, ['id', 'slug', 'page'])).then(function (post) {
             if (post) {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
@@ -89,6 +89,14 @@ frontendControllers = {
             e.status = err.errorCode;
             return next(e);
         });
+    },
+    'post': function (req, res, next) {
+        req.params.page = 0;
+        return frontendControllers.single(req, res, next);
+    },
+    'page': function (req, res, next) {
+        req.params.page = 1;
+        return frontendControllers.single(req, res, next);
     },
     'rss': function (req, res, next) {
         // Initialize RSS

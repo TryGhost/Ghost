@@ -108,7 +108,11 @@ coreHelpers.url = function (options) {
             output += config.paths().subdir;
         }
         if (models.isPost(self)) {
-            output += permalinks.value;
+            if (self.page === 1) {
+                output += '/:slug/';
+            } else {
+                output += permalinks.value;
+            }
             output = output.replace(/(:[a-z]+)/g, function (match) {
                 if (_.has(tags, match.substr(1))) {
                     return tags[match.substr(1)]();
