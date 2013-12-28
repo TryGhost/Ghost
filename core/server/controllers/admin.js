@@ -132,6 +132,23 @@ adminControllers = {
             password: password
         }).then(function (user) {
             api.settings.edit('email', email).then(function () {
+                var message = {
+                    to: email,
+                    subject: 'Your New Ghost Blog',
+                    html: '<p><strong>Hello!</strong></p>' +
+                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
+                          '<p>You can log in to your admin account with the following details:</p>' +
+                          '<p> Email Address: ' + email + '<br>' +
+                          'Password: The password you chose when you signed up</p>' +
+                          '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
+                          '<p>xoxo</p>' +
+                          '<p>Team Ghost<br>' +
+                          '<a href="https://ghost.org">https://ghost.org</a></p>'
+                };
+                mailer.send(message).otherwise(function (error) {
+                    errors.logError('Unable to send welcome email. Reason: \n' + error.message);
+                });
+
                 req.session.regenerate(function (err) {
                     if (!err) {
                         if (req.session.user === undefined) {
