@@ -89,7 +89,7 @@ function initViews(req, res, next) {
 function activateTheme(activeTheme) {
     var hbsOptions,
         stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
-            return stackItem.route === '' && stackItem.handle.name === 'settingEnabled';
+            return stackItem.route === config.paths().subdir && stackItem.handle.name === 'settingEnabled';
         }));
 
     // clear the view cache
@@ -99,7 +99,6 @@ function activateTheme(activeTheme) {
     expressServer.enable(expressServer.get('activeTheme'));
     if (stackLocation) {
         expressServer.stack[stackLocation].handle = middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme());
-        expressServer.stack[stackLocation].route = config.paths().subdir;
     }
 
     // set view engine
@@ -228,7 +227,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
 
     // Theme only config
-    expressServer.use(middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
+    expressServer.use(subdir, middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
 
     // Add in all trailing slashes
     expressServer.use(slashes());
