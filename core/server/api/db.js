@@ -1,8 +1,8 @@
 var dataExport       = require('../data/export'),
     dataImport       = require('../data/import'),
     dataProvider     = require('../models'),
-    apiNotifications = require('./notifications'),
-    apiSettings      = require('./settings'),
+    notifications    = require('./notifications'),
+    settings         = require('./settings'),
     fs               = require('fs-extra'),
     path             = require('path'),
     when             = require('when'),
@@ -29,7 +29,7 @@ db = {
             res.download(exportedFilePath, 'GhostData.json');
         }).otherwise(function (error) {
             // Notify of an error if it occurs
-            return apiNotifications.browse().then(function (notifications) {
+            return notifications.browse().then(function (notifications) {
                 var notification = {
                     type: 'error',
                     message: error.message || error,
@@ -37,7 +37,7 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return apiNotifications.add(notification).then(function () {
+                return notifications.add(notification).then(function () {
                     res.redirect(debugPath);
                 });
             });
@@ -56,7 +56,7 @@ db = {
              * - If there is no path
              * - If the name doesn't have json in it
              */
-            return apiNotifications.browse().then(function (notifications) {
+            return notifications.browse().then(function (notifications) {
                 notification = {
                     type: 'error',
                     message:  "Must select a .json file to import",
@@ -64,13 +64,13 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return apiNotifications.add(notification).then(function () {
+                return notifications.add(notification).then(function () {
                     res.redirect(debugPath);
                 });
             });
         }
 
-        apiSettings.read({ key: 'databaseVersion' }).then(function (setting) {
+        settings.read({ key: 'databaseVersion' }).then(function (setting) {
             return when(setting.value);
         }, function () {
             return when('001');
@@ -100,17 +100,15 @@ db = {
                     for (prop in elem) {
                         if (elem.hasOwnProperty(prop)) {
                             if (schema[constkey].hasOwnProperty(prop)) {
-                                if (elem.hasOwnProperty(prop)) {
-                                    if (!_.isNull(elem[prop])) {
-                                        if (elem[prop].length > schema[constkey][prop].maxlength) {
-                                            error += error !== "" ? "<br>" : "";
-                                            error += "Property '" + prop + "' exceeds maximum length of " + schema[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
-                                        }
-                                    } else {
-                                        if (!schema[constkey][prop].nullable) {
-                                            error += error !== "" ? "<br>" : "";
-                                            error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
-                                        }
+                                if (!_.isNull(elem[prop])) {
+                                    if (elem[prop].length > schema[constkey][prop].maxlength) {
+                                        error += error !== "" ? "<br>" : "";
+                                        error += "Property '" + prop + "' exceeds maximum length of " + schema[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
+                                    }
+                                } else {
+                                    if (!schema[constkey][prop].nullable) {
+                                        error += error !== "" ? "<br>" : "";
+                                        error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
                                     }
                                 }
                             } else {
@@ -127,25 +125,24 @@ db = {
             }
             // Import for the current version
             return dataImport(databaseVersion, importData);
+
         }).then(function importSuccess() {
-            return apiNotifications.browse();
+            return settings.updateSettingsCache();
+        }).then(function () {
+            return notifications.browse();
         }).then(function (notifications) {
             notification = {
                 type: 'success',
-                message: "Data imported. Log in with the user details you imported",
+                message: "Posts, tags and other data successfully imported",
                 status: 'persistent',
                 id: 'per-' + (notifications.length + 1)
             };
 
-            return apiNotifications.add(notification).then(function () {
-                req.session.destroy();
-                res.set({
-                    "X-Cache-Invalidate": "/*"
-                });
-                res.redirect(config.paths().subdir + '/ghost/signin/');
+            return notifications.add(notification).then(function () {
+                res.redirect(debugPath);
             });
         }).otherwise(function importFailure(error) {
-            return apiNotifications.browse().then(function (notifications) {
+            return notifications.browse().then(function (notifications) {
                 // Notify of an error if it occurs
                 notification = {
                     type: 'error',
@@ -154,7 +151,7 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return apiNotifications.add(notification).then(function () {
+                return notifications.add(notification).then(function () {
                     res.redirect(debugPath);
                 });
             });

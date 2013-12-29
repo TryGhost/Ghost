@@ -62,12 +62,7 @@ describe("Import", function () {
     describe("000", function () {
         should.exist(Importer000);
 
-        it("imports data from 001", function (done) {
-            var exportData;
-            var migrationStub = sinon.stub(migration, "getDatabaseVersion", function () {
-                return when.resolve("000");
-            });
-
+        beforeEach(function (done) {
             // migrate to current version
             migration.migrateUp().then(function () {
                 // Load the fixtures
@@ -76,10 +71,20 @@ describe("Import", function () {
                 // Initialise the default settings
                 return Settings.populateDefaults();
             }).then(function () {
-                // export the version 000 data ready to import
-                // TODO: Should have static test data here?
-                return exporter();
-            }).then(function (exported) {
+                return testUtils.insertDefaultUser();
+            }).then(function () {
+                done();
+            }).then(null, done);
+        });
+
+
+        it("imports data from 000", function (done) {
+            var exportData,
+                migrationStub = sinon.stub(migration, "getDatabaseVersion", function () {
+                    return when.resolve("000");
+                });
+
+            testUtils.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
 
                 return importer("000", exportData);
@@ -92,21 +97,28 @@ describe("Import", function () {
                     knex("tags").select()
                 ]);
             }).then(function (importedData) {
-
                 should.exist(importedData);
+
                 importedData.length.should.equal(4, 'Did not get data successfully');
 
-                // we always have 0 users as there isn't one in fixtures
-                importedData[0].length.should.equal(0, 'There should not be a user');
+                var users = importedData[0],
+                    posts = importedData[1],
+                    settings = importedData[2],
+                    tags = importedData[3];
+
+                // we always have 1 user, the default user we added
+                users.length.should.equal(1, 'There should only be one user');
                 // import no longer requires all data to be dropped, and adds posts
-                importedData[1].length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
+                posts.length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
 
                 // test settings
-                importedData[2].length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
+                settings.length.should.be.above(0, 'Wrong number of settings');
+                _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
 
                 // test tags
-                importedData[3].length.should.equal(exportData.data.tags.length, 'no new tags');
+                tags.length.should.equal(exportData.data.tags.length, 'no new tags');
+
+                migrationStub.restore();
 
                 done();
             }).then(null, done);
@@ -116,22 +128,26 @@ describe("Import", function () {
     describe("001", function () {
         should.exist(Importer001);
 
-        it("imports data from 001", function (done) {
-            var exportData,
-                timestamp = 1349928000000;
-
-            // Migrate to version 001
+        beforeEach(function (done) {
+            // migrate to current version
             migration.migrateUp().then(function () {
                 // Load the fixtures
                 return fixtures.populateFixtures();
             }).then(function () {
-                // Initialise the default settings
+                    // Initialise the default settings
                 return Settings.populateDefaults();
             }).then(function () {
-                // export the version 000 data ready to import
-                // TODO: Should have static test data here?
-                return exporter();
-            }).then(function (exported) {
+                return testUtils.insertDefaultUser();
+            }).then(function () {
+                done();
+            }).then(null, done);
+        });
+
+        it("safely imports data from 001", function (done) {
+            var exportData,
+                timestamp = 1349928000000;
+
+            testUtils.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
                 // Modify timestamp data for testing
@@ -156,16 +172,33 @@ describe("Import", function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3];
+                    tags = importedData[3],
+                    exportEmail;
 
-                // we always have 0 users as there isn't one in fixtures
-                users.length.should.equal(0, 'There should not be a user');
+                // we always have 1 user, the default user we added
+                users.length.should.equal(1, 'There should only be one user');
+
+                // user should still have the credentials from the original insert, not the import
+                users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
+                users[0].password.should.equal(testUtils.DataGenerator.Content.users[0].password);
+                // but the name, slug, and bio should have been overridden
+                users[0].name.should.equal(exportData.data.users[0].name);
+                users[0].slug.should.equal(exportData.data.users[0].slug);
+                users[0].bio.should.equal(exportData.data.users[0].bio);
+
                 // import no longer requires all data to be dropped, and adds posts
                 posts.length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
                 _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
+
+                // activeTheme should NOT have been overridden
+                _.findWhere(settings, {key: "activeTheme"}).value.should.equal("casper", 'Wrong theme');
+
+                // email address should have been overridden
+                exportEmail = _.findWhere(exportData.data.settings, {key: "email"}).value;
+                _.findWhere(settings, {key: "email"}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -175,9 +208,9 @@ describe("Import", function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistant for all DBs.
-                assert.equal( new Date(posts[1].created_at).getTime(), timestamp);
-                assert.equal( new Date(posts[1].updated_at).getTime(), timestamp);
-                assert.equal( new Date(posts[1].published_at).getTime(), timestamp);
+                assert.equal(new Date(posts[1].created_at).getTime(), timestamp);
+                assert.equal(new Date(posts[1].updated_at).getTime(), timestamp);
+                assert.equal(new Date(posts[1].published_at).getTime(), timestamp);
 
                 done();
             }).then(null, done);
@@ -185,19 +218,11 @@ describe("Import", function () {
 
         it("doesn't import invalid post data from 001", function (done) {
             var exportData;
-            // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
-                // export the version 000 data ready to import
-                // TODO: Should have static test data here?
-                return exporter();
-            }).then(function (exported) {
+
+
+            testUtils.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
+
                 //change title to 151 characters
                 exportData.data.posts[0].title = new Array(152).join('a');
                 exportData.data.posts[0].tags = 'Tag';
@@ -214,40 +239,36 @@ describe("Import", function () {
                     knex("tags").select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
+
                     importedData.length.should.equal(4, 'Did not get data successfully');
 
-                    // we always have 0 users as there isn't one in fixtures
-                    importedData[0].length.should.equal(0, 'There should not be a user');
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        settings = importedData[2],
+                        tags = importedData[3];
+
+                    // we always have 1 user, the default user we added
+                    users.length.should.equal(1, 'There should only be one user');
                     // import no longer requires all data to be dropped, and adds posts
-                    importedData[1].length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
                     // test settings
-                    importedData[2].length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
+                    settings.length.should.be.above(0, 'Wrong number of settings');
+                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
 
                     // test tags
-                    importedData[3].length.should.equal(exportData.data.tags.length, 'no new tags');
+                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
                     done();
                 });
 
             }).then(null, done);
         });
+
         it("doesn't import invalid settings data from 001", function (done) {
             var exportData;
 
-            // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
-                // export the version 000 data ready to import
-                // TODO: Should have static test data here?
-                return exporter();
-            }).then(function (exported) {
+            testUtils.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
                 //change to blank settings key
                 exportData.data.settings[3].key = null;
@@ -256,6 +277,7 @@ describe("Import", function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
                 error.should.eql('Error importing data: Setting key cannot be blank');
+
                 when.all([
                     knex("users").select(),
                     knex("posts").select(),
@@ -263,19 +285,25 @@ describe("Import", function () {
                     knex("tags").select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
+
                     importedData.length.should.equal(4, 'Did not get data successfully');
 
-                    // we always have 0 users as there isn't one in fixtures
-                    importedData[0].length.should.equal(0, 'There should not be a user');
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        settings = importedData[2],
+                        tags = importedData[3];
+
+                    // we always have 1 user, the default user we added
+                    users.length.should.equal(1, 'There should only be one user');
                     // import no longer requires all data to be dropped, and adds posts
-                    importedData[1].length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
                     // test settings
-                    importedData[2].length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(importedData[2], {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
+                    settings.length.should.be.above(0, 'Wrong number of settings');
+                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("001", 'Wrong database version');
 
                     // test tags
-                    importedData[3].length.should.equal(exportData.data.tags.length, 'no new tags');
+                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
                     done();
                 });
