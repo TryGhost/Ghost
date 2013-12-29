@@ -1,25 +1,26 @@
 var dataExport       = require('../data/export'),
     dataImport       = require('../data/import'),
     dataProvider     = require('../models'),
-    notifications    = require('./notifications'),
-    settings         = require('./settings'),
     fs               = require('fs-extra'),
     path             = require('path'),
     when             = require('when'),
     nodefn           = require('when/node/function'),
     _                = require('underscore'),
     schema           = require('../data/schema'),
-    config           = require('../config'),
-    debugPath        = config.paths().subdir + '/ghost/debug/',
+    configPaths      = require('../config/paths'),
+    api              = {},
 
     db;
+
+api.notifications    = require('./notifications');
+api.settings         = require('./settings');
 
 db = {
     'export': function (req, res) {
         /*jslint unparam:true*/
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
-            var fileName = path.resolve(__dirname + '/../../server/data/export/exported-' + (new Date().getTime()) + '.json');
+            var fileName = path.join(configPaths().exportPath, 'exported-' + (new Date().getTime()) + '.json');
 
             return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
                 return when(fileName);
@@ -29,7 +30,7 @@ db = {
             res.download(exportedFilePath, 'GhostData.json');
         }).otherwise(function (error) {
             // Notify of an error if it occurs
-            return notifications.browse().then(function (notifications) {
+            return api.notifications.browse().then(function (notifications) {
                 var notification = {
                     type: 'error',
                     message: error.message || error,
@@ -37,8 +38,8 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return notifications.add(notification).then(function () {
-                    res.redirect(debugPath);
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(configPaths().debugPath);
                 });
             });
         });
@@ -56,7 +57,7 @@ db = {
              * - If there is no path
              * - If the name doesn't have json in it
              */
-            return notifications.browse().then(function (notifications) {
+            return api.notifications.browse().then(function (notifications) {
                 notification = {
                     type: 'error',
                     message:  "Must select a .json file to import",
@@ -64,13 +65,15 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return notifications.add(notification).then(function () {
-                    res.redirect(debugPath);
+
+
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(configPaths().debugPath);
                 });
             });
         }
 
-        settings.read({ key: 'databaseVersion' }).then(function (setting) {
+        api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
             return when(setting.value);
         }, function () {
             return when('001');
@@ -127,9 +130,9 @@ db = {
             return dataImport(databaseVersion, importData);
 
         }).then(function importSuccess() {
-            return settings.updateSettingsCache();
+            return api.settings.updateSettingsCache();
         }).then(function () {
-            return notifications.browse();
+            return api.notifications.browse();
         }).then(function (notifications) {
             notification = {
                 type: 'success',
@@ -138,11 +141,11 @@ db = {
                 id: 'per-' + (notifications.length + 1)
             };
 
-            return notifications.add(notification).then(function () {
-                res.redirect(debugPath);
+            return api.notifications.add(notification).then(function () {
+                res.redirect(configPaths().debugPath);
             });
         }).otherwise(function importFailure(error) {
-            return notifications.browse().then(function (notifications) {
+            return api.notifications.browse().then(function (notifications) {
                 // Notify of an error if it occurs
                 notification = {
                     type: 'error',
@@ -151,8 +154,8 @@ db = {
                     id: 'per-' + (notifications.length + 1)
                 };
 
-                return notifications.add(notification).then(function () {
-                    res.redirect(debugPath);
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(configPaths().debugPath);
                 });
             });
         });

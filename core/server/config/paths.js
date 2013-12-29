@@ -19,9 +19,11 @@ var path              = require('path'),
 
 
 function paths() {
+    var subdir = localPath === '/' ? '' : localPath;
+
     return {
         'appRoot':          appRoot,
-        'subdir':           localPath === '/' ? '' : localPath,
+        'subdir':           subdir,
         'config':           path.join(appRoot, 'config.js'),
         'configExample':    path.join(appRoot, 'config.example.js'),
         'contentPath':      contentPath,
@@ -32,7 +34,9 @@ function paths() {
         'imagesRelPath':    'content/images',
         'adminViews':       path.join(corePath, '/server/views/'),
         'helperTemplates':  path.join(corePath, '/server/helpers/tpl/'),
+        'exportPath':       path.join(corePath, '/server/data/export/'),
         'lang':             path.join(corePath, '/shared/lang/'),
+        'debugPath':        subdir + '/ghost/debug/',
         'availableThemes':  availableThemes,
         'availablePlugins': availablePlugins
     };

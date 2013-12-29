@@ -91,7 +91,9 @@ describe('Config', function () {
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
+                'exportPath',
                 'lang',
+                'debugPath',
                 'availableThemes',
                 'availablePlugins'
             );
