@@ -1,17 +1,19 @@
 /*globals describe, beforeEach, afterEach, it*/
-var testUtils = require('../utils'),
-    should    = require('should'),
-    sinon     = require('sinon'),
-    when      = require('when'),
-    _         = require('underscore'),
-    path      = require('path'),
-    api       = require('../../server/api'),
-    hbs = require('express-hbs'),
+var testUtils  = require('../utils'),
+    should     = require('should'),
+    sinon      = require('sinon'),
+    when       = require('when'),
+    _          = require('underscore'),
+    path       = require('path'),
+    rewire     = require('rewire'),
+    api        = require('../../server/api'),
+    hbs        = require('express-hbs'),
+
 
     // Stuff we are testing
     handlebars = hbs.handlebars,
-    helpers = require('../../server/helpers'),
-    config = require('../../server/config');
+    helpers    = require('../../server/helpers'),
+    config     = require('../../server/config');
 
 describe('Core Helpers', function () {
 
@@ -302,9 +304,12 @@ describe('Core Helpers', function () {
         });
 
         it('returns meta tag string', function (done) {
-            helpers.ghost_foot.call({version: "0.9"}).then(function (rendered) {
+
+            helpers.assetHash = 'abc';
+
+            helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js\?v=0.9"><\/script>/);
+                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js\?v=abc"><\/script>/);
 
                 done();
             }).then(null, done);
@@ -325,9 +330,9 @@ describe('Core Helpers', function () {
 
         it('should output an absolute URL if the option is present', function () {
             helpers.url.call(
-                    {html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)},
-                    {hash: { absolute: 'true'}})
-            .then(function (rendered) {
+                {html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)},
+                {hash: { absolute: 'true'}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('http://testurl.com/slug/');
             });
@@ -551,13 +556,13 @@ describe('Core Helpers', function () {
         });
     });
 
-    describe("meta_description helper", function (done) {
+    describe("meta_description helper", function () {
 
         it('has loaded meta_description helper', function () {
             should.exist(handlebars.helpers.meta_description);
         });
 
-        it('can return blog description', function () {
+        it('can return blog description', function (done) {
             helpers.meta_description.call({ghostRoot: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Just a blogging platform.');
@@ -576,6 +581,177 @@ describe('Core Helpers', function () {
             }, done);
         });
 
+    });
+
+    describe("asset helper", function () {
+        var rendered,
+            configStub;
+
+        beforeEach(function () {
+            // set the asset hash
+            helpers.assetHash = 'abc';
+        });
+
+        afterEach(function () {
+            if (configStub) {
+                configStub.restore();
+            }
+        });
+
+        it('has loaded asset helper', function () {
+            should.exist(handlebars.helpers.asset);
+        });
+
+        it("handles favicon correctly", function () {
+            // with ghost set
+            rendered = helpers.asset('favicon.ico', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/favicon.ico');
+
+            // without ghost set
+            rendered = helpers.asset('favicon.ico');
+            should.exist(rendered);
+            String(rendered).should.equal('/favicon.ico');
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.asset('favicon.ico', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/favicon.ico');
+
+            // without ghost set
+            rendered = helpers.asset('favicon.ico');
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/favicon.ico');
+        });
+
+        it('handles shared assets correctly', function () {
+            // with ghost set
+            rendered = helpers.asset('shared/asset.js', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/shared/asset.js?v=abc');
+
+            // without ghost set
+            rendered = helpers.asset('shared/asset.js');
+            should.exist(rendered);
+            String(rendered).should.equal('/shared/asset.js?v=abc');
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.asset('shared/asset.js', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/shared/asset.js?v=abc');
+
+            // without ghost set
+            rendered = helpers.asset('shared/asset.js');
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/shared/asset.js?v=abc');
+        });
+
+        it('handles admin assets correctly', function () {
+            // with ghost set
+            rendered = helpers.asset('js/asset.js', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/ghost/js/asset.js?v=abc');
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.asset('js/asset.js', {"hash": {ghost: 'true'}});
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/ghost/js/asset.js?v=abc');
+        });
+
+        it('handles theme assets correctly', function () {
+            // with ghost set
+            rendered = helpers.asset('js/asset.js');
+            should.exist(rendered);
+            String(rendered).should.equal('/assets/js/asset.js?v=abc');
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.asset('js/asset.js');
+            should.exist(rendered);
+            String(rendered).should.equal('/blog/assets/js/asset.js?v=abc');
+        });
+
+    });
+
+    describe("ghostScriptTags  helper", function () {
+        var rendered,
+            configStub;
+
+        beforeEach(function () {
+            // set the asset hash
+            helpers = rewire('../../server/helpers');
+            helpers.assetHash = 'abc';
+        });
+
+        afterEach(function () {
+            if (configStub) {
+                configStub.restore();
+            }
+        });
+
+        it('has loaded ghostScriptTags  helper', function () {
+            should.exist(helpers.ghostScriptTags);
+        });
+
+        it('outputs correct scripts for development mode', function () {
+            rendered = helpers.ghostScriptTags();
+            should.exist(rendered);
+            String(rendered).should.equal(
+                '<script src="/ghost/scripts/vendor.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/helpers.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/templates.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/models.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/views.js?v=abc"></script>'
+            );
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.ghostScriptTags();
+            should.exist(rendered);
+            String(rendered).should.equal(
+                '<script src="/blog/ghost/scripts/vendor.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/helpers.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/templates.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/models.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/views.js?v=abc"></script>'
+            );
+        });
+
+        it('outputs correct scripts for production mode', function () {
+
+            helpers.__set__('isProduction', true);
+
+            rendered = helpers.ghostScriptTags();
+            should.exist(rendered);
+            String(rendered).should.equal('<script src="/ghost/scripts/ghost.min.js?v=abc"></script>');
+
+            configStub = sinon.stub(config, 'paths', function () {
+                return {'subdir': '/blog'};
+            });
+
+            // with subdirectory
+            rendered = helpers.ghostScriptTags();
+            should.exist(rendered);
+            String(rendered).should.equal('<script src="/blog/ghost/scripts/ghost.min.js?v=abc"></script>');
+        });
     });
 
 });

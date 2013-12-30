@@ -1,11 +1,11 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, beforeEach, afterEach, it*/
 var assert          = require('assert'),
     should          = require('should'),
     sinon           = require('sinon'),
     when            = require('when'),
     _               = require('underscore'),
     express         = require('express'),
-    api             = require('../../server/api');
+    api             = require('../../server/api'),
     middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {
@@ -33,9 +33,9 @@ describe('Middleware', function () {
 
             middleware.auth(req, res, null).then(function () {
                 assert(res.redirect.calledWithMatch('/ghost/signin/'));
-                return done();    
+                return done();
             });
-            
+
         });
 
         it('should redirect to signin path with redirect paramater stripped of /ghost/', function(done) {
@@ -145,22 +145,24 @@ describe('Middleware', function () {
 
         beforeEach(function (done) {
             api.notifications.add({
-                    id: 0,
+                id: 0,
+                status: 'passive',
+                message: 'passive-one'
+            }).then(function () {
+                return api.notifications.add({
+                    id: 1,
                     status: 'passive',
-                    message: 'passive-one'
-                }).then(function () {
-                    return api.notifications.add({
-                        id: 1,
-                        status: 'passive',
-                        message: 'passive-two'});
-                }).then(function () {
-                    return api.notifications.add({
-                        id: 2,
-                        status: 'aggressive',
-                        message: 'aggressive'});
-                }).then(function () {
-                    done();
+                    message: 'passive-two'
                 });
+            }).then(function () {
+                return api.notifications.add({
+                    id: 2,
+                    status: 'aggressive',
+                    message: 'aggressive'
+                });
+            }).then(function () {
+                done();
+            });
         });
 
         it('should clean all passive messages', function (done) {
@@ -177,7 +179,7 @@ describe('Middleware', function () {
         });
     });
 
-    describe('disableCachedResult', function () {
+    describe('cacheControl', function () {
         var res;
 
         beforeEach(function () {
@@ -186,12 +188,28 @@ describe('Middleware', function () {
             };
         });
 
-        it('should set correct cache headers', function (done) {
-            middleware.disableCachedResult(null, res, function () {
-                assert(res.set.calledWith({
-                    'Cache-Control': 'no-cache, must-revalidate',
-                    'Expires': 'Sat, 26 Jul 1997 05:00:00 GMT'
-                }));
+        it('correctly sets the public profile headers', function (done) {
+            middleware.cacheControl('public')(null, res, function (a) {
+                should.not.exist(a);
+                res.set.calledOnce.should.be.true;
+                res.set.calledWith({'Cache-Control': 'public, max-age=0'});
+                return done();
+            });
+        });
+
+        it('correctly sets the private profile headers', function (done) {
+            middleware.cacheControl('private')(null, res, function (a) {
+                should.not.exist(a);
+                res.set.calledOnce.should.be.true;
+                res.set.calledWith({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
+                return done();
+            });
+        });
+
+        it('will not set headers without a profile', function (done) {
+            middleware.cacheControl()(null, res, function (a) {
+                should.not.exist(a);
+                res.set.called.should.be.false;
                 return done();
             });
         });
@@ -235,8 +253,6 @@ describe('Middleware', function () {
     });
 
     describe('staticTheme', function () {
-        var realExpressStatic = express.static;
-
         beforeEach(function () {
             sinon.stub(middleware, 'forwardToExpressStatic').yields();
         });

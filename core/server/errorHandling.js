@@ -9,7 +9,9 @@ var _           = require('underscore'),
     // Paths for views
     defaultErrorTemplatePath = path.resolve(configPaths().adminViews, 'user-error.hbs'),
     userErrorTemplatePath    = path.resolve(configPaths().themePath, 'error.hbs'),
-    userErrorTemplateExists;
+    userErrorTemplateExists,
+
+    ONE_HOUR_S  = 60 * 60;
 
 /**
  * Basic error handling helpers
@@ -182,6 +184,8 @@ errors = {
     error404: function (req, res, next) {
         var message = res.isAdmin && req.session.user ? "No Ghost Found" : "Page Not Found";
 
+        // 404 errors should be briefly cached
+        res.set({'Cache-Control': 'public, max-age=' + ONE_HOUR_S});
         if (req.method === 'GET') {
             this.renderErrorPage(404, message, req, res, next);
         } else {
@@ -190,6 +194,13 @@ errors = {
     },
 
     error500: function (err, req, res, next) {
+        // 500 errors should never be cached
+        res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
+
+        if (err.status === 404) {
+            return this.error404(req, res, next);
+        }
+
         if (req.method === 'GET') {
             if (!err || !(err instanceof Error)) {
                 next();

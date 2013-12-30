@@ -1,20 +1,22 @@
-var _               = require('underscore'),
-    moment          = require('moment'),
-    downsize        = require('downsize'),
-    path            = require('path'),
-    when            = require('when'),
+var downsize        = require('downsize'),
     hbs             = require('express-hbs'),
+    moment          = require('moment'),
+    path            = require('path'),
     polyglot        = require('node-polyglot').instance,
-    template        = require('./template'),
-    errors          = require('../errorHandling'),
-    models          = require('../models'),
-    filters         = require('../filters'),
-    packageInfo     = require('../../../package.json'),
-    version         = packageInfo.version,
-    scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
-    isProduction    = process.env.NODE_ENV === 'production',
+    _               = require('underscore'),
+    when            = require('when'),
+
     api             = require('../api'),
     config          = require('../config'),
+    errors          = require('../errorHandling'),
+    filters         = require('../filters'),
+    models          = require('../models'),
+    template        = require('./template'),
+
+    assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
+    scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
+    isProduction    = process.env.NODE_ENV === 'production',
+
     coreHelpers     = {},
     registerHelpers;
 
@@ -128,7 +130,6 @@ coreHelpers.url = function (options) {
 // *Usage example:*
 // `{{asset "css/screen.css"}}`
 // `{{asset "css/screen.css" ghost="true"}}`
-//
 // Returns the path to the specified asset. The ghost
 // flag outputs the asset path for the Ghost admin
 coreHelpers.asset = function (context, options) {
@@ -137,7 +138,7 @@ coreHelpers.asset = function (context, options) {
 
     output += config.paths().subdir + '/';
 
-    if (!context.match(/^shared/)) {
+    if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/)) {
         if (isAdmin) {
             output += 'ghost/';
         } else {
@@ -146,6 +147,14 @@ coreHelpers.asset = function (context, options) {
     }
 
     output += context;
+
+    if (!context.match(/^favicon\.ico$/)) {
+        output = assetTemplate({
+            source: output,
+            version: coreHelpers.assetHash
+        });
+    }
+
     return new hbs.handlebars.SafeString(output);
 };
 
@@ -284,8 +293,8 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptFiles = _.map(scriptFiles, function (fileName) {
         return scriptTemplate({
-            source: config.paths().subdir + '/built/scripts/' + fileName,
-            version: version
+            source: config.paths().subdir + '/ghost/scripts/' + fileName,
+            version: coreHelpers.assetHash
         });
     });
 
@@ -379,7 +388,7 @@ coreHelpers.ghost_foot = function (options) {
 
     foot.push(scriptTemplate({
         source: config.paths().subdir + '/shared/vendor/jquery/jquery.js',
-        version: this.version
+        version: coreHelpers.assetHash
     }));
 
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
@@ -593,10 +602,13 @@ function registerAsyncAdminHelper(name, fn) {
 
 
 
-registerHelpers = function (adminHbs) {
+registerHelpers = function (adminHbs, assetHash) {
 
     // Expose hbs instance for admin
     coreHelpers.adminHbs = adminHbs;
+
+    // Store hash for assets
+    coreHelpers.assetHash = assetHash;
 
 
     // Register theme helpers
