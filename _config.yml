@@ -19,6 +19,8 @@ languages:
       key: 'ja'
     - name: 'Italiano'
       key: 'it'
+    - name: 'Romanian'
+      key: 'ro'
 
 port:         4478
 
@@ -91,6 +93,15 @@ translations:
     deploy:       'Deploy'
     upgrading:    'Aggiornamento' 
     troubleshooting: 'Risoluzione dei Problemi'
+ro:
+    site_title:   'Ghid Ghost'
+    installation: 'Instalare'
+    usage:        'Legenda'
+    email:        'Email'
+    themes:       'Teme'
+    translations: 'Traduceri'
+    help:         'Ajutor'
+
 
 # If running locally, simply comment out the line below to make all urls relative
 
