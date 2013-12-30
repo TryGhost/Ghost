@@ -28,18 +28,8 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     });
 });
 
-CasperTest.begin('Ensures dated permalinks works with RSS', 4, function suite(test) {
-	casper.thenOpen(url + "ghost/settings/", function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
-    });
-	casper.thenClick('#permalinks');
-	casper.thenClick('.button-save');
-	casper.waitFor(function successNotification() {
-        return this.evaluate(function () {
-            return document.querySelectorAll('.js-bb-notification section').length > 0;
-        });
-    });
+CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
+    CasperTest.Routines.togglePermalinks.run(test);
 	casper.thenOpen(url + 'rss/', function (response) {
 		var content = this.getPageContent(),
 			today = new Date(),

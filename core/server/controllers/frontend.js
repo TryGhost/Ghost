@@ -69,35 +69,54 @@ frontendControllers = {
         });
     },
     'single': function (req, res, next) {
-        api.posts.read(_.pick(req.params, ['id', 'slug', 'page'])).then(function (post) {
-            if (post) {
+        // From route check if a date was parsed
+        // from the regex
+        var dateInSlug = req.params[0] !== '';
+        when.join(
+            api.settings.read('permalinks'),
+            api.posts.read({slug: req.params[1]})
+        ).then(function (promises) {
+            var permalink = promises[0].value,
+                post = promises[1];
+
+            function render() {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
-                        var paths = config.paths().availableThemes[activeTheme.value];
-                        if (post.page && paths.hasOwnProperty('page')) {
-                            res.render('page', {post: post});
-                        } else {
-                            res.render('post', {post: post});
-                        }
+                        var paths = config.paths().availableThemes[activeTheme.value],
+                            view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
+                        res.render(view, {post: post});
                     });
                 });
-            } else {
-                next();
             }
+
+            if (!post) {
+                return next();
+            }
+
+            // A page can only be rendered when there is no date in the url.
+            // A post can either be rendered with a date in the url
+            // depending on the permalink setting.
+            // For all other conditions return 404.
+            if (post.page === 1 && dateInSlug === false) {
+                return render();
+            }
+
+            if (post.page === 0) {
+                // Handle post rendering
+                if ((permalink === '/:slug/' && dateInSlug === false) ||
+                        (permalink !== '/:slug/' && dateInSlug === true)) {
+                    return render();
+                }
+            }
+
+            next();
+
 
         }).otherwise(function (err) {
             var e = new Error(err.message);
             e.status = err.errorCode;
             return next(e);
         });
-    },
-    'post': function (req, res, next) {
-        req.params.page = 0;
-        return frontendControllers.single(req, res, next);
-    },
-    'page': function (req, res, next) {
-        req.params.page = 1;
-        return frontendControllers.single(req, res, next);
     },
     'rss': function (req, res, next) {
         // Initialize RSS
