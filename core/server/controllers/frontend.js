@@ -12,6 +12,7 @@ var config  = require('../config'),
     when    = require('when'),
     url     = require('url'),
     filters = require('../../server/filters'),
+    coreHelpers = require('../helpers'),
 
     frontendControllers;
 
@@ -132,7 +133,8 @@ frontendControllers = {
             }
 
             api.posts.browse({page: pageParam}).then(function (page) {
-                var maxPage = page.pages;
+                var maxPage = page.pages,
+                    feedItems = [];
 
                 // A bit of a hack for situations with no content.
                 if (maxPage === 0) {
@@ -147,30 +149,38 @@ frontendControllers = {
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
-                        var item = {
-                                title:  _.escape(post.title),
-                                guid: post.uuid,
-                                url: siteUrl + '/' + post.slug + '/',
-                                date: post.published_at,
-                                categories: _.pluck(post.tags, 'name')
-                            },
-                            content = post.html;
+                        var deferred = when.defer();
+                        post.url = coreHelpers.url;
+                        post.url().then(function (postUrl) {
+                            var item = {
+                                    title:  _.escape(post.title),
+                                    guid: post.uuid,
+                                    url: siteUrl + postUrl,
+                                    date: post.published_at,
+                                    categories: _.pluck(post.tags, 'name')
+                                },
+                                content = post.html;
 
-                        //set img src to absolute url
-                        content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "src='" + p1 + "' ";
+                            //set img src to absolute url
+                            content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                                /*jslint unparam:true*/
+                                p1 = url.resolve(siteUrl, p1);
+                                return "src='" + p1 + "' ";
+                            });
+                            //set a href to absolute url
+                            content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                                /*jslint unparam:true*/
+                                p1 = url.resolve(siteUrl, p1);
+                                return "href='" + p1 + "' ";
+                            });
+                            item.description = content;
+                            feed.item(item);
+                            deferred.resolve();
                         });
-                        //set a href to absolute url
-                        content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "href='" + p1 + "' ";
-                        });
-                        item.description = content;
-                        feed.item(item);
+                        feedItems.push(deferred.promise);
                     });
+                });
+                when.all(feedItems).then(function () {
                     res.set('Content-Type', 'text/xml');
                     res.send(feed.xml());
                 });
