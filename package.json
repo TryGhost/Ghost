@@ -36,7 +36,7 @@
         "bookshelf": "0.6.1",
         "busboy": "0.0.12",
         "colors": "0.6.2",
-        "connect-slashes": "1.0.2",
+        "connect-slashes": "1.2.0",
         "downsize": "0.0.4",
         "express": "3.4.6",
         "express-hbs": "0.5.2",
