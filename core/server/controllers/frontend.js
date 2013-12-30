@@ -105,14 +105,15 @@ frontendControllers = {
             pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             feed;
         //needs refact for multi user to not use first user as default
-        when.all([
+        when.settle([
             api.users.read({id : 1}),
             api.settings.read('title'),
             api.settings.read('description')
-        ]).then(function (values) {
-            var user = values[0],
-                title = values[1].value,
-                description = values[2].value;
+        ]).then(function (result) {
+            var user = result[0].value,
+                title = result[1].value.value,
+                description = result[2].value.value;
+
             feed = new RSS({
                 title: title,
                 description: description,
