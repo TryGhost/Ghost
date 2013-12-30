@@ -13,7 +13,7 @@ describe('Frontend Controller', function () {
 
     var ghost,
         sandbox,
-        apiStub;
+        apiSettingsStub;
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
@@ -48,16 +48,16 @@ describe('Frontend Controller', function () {
         };
 
         beforeEach(function () {
-            apiStub = sandbox.stub(api.posts , 'read', function (args) {
-                return when(args.id === 1 ? mockStaticPost : mockPost);
+            sandbox.stub(api.posts , 'read', function (args) {
+                return when(args.slug === mockStaticPost.slug ? mockStaticPost : mockPost);
             });
 
-            sandbox.stub(api.settings , 'read', function () {
-                return when({
-                    'key': 'activeTheme',
-                    'value': 'casper'
-                });
-            });
+            apiSettingsStub = sandbox.stub(api.settings , 'read');
+
+            apiSettingsStub.withArgs('activeTheme').returns(when({
+                'key': 'activeTheme',
+                'value': 'casper'
+            }));
 
             sandbox.stub(config , 'paths', function () {
                 return {
@@ -74,47 +74,148 @@ describe('Frontend Controller', function () {
             });
         });
 
-      it('can render a static page', function(done) {
-        var req = {
-            params: {
-                'id': 1,
-                'slug': 'test-static-page'
-            }
-        };
+        describe('permalink set to slug', function() {
+            beforeEach(function() {
+                apiSettingsStub.withArgs('permalinks').returns(when({
+                    value: '/:slug/'
+                }));
+            });
 
-        var res = {
-            render: function(view, context) {
-                assert.equal(view, 'page');
-                assert(context.post, 'Context object has post attribute');
-                assert.equal(context.post, mockStaticPost);
-                done();
-            }
-        };
+            it('can render a static page', function(done) {
+                var req = {
+                    params: ['', 'test-static-page']
+                };
 
-        frontend.single(req, res, null);
+                var res = {
+                    render: function(view, context) {
+                        assert.equal(view, 'page');
+                        assert.equal(context.post, mockStaticPost);
+                        done();
+                    }
+                };
 
-      });
+                frontend.single(req, res, null);
+            });
 
-      it('can render a normal post', function(done) {
-        var req = {
-            params: {
-                'id': 2,
-                'slug': 'test-normal-post'
-            }
-        };
+            it('won\'t render a static page accessed as a date url', function(done) {
+                var req = {
+                    params: ['2012/12/30', 'test-static-page']
+                };
 
-        var res = {
-            render: function(view, context) {
-                assert.equal(view, 'post');
-                assert(context.post, 'Context object has post attribute');
-                assert.equal(context.post, mockPost);
-                done();
-            }
-        };
+                var res = {
+                    render: sinon.spy()
+                };
 
-        frontend.single(req, res, null);
+                frontend.single(req, res, function() {
+                    res.render.called.should.be.false;
+                    done();
+                });
+            });
 
-      });
+            it('can render a normal post', function(done) {
+                var req = {
+                    params: ['', 'test-normal-post']
+                };
+
+                var res = {
+                    render: function(view, context) {
+                        assert.equal(view, 'post');
+                        assert(context.post, 'Context object has post attribute');
+                        assert.equal(context.post, mockPost);
+                        done();
+                    }
+                };
+
+                frontend.single(req, res, null);
+            });
+
+            it('won\'t render a normal post accessed as a date url', function(done) {
+                var req = {
+                    params: ['2012/12/30', 'test-normal-post']
+                };
+
+                var res = {
+                    render: sinon.spy()
+                };
+
+                frontend.single(req, res, function() {
+                    res.render.called.should.be.false;
+                    done();
+                });
+            });
+        });
+
+        describe('permalink set to date', function() {
+            beforeEach(function() {
+                apiSettingsStub.withArgs('permalinks').returns(when({
+                    value: '/:year/:month/:day/:slug/'
+                }));
+            });
+
+            it('can render a static page', function(done) {
+                var req = {
+                    params: ['', 'test-static-page']
+                };
+
+                var res = {
+                    render: function(view, context) {
+                        assert.equal(view, 'page');
+                        assert.equal(context.post, mockStaticPost);
+                        done();
+                    }
+                };
+
+                frontend.single(req, res, null);
+            });
+
+            it('won\'t render a static page accessed as a date url', function(done) {
+                var req = {
+                    params: ['2012/12/30', 'test-static-page']
+                };
+
+                var res = {
+                    render: sinon.spy()
+                };
+
+                frontend.single(req, res, function() {
+                    res.render.called.should.be.false;
+                    done();
+                });
+            });
+
+            it('can render a normal post', function(done) {
+                var req = {
+                    params: ['2012/12/30', 'test-normal-post']
+                };
+
+                var res = {
+                    render: function(view, context) {
+                        assert.equal(view, 'post');
+                        assert(context.post, 'Context object has post attribute');
+                        assert.equal(context.post, mockPost);
+                        done();
+                    }
+                };
+
+                frontend.single(req, res, null);
+            });
+
+            it('won\'t render a normal post accessed as a slug url', function(done) {
+                var req = {
+                    params: ['', 'test-normal-post']
+                };
+
+                var res = {
+                    render: sinon.spy()
+                };
+
+                frontend.single(req, res, function() {
+                    res.render.called.should.be.false;
+                    done();
+                });
+            });
+        });
+
 
     });
 });

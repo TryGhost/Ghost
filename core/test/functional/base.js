@@ -209,6 +209,17 @@ CasperTest.Routines = (function () {
         }, id);
     }
 
+    function togglePermalinks(test) {
+        casper.thenOpen(url + "ghost/settings/");
+        casper.thenClick('#permalinks');
+        casper.thenClick('.button-save');
+        casper.waitFor(function successNotification() {
+            return this.evaluate(function () {
+                return document.querySelectorAll('.js-bb-notification section').length > 0;
+            });
+        });
+    }
+
     function _createRunner(fn) {
         fn.run = function run(test) {
             var routine = this;
@@ -225,7 +236,8 @@ CasperTest.Routines = (function () {
         register: _createRunner(register),
         login: _createRunner(login),
         logout: _createRunner(logout),
-        deletePost: _createRunner(deletePost)
+        deletePost: _createRunner(deletePost),
+        togglePermalinks: _createRunner(togglePermalinks)
     };
 
 }());

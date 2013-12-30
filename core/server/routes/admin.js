@@ -1,8 +1,6 @@
 var admin       = require('../controllers/admin'),
-    api         = require('../api'),
     config      = require('../config'),
-    middleware  = require('../middleware').middleware,
-    url         = require('url');
+    middleware  = require('../middleware').middleware;
 
 module.exports = function (server) {
     var subdir = config.paths().subdir;
