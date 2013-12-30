@@ -5,41 +5,38 @@ meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/windows/
+permalink: /ro/installation/windows/
 chapter: installation
 section: windows
 prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# Instalarea pe Windows <a id="install-windows"></a>
 
-### Install Node
+### Instalează Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   Pe [http://nodejs.org](http://nodejs.org) apasă install și un fișier '.msi' va fi descărcat.
+*   Click pe fișier pentru a deschide instalatorul. Node și npm va fi instalat.
+*   Urmează instrucțiunile instalatorului
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+Dacă întâmpini probleme, vezi întregul process [aici](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
 
-### Download & Extract Ghost
+### Descarcă și Extrage Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   Intră pe [http://ghost.org](http://ghost.org) și dă click pe 'Download Ghost Source Code'.
+*   Extrage fișierul
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+Dacă întâmpini probleme, vezi întregul process [aici](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
 
-### Install and Run Ghost
+### Instalează și Ruelază Ghost
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   În meniul start găsește 'Node.js' și alege 'Node.js Command Prompt'.
+*   În linia de comandă navighează unde ai extra Ghost. Execută `cd Downloads/ghost-#.#.#` (Înlocuiește #.#.# cu versiunea curentă a Ghost).
+*   Execută `npm install --production`.
+*   Când npm s-a instalat, scrie `npm start` pentru a porni Ghost.
+*   În browser, navighează la <code class="path">127.0.0.1:2368</code> pentru a vedea noul blog.
+*   Navighează la <code class="path">127.0.0.1:2368/ghost</code> pentru a creea un utilizator nou.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
 

@@ -5,104 +5,105 @@ meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
 heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/upgrading/
+permalink: /ro/installation/upgrading/
 chapter: installation
 section: upgrading
 prev_section: deploy
 next_section: troubleshooting
 ---
 
-# Upgrading Ghost <a id="upgrade"></a>
+# Upgradează Ghost <a id="upgrade"></a>
 
-Upgrading Ghost is super straightforward.
+Upgradarea Ghost se face printr-o procedură simplă.
 
-There is a couple of different ways you might want to go about it. The following describes what needs to happen, and then covers the process step-by-step for both doing it [point-and-click style](#how-to) and via a [command line](#cli), so that you are free to choose the method you are most comfortable with.
+Există câteva metode prin care poți face asta. Următoarele descriu ce trebuie să se întâmple, apoi descrie procesul pas cu pas pentru a executa upgrade-ul [point-and-click](#how-to) și prin [linia de comandă](#cli), astfel încât poți alege metoda cu care ești confortabil.
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fă o copie de rezervă!</strong> Salveză o copie de rezervă de fiecare dată când vrei să modifici platforma. Citește <a href="#backing-up">instrucțiuni de backup</a> prima dată!</p>
 
-## Overview
+## Descriere
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/folder-structure.png" style="float:left" />
 
-Ghost, once installed, has a folder structure similar to that shown on the left. There are two main directories <code class="path">content</code> and <code class="path">core</code>, plus some files in the root.
+Ghost, odată instalat, are o structură a folderelor similară cu cea din stânga. Cele două directoare principale <code class="path">content</code> și <code class="path">core</code>, plus câteva fișiere la rădăcină.
 
-Upgrading Ghost is matter of replacing the old files with the new files, re-running `npm install` to update the <code class="path">node_modules</code> folder and then restarting Ghost to make it all take affect.
+Upgradarea Ghost înseamnă înlocuirea fișierelor vechi cu cele noi, rularea `npm install` pentru a actualiza folderul <code class="path">node_modules</code> și apoi repornirea Ghost pentru a rula versiunea nouă.
 
-Remember, by default Ghost stores all your custom data, themes, images, etc in the <code class="path">content</code> directory, so take care to keep this safe! Replace only the files in <code class="path">core</code> and the root, and all will be fine.
+De la sine, Ghost salvează datele, temele, imaginile, etc. în directorul <code class="path">content</code> așa că ai grijă să nu îl suprascrii! Înlocuiește doar fișierele <code class="path">core</code> și rădăcina și totul va rămâne intact.
 
-## Backing Up <a id="backing-up"></a>
+## Copie de rezervă <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
-*   To backup all the data from your database, log into your Ghost install and go to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data. Job done
-*   To back up your custom themes and images, you need to take a copy of the files inside of <code class="path">content/themes</code> and <code class="path">content/images</code>
+*   Pentru a salva datele din baza de date, loghează-te pe Ghost și navighează în <code class="path">/ghost/debug/</code>. Apasă Export și descarcă fișierul JSON care conține toate informațiile personale.
+*   Pentru a face o copie a temelor și imaginilor, trebuie să copiezi fișierele din <code class="path">content/themes</code> și <code class="path">content/images</code>
 
-<p class="note"><strong>Note:</strong> You can, if you like, take a copy of your database from <code class="path">content/data</code> but <strong>be warned</strong> you should not do this whilst Ghost is running. Please stop it first.</p>
+<p class="note"><strong>Notă:</strong> Dacă vrei poți să copiezi baza de date din <code class="path">content/data</code>, dar <strong>ai grijă</strong> să nu faci asta în timp ce Ghost rulează. Oprește nodul prima dată.</p>
 
 
-## How to Upgrade <a id="how-to"></a>
+## Cum să upgradezi <a id="how-to"></a>
 
-How to upgrade on your local machine
+Cum să upgradezi pe mașina personală
 
-<p class="warn"><strong>WARNING:</strong> Do <strong>NOT</strong> copy and paste the entire Ghost folder over the top of an existing installation on mac. Do <strong>NOT</strong> choose <kbd>REPLACE</kbd> if uploading with Transmit or other FTP software, choose <strong>MERGE</strong>.</p>
+<p class="warn"><strong>ATENȚIE:</strong> <strong>NU</strong> suprascrie întregul director Ghost peste unul deja existent. <strong>NU</strong> alege <kbd>REPLACE</kbd> dacă uploadezi folderul prin Transmit sau alt soft FTP, alege <strong>MERGE</strong>.</p>
 
-*   Download the latest version of Ghost from [Ghost.org](http://ghost.org/download/)
-*   Extract the zip file to a temporary location
-*   Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.
-*   Next replace the old <code class="path">core</code> directory with the new `core` directory
-*   For releases which include update to Casper (the default theme), replace the old <code class="path">content/themes/casper</code> directory with the new one
-*   Run `npm install --production`
-*   Finally, Restart Ghost so that the changes take effect
+*   Descarcă ultima versiune de Ghost de la [Ghost.org](http://ghost.org/download/)
+*   Extrage zipul într-un loc temporar
+*   Copiază folderele de la rădăcină din versiunea nouă. Include index.js, package.json, Gruntfile.js, config.example.js, licența și fișierele readme.
+*   Înlocuiește directorul `core`
+*   Pentru actualizări care conțin update-uri la Casper (tema de bază), înlocuiește <code class="path">content/themes/casper</code> cu cel nou.
+*   Execută `npm install --production`
+*   Repornește Ghost
 
-## Command line only <a id="cli"></a>
+## Doar din linia de comandă <a id="cli"></a>
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fă o copie de rezervă!</strong> Salveză o copie de rezervă de fiecare dată când vrei să modifici platforma. Citește <a href="#backing-up">instrucțiuni de backup</a> prima dată!</p>
 
-### Command line only on mac <a id="cli-mac"></a>
+### Din linia de comandă pe Mac <a id="cli-mac"></a>
 
-The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note">**Note:** `~` means the user's home directory on mac and linux</span>
+Screencastul de mai jos vă arată pașii pentru actualizarea Ghost unde fișierul zip a fost descarcat în <code class="path">~/Downloads</code> și Ghost este instalat în <code class="path">~/ghost</code><span class="note">**Notă:** `~` înseamnă directorul principal al utilizatorului de Mac sau Linux</span>
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
 
-The steps in the screencast are:
+Aceștia sunt pașii din screencast:
 
-*   <code class="path">cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved
-*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - unzip ghost into the folder <code class="path">ghost-0.3.3</code>
-*   <code class="path">cd ghost-0.3.3</code> - change directory into the <code class="path">ghost-0.3.3</code> directory
-*   `ls` - show all the files and folders inside this directory
-*   `cp *.md *.js *.txt *.json ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
-*   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to the <code class="path">~/ghost</code>
-*   `cp -R content/themes/casper ~/ghost/content/themes` - copy the <code class="path">casper</code> directory and all of its contents to <code class="path">~/ghost/content/themes</code>
-*   `cd ~/ghost` - change directory to the <code class="path">~/ghost</code> directory
-*   `npm install --production` - install Ghost
-*   `npm start` - start Ghost
+*   <code class="path">cd ~/Downloads</code> - schimbă directorul unde nou Ghost a fost descărcat
+*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - descarcă ghost în directorul <code class="path">ghost-0.3.3</code>
+*   <code class="path">cd ghost-0.3.3</code> - schimbă directorul la <code class="path">ghost-0.3.3</code> directory
+*   `ls` - arată toate fișierele din director
+*   `cp *.md *.js *.txt *.json ~/ghost` - copiază toate fișierele .md .js .txt and .json de aici în <code class="path">~/ghost</code>
+*   `cp -R core ~/ghost` - copiază directorul <code class="path">core</code> și tot ce conține în <code class="path">~/ghost</code>
+*   `cp -R content/themes/casper ~/ghost/content/themes` - copiază directorul <code class="path">casper</code> și tot ce conține la <code class="path">~/ghost/content/themes</code>
+*   `cd ~/ghost` - schimbă directorul la <code class="path">~/ghost</code>
+*   `npm install --production` - instalează Ghost
+*   `npm start` - pornește Ghost
 
-### Command line only on linux servers <a id="cli-server"></a>
+### Din linia de comandă pe Linux <a id="cli-server"></a>
 
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
-*   Run `npm install --production` to get any new dependencies
-*   Finally, restart Ghost so that the changes will take effect
+*   Prima dată vă trebuie URLul ultimei versiuni de Ghost. O să fie similar cu: `http://ghost.org/zip/ghost-latest.zip`.
+*   Descarcă fișierul prin următoarea comandă: `wget http://ghost.org/zip/ghost-latest.zip`
+*   Dezarhivează arhiva cu `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+*   Rulează `npm install --production` pentru a instala dependințele noi
+*   Repornește Ghost
 
-**Additionally**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) also has instructions for upgrading Ghost on linux servers.
+**Adițional**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) are instrucțiuni pentru instalarea Ghost pe serverele Linux.
 
-### How to update a DigitalOcean Droplet <a id="digitalocean"></a>
+### Cum să actualizezi DigitalOcean Droplet <a id="digitalocean"></a>
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>Fă o copie de rezervă!</strong> Salveză o copie de rezervă de fiecare dată când vrei să modifici platforma. Citește <a href="#backing-up">instrucțiuni de backup</a> prima dată!</p>
 
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Once you've got the URL for the latest version, in your Droplet console type `cd /var/www/` to change directory to where the Ghost codebase lives.
-*   Next, type `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d ghost`
-*   Make sure all of the files have the right permissions with `chown -R ghost:ghost ghost/*`
-*   Run `npm install` to get any new dependencies
-*   Finally, restart Ghost so that the changes take effect using `service ghost restart`
+*   Prima dată vă trebuie URLul ultimei versiuni de Ghost. O să fie similar cu: `http://ghost.org/zip/ghost-latest.zip`.
+*   O dată ce aveți fișierul, executați `cd /var/www/` pentru a schimba directorul în instalarea Ghost.
+*   Execută `wget http://ghost.org/zip/ghost-latest.zip`
+*   Dezarhivează cu `unzip -uo ghost-0.3.*.zip -d ghost`
+*   Asigură-te că ai permisiile necesare cu `chown -R ghost:ghost ghost/*`
+*   Rulează `npm install` pentru dependințele noi
+*   Repornește Ghost cu `service ghost restart`
 
-## How to upgrade Node.js to the latest version <a id="upgrading-node"></a>
+## Cum să actualizezi Node.js la ultima versiune <a id="upgrading-node"></a>
 
-If you originally installed Node.js from the [Node.js](nodejs.org) website, you can upgrade Node.js to the latest version by downloading and running the latest installer. This will replace your current version with the new version.
+Dacă inițial ai avut Node.js de la [Node.js](nodejs.org), poți actualiza la ultima versiune descărcând ultima versiune și rulând instalatorul.
 
 If you are on Ubuntu, or another linux distribution which uses `apt-get`, the command to upgrade node is the same as to install: `sudo apt-get install nodejs`.
+Dacă ești pe Ubuntu sau altă distribuție Linux care folosește `apt-get`, comanda pentru a actualiza este `sudo apt-get install nodejs`.
 
-You do **not** need to restart the server or Ghost.
+**Nu** e nevoie să restartezi Ghost sau serverul.
