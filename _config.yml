@@ -18,7 +18,7 @@ languages:
     - name: '日本語'
       key: 'ja'
     - name: 'Svenska'
-      key: 'sv-SE'
+      key: 'sv'
 
 port:         4478
 
@@ -75,7 +75,7 @@ translations:
     deploy:       'デプロイ'
     upgrading:    'アップグレード'
     troubleshooting: 'トラブルシューティング'
-  sv-SE:
+  sv:
     site_title:   'Ghostguide'
     installation: 'Installation'
     usage:        'Användning'

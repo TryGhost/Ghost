@@ -1,11 +1,11 @@
 ---
-lang: sv-SE
+lang: sv
 layout: installation
 meta_title: Hur du installerar Ghost på din server - Ghost Docs
 meta_description: Allt du behöver veta för att komma igång med bloggplattformen Ghost på din lokal eller fjärrmiljö.         
 heading: Installation av Ghost &amp; Komma igång
 subheading: De första stegen för att sätta upp din blogg för första gången.
-permalink: /sv_SE/installation/deploy/
+permalink: /sv/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
@@ -38,12 +38,12 @@ Tråkigt nog så har många av de Node-specifika molnbaserade webbhotellen som *
 
 Följande länkar innehåller instruktioner för att komma igång med:
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - från [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - från [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - från [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux-service) - från [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - från [Gregg Housh](http://0v.org/)
+*   ...ta en titt på [installations forumet](https://en.ghost.org/forum/installation) för fler guider ...
 
 ## Sätta igång Ghost med forever
 
@@ -51,7 +51,7 @@ Den tidigare beskrivna metoden för att starta Ghost är `npm start`. Detta är 
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-Du kan använda `forever`för att köra Ghost som en bakgrundsprocess. `forever` kommer även ta hand om din installation av Ghost och kommer att starta om processen i node om den kraschar.
+Du kan använda `forever` för att köra Ghost som en bakgrundsprocess. `forever` kommer även ta hand om din installation av Ghost och kommer att starta om processen i node om den kraschar.
 
 *   För att installera `forever` skriv `npm install forever -g`
 *   För att starta Ghost med `forever` från installationsmappen för Ghost skriv `NODE_ENV=production forever start index.js`
