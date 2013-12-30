@@ -8,7 +8,7 @@ var _       = require('underscore'),
     path    = require('path'),
     when    = require('when'),
     errors  = require('../errorHandling'),
-    config  = require('../config'),
+    configPaths = require('../config/paths'),
     baseStore   = require('./base'),
 
     localFileStore;
@@ -20,7 +20,7 @@ localFileStore = _.extend(baseStore, {
     // - returns a promise which ultimately returns the full url to the uploaded image
     'save': function (image) {
         var saved = when.defer(),
-            targetDir = this.getTargetDir(config.paths().imagesRelPath),
+            targetDir = this.getTargetDir(configPaths().imagesRelPath),
             targetFilename;
 
         this.getUniqueFileName(this, image, targetDir).then(function (filename) {
@@ -33,7 +33,7 @@ localFileStore = _.extend(baseStore, {
         }).then(function () {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
-            var fullUrl = (config.paths().subdir + '/' + targetFilename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+            var fullUrl = (configPaths().subdir + '/' + targetFilename).replace(new RegExp('\\' + path.sep, 'g'), '/');
             return saved.resolve(fullUrl);
         }).otherwise(function (e) {
             errors.logError(e);
@@ -56,7 +56,7 @@ localFileStore = _.extend(baseStore, {
 
     // middleware for serving the files
     'serve': function () {
-        return express['static'](config.paths().imagesPath);
+        return express['static'](configPaths().imagesPath);
     }
 });
 
