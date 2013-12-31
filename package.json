@@ -74,7 +74,7 @@
         "grunt-jslint": "~1.1.1",
         "grunt-mocha-cli": "~1.4.0",
         "grunt-shell": "~0.6.1",
-        "grunt-update-submodules": "~0.2.0",
+        "grunt-update-submodules": "~0.2.1",
         "matchdep": "~0.3.0",
         "mocha": "~1.15.1",
         "rewire": "~2.0.0",
