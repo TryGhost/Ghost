@@ -73,6 +73,20 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p>Hello <strong>World</strong></p>");
         });
 
+        it('can truncate html to zero words', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 0}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p><strong></strong></p>");
+        });
+
         it('can truncate html by character', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
