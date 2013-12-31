@@ -203,12 +203,12 @@ coreHelpers.tags = function (options) {
 //
 coreHelpers.content = function (options) {
     var truncateOptions = (options || {}).hash || {};
-    _.each(_.pick(truncateOptions, ['words', 'characters']), function (value, key){
+    _.each(_.pick(truncateOptions, ['words', 'characters']), function (value, key) {
         truncateOptions[key]  = parseInt(value, 10);
     });
 
 
-    if (_.any(truncateOptions, function (val){ return val !== undefined; })) {
+    if (_.any(truncateOptions, function (val) { return val !== undefined; })) {
         return new hbs.handlebars.SafeString(
             downsize(this.html, truncateOptions)
         );
