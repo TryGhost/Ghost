@@ -16,13 +16,13 @@ next_section: managing
 
 Visita <code class="path">&lt;la tua URL&gt;/ghost/settings/</code>.
 
-Una volta che hai finito di modificare i settaggi, il pulsante "Save" **deve** essere premuto, in modo che i cambiamenti vengano salvati.
+Una volta che hai finito di modificare le impostazioni, **clicca** sul pulsante "Save", in modo che le modifiche apportate vengano salvate.
 
 Puoi verificare le tue modifiche visitando il tuo Blog.
 
 ### Configurazione del Blog (<code class="path">/general/</code>)
 
-Questi sono i settaggi specifici del Blog.
+Queste sono le impostazioni specifice del Blog.
 
 *   **Blog Title**: Cambia il titolo del Blog. Variabile nei temi `@blog.title`.
 *   **Blog Description**: Cambia la descrizione del Blog. Variabile nei temi `@blog.description`.
@@ -34,7 +34,7 @@ Questi sono i settaggi specifici del Blog.
 
 ### Configurazione dell'Utente (<code class="path">/user/</code>)
 
-Questi sono i settaggi relativi al profilo utente/autore.
+Queste sono le impostazioni relative al profilo utente/autore.
 
 *   **Your Name**: Il nome dell'autore mostrato nei post. Variabile nei temi (post) `author.name`.
 *   **Cover Image**: L'immagine cover del tuo profilo, nei formati '.png', '.jpg' o '.gif'. Variabile nei temi (post) `author.cover`.

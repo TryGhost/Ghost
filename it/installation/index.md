@@ -15,7 +15,7 @@ La documentazione di Ghost è ancora Work in Progress, è aggiornata e migliorat
 
 Ghost è sviluppato in [Node.js](http://nodejs.org), e richiede la versione `0.10.*` (l'ultima versione stabile).
 
-Far girare Ghost in locale sul tuo computer è abbastanza semplice, ma prima è necessario che tu installi Node.js.
+Far funzionare Ghost in locale sul tuo computer è abbastanza semplice, ma prima è necessario che tu installi Node.js.
 
 ### Cos'è Node.js?
 
