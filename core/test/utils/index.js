@@ -25,20 +25,22 @@ function insertPosts() {
     }));
 }
 
-function insertMorePosts() {
+function insertMorePosts(max) {
     var lang,
         status,
         posts,
         promises = [],
         i, j, k = 0;
 
+    max = max || 50;
+
     for (i = 0; i < 2; i += 1) {
         posts = [];
         lang = i % 2 ? 'en' : 'fr';
         posts.push(DataGenerator.forKnex.createGenericPost(k++, null, lang));
 
-        for (j = 0; j < 50; j += 1) {
-            status = j % 2 ? 'published' : 'draft';
+        for (j = 0; j < max; j += 1) {
+            status = j % 2 ? 'draft' : 'published';
             posts.push(DataGenerator.forKnex.createGenericPost(k++, status, lang));
         }
 
