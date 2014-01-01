@@ -2,29 +2,30 @@
 lang: ro
 layout: quickstart
 meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+heading: Ghid Rapid Ghost
+subheading: Configurează și ruleazâ Ghost
 chapter: quickstart
 section: quickstart
 ---
 
-# Overview <a id="overview"></a>
+# Introducere <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+Ghidul rapid este destinat utilizatorilor care sunt deja familiari cu [Node](http://nodejs.org) sau ceva familiar, cum ar fi Ruby On Rails. Dacă ești nefamiliarizat cu o tehnologie similară, îți recomandăm să citești [ghidul întreg](/installation.html).
 
-## Get Ghost running locally <a id="ghost-local"></a>
 
-Ghost requires node `0.10.*` (the latest stable version).
+## Rulează Ghost local <a id="ghost-local"></a>
 
-If you haven't already got it, head over to <http://nodejs.org> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.
+Ghost are nevoie de Node `0.10.*` (ultima versiune stabilă).
 
-For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+Dacă nu ai Node instalat, descarcă-l de la <http://nodejs.org>. Installerul conține Node și un manager de pachete, npm.
 
-Download the latest version of Ghost from [Ghost.org](http://ghost.org). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+Dacă folosești Linux, [folosește un manager de pachete](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) pentru a instala Node.
 
-Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
+Descarcă ultima versiune a Ghost de la [Ghost.org](http://ghost.org). Dezarhivează fișierul în folderul din care vrei să rulezi Ghost.
 
-To install Ghost, run `npm install --production`
+Deschide un terminal și navighează în director.
+
+Pentru a instala Ghost, execută `npm install --production`
 
 <!--<h2 id="customise">Customise & Configure Ghost</h2>
 

@@ -10,42 +10,41 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Cum să schimbi tema <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Temele Ghost sunt în <code class="path">content/themes/</code>.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Dacă vrei să folosești o altă temă decât Casper, uită-te la temele oferite de [magazinul nostru](http://marketplace.ghost.org/). Descarcă tema pe care o vrei, dezarhiveaz-o și mută folderul în <code class="path">content/themes/</code>, lângă Casper.
+Dacă vrei să îți placi propria tema, vă recomandăm să copiați și redenumiți casper și să editați tema pentru a o face să arate așa cum vă doriți.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Pentru a aplica tema nouă:
 
-To switch to your newly added theme:
-
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Restartează Ghost. În prezent Ghost nu detectează schimbările din <code class="path">content/themes/</code>
+2.  Loghează-te ca administrator și navighează la <code class="path">/ghost/settings/general/</code>
+4.  Click pe 'Save'
+5.  Vizitează pagina principală a blogului pentru a vedea schimbarea
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Ce este Handlebars? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars](http://handlebarsjs.com/) este limba de teme folosită de Ghost.
 
 > Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars oferă puterea necesară pentru a scrie o temă semantică ușor, fără frustrări.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+Dacă vrei să scrii propria temă va trebui să înveți sintaxa Handlebars. Citește [documentația](http://handlebarsjs.com/expressions.html) sau acest [tutorial de la Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) - poți sări peste prima secțiune despre utilizare și să sari la  `Basic Expressions`
 
-## About Ghost themes <a id="about"></a>
+## Despre temele Ghost <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Temele Ghost sunt făcute să fie simplu de construit și întreținut. Promovează separarea cât mai clară dintre temă(HTMLul) și logica programului(Javascript). Handlebars nu include logică și necesită această separare oferindu-ți un mecanism pentru ca logica afișării conținutului să rămână separată. Această separare facilitează colaborarea între designerii și programatorii care se ocupa cu așa ceva.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+Temele Handlebars sunt ierarhice (o temă o poate extinde pe alta) și suportă teme parțiale. Ghost folosește aceste opțiuni pentru a reduce duplicare codului și pentru a ține temele concentrate pe a face un singur lucru. O temă structurată bine va fi ușor de întreținut și ținut componentele separate, astfel încât să le poți refolosi într-o temă.
 
-We really hope you'll enjoy our approach to theming.
+Sperăm să vă placă modul în care am decis să abordăm problema.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Structura fișierelor unei teme Ghost <a id="file-structure"></a>
 
-The recommended file structure is:
+Structura recomandată:
 
 ```
 .
@@ -60,97 +59,97 @@ The recommended file structure is:
 └── post.hbs [required]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+Deocamdată nu este obligatoriu ca default.hbs sau orice alt folder să existe. <code class="path">index.hbs</code> și <code class="path">post.hbs</code> sunt necesare - Ghost nu va merge dacă aceste două fișiere nu sunt prezente. <code class="path">partials</code> este un director special. Trebuie să includă orice părți de teme pe care vrei să le folosești în blog; de exemplu <code class="path">list-post.hbs</code> poate include o temă pentru a printa un articol într-o listă, structură care poate fi folosită pe prima pagină, și în viitor pentru paginile de arhivă și taguri. <code class="path">partials</code> este deasemenea locul unde poți pune teme care să suprascrie pe cele încorporate, folosite de programe ajutătoare cum ar fi cel de paginare. Dacă incluzi <code class="path">pagination.hbs</code> în <code class="path">partials</code>, atunci vei putea să îți creezi propriul cod pentru paginare.
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+Acesta este fișierul de bază, care conține toate părțile plictisitoare de HTML care vor apărea pe toate paginile - tagurile `<html>`, `<head>` și `<body>`, precum și `{{ghost_head}}` și `{{ghost_foot}}` și toate elementele HTML care reprezintă un header sau footer ce se repetă pe blog.
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+Fișierul cu structura de bază, conține expresia handlebars `{{{body}}}` pentru a denota unde să insereze conținutul din temele ce o extind pe cea predefinită.
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+Temele au `{{!< default}}` ca primă linie pentru a specifica faptul că extind altă temă și conținutul trebuie plasat în <code class="path">code.hbs</code> unde `{{{body}}}` este definit.
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+Acest fișier definește structura paginii principale și extinde <code class="path">default.hbs</code>. Paginii principale îi este pasată o listă de articole și <code class="path">index.hbs</code> definește cum fiecare post trebuie afișat.
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+În Casper (în prezent tema predefinită), pagina principală are un header mare care folosește variabila `@blog` pentru a produce logoul blogului și descrierea. Acesta este urmat de modulul ajutător {{#foreach}}` pentru a produce o listă a celor mai recente articole.
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+Acest fișier conține structura unui singur articol, și extinde de asemenea <code class="path">default.hbs</code>.
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+În Casper (în prezent tema predefinită), acest fișier are propriul header și folosește variabila globala `@blog` și accesorul de date `{{#post}}` pentru a afișa conținutul.
 
-### Post styling & previewing
+### Editarea și previzualizarea articolelor
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+Când construiți teme pentru Ghost, aveți grijă la domeniul claselor, în special la IDuri, și evitați coliziunile dintre stilul principal și stilul articolului. Nu veți știi ce nume vor avea o clasă sau un ID la afișarea unui articol, de aceea e cel mai sigur să alegeți domeniul potrivit pentru fiecare parte a paginii. De exemplu: #my-id poate avea același nume cu variabile necunoscute de voie, lucru ușor de evitat cu un nume ca #themename-my-id.
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghost oferă o previzualizare realistică a articolului ca pare din editorul împărțit în două, dar pentru a face asta trebuie să încărcăm stilul specific al unui post. Această funcție nu este încă implementată, dar îți recomandăm să țineți stilul pentru articole într-un fișier separat(post.css) pentru a putea face viitoarele modificări necesare mai ușor.
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## Crează-ți propria temă <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+Îți poți creea propria temă pentru Ghost copiind Casper sau adăugând un nou director cu numele temei în <code class="path">content/themes</code>. Numele trebuie să fie în minuscule și să conțină doar litere, numere și cratime. Adaugă două fișiere goale în noul director: index.hbs și post.hbs. Nu vor afișa nimic, dar vor genera o tema validă.
 
-### The post list
+### Lista de articole
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
-
+<code class="path">index.hbs</code> primește un obiect numit `posts` care poate fi folosit cu modulul <code>foreach</code> pentru a afișa fiecare articol. De ex.:
 ```
 {{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
+// Aici ești în contextul unui articol
+// Tot ce pui aici va fi executat pentru fiecare articol din listă.
 {{/foreach}}
 ```
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+Vezi secțiunea despre modulul [`{{#foreach}}`](#foreach-helper) pentru mai multe detalii.
 
-#### Pagination
+#### Paginarea
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+Vezi secțiunea despre modulul [`{{pagination}}`](#pagination-helper).
 
-### Outputting individual posts
+### Afișarea unui singur articol
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+Odată ce sunteți în contextul unui singur articol, folosind `foreach` sau într-un <code class="path">post.hbs</code>, ai acces la toate proprietățiile unui articol.
 
-For the time being, these are:
+În prezent, acestea sunt:
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+*   id – *IDul articolului*
+*   title – *Titlul articolului*
+*   url – *URLul relativ al unui articol*
+*   content – *HTMLul articolului*
+*   published_at – *Data când articolul a fost publicat*
+*   author – *Detaliile despre autor* (vezi mai jos pentru mai multe detalii)
 
 Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+Toate aceste proprietăți pot fi accesate folosind expresiile standard handlebars. De ex.: `{{title}}`
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>Note:</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+        Proprietatea <code>content</code> este suprascrisă și afișată de modulul <code>{{content}}</code> care se asigură că HTMLul este produs și transmis corect și în siguranță. Vezi secțiunea despre <a href="#content-helper">modulul <code>{{content}}</code></a> pentru mai multe informații.
       </li>
       <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+        Proprietatea <code>url</code> provine din modulul <code>{{url}}</code>. Vezi secțiunea despre <a href="#url-helper">modulul <code>{{url}}</code></a> pentru mai multe informații.
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### Autorul unui articol
 
-When inside the context of a single post, the following author data is available:
+Când sunteți în contextul unui singur articol ai acces la următoarele informații despre autor:
 
-*   `{{author.name}}` – the name of the author 
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – Numele autorului
+*   `{{author.email}}` – Adresa de email a autorului
+*   `{{author.bio}}` – Bioul autorului
+*   `{{author.website}}` – Site-ul autorului
+*   `{{author.image}}` – Imaginea de profil a autorului
+*   `{{author.cover}}` – Imaginea de fundal a autorului
 
-You can use just`{{author}}` to output the author's name.
+Poți folosi `{{author}}` pentru a afișa doar numele autorului.
 
-This can also be done by using a block expression:
+Poți face asta și printr-o expresie bloc:
 
 ```
 {{#author}}
@@ -158,15 +157,15 @@ This can also be done by using a block expression:
 {{/author}}
 ```
 
-#### Post Tags
+#### Tagurile articolelor
 
-When inside the context of a single post, the following tag data is available
+Când sunteți în contextul unui singur articol, următoarele proprietăți ale tagurilor sunt disponibile:
 
-*   `{{tag.name}}` – the name of the tag 
+*   `{{tag.name}}` – Numele tagului
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+Poți folosi `{{tags}}` pentru a produce o listă separată de o virgulă, sau dacă preferi, un separator ales de tine cu `{{tags separator=""}}`
 
-This can also be done by using a block expression:
+Poți face asta și printr-o expresie bloc:
 
 ```
 <ul>
@@ -176,35 +175,36 @@ This can also be done by using a block expression:
 </ul>
 ```
 
-### Global Settings
+### Setări globale
 
 Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+Temele Ghost au acces la un număr de variabile globale prin accesorul global `@blog`
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – URLul specificat de mediu <code class="path">config.js</code>
+*   `{{@blog.title}}` – Titlul blogului setat pe pagina de setări
+*   `{{@blog.description}}` – Descrierea blogului setat pe pagina de setari
+*   `{{@blog.logo}}` – Logoul blogului setat pe pagina de setări
 
-## Built-in Helpers <a id="helpers"></a>
+## Module Predefinite <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghost are un număr de module care îți dau uneltele necesare să îți construiești propria temă. Modulele sunt clasificate în două tipuri: blocuri și module de afișare.
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[Modulele bloc(block helpers)](http://handlebarsjs.com/block_helpers.html)** au un tag de inceput și sfârșit. De ex.: `{{#foreach}}{{/foreach}}`. Contextul intre taguri se schimbă și aceste module îți pot oferi proprietăți adiționale pe care le poți accesa cu simbolul `@`.
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**Modulele de afișare(Output helpers)** arată aproape la fel ca expresiile folosite pentru returnarea informațiilor. De ex.: `{{content}}`. Efectuează operații folositoare pe bucățiile de informație transmise și deseori oferă opțiuni pentru formatarea acestora. Unele module folosesc teme pentru formatarea informației, similar cu parțialele. Unele module de afișare sunt și module bloc, oferind o variație a funcționalității lor.
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   Tipul modulului: bloc
+*   Opțiuni: `columns` (număr)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}` este o buclă special construită pentru a lucra cu liste de articole. Toate modulele din handlebars adaugă două proprietăți contextului curent: `@index` pentru vectori și `@key` pentru obiecte, ambele disponibile înăuntrul buclei <code>each</code>
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach` extinde această buclă și adaugă mai multe proprietăți private: `@first`, `@last`, `@even`, `@odd`, `@rowStart` și `@rowEnd` atât vectorilor cât și obiectelor. Această buclă poate fi folosită pentru a produce scheme complexe pentru liste de posturi sau alt conținut. Pentru exemple, vezi mai jos:
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+Exemplul iterează printr-un vector sau obiect și testează dacă se află la prima intrare.
 
 ```
 {{#foreach posts}}
@@ -214,7 +214,7 @@ The following example checks through an array or object e.g `posts` and tests fo
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+Instrucțiunile `if` pot verifica proprietăți multiple prin imbricare. În acest exemplu putem să modificăm modul în care primul și ultimul articol este procesat.
 
 ```
 {{#foreach posts}}
@@ -232,7 +232,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+Următorul exemplu adaugă o clasă, even(par) sau odd(impar) ce poate fi folosită pentru alternarea culorilor într-o listă:
 
 ```
 {{#foreach posts}}
@@ -242,7 +242,7 @@ The following example adds a class of even or odd, which could be used for zebra
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+Exemplul următor demonstrează cum să pasezi un argument într-o coloană pentru a putea seta proprietăți pentru primul și ultimul element dintr-un rând. Asta îți permite să afișezi conținut într-un grid. 
 
 ```
 {{#foreach posts columns=3}}
@@ -252,19 +252,20 @@ The following example shows you how to pass in a column argument so that you can
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   Tipul modulului: afișare
+*   Tipul modulului: afișare
+*   Opțiuni: `words` (număr), `characters` (număr)
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}` este un modul simplu folosit pentru afișarea conținutului articolelor. Verifică dacă HTMLul este produs corect.
 
-You can limit the amount of HTML content to output by passing one of the options:
+Poți limita cât HTML să fie produs pasându-i una din opțiuni:
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}` va produce 100 de cuvinte HTML cu taguri împerecheate.
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   Tipul modulului: output
+*   Opțiuni: `words` (number), `characters` (number) [defaults to 50 words]
 
 `{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
 
@@ -274,95 +275,95 @@ You can limit the amount of text to output by passing one of the options:
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   Tipul modulului output
+*   Opțiuni: `format` (formatul dateu, predefinit “MMM Do, YYYY”), `timeago` (boolean)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}` este un modul pentru afișarea datei calendaristice în diverse formaturi. Îi poți pasa o dată și un string de formatare pentru a fi folosit la afișare:
 
 ```
-// outputs something like 'July 11, 2013'
+// Produce: 'July 11, 2013'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+Sau îi poți pasa o dată și opțiunea timeago:
 
 ```
-// outputs something like '5 mins ago'
+// Produce: '5 mins ago'
 {{date published_at timeago="true"}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+Dacă invoci `{{date}}` fără un format, va folosi formatul predefinit “MMM Do, YYYY”.
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+Dacă invoci `{{date}}` în contextul unui articol fără să îi spui ce dată să afișeze, va folosi variabila `published_at`.
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+Dacă invoci `{{date}}` în afara contextului unui articol fără să specifici ce dată să afișeze va afișa data curentă.
 
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date` folosește [moment.js](http://momentjs.com/) pentru a formata datele. Vezi [documentația](http://momentjs.com/docs/#/parsing/string-format/) pentru o explicație pe larg a diferitelor stringuri de formatare ce pot fi folosite.
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   Tipul modulului: afișare
+*   Opțiuni: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}` afișează URLul relativ al unui articol atunci când vă aflați în interiorul contextului potrivit. În afara contextului articolului, nu va produce nimic.
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+Poți forța modulul să afișeze un URL absolut invocându-l în felul următor: `{{url absolute="true"}}`.
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   Tipul modulului: output, template-driven
+*   Opțiuni: none (în curând)
 
-`{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
+`{{pagination}}` este un modul bazat pe un sistem de scheme ce produce HTML pentru ancorele 'Articole mai noi' și 'Articole mai vechi', dacă sunt disponibile.
 
-You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
+Poți suprascrie HTMLul produs de acest modul plasând un fișier numit <code class="path">pagination.hbs</code> în folderul <code class="path">content/themes/your-theme/partials</code>.
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+`{{body_class}}` - produce clasele pentru tagul `<body>` în <code class="path">default.hbs</code>, folositor pentru targetarea unor pagini specifice cu stiluri.
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
+`{{post_class}}` - produce clase pentru containerul unui articol, folositor pentru targetarea articolelor cu diferite stiluri.
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+`{{ghost_head}}` - apare înainte de tagul `</head>` în <code class="path">default.hbs</code>, folosit pentru producerea meta tagurilor, scripturilor și stilurilor.
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
+`{{ghost_foot}}` - apare înainte de tagul `</body>`în <code class="path">default.hbs</code>, folosit pentru producerea scripturilor. Produce jquery dacă nu este modificat.
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
+`{{meta_title}}` - produce titlul articolelor sau titlul blogului, în funcție de context. Folosit pentru producerea tagurilor de titlu înainte de blocul `<head>`.
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   Tipul modulului: output
+*   Opțiuni: none
 
-`{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+`{{meta_description}}` - încă nu produce nimic pentru articole, produce descrierea blogului pe celelalte pagini. Folosit pentru producerea meta tagurilor.
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## Depanarea Temelor <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. Văd eroarea: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+Verifică dacă ai fișierele index.hbs și post.hbs în folderul temei.
 
 {% endraw %}
