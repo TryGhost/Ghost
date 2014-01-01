@@ -19,4 +19,4 @@ CasperTest.begin('Test helpers on homepage', 3, function suite(test) {
         test.assertExists('article.post', 'post_class outputs correct post class');
         test.assertExists('article.tag-getting-started', 'post_class outputs correct tag class');
     });
-});
+}, true);

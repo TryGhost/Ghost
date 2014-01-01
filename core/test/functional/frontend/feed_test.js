@@ -1,11 +1,11 @@
 /**
  * Tests if RSS exists and is working
  */
-/*globals CasperTest, casper */
+/*globals url, CasperTest, casper */
 CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getPageContent(),
-            siteTitle = '<title><![CDATA[Ghost]]></title',
+            siteTitle = '<title><![CDATA[Ghost]]></title>',
             siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
             siteUrl = '<link>http://127.0.0.1:2369</link>',
             postTitle = '<![CDATA[Welcome to Ghost]]>',
@@ -26,19 +26,19 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
         test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
         test.assert(content.indexOf('</rss>') >= 0, 'Feed should contain </rss>');
     });
-});
+}, false);
 
 CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
-    CasperTest.Routines.togglePermalinks.run(test);
-	casper.thenOpen(url + 'rss/', function (response) {
-		var content = this.getPageContent(),
-			today = new Date(),
-			dd = ("0" + today.getDate()).slice(-2),
-			mm = ("0" + (today.getMonth() + 1)).slice(-2),
-			yyyy = today.getFullYear(),
-			postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
+    CasperTest.Routines.togglePermalinks.run('on');
+    casper.thenOpen(url + 'rss/', function (response) {
+        var content = this.getPageContent(),
+            today = new Date(),
+            dd = ("0" + today.getDate()).slice(-2),
+            mm = ("0" + (today.getMonth() + 1)).slice(-2),
+            yyyy = today.getFullYear(),
+            postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 
-		test.assertEqual(response.status, 200, 'Response status should be 200.');
-		test.assert(content.indexOf(postLink) >= 0, 'Feed should have dated permalink.');
-	});
-});
+        test.assertEqual(response.status, 200, 'Response status should be 200.');
+        test.assert(content.indexOf(postLink) >= 0, 'Feed should have dated permalink.');
+    });
+}, false);

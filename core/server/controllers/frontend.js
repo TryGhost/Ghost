@@ -71,7 +71,8 @@ frontendControllers = {
     'single': function (req, res, next) {
         // From route check if a date was parsed
         // from the regex
-        var dateInSlug = req.params[0] !== '';
+        var dateInSlug = req.params[0] ? true : false;
+        console.log('SINGLE', req.params, dateInSlug);
         when.join(
             api.settings.read('permalinks'),
             api.posts.read({slug: req.params[1]})
