@@ -15,7 +15,7 @@ before_install:
   - npm install -g grunt-cli
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs
-  - git checkout tags/1.1-beta1
+  - git checkout tags/1.1-beta3
   - export PATH=$PATH:`pwd`/bin
   - cd -
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_travis'; fi

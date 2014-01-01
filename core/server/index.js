@@ -215,7 +215,7 @@ function setup(server) {
                         getSocket(),
                         startGhost
                     );
-                    fs.chmod(getSocket(), '0744');
+                    fs.chmod(getSocket(), '0660');
                 });
 
             } else {
