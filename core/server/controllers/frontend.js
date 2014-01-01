@@ -4,14 +4,16 @@
 
 /*global require, module */
 
-var config  = require('../config'),
-    api     = require('../api'),
-    RSS     = require('rss'),
-    _       = require('underscore'),
-    errors  = require('../errorHandling'),
-    when    = require('when'),
-    url     = require('url'),
-    filters = require('../../server/filters'),
+var moment      = require('moment'),
+    RSS         = require('rss'),
+    _           = require('underscore'),
+    url         = require('url'),
+    when        = require('when'),
+
+    api         = require('../api'),
+    config      = require('../config'),
+    errors      = require('../errorHandling'),
+    filters     = require('../../server/filters'),
     coreHelpers = require('../helpers'),
 
     frontendControllers;
@@ -90,6 +92,11 @@ frontendControllers = {
             }
 
             if (!post) {
+                return next();
+            }
+
+            // Check that the date in the URL matches the published date of the post, else 404
+            if (dateInSlug && req.params[0] !== moment(post.published_at).format('YYYY/MM/DD/')) {
                 return next();
             }
 
