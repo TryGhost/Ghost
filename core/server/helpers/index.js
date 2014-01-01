@@ -94,9 +94,9 @@ coreHelpers.url = function (options) {
     var output = '',
         self = this,
         tags = {
-            year: function () { return moment(self.created_at).format('YYYY'); },
-            month: function () { return moment(self.created_at).format('MM'); },
-            day: function () { return moment(self.created_at).format('DD'); },
+            year: function () { return moment(self.published_at).format('YYYY'); },
+            month: function () { return moment(self.published_at).format('MM'); },
+            day: function () { return moment(self.published_at).format('DD'); },
             slug: function () { return self.slug; },
             id: function () { return self.id; }
         },
