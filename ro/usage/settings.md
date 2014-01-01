@@ -1,54 +1,54 @@
 ---
 lang: ro
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+meta_title: Cum să folosești Ghost - Documentație Ghost
+meta_description: Un ghid comprehensiv pentru utilizarea platformei de blogging Ghost. Ai instalat Ghost, dar nu știi cum să-l folosești? Începe aici!
 heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+subheading: Rulează Ghost cum vrei, în câțiva pași simpli
 chapter: usage
 section: settings
-permalink: /example_translation/usage/settings/
+permalink: /ro/usage/settings/
 prev_section: configuration
 next_section: managing
 ---
 
-##  Ghost Settings <a id="settings"></a>
+##  Setări Ghost <a id="settings"></a>
 
-Go to <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
+Du-te la <code class="path">&lt;URLul tău&gt;/ghost/settings/</code>.
 
-After you are finished adjusting the settings the "Save" button *must* be pressed, this will save your changes.
+După ce ai ajustat setările, *trebuie* să apeși pe "Save" pentru a le salva.
 
-You can check your changes by visiting the Blog URL.
+Poți verifica setările vizitându-ți blogul.
 
-### Blog Settings (<code class="path">/general/</code>)
+### Setările Blogului (<code class="path">/general/</code>)
 
-These are the Blog specific settings.
+Acestea sunt setările specifice pentru Blog.
 
-*   **Blog Title**: Changes your Blog's title. Theme reference `@blog.title`.
-*   **Blog Description**: Changes your Blog's description. Theme reference `@blog.description`.
-*   **Blog Logo**: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference `@blog.logo`.
-*   **Blog Cover**: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference `@blog.cover`.
-*   **Email Address**: This is the email admin notifications are sent too. It *must* be a valid email.
-*   **Posts per page**: This is how many posts are displayed per page. This should be a numeric value.
-*   **Theme**: This will list all the themes in your <code class="path">content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
+*   **Blog Title**: Schimbă titlul blogului. Referința în temă: `@blog.title`.
+*   **Blog Description**: Schimbă descrierea blogului. Referința în temă: `@blog.description`.
+*   **Blog Logo**: Uploadează o poză pentru logoul blogului în format '.png', '.jpg' sau '.gif'. Referința în temă: `@blog.logo`.
+*   **Blog Cover**: Încarcă coverul blogului în format '.png', '.jpg' sau '.gif'. Referința în temă: `@blog.cover`.
+*   **Email Address**: Aici vor fi trimise mesajele către administrator. *Trebuie* să fie o adresă validă.
+*   **Posts per page**: Numărul de articole afișate pe o pagină. Valoare numerică.
+*   **Theme**: O listă a temelor disponibile aflate în directorul <code class="path">content/themes</code>. Selectarea unei teme va schimba aspectul blogului.
 
-### User Settings (<code class="path">/user/</code>)
+### Setări utilizatori (<code class="path">/user/</code>)
 
-These are the settings that control your user / author profile.
+Setările contului de utilizator(autor).
 
-*   **Your Name**: This is your name that will be used to credit you when you publish a post. Theme reference (post) `author.name`.
-*   **Cover Image**: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.cover`.
-*   **Display Picture**: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.image`.
-*   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
-*   **Location**: This should be your current location. Theme reference (post) `author.location`.
-*   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Your Name**: Numele care va apărea lângă articolele scrise de tine. Referința în temă: (post) `author.name`.
+*   **Cover Image**: Coverul profilului tău în format '.png', '.jpg' sau '.gif'. Referința în temă: (post) `author.cover`.
+*   **Display Picture**: Poza profilului în format '.png', '.jpg' sau '.gif' . Referința în temă: (post) `author.image`.
+*   **Email Address**: Emailul tău public, și locul unde vei primii notificări. Referința în temă: (post) `author.email`.
+*   **Location**: Locația ta curentă. Referința în temă: (post) `author.location`.
+*   **Website**: URLul websiteului, sau orice URL dorești. Referința în temă: (post) `author.website`.
+*   **Bio**: O scurtă(< 200 caractere) descriere despre tine. Referința în temă: (post) `author.bio`.
 
-#### Changing your password
+#### Schimbarea parolei
 
-1.  Fill out the input boxes with the appropriate password (current / new password).
-2.  Now click **Change Password**.
+1.  Completează câmpurile necesare cu parola dorită
+2.  Click pe "Change Password"
 <p class="note">
-    <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
+    <strong>Note:</strong> Pentru ca parola să fie schimbată trebuie să dau click pe "Change Password", click pe "Save" nu va avea efect asupra parolei.
 </p>
 

@@ -1,48 +1,50 @@
 ---
 lang: ro
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+meta_title: Cum să folosești Ghost - Documentație Ghost
+meta_description: Un ghid comprehensiv pentru utilizarea platformei de blogging Ghost. Ai instalat Ghost, dar nu știi cum să-l folosești? Începe aici!
 heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+subheading: Rulează Ghost cum vrei, în câțiva pași simpli
 chapter: usage
 section: managing
-permalink: /example_translation/usage/managing/
+permalink: /ro/usage/managing/
 prev_section: settings
 next_section: writing
 ---
 
 
-##  Managing your blog <a id="managing"></a>
+##  Administrarea blogului <a id="managing"></a>
 
-1.  Go to <code class="path">&lt;your URL&gt;/ghost/editor/</code>
-2.  Enter a Post Title
-3.  Enter your post content using [Markdown](http://daringfireball.net/projects/markdown/syntax)
+1.  Du-te la <code class="path">&lt;URLul tău&gt;/ghost/editor/</code>
+2.  Introdu un titlu de articol
+3.  Scrie conținutul folosind [Markdown](http://daringfireball.net/projects/markdown/syntax)
 4.  Save your Post as "Draft" by clicking the 'Save Draft' button, or press Ctrl / CMD + S.<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/draft.gif)
+4.  Salvează articolul ca "Ciornă", dând click pe 'Save Draft' sau Ctrl / CMD + S <br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/draft.gif)
 
-### Publish a Post
+### Publică un articol
 
-Once you have written your Post.
+După ce ai scris articolul:
 
-1.  Click the arrow next to "Save Draft"
-2.  Select "Publish Now"<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/publish.gif)
+1.  Click pe săgeata de lângă "Save Draft"
+2. Apasă "Publish Now"<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/publish.gif)
 
-This will set the save state to 'Publish Now' and the button will turn Red, once you press this button the Post will be published. To return the Post to a 'Draft' state;
+Articolul va putea fi publicat acum prin apăsarea butonului "Publish Now". Pentru a pune un articol în modul Draft din now:
 
-1.  return to the 'Save Menu'.
-2.  Select "Unpublish".
-3.  Click the "Unpublish" button.
+1.  Întoarce-te la 'Save Menu'.
+2.  Selectează "Unpublish".
+3.  Click pe "Unpublish".
 
 To change the "Slug" or "Publish date" of a post once published;
+Pentru a schimba "Slugul" sau data de publicare după ce articolul a fost publicat:
 
-1.  Click the 'Settings' icon.
-2.  Proceed to update the information as required (this will be saved automatically when you naviagte away).
+1.  Click pe iconul 'Settings'
+2. Actualizează informația necesară (va fi salvat automat când navighezi din câmp)
 <img style="max-width:100%;" src="hhttps://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" /> 
 
-### Delete a Post
+### Șterge un Articol
 
-1.  Navigate to the 'Settings' icon in either the 'Content' page or 'Editor' page.
-2.  Click "Delete".
-3.  Accept the Modal
+1.  Navighează la 'Setări', apoi 'Content' sau 'Editor'
+2.  Click pe "Delete".
+3.  Click Accept în fereastra nouă
 <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/deletePost.gif" />
  

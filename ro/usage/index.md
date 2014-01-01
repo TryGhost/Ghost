@@ -1,21 +1,21 @@
 ---
 lang: ro
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+meta_title: Cum să folosești Ghost - Documentație Ghost
+meta_description: Un ghid comprehensiv pentru utilizarea platformei de blogging Ghost. Ai instalat Ghost, dar nu știi cum să-l folosești? Începe aici!
 heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+subheading: Rulează Ghost cum vrei, în câțiva pași simpli
 chapter: usage
 next_section: configuration
 ---
 
 ## Overview <a id="overview"></a>
 
-Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
+Sperăm că până acum ai reușit să instalezi și să rulezi Ghost și ești gata de blogging. Următoarele secțiuni te vor ghida prin absolut to ce vrei să știi despre Ghost astfel încât vei fi familiarizat cu totul.
 
-### First run
+### Prima rulare
 
-If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:
+Dacă rulezi Ghost pentru prima oară va trebui să creezi un cont de administrator. Navighează la <code class="path">&lt;your URL&gt;/ghost/signup/</code>. Vei vedea o pagină ca cea de mai jos:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
 
@@ -23,19 +23,22 @@ If you are running Ghost for the very first time, then you need to create your a
 *   Then enter your **Email Address** - make sure it's valid, and carefully enter a sensible **Password** (it needs to be at least 8 characters long).
 *   Hit the big blue **Sign Up** button, and you will be logged in to your blog.
 
-That's it! You can now start writing blog posts.
+*   Introdu-ți **numele**, așa cum vrei să apară atunci când scrii un articol
+*   Scrie-ți adresa de **email**, precum și o **parolă** puternică.
+*   Apasă pe **Sign Up** și vei fi logat automat.
 
-#### Messages
+Asta e tot! Poți începe să scrii.
 
-On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:
+#### Mesaje
+
+La prima rulare vei vedea un mesaj de informare în partea de sus a ecranului care arată așa:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
 
-It let's you know some information about the way Ghost is configured, such as which environment you've started it in, and what you've got your URL set to. Jump to the [configuration](/usage/configuration/) section to find out more about environments, and how to configure Ghost. You won't be able to get rid of this message until you log in (this is a bug we're working on), but once you have, and you're familiar with the info, close it by pressing the x. It won't appear again.
+Este pentru a te inform despre cum e Ghost configurat, în ce mediu îl rulezi și ce URL ai setat. Citește [Secțiunea Configurare](/usage/configuration/) pentru a afla mai multe despre medii și configurare. Nu vei putea să scapi de acest mesaj până când nu vă veți loga, dar o dată ce ești logat, îl poți închide apăsând pe *x*. Nu va mai apărea din nou.
 
-You may also see an orange warning message with regard to email:
+S-ar putea să vezi un mesaj portocaliu despre setarea mailului:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
 
-This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the [email documentation](/mail) at some point, and learn about configuring Ghost to send email. This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!
-
+Nu este critic pentru funcționarea blogului, deci poți începe să scrii ignorând mesajul. Este o idee bună să citești [documentația despre email](/mail) pentru a configura Ghost să trimită emailuri. Deocamdată este o funcție folosită pentru a-ți trimite un email de resetare a parolei.

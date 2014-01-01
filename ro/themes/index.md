@@ -29,7 +29,6 @@ Pentru a aplica tema nouă:
 
 [Handlebars](http://handlebarsjs.com/) este limba de teme folosită de Ghost.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
 > Handlebars oferă puterea necesară pentru a scrie o temă semantică ușor, fără frustrări.
 
 Dacă vrei să scrii propria temă va trebui să înveți sintaxa Handlebars. Citește [documentația](http://handlebarsjs.com/expressions.html) sau acest [tutorial de la Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) - poți sări peste prima secțiune despre utilizare și să sari la  `Basic Expressions`

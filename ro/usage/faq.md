@@ -1,24 +1,23 @@
 ---
 lang: ro
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+meta_title: Cum să folosești Ghost - Documentație Ghost
+meta_description: Un ghid comprehensiv pentru utilizarea platformei de blogging Ghost. Ai instalat Ghost, dar nu știi cum să-l folosești? Începe aici!
 heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+subheading: Rulează Ghost cum vrei, în câțiva pași simpli
 chapter: usage
 section: faq
-permalink: /example_translation/usage/faq/
+permalink: /ro/usage/faq/
 prev_section: writing
 ---
 
 
-## FAQ <a id="faq"></a>
+## Întrebări frecvente <a id="faq"></a>
 
-### (When) Will Ghost support feature X?
+### (Când) Va încorpora Ghost capabilitatea X?
 
-Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing and [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) on the [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+Vă rugăm citiți [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) și [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) pe [Github wiki](https://github.com/TryGhost/Ghost/wiki).
 
-### How do I insert images into a post?
+### Cum inserez imagini într-un articol?
 
-Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
-
+Citește [ghidul Markdown](/usage/writing/#markdown) pentru o explicație comprehensivă a editorului Ghost.
