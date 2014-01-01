@@ -362,7 +362,7 @@ User = ghostBookshelf.Model.extend({
                             "?d=404",
             checkPromise = when.defer();
 
-        http.get(gravatarUrl, function (res) {
+        http.get('http:' + gravatarUrl, function (res) {
             if (res.statusCode !== 404) {
                 userData.image = gravatarUrl;
             }
