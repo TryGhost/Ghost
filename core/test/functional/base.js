@@ -209,14 +209,23 @@ CasperTest.Routines = (function () {
         }, id);
     }
 
-    function togglePermalinks(test) {
-        casper.thenOpen(url + "ghost/settings/");
-        casper.thenClick('#permalinks');
-        casper.thenClick('.button-save');
-        casper.waitFor(function successNotification() {
-            return this.evaluate(function () {
-                return document.querySelectorAll('.js-bb-notification section').length > 0;
+    function togglePermalinks(state) {
+        casper.thenOpen(url + "ghost/settings/general");
+
+        casper.waitForSelector('#general');
+        casper.waitForOpaque('#general', function then() {
+            var currentState = this.evaluate(function () {
+                return document.querySelector('#permalinks') && document.querySelector('#permalinks').checked ? 'on' : 'off';
             });
+            if (currentState !== state) {
+                casper.thenClick('#permalinks');
+                casper.thenClick('.button-save');
+                casper.waitFor(function successNotification() {
+                    return this.evaluate(function () {
+                        return document.querySelectorAll('.js-bb-notification section').length > 0;
+                    });
+                });
+            }
         });
     }
 

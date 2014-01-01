@@ -12,18 +12,14 @@ CasperTest.begin('Post page does not load as slug', 2, function suite(test) {
     });
 }, true);
 
-CasperTest.begin('Toggle permalinks', 0, function suite(test) {
-    CasperTest.Routines.togglePermalinks.run(test);
-});
-
 CasperTest.begin('Post page loads', 3, function suite(test) {
-    CasperTest.Routines.togglePermalinks.run(test);
-    casper.start(url + 'welcome-to-ghost', function then(response) {
+    CasperTest.Routines.togglePermalinks.run('off');
+    casper.thenOpen(url + 'welcome-to-ghost', function then(response) {
         test.assertTitle('Welcome to Ghost', 'The post should have a title and it should be "Welcome to Ghost"');
         test.assertElementCount('.content .post', 1, 'There is exactly one post on this page');
         test.assertSelectorHasText('.poweredby', 'Proudly published with Ghost');
     });
-}, true);
+});
 
 CasperTest.begin('Test helpers on homepage', 4, function suite(test) {
     casper.start(url + 'welcome-to-ghost', function then(response) {
@@ -34,4 +30,4 @@ CasperTest.begin('Test helpers on homepage', 4, function suite(test) {
         test.assertExists('article.post', 'post_class outputs correct post class');
         test.assertExists('article.tag-getting-started', 'post_class outputs correct tag class');
     });
-});
+}, true);

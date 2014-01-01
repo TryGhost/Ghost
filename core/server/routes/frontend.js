@@ -14,6 +14,7 @@ module.exports = function (server) {
     // Examples:
     //  Given `/plain-slug/` the req.params would be ['', 'plain-slug']
     //  Given `/2012/12/24/plain-slug/` the req.params would be ['2012/12/24', 'plain-slug']
-    server.get(/^\/([0-9\/]*)([^\/.]*)\/$/, frontend.single);
+    //server.get(/^\/([0-9\/]*)([^\/.]*)\/$/, frontend.single);
+    server.get(/^\/([0-9]{4}\/[0-9]{2}\/[0-9]{2}\/)?([^\/.]*)\/$/, frontend.single);
     server.get('/', frontend.homepage);
 };
