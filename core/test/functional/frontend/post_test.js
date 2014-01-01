@@ -4,7 +4,7 @@
 
 /*globals CasperTest, casper, __utils__, url, testPost, falseUser, email */
 
-// Tests when permalinks is set to date (changed in feed_test)
+// Tests when permalinks is set to date
 CasperTest.begin('Post page does not load as slug', 2, function suite(test) {
     casper.start(url + 'welcome-to-ghost', function then(response) {
         test.assertTitle('404 — Page Not Found', 'The post should return 404 page');
@@ -19,9 +19,9 @@ CasperTest.begin('Post page loads', 3, function suite(test) {
         test.assertElementCount('.content .post', 1, 'There is exactly one post on this page');
         test.assertSelectorHasText('.poweredby', 'Proudly published with Ghost');
     });
-});
+}, false);
 
-CasperTest.begin('Test helpers on homepage', 4, function suite(test) {
+CasperTest.begin('Test helpers on welcome post', 4, function suite(test) {
     casper.start(url + 'welcome-to-ghost', function then(response) {
         // body class
         test.assertExists('body.post-template', 'body_class outputs correct post-template class');
