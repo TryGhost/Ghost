@@ -18,7 +18,11 @@ var middleware = require('./middleware'),
     BSStore     = require('../bookshelf-session'),
     models      = require('../models'),
 
-    expressServer;
+    expressServer,
+    ONE_HOUR_S  = 60 * 60,
+    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
+    ONE_HOUR_MS = ONE_HOUR_S * 1000,
+    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS;
 
 // ##Custom Middleware
 
@@ -186,9 +190,7 @@ function checkSSL(req, res, next) {
 }
 
 module.exports = function (server, dbHash) {
-    var oneHour = 60 * 60 * 1000,
-        oneYear = 365 * 24 * oneHour,
-        subdir = config.paths().subdir,
+    var subdir = config.paths().subdir,
         corePath = config.paths().corePath,
         cookie;
 
@@ -206,16 +208,11 @@ module.exports = function (server, dbHash) {
     // Favicon
     expressServer.use(subdir, express.favicon(corePath + '/shared/favicon.ico'));
 
-    // Shared static config
-    expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared')));
-
+    // Static assets
+    // For some reason send divides the max age number by 1000
+    expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared'), {maxAge: ONE_HOUR_MS}));
     expressServer.use(subdir + '/content/images', storage.get_storage().serve());
-
-    // Serve our built scripts; can't use /scripts here because themes already are
-    expressServer.use(subdir + '/built/scripts', express['static'](path.join(corePath, '/built/scripts'), {
-        // Put a maxAge of one year on built scripts
-        maxAge: oneYear
-    }));
+    expressServer.use(subdir + '/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
     expressServer.use(manageAdminAndTheme);
@@ -223,25 +220,27 @@ module.exports = function (server, dbHash) {
     // Force SSL
     expressServer.use(checkSSL);
 
+
     // Admin only config
-    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'))));
+    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
 
     // Theme only config
     expressServer.use(subdir, middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
 
     // Add in all trailing slashes
-    expressServer.use(slashes());
+    expressServer.use(slashes(true, {headers: {'Cache-Control': 'public, max-age=' + ONE_YEAR_S}}));
 
+    // Body parsing
     expressServer.use(express.json());
     expressServer.use(express.urlencoded());
 
     expressServer.use(subdir + '/ghost/upload/', middleware.busboy);
     expressServer.use(subdir + '/ghost/api/v0.1/db/', middleware.busboy);
 
-    // Session handling
+    // ### Sessions
     cookie = {
         path: subdir + '/ghost',
-        maxAge: 12 * oneHour
+        maxAge: 12 * ONE_HOUR_MS
     };
 
     // if SSL is forced, add secure flag to cookie
@@ -258,17 +257,25 @@ module.exports = function (server, dbHash) {
         cookie: cookie
     }));
 
+
     //enable express csrf protection
     expressServer.use(middleware.conditionalCSRF);
+
+
     // local data
     expressServer.use(ghostLocals);
-    // So on every request we actually clean out reduntant passive notifications from the server side
+    // So on every request we actually clean out redundant passive notifications from the server side
     expressServer.use(middleware.cleanNotifications);
-
      // Initialise the views
     expressServer.use(initViews);
 
-    // process the application routes
+
+    // ### Caching
+    expressServer.use(middleware.cacheControl('public'));
+    expressServer.use('/api/', middleware.cacheControl('private'));
+    expressServer.use('/ghost/', middleware.cacheControl('private'));
+
+    // ### Routing
     expressServer.use(subdir, expressServer.router);
 
     // ### Error handling

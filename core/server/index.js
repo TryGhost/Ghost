@@ -3,30 +3,31 @@
 // modules to ensure config gets right setting.
 
 // Module dependencies
-var config       = require('./config'),
-    express      = require('express'),
-    when         = require('when'),
-    _            = require('underscore'),
-    semver       = require('semver'),
-    fs           = require('fs'),
-    errors       = require('./errorHandling'),
-    plugins      = require('./plugins'),
-    path         = require('path'),
-    Polyglot     = require('node-polyglot'),
-    mailer       = require('./mail'),
-    helpers      = require('./helpers'),
-    middleware   = require('./middleware'),
-    routes       = require('./routes'),
-    packageInfo  = require('../../package.json'),
-    models        = require('./models'),
-    permissions   = require('./permissions'),
-    uuid          = require('node-uuid'),
-    api           = require('./api'),
-    hbs          = require('express-hbs'),
+var crypto      = require('crypto'),
+    express     = require('express'),
+    hbs         = require('express-hbs'),
+    fs          = require('fs'),
+    uuid        = require('node-uuid'),
+    path        = require('path'),
+    Polyglot    = require('node-polyglot'),
+    semver      = require('semver'),
+    _           = require('underscore'),
+    when        = require('when'),
+
+    api         = require('./api'),
+    config      = require('./config'),
+    errors      = require('./errorHandling'),
+    helpers     = require('./helpers'),
+    mailer      = require('./mail'),
+    middleware  = require('./middleware'),
+    models      = require('./models'),
+    permissions = require('./permissions'),
+    plugins     = require('./plugins'),
+    routes      = require('./routes'),
+    packageInfo = require('../../package.json'),
+
 
 // Variables
-    setup,
-    init,
     dbHash;
 
 // If we're in development mode, require "when/console/monitor"
@@ -79,6 +80,9 @@ function initDbHashAndFirstRun() {
 // Finally it starts the http server.
 function setup(server) {
 
+    // create a hash for cache busting assets
+    var assetHash = (crypto.createHash('md5').update(packageInfo.version + Date().now).digest('hex')).substring(0, 10);
+
     // Set up Polygot instance on the require module
     Polyglot.instance = new Polyglot();
 
@@ -112,6 +116,7 @@ function setup(server) {
         var adminHbs = hbs.create();
 
         // ##Configuration
+        server.set('version hash', assetHash);
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
@@ -124,7 +129,7 @@ function setup(server) {
         server.set('admin view engine', adminHbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
 
         // Load helpers
-        helpers.loadCoreHelpers(adminHbs);
+        helpers.loadCoreHelpers(adminHbs, assetHash);
 
         // ## Middleware
         middleware(server, dbHash);

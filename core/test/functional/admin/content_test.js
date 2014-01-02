@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url, testPost */
 
-CasperTest.begin("Content screen is correct", 21, function suite(test) {
+CasperTest.begin("Content screen is correct", 20, function suite(test) {
     // Create a sample post
     casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -37,10 +37,6 @@ CasperTest.begin("Content screen is correct", 21, function suite(test) {
         test.assertSelectorHasText("#usermenu .usermenu-profile a", "Your Profile");
         test.assertSelectorHasText("#usermenu .usermenu-help a", "Help / Support");
         test.assertSelectorHasText("#usermenu .usermenu-signout a", "Sign Out");
-
-        test.assertResourceExists(function (resource) {
-            return resource.url.match(/user-image\.png$/) && (resource.status === 200 || resource.status === 304);
-        }, 'Default user image');
     });
 
     casper.then(function testViews() {

@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url */
 
-CasperTest.begin("Settings screen is correct", 17, function suite(test) {
+CasperTest.begin("Settings screen is correct", 15, function suite(test) {
     casper.thenOpen(url + "ghost/settings/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
@@ -32,16 +32,6 @@ CasperTest.begin("Settings screen is correct", 17, function suite(test) {
         test.assertEval(function testContentIsUser() {
             return document.querySelector('.settings-content').id === 'user';
         }, "loaded content is user screen");
-
-        test.assertResourceExists(function (resource) {
-            return resource.url.match(/user-image\.png$/) && (resource.status === 200 || resource.status === 304);
-        }, 'Default user image');
-
-        test.assertResourceExists(function (resource) {
-            return resource.url.match(/user-cover\.png$/) && (resource.status === 200 || resource.status === 304);
-        }, 'Default cover image');
-
-
     }, function onTimeOut() {
         test.fail('User screen failed to load');
     });
