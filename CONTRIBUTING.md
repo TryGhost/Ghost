@@ -119,7 +119,7 @@ what's already there? Does it fit with the Roadmap?
 <a name="pull-requests"></a>
 ### Submitting Pull Requests
 
-Pull requests are awesome. To make sure yours is accepted as quickly as possible, you should be sure to have read 
+Pull requests are awesome. If you're looking to raise a PR for something which doesn't have an open issue, please think carefully about [raising an issue](#raising-issues) which your PR can close, especially if you're fixing a bug. This makes it more likely that there will be enough information available for your PR to be properly tested and merged. To make sure your PR is accepted as quickly as possible, you should be sure to have read 
 all the guidelines on:
 
 * [code standards](https://github.com/TryGhost/Ghost/wiki/Code-standards)
