@@ -114,7 +114,7 @@ function activateTheme(activeTheme) {
     expressServer.set('theme view engine', hbs.express3(hbsOptions));
 
     // Update user error template
-    errors.updateActiveTheme(activeTheme);
+    errors.updateActiveTheme(activeTheme, config.paths().availableThemes[activeTheme].hasOwnProperty('error'));
 }
 
  // ### ManageAdminAndTheme Middleware
