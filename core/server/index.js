@@ -87,12 +87,9 @@ function setup(server) {
     Polyglot.instance = new Polyglot();
 
     // ### Initialisation
-    when.join(
-        // Initialise the models
-        models.init(),
-        // Calculate paths
-        config.paths.update(config().url)
-    ).then(function () {
+
+    // Initialise the models
+    models.init().then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
     }).then(function () {

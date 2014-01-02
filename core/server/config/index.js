@@ -21,9 +21,13 @@ function loadConfig() {
     return loader().then(function (config) {
         // Cache the config.js object's environment
         // object so we can later refer to it.
-        // Note: this is not the entirity of config.js,
+        // Note: this is not the entirety of config.js,
         // just the object appropriate for this NODE_ENV
         ghostConfig = config;
+
+        // can't load theme settings yet as we don't have the API,
+        // but we can load the paths
+        return paths.update(config.url);
     });
 }
 
