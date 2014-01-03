@@ -40,7 +40,7 @@ Ghost 是用 [Node.js](http://nodejs.org) 打造的，需要 Node.js `0.10.*` (�
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
 </div>
 
-假如您已經決定在伺服器或虛擬空間上佈署 Ghost，那真是太好了！接下來的文件會帶領你透過許多種方式來佈署 Ghost，無論您想要手動安裝，或是使用一鍵完成。
+假如您已經決定在伺服器或虛擬空間上佈署 Ghost，那真是太好了！接下來的文件會帶領你透過各種方式來佈署 Ghost，無論您想要手動安裝，或是使用一鍵完成。
 
 <div class="text-center install-ghost">
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">讓 Ghost 上線</a>
