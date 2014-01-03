@@ -6,6 +6,7 @@ var config        = require('../config'),
     mailer        = require('../mail'),
     errors        = require('../errorHandling'),
     storage       = require('../storage'),
+    updateCheck   = require('../update-check'),
 
     adminNavbar,
     adminControllers,
@@ -278,10 +279,18 @@ adminControllers = {
     },
     'index': function (req, res) {
         /*jslint unparam:true*/
-        res.render('content', {
-            bodyClass: 'manage',
-            adminNav: setSelected(adminNavbar, 'content')
-        });
+        function renderIndex() {
+            res.render('content', {
+                bodyClass: 'manage',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
+        }
+
+        when.join(
+            updateCheck(res),
+            when(renderIndex())
+        // an error here should just get logged
+        ).otherwise(errors.logError);
     },
     'editor': function (req, res) {
         if (req.params.id !== undefined) {

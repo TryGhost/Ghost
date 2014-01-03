@@ -12,6 +12,7 @@ posts = {
 
     // **takes:** filter / pagination parameters
     browse: function browse(options) {
+        options = options || {};
 
         // **returns:** a promise for a page of posts in a json object
         //return dataProvider.Post.findPage(options);

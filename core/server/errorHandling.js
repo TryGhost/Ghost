@@ -4,6 +4,7 @@ var _           = require('underscore'),
     fs          = require('fs'),
     configPaths = require('./config/paths'),
     path        = require('path'),
+    when        = require('when'),
     errors,
 
     // Paths for views
@@ -32,6 +33,12 @@ errors = {
         }
 
         throw err;
+    },
+
+    // ## Reject Error
+    // Used to pass through promise errors when we want to handle them at a later time
+    rejectError: function (err) {
+        return when.reject(err);
     },
 
     logWarn: function (warn, context, help) {
