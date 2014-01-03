@@ -39,7 +39,7 @@ describe('Admin Routing', function () {
 
     before(function (done) {
         testUtils.clearData().then(function () {
-            // we initialise data, but not a user. No user should be required for navigating the frontend
+            // we initialise data, but not a user.
             return testUtils.initData();
         }).then(function () {
             done();

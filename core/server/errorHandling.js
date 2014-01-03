@@ -9,7 +9,7 @@ var _           = require('underscore'),
     // Paths for views
     defaultErrorTemplatePath = path.resolve(configPaths().adminViews, 'user-error.hbs'),
     userErrorTemplatePath    = path.resolve(configPaths().themePath, 'error.hbs'),
-    userErrorTemplateExists,
+    userErrorTemplateExists   = false,
 
     ONE_HOUR_S  = 60 * 60;
 
@@ -17,9 +17,9 @@ var _           = require('underscore'),
  * Basic error handling helpers
  */
 errors = {
-    updateActiveTheme: function (activeTheme) {
+    updateActiveTheme: function (activeTheme, hasErrorTemplate) {
         userErrorTemplatePath = path.resolve(configPaths().themePath, activeTheme, 'error.hbs');
-        userErrorTemplateExists = undefined;
+        userErrorTemplateExists = hasErrorTemplate;
     },
 
     throwError: function (err) {
@@ -165,20 +165,7 @@ errors = {
         }
 
         // We're not admin and the template doesn't exist. Render the default.
-        if (userErrorTemplateExists === false) {
-            return renderErrorInt(defaultErrorTemplatePath);
-        }
-
-        // userErrorTemplateExists is undefined, which means we
-        // haven't yet checked for it. Do so now!
-        fs.stat(userErrorTemplatePath, function (err, stat) {
-            userErrorTemplateExists = !err;
-            if (userErrorTemplateExists) {
-                return renderErrorInt();
-            }
-
-            renderErrorInt(defaultErrorTemplatePath);
-        });
+        return renderErrorInt(defaultErrorTemplatePath);
     },
 
     error404: function (req, res, next) {
