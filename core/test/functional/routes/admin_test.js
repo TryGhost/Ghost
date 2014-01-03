@@ -64,7 +64,7 @@ describe('Admin Routing', function () {
 
                     var expires;
                     // Session should expire 12 hours after the time in the date header
-                    expires = moment(res.headers.date).add('Hours', 12).format("ddd, DD MMM YYYY HH:mm");
+                    expires = moment.utc(res.headers.date).add('Hours', 12).format("ddd, DD MMM YYYY HH:mm");
                     expires = new RegExp("Expires=" + expires);
 
                     res.headers['set-cookie'].should.match(expires);
