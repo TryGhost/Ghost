@@ -115,6 +115,86 @@ describe("Error handling", function () {
             logStub.lastCall.calledWith('').should.be.true;
         });
 
+        it("logs errors from an undefined error argument", function () {
+            var message = "Testing";
+
+            errors.logError(undefined, message, message);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(4);
+            logStub.firstCall.calledWith("\nERROR:".red, "An unknown error occurred.".red).should.be.true;
+            logStub.secondCall.calledWith(message.white).should.be.true;
+            logStub.thirdCall.calledWith(message.green).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
+        it("logs errors from an undefined context argument", function () {
+            var message = "Testing";
+
+            errors.logError(message, undefined, message);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(3);
+            logStub.firstCall.calledWith("\nERROR:".red, message.red).should.be.true;
+            logStub.secondCall.calledWith(message.green).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
+        it("logs errors from an undefined help argument", function () {
+            var message = "Testing";
+
+            errors.logError(message, message, undefined);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(3);
+            logStub.firstCall.calledWith("\nERROR:".red, message.red).should.be.true;
+            logStub.secondCall.calledWith(message.white).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
+        it("logs errors from a null error argument", function () {
+            var message = "Testing";
+
+            errors.logError(null, message, message);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(4);
+            logStub.firstCall.calledWith("\nERROR:".red, "An unknown error occurred.".red).should.be.true;
+            logStub.secondCall.calledWith(message.white).should.be.true;
+            logStub.thirdCall.calledWith(message.green).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
+        it("logs errors from a null context argument", function () {
+            var message = "Testing";
+
+            errors.logError(message, null, message);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(3);
+            logStub.firstCall.calledWith("\nERROR:".red, message.red).should.be.true;
+            logStub.secondCall.calledWith(message.green).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
+        it("logs errors from a null help argument", function () {
+            var message = "Testing";
+
+            errors.logError(message, message, null);
+
+            // Calls log with message on Error objects
+
+            logStub.callCount.should.equal(3);
+            logStub.firstCall.calledWith("\nERROR:".red, message.red).should.be.true;
+            logStub.secondCall.calledWith(message.white).should.be.true;
+            logStub.lastCall.calledWith('').should.be.true;
+        });
+
         it("logs promise errors and redirects", function (done) {
             var def = when.defer(),
                 prom = def.promise,
