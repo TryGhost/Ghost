@@ -251,7 +251,7 @@ When cloning from GitHub be sure to use SSH and to run `git submodule update --i
 ### I get "Syntax error: File to import not found or unreadable: bourbon/_bourbon."
 
 Sounds like you don't have the Ruby gem "bourbon" installed. Make sure you have Ruby, and then 
-run `gem install bourbon`.
+run `gem install bourbon`, and `grunt init`.
 
 ### Ghost doesn't do anything - I get a blank screen
 
