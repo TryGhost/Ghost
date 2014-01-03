@@ -101,7 +101,6 @@
         },
 
         showSuggestions: function ($target, _searchTerm) {
-            this.$suggestions.show();
             var searchTerm = _searchTerm.toLowerCase(),
                 matchingTags = this.findMatchingTags(searchTerm),
                 styles = {
@@ -115,6 +114,9 @@
             this.$suggestions.html("");
 
             matchingTags = _.first(matchingTags, maxSuggestions);
+            if (matchingTags.length > 0) {
+                this.$suggestions.show();
+            }
             _.each(matchingTags, function (matchingTag) {
                 var highlightedName,
                     suggestionHTML;
