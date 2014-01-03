@@ -224,6 +224,11 @@ input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
         box-shadow: rgba(0,0,0,0.3) 0 1px 3px inset;
     }
 
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     &.large {
         padding: 1em 1.8em;
         font-size: 14px;
