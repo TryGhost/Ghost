@@ -29,8 +29,8 @@
         return date;
     });
 
-    Handlebars.registerHelper('url', function () {
-        return Ghost.paths.subdir;
+    Handlebars.registerHelper('adminUrl', function () {
+        return Ghost.paths.subdir + '/ghost';
     });
 
     Handlebars.registerHelper('asset', function (context, options) {
