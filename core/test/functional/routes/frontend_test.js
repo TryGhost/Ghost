@@ -88,8 +88,6 @@ describe('Frontend Routing', function () {
             // get today's date
             var date  = moment().format("YYYY/MM/DD");
 
-            console.log('date', date);
-
             request.get('/' + date + '/welcome-to-ghost/')
                 .expect('Cache-Control', cacheRules.hour)
                 .expect(404)
