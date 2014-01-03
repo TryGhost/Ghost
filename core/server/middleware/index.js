@@ -33,9 +33,8 @@ function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
-    res.locals.path = req.path;
-    // Strip off the subdir part of the path
-    res.locals.ghostRoot = req.path.replace(config.paths().subdir, '');
+    // relative path from the URL, not including subdir
+    res.locals.relativeUrl = req.path.replace(config.paths().subdir, '');
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();

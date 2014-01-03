@@ -6,7 +6,7 @@ var dataExport       = require('../data/export'),
     when             = require('when'),
     nodefn           = require('when/node/function'),
     _                = require('underscore'),
-    schema           = require('../data/schema'),
+    schema           = require('../data/schema').tables,
     configPaths      = require('../config/paths'),
     api              = {},
 

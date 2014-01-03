@@ -12,7 +12,7 @@ var testUtils  = require('../utils'),
 
     // Stuff we are testing
     handlebars = hbs.handlebars,
-    helpers    = require('../../server/helpers'),
+    helpers    = rewire('../../server/helpers'),
     config     = require('../../server/config');
 
 describe('Core Helpers', function () {
@@ -23,6 +23,7 @@ describe('Core Helpers', function () {
 
     beforeEach(function (done) {
         var adminHbs = hbs.create();
+        helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings, 'read', function () {
             return when({value: 'casper'});
@@ -244,9 +245,9 @@ describe('Core Helpers', function () {
 
         it('can render class string for context', function (done) {
             when.all([
-                helpers.body_class.call({ghostRoot: '/'}),
-                helpers.body_class.call({ghostRoot: '/a-post-title'}),
-                helpers.body_class.call({ghostRoot: '/page/4'})
+                helpers.body_class.call({relativeUrl: '/'}),
+                helpers.body_class.call({relativeUrl: '/a-post-title'}),
+                helpers.body_class.call({relativeUrl: '/page/4'})
             ]).then(function (rendered) {
                 rendered.length.should.equal(3);
 
@@ -264,7 +265,7 @@ describe('Core Helpers', function () {
 
         it('can render class for static page', function (done) {
             helpers.body_class.call({
-                ghostRoot: '/',
+                relativeUrl: '/',
                 post: {
                     page: true
                 }
@@ -300,28 +301,82 @@ describe('Core Helpers', function () {
                 done();
             }).then(null, done);
         });
+
+        it('can render page class', function (done) {
+            var post = { page: true };
+
+            helpers.post_class.call(post).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('post page');
+
+                done();
+            }).then(null, done);
+        });
     });
 
     describe('ghost_head Helper', function () {
+         // TODO: these tests should be easier to do!
+        var configUrl = config().url;
+
+        afterEach(function (done) {
+            config.paths.update(configUrl).then(function () {
+                done();
+            }).then(null, done);
+        });
+
         it('has loaded ghost_head helper', function () {
             should.exist(handlebars.helpers.ghost_head);
         });
 
         it('returns meta tag string', function (done) {
-            helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
+            config.paths.update('http://testurl.com/').then(function () {
+                helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
+                    should.exist(rendered);
+                    rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
+                        '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">\n' +
+                        '<link rel="canonical" href="http://testurl.com/" />');
 
-                done();
+                    done();
+                });
             }).then(null, done);
         });
 
         it('returns meta tag string even if version is invalid', function (done) {
-            helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">');
+            config.paths.update('http://testurl.com/').then(function () {
+                return helpers.ghost_head.call({version: "0.9"}).then(function (rendered) {
+                    should.exist(rendered);
+                    rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n' +
+                        '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">\n' +
+                        '<link rel="canonical" href="http://testurl.com/" />');
 
-                done();
+                    done();
+                });
+            }).then(null, done);
+        });
+
+        it('returns correct rss url with subdirectory', function (done) {
+            config.paths.update('http://testurl.com/blog/').then(function () {
+                return helpers.ghost_head.call({version: "0.3.0"}).then(function (rendered) {
+                    should.exist(rendered);
+                    rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
+                        '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/blog/rss/">\n' +
+                        '<link rel="canonical" href="http://testurl.com/blog/" />');
+
+                    done();
+                });
+            }).then(null, done);
+        });
+
+        it('returns canonical URL', function (done) {
+            config.paths.update('http://testurl.com').then(function () {
+                return helpers.ghost_head.call({version: "0.3.0", relativeUrl: '/about/'}).then(function (rendered) {
+                    should.exist(rendered);
+                    rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
+                        '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">\n' +
+                        '<link rel="canonical" href="http://testurl.com/about/" />');
+
+                    done();
+                });
             }).then(null, done);
         });
     });
@@ -391,6 +446,13 @@ describe('Core Helpers', function () {
             helpers.pageUrl(1).should.equal('/');
             helpers.pageUrl(2).should.equal('/page/2/');
             helpers.pageUrl(50).should.equal('/page/50/');
+        });
+
+        it('can return a valid url with subdirectory', function () {
+            sandbox.stub(config, 'paths', function () { return {'subdir': '/blog'}; });
+            helpers.pageUrl(1).should.equal('/blog/');
+            helpers.pageUrl(2).should.equal('/blog/page/2/');
+            helpers.pageUrl(50).should.equal('/blog/page/50/');
         });
     });
 
@@ -565,22 +627,22 @@ describe('Core Helpers', function () {
         });
 
         it('can return blog title', function (done) {
-            helpers.meta_title.call({ghostRoot: '/'}).then(function (rendered) {
+            helpers.meta_title.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Ghost');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can return title of a post', function (done) {
-            var post = {ghostRoot: '/nice-post', post: {title: 'Post Title'}};
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Post Title');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
     });
 
@@ -591,22 +653,22 @@ describe('Core Helpers', function () {
         });
 
         it('can return blog description', function (done) {
-            helpers.meta_description.call({ghostRoot: '/'}).then(function (rendered) {
+            helpers.meta_description.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('Just a blogging platform.');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
         it('can return empty description on post', function (done) {
-            var post = {ghostRoot: '/nice-post', post: {title: 'Post Title'}};
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('');
 
                 done();
-            }, done);
+            }).then(null, done);
         });
 
     });
@@ -722,7 +784,6 @@ describe('Core Helpers', function () {
 
         beforeEach(function () {
             // set the asset hash
-            helpers = rewire('../../server/helpers');
             helpers.assetHash = 'abc';
         });
 
@@ -782,4 +843,98 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('adminUrl', function () {
+        var rendered,
+            configUrl = config().url;
+
+        afterEach(function (done) {
+            config.paths.update(configUrl).then(function () {
+                done();
+            }).then(null, done);
+        });
+
+
+        it('should output the path to admin', function () {
+            rendered = helpers.adminUrl();
+            should.exist(rendered);
+            rendered.should.equal('/ghost');
+        });
+
+        it('should output the path to admin with subdirectory', function (done) {
+            config.paths.update('http://testurl.com/blog/').then(function () {
+                rendered = helpers.adminUrl();
+                should.exist(rendered);
+                rendered.should.equal('/blog/ghost');
+                done();
+            });
+        });
+
+        it('should output absolute path if absolute is set', function (done) {
+            // no trailing slash
+            config.paths.update('http://testurl.com').then(function () {
+
+                rendered = helpers.adminUrl({"hash": {absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/ghost');
+
+                // test trailing slash
+                return config.paths.update('http://testurl.com/');
+            }).then(function () {
+                rendered = helpers.adminUrl({"hash": {absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/ghost');
+                done();
+            });
+        });
+
+        it('should output absolute path with subdirectory', function (done) {
+            config.paths.update('http://testurl.com/blog').then(function () {
+                rendered = helpers.adminUrl({"hash": {absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/blog/ghost');
+                done();
+            });
+        });
+
+        it('should output the path to frontend if frontend is set', function () {
+            rendered = helpers.adminUrl({"hash": {frontend: true}});
+            should.exist(rendered);
+            rendered.should.equal('/');
+        });
+
+        it('should output the absolute path to frontend if both are set', function (done) {
+            config.paths.update('http://testurl.com').then(function () {
+
+                rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/');
+
+                return config.paths.update('http://testurl.com/');
+            }).then(function () {
+                rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/');
+                done();
+            });
+        });
+
+        it('should output the path to frontend with subdirectory', function (done) {
+            config.paths.update('http://testurl.com/blog/').then(function () {
+
+                rendered = helpers.adminUrl({"hash": {frontend: true}});
+                should.exist(rendered);
+                rendered.should.equal('/blog/');
+                done();
+            });
+        });
+
+        it('should output the absolute path to frontend with subdirectory', function (done) {
+            config.paths.update('http://testurl.com/blog/').then(function () {
+                rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+                should.exist(rendered);
+                rendered.should.equal('http://testurl.com/blog/');
+                done();
+            });
+        });
+    });
 });

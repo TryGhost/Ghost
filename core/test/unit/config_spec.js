@@ -8,6 +8,8 @@ var should         = require('should'),
     _              = require('underscore'),
     rewire         = require("rewire"),
 
+    testUtils      = require('../utils'),
+
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
     loader         = rewire('../../server/config/loader'),
@@ -274,11 +276,10 @@ describe('Config', function () {
         });
 
         afterEach(function (done) {
+            sandbox.restore();
             paths.update(defaultConfig.url)
                 .then(done)
                 .then(null, done);
-
-            sandbox.restore();
         });
 
         it('should have exactly the right keys', function () {
@@ -344,6 +345,245 @@ describe('Config', function () {
 
                 done();
             }).otherwise(done);
+        });
+    });
+
+    describe('urlFor', function () {
+
+        afterEach(function (done) {
+            paths.update(defaultConfig.url)
+                .then(done)
+                .then(null, done);
+        });
+
+        it('should return the home url with no options', function (done) {
+            paths.urlFor().should.equal('/');
+            paths.update('http://my-ghost-blog.com/blog').then(function () {
+                paths.urlFor().should.equal('/blog/');
+
+                done();
+            });
+        });
+
+        it('should return home url when asked for', function (done) {
+            var testContext = 'home';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+                paths.urlFor(testContext).should.equal('/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+                paths.urlFor(testContext).should.equal('/blog/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
+
+                done();
+            });
+        });
+
+        it('should return rss url when asked for', function (done) {
+            var testContext = 'rss';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+                paths.urlFor(testContext).should.equal('/rss/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+                paths.urlFor(testContext).should.equal('/blog/rss/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
+
+                done();
+            });
+        });
+
+        it('should return url for a random path when asked for', function (done) {
+            var testContext = {relativeUrl: '/about/'};
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+                paths.urlFor(testContext).should.equal('/about/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/about/');
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+                paths.urlFor(testContext).should.equal('/blog/about/');
+                paths.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+
+                done();
+            });
+        });
+
+        it('should return url for a post when asked for', function (done) {
+            var testContext = 'post',
+                testData = {post: testUtils.DataGenerator.Content.posts[2], permalinks: {value: '/:slug/'}};
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+                paths.urlFor(testContext, testData).should.equal('/short-and-sweet/');
+                paths.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+                paths.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
+                paths.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                done();
+            }).then(null, done);
+        });
+
+        it('should return url for a dated post when asked for', function (done) {
+            var testContext = 'post',
+                testData = {
+                    post: testUtils.DataGenerator.Content.posts[2],
+                    permalinks: {value: '/:year/:month/:day/:slug/'}
+                },
+                today = new Date(),
+                dd = ("0" + today.getDate()).slice(-2),
+                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                yyyy = today.getFullYear(),
+                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+                paths.urlFor(testContext, testData).should.equal(postLink);
+                paths.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com' + postLink);
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+                paths.urlFor(testContext, testData).should.equal('/blog' + postLink);
+                paths.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog' + postLink);
+
+                done();
+            }).then(null, done);
+        });
+
+    });
+
+    describe('urlForPost', function () {
+        var sandbox;
+
+        beforeEach(function () {
+            sandbox = sinon.sandbox.create();
+        });
+
+        afterEach(function (done) {
+            sandbox.restore();
+            paths.update(defaultConfig.url)
+                .then(done)
+                .then(null, done);
+        });
+
+        it('should output correct url for post', function (done) {
+            var  settings = {'read': function read() {}},
+                settingsStub = sandbox.stub(settings, 'read', function () {
+                    return when({value: '/:slug/'});
+                }),
+                testData = testUtils.DataGenerator.Content.posts[2],
+                postLink = '/short-and-sweet/';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal(postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com' + postLink);
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal('/blog' + postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
+
+                done();
+            }).then(null, done);
+
+        });
+
+        it('should output correct url for post with date permalink', function (done) {
+            var settings = {'read': function read() {}},
+                settingsStub = sandbox.stub(settings, 'read', function () {
+                    return when({value: '/:year/:month/:day/:slug/'});
+                }),
+                testData = testUtils.DataGenerator.Content.posts[2],
+                today = new Date(),
+                dd = ("0" + today.getDate()).slice(-2),
+                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                yyyy = today.getFullYear(),
+                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal(postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com' + postLink);
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal('/blog' + postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
+
+                done();
+            }).then(null, done);
+        });
+
+        it('should output correct url for page with date permalink', function (done) {
+            var settings = {'read': function read() {}},
+                settingsStub = sandbox.stub(settings, 'read', function () {
+                    return when({value: '/:year/:month/:day/:slug/'});
+                }),
+                testData = testUtils.DataGenerator.Content.posts[5],
+                postLink = '/static-page-test/';
+
+            paths.update('http://my-ghost-blog.com').then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal(postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com' + postLink);
+
+                return paths.update('http://my-ghost-blog.com/blog');
+            }).then(function () {
+
+                // next test
+                return paths.urlForPost(settings, testData);
+            }).then(function (url) {
+                url.should.equal('/blog' + postLink);
+
+                // next test
+                return paths.urlForPost(settings, testData, true);
+            }).then(function (url) {
+                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
+
+                done();
+            }).then(null, done);
         });
     });
 });

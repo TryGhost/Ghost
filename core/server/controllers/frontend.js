@@ -25,19 +25,14 @@ frontendControllers = {
             postsPerPage,
             options = {};
 
-        api.settings.read('postsPerPage').then(function (postPP) {
-            postsPerPage = parseInt(postPP.value, 10);
-            // No negative pages
-            if (isNaN(pageParam) || pageParam < 1) {
-                //redirect to 404 page?
-                return res.redirect('/');
-            }
-            options.page = pageParam;
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
+            return res.redirect(config.paths().subdir + '/');
+        }
 
-            // Redirect '/page/1/' to '/' for all teh good SEO
-            if (pageParam === 1 && req.route.path === '/page/:page/') {
-                return res.redirect(config.paths().subdir + '/');
-            }
+        return api.settings.read('postsPerPage').then(function (postPP) {
+            postsPerPage = parseInt(postPP.value, 10);
+            options.page = pageParam;
 
             // No negative posts per page, must be number
             if (!isNaN(postsPerPage) && postsPerPage > 0) {
@@ -138,39 +133,39 @@ frontendControllers = {
     },
     'rss': function (req, res, next) {
         // Initialize RSS
-        var siteUrl = config().url,
-            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             feed;
+
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/rss/:page/')) {
+            return res.redirect(config.paths().subdir + '/rss/');
+        }
+
         //needs refact for multi user to not use first user as default
-        when.settle([
+        return when.settle([
             api.users.read({id : 1}),
             api.settings.read('title'),
-            api.settings.read('description')
+            api.settings.read('description'),
+            api.settings.read('permalinks')
         ]).then(function (result) {
             var user = result[0].value,
                 title = result[1].value.value,
-                description = result[2].value.value;
+                description = result[2].value.value,
+                permalinks = result[3].value,
+                siteUrl = config.paths.urlFor('home', null, true),
+                feedUrl =  config.paths.urlFor('rss', null, true);
 
             feed = new RSS({
                 title: title,
                 description: description,
                 generator: 'Ghost v' + res.locals.version,
                 author: user ? user.name : null,
-                feed_url: url.resolve(siteUrl, '/rss/'),
+                feed_url: feedUrl,
                 site_url: siteUrl,
                 ttl: '60'
             });
 
-            // No negative pages
-            if (isNaN(pageParam) || pageParam < 1) {
-                return res.redirect(config.paths().subdir + '/rss/');
-            }
-
-            if (pageParam === 1 && req.route.path === config.paths().subdir + '/rss/:page/') {
-                return res.redirect(config.paths().subdir + '/rss/');
-            }
-
-            api.posts.browse({page: pageParam}).then(function (page) {
+            return api.posts.browse({page: pageParam}).then(function (page) {
                 var maxPage = page.pages,
                     feedItems = [];
 
@@ -187,37 +182,35 @@ frontendControllers = {
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
-                        var deferred = when.defer();
-                        post.url = coreHelpers.url;
-                        post.url().then(function (postUrl) {
-                            var item = {
-                                    title:  _.escape(post.title),
-                                    guid: post.uuid,
-                                    url: siteUrl + postUrl,
-                                    date: post.published_at,
-                                    categories: _.pluck(post.tags, 'name')
-                                },
-                                content = post.html;
+                        var deferred = when.defer(),
+                            item = {
+                                title:  _.escape(post.title),
+                                guid: post.uuid,
+                                url: config.paths.urlFor('post', {post: post, permalinks: permalinks}, true),
+                                date: post.published_at,
+                                categories: _.pluck(post.tags, 'name')
+                            },
+                            content = post.html;
 
-                            //set img src to absolute url
-                            content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                                /*jslint unparam:true*/
-                                p1 = url.resolve(siteUrl, p1);
-                                return "src='" + p1 + "' ";
-                            });
-                            //set a href to absolute url
-                            content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                                /*jslint unparam:true*/
-                                p1 = url.resolve(siteUrl, p1);
-                                return "href='" + p1 + "' ";
-                            });
-                            item.description = content;
-                            feed.item(item);
-                            deferred.resolve();
+                        //set img src to absolute url
+                        content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            /*jslint unparam:true*/
+                            p1 = url.resolve(siteUrl, p1);
+                            return "src='" + p1 + "' ";
                         });
+                        //set a href to absolute url
+                        content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                            /*jslint unparam:true*/
+                            p1 = url.resolve(siteUrl, p1);
+                            return "href='" + p1 + "' ";
+                        });
+                        item.description = content;
+                        feed.item(item);
+                        deferred.resolve();
                         feedItems.push(deferred.promise);
                     });
                 });
+
                 when.all(feedItems).then(function () {
                     res.set('Content-Type', 'text/xml');
                     res.send(feed.xml());
