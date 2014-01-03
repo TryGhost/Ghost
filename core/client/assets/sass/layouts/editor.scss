@@ -521,7 +521,6 @@ body.zen {
         @include linear-gradient(right, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
     }
 
-
     .tags {
         position: relative;
         display: inline-block;
@@ -530,7 +529,7 @@ body.zen {
         max-width: 80%;
         max-width: calc(100% - 320px);
         height: 26px;
-        padding-left: 20px;
+        padding-left: 8px;
         padding-bottom: 20px;
         overflow-x: auto;
         overflow-y: hidden;
