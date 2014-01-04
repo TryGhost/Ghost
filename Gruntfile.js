@@ -838,7 +838,7 @@ var path           = require('path'),
 
         // ### Coverage report for Unit and Integration Tests
 
-        grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'shell:coverage', 'express:test:stop']);
+        grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report', ['clean:test', 'setTestEnv', 'loadConfig', 'shell:coverage']);
 
 
         // ### Documentation
