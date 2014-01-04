@@ -82,6 +82,13 @@ frontendControllers = {
                 post = promises[1];
 
             function render() {
+                // If we're ready to render the page
+                // but the last param is 'edit' then we'll
+                // actually kick you to the edit page.
+                if (req.params[2] && req.params[2] === 'edit') {
+                    return res.redirect(config.paths().subdir + '/ghost/editor/' + post.id + '/');
+                }
+
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config.paths().availableThemes[activeTheme.value],
@@ -124,6 +131,10 @@ frontendControllers = {
             e.status = err.errorCode;
             return next(e);
         });
+    },
+    'edit': function (req, res, next) {
+        req.params[2] = 'edit';
+        return frontendControllers.single(req, res, next);
     },
     'rss': function (req, res, next) {
         // Initialize RSS
