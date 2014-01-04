@@ -56,7 +56,11 @@ errors = {
 
     logError: function (err, context, help) {
         var stack = err ? err.stack : null;
-        err = err.message || err || 'Unknown';
+        if (err) {
+            err = err.message || err || 'An unknown error occurred.';
+        } else {
+            err = 'An unknown error occurred.';
+        }
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
