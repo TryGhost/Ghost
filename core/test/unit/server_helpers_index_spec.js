@@ -75,6 +75,34 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p>Hello <strong>World</strong></p>");
         });
 
+        it('can truncate html to 0 words', function () {
+            var html = "<p>Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": "0"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p></p>");
+        });
+
+        it('can truncate html to 0 words, leaving image tag if it is first', function () {
+            var html = "<p><img src='example.jpg' />Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": "0"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p><img src='example.jpg' /></p>");
+        });
+
         it('can truncate html by character', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
