@@ -17,7 +17,7 @@ CasperTest.begin("Content screen is correct", 20, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForResource(/posts/, function checkPostWasCreated() {
+    casper.waitForResource(/posts\/$/, function checkPostWasCreated() {
         test.assertExists('.notification-success', 'got success notification');
     });
 
