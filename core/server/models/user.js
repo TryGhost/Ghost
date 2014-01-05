@@ -107,13 +107,6 @@ User = ghostBookshelf.Model.extend({
          * @author javorszky
          */
         return validatePasswordLength(userData.password).then(function () {
-            return self.forge().fetch();
-        }).then(function (user) {
-            // Check if user exists
-            if (user) {
-                return when.reject(new Error('A user is already registered. Only one user for now!'));
-            }
-        }).then(function () {
             // Generate a new password hash
             return generatePasswordHash(_user.password);
         }).then(function (hash) {
@@ -125,6 +118,11 @@ User = ghostBookshelf.Model.extend({
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData);
         }).then(function (addedUser) {
+            if (addedUser.id !== 1) {
+                return addedUser.destroy().then(function () {
+                    return when.reject(new Error('A user is already registered. Only one user for now!'));
+                });
+            }
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
             // Add this user to the admin role (assumes admin = role_id: 1)
