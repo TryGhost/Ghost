@@ -1,7 +1,8 @@
 var BusBoy  = require('busboy'),
     fs      = require('fs-extra'),
     path    = require('path'),
-    os      = require('os');
+    os      = require('os'),
+    crypto  = require('crypto');
 
 // ### ghostBusboy
 // Process multipart file streams and copies them to a memory stream to be 
@@ -23,7 +24,9 @@ function ghostBusBoy(req, res, next) {
     req.body = req.body || {};
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-        var filePath;
+        var filePath,
+            tmpFileName,
+            md5 = crypto.createHash('md5');
 
         // If the filename is invalid, mark an error
         if (!filename) {
@@ -34,7 +37,12 @@ function ghostBusBoy(req, res, next) {
             return file.emit('end');
         }
 
-        filePath = path.join(tmpDir, filename || 'temp.tmp');
+        // Create an MD5 hash of original filenae
+        md5.update(filename, 'utf8');
+
+        tmpFileName = +new Date() + md5.digest('base64');
+
+        filePath = path.join(tmpDir, tmpFileName || 'temp.tmp');
 
         file.on('end', function () {
             req.files[fieldname] = {
