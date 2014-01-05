@@ -58,12 +58,24 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    // Convert bools to ints to be consistent
+    // across db providers
+    fixBools: function (attrs) {
+        _.each(attrs, function (value, key) {
+            if (typeof value === "boolean") {
+                attrs[key] = value ? 1 : 0;
+            }
+        });
+
+        return attrs;
+    },
+
     format: function (attrs) {
-        return this.fixDates(attrs);
+        return this.fixBools(this.fixDates(attrs));
     },
 
     toJSON: function (options) {
-        var attrs = this.fixDates(_.extend({}, this.attributes)),
+        var attrs = this.fixBools(this.fixDates(_.extend({}, this.attributes))),
             relations = this.relations;
 
         if (options && options.shallow) {
