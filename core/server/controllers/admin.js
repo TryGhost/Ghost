@@ -72,16 +72,17 @@ adminControllers = {
     },
     'auth': function (req, res) {
         var currentTime = process.hrtime()[0],
+            remoteAddress = req.connection.remoteAddress,
             denied = '';
         loginSecurity = _.filter(loginSecurity, function (ipTime) {
             return (ipTime.time + 2 > currentTime);
         });
         denied = _.find(loginSecurity, function (ipTime) {
-            return (ipTime.ip === req.connection.remoteAddress);
+            return (ipTime.ip === remoteAddress);
         });
 
         if (!denied) {
-            loginSecurity.push({ip: req.connection.remoteAddress, time: process.hrtime()[0]});
+            loginSecurity.push({ip: remoteAddress, time: currentTime});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
                 req.session.regenerate(function (err) {
                     if (!err) {
@@ -90,7 +91,11 @@ adminControllers = {
                         if (req.body.redirect) {
                             redirect += decodeURIComponent(req.body.redirect);
                         }
-
+                        // If this IP address successfully logins we
+                        // can remove it from the array of failed login attempts.
+                        loginSecurity = _.reject(loginSecurity, function (ipTime) {
+                            return ipTime.ip === remoteAddress;
+                        });
                         res.json(200, {redirect: redirect});
                     }
                 });
