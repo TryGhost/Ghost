@@ -53,7 +53,7 @@ posts = {
                 return slug;
             }
             return when.reject({errorCode: 500, message: 'Could not generate slug'});
-        })
+        });
     },
 
     // #### Edit

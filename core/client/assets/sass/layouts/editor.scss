@@ -634,6 +634,20 @@ body.zen {
     position: relative;
     padding: 0;
     z-index: 1;
+
+    &.unsaved {
+        .post-settings-menu {
+            padding-bottom: 0;
+
+            .post-setting:nth-child(3) td {
+                border-bottom: none;
+            }
+
+            .delete {
+                display: none;
+            }
+        }
+    }
 }
 
 #entry-actions {

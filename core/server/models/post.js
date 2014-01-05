@@ -84,6 +84,16 @@ Post = ghostBookshelf.Model.extend({
         }
 
         ghostBookshelf.Model.prototype.creating.call(this);
+
+        // We require a slug be set when creating a new post
+        // as the database doesn't allow null slug values.
+        if (!this.get('slug')) {
+            // Generating a slug requires a db call to look for conflicting slugs
+            return ghostBookshelf.Model.generateSlug(Post, this.get('title'), {status: 'all', transacting: options.transacting})
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
     },
 
     updateTags: function (newTags, attr, options) {
@@ -389,11 +399,7 @@ Post = ghostBookshelf.Model.extend({
 
             return post.destroy(options);
         });
-    },
-    getSlug: function(options) {
-
     }
-
 });
 
 Posts = ghostBookshelf.Collection.extend({

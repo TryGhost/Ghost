@@ -182,7 +182,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     generateSlug: function (Model, base, readOptions) {
         var slug,
             slugTryCount = 1,
-        // Look for a post with a matching slug, append an incrementing number if so
+            // Look for a post with a matching slug, append an incrementing number if so
             checkIfSlugExists = function (slugToFind) {
                 var args = {slug: slugToFind};
                 //status is needed for posts
