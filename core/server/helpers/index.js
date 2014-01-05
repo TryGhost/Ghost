@@ -92,7 +92,7 @@ coreHelpers.encode = function (context, str) {
 //
 coreHelpers.pageUrl = function (context, block) {
     /*jslint unparam:true*/
-    return config.paths().subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
+    return config().paths.subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
 };
 
 // ### URL helper
@@ -108,10 +108,10 @@ coreHelpers.url = function (options) {
     var absolute = options && options.hash.absolute;
 
     if (schema.isPost(this)) {
-        return config.paths.urlForPost(api.settings, this, absolute);
+        return config.urlForPost(api.settings, this, absolute);
     }
 
-    return when(config.paths.urlFor(this, absolute));
+    return when(config.urlFor(this, absolute));
 };
 
 // ### Asset helper
@@ -125,7 +125,7 @@ coreHelpers.asset = function (context, options) {
     var output = '',
         isAdmin = options && options.hash && options.hash.ghost;
 
-    output += config.paths().subdir + '/';
+    output += config().paths.subdir + '/';
 
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
@@ -278,7 +278,7 @@ coreHelpers.ghostScriptTags = function () {
 
     scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
-            source: config.paths().subdir + '/ghost/scripts/' + fileName,
+            source: config().paths.subdir + '/ghost/scripts/' + fileName,
             version: coreHelpers.assetHash
         });
     });
@@ -356,7 +356,7 @@ coreHelpers.ghost_head = function (options) {
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
     head.push('<link rel="alternate" type="application/rss+xml" title="'
-        + _.escape(blog.title)  + '" href="' + config.paths.urlFor('rss') + '">');
+        + _.escape(blog.title)  + '" href="' + config.urlFor('rss') + '">');
 
     return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
         head.push('<link rel="canonical" href="' + url + '" />');
@@ -373,7 +373,7 @@ coreHelpers.ghost_foot = function (options) {
     var foot = [];
 
     foot.push(scriptTemplate({
-        source: config.paths().subdir + '/shared/vendor/jquery/jquery.js',
+        source: config().paths.subdir + '/shared/vendor/jquery/jquery.js',
         version: coreHelpers.assetHash
     }));
 
@@ -559,7 +559,7 @@ coreHelpers.adminUrl = function (options) {
         // Ghost isn't a named route as currently it violates the must start-and-end with slash rule
         context = !options || !options.hash || !options.hash.frontend ? {relativeUrl: '/ghost'} : 'home';
 
-    return config.paths.urlFor(context, absolute);
+    return config.urlFor(context, absolute);
 };
 
 coreHelpers.updateNotification = function (options) {

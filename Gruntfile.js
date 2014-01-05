@@ -10,7 +10,7 @@ var path           = require('path'),
     spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
-    config         = require('./core/server/config'),
+    bootstrap      = require('./core/bootstrap'),
 
 
     // ## Build File Patterns
@@ -501,7 +501,7 @@ var path           = require('path'),
 
         grunt.registerTask('loadConfig', function () {
             var done = this.async();
-            config.load().then(function () {
+            bootstrap().then(function () {
                 done();
             });
         });

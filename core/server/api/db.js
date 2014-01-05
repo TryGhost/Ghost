@@ -7,7 +7,7 @@ var dataExport       = require('../data/export'),
     nodefn           = require('when/node/function'),
     _                = require('lodash'),
     schema           = require('../data/schema').tables,
-    configPaths      = require('../config/paths'),
+    config           = require('../config'),
     api              = {},
 
     db;
@@ -20,7 +20,7 @@ db = {
         /*jslint unparam:true*/
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
-            var fileName = path.join(configPaths().exportPath, 'exported-' + (new Date().getTime()) + '.json');
+            var fileName = path.join(config().paths.exportPath, 'exported-' + (new Date().getTime()) + '.json');
 
             return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
                 return when(fileName);
@@ -39,7 +39,7 @@ db = {
                 };
 
                 return api.notifications.add(notification).then(function () {
-                    res.redirect(configPaths().debugPath);
+                    res.redirect(config().paths.debugPath);
                 });
             });
         });

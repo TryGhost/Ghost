@@ -88,7 +88,7 @@ adminControllers = {
                 req.session.regenerate(function (err) {
                     if (!err) {
                         req.session.user = user.id;
-                        var redirect = config.paths().subdir + '/ghost/';
+                        var redirect = config().paths.subdir + '/ghost/';
                         if (req.body.redirect) {
                             redirect += decodeURIComponent(req.body.redirect);
                         }
@@ -164,7 +164,7 @@ adminControllers = {
                         if (req.session.user === undefined) {
                             req.session.user = user.id;
                         }
-                        res.json(200, {redirect: config.paths().subdir + '/ghost/'});
+                        res.json(200, {redirect: config().paths.subdir + '/ghost/'});
                     }
                 });
             });
@@ -206,7 +206,7 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: config.paths().subdir + '/ghost/signin/'});
+                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
 
         }, function failure(error) {
@@ -241,7 +241,7 @@ adminControllers = {
             errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
 
             return api.notifications.add(notification).then(function () {
-                res.redirect(config.paths().subdir + '/ghost/forgotten');
+                res.redirect(config().paths.subdir + '/ghost/forgotten');
             });
         });
     },
@@ -259,7 +259,7 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: config.paths().subdir + '/ghost/signin/'});
+                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
         }).otherwise(function (err) {
             res.json(401, {error: err.message});
@@ -276,7 +276,7 @@ adminControllers = {
             };
 
         return api.notifications.add(notification).then(function () {
-            res.redirect(config.paths().subdir + '/ghost/signin/');
+            res.redirect(config().paths.subdir + '/ghost/signin/');
         });
     },
     'index': function (req, res) {

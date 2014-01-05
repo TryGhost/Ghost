@@ -12,7 +12,7 @@ var path = require('path'),
 function getAppRelativePath(name, relativeTo) {
     relativeTo = relativeTo || __dirname;
 
-    return path.relative(relativeTo, path.join(config.paths().appPath, name));
+    return path.relative(relativeTo, path.join(config().paths.appPath, name));
 }
 
 // Load apps through a psuedo sandbox

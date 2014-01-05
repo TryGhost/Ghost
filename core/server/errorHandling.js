@@ -2,15 +2,15 @@
 var _           = require('lodash'),
     colors      = require('colors'),
     fs          = require('fs'),
-    configPaths = require('./config/paths'),
+    config      = require('./config'),
     path        = require('path'),
     when        = require('when'),
     hbs         = require('express-hbs'),
     errors,
 
     // Paths for views
-    defaultErrorTemplatePath = path.resolve(configPaths().adminViews, 'user-error.hbs'),
-    userErrorTemplatePath    = path.resolve(configPaths().themePath, 'error.hbs'),
+    defaultErrorTemplatePath = path.resolve(config().paths.adminViews, 'user-error.hbs'),
+    userErrorTemplatePath    = path.resolve(config().paths.themePath, 'error.hbs'),
     userErrorTemplateExists   = false,
 
     ONE_HOUR_S  = 60 * 60;
@@ -20,7 +20,7 @@ var _           = require('lodash'),
  */
 errors = {
     updateActiveTheme: function (activeTheme, hasErrorTemplate) {
-        userErrorTemplatePath = path.resolve(configPaths().themePath, activeTheme, 'error.hbs');
+        userErrorTemplatePath = path.resolve(config().paths.themePath, activeTheme, 'error.hbs');
         userErrorTemplateExists = hasErrorTemplate;
     },
 

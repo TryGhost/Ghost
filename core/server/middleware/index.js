@@ -35,7 +35,7 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
     // relative path from the URL, not including subdir
-    res.locals.relativeUrl = req.path.replace(config.paths().subdir, '');
+    res.locals.relativeUrl = req.path.replace(config().paths.subdir, '');
 
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
@@ -79,10 +79,10 @@ function initViews(req, res, next) {
     if (!res.isAdmin) {
         hbs.updateTemplateOptions({ data: {blog: config.theme()} });
         expressServer.engine('hbs', expressServer.get('theme view engine'));
-        expressServer.set('views', path.join(config.paths().themePath, expressServer.get('activeTheme')));
+        expressServer.set('views', path.join(config().paths.themePath, expressServer.get('activeTheme')));
     } else {
         expressServer.engine('hbs', expressServer.get('admin view engine'));
-        expressServer.set('views', config.paths().adminViews);
+        expressServer.set('views', config().paths.adminViews);
     }
 
     next();
@@ -92,9 +92,9 @@ function initViews(req, res, next) {
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
     var hbsOptions,
-        themePartials = path.join(config.paths().themePath, activeTheme, 'partials'),
+        themePartials = path.join(config().paths.themePath, activeTheme, 'partials'),
         stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
-            return stackItem.route === config.paths().subdir && stackItem.handle.name === 'settingEnabled';
+            return stackItem.route === config().paths.subdir && stackItem.handle.name === 'settingEnabled';
         }));
 
     // clear the view cache
@@ -107,7 +107,7 @@ function activateTheme(activeTheme) {
     }
 
     // set view engine
-    hbsOptions = { partialsDir: [ config.paths().helperTemplates ] };
+    hbsOptions = { partialsDir: [ config().paths.helperTemplates ] };
 
     fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it
@@ -119,14 +119,14 @@ function activateTheme(activeTheme) {
     expressServer.set('theme view engine', hbs.express3(hbsOptions));
 
     // Update user error template
-    errors.updateActiveTheme(activeTheme, config.paths().availableThemes[activeTheme].hasOwnProperty('error'));
+    errors.updateActiveTheme(activeTheme, config().paths.availableThemes[activeTheme].hasOwnProperty('error'));
 }
 
  // ### ManageAdminAndTheme Middleware
 // Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
 function manageAdminAndTheme(req, res, next) {
-    res.isAdmin = req.url.lastIndexOf(config.paths().subdir + '/ghost/', 0) === 0;
+    res.isAdmin = req.url.lastIndexOf(config().paths.subdir + '/ghost/', 0) === 0;
 
     if (res.isAdmin) {
         expressServer.enable('admin');
@@ -139,7 +139,7 @@ function manageAdminAndTheme(req, res, next) {
         // Check if the theme changed
         if (activeTheme.value !== expressServer.get('activeTheme')) {
             // Change theme
-            if (!config.paths().availableThemes.hasOwnProperty(activeTheme.value)) {
+            if (!config().paths.availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
                     return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
@@ -162,7 +162,7 @@ function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
-            return res.redirect(config.paths().subdir + '/ghost/signup/');
+            return res.redirect(config().paths.subdir + '/ghost/signup/');
         }
         next();
     }).otherwise(function (err) {
@@ -196,8 +196,8 @@ function checkSSL(req, res, next) {
 }
 
 module.exports = function (server, dbHash) {
-    var subdir = config.paths().subdir,
-        corePath = config.paths().corePath,
+    var subdir = config().paths.subdir,
+        corePath = config().paths.corePath,
         cookie;
 
     // Cache express server instance

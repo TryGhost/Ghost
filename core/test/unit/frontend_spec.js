@@ -4,11 +4,11 @@ var assert   = require('assert'),
     should   = require('should'),
     sinon    = require('sinon'),
     when     = require('when'),
+    rewire   = require("rewire"),
 
 // Stuff we are testing
-    config   = require('../../server/config'),
     api      = require('../../server/api'),
-    frontend = require('../../server/controllers/frontend');
+    frontend = rewire('../../server/controllers/frontend');
 
 describe('Frontend Controller', function () {
 
@@ -19,6 +19,9 @@ describe('Frontend Controller', function () {
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
+
+        // Reset frontend controller for next test
+        frontend = rewire('../../server/controllers/frontend');
     });
 
     afterEach(function () {
@@ -79,7 +82,11 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
 
             var req = {params: {page: 0}, route: {path: '/page/:page/'}};
 
@@ -91,7 +98,11 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
 
             var req = {params: {page: 1}, route: {path: '/page/:page/'}};
 
@@ -114,7 +125,11 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
 
             var req = {params: {page: 4}, route: {path: '/page/:page/'}};
 
@@ -160,8 +175,8 @@ describe('Frontend Controller', function () {
                 'value': 'casper'
             }));
 
-            sandbox.stub(config, 'paths', function () {
-                return {
+            frontend.__set__('config',  sandbox.stub().returns({
+                'paths': {
                     'subdir': '',
                     'availableThemes': {
                         'casper': {
@@ -172,8 +187,8 @@ describe('Frontend Controller', function () {
                             'post': '/content/themes/casper/post.hbs'
                         }
                     }
-                };
-            });
+                }
+            }));
         });
 
         describe('permalink set to slug', function () {
@@ -459,7 +474,15 @@ describe('Frontend Controller', function () {
 
     describe('rss redirects', function () {
         var res,
-            apiUsersStub;
+            apiUsersStub,
+            overwriteConfig = function(newConfig) {
+                var existingConfig = frontend.__get__('config');
+                var newConfigModule = function() {
+                    return newConfig;
+                };
+                newConfigModule.urlFor = existingConfig.urlFor;
+                frontend.__set__('config', newConfigModule);
+            };
 
         beforeEach(function () {
             res = {
@@ -522,7 +545,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            overwriteConfig({paths: {subdir: '/blog'}});
 
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
 
@@ -534,7 +557,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            overwriteConfig({paths: {subdir: '/blog'}});
 
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
 
@@ -557,7 +580,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+            overwriteConfig({paths: {subdir: '/blog'}});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 

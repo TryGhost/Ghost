@@ -75,7 +75,7 @@ function initDbHashAndFirstRun() {
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config.paths().builtScriptPath,
+        location = config().paths.builtScriptPath,
 
         fileNames = process.env.NODE_ENV === 'production' ?
                 helpers.scriptFiles.production : helpers.scriptFiles.development;
@@ -158,7 +158,7 @@ function setup(server) {
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        server.set('admin view engine', adminHbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+        server.set('admin view engine', adminHbs.express3({partialsDir: config().paths.adminViews + 'partials'}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);

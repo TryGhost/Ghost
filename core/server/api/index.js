@@ -31,7 +31,7 @@ function cacheInvalidationHeader(req, result) {
         } else if (endpoint === 'posts') {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
             if (id && jsonResult.slug) {
-                return config.paths.urlForPost(settings, jsonResult).then(function (postUrl) {
+                return config.urlForPost(settings, jsonResult).then(function (postUrl) {
                     return cacheInvalidate + ', ' + postUrl;
                 });
             }
