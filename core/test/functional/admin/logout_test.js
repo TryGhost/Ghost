@@ -20,8 +20,9 @@ CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
         });
     });
 
+    casper.waitForSelector('.usermenu-signout a');
     casper.thenClick('.usermenu-signout a');
-    casper.waitForResource(/signin/);
+    casper.waitForResource(/ghost\/signin/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
         test.assert(true, 'Got success notification');
