@@ -67,11 +67,13 @@ User = ghostBookshelf.Model.extend({
 
     saving: function () {
 
-        this.set('name', this.sanitize('name'));
-        this.set('email', this.sanitize('email').toLocaleLowerCase());
-        this.set('location', this.sanitize('location'));
-        this.set('website', this.sanitize('website'));
-        this.set('bio', this.sanitize('bio'));
+        // disabling sanitization until we can implement a better version
+        // this.set('name', this.sanitize('name'));
+        // this.set('email', this.sanitize('email').toLocaleLowerCase());
+        // this.set('location', this.sanitize('location'));
+        // this.set('website', this.sanitize('website'));
+        // this.set('bio', this.sanitize('bio'));
+        this.set('email', this.get('email').toLocaleLowerCase());
 
         return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
