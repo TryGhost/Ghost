@@ -17,6 +17,9 @@ var downsize        = require('downsize'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     isProduction    = process.env.NODE_ENV === 'production',
 
+    Showdown        = require('showdown'),
+    github          = require('../../shared/vendor/showdown/extensions/github'),
+
     coreHelpers     = {},
     registerHelpers;
 
@@ -68,6 +71,20 @@ coreHelpers.date = function (context, options) {
 coreHelpers.encode = function (context, str) {
     var uri = context || str;
     return new hbs.handlebars.SafeString(encodeURIComponent(uri));
+};
+
+//
+// ### Markdown helper
+//
+// *Usage example:*
+// `{{markdown context}}`
+//
+// Returns parsed markdown for context.
+//
+coreHelpers.markdown = function (context) {
+    var converter = new Showdown.converter({extensions: [github]}),
+        output = converter.makeHtml(context);
+    return new hbs.handlebars.SafeString(output);
 };
 
 // ### Page URL Helper
@@ -618,6 +635,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerThemeHelper('excerpt', coreHelpers.excerpt);
 
     registerThemeHelper('foreach', coreHelpers.foreach);
+
+    registerThemeHelper('markdown', coreHelpers.markdown);
 
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 
