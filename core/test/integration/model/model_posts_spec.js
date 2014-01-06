@@ -377,12 +377,13 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('should sanitize the title', function (done) {
-        new PostModel().fetch().then(function (model) {
-            return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
-        }).then(function (saved) {
-                saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
-                done();
-            }).otherwise(done);
-    });
+    // disabling sanitization until we can implement a better version
+    // it('should sanitize the title', function (done) {
+    //    new PostModel().fetch().then(function (model) {
+    //        return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
+    //    }).then(function (saved) {
+    //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+    //        done();
+    //    }).otherwise(done);
+    // });
 });
