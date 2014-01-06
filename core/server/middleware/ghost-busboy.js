@@ -5,10 +5,10 @@ var BusBoy  = require('busboy'),
     crypto  = require('crypto');
 
 // ### ghostBusboy
-// Process multipart file streams and copies them to a memory stream to be 
-// processed later.
+// Process multipart file streams
 function ghostBusBoy(req, res, next) {
     var busboy,
+        stream,
         tmpDir,
         hasError = false;
 
@@ -37,10 +37,10 @@ function ghostBusBoy(req, res, next) {
             return file.emit('end');
         }
 
-        // Create an MD5 hash of original filenae
+        // Create an MD5 hash of original filename
         md5.update(filename, 'utf8');
 
-        tmpFileName = +new Date() + md5.digest('base64');
+        tmpFileName = (new Date()).getTime() + md5.digest('hex');
 
         filePath = path.join(tmpDir, tmpFileName || 'temp.tmp');
 
@@ -58,7 +58,18 @@ function ghostBusBoy(req, res, next) {
             res.send(413, { errorCode: 413, message: 'File size limit breached.' });
         });
 
-        file.pipe(fs.createWriteStream(filePath));
+        busboy.on('error', function (error) {
+            console.log('Error', 'Something went wrong uploading the file', error);
+        });
+
+        stream = fs.createWriteStream(filePath);
+
+        stream.on('error', function (error) {
+            console.log('Error', 'Something went wrong uploading the file', error);
+        });
+
+        file.pipe(stream);
+
     });
 
     busboy.on('field', function (fieldname, val) {
