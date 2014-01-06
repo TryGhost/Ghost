@@ -144,9 +144,7 @@ function getTablesFromSqlite3() {
 
 function getTablesFromPgSQL() {
     return knex.raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'").then(function (response) {
-        return _.flatten(_.map(response[0], function (entry) {
-            return _.values(entry);
-        }));
+        return _.flatten(_.pluck(response.rows, 'table_name'));
     });
 }
 
