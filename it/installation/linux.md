@@ -18,7 +18,7 @@ next_section: deploy
 ### Installare Node
 
 *   Si può procedere in due modi: scaricare l'archivio `.tar.gz` da [http://nodejs.org](http://nodejs.org), oppure puoi seguire le istruzioni per [installare dal package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
-*   Controlla di avere Node e npm installati, digitando nel terminale, prima `node -v`, controllare di avere Node.js installato, e `npm -v` per verificare di aver installato npm.
+*   Controlla di avere Node e npm installati, digitando nel terminale, prima `node -v`, per controllare di avere Node.js installato, e `npm -v` per verificare di aver installato npm.
 
 ### Installare ed eseguire Ghost
 

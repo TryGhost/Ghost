@@ -11,7 +11,7 @@ next_section: mac
 
 ## Panoramica <a id="overview"></a>
 
-La documentazione di Ghost è ancora Work in Progress, è aggiornata e migliorata regolarmente. Se rimani bloccato o hai suggerimenti su come migliorare, faccelo sapere.
+La documentazione di Ghost è ancora "Work in Progress", viene aggiornata e migliorata regolarmente. Se hai problemi o hai suggerimenti su come migliorare, faccelo sapere.
 
 Ghost è sviluppato in [Node.js](http://nodejs.org), e richiede la versione `0.10.*` (l'ultima versione stabile).
 
@@ -20,7 +20,7 @@ Far funzionare Ghost in locale sul tuo computer è abbastanza semplice, ma prima
 ### Cos'è Node.js?
 
 [Node.js](http://nodejs.org) è una piattaforma moderna per sviluppare applicazioni web veloci, scalabili ed efficienti.
-    Negli ultimi 20 anni, il web si è evoluto da un insieme di pagine statiche ad una piattaforma in grado di supportare applicazioni web complesse come Gmail e facebook.
+    Negli ultimi 20 anni, il web si è evoluto da un insieme di pagine statiche ad una piattaforma in grado di supportare applicazioni web complesse come Gmail e Facebook.
     JavaScript è il linguaggio di programmazione che ha consentito questo progresso.
 
 [Node.js](http://nodejs.org) ci dà la possibilità di scrivere Javascript sul server. Nel passato Javascript è esistito soltanto nel browser, ed un secondo linguaggio di programmazione, come PHP, era necessario per programmare lato server. Avere un'applicazione web scritta in un solo linguaggio è un grosso beneficio, ed inoltre questo rende Node.js accessibile agli sviluppatori che tipicamente si sarebbero dedicati solo al client.
@@ -47,5 +47,5 @@ Se hai già deciso di installare Ghost sul tuo server o hosting personale, è un
 </div>
 
 Ricordati che Ghost è molto giovane, ed il team sta lavorando duramente per implementare funzionalità ad un ritmo frenetico. Se hai bisogno di aggiornare Ghost all'ultima versione, segui la [guida all'aggiornamento](/installation/upgrading/).
-    Se rimani bloccato, dai un'occhiata alla [guida alla risoluzione dei problemi]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), o se non è sufficiente, perfavore scrivi sul [forum di Ghost](http://ghost.org/forum) dove lo staff e la community sono disponibili per aiutarti con qualsiasi problema.
+    Se hai problemi, dai un'occhiata alla [guida alla risoluzione dei problemi]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), o se non è sufficiente, perfavore scrivi sul [forum di Ghost](http://ghost.org/forum) dove lo staff e la community sono disponibili per aiutarti con qualsiasi problema.
 

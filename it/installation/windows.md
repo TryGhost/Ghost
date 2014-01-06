@@ -17,7 +17,7 @@ next_section: linux
 ### Installare Node.js
 
 *   Su [http://nodejs.org](http://nodejs.org) clicca installa, per scaricare il file '.msi'.
-*   Clicca sul file scaricato per aprire il programma di installazione; così installi sia node.js che npm.
+*   Clicca sul file scaricato per aprire il programma di installazione; in questo modo installi sia Node.js che npm.
 *   Prosegui con le istruzioni mostrate dal programma di installazione, fino a quando sullo schermo non comparirà un messaggio che conferma l'installazione per Node.js.
 
 Se hai problemi in questa fase, guarda tutto [questo video](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Installa node su Windows"), ti può aiutare.
