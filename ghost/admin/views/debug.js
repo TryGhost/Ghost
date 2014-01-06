@@ -8,6 +8,59 @@
             "click .js-delete": "handleDeleteClick"
         },
 
+        initialize: function () {
+            // Disable import button and initizalize BlueImp file upload
+            $('#startupload').prop('disabled', true);
+            $('#importfile').fileupload({
+                url: Ghost.paths.apiRoot + '/db/',
+                limitMultiFileUploads: 1,
+                replaceFileInput: false,
+                headers: {
+                    'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                },
+                dataType: 'json',
+                add: function (e, data) {
+                    /*jslint unparam:true*/
+                    data.context = $('#startupload').prop('disabled', false)
+                        .click(function () {
+                            $('#startupload').prop('disabled', true);
+                            data.context = $('#startupload').text('Importing');
+                            data.submit();
+                            // unregister click event to allow different subsequent uploads
+                            $('#startupload').off('click');
+                        });
+                },
+                done: function (e, data) {
+                    /*jslint unparam:true*/
+                    $('#startupload').text('Import');
+                    if (!data.result) {
+                        throw new Error('No response received from server.');
+                    }
+                    if (!data.result.message) {
+                        throw new Error('Unknown error');
+                    }
+
+                    Ghost.notifications.addItem({
+                        type: 'success',
+                        message: data.result.message,
+                        status: 'passive'
+                    });
+                },
+                error: function (response) {
+                    $('#startupload').text('Import');
+                    var responseJSON = response.responseJSON,
+                        message = responseJSON && responseJSON.error ? responseJSON.error : 'unknown';
+                    Ghost.notifications.addItem({
+                        type: 'error',
+                        message: ['A problem was encountered while importing new content to your blog. Error: ', message].join(''),
+                        status: 'passive'
+                    });
+                }
+
+            });
+
+        },
+
         handleMenuClick: function (ev) {
             ev.preventDefault();
 
@@ -21,6 +74,7 @@
 
             return false;
         },
+
         handleDeleteClick: function (ev) {
             ev.preventDefault();
             this.addSubview(new Ghost.Views.Modal({
