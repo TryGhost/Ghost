@@ -28,7 +28,7 @@ Ghost, una volta installato, ha una struttura simile a quella mostrata sulla sin
 
 Aggiornare Ghost significa semplicemente sostituire i file vecchi con quelli nuovi, ri-eseguire `npm install` per aggiornare le dipendenze nella cartella <code class="path">node_modules</code> e poi far ripartire Ghost in modo che le modifiche abbiano effetto.
 
-Ricordati, Ghost di default salva tutti i tuoi dati (temi, immagini, etc) nella cartella <code class="path">content</code>, quindi fai attenzione a non toccarla! Sostituisci solo i file nella cartella <code class="path">core</code> e nella root, e tutto andrà bene.
+Ricorda, Ghost di default salva tutti i tuoi dati (temi, immagini, etc) nella cartella <code class="path">content</code>, quindi fai attenzione a non toccarla! Sostituisci solo i file nella cartella <code class="path">core</code> e nella root, e tutto andrà bene.
 
 ## Come eseguire un backup <a id="backing-up"></a>
 
@@ -48,7 +48,7 @@ Come fare l'aggiornamento sulla tua macchina locale.
 
 *   Scarica l'ultima versione di Ghost da [Ghost.org](http://ghost.org/download/)
 *   Estrai lo zip in una posizione temporanea
-*   Copia tutti i file che stanno nella root e incollali nella tua installazione. I file sono: index.js, package.json, Gruntfile.js, config.example.js, la licenza e il readme
+*   Copia tutti i file che trovi nella root e incollali nella tua installazione. I file sono: index.js, package.json, Gruntfile.js, config.example.js, la licenza e il readme
 *   Poi sostituisci la vecchia cartella <code class="path">core</code> con la nuova cartella `core`
 *   Per le release che includono un aggiornamento di Casper (il tema di default), sostituisci la vecchia cartella <code class="path">content/themes/casper</code> con quella nuova
 *   Esegui `npm install --production`
@@ -77,15 +77,15 @@ I passi nello screencast sono:
 *   `npm install --production` - installa Ghost
 *   `npm start` - lancia Ghost
 
-### Linea di comando su server linux <a id="cli-server"></a>
+### Linea di comando su server Linux <a id="cli-server"></a>
 
 *   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
-*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quella corretta, se necessario)
+*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quello corretto, se necessario)
 *   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
-*   Esegui `npm install --production` per installare nuove dipendenze
+*   Esegui `npm install --production` per installare le nuove dipendenze
 *   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto
 
-**Inoltre**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) fornisce ulteriori istruzioni su come installare Ghost su un server linux.
+**Inoltre**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) fornisce ulteriori istruzioni su come installare Ghost su un server Linux.
 
 ### Come aggiornare una Droplet su DigitalOcean <a id="digitalocean"></a>
 
@@ -93,7 +93,7 @@ I passi nello screencast sono:
 
 *   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
 *   Nella console della tua droplet esegui `cd /var/www/` per spostarti dove c'è la tua installazione di Ghost
-*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quella corretta, se necessario)
+*   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quello corretto, se necessario)
 *   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
 *   Assicurati che tutti i file abbiano i permessi corretti con `chown -R ghost:ghost ghost/*`
 *   Esegui `npm install` per installare nuove dipendenze
@@ -103,6 +103,6 @@ I passi nello screencast sono:
 
 Se hai installato Node.js dal sito [Node.js](nodejs.org), puoi effettuare l'aggiornamento semplicemente scaricando e lanciando l'installer più recente. La versione attualmente installata verrà sostituita dall'ultima versione.
 
-Se usi Ubuntu, od un'altra distribuzione linux dotata di `apt-get`, il comando per aggiornare node è uguale a quello per fare l'installazione: `sudo apt-get install nodejs`.
+Se usi Ubuntu, od un'altra distribuzione Linux dotata di `apt-get`, il comando per aggiornare node è uguale a quello per fare l'installazione: `sudo apt-get install nodejs`.
 
 **Non** hai bisogno di riavviare il server o Ghost.
