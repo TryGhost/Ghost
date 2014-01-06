@@ -16,7 +16,7 @@ api.notifications    = require('./notifications');
 api.settings         = require('./settings');
 
 db = {
-    'export': function (req, res) {
+    'exportContent': function (req, res) {
         /*jslint unparam:true*/
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
@@ -44,11 +44,10 @@ db = {
             });
         });
     },
-    'import': function (req, res) {
-        var notification,
-            databaseVersion;
+    'importContent': function (options) {
+        var databaseVersion;
 
-        if (!req.files.importfile || !req.files.importfile.path || req.files.importfile.name.indexOf('json') === -1) {
+        if (!options.importfile || !options.importfile.path || options.importfile.name.indexOf('json') === -1) {
             /**
              * Notify of an error if it occurs
              *
@@ -57,30 +56,17 @@ db = {
              * - If there is no path
              * - If the name doesn't have json in it
              */
-            return api.notifications.browse().then(function (notifications) {
-                notification = {
-                    type: 'error',
-                    message:  "Must select a .json file to import",
-                    status: 'persistent',
-                    id: 'per-' + (notifications.length + 1)
-                };
-
-
-
-                return api.notifications.add(notification).then(function () {
-                    res.redirect(configPaths().debugPath);
-                });
-            });
+            return when.reject({errorCode: 500, message: 'Please select a .json file to import.'});
         }
 
-        api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
+        return api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
             return when(setting.value);
         }, function () {
             return when('001');
         }).then(function (version) {
             databaseVersion = version;
             // Read the file contents
-            return nodefn.call(fs.readFile, req.files.importfile.path);
+            return nodefn.call(fs.readFile, options.importfile.path);
         }).then(function (fileContents) {
             var importData,
                 error = '',
@@ -132,32 +118,9 @@ db = {
         }).then(function importSuccess() {
             return api.settings.updateSettingsCache();
         }).then(function () {
-            return api.notifications.browse();
-        }).then(function (notifications) {
-            notification = {
-                type: 'success',
-                message: "Posts, tags and other data successfully imported",
-                status: 'persistent',
-                id: 'per-' + (notifications.length + 1)
-            };
-
-            return api.notifications.add(notification).then(function () {
-                res.redirect(configPaths().debugPath);
-            });
+            return when.resolve({message: 'Posts, tags and other data successfully imported'});
         }).otherwise(function importFailure(error) {
-            return api.notifications.browse().then(function (notifications) {
-                // Notify of an error if it occurs
-                notification = {
-                    type: 'error',
-                    message: error.message || error,
-                    status: 'persistent',
-                    id: 'per-' + (notifications.length + 1)
-                };
-
-                return api.notifications.add(notification).then(function () {
-                    res.redirect(configPaths().debugPath);
-                });
-            });
+            return when.reject({errorCode: 500, message: error.message || error});
         });
     },
     'deleteAllContent': function () {

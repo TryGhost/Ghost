@@ -45,7 +45,7 @@ function cacheInvalidationHeader(req, result) {
 // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
 requestHandler = function (apiMethod) {
     return function (req, res) {
-        var options = _.extend(req.body, req.query, req.params),
+        var options = _.extend(req.body, req.files, req.query, req.params),
             apiContext = {
                 user: req.session && req.session.user
             };

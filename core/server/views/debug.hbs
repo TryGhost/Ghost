@@ -25,13 +25,12 @@
                     </div>
                 </fieldset>
             </form>
-            <form id="settings-import" method="post" action="{{adminUrl}}/api/v0.1/db/" enctype="multipart/form-data">
-                <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+            <form id="settings-import" enctype="multipart/form-data">
                 <fieldset>
                     <div class="form-group">
                         <label>Import</label>
-                        <input type="file" class="button-add" name="importfile" />
-                        <input type="submit" class="button-save" value="Import" />
+                        <input type="file" class="button-add" name="importfile" id="importfile" />
+                        <button type="submit" class="button-save" value="Import" id="startupload" >Import</button>
                         <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
                     </div>
                 </fieldset>

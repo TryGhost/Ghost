@@ -233,9 +233,6 @@ module.exports = function (server, dbHash) {
     expressServer.use(express.json());
     expressServer.use(express.urlencoded());
 
-    expressServer.use(subdir + '/ghost/upload/', middleware.busboy);
-    expressServer.use(subdir + '/ghost/api/v0.1/db/', middleware.busboy);
-
     // ### Sessions
     cookie = {
         path: subdir + '/ghost',
