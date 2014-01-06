@@ -28,7 +28,7 @@ translations:
   zh_TW:
     site_title:   'Ghost 使用手冊'
     installation: '安裝'
-    usage:        '使用方法'
+    usage:        '使用說明'
     email:        '電子郵件'
     themes:       '佈景主題'
     translations: '翻譯'
