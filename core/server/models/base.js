@@ -7,7 +7,7 @@ var ghostBookshelf,
     config    = require('../config'),
     Validator = require('validator').Validator,
     unidecode = require('unidecode'),
-    sanitize  = require('validator').sanitize;
+    sanitize  = require('caja-sanitizer').sanitize;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
 ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
@@ -92,7 +92,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     sanitize: function (attr) {
-        return sanitize(this.get(attr)).xss();
+        if (this.get(attr) === null || this.get(attr) === undefined) {
+            return this.get(attr);
+        }
+        return sanitize(this.get(attr));
     },
 
     // #### generateSlug

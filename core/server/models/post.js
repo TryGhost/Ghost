@@ -1,16 +1,17 @@
-var Post,
-    Posts,
-    _ = require('underscore'),
-    uuid = require('node-uuid'),
-    when = require('when'),
-    errors = require('../errorHandling'),
-    Showdown = require('showdown'),
-    github = require('../../shared/vendor/showdown/extensions/github'),
-    converter = new Showdown.converter({extensions: [github]}),
-    User = require('./user').User,
-    Tag = require('./tag').Tag,
-    Tags = require('./tag').Tags,
-    ghostBookshelf = require('./base');
+var _               = require('underscore'),
+    uuid            = require('node-uuid'),
+    when            = require('when'),
+    Showdown        = require('showdown'),
+    errors          = require('../errorHandling'),
+    github          = require('../../shared/vendor/showdown/extensions/github'),
+    User            = require('./user').User,
+    Tag             = require('./tag').Tag,
+    Tags            = require('./tag').Tags,
+    ghostBookshelf  = require('./base'),
+
+    converter       = new Showdown.converter({extensions: [github]}),
+    Post,
+    Posts;
 
 Post = ghostBookshelf.Model.extend({
 
@@ -33,25 +34,20 @@ Post = ghostBookshelf.Model.extend({
         this.on('creating', this.creating, this);
         this.on('saving', this.updateTags, this);
         this.on('saving', this.saving, this);
-        this.on('saving', this.validate, this);
-    },
-
-    validate: function () {
-        ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
-        ghostBookshelf.validator.check(this.get('title'), 'Post title maximum length is 150 characters.').len(0, 150);
-        return true;
     },
 
     saving: function (newPage, attr, options) {
         /*jslint unparam:true*/
-        var self = this;
-
-        // Remove any properties which don't belong on the post model
-        this.attributes = this.pick(this.permittedAttributes);
+        var self = this,
+            unsafeTitle = this.get('title');
 
         this.set('html', converter.makeHtml(this.get('markdown')));
 
         this.set('title', this.sanitize('title').trim());
+        ghostBookshelf.validator.check(this.get('title'),
+            this.get('title') === unsafeTitle ? "Post title cannot be blank" : "Post title cannot be blank (current text is classified as unsafe and will be removed)")
+            .notEmpty();
+        ghostBookshelf.validator.check(this.get('title'), 'Post title maximum length is 150 characters.').len(0, 150);
 
         if (this.hasChanged('status') && this.get('status') === 'published') {
             if (!this.get('published_at')) {

@@ -379,9 +379,9 @@ describe('Post Model', function () {
 
     it('should sanitize the title', function (done) {
         new PostModel().fetch().then(function (model) {
-            return model.set({'title': "</title></head><body><script>alert('blogtitle');</script>"}).save();
+            return model.set({'title': '<b onclick="alert(\'foo\')" class="bar">title</b></title></head><body><script>alert("blogtitle");</script>'}).save();
         }).then(function (saved) {
-                saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
+                saved.get('title').should.eql('<b class="bar">title</b>');
                 done();
             }).otherwise(done);
     });
