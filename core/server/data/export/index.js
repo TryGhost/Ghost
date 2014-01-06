@@ -2,7 +2,7 @@ var when      = require('when'),
     _         = require('underscore'),
     migration = require('../migration'),
     knex      = require('../../models/base').knex,
-    schema    = require('../schema'),
+    schema    = require('../schema').tables,
 
     excludedTables = ['sessions'],
     exporter;

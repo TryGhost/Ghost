@@ -118,4 +118,12 @@ var db = {
         }
     };
 
-module.exports = db;
+function isPost(jsonData) {
+    return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown')
+        && jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
+}
+
+module.exports.tables = db;
+module.exports.checks = {
+    isPost: isPost
+};

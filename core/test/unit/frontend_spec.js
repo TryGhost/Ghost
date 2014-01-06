@@ -26,8 +26,106 @@ describe('Frontend Controller', function () {
     });
 
 
-    describe('homepage', function () {
-        // No tests yet, shows up in coverage report
+    describe('homepage redirects', function () {
+        var res;
+
+        beforeEach(function () {
+            res = {
+                redirect: sandbox.spy(),
+                render: sandbox.spy()
+            };
+
+            sandbox.stub(api.posts, 'browse', function () {
+                return when({posts: {}, pages: 3});
+            });
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs('postsPerPage').returns(when({
+                'key': 'postsPerPage',
+                'value': 6
+            }));
+        });
+
+        it('Redirects to home if page number is 0', function () {
+            var req = {params: {page: -1}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to home if page number is 0', function () {
+            var req = {params: {page: 0}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to home if page number is 1', function () {
+            var req = {params: {page: 1}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to home if page number is 0 with subdirectory', function () {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 0}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to home if page number is 1 with subdirectory', function () {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 1}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to last page if page number too big', function (done) {
+            var req = {params: {page: 4}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, done).then(function () {
+                res.redirect.called.should.be.true;
+                res.redirect.calledWith('/page/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+        });
+
+        it('Redirects to last page if page number too big with subdirectory', function (done) {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 4}, route: {path: '/page/:page/'}};
+
+            frontend.homepage(req, res, done).then(function () {
+                res.redirect.calledOnce.should.be.true;
+                res.redirect.calledWith('/blog/page/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+
+        });
     });
 
     describe('single', function () {
@@ -356,6 +454,120 @@ describe('Frontend Controller', function () {
                     done();
                 });
             });
+        });
+    });
+
+    describe('rss redirects', function () {
+        var res,
+            apiUsersStub;
+
+        beforeEach(function () {
+            res = {
+                locals: { version: '' },
+                redirect: sandbox.spy(),
+                render: sandbox.spy()
+            };
+
+            sandbox.stub(api.posts, 'browse', function () {
+                return when({posts: {}, pages: 3});
+            });
+
+            apiUsersStub = sandbox.stub(api.users, 'read').returns(when({}));
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs('title').returns(when({
+                'key': 'title',
+                'value': 'Test'
+            }));
+            apiSettingsStub.withArgs('description').returns(when({
+                'key': 'description',
+                'value': 'Some Text'
+            }));
+            apiSettingsStub.withArgs('permalinks').returns(when({
+                'key': 'permalinks',
+                'value': '/:slug/'
+            }));
+        });
+
+        it('Redirects to rss if page number is 0', function () {
+            var req = {params: {page: -1}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/rss/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to rss if page number is 0', function () {
+            var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/rss/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to home if page number is 1', function () {
+            var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/rss/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to home if page number is 0 with subdirectory', function () {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/rss/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to home if page number is 1 with subdirectory', function () {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/rss/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to last page if page number too big', function (done) {
+            var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, done).then(function () {
+                res.redirect.called.should.be.true;
+                res.redirect.calledWith('/rss/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+        });
+
+        it('Redirects to last page if page number too big with subdirectory', function (done) {
+            sandbox.stub(config, 'paths', function () { return {subdir: '/blog'}; });
+
+            var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
+
+            frontend.rss(req, res, done).then(function () {
+                res.redirect.calledOnce.should.be.true;
+                res.redirect.calledWith('/blog/rss/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+
         });
     });
 });

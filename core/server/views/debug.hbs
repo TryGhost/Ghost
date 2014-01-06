@@ -20,12 +20,12 @@
                 <fieldset>
                     <div class="form-group">
                         <label>Export</label>
-                        <a href="{{url}}/ghost/api/v0.1/db/" class="button-save">Export</a>
+                        <a href="{{adminUrl}}/api/v0.1/db/" class="button-save">Export</a>
                         <p>Export the blog settings and data.</p>
                     </div>
                 </fieldset>
             </form>
-            <form id="settings-import" method="post" action="{{url}}/ghost/api/v0.1/db/" enctype="multipart/form-data">
+            <form id="settings-import" method="post" action="{{adminUrl}}/api/v0.1/db/" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" value="{{csrfToken}}" />
                 <fieldset>
                     <div class="form-group">

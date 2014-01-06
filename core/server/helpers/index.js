@@ -10,8 +10,8 @@ var downsize        = require('downsize'),
     config          = require('../config'),
     errors          = require('../errorHandling'),
     filters         = require('../filters'),
-    models          = require('../models'),
     template        = require('./template'),
+    schema          = require('../data/schema').checks,
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
@@ -80,7 +80,7 @@ coreHelpers.encode = function (context, str) {
 //
 coreHelpers.pageUrl = function (context, block) {
     /*jslint unparam:true*/
-    return context === 1 ? '/' : ('/page/' + context + '/');
+    return config.paths().subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
 };
 
 // ### URL helper
@@ -93,36 +93,13 @@ coreHelpers.pageUrl = function (context, block) {
 // i.e. If inside a post context will return post permalink
 // absolute flag outputs absolute URL, else URL is relative
 coreHelpers.url = function (options) {
-    var output = '',
-        self = this,
-        tags = {
-            year: function () { return moment(self.published_at).format('YYYY'); },
-            month: function () { return moment(self.published_at).format('MM'); },
-            day: function () { return moment(self.published_at).format('DD'); },
-            slug: function () { return self.slug; },
-            id: function () { return self.id; }
-        },
-        isAbsolute = options && options.hash.absolute;
-    return api.settings.read('permalinks').then(function (permalinks) {
-        if (isAbsolute) {
-            output += config().url.replace(/\/$/, '');
-        } else {
-            output += config.paths().subdir;
-        }
-        if (models.isPost(self)) {
-            if (self.page === 1) {
-                output += '/:slug/';
-            } else {
-                output += permalinks.value;
-            }
-            output = output.replace(/(:[a-z]+)/g, function (match) {
-                if (_.has(tags, match.substr(1))) {
-                    return tags[match.substr(1)]();
-                }
-            });
-        }
-        return output;
-    });
+    var absolute = options && options.hash.absolute;
+
+    if (schema.isPost(this)) {
+        return config.paths.urlForPost(api.settings, this, absolute);
+    }
+
+    return when(config.paths.urlFor(this, absolute));
 };
 
 // ### Asset helper
@@ -317,9 +294,9 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.ghostRoot) && this.ghostRoot.match(/\/page/)) {
+    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/page/)) {
         classes.push('archive-template');
-    } else if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '') {
+    } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
     } else {
         classes.push('post-template');
@@ -366,7 +343,8 @@ coreHelpers.post_class = function (options) {
 
 coreHelpers.ghost_head = function (options) {
     /*jslint unparam:true*/
-    var blog = config.theme(),
+    var self = this,
+        blog = config.theme(),
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version;
@@ -376,13 +354,13 @@ coreHelpers.ghost_head = function (options) {
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
     head.push('<link rel="alternate" type="application/rss+xml" title="'
-        + _.escape(blog.title)  + '" href="' + config.paths().subdir + '/rss/' + '">');
+        + _.escape(blog.title)  + '" href="' + config.paths.urlFor('rss') + '">');
 
-    if (this.ghostRoot) {
-        head.push('<link rel="canonical" href="' + config().url + this.ghostRoot + '" />');
-    }
+    return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
+        head.push('<link rel="canonical" href="' + url + '" />');
 
-    return filters.doFilter('ghost_head', head).then(function (head) {
+        return filters.doFilter('ghost_head', head);
+    }).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n' + item; }, '');
         return new hbs.handlebars.SafeString(headString.trim());
     });
@@ -408,8 +386,8 @@ coreHelpers.meta_title = function (options) {
     var title,
         blog;
 
-    if (_.isString(this.ghostRoot)) {
-        if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
+    if (_.isString(this.relativeUrl)) {
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             title = blog.title;
         } else {
@@ -428,8 +406,8 @@ coreHelpers.meta_description = function (options) {
     var description,
         blog;
 
-    if (_.isString(this.ghostRoot)) {
-        if (!this.ghostRoot || this.ghostRoot === '/' || this.ghostRoot === '' || this.ghostRoot.match(/\/page/)) {
+    if (_.isString(this.relativeUrl)) {
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             description = blog.description;
         } else {
@@ -572,6 +550,16 @@ coreHelpers.helperMissing = function (arg) {
     errors.logError('Missing helper: "' + arg + '"');
 };
 
+// ## Admin URL helper
+// uses urlFor to generate a URL for either the admin or the frontend.
+coreHelpers.adminUrl = function (options) {
+    var absolute = options && options.hash && options.hash.absolute,
+        // Ghost isn't a named route as currently it violates the must start-and-end with slash rule
+        context = !options || !options.hash || !options.hash.frontend ? {relativeUrl: '/ghost'} : 'home';
+
+    return config.paths.urlFor(context, absolute);
+};
+
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
@@ -605,7 +593,6 @@ function registerAdminHelper(name, fn) {
 function registerAsyncAdminHelper(name, fn) {
     registerAsyncHelper(coreHelpers.adminHbs, name, fn);
 }
-
 
 
 registerHelpers = function (adminHbs, assetHash) {
@@ -662,7 +649,7 @@ registerHelpers = function (adminHbs, assetHash) {
 
     registerAdminHelper('fileStorage', coreHelpers.fileStorage);
 
-    registerAsyncAdminHelper('url', coreHelpers.url);
+    registerAdminHelper('adminUrl', coreHelpers.adminUrl);
 
 };
 

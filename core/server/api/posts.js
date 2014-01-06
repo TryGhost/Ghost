@@ -106,9 +106,7 @@ posts = {
         return canThis(this.user).remove.post(args.id).then(function () {
             return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
-                    var deletedObj = {};
-                    deletedObj.id = result.id;
-                    deletedObj.slug = result.slug;
+                    var deletedObj = result;
                     return deletedObj;
                 });
             });

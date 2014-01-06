@@ -16,7 +16,7 @@ var _             = require('underscore'),
 
 // ## Request Handlers
 
-function invalidateCache(req, res, result) {
+function cacheInvalidationHeader(req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[4],
@@ -30,15 +30,14 @@ function invalidateCache(req, res, result) {
         } else if (endpoint === 'posts') {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
             if (id && jsonResult.slug) {
-                cacheInvalidate += ', /' + jsonResult.slug + '/';
+                return config.paths.urlForPost(settings, jsonResult).then(function (postUrl) {
+                    return cacheInvalidate + ', ' + postUrl;
+                });
             }
         }
-        if (cacheInvalidate) {
-            res.set({
-                "X-Cache-Invalidate": cacheInvalidate
-            });
-        }
     }
+
+    return when(cacheInvalidate);
 }
 
 // ### requestHandler
@@ -52,8 +51,14 @@ requestHandler = function (apiMethod) {
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {
-            invalidateCache(req, res, result);
             res.json(result || {});
+            return cacheInvalidationHeader(req, result).then(function (header) {
+                if (header) {
+                    res.set({
+                        "X-Cache-Invalidate": header
+                    });
+                }
+            });
         }, function (error) {
             var errorCode = error.errorCode || 500,
                 errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
