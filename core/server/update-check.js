@@ -69,7 +69,7 @@ function updateCheckData() {
     data.node_version    = process.versions.node;
     data.env             = process.env.NODE_ENV;
     data.database_type   = require('./models/base').client;
-    data.email_transport = mailConfig && mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport;
+    data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
 
     return when.settle(ops).then(function (descriptors) {
         var hash             = descriptors[0].value,
