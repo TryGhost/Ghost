@@ -903,6 +903,7 @@ nav {
     }
 
     .checkbox {
+        position: relative;
         margin-top: 0;
         width: 18px;
         border: lighten($grey, 10%) 1px solid;
