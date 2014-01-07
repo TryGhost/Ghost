@@ -904,7 +904,7 @@ nav {
     }
 
     .checkbox {
-        @include position(absolute, 9px 0 0 10px);
+        position: relative;
         margin-top: 0;
         width: 18px;
         border: lighten($grey, 10%) 1px solid;
