@@ -7,7 +7,7 @@
     Ghost.temporary.hideToggles = function () {
         $('[data-toggle]').each(function () {
             var toggle = $(this).data('toggle');
-            $(this).parent().children(toggle + ':visible').fadeOut();
+            $(this).parent().children(toggle + ':visible').fadeOut(150);
         });
 
         // Toggle active classes on menu headers
@@ -33,7 +33,7 @@
 
             if (!isAlreadyActive) {
                 $this.toggleClass('active');
-                $(this).parent().children(toggle).toggleClass('open').fadeToggle(200);
+                $(this).parent().children(toggle).toggleClass('open').fadeToggle(150);
             }
         });
 
