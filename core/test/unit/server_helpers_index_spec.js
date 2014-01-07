@@ -17,15 +17,14 @@ var testUtils  = require('../utils'),
 
 describe('Core Helpers', function () {
 
-    var ghost,
-        sandbox,
+    var sandbox,
         apiStub;
 
     beforeEach(function (done) {
         var adminHbs = hbs.create();
         helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
-        apiStub = sandbox.stub(api.settings, 'read', function () {
+        apiStub = sandbox.stub(api.settings, 'read', function (arg) {
             return when({value: 'casper'});
         });
 
@@ -778,12 +777,14 @@ describe('Core Helpers', function () {
 
     });
 
+    // ## Admin only helpers
     describe("ghostScriptTags  helper", function () {
         var rendered,
             configStub;
 
         beforeEach(function () {
             // set the asset hash
+            helpers = rewire('../../server/helpers');
             helpers.assetHash = 'abc';
         });
 
@@ -935,6 +936,61 @@ describe('Core Helpers', function () {
                 rendered.should.equal('http://testurl.com/blog/');
                 done();
             });
+        });
+    });
+    describe('updateNotification', function () {
+        it('outputs a correctly formatted notification when display is set to true', function (done) {
+            var output = '<div class="notification-success">' +
+                'A new version of Ghost is available! Hot damn. ' +
+                '<a href="http://ghost.org/download">Upgrade now</a></div>';
+
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({value: 'true'});
+            });
+
+            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+                should.exist(rendered);
+
+                rendered.should.equal(output);
+                done();
+            }).then(null, done);
+        });
+
+        it('does NOT output a correctly formatted notification when display is not set to true', function (done) {
+            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('');
+                done();
+            }).then(null, done);
+        });
+
+        it('does NOT output a notification if updateCheck is false', function (done) {
+            helpers.__set__('config', function () { return { updateCheck: false}; });
+
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({value: 'true'});
+            });
+
+            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('');
+                done();
+            }).then(null, done);
+        });
+
+        it('does NOT output a notification if the user is not logged in', function (done) {
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({value: 'true'});
+            });
+
+            helpers.updateNotification.call().then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('');
+                done();
+            }).then(null, done);
         });
     });
 });

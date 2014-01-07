@@ -5,6 +5,12 @@
         },
         "dbHash": {
             "defaultValue": null
+        },
+        "nextUpdateCheck": {
+            "defaultValue": null
+        },
+        "displayUpdateNotification": {
+            "defaultValue": false
         }
     },
     "blog": {

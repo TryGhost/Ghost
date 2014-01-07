@@ -560,6 +560,24 @@ coreHelpers.adminUrl = function (options) {
     return config.paths.urlFor(context, absolute);
 };
 
+coreHelpers.updateNotification = function () {
+    var output = '';
+
+    if (config().updateCheck === false || !this.currentUser) {
+        return when(output);
+    }
+
+    return api.settings.read('displayUpdateNotification').then(function (display) {
+        if (display && display.value && display.value === 'true') {
+            output = '<div class="notification-success">' +
+                'A new version of Ghost is available! Hot damn. ' +
+                '<a href="http://ghost.org/download">Upgrade now</a></div>';
+        }
+
+        return output;
+    });
+};
+
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
@@ -572,7 +590,6 @@ function registerAsyncHelper(hbs, name, fn) {
         });
     });
 }
-
 
 // Register a handlebars helper for themes
 function registerThemeHelper(name, fn) {
@@ -651,6 +668,7 @@ registerHelpers = function (adminHbs, assetHash) {
 
     registerAdminHelper('adminUrl', coreHelpers.adminUrl);
 
+    registerAsyncAdminHelper('updateNotification', coreHelpers.updateNotification);
 };
 
 module.exports = coreHelpers;
