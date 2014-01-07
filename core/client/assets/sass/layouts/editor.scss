@@ -499,7 +499,7 @@ body.zen {
     text-transform: none;
     padding: 10px 0 0 0;
 
-    &:after, &:before {
+    &:after {
         content: "";
         position: fixed;
         top: 10px;
@@ -511,14 +511,8 @@ body.zen {
         pointer-events: none;
 
         @include breakpoint($mobile) {
-            right: 176px;
+            right: 161px;
         }
-    }
-
-    &:before {
-        right: auto;
-        left: 29px;
-        @include linear-gradient(right, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
     }
 
     .tags {
@@ -529,7 +523,7 @@ body.zen {
         max-width: 80%;
         max-width: calc(100% - 320px);
         height: 26px;
-        padding-left: 8px;
+        padding-left: 5px;
         padding-bottom: 20px;
         overflow-x: auto;
         overflow-y: hidden;
@@ -580,7 +574,7 @@ body.zen {
     .tag {
         @include icon-after($i-x, 8px, $darkgrey) {
             margin-left: 4px;
-            vertical-align: 5%;
+            vertical-align: 10%;
             text-shadow: rgba(255,255,255,0.15) 0 1px 0;
             @include transition;
         }
@@ -599,7 +593,11 @@ body.zen {
 
         &:hover {
             cursor: pointer;
-            @include icon-after($i-x, 8px, $lightgrey) {text-shadow: none;}
+            @include icon-after($i-x, 8px, $lightgrey) {
+                margin-left: 4px;
+                vertical-align: 10%;
+                text-shadow: none;
+            }
 
         }
     }
