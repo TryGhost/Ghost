@@ -144,7 +144,7 @@
                 if (callback) {
                     callback($("body").find(hideClass + ":visible"));
                 } else {
-                    $("body").find(hideClass + ":visible").fadeOut();
+                    $("body").find(hideClass + ":visible").fadeOut(150);
 
                     // Toggle active classes on menu headers
                     $("[data-toggle].active").removeClass("active");
