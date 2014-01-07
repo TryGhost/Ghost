@@ -58,7 +58,7 @@ User = ghostBookshelf.Model.extend({
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
-            return this.generateSlug(User, this.get('name'))
+            return ghostBookshelf.Model.generateSlug(User, this.get('name'))
                 .then(function (slug) {
                     self.set({slug: slug});
                 });

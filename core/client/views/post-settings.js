@@ -21,15 +21,17 @@
                 this.listenTo(this.model, 'change:status', this.render);
                 this.listenTo(this.model, 'change:published_at', this.render);
                 this.listenTo(this.model, 'change:page', this.render);
+                this.listenTo(this.model, 'change:title', this.updateSlugPlaceholder);
             }
         },
 
         render: function () {
             var slug = this.model ? this.model.get('slug') : '',
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
-                $pubDateEl = this.$('.post-setting-date');
+                $pubDateEl = this.$('.post-setting-date'),
+                $postSettingSlugEl = this.$('.post-setting-slug');
 
-            $('.post-setting-slug').val(slug);
+            $postSettingSlugEl.val(slug);
 
             // Update page status test if already a page.
             if (this.model && this.model.get('page')) {
@@ -46,7 +48,40 @@
                 this.$('.delete').removeClass('hidden');
             }
 
+            // Apply different style for model's that aren't
+            // yet persisted to the server.
+            // Mostly we're hiding the delete post UI
+            if (this.model.id === undefined) {
+                this.$el.addClass('unsaved');
+            } else {
+                this.$el.removeClass('unsaved');
+            }
+
             $pubDateEl.val(pubDate);
+        },
+
+        // Requests a new slug when the title was changed
+        updateSlugPlaceholder: function () {
+            var title = this.model.get('title'),
+                $postSettingSlugEl = this.$('.post-setting-slug');
+
+            // If there's a title present we want to
+            // validate it against existing slugs in the db
+            // and then update the placeholder value.
+            if (title) {
+                $.ajax({
+                    url: Ghost.paths.apiRoot + '/posts/getSlug/' + encodeURIComponent(title) + '/',
+                    success: function (result) {
+                        $postSettingSlugEl.attr('placeholder', result);
+                    }
+                });
+            } else {
+                // If there's no title set placeholder to blank
+                // and don't make an ajax request to server
+                // for a proper slug (as there won't be any).
+                $postSettingSlugEl.attr('placeholder', '');
+                return;
+            }
         },
 
         selectSlug: function (e) {
@@ -60,8 +95,18 @@
                 slugEl = e.currentTarget,
                 newSlug = slugEl.value;
 
-            // Ignore empty or unchanged slugs
-            if (newSlug.length === 0 || slug === newSlug) {
+            // If the model doesn't currently
+            // exist on the server (aka has no id)
+            // then just update the model's value
+            if (self.model.id === undefined) {
+                this.model.set({
+                    slug: newSlug
+                });
+                return;
+            }
+
+            // Ignore unchanged slugs
+            if (slug === newSlug) {
                 slugEl.value = slug === undefined ? '' : slug;
                 return;
             }
@@ -102,7 +147,7 @@
                 pubDateMoment,
                 newPubDateMoment;
 
-            // Ignore empty or unchanged dates
+            // if there is no new pub date do nothing
             if (!newPubDate) {
                 return;
             }
@@ -155,6 +200,16 @@
                 return;
             }
 
+            // If the model doesn't currently
+            // exist on the server (aka has no id)
+            // then just update the model's value
+            if (self.model.id === undefined) {
+                this.model.set({
+                    published_at: newPubDateMoment.toDate()
+                });
+                return;
+            }
+
             // Save new 'Published' date
             this.model.save({
                 published_at: newPubDateMoment.toDate()
@@ -183,6 +238,16 @@
             var pageEl = $(e.currentTarget),
                 page = pageEl.prop('checked');
 
+            // Don't try to save
+            // if the model doesn't currently
+            // exist on the server
+            if (this.model.id === undefined) {
+                this.model.set({
+                    page: page
+                });
+                return;
+            }
+
             this.model.save({
                 page: page
             }, {
@@ -209,6 +274,11 @@
         deletePost: function (e) {
             e.preventDefault();
             var self = this;
+            // You can't delete a post
+            // that hasn't yet been saved
+            if (this.model.id === undefined) {
+                return;
+            }
             this.addSubview(new Ghost.Views.Modal({
                 model: {
                     options: {
