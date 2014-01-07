@@ -81,7 +81,7 @@ function initDbHashAndFirstRun() {
 function setup(server) {
 
     // create a hash for cache busting assets
-    var assetHash = (crypto.createHash('md5').update(packageInfo.version + Date().now).digest('hex')).substring(0, 10);
+    var assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
     // Set up Polygot instance on the require module
     Polyglot.instance = new Polyglot();
