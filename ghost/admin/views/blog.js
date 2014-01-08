@@ -11,12 +11,23 @@
     Ghost.Views.Blog = Ghost.View.extend({
         initialize: function (options) {
             /*jslint unparam:true*/
+            var self = this,
+                finishProgress = function () {
+                    NProgress.done();
+                };
+
+            // Basic collection request/sync flow progress bar handlers
             this.listenTo(this.collection, 'request', function () {
                 NProgress.start();
             });
-            this.listenTo(this.collection, 'sync', function () {
-                NProgress.done();
+            this.listenTo(this.collection, 'sync', finishProgress);
+
+            // A special case because models that are destroyed are removed from the
+            // collection before the sync event fires and bubbles up
+            this.listenTo(this.collection, 'destroy', function (model) {
+                self.listenToOnce(model, 'sync', finishProgress);
             });
+
             this.addSubview(new PreviewContainer({ el: '.js-content-preview', collection: this.collection })).render();
             this.addSubview(new ContentList({ el: '.js-content-list', collection: this.collection })).render();
         }
