@@ -55,37 +55,39 @@ Guidelines for bug reports:
 helpful thing in the world is if we can *see* what you're talking about. 
 Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
+5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A) to start creating a bug report with the template automatically.
+
 A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the 
 details of your environment.
 
 Here is a [real example](https://github.com/TryGhost/Ghost/issues/413)
 
-Template:
+Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A)):
+```
+Short and descriptive example bug report title
 
-> Short and descriptive example bug report title
->
-> ### Issue Summary
->
-> A summary of the issue and the browser/OS environment in which it occurs. If
-> suitable, include the steps required to reproduce the bug.
->
-> ### Steps to Reproduce
->
-> 1. This is the first step
-> 2. This is the second step
-> 3. Further steps, etc.
->
-> Any other information you want to share that is relevant to the issue being
-> reported. Especially, why do you consider this to be a bug? What do you expect to happen instead?
->
-> ### Technical details: 
->
-> * Ghost Version: master (latest commit: 590ba48988b51b9c5e8d99afbb84c997436d7f21)
-> * Client OS: Mac OS X 10.8.4
-> * Server OS: CentOS 6.4
-> * Node Version: 0.10.16
-> * Browser: Chrome 29.0.1547.57
+### Issue Summary
 
+A summary of the issue and the browser/OS environment in which it occurs. If
+suitable, include the steps required to reproduce the bug.
+
+### Steps to Reproduce
+
+1. This is the first step
+2. This is the second step
+3. Further steps, etc.
+
+Any other information you want to share that is relevant to the issue being
+reported. Especially, why do you consider this to be a bug? What do you expect to happen instead?
+
+### Technical details: 
+
+* Ghost Version: master (latest commit: 590ba48988b51b9c5e8d99afbb84c997436d7f21)
+* Client OS: Mac OS X 10.8.4
+* Server OS: CentOS 6.4
+* Node Version: 0.10.16
+* Browser: Chrome 29.0.1547.57
+```
 
 <a name="features"></a>
 ### Feature Requests
