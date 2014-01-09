@@ -255,6 +255,18 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
+    it('can generate a safe slug when a reserved keyword is used', function(done) {
+        var newPost = {
+            title: 'rss',
+            markdown: 'Test Content 1'
+        };
+
+        PostModel.add(newPost).then(function (createdPost) {
+            createdPost.get('slug').should.not.equal('rss');
+            done();
+        });
+    });
+
     it('can generate slugs without non-ascii characters', function (done) {
         var newPost = {
             title: 'भुते धडकी भरवणारा आहेत',

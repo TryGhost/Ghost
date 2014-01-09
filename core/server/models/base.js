@@ -227,7 +227,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Remove non ascii characters
         slug = unidecode(slug);
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users)$/g
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users|rss)$/g
             .test(slug) ? slug + '-post' : slug;
 
         //if slug is empty after trimming use "post"
