@@ -29,7 +29,8 @@
             var slug = this.model ? this.model.get('slug') : '',
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
                 $pubDateEl = this.$('.post-setting-date'),
-                $postSettingSlugEl = this.$('.post-setting-slug');
+                $postSettingSlugEl = this.$('.post-setting-slug'),
+                publishedDateFormat = 'DD MMM YY HH:mm';
 
             $postSettingSlugEl.val(slug);
 
@@ -40,7 +41,10 @@
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
-                pubDate = moment(pubDate).format('DD MMM YY HH:mm');
+                pubDate = moment(pubDate).format(publishedDateFormat);
+                $pubDateEl.attr('placeholder', '');
+            } else {
+                $pubDateEl.attr('placeholder', moment().format(publishedDateFormat));
             }
 
             if (this.model && this.model.get('id')) {
