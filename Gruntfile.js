@@ -796,7 +796,6 @@ var path           = require('path'),
                 'handlebars',
                 'concat',
                 'uglify',
-                'changelog',
                 'clean:release',
                 'copy:release',
                 'compress:release'
