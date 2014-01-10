@@ -7,9 +7,7 @@ heading: Setting up Email
 chapter: mail
 ---
 
-
 ## 邮件配置 <a id="email-config"></a>
-
 
 接下来的文档将详细介绍如何设置 Ghost 邮件，Ghost 使用的是 [Nodemailer](https://github.com/andris9/Nodemailer)，在他们的文档中能找到更多的示例。
 
