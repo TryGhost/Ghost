@@ -1,9 +1,10 @@
 ---
+lang: zh_TW
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 如何在主機上安裝 Ghost - Ghost 繁體中文文件
+meta_description: 這裡詳細敘述如何在本地或遠端環境中安裝 Ghost 部落格平台。
+heading: 安裝 Ghost &amp; 開始嘗試
+subheading: 開始創建新部落格的第一步
 permalink: /zh_TW/installation/deploy/
 chapter: installation
 section: deploy
@@ -11,30 +12,30 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## 讓 Ghost 上線 <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+準備好讓 Ghost 上線了嗎？太棒了！
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+第一個要做的決定就是，要透過安裝程序來安裝，還是自己手動安裝 Ghost 。
 
-### Installers
+### 安裝程序安裝
 
-There are a couple of options for simple installers at the moment:
+目前有以下幾種簡單的安裝程序：
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   使用 [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost) 部署到雲端。
+*   使用 [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html) 來執行 Ghost。
+*   搭建在 [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application) 。
 
-### Manual Setup
+### 手動安裝
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+你需要一個主機空間，或者可以安裝 [Node.js](http://nodejs.org) 的伺服器。
+    例如一個雲端空間 ([Amazon EC2](http://aws.amazon.com/ec2/)， [DigitalOcean](http://www.digitalocean.com)， [Rackspace Cloud](http://www.rackspace.com/cloud/))， VPS ([Webfaction](https://www.webfaction.com/)， [Dreamhost](http://www.dreamhost.com/servers/vps/)) 或者其他有 SSH (terminal) 並且可以安裝 Node.js 的平台。目前有很多這種平台，而且也都很便宜。
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+目前還不能在 cPanel 之類的虛擬主機（通常用於 PHP）上運行。雖然有些（cPanel）支援 Ruby， 或許將來也會支援 Node.js，但這些（cPanel）主機也同樣不支援 Ghost。
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>很不幸地，一些 Node.js 主機提供商與 Ghost 並不兼容，比如說 **Nodejitsu** 和 **Heroku** 。它們可以安裝 Ghost，但你的檔案會被刪除，所以你上傳的圖片和資料庫的內容都會消失。Heroku 支援 MySQL 資料庫，你可以使用它來彌補這個問題，但一些上傳的圖片仍然會消失。
 
-The following links contain instructions on how to get up and running with:
+以下鏈接包含了如何開始和運行的說明：
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
@@ -43,29 +44,29 @@ The following links contain instructions on how to get up and running with:
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
 *   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
 
-## Making Ghost run forever
+## 讓 Ghost 持續執行
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+前面提到說需使用 `npm start` 命令來啟動 Ghost。這是一個在開發模式下啟動和測試的好方法，但是用這種命令列啟動有個缺點，即當你結速終端機或者從 SSH 登出時，Ghost 就停止了。為了防止 Ghost 停止執行，有兩種方式可以解決這個問題。
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+你可以使用 `forever` 在背景執行 Ghost 。`forever` 將會按照 Ghost 的配置，若 node 程式當掉了，還是會自動重啟 node。
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   使用指令 `npm install forever -g` 安裝 `forever` 
+*   為了讓 `forever` 從 Ghost 安裝目錄執 行，輸入 `NODE_ENV=production forever start index.js`
+*   使用指令 `forever stop index.js` 來停止 Ghost
+*   使用指令 `forever list` 來檢查 Ghost 是否仍在執行
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+流行的 Linux 發行版——例如 Fedora， Debian 和 Ubuntu，都包含一個 Supervisor 包裝：這是一個進程控制系統，允許在啟動的時候無需初始化腳本就能執行 Ghost。不像初始化腳本一樣，Supervisor 可以移植到不同的發行版和版本。
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
-    *   Debian/Ubuntu: `apt-get install supervisor`
-    *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+*   根據不同的 Linux 發行版 [安裝 Supervisor](http://supervisord.org/installing.html) 。如下所示：
+    *   Debian/Ubuntu： `apt-get install supervisor`
+    *   Fedora： `yum install supervisor`
+    *   其他大多數發行版： `easy_install supervisor`
+*   使用指令 `service supervisor start` 來確保 Supervisor 順利執行
+*   為 Ghost 創建一個啟動腳本。通常是 `/etc/supervisor/conf.d/ghost.conf` ，例如：
 
     ```
     [program:ghost]
@@ -79,44 +80,44 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   使用 Supervisor 啟動 Ghost：`supervisorctl start ghost`
+*   停止 Ghost： `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+詳細內容請參閱 [Supervisor 文件](http://supervisord.org)。
 
-### Init Script
+### 初始化腳本
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Linux 系統在啟動的時候會運行初始化腳本。這些腳本通常存在於 /etc/init.d 。為了讓 Ghost 一直運行下去甚至自動重啟，你可以設置一個初始化腳本來完成這個任務。以下的例子工作在 Ubuntu ，並且在 **Ubuntu 12.04** 下通過測試。
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   使用以下命令創建 /etc/init.d/ghost 文件：
 
     ```
     $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   使用 `nano /etc/init.d/ghost` 命令打開文件並檢查以下內容：
+*   將 `GHOST_ROOT` 變數的值更換為你的 Ghost 安裝路徑
+*   檢查 `DAEMON` 變數的值是否和 `which node` 的輸出值相同
+*   這個初始化腳本將在你的系統上以它自己的 Ghost 用戶和群組執行，使用以下命令來創建：
 
     ```
     $ sudo useradd -r ghost -U
     ```
-
-*   Let's also make sure the Ghost user can access the installation:
+    
+*   確保 Ghost 用戶可以訪問安裝目錄：
 
     ```
-    $ sudo chown -R ghost:ghost /path/to/ghost
+    $ sudo chown -R ghost:ghost /你的 Ghost 安裝目錄
     ```
 
-*   Change the execution permission for the init script by typing
+*   使用以下命令給這個初始化腳本加上可執行權限：
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   現在你可以使用以下的命令來控制 Ghost ：
 
     ```
     $ sudo service ghost start
@@ -125,40 +126,37 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line: 
+*   為了讓 Ghost 能在系統啟動時同時啟動，我們必須要將剛剛創建的初始化腳本註冊為為啟動項。
+    執行以下兩個命令：
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
-
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+    
+*   為了保證你的用戶可以更改 Ghost 目錄裏的文件和預設的 config.js ，需要將你加入 ghost 群組中：
     ```
-    $ sudo adduser USERNAME ghost
+    $ sudo adduser 你的用戶名 ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   如果你現在重新啟動伺服器，Ghost 應該會自動運行。
 
+## 配置 Ghost 域名
 
-## Setting up Ghost with a domain name
+如果你已經讓 Ghost 持續執行了，你也可以設置一個代理服務器讓你的部落格可以使用域名訪問。以下的範例假設你的操作系統是 **Ubuntu 12.04** ，使用 **Nginx** 作為你的 Web 伺服務，已經使用以上任意一種方法讓 Ghost 在後台運行。
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
-
-*   Install nginx
+*   安裝 nginx
 
     ```
     $ sudo apt-get install nginx
     ```
-    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+    <span class="note">這個命令將會安裝 nginx 並且設定好所有必需的目錄和基礎配置。</span>
+    
+*   配置你的站點
 
-*   Configure your site
-
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   在 `/etc/nginx/sites-available` 創建一個 `ghost.conf` 文件
+    *   使用文本編輯器打開這個文件 (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        把以下內容複製到這個文件
 
         ```
         server {
@@ -174,14 +172,14 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   將 `server_name` 的值改為你的域名
+    *   把你的配置文件建立捷徑到 `sites-enabled` 資料夾下:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
 
-    *   Restart nginx
+    *   重啟 nginx
 
     ```
     $ sudo service nginx restart
