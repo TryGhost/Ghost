@@ -1,9 +1,9 @@
 ---
 lang: zh
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Ghost电子邮件设置 - Ghost中文文档
+meta_description: 关于怎样设置电子邮件服务以及如何用 Ghost 发送邮件，你需要知道的一切。
+heading: 邮件设置
 chapter: mail
 ---
 
