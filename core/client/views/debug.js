@@ -21,6 +21,8 @@
                 dataType: 'json',
                 add: function (e, data) {
                     /*jslint unparam:true*/
+                    // unregister click event to preveng duplicate binding
+                    $('#startupload').off("click");
                     data.context = $('#startupload').prop('disabled', false)
                         .click(function () {
                             $('#startupload').prop('disabled', true);
