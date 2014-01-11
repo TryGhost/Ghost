@@ -60,7 +60,8 @@ adminControllers = {
                 return res.send(url);
             })
             .otherwise(function (e) {
-                return errors.logError(e);
+                errors.logError(e);
+                return res.send(500, e.message);
             });
     },
     'login': function (req, res) {
