@@ -274,6 +274,8 @@
             overflow: auto;
             word-break: break-word;
             hyphens: auto;
+            @include user-select(none);
+            cursor: default;
 
             // Tweak padding for smaller screens
             @include breakpoint($netbook) {padding-top: 20px;}
