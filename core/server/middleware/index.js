@@ -234,8 +234,9 @@ module.exports = function (server, dbHash) {
     expressServer.use(express.urlencoded());
 
     // ### Sessions
+    // we need the trailing slash in the cookie path. Session handling *must* be after the slash handling
     cookie = {
-        path: subdir + '/ghost',
+        path: subdir + '/ghost/',
         maxAge: 12 * ONE_HOUR_MS
     };
 
