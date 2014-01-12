@@ -249,6 +249,17 @@ describe('Frontend Routing', function () {
         });
     });
 
+    describe('Post with Ghost in the url', function () {
+        // All of Ghost's admin depends on the /ghost/ in the url to work properly
+        // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
+        it('should retrieve a blog post with ghost at the start of the url', function (done) {
+            request.get('/ghostly-kitchen-sink/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });
+
     describe('Static assets', function () {
         it('should retrieve shared assets', function (done) {
             request.get('/shared/img/usr-image.png')
