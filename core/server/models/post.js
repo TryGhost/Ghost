@@ -115,7 +115,8 @@ Post = ghostBookshelf.Model.extend({
             var existingTags = thisPostWithTags.related('tags').toJSON(),
                 tagOperations = [],
                 tagsToDetach = [],
-                tagsToAttach = [];
+                tagsToAttach = [],
+                createdTagsToAttach = [];
 
             // First find any tags which have been removed
             _.each(existingTags, function (existingTag) {
@@ -143,23 +144,45 @@ Post = ghostBookshelf.Model.extend({
                         tagsToAttach = _.reject(tagsToAttach, function (tagToAttach) {
                             return tagToAttach.name === matchingTag.name;
                         });
+
                     });
 
+                    // Return if no tags to add
+                    if (tagsToAttach.length === 0) {
+                        return;
+                    }
+
+                    // Set method to insert, so each tag gets inserted with the appropriate options
+                    var opt = options.method;
+                    options.method = 'insert';
+
+                    // Create each tag that doesn't yet exist
                     _.each(tagsToAttach, function (tagToCreateAndAttach) {
-                        var createAndAttachOperation,
-                            opt = options.method;
-                        //TODO: remove when refactor; ugly fix to overcome bookshelf
-                        options.method = 'insert';
-                        createAndAttachOperation = Tag.add({name: tagToCreateAndAttach.name}, options).then(function (createdTag) {
-                            options.method = opt;
-                            return self.tags().attach(createdTag.id, createdTag.name, options);
+                        var createAndAttachOperation = Tag.add({name: tagToCreateAndAttach.name}, options).then(function (createdTag) {
+                            createdTagsToAttach.push(createdTag);
+
+                            // If the tags are all inserted, process them
+                            if (tagsToAttach.length === createdTagsToAttach.length) {
+
+                                // Set method back to whatever it was, for tag attachment
+                                options.method = opt;
+
+                                // Attach each newly created tag
+                                _.each(createdTagsToAttach, function (tagToAttach) {
+                                    self.tags().attach(tagToAttach.id, tagToAttach.name, options);
+                                });
+
+                            }
+
                         });
 
-
                         tagOperations.push(createAndAttachOperation);
+
                     });
 
+                    // Return when all tags attached
                     return when.all(tagOperations);
+
                 });
             }
 
@@ -381,10 +404,7 @@ Post = ghostBookshelf.Model.extend({
         var self = this;
 
         return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (editedObj) {
-            return when(editedObj.updateTags(editedPost.tags, null, options)).then(function () {
-                return self.findOne({status: 'all', id: editedObj.id}, options);
-            });
-            //return self.findOne({status: 'all', id: editedObj.id}, options);
+            return self.findOne({status: 'all', id: editedObj.id}, options);
         });
     },
     destroy: function (_identifier, options) {
