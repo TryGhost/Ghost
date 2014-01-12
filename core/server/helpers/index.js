@@ -115,7 +115,7 @@ coreHelpers.asset = function (context, options) {
 
     output += config.paths().subdir + '/';
 
-    if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/)) {
+    if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
             output += 'ghost/';
         } else {
@@ -123,6 +123,8 @@ coreHelpers.asset = function (context, options) {
         }
     }
 
+    // Get rid of any leading slash on the context
+    context = context.replace(/^\//, '');
     output += context;
 
     if (!context.match(/^favicon\.ico$/)) {

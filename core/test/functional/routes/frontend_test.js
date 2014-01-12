@@ -262,26 +262,29 @@ describe('Frontend Routing', function () {
 
     describe('Static assets', function () {
         it('should retrieve shared assets', function (done) {
-            request.get('/shared/img/usr-image.png')
-                .expect('Cache-Control', cacheRules.year)
+            request.get('/shared/img/user-image.png')
+                .expect('Cache-Control', cacheRules.hour)
+                .expect(200)
                 .end(doEnd(done));
         });
 
         it('should retrieve theme assets', function (done) {
             request.get('/assets/css/screen.css')
                 .expect('Cache-Control', cacheRules.hour)
+                .expect(200)
                 .end(doEnd(done));
         });
 
         it('should retrieve built assets', function (done) {
-            request.get('/ghost/built/vendor.js')
+            request.get('/ghost/scripts/vendor.js')
                 .expect('Cache-Control', cacheRules.year)
+                .expect(200)
                 .end(doEnd(done));
         });
 
         // at the moment there is no image fixture to test
         // it('should retrieve image assets', function (done) {
-        // request.get('/assets/css/screen.css')
+        // request.get('/content/images/some.jpg')
         //    .expect('Cache-Control', cacheRules.year)
         //    .end(doEnd(done));
         // });
