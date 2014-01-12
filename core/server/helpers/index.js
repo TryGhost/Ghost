@@ -370,10 +370,7 @@ coreHelpers.ghost_foot = function (options) {
     /*jslint unparam:true*/
     var foot = [];
 
-    foot.push(scriptTemplate({
-        source: config.paths().subdir + '/shared/vendor/jquery/jquery.js',
-        version: coreHelpers.assetHash
-    }));
+    // Saved for future use; this helper doesn't actually do anything right now
 
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');

@@ -385,13 +385,13 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.ghost_foot);
         });
 
-        it('returns meta tag string', function (done) {
+        it('should return empty string', function (done) {
 
             helpers.assetHash = 'abc';
 
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js\?v=abc"><\/script>/);
+                rendered.string.should.equal('');
 
                 done();
             }).then(null, done);
