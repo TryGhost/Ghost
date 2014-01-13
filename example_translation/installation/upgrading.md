@@ -70,7 +70,7 @@ The steps in the screencast are:
 *   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - unzip ghost into the folder <code class="path">ghost-0.4.0</code>
 *   <code class="path">cd ghost-0.4.0</code> - change directory into the <code class="path">ghost-0.4.0</code> directory
 *   `ls` - show all the files and folders inside this directory
-*   `cp *.md *.js *.txt *.json ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
+*   `cp *.js *.json *.md LICENSE ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
 *   `rm -rf ~/ghost/core` - delete the old <code class="path">core</code> directory
 *   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to <code class="path">~/ghost</code>
 *   `cp -R content/themes/casper ~/ghost/content/themes` - copy the <code class="path">casper</code> directory and all of its contents to <code class="path">~/ghost/content/themes</code>
