@@ -160,7 +160,7 @@
                 return false;
             }
 
-            if (searchTerm) {
+            if (searchTerm && e.keyCode !== this.keys.ESC) {
                 this.showSuggestions($target, searchTerm);
             } else {
                 this.$suggestions.hide();
