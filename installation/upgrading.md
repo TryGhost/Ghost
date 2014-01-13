@@ -82,7 +82,7 @@ The steps in the screencast are:
 *   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
 *   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
 *   Delete the old core directory from your install
-*   Unzip the archive with `unzip -uo ghost-0.4.*.zip -d path-to-your-ghost-install`
+*   Unzip the archive with `unzip -uo ghost-latest.zip -d path-to-your-ghost-install`
 *   Run `npm install --production` to get any new dependencies
 *   Finally, restart Ghost so that the changes will take effect
 
