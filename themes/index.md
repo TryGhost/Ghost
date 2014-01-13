@@ -279,7 +279,7 @@ You can limit the amount of text to output by passing one of the options:
 `{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
 
 ```
-// outputs something like 'July 11, 2013'
+// outputs something like 'July 11, 2014'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 

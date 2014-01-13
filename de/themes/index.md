@@ -278,7 +278,7 @@ Du kannst die Menge an ausgegebenem Text durch folgende Optionen beschränken:
 `{{date}}` ist ein Formatierungshelfer zur Ausgabe von Daten in verschiedenen Formatierungen. Du kannst entweder ein Datum und einen Formatierungsstring übergeben, um das Datum wie folgt auszugeben:
 
 ```
-// gibt etwas Ähnliches wie 'July 11, 2013' aus
+// gibt etwas Ähnliches wie 'July 11, 2014' aus
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 

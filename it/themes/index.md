@@ -280,7 +280,7 @@ Puoi limitare il numero di parole o caratteri da mostrare tramite le opzioni:
 `{{date}}` è un helper per mostrare le date in diversi formati. Puoi passargli come argomenti una data ed un formato in questo modo:
 
 ```
-// mostrerà qualcosa di simile a 'Luglio 11, 2013'
+// mostrerà qualcosa di simile a 'Luglio 11, 2014'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
