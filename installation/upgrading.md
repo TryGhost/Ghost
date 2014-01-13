@@ -48,8 +48,8 @@ How to upgrade on your local machine
 *   Download the latest version of Ghost from [Ghost.org](http://ghost.org/download/)
 *   Extract the zip file to a temporary location
 *   Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.
-*   Next replace the old <code class="path">core</code> directory with the new `core` directory
-*   For releases which include update to Casper (the default theme), replace the old <code class="path">content/themes/casper</code> directory with the new one
+*   Next, delete the old <code class="path">core</code> directory completely, and then put the new <code class="path">core</code> directory in its place.
+*   For releases which include update to Casper (the default theme), delete the old <code class="path">content/themes/casper</code> directory and put the new one its place
 *   Run `npm install --production`
 *   Finally, Restart Ghost so that the changes take effect
 
@@ -61,16 +61,17 @@ How to upgrade on your local machine
 
 The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note">**Note:** `~` means the user's home directory on mac and linux</span>
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
+![Upgrade ghost](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
 
 The steps in the screencast are:
 
 *   <code class="path">cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved
-*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - unzip ghost into the folder <code class="path">ghost-0.3.3</code>
-*   <code class="path">cd ghost-0.3.3</code> - change directory into the <code class="path">ghost-0.3.3</code> directory
+*   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - unzip ghost into the folder <code class="path">ghost-0.4.0</code>
+*   <code class="path">cd ghost-0.4.0</code> - change directory into the <code class="path">ghost-0.4.0</code> directory
 *   `ls` - show all the files and folders inside this directory
 *   `cp *.md *.js *.txt *.json ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
-*   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to the <code class="path">~/ghost</code>
+*   `rm -rf ~/ghost/core` - delete the old <code class="path">core</code> directory
+*   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to <code class="path">~/ghost</code>
 *   `cp -R content/themes/casper ~/ghost/content/themes` - copy the <code class="path">casper</code> directory and all of its contents to <code class="path">~/ghost/content/themes</code>
 *   `cd ~/ghost` - change directory to the <code class="path">~/ghost</code> directory
 *   `npm install --production` - install Ghost
@@ -80,7 +81,8 @@ The steps in the screencast are:
 
 *   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
 *   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Unzip the archive with `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+*   Delete the old core directory from your install
+*   Unzip the archive with `unzip -uo ghost-0.4.*.zip -d path-to-your-ghost-install`
 *   Run `npm install --production` to get any new dependencies
 *   Finally, restart Ghost so that the changes will take effect
 
@@ -93,10 +95,13 @@ The steps in the screencast are:
 *   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
 *   Once you've got the URL for the latest version, in your Droplet console type `cd /var/www/` to change directory to where the Ghost codebase lives.
 *   Next, type `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
+*   Remove the old core directory, `rm -rf ghost/core`
 *   Unzip the archive with `unzip -uo ghost-latest.zip -d ghost`
 *   Make sure all of the files have the right permissions with `chown -R ghost:ghost ghost/*`
-*   Run `npm install` to get any new dependencies
-*   Finally, restart Ghost so that the changes take effect using `service ghost restart`
+*   Change into the <code class="path">ghost</code> directory with `cd ghost`
+*   Run `npm install --production` to get any new dependencies
+*   Finally, restart Ghost so that the changes take effect using `service ghost restart` (this can take a little while)
+
 
 ## How to upgrade Node.js to the latest version <a id="upgrading-node"></a>
 
