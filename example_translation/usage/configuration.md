@@ -12,14 +12,85 @@ prev_section: usage
 next_section: settings
 ---
 
-
 ## Configuring Ghost <a id="configuration"></a>
 
 After you run Ghost for the first time, you'll find a file called `config.js` in the root directory of Ghost, along with the `index.js`. This file allows you to set environment level configuration for things like your URL, database, and mail settings.
 
-If you haven't yet run Ghost for the first time, you won't have this file yet. You can create one by copying the `config.example.js` file - that's what Ghost does when it starts. 
+If you haven't yet run Ghost for the first time, you won't have this file yet. You can create one by copying the `config.example.js` file - that's what Ghost does when it starts.
 
-To configure your Ghost URL, mail or database settings, open `config.js` in your favourite editor, and start changing the settings for your desired environment. If environments aren't something you've come across yet, read the documentation below.
+To configure your Ghost URL, mail or database settings, open `config.js` in your favourite editor, and start changing the settings for your desired environment. If environments aren't something you've come across yet, read the [documentation](#environments) below.
+
+## Configuration options
+
+Ghost has a number of configuration options which you can add to change things about how Ghost works.
+
+### Email
+
+Possibly the most important piece of configuration is setting up email so that Ghost can let you reset your password if you forget it. Read the [email documentation]({% if page.lang %}/{{ page.lang }}{% endif %}/mail) for more information.
+
+### Database
+
+By default, Ghost comes configured to use an SQLite database, which requires no configuration on your part.
+
+If however you would like to use a MySQL database, you can do so by changing the database configuration.  You must create a database and user first, you can then change the existing sqlite3 config to something like:
+
+```
+database: {
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'ghost_db',
+    charset  : 'utf8'
+  }
+}
+```
+
+You can also limit the number of simultaneous connections should you wish, by using the `pool` setting.
+
+```
+database: {
+  client: ...,
+  connection: { ... },
+  pool: {
+    min: 2,
+    max: 20
+  }
+}
+```
+
+### Server
+
+The server host and port are the IP address and port number that Ghost should listen on for requests.
+
+It is also possible to configure Ghost to listen on a unix socket instead by changing the server config to something like:
+
+```
+server: {
+    socket: 'path/to/socket.sock'
+}
+```
+
+### Update Check
+
+Ghost 0.4 introduced an automatic update check service to let you know when a new version of Ghost is available (woo!). Ghost.org collects basic anonymous usage statistics from update check requests. For more more information, see the [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js) file in Ghost core.
+
+It is possible to disable the update checks and anonymous data collection by setting the following option:
+
+`updateCheck: false`
+
+Please be sure to subscribe to emails from Ghost, or the [Ghost blog](http://blog.ghost.org), so that you are still informed about new versions. More information about
+
+### File Storage
+
+Some platforms such as Heroku do not have a persistent file system. As a result of this, any uploaded images are likely to go missing at some point.
+It is possible to disable Ghost's file storage features:
+
+`fileStorage: false`
+
+When file storage is disabled, Ghost's image upload tools will prompt you to enter a URL by default, thereby preventing you from uploading files that will go missing.
+
 
 ## About Environments <a id="environments"></a>
 
