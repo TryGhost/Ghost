@@ -36,7 +36,12 @@ function getPluginByName(name) {
 loader = {
     // Load a plugin and return the instantiated plugin
     installPluginByName: function (name) {
-        var plugin = getPluginByName(name);
+        var plugin;
+        try {
+            plugin = getPluginByName(name);
+        } catch (e) {
+            return when.reject(new Error("Error loading plugin named " + name + "; plugin directory (/content/plugins/" + name + ") does not exist."));
+        }
 
         // Check for an install() method on the plugin.
         if (!_.isFunction(plugin.install)) {

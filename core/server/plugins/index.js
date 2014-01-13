@@ -62,6 +62,12 @@ module.exports = {
                     if (_.contains(installedPlugins, plugin)) {
                         return loader.activatePluginByName(plugin).then(function (loadedPlugin) {
                             return recordLoadedPlugin(plugin, loadedPlugin);
+                        }).otherwise(function (err) {
+                            errors.logError(
+                                err.message || err,
+                                'The plugin will not be loaded',
+                                'Check with the plugin creator, or read the plugin documentation for more details on plugin requirements'
+                            );
                         });
                     }
 
@@ -70,6 +76,12 @@ module.exports = {
                         return loader.activatePluginByName(plugin);
                     }).then(function (loadedPlugin) {
                         return recordLoadedPlugin(plugin, loadedPlugin);
+                    }).otherwise(function (err) {
+                        errors.logError(
+                            err.message || err,
+                            'The plugin will not be loaded',
+                            'Check with the plugin creator, or read the plugin documentation for more details on plugin requirements'
+                        );
                     });
                 });
 
