@@ -48,7 +48,7 @@ Die folgenden Links enthalten englische Anleitungen, die die Einrichtung beschre
 
 Bisher wurde Ghost mit `npm start` gestartet. Das ist der beste Weg für lokale Entwicklung oder Tests, sobald du allerdings das Terminal beendest oder dich aus SSH ausloggst, wird Ghost auch beendet. Um das zu verhindern, musst du Ghost als Dienst ausführen, wofür es mehrere Wege gibt.
 
-### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
+### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
 Du kannst `forever` nutzen, um Ghost als Hintergrunddienst zu betreiben. `forever` kümmert sich um deine Ghost-Installation und startet sie neu, falls der Node-Prozess durch einen Fehler beendet wird.
 
@@ -57,7 +57,7 @@ Du kannst `forever` nutzen, um Ghost als Hintergrunddienst zu betreiben. `foreve
 * Um Ghost zu stoppen, führe `forever stop index.js` aus
 * Um herauszufinden ob Ghost momentan läuft, führe `forever list` aus
 
-### Supervisor ([http://supervisord.org/](http://supervisord.org/))
+### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
 Beliebte Linux-Distributionen wie Fedora, Debian und Ubuntu bieten ein Paket für Supervisor: Eine Prozessverwaltung die es ermöglicht Ghost ohne herkömmliche Init-Scripte beim Systemstart auszuführen. Anders als ein Init-Script ist Supvervisor über verschiedene Distrubitionen und Kernel-Versionen hinweg portabel.
 
@@ -85,7 +85,7 @@ Beliebte Linux-Distributionen wie Fedora, Debian und Ubuntu bieten ein Paket fü
 
 Für weitere Informationen kannst du einen Blick in die [Dokumentation von Supervisor](http://supervisord.org) werfen.
 
-### Init Script
+### Init Script <a id="init-script"></a>
 
 Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init.d. Um Ghost ununterbrochen auszuführen, sogar über einen Neustart hinweg, kannst du ein Init-Script einrichten. Das folgende Beispiel funktioniert unter Ubuntu und wurde unter **Ubuntu 12.04** getestet.
 
@@ -124,7 +124,7 @@ Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init
 
 Weitere Dokumentation darüber, wie node mit forever verwendet wird und wie man Ghost als daemon unter Ubuntu betreibt, werden sehr bald hinzugefügt!
 
-## Ghost mit einer Domain betreiben
+## Ghost mit einer Domain betreiben <a id="nginx-domain"></a>
 
 Wenn du Ghost aufgesetzt hast um immer zu laufen, kannst du auch einen Web-Server als Proxy einrichten mit deiner Domain.
 Im folgenden Beispiel nehmen wir an du verwendest **Ubuntu 12.04** und benutzt **nginx** als Web-Server.
@@ -170,3 +170,49 @@ Es nimmt auch an, dass Ghost im Hintergrund lauft mit einer der oben genannten M
     $ sudo service nginx restart
     ```
 
+## Ghost mit SSL zum Laufen bringen <a id="ssl"></a>
+
+Nachdem du Ghost unter einer Domain eingerichtet hast, ist es eine gute Idee die Admin-Oberfläche oder vielleicht gleich deinen ganzen Blog durch HTTPS zu schützen. Es ist ratsam, die Admin-Oberfläche mit HTTPS zu schützen, da Benutzername und Passwort in Klartext übermittelt werden, wenn du keine Verschlüsselung einstellst.
+
+Das folgende Beispiel wird dir zeigen, wie du SSL zum Laufen bekommst. Wir nehmen an, dass du bisher dieser Anleitung gefolgt bist und nginx als deinen Proxyserver benutzt. Ein Setup mit einem anderen Proxyserver sollte ähnlich aussehen.
+
+Zuerst musst du ein SSL-Zertifikat von einem Provider erhalten, dem du vertraust. Dein Provider wird dich durch den Prozess von einer privaten Schlüsselgeneration und einer Zertifikatsregistrierungsanforderung (Certificate Signing Request, kurz CSR) leiten. Nachdem du deine Zertifizierungsdatei erhalten hast, musst du die CRT-Datei von deinem Zertifikatsprovider und die KEY-Datei, welche während der Erteilung des CSR generiert wird, zu deinem Server kopieren.
+
+- `mkdir /etc/nginx/ssl`
+- `cp server.crt /etc/nginx/ssl/server.crt`
+- `cp server.key /etc/nginx/ssl/server.key`
+
+Nachdem diese beiden Dateien an Ort und Stelle sind, musst du deine nginx-Konfiguration aktualisieren.
+
+*   Öffne die nginx-Konfigurationsdatei mit einem Texteditor (z. B. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+*   Füge die mit einem Plus markierten Einstellungen zu deiner Konfigurationsdatei:
+
+    ```
+     server {
+         listen 80;
+    +    listen 443 ssl;
+         server_name example.com;
+    +    ssl_certificate        /etc/nginx/ssl/server.crt;
+    +    ssl_certificate_key    /etc/nginx/ssl/server.key;
+         ...
+         location / {
+    +       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    +       proxy_set_header Host $http_host;
+    +       proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://127.0.0.1:2368;
+            ...
+         }
+     }
+    ```
+
+    *   Starte nginx neu
+
+    ```
+    $ sudo service nginx restart
+    ```
+
+Nach diesen Schritten solltest du in der Lage sein, den Adminbereich deines Blogs über eine geschützte HTTPS-Verbindung zu erreichen. Wenn du all deinen Verkehr zur SSL-Benutzung zwingen möchtest, ist es möglich, das Protokoll der URL-Einstellungen in deiner config.js-Datei zu https zu ändern (z. B.: `url: 'https://mein-ghost-blog.com'`). Dies wird die SSL-Nutzung für Frontend und Adminbereich erzwingen. Alle Anfragen, die über HTTP gesendet werden, werden zu HTTPS weitergeleitet. Wenn du Bilder in deinen Posts einbaust, die von Domains stammen, die HTTP verwenden, erscheint eine 'insecure content' (unsicherer Inhalt)-Warnung. Scripte und Schriftarten von HTTP-Domains werden aufhören zu funktionieren.
+
+In den meisten Fällen wirst du SSL im Adminbereich erzwingen wollen und das Frontend über HTTP und HTTPS bedienen. Um SSL für den Adminbereich zu erzwingen, wurde die Option `forceAdminSSL: true` eingeführt.
+
+Wenn du weitere Informationen über das Aufsetzen von SSL für deinen Proxyserver benötigst, sind die offizielle SSL-Dokumentation von [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) und [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) perfekte Orte zum starten.

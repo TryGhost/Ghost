@@ -71,7 +71,7 @@ Die gezeigten Schritte sind:
 *   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - Entpacken von Ghost in den Ordner <code class="path">ghost-0.4.0</code>
 *   <code class="path">cd ghost-0.4.0</code> - Wechseln in das <code class="path">ghost-0.4.0</code>-Verzeichnis
 *   `ls` - Zeige alle Dateien im aktuellen Verzeichnis
-*   `cp *.md *.js *.txt *.json ~/ghost` - Kopiere alle .md .js .txt und .json Dateien in das Verzeichnis <code class="path">~/ghost</code>
+*   `cp *.js *.json *.md LICENSE ~/ghost` - Kopiere alle .md .js .txt und .json Dateien in das Verzeichnis <code class="path">~/ghost</code>
 *	`rm -rf ~/ghost/core` - Lösche das alte <code class="path">core</code>-Verzeichnis
 *   `cp -R core ~/ghost` - Kopiere das <code class="path">core</code>-Verzeichnis und alle Inhalte nach <code class="path">~/ghost</code>
 *   `cp -R content/themes/casper ~/ghost/content/themes` - Kopiere das <code class="path">casper</code>-Verzeichnis und alle Inhalte nach <code class="path">~/ghost/content/themes</code>
@@ -84,7 +84,7 @@ Die gezeigten Schritte sind:
 * Als Erstes musst du die URL mit der neuesten Ghost-Version herausfinden. Sie dürfte `http://ghost.org/zip/ghost-latest.zip` sein.
 * Lade die Zip-Datei mittels `wget http://ghost.org/zip/ghost-latest.zip` herunter (oder mit der URL die für die neueste Ghost-Version steht).
 * Lösche das alte core-Verzeichnis von deiner Installation
-* Entpacke das Archiv mit `unzip -uo ghost-0.4.*.zip -d Pfas-zu-deiner-Ghost-Installation`
+* Entpacke das Archiv mit `unzip -uo ghost-latest.*.zip -d Pfas-zu-deiner-Ghost-Installation`
 * Führe `npm install --production` aus, um alle neuen Abhängigkeiten zu installieren
 * Starte Ghost neu, um alle Änderungen anzuwenden
 
