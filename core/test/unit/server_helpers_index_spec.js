@@ -1,19 +1,18 @@
 /*globals describe, beforeEach, afterEach, it*/
-var testUtils  = require('../utils'),
-    should     = require('should'),
-    sinon      = require('sinon'),
-    when       = require('when'),
-    _          = require('underscore'),
-    path       = require('path'),
-    rewire     = require('rewire'),
-    api        = require('../../server/api'),
-    hbs        = require('express-hbs'),
-
+var testUtils   = require('../utils'),
+    should      = require('should'),
+    sinon       = require('sinon'),
+    when        = require('when'),
+    _           = require('underscore'),
+    path        = require('path'),
+    rewire      = require('rewire'),
+    api         = require('../../server/api'),
+    hbs         = require('express-hbs'),
 
     // Stuff we are testing
-    handlebars = hbs.handlebars,
-    helpers    = rewire('../../server/helpers'),
-    config     = require('../../server/config');
+    handlebars  = hbs.handlebars,
+    helpers     = rewire('../../server/helpers'),
+    config      = require('../../server/config');
 
 describe('Core Helpers', function () {
 
@@ -939,16 +938,19 @@ describe('Core Helpers', function () {
         });
     });
     describe('updateNotification', function () {
-        it('outputs a correctly formatted notification when display is set to true', function (done) {
+        it('outputs a correctly formatted notification when db version is higher than package version', function (done) {
             var output = '<div class="notification-success">' +
                 'A new version of Ghost is available! Hot damn. ' +
                 '<a href="http://ghost.org/download">Upgrade now</a></div>';
 
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({value: 'true'});
+                return when({value: '0.4.1'});
             });
 
+            api.settings.read('displayUpdateNotification').then(function (result) {
+                console.log(result);
+            });
             helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
 
@@ -957,7 +959,12 @@ describe('Core Helpers', function () {
             }).then(null, done);
         });
 
-        it('does NOT output a correctly formatted notification when display is not set to true', function (done) {
+        it('does NOT output a correctly formatted notification when db version equals package version', function (done) {
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({value: '0.4.0'});
+            });
+
             helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('');
@@ -983,7 +990,7 @@ describe('Core Helpers', function () {
         it('does NOT output a notification if the user is not logged in', function (done) {
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({value: 'true'});
+                return when({value: '0.4.1'});
             });
 
             helpers.updateNotification.call().then(function (rendered) {

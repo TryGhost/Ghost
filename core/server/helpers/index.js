@@ -12,6 +12,7 @@ var downsize        = require('downsize'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,
+    updateCheck     = require('../update-check'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
@@ -569,8 +570,8 @@ coreHelpers.updateNotification = function () {
         return when(output);
     }
 
-    return api.settings.read('displayUpdateNotification').then(function (display) {
-        if (display && display.value && display.value === 'true') {
+    return updateCheck.showUpdateNotification().then(function (result) {
+        if (result) {
             output = '<div class="notification-success">' +
                 'A new version of Ghost is available! Hot damn. ' +
                 '<a href="http://ghost.org/download">Upgrade now</a></div>';
