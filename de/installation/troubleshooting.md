@@ -27,21 +27,21 @@ prev_section: upgrading
     </dd>
     <dt id="sqlite3-errors">SQLite3 kann nicht installiert werden</dt>
     <dd>
-        <p>Das SQLite3-Paket kommt mit vorkompilierten Binärdateien für die meisten Architekturen. Falls du eine weniger bekanntest Linux oder eine andere Unix-Variante verwendest, kann es sein dass SQLite3 dir einen 404-Fehler zurückgibt da es die Binärdatei nicht für deine Platform finden kann</p>
+        <p>Das SQLite3-Paket kommt mit vorkompilierten Binärdateien für die meisten Architekturen. Falls du eine weniger bekanntest Linux oder eine andere Unix-Variante verwendest, kann es sein dass SQLite3 dir einen 404-Fehler zurückgibt da es die Binärdatei nicht für deine Platfform finden kann</p>
         <p>Das kann behoben werden, indem man SQlite3 zum kompilieren zwingt. Das erfordert Python und GCC. Versuche es mit <code>npm install sqlite3 --build-from-source</code></p>
         <p>Falls es nicht kompiliert, fehlen dir vermutlich einer der Abhängigkeiten zu Python oder GCC. Unter Linux kannst du <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> und <code>sudo apt-get install python-software-properties python g++ make</code> versuchen und dann das kompilieren erneut starten.</p>
         <p>Für mehr Informationen über das kompilieren von Binärdateien schaue dir bitte <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a> an.</p>
-        <p>Sobald du die Binärdatien für deine Platform erfolgreich kompiliert hast, folge bitte den <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">Instruktionen hier</a> um die Dateien an das node-sqlite-Projekt zu senden, damit andere Nutzer nach dir nicht das selbe Problem haben werden.</p>
+        <p>Sobald du die Binärdatien für deine Platfform erfolgreich kompiliert hast, folge bitte den <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">Instruktionen hier</a> um die Dateien an das node-sqlite-Projekt zu senden, damit andere Nutzer nach dir nicht das selbe Problem haben werden.</p>
     </dd>
     <dt id="image-uploads">Ich kann keine Bilder hochladen</dt>
     <dd>
-        <p>Falls du eine DigitalOcean Droplet Installation, die noch mit Ghost v0.3.2 kommt, oder unter einigen Platformen nginx verwendest, könnte es sein dass du keine Bilder hochladen kannst.</p>
+        <p>Falls du eine DigitalOcean Droplet Installation, die noch mit Ghost v0.3.2 kommt, oder unter einigen Platfformen nginx verwendest, könnte es sein dass du keine Bilder hochladen kannst.</p>
         <p>Das eigentliche Problem ist dass du keine Bilder hochladen kannst, die Größer als 1MB sind. Kleiner Bilder sollten möglich sein, jedoch ist das ein sehr niedriges Limit.</p>
         <p>Um das Limit zu erhöhen, musst du die nginx Konfiguration modifizieren und es auf einen anderen Wert setzen.</p>
         <ul>
             <li>Logge dich auf deinem Server ein und gib <code>sudo nano /etc/nginx/conf.d/default.conf</code>ein um die Konfigurationsdatei zu öffnen.</li>
             <li>Füge nach <code>server_name</code> folgendes hinzu: <code>client_max_body_size 10M;</code></li>
-            <li>Drücke <kbd>ctrl</kbd> + <kbd>x</kbd> zum verlassen. Nano wird dich fragen ob du speichern möchstest, gib <kbd>y</kbd> für ja ein und drücke zur Bestätigung <kbd>enter</kbd>.</li>
+            <li>Drücke <kbd>Strg</kbd> + <kbd>x</kbd> zum verlassen. Nano wird dich fragen ob du speichern möchtest, gib <kbd>y</kbd> für ja ein und drücke zur Bestätigung <kbd>enter</kbd>.</li>
         </ul>
     </dd>
 </dl>

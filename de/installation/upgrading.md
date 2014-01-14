@@ -16,7 +16,7 @@ next_section: troubleshooting
 
 Ghost zu aktualisieren ist sehr einfach.
 
-Es gibt verschiedene Wege, dies anzugehen. Im folgenden wird beschrieben was getan werden muss und der Prozess jeweils über eine grafische Oberfäche und die [Kommandozeile](#cli) im Detail beschrieben. Dir steht es frei, den Weg zu wählen, der dir am besten liegt.
+Es gibt verschiedene Wege, dies anzugehen. Im folgenden wird beschrieben was getan werden muss und der Prozess jeweils über eine grafische Oberfläche und die [Kommandozeile](#cli) im Detail beschrieben. Dir steht es frei, den Weg zu wählen, der dir am besten liegt.
 
 <p class="note"><strong>Erstelle Backups!</strong> Erstelle vor der Aktualisierung immer ein Backup. Lies die <a href="#backing-up">Backup-Anleitung</a> zuerst!</p>
 
@@ -84,13 +84,13 @@ Die gezeigten Schritte sind:
 * Als Erstes musst du die URL mit der neuesten Ghost-Version herausfinden. Sie dürfte `http://ghost.org/zip/ghost-latest.zip` sein.
 * Lade die Zip-Datei mittels `wget http://ghost.org/zip/ghost-latest.zip` herunter (oder mit der URL die für die neueste Ghost-Version steht).
 * Lösche das alte core-Verzeichnis von deiner Installation
-* Entpacke das Archiv mit `unzip -uo ghost-0.4.*.zip -d path-to-your-ghost-install`
+* Entpacke das Archiv mit `unzip -uo ghost-0.4.*.zip -d Pfas-zu-deiner-Ghost-Installation`
 * Führe `npm install --production` aus, um alle neuen Abhängigkeiten zu installieren
 * Starte Ghost neu, um alle Änderungen anzuwenden
 
 **Weiterhin** bietet [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) auch Instruktionen, wie man Ghost auf Linux-Servern aktualisiert.
 
-### Ein DigitalOcean Droplet aktualsieren <a id="digitalocean"></a>
+### Ein DigitalOcean Droplet aktualisieren <a id="digitalocean"></a>
 
 <p class="note"><strong>Erstelle Backups!</strong> Erstelle vor der Aktualisierung immer ein Backup. Lies die <a href="#backing-up">Backup-Anleitung</a> zuerst!</p>
 

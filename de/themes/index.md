@@ -1,7 +1,7 @@
 ---
 lang: de
 layout: themes
-meta_title: Wie man Ghost-Themes erstellt - Ghost-Docs
+meta_title: Wie man Ghost-Themes erstellt - Ghost-Dokumentation
 meta_description: Eine detaillierte Anleitung zur Erstellung von Themes für die Ghost-Bloggingplattform. Alles, was Du wissen musst, um Themes für Ghost zu erstellen.
 heading: Ghost-Themes
 subheading: Leg los mit Deinen eigenen Themes für Ghost

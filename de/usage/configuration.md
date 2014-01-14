@@ -18,7 +18,7 @@ Nachdem du Ghost zum ersten Mal ausgeführt hast, findest du eine Datei mit dem 
 
 Wenn du Ghost noch nicht ausgeführt hast, wirst du diese Datei noch nicht haben. Du kannst sie erstellen, indem du die `config.example.js`-Datei kopierst - das tut Ghost auch, wenn es startet. 
 
-Um deine Ghost-URL, E-Mail- oder Datenbankeinstellungen zu konfigurieren, öffne die `config.js` in deinem Lieblingseditor und beginne mit dem Bearbeiten der Einstellungen für deine gewünschte Umgebung. Wenn Umgebungen noch nichts ist, worüber du schon gestolpert bist, lies dir die [Dokumentation](#environments) unten durch.
+Um deine Ghost-URL, E-Mail- oder Datenbankeinstellungen zu konfigurieren, öffne die `config.js` in deinem Lieblingseditor und beginne mit dem Bearbeiten der Einstellungen für dein gewünschtes Environment. Wenn Environments noch nichts ist, worüber du schon gestolpert bist, lies dir die [Dokumentation](#environments) unten durch.
 
 ## Konfigurationsoptionen
 
@@ -92,17 +92,17 @@ Es ist möglich, Ghosts Datenspeicherungsfeatures auszustellen:
 Wenn Datenspeicherung ausgeschaltet ist, wird dich Ghosts Image-Upload-Tool dazu auffordern, standardmäßig eine URL anzugeben, was zur Folge hat, dass Dateien nicht verloren gehen.
 
 
-## Über Umgebungen <a id="environments"></a>
+## Über Environments <a id="environments"></a>
 
-Node.js und damit Ghost, haben Umgebungskonzepte eingebaut. Umgebungen erlauben es dir, verschiedene Konfigurationen für verschiedene Modi zu erstellen in welchen du Ghost laufen lassen willst. Standardmäßig hat Ghost zwei mitgelieferte Modi: **development** und **production**.
+Node.js und damit Ghost, haben Konzepte für Environments eingebaut. Environments erlauben es dir, verschiedene Konfigurationen für verschiedene Modi zu erstellen in welchen du Ghost laufen lassen willst. Standardmäßig hat Ghost zwei mitgelieferte Modi: **development** und **production**.
 
-Es gibt ein paar, sehr subtile Unterschiede zwischen den beiden Modi oder Umgebungen. Im wesentlichen ist **development** für das Entwickeln und Debuggen von Ghost ausgerichtet. Währenddessen ist **production** dafür gedacht, wenn du Ghost öffentlich laufen lässt. Die Unterschiede beinhalten Dinge wie beispielsweise welche Logging- und Errornachrichten ausgegeben werden und auch wie viele statische Anhänge verkettet oder minimiert werden. In **production** wirst du nur eine JavaScript-Datei bekommen, die allen Code für den Admin enthält, während du in **development** mehrere erhältst.
+Es gibt ein paar, sehr subtile Unterschiede zwischen den beiden Modi oder Environments. Im wesentlichen ist **development** für das Entwickeln und Debuggen von Ghost ausgerichtet. Währenddessen ist **production** dafür gedacht, wenn du Ghost öffentlich laufen lässt. Die Unterschiede beinhalten Dinge wie beispielsweise welche Logging- und Errornachrichten ausgegeben werden und auch wie viele statische Anhänge verkettet oder minimiert werden. In **production** wirst du nur eine JavaScript-Datei bekommen, die allen Code für den Admin enthält, während du in **development** mehrere erhältst.
 
-Während sich Ghost weiterentwickelt, werden diese Unterschiede zunehmen und ersichtlicher sein und damit auch immer wichtiger, dass jeder öffentliche Blog in der **production**-Umgebung läuft. Das wirft vielleicht die Frage auf, warum der **development**-Modus der Standard ist, wenn doch die meisten Leute es im **production**-Modus laufen lassen wollen werden? Ghost hat **development** als Standard, weil sich diese Umgebung am besten zum Debuggen von Problemen ist, was du höchst wahrscheinlich brauch wirst, wenn du Ghost zum ersten Mal ausführst.
+Während sich Ghost weiterentwickelt, werden diese Unterschiede zunehmen und ersichtlicher sein und damit auch immer wichtiger, dass jeder öffentliche Blog im **production**-Environment läuft. Das wirft vielleicht die Frage auf, warum der **development**-Modus der Standard ist, wenn doch die meisten Leute es im **production**-Modus laufen lassen wollen werden? Ghost hat **development** als Standard, weil sich dieses Environment am besten zum Debuggen von Problemen eignet, was du höchst wahrscheinlich brauchen wirst, wenn du Ghost zum ersten Mal ausführst.
 
-##  Umgebungen benutzen <a id="using-env"></a>
+##  Environments benutzen <a id="using-env"></a>
 
-Um Ghost in verschiedenen Umgebungen laufen zu lassen, musst du eine Umgebungsvariable verwenden. Wenn du zum Beispiel Ghost normal mit `node index.js` startest, würdest du dies benutzen:
+Um Ghost in verschiedenen Environments laufen zu lassen, musst du eine Environmentvariable verwenden. Wenn du zum Beispiel Ghost normal mit `node index.js` startest, würdest du dies benutzen:
 
 `NODE_ENV=production node index.js`
 

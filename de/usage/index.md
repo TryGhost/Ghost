@@ -31,7 +31,7 @@ Bei deiner ersten Ausführung von Ghost solltest du eine blaue Infonachricht am 
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
 
-Sie teilt dir einige Informationen über die Art, wie Ghost konfiguriert ist, mit. Beispielsweise die Umgebung, in der du es gestartet und was als deine URL festgelegt ist. Gehe zum Abschnitt [Konfiguration](/usage/configuration) um mehr über Umgebungen herauszufinden und wie du Ghost konfiguriest. Du wirst diese Nachricht nicht los, bis du einloggst (das ist ein Bug, wir arbeiten dran), aber sobald du das getan hast und dir die Information bekannt ist, schließe sie indem du das x anklickst. Sie wird nicht wieder auftauchen.
+Sie teilt dir einige Informationen über die Art, wie Ghost konfiguriert ist, mit. Beispielsweise das Environment, in der du es gestartet und was als deine URL festgelegt ist. Gehe zum Abschnitt [Konfiguration](/usage/configuration) um mehr über Environments herauszufinden und wie du Ghost konfiguriest. Du wirst diese Nachricht nicht los, bis du einloggst (das ist ein Bug, wir arbeiten dran), aber sobald du das getan hast und dir die Information bekannt ist, schließe sie indem du das x anklickst. Sie wird nicht wieder auftauchen.
 
 Vielleicht siehst du auch eine Warnungsnachricht bezüglich E-Mails:
 

@@ -40,9 +40,9 @@ next_section: deploy
     $ unzip -uo ghost.zip -d ghost
     ```
 
-**Nachdem du Ghost erfolgrich entpackt hast, öffne einen Terminal, wenn noch nicht geöffnet, und fahre wie folgt fort:**
+**Nachdem du Ghost erfolgreich entpackt hast, öffne einen Terminal, wenn noch nicht geöffnet, und fahre wie folgt fort:**
 
-*   Wechsle in einem Terminal zu dem Pfad, in den du Ghost extrahiert hast, mit foglendem Befehl:
+*   Wechsle in einem Terminal zu dem Pfad, in den du Ghost extrahiert hast, mit folgendem Befehl:
 
     ```
     $ cd /path/to/ghost
@@ -62,6 +62,6 @@ next_section: deploy
     ```
 
 *   Ghost lauft nun unter **127.0.0.1:2368**<br />
-    <span class="note">Du kannst die IP-address und den Port in **config.js** anpassen</span>
+    <span class="note">Du kannst die IP-Addresse und den Port in **config.js** anpassen</span>
 *   Navigiere in einem Browser zu <code class="path">127.0.0.1:2368</code>, um deinen neuen Ghost Blog zu betrachten
 *   Wechsel zu <code class="path">127.0.0.1:2368/ghost</code> und erstelle deinen Administrator-Benutzer, um dich im Ghost-Backend anzumelden

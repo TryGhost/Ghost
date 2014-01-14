@@ -20,7 +20,7 @@ Die erste Entscheidung, die du zu treffen hast, ist ob du Ghost selbst installie
 
 ### Installationsprogramme
 
-Im moment gibt es eine Reihe an einfachen Installationsprogrammen.
+Im Moment gibt es eine Reihe an einfachen Installationsprogrammen.
 
 * Ghost in der Cloud bei [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
 * Ghost mittels [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html) betreiben.
@@ -30,11 +30,11 @@ Im moment gibt es eine Reihe an einfachen Installationsprogrammen.
 
 Dies erfordert einen Hosting-Account der bereits [Node.js](http://nodejs.org) beherrscht oder es zur Installation anbietet. Viele Cloud-Dienste ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) oder andere Pakete mit SSH-Zugang ermöglichen die installation von Node.js. Es gibt viele Anbieter und einige sind sehr günstig.
 
-Was momentant nicht unterstützt wird, ist Shared-Hosting im Stil von cPanel, welches normalerweise ausschließlich PHP bietet. Wer jedoch bereits heute Ruby unterstützt, wird möglicherweise in Zukunft auch Node.js untersützten, da diese gewissermaßen ähnlich sind.
+Was momentan nicht unterstützt wird, ist Shared-Hosting im Stil von cPanel, welches normalerweise ausschließlich PHP bietet. Wer jedoch bereits heute Ruby unterstützt, wird möglicherweise in Zukunft auch Node.js unterstützen, da diese gewissermaßen ähnlich sind.
 
 Leider sind viele der Node.js Cloud-Hosting-Dienste wie **Nodejitsu** und **Heroku**  **NICHT** kompatibel mit Ghost. Zwar lässt sich Ghost auf ihnen starten, sie löschen allerdings deine Dateien und somit auch alle hochgeladenen Bilder und die Datenbank. Heroku unterstützt MySQL und lässt sich somit verwenden, Bilder bleiben dennoch nicht permanent erhalten.
 
-Die folgenden Links enthalten Anleitungen, die die Einrichtung beschreiben:
+Die folgenden Links enthalten englische Anleitungen, die die Einrichtung beschreiben:
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
@@ -46,7 +46,7 @@ Die folgenden Links enthalten Anleitungen, die die Einrichtung beschreiben:
 ## Ghost ununterbrochen ausführen
 
 
-Bisher wurde Ghost mit `npm start` gestartet. Das ist der beste Weg für lokale Entwicklung oder Tests, sobald du allerdings das Terminal beendest oder dich aus SSH ausloggest, wird Ghost auch beendet. Um das zu verhindern, musst du Ghost als Dienst ausführen, wofür es mehrere Wege gibt.
+Bisher wurde Ghost mit `npm start` gestartet. Das ist der beste Weg für lokale Entwicklung oder Tests, sobald du allerdings das Terminal beendest oder dich aus SSH ausloggst, wird Ghost auch beendet. Um das zu verhindern, musst du Ghost als Dienst ausführen, wofür es mehrere Wege gibt.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
@@ -55,7 +55,7 @@ Du kannst `forever` nutzen, um Ghost als Hintergrunddienst zu betreiben. `foreve
 * Um `forever` zu installieren, verwende `npm install forever -g`
 * Um Ghost zu starten, wechsle in das Ghost-Verzeichnis und führe `NODE_ENV=production forever start index.js` aus
 * Um Ghost zu stoppen, führe `forever stop index.js` aus
-* Um herauszufunden ob Ghost momentan läuft, führe `forever list` aus
+* Um herauszufinden ob Ghost momentan läuft, führe `forever list` aus
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
@@ -70,8 +70,8 @@ Beliebte Linux-Distributionen wie Fedora, Debian und Ubuntu bieten ein Paket fü
 
     ```
     [program:ghost]
-    command = node /path/to/ghost/index.js
-    directory = /path/to/ghost
+    command = node /Pfad/zu/Ghost/index.js
+    directory = /Pfad/zu/Ghost
     user = ghost
     autostart = true
     autorestart = true
@@ -109,10 +109,10 @@ Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init
 
 *   Verwendung des Scripts:
 
-    *   start: `service ghost start`
-    *   stop: `service ghost stop`
-    *   restart: `service ghost restart`
-    *   status: `service ghost status`
+    *   Start: `service ghost start`
+    *   Stopp: `service ghost stop`
+    *   Neustart: `service ghost restart`
+    *   Status: `service ghost status`
 
 *   Um Ghost beim Systemstart automatisch zu starten, muss das Init-Script entsprechend registriert werden. 
     Das geht mit den folgenden Befehlen:
@@ -135,7 +135,7 @@ Es nimmt auch an, dass Ghost im Hintergrund lauft mit einer der oben genannten M
     ```
     $ sudo apt-get install nginx
     ```
-    <span class="note">Dies installiert nginx und richtet alle nötigen Verzeichnisse und eine standard Konfiguration an</span>
+    <span class="note">Dies installiert nginx und richtet alle nötigen Verzeichnisse und eine Standardkonfiguration an</span>
 
 *   Konfiguriere deine Seite
 
