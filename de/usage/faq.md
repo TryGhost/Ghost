@@ -20,5 +20,5 @@ Bitte sieh dir die [geplanten Features](https://github.com/TryGhost/Ghost/wiki/P
 
 ### Wie füge ich Bilder in einen Post ein?
 
-Bitte schau dir den [Markdown Guide](/de/usage/writing/#markdown) für eine komplette Erklärung wie das Hochladen von Bildern im Ghost-Editor funktioniert.
+Bitte schau dir den [Markdown Guide](/de/usage/writing/#markdown) für eine komplette Erklärung wie das Hochladen von Bildern im Ghost-Editor funktioniert an.
 
