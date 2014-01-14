@@ -307,7 +307,7 @@ You can limit the amount of text to output by passing one of the options:
 *   Helper type: output
 *   Options: `separator` (string, default ", "), `suffix` (string), `prefix` (string)
 
-`((tags}}` is a formatting helper for outputting a list of tags for a particular post. It defaults to a comma-separated list:
+`{{tags}}` is a formatting helper for outputting a list of tags for a particular post. It defaults to a comma-separated list:
 
 ```
 // outputs something like 'my-tag, my-other-tag, more-tagging'

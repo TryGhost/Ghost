@@ -162,7 +162,7 @@ Each of these properties can be output using the standard handlebars expression,
 
 When inside the context of a single post, the following author data is available:
 
-*   `{{author.name}}` – the name of the author 
+*   `{{author.name}}` – the name of the author
 *   `{{author.email}}` – the author's email address
 *   `{{author.bio}}` – the author's bio
 *   `{{author.website}}` – the author's website
@@ -183,7 +183,7 @@ This can also be done by using a block expression:
 
 When inside the context of a single post, the following tag data is available
 
-*   `{{tag.name}}` – the name of the tag 
+*   `{{tag.name}}` – the name of the tag
 
 You can use `{{tags}}` to output a customisable list of tags, this can also be done by using a block expression:
 
@@ -306,7 +306,7 @@ You can limit the amount of text to output by passing one of the options:
 *   Helper type: output
 *   Options: `separator` (string, default ", "), `suffix` (string), `prefix` (string)
 
-`((tags}}` is a formatting helper for outputting a list of tags for a particular post. It defaults to a comma-separated list:
+`{{tags}}` is a formatting helper for outputting a list of tags for a particular post. It defaults to a comma-separated list:
 
 ```
 // outputs something like 'my-tag, my-other-tag, more-tagging'
