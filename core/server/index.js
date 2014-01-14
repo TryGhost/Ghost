@@ -98,6 +98,7 @@ function setup(server) {
     }).then(function () {
         // We must pass the api.settings object
         // into this method due to circular dependencies.
+        api.settings.edit('displayUpdateNotification', false);
         return config.theme.update(api.settings, config().url);
     }).then(function () {
         return when.join(
