@@ -10,7 +10,6 @@ section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-
 ## Getting Ghost Live <a id="deploy"></a>
 
 So you're ready to get Ghost live? Excellent!
@@ -47,7 +46,7 @@ The following links contain instructions on how to get up and running with:
 
 The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
 
-### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
+### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
 You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
 
@@ -56,7 +55,7 @@ You can use `forever` to run Ghost as a background task. `forever` will also tak
 *   To stop Ghost type `forever stop index.js`
 *   To check if Ghost is currently running type `forever list`
 
-### Supervisor ([http://supervisord.org/](http://supervisord.org/))
+### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
 Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
 
@@ -84,7 +83,7 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
 
 You can see the [documentation for Supervisor](http://supervisord.org) for more information.
 
-### Init Script
+### Init Script <a id="init-script"></a>
 
 Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
 
@@ -126,7 +125,7 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     ```
 
 *   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line: 
+    Type the following two commands in command line:
 
     ```
     $ sudo update-rc.d ghost defaults
@@ -141,7 +140,7 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 *   If you now restart your server Ghost should already be running for you.
 
 
-## Setting up Ghost with a domain name
+## Setting up Ghost with a domain name <a id="nginx-domain"></a>
 
 If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
 In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
@@ -187,7 +186,7 @@ It also assumes that Ghost is running in the background with one of the above me
     $ sudo service nginx restart
     ```
 
-## Setting up Ghost with SSL
+## Setting up Ghost with SSL <a id="ssl"></a>
 
 After setting up a custom domain it is a good idea to secure the admin interface or maybe your whole blog using HTTPS. It is advisable to protect the admin interface with HTTPS because username and password are going to be transmitted in plaintext if you do not enable encryption.
 
