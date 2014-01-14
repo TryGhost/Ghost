@@ -303,7 +303,8 @@ describe('Config', function () {
                 'lang',
                 'debugPath',
                 'availableThemes',
-                'availablePlugins'
+                'availablePlugins',
+                'builtScriptPath'
             );
         });
 

@@ -18,9 +18,20 @@ var downsize        = require('downsize'),
     isProduction    = process.env.NODE_ENV === 'production',
 
     coreHelpers     = {},
-    registerHelpers;
+    registerHelpers,
 
-
+    scriptFiles = {
+        production: [
+            'ghost.min.js'
+        ],
+        development: [
+            'vendor.js',
+            'helpers.js',
+            'templates.js',
+            'models.js',
+            'views.js'
+        ]
+    };
 
 /**
  * [ description]
@@ -262,28 +273,16 @@ coreHelpers.fileStorage = function (context, options) {
 };
 
 coreHelpers.ghostScriptTags = function () {
-    var scriptFiles = [];
+    var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
-    if (isProduction) {
-        scriptFiles.push("ghost.min.js");
-    } else {
-        scriptFiles = [
-            'vendor.js',
-            'helpers.js',
-            'templates.js',
-            'models.js',
-            'views.js'
-        ];
-    }
-
-    scriptFiles = _.map(scriptFiles, function (fileName) {
+    scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
             source: config.paths().subdir + '/ghost/scripts/' + fileName,
             version: coreHelpers.assetHash
         });
     });
 
-    return scriptFiles.join('');
+    return scriptList.join('');
 };
 
 /*
@@ -677,3 +676,4 @@ module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;
 module.exports.registerThemeHelper = registerThemeHelper;
 module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;
+module.exports.scriptFiles = scriptFiles;
