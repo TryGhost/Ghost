@@ -69,11 +69,10 @@ User = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         // this.set('name', this.sanitize('name'));
-        // this.set('email', this.sanitize('email').toLocaleLowerCase());
+        // this.set('email', this.sanitize('email'));
         // this.set('location', this.sanitize('location'));
         // this.set('website', this.sanitize('website'));
         // this.set('bio', this.sanitize('bio'));
-        this.set('email', this.get('email').toLocaleLowerCase());
 
         return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
@@ -182,9 +181,8 @@ User = ghostBookshelf.Model.extend({
     check: function (_userdata) {
         var self = this,
             s;
-        return this.forge({
-            email: _userdata.email.toLocaleLowerCase()
-        }).fetch({require: true}).then(function (user) {
+
+        return this.getByEmail(_userdata.email).then(function (user) {
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                     if (!matched) {
@@ -205,8 +203,11 @@ User = ghostBookshelf.Model.extend({
                 'the "Forgotten password?" link!'));
 
         }, function (error) {
-            /*jslint unparam:true*/
-            return when.reject(new Error('There is no user with that email address.'));
+            if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
+                return when.reject(new Error('There is no user with that email address.'));
+            }
+
+            return when.reject(error);
         });
     },
 
@@ -248,7 +249,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     generateResetToken: function (email, expires, dbHash) {
-        return this.forge({email: email.toLocaleLowerCase()}).fetch({require: true}).then(function (foundUser) {
+        return this.getByEmail(email).then(function (foundUser) {
             var hash = crypto.createHash('sha256'),
                 text = "";
 
@@ -375,8 +376,28 @@ User = ghostBookshelf.Model.extend({
         });
 
         return checkPromise.promise;
-    }
+    },
 
+    // Get the user by email address, enforces case insensitivity rejects if the user is not found
+    // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
+    // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
+    getByEmail: function (email) {
+        // We fetch all users and process them in JS as there is no easy way to make this query across all DBs
+        // Although they all support `lower()`, sqlite can't case transform unicode characters
+        // This is somewhat mute, as validator.isEmail() also doesn't support unicode, but this is much easier / more
+        // likely to be fixed in the near future.
+        return Users.forge().fetch({require: true}).then(function (users) {
+            var userWithEmail = users.find(function (user) {
+                return user.get('email').toLowerCase() === email.toLowerCase();
+            });
+
+            if (userWithEmail) {
+                return when.resolve(userWithEmail);
+            }
+
+            return when.reject(new Error('NotFound'));
+        });
+    }
 });
 
 Users = ghostBookshelf.Collection.extend({

@@ -49,7 +49,7 @@ describe('User Model', function run() {
             }).then(null, done);
         });
 
-        it('can lowercase email', function (done) {
+        it('does NOT lowercase email', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 gravatarStub =  sinon.stub(UserModel, 'gravatarLookup', function (userData) {
                     return when.resolve(userData);
@@ -58,7 +58,7 @@ describe('User Model', function run() {
             UserModel.add(userData).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.email.should.eql(userData.email.toLocaleLowerCase(), "email address correct");
+                createdUser.attributes.email.should.eql(userData.email, "email address correct");
                 gravatarStub.restore();
                 done();
             }).then(null, done);
@@ -80,7 +80,7 @@ describe('User Model', function run() {
             }).then(null, done);
         });
 
-        it('can handle no gravatar', function(done) {
+        it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0],
                 gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
                     return when.resolve(userData);
@@ -91,6 +91,39 @@ describe('User Model', function run() {
                 createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
                 gravatarStub.restore();
+                done();
+            }).then(null, done);
+        });
+
+        it('can find by email and is case insensitive', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[2],
+                email = testUtils.DataGenerator.forModel.users[2].email;
+
+            UserModel.add(userData).then(function () {
+                // Test same case
+                return UserModel.getByEmail(email).then(function (user) {
+                    should.exist(user);
+                    user.attributes.email.should.eql(email);
+                });
+            }).then(function () {
+                // Test entered in lowercase
+                return UserModel.getByEmail(email.toLowerCase()).then(function (user) {
+                    should.exist(user);
+                    user.attributes.email.should.eql(email);
+                });
+            }).then(function () {
+                // Test entered in uppercase
+                return UserModel.getByEmail(email.toUpperCase()).then(function (user) {
+                    should.exist(user);
+                    user.attributes.email.should.eql(email);
+                });
+            }).then(function () {
+                // Test incorrect email address - swapped capital O for number 0
+                return UserModel.getByEmail('jb0gendAth@example.com').then(null, function (error) {
+                    should.exist(error);
+                    error.message.should.eql('NotFound');
+                });
+            }).then(function () {
                 done();
             }).then(null, done);
         });
@@ -252,7 +285,7 @@ describe('User Model', function run() {
                 return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
 
             }).then(function (token) {
-                
+
                 return UserModel.validateToken(token, dbHash);
 
             }).then(function () {
@@ -278,7 +311,7 @@ describe('User Model', function run() {
                 return UserModel.generateResetToken(firstUser.attributes.email, expires, dbHash);
 
             }).then(function (token) {
-                
+
                 return UserModel.resetPassword(token, 'newpassword', 'newpassword', dbHash);
 
             }).then(function (resetUser) {
@@ -329,7 +362,7 @@ describe('User Model', function run() {
                 return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
 
             }).then(function (token) {
-                
+
                 var tokenText = new Buffer(token, 'base64').toString('ascii'),
                     parts = tokenText.split('|'),
                     fakeExpires,
@@ -341,7 +374,7 @@ describe('User Model', function run() {
                 fakeToken = new Buffer(fakeToken).toString('base64');
 
                 return UserModel.validateToken(fakeToken, dbHash);
-                
+
             }).then(function () {
                 throw new Error("allowed invalid token");
             }, function (err) {
