@@ -296,12 +296,20 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/page/)) {
-        classes.push('archive-template');
-    } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
-        classes.push('home-template');
-    } else {
-        classes.push('post-template');
+    switch(this.template) {
+        case 'post':
+            classes.push('post-template');
+            break;
+        case 'page':
+            classes.push('page-template');
+            break;
+        default:
+            if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/page/)) {
+                classes.push('archive-template');
+            } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
+                classes.push('home-template');
+            }
+            break;
     }
 
     if (tags) {
