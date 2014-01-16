@@ -32,6 +32,7 @@ translations:
     themes:       '主题'
     translations: '翻译'
     help:         '帮助'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   ko:
     site_title:   'Ghost Guide'
     installation: 'Installation'
@@ -40,6 +41,7 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   de:
     site_title:   'Ghost-Handbuch'
     installation: 'Installation'
@@ -50,6 +52,7 @@ translations:
     deploy:       'Einsetzen'
     upgrading:    'Aktualisieren' 
     troubleshooting: 'Problembehebung'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
@@ -58,6 +61,7 @@ translations:
     themes:       'Thèmes'
     translations: 'Traductions'
     help:         'Aide'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   pl:
     site_title:   'Ghost Guide'
     installation: 'Installation'
@@ -66,6 +70,7 @@ translations:
     themes:       'Themes'
     translations: 'Translations'
     help:         'Help'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   ja:
     site_title:   'Ghost日本語ガイド'
     installation: 'インストール'
@@ -81,6 +86,7 @@ translations:
     managing:     '記事の管理'
     writing:      '記事を書く'
     faq:          'Q&A'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
   it:
     site_title:   'Guida a Ghost'
     installation: 'Installazione'
@@ -92,6 +98,7 @@ translations:
     deploy:       'Deploy'
     upgrading:    'Aggiornamento' 
     troubleshooting: 'Risoluzione dei Problemi'
+    ghost-hosted-platform: 'Ghost Hosted Platform'
 
 # If running locally, simply comment out the line below to make all urls relative
 
