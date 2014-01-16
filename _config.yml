@@ -1,6 +1,7 @@
 pygments:     true
 permalinks: pretty
 relative_permalinks: false
+exclude:     ['node_modules', 'core', 'content']
 markdown: redcarpet
 languages:
     - name: 'English'
