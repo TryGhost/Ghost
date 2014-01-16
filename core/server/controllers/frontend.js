@@ -88,7 +88,7 @@ frontendControllers = {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config.paths().availableThemes[activeTheme.value],
                             view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
-                        res.render(view, {post: post});
+                        res.render(view, {template: view, post: post});
                     });
                 });
             }
