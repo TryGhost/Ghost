@@ -17,7 +17,9 @@ If your issue or query is not answered here, drop us an email at <a href="mailto
 
 ## How do I install a Theme? <a id="install-theme"></a>
 
-You can install (or create) any theme you like for Ghost. It's 100% open for whatever you want to do with it. You can either download an existing theme from <http://marketplace.ghost.org> - or build your own. Once you've got a theme you'd like to use - simply click on the "edit" button of your blog on <https://ghost.org/blogs/> and upload the theme .zip here. It will be immediately activated on your blog! You can do this as many times as you like :)
+You can install (or create) any theme you like for Ghost. It's 100% open for whatever you want to do with it. You can either download an existing theme from <http://marketplace.ghost.org> - or [build your own](http://docs.ghost.org/themes/). Once you've got a theme you'd like to use - simply click on the "edit" button of your blog on <https://ghost.org/blogs/> and upload the theme .zip here. It will be immediately activated on your blog! You can do this as many times as you like :)
+
+You can download the default Ghost theme (Casper) from <https://github.com/TryGhost/Casper>.
 
 ## Is there FTP support? <a id="ftp-support"></a>
 We don't provide direct access to your blog via FTP, but we've built the infrastructure in a way that you should always be able to get to everything you need without requiring it.
