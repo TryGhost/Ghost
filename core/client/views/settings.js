@@ -235,8 +235,23 @@
         templateName: 'settings/general',
 
         afterRender: function () {
-            this.$('#permalinks').prop('checked', this.model.get('permalinks') === '/:slug/' ? false : true);
+            var self = this;
+
+            this.$('#permalinks').prop('checked', this.model.get('permalinks') !== '/:slug/');
             this.$('.js-drop-zone').upload();
+
+            Countable.live(document.getElementById('blog-description'), function (counter) {
+                var descriptionContainer = self.$('.description-container .word-count');
+                if (counter.all > 180) {
+                    descriptionContainer.css({color: "#e25440"});
+                } else {
+                    descriptionContainer.css({color: "#9E9D95"});
+                }
+
+                descriptionContainer.text(200 - counter.all);
+
+            });
+
             Settings.Pane.prototype.afterRender.call(this);
         }
     });
