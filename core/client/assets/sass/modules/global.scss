@@ -360,7 +360,7 @@ nav {
         border-top:$lightbrown 1px solid;
     }
 
-    li { 
+    li {
         a {
             display:block;
             padding:10px 15px;
@@ -504,7 +504,6 @@ nav {
         // The dropdown menu
         ul {
             display: none;
-            padding: 7px 0;
             border-left: none;
             position: absolute;
             top:40px;
@@ -515,6 +514,12 @@ nav {
         }
 
         li {
+            border-bottom: 1px solid $grey;
+
+            &:last-of-type {
+                border-bottom: none;
+            }
+
             a {
                 color: $lightgrey;
 
@@ -526,13 +531,6 @@ nav {
 
                 &:before { margin-right: 1em; } // space for icons
             }
-        }
-
-        .divider {
-            height: 1px;
-            margin: 7px 0;
-            overflow: hidden;
-            background: $grey;
         }
 
     }//.subnav
@@ -913,10 +911,10 @@ nav {
     .delete {
         display: block;
         padding: 10px 15px;
-        @include icon($i-trash) { 
-            position: relative; 
-            top: -1px; 
-            margin-right: 10px 
+        @include icon($i-trash) {
+            position: relative;
+            top: -1px;
+            margin-right: 10px
         };
 
         &:hover { background: $red; }
