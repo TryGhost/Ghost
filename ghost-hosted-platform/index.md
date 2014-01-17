@@ -3,9 +3,12 @@ layout: ghost-hosted-platform
 meta_title: An FAQ for the Ghost Hosted Platform - Ghost Docs
 meta_description: A selection of the most frequently asked questions about the Ghost Hosted Platform.
 heading: The Ghost Hosted Platform
-subheading: An FAQ for the Ghost Hosted Platform
+subheading: This document covers getting started with Ghost on the Ghost.org Hosted Platform
 chapter: ghost-hosted-platform
 ---
+## How do I Start a Blog? <a id="start"></a>
+
+To start a new Ghost hosted platform blog, simply go to <https://ghost.org/blogs/>, click the 'New Blog' button and then follow the steps!
 
 ## Where do I go with a Ghost hosted platform problem / query? <a id="support"></a>
 

@@ -3,7 +3,7 @@ lang: zh
 layout: get-started
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Where is your Ghost Blog?
+heading: Getting Started with Ghost
 subheading: Choose your route.
 chapter: get-started
 ---
