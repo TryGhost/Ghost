@@ -4,19 +4,18 @@ We've put together a short guide to help you get started with Ghost. This guide 
 
 ## Running Locally
 
-If you would like to download these docs and run them locally/offline for your own use and modification, pleae follow these instructions to get started:
+If you would like to download these docs and run them locally/offline for your own use and modification, please follow these instructions to get started:
 
 1. Clone the [Ghost repository](https://github.com/TryGhost/Ghost) and check out the `/gh-pages/` branch
 2. Go to this directory - `cd ~/User/path/to/Ghost`
-3. Edit `_config.yml` and comment out the `url:` line
-4. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
-5. Build the docs - `$ jekyll build`
-6. Start the server - `$ jekyll serve`
-7. View the docs on [http://localhost:4478](http://localhost:4478)
+3. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
+4. Build the docs - `$ jekyll build`
+5. Start the server - `$ jekyll serve`
+6. View the docs on [http://localhost:4478](http://localhost:4478)
 
 ## Contributions
 
-Pleas submit Pull Requests if you would like to contribute to this documentation for Ghost - referencing any relevant or open issues in the bug tracker.
+Please submit Pull Requests if you would like to contribute to this documentation for Ghost - referencing any relevant or open issues in the bug tracker.
 
 All code should conform, strictly, to the Ghost project [Code Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
 
