@@ -360,7 +360,7 @@ nav {
         border-top:$lightbrown 1px solid;
     }
 
-    li { 
+    li {
         a {
             display:block;
             padding:10px 15px;
@@ -913,10 +913,10 @@ nav {
     .delete {
         display: block;
         padding: 10px 15px;
-        @include icon($i-trash) { 
-            position: relative; 
-            top: -1px; 
-            margin-right: 10px 
+        @include icon($i-trash) {
+            position: relative;
+            top: -1px;
+            margin-right: 10px
         };
 
         &:hover { background: $red; }
@@ -928,7 +928,7 @@ nav {
    Notifications
    ========================================================================== */
 
-#notifications {
+.notifications {
     @include breakpoint($biggerthan-mobile) {
         position: absolute;
         bottom: 0;
@@ -1031,7 +1031,7 @@ nav {
 /* ==========================================================================
    Modals
    ========================================================================== */
-#modal-container {
+.modal-container {
     @include box-sizing(border-box);
     display: none;
     position: fixed;

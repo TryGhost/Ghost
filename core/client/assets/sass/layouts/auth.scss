@@ -2,7 +2,7 @@
  * These styles control elements specific to the Ghost admin login / signup screens.
  *
  * Table of Contents:
- * 
+ *
  * 0. General
  * 1. Login
  * 2. Signup
@@ -30,7 +30,7 @@
 
     input:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
-    } 
+    }
 
 }//.ghost-login
 
@@ -55,7 +55,7 @@
    1. Login
    ============================================================================= */
 
-#login {
+.login-form {
     @include box-sizing(border-box);
     max-width: 530px;
     color: lighten($midgrey, 15%);
@@ -94,9 +94,9 @@
             width:264px;
             @include transition(none);
         }
-        
-        &:focus { 
-            background: lighten($darkgrey, 15%); 
+
+        &:focus {
+            background: lighten($darkgrey, 15%);
         }
 
     }
@@ -169,7 +169,7 @@
         color: darken($midgrey, 10%);
         font-size: 0.9em;
 
-        &:hover { 
+        &:hover {
             color: lighten($midgrey, 5%);
             text-decoration: none;
         }
@@ -182,7 +182,7 @@
    2. Signup and Reset
    ============================================================================= */
 
-#signup, #reset {
+.signup-form, .reset-form {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
@@ -219,8 +219,8 @@
             width: 264px;
         }
 
-        &:focus { 
-           background: lighten($darkgrey, 15%); 
+        &:focus {
+           background: lighten($darkgrey, 15%);
         }
 
     }
@@ -270,7 +270,7 @@
    3. Forgotten
    ============================================================================= */
 
-#forgotten {
+.forgotten-form {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
@@ -304,9 +304,9 @@
             @include transition(none);
             max-width: 244px;
         }
-        
-        &:focus { 
-            background: lighten($darkgrey, 15%); 
+
+        &:focus {
+            background: lighten($darkgrey, 15%);
         }
 
     }
