@@ -270,7 +270,7 @@
    3. Forgotten
    ============================================================================= */
 
-#forgotten {
+.forgotten-form {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
