@@ -1031,7 +1031,7 @@ nav {
 /* ==========================================================================
    Modals
    ========================================================================== */
-#modal-container {
+.modal-container {
     @include box-sizing(border-box);
     display: none;
     position: fixed;
