@@ -55,7 +55,7 @@
    1. Login
    ============================================================================= */
 
-#login {
+.login-form {
     @include box-sizing(border-box);
     max-width: 530px;
     color: lighten($midgrey, 15%);
