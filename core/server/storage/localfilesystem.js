@@ -20,7 +20,7 @@ localFileStore = _.extend(baseStore, {
     // - returns a promise which ultimately returns the full url to the uploaded image
     'save': function (image) {
         var saved = when.defer(),
-            targetDir = this.getTargetDir(configPaths().imagesRelPath),
+            targetDir = this.getTargetDir(configPaths().imagesPath),
             targetFilename;
 
         this.getUniqueFileName(this, image, targetDir).then(function (filename) {
@@ -33,7 +33,7 @@ localFileStore = _.extend(baseStore, {
         }).then(function () {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
-            var fullUrl = (configPaths().subdir + '/' + targetFilename).replace(new RegExp('\\' + path.sep, 'g'), '/');
+            var fullUrl = (configPaths().subdir + '/' + path.relative(configPaths().appRoot, targetFilename)).replace(new RegExp('\\' + path.sep, 'g'), '/');
             return saved.resolve(fullUrl);
         }).otherwise(function (e) {
             errors.logError(e);
