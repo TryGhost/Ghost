@@ -1,7 +1,6 @@
 var Store = require('express').session.Store,
     time12h = 12 * 60 * 60 * 1000,
     BSStore,
-    dataProvider,
     db,
     client;
 

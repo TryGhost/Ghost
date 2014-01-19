@@ -12,7 +12,6 @@ var config        = require('../config'),
     adminControllers,
     loginSecurity = [];
 
- // TODO: combine path/navClass to single "slug(?)" variable with no prefix
 adminNavbar = {
     content: {
         name: 'Content',
@@ -93,7 +92,7 @@ adminControllers = {
                         if (req.body.redirect) {
                             redirect += decodeURIComponent(req.body.redirect);
                         }
-                        // If this IP address successfully logins we
+                        // If this IP address successfully logs in we
                         // can remove it from the array of failed login attempts.
                         loginSecurity = _.reject(loginSecurity, function (ipTime) {
                             return ipTime.ip === remoteAddress;
@@ -212,7 +211,6 @@ adminControllers = {
 
         }, function failure(error) {
             // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
-            // TODO: It's debatable whether we want to just tell the user we sent the email in this case or not, we are giving away sensitive info here.
             if (error && error.message === 'EmptyResponse') {
                 error.message = "Invalid email address";
             }
@@ -264,7 +262,6 @@ adminControllers = {
                 res.json(200, {redirect: config.paths().subdir + '/ghost/signin/'});
             });
         }).otherwise(function (err) {
-            // TODO: Better error message if we can tell whether the passwords didn't match or something
             res.json(401, {error: err.message});
         });
     },
@@ -318,9 +315,7 @@ adminControllers = {
         });
     },
     'settings': function (req, res, next) {
-
-        // TODO: Centralise list/enumeration of settings panes, so we don't
-        // run into trouble in future.
+        // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
         var allowedSections = ['', 'general', 'user'],
             section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
 
@@ -333,7 +328,7 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'settings')
         });
     },
-    'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
+    'debug': {
         index: function (req, res) {
             /*jslint unparam:true*/
             res.render('debug', {

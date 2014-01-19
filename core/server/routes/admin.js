@@ -5,7 +5,6 @@ var admin       = require('../controllers/admin'),
 module.exports = function (server) {
     var subdir = config.paths().subdir;
     // ### Admin routes
-    /* TODO: put these somewhere in admin */
     server.get('/logout/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.redirect(301, subdir + '/ghost/signout/');

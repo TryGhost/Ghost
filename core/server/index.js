@@ -1,7 +1,3 @@
-// If no env is set, default to development
-// This needs to be above all other require()
-// modules to ensure config gets right setting.
-
 // Module dependencies
 var crypto      = require('crypto'),
     express     = require('express'),
@@ -75,8 +71,7 @@ function initDbHashAndFirstRun() {
 }
 
 // Sets up the express server instance.
-// Instantiates the ghost singleton,
-// helpers, routes, middleware, and plugins.
+// Instantiates the ghost singleton, helpers, routes, middleware, and plugins.
 // Finally it starts the http server.
 function setup(server) {
 

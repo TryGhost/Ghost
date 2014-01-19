@@ -91,7 +91,6 @@ users = {
     },
 
     generateResetToken: function generateResetToken(email) {
-        // TODO: Do we want to be able to pass this in?
         var expires = Date.now() + ONE_DAY;
         return settings.read('dbHash').then(function (dbHash) {
             return dataProvider.User.generateResetToken(email, expires, dbHash);

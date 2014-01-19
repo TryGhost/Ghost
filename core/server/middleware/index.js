@@ -208,7 +208,6 @@ module.exports = function (server, dbHash) {
     expressServer.use(subdir, express.favicon(corePath + '/shared/favicon.ico'));
 
     // Static assets
-    // For some reason send divides the max age number by 1000
     expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared'), {maxAge: ONE_HOUR_MS}));
     expressServer.use(subdir + '/content/images', storage.get_storage().serve());
     expressServer.use(subdir + '/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: ONE_YEAR_MS}));
@@ -254,10 +253,8 @@ module.exports = function (server, dbHash) {
         cookie: cookie
     }));
 
-
-    //enable express csrf protection
+    // enable express csrf protection
     expressServer.use(middleware.conditionalCSRF);
-
 
     // local data
     expressServer.use(ghostLocals);

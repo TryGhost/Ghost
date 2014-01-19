@@ -14,7 +14,6 @@ var moment      = require('moment'),
     config      = require('../config'),
     errors      = require('../errorHandling'),
     filters     = require('../../server/filters'),
-    coreHelpers = require('../helpers'),
 
     frontendControllers;
 
@@ -77,9 +76,7 @@ frontendControllers = {
                 post = promises[1];
 
             function render() {
-                // If we're ready to render the page
-                // but the last param is 'edit' then we'll
-                // actually kick you to the edit page.
+                // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
                 if (req.params[2] && req.params[2] === 'edit') {
                     return res.redirect(config.paths().subdir + '/ghost/editor/' + post.id + '/');
                 }
@@ -103,8 +100,7 @@ frontendControllers = {
             }
 
             // A page can only be rendered when there is no date in the url.
-            // A post can either be rendered with a date in the url
-            // depending on the permalink setting.
+            // A post can either be rendered with a date in the url depending on the permalink setting.
             // For all other conditions return 404.
             if (post.page === 1 && dateInSlug === false) {
                 return render();
@@ -141,7 +137,7 @@ frontendControllers = {
             return res.redirect(config.paths().subdir + '/rss/');
         }
 
-        //needs refact for multi user to not use first user as default
+        // TODO: needs refactor for multi user to not use first user as default
         return when.settle([
             api.users.read({id : 1}),
             api.settings.read('title'),

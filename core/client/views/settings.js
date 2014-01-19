@@ -114,7 +114,6 @@
         saveSuccess: function (model, response, options) {
             /*jslint unparam:true*/
             Ghost.notifications.clearEverything();
-            // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
                 message: 'Saved',
@@ -139,8 +138,6 @@
             });
         }
     });
-
-    // TODO: use some kind of data-binding for forms
 
     // ### General settings
     Settings.general = Settings.Pane.extend({

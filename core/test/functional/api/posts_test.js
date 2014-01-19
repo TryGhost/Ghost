@@ -193,7 +193,6 @@ describe('Post API', function () {
                 headers: {'X-CSRF-Token': csrfToken},
                 json: newPost}, function (error, response, draftPost) {
                 response.should.have.status(200);
-                //TODO: do drafts really need a x-cache-invalidate header
                 response.should.be.json;
                 draftPost.should.exist;
                 draftPost.title.should.eql(newTitle);
@@ -308,7 +307,7 @@ describe('Post API', function () {
                 headers: {'X-CSRF-Token': csrfToken},
                 json: newPost}, function (error, response, draftPost) {
                 response.should.have.status(200);
-                //TODO: do drafts really need a x-cache-invalidate header
+
                 response.should.be.json;
                 draftPost.should.exist;
                 draftPost.title.should.eql(newTitle);
@@ -317,7 +316,6 @@ describe('Post API', function () {
                 request.del({uri: testUtils.API.getApiURL('posts/' + draftPost.id + '/'),
                     headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
                     response.should.have.status(200);
-                    //TODO: do drafts really need a x-cache-invalidate header
                     response.should.be.json;
                     var jsonResponse = JSON.parse(body);
                     jsonResponse.should.exist;

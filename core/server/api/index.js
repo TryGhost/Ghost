@@ -17,6 +17,7 @@ var _             = require('underscore'),
 // ## Request Handlers
 
 function cacheInvalidationHeader(req, result) {
+    //TODO: don't set x-cache-invalidate header for drafts
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[4],

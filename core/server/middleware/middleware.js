@@ -57,7 +57,6 @@ var middleware = {
     // Authenticate a request to the API by responding with a 401 and json error details
     authAPI: function (req, res, next) {
         if (!req.session.user) {
-            // TODO: standardize error format/codes/messages
             res.json(401, { error: 'Please sign in' });
             return;
         }

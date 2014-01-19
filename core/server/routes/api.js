@@ -3,7 +3,6 @@ var middleware  = require('../middleware').middleware,
 
 module.exports = function (server) {
     // ### API routes
-    /* TODO: auth should be public auth not user auth */
     // #### Posts
     server.get('/ghost/api/v0.1/posts', middleware.authAPI, api.requestHandler(api.posts.browse));
     server.post('/ghost/api/v0.1/posts', middleware.authAPI, api.requestHandler(api.posts.add));
