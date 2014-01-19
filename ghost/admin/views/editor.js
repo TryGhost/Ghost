@@ -226,7 +226,6 @@
 
             var saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
-                // TODO: The content_raw getter here isn't great, shouldn't rely on currentView.
                 markdown: Ghost.currentView.getEditorValue()
             }, data));
 
