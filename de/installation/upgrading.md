@@ -16,7 +16,7 @@ next_section: troubleshooting
 
 Ghost zu aktualisieren ist sehr einfach.
 
-Es gibt verschiedene Wege, dies anzugehen. Im folgenden wird beschrieben was getan werden muss und der Prozess jeweils über eine grafische Overfäche und die [Kommandozeile](#cli) im Detail beschrieben. Dir steht es frei, den Weg zu wählen, der dir am besten liegt.
+Es gibt verschiedene Wege, dies anzugehen. Im folgenden wird beschrieben was getan werden muss und der Prozess jeweils über eine grafische Oberfläche und die [Kommandozeile](#cli) im Detail beschrieben. Dir steht es frei, den Weg zu wählen, der dir am besten liegt.
 
 <p class="note"><strong>Erstelle Backups!</strong> Erstelle vor der Aktualisierung immer ein Backup. Lies die <a href="#backing-up">Backup-Anleitung</a> zuerst!</p>
 
@@ -29,7 +29,7 @@ Sobald Ghost installiert ist, sollte die Orderstruktur ähnlich zu der auf der l
 
 Bei der Aktualisierung müssen die alten Dateien mit den neuen ersetzt und `npm install` zum aktualisieren des <code class="path">node_modules</code>-Ordners ausgeführt werden. Damit diese Änderungen angewendet werden, muss Ghost dann noch neugestartet werden. 
 
-Denke daran, dass Ghost standardmäßig deine eigenen Daten, Themes, Bilder, etc. im Verzeinis <code class="path">content</code> speichert, versuche dieses zu schützen! Ersetze ausschließlich Dateien in <code class="path">core</code> und im Überverzeichnis, dann sollte nichts schief gehen.
+Denke daran, dass Ghost standardmäßig deine eigenen Daten, Themes, Bilder, etc. im Verzeichnis <code class="path">content</code> speichert, versuche dieses zu schützen! Ersetze ausschließlich Dateien in <code class="path">core</code> und im Überverzeichnis, dann sollte nichts schief gehen.
 
 
 ## Backup erstellen <a id="backing-up"></a>
@@ -47,11 +47,11 @@ Wie du die Aktualisierung auf deinem lokalen Rechner durchführst
 
 <p class="warn"><strong>WARNUNG:</strong> Kopiere auf einem Mac <strong>NICHT</strong> den gesamten Ghost-Ordner über eine bestehende Installation. Wenn du die Dateien mit Transmit oder einem anderen FTP-Programm hochlädst, wähle <strong>NICHT</strong> <kbd>ERSETZEN</kbd>, wähle <kbd>ZUSAMMENLEGEN</kbd>.</p>
 
-* Lade die neueste version von Ghost von [Ghost.org](http://ghost.org/download/) herunter
+* Lade die neueste Version von Ghost von [Ghost.org](http://ghost.org/download/) herunter
 * Extrahiere die Zip-Datei in ein temporäres Verzeichnis
 * Kopiere alle Dateien im Überverzeichnis aus der neuen Version. Diese beinhalten: index.js, package.json, Gruntfile.js, config.example.js, die Lizenz- und Readme-Dateien.
-* Ersetze das alte <code class="path">core</code>-Verzeichnis mit dem neuen.
-* Für Veröffentlichungen die eine aktualisierte Version von Casper (dem Standard-Theme) beinhalten, ersetze das alte <code class="path">content/themes/casper</code> mit dem neuen
+* Lösche das alte <code class="path">core</code>-Verzeichnis und setze dann das neue <code class="path">core</code>-Verzeichnis an diese Stelle.
+* Für Veröffentlichungen die eine aktualisierte Version von Casper (dem Standard-Theme) beinhalten, lösche das alte <code class="path">content/themes/casper</code>-Verzeichnis und setze das neue an diese Stelle
 * Führe `npm install --production` aus
 * Starte Ghost neu, um die Änderungen anzuwenden.
 
@@ -63,15 +63,16 @@ Wie du die Aktualisierung auf deinem lokalen Rechner durchführst
 
 Die Bildschirmaufnahme unten zeigt die Schritte für eine Aktualisierung. Dabei wurde die Zip-Datei nach <code class="path">~/Downloads</code> heruntergeladen und Ghost unter <code class="path">~/ghost</code> installiert. <span class="note">**Hinweis:** `~` steht unter Mac und Linux für das Benutzerverzeichnis</span>
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
+![Aktualisiere Ghost](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
 
 Die gezeigten Schritte sind:
 
 *   <code class="path">cd ~/Downloads</code> - Wechseln in das Verzeichnis wo die neueste Version von Ghost gespeichert wurde
-*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - Entpacken von Ghost in den Ordner <code class="path">ghost-0.3.3</code>
-*   <code class="path">cd ghost-0.3.3</code> - Wechseln in das <code class="path">ghost-0.3.3</code>-Verzeichnis
+*   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - Entpacken von Ghost in den Ordner <code class="path">ghost-0.4.0</code>
+*   <code class="path">cd ghost-0.4.0</code> - Wechseln in das <code class="path">ghost-0.4.0</code>-Verzeichnis
 *   `ls` - Zeige alle Dateien im aktuellen Verzeichnis
-*   `cp *.md *.js *.txt *.json ~/ghost` - Kopiere alle .md .js .txt und .json Dateien in das Verzeichnis <code class="path">~/ghost</code>
+*   `cp *.js *.json *.md LICENSE ~/ghost` - Kopiere alle .md .js .txt und .json Dateien in das Verzeichnis <code class="path">~/ghost</code>
+*	`rm -rf ~/ghost/core` - Lösche das alte <code class="path">core</code>-Verzeichnis
 *   `cp -R core ~/ghost` - Kopiere das <code class="path">core</code>-Verzeichnis und alle Inhalte nach <code class="path">~/ghost</code>
 *   `cp -R content/themes/casper ~/ghost/content/themes` - Kopiere das <code class="path">casper</code>-Verzeichnis und alle Inhalte nach <code class="path">~/ghost/content/themes</code>
 *   `cd ~/ghost` - Wechsle in das <code class="path">~/ghost</code>-Verzeichnis
@@ -82,22 +83,26 @@ Die gezeigten Schritte sind:
 
 * Als Erstes musst du die URL mit der neuesten Ghost-Version herausfinden. Sie dürfte `http://ghost.org/zip/ghost-latest.zip` sein.
 * Lade die Zip-Datei mittels `wget http://ghost.org/zip/ghost-latest.zip` herunter (oder mit der URL die für die neueste Ghost-Version steht).
-* Entpacke das Archiv mit `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+* Lösche das alte core-Verzeichnis von deiner Installation
+* Entpacke das Archiv mit `unzip -uo ghost-latest.*.zip -d Pfas-zu-deiner-Ghost-Installation`
 * Führe `npm install --production` aus, um alle neuen Abhängigkeiten zu installieren
 * Starte Ghost neu, um alle Änderungen anzuwenden
 
 **Weiterhin** bietet [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) auch Instruktionen, wie man Ghost auf Linux-Servern aktualisiert.
 
-### Ein DigitalOcean Droplet aktualsieren <a id="digitalocean"></a>
+### Ein DigitalOcean Droplet aktualisieren <a id="digitalocean"></a>
 
 <p class="note"><strong>Erstelle Backups!</strong> Erstelle vor der Aktualisierung immer ein Backup. Lies die <a href="#backing-up">Backup-Anleitung</a> zuerst!</p>
 
 * Als erstes musst du die URL mit der neuesten Ghost-Version herausfinden. Sie dürfte `http://ghost.org/zip/ghost-latest.zip` sein.
 * Sobald du die URL hast, wechselst du in der Droplet-Konsole mittels `cd /var/www/` in das Verzeichnis deiner Ghost-Installation
-* Entpacke das Archiv mit `unzip -uo ghost-0.3.*.zip -d ghost`
+* Entferne das alte core-Verzeichnis mit `rm -rf ghost/core`
+* Entpacke das Archiv mit `unzip -uo ghost-0.4.*.zip -d ghost`
 * Stelle sicher dass alle Dateirechte korrekt sind: `chown -R ghost:ghost ghost/*`
+* Wechsle in das <code class="path">ghost</code>-Verzeichnis mit `cd ghost`
 * Führe `npm install --production` aus, um alle neuen Abhängigkeiten zu installieren
 * Starte Ghost mit `service ghost restart` neu, um alle Änderungen anzuwenden
+
 
 ## Node.js auf die neueste Version aktualisieren <a id="upgrading-node"></a>
 

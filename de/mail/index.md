@@ -25,7 +25,7 @@ Aber keine Angst, die Email-Einstellungen müssen nur einmalig vorgenommen werde
 
 Als erstes benötigst du einen Account mit einem Email-Service. Wir empfehlen dir Mailgun, sie bieten einen kostenlosen Account der dir erlaubt mehr Mails zu versenden als die meisten Blogs mit Email-Subskriptionen jemals brauchen werden. Du kannst ebenfalls Gmail oder Amazon SES verwenden.
 
-Sobald du dich für einen Service entschieden hast, musst du die Einstellungen in Ghost's Konfigurationsdatei hinzufügen. Egal wo du Ghost installiert hast, die <code class="path">config.js</code> findest  immer im Überverzeichnis, wo auch die <code class="path">index.js</code> liegt. Falls du noch keine <code class="path">config.js</code> hast, kopiere die <code class="path">config.example.js</code> und benenne sie entsprechend um.
+Sobald du dich für einen Service entschieden hast, musst du die Einstellungen in Ghosts Konfigurationsdatei hinzufügen. Egal wo du Ghost installiert hast, die <code class="path">config.js</code> findest  immer im Überverzeichnis, wo auch die <code class="path">index.js</code> liegt. Falls du noch keine <code class="path">config.js</code> hast, kopiere die <code class="path">config.example.js</code> und benenne sie entsprechend um.
 
 ### Mailgun <a id="mailgun"></a>
 
@@ -65,15 +65,15 @@ mail: {
 }
 ```
 
-Achte auf alle Kommas, Anführungszeicheichen und geschweifte Klammern. Falls eine falsch gesetzt ist, wirst du schräge Fehler bekommen.
+Achte auf alle Kommas, Anführungszeichen und geschweifte Klammern. Falls eine falsch gesetzt ist, wirst du schräge Fehler bekommen.
 
-Du kannst die Einstellungen für die development und production Environment's wiederverwenden, falls du beide hast.
+Du kannst die Einstellungen für die development und production Environments wiederverwenden, falls du beide hast.
 
 ### Amazon SES <a id="ses"></a>
 
 Du kannst dich für für Amazon's Simple Email Service unter <http://aws.amazon.com/ses/> registrieren. Sobald du das getan hast, wirst du einen Zugangsschlüssel und einen geheimen Schlüssel erhalten.
 
-Öffne Ghost's <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere zu deiner Environment für das du Email einrichten willst und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
+Öffne Ghosts <code class="path">config.js</code>-Datei in einem Editor deiner Wahl, navigiere zu deiner Environment für das du Email einrichten willst und füge deine Amazon-Zugangsdaten folgendermaßen hinzu:
 
 ```
 mail: {
@@ -106,7 +106,7 @@ mail: {
 
 ### Absender <a id="from"></a>
 
-Standardmäßig ist der Absender bei von Ghost versendeten Emails die Adresse, die auf der Einstellungseite eingetragen wurde. Falls du diese überschreiben willst, kann du sie auch in deiner <code class="path">config.js</code> eintragen.
+Standardmäßig ist der Absender bei von Ghost versendeten Emails die Adresse, die auf der Einstellungsseite eingetragen wurde. Falls du diese überschreiben willst, kann du sie auch in deiner <code class="path">config.js</code> eintragen.
 
 ```
 mail: {

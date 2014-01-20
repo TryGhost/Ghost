@@ -1,10 +1,10 @@
 ---
 lang: de
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Wie man Ghost benutzt - Ghost-Dokumentation
+meta_description: Eine ausführliche Anleitung zum Benutzen der Ghost Blogging-Platform. Du hast Ghost, weißt aber nicht wie du loslegst? Beginne hier!
+heading: Ghost benutzen
+subheading: Dich zurechtfinden und alles so einstellen, wie du es willst
 chapter: usage
 section: writing
 permalink: /de/usage/writing/
@@ -12,55 +12,55 @@ prev_section: managing
 next_section: faq
 ---
 
-##  Writing posts <a id="writing"></a>
+##  Posts schreiben <a id="writing"></a>
 
-Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.
+Blogposts in Ghost werden unter der Verwendung von Markdown geschrieben. Markdown ist eine minimale Syntax um Dokumente durch Formatierung durch Satz- und Sonderzeichen zu gestalten. Die Syntax beabsichtigt, Störungen des Arbeitsflusses zu verhindern, was es dir erlaubt, dich auf den Inhalt zu konzentrieren und nicht darauf, wie er aussieht.
 
 ###  Markdown Guide <a id="markdown"></a>
 
-[Markdown](http://daringfireball.net/projects/markdown/) is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.
+[Markdown](http://daringfireball.net/projects/markdown/) ist eine Markup-Sprache, gestaltet um die Leistungsfähigkeit deines Schreibens zu verbessern, während das Geschriebene so einfach zu lesen gehalten wird, wie nur möglich.
 
-Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.
+Ghost benutzt alle standardmäßigen Markdown-Kurzbefehle, plus einige unserer eigenen Ergänzungen. Die komplette Liste der Kurzbefehle ist unten aufgelistet.
 
-####  Headers
+####  Kopfzeilen
 
-Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.
+Kopfzeilen können durch eine Raute vor dem Titeltext gesetzt werden. Die Anzahl der Rauten vor dem Titeltext kennzeichnet die Kopftiefe. Die Kopftiefen gehen von 1-6.
 
-*   H1 : `# Header 1`
-*   H2 : `## Header 2`
-*   H3 : `### Header 3`
-*   H4 : `#### Header 4`
-*   H5 : `##### Header 5`
-*   H6 : `###### Header 6`
+*   H1 : `# Kopfzeile 1`
+*   H2 : `## Kopfzeile 2`
+*   H3 : `### Kopfzeile 3`
+*   H4 : `#### Kopfzeile 4`
+*   H5 : `##### Kopfzeile 5`
+*   H6 : `###### Kopfzeile 6`
 
-####  Text Styling
+####  Textgestaltung
 
-*   Links : `[Title](URL)`
-*   Bold : `**Bold**`
-*   Italic : `*Italic*`
-*   Paragraphs : Line space inbetween paragraphs
-*   Lists : `* An asterix on every new list item`
-*   Quotes : `> Quote`
-*   Code : `` `code` ``
+*   Links : `[Titel](URL)`
+*   Fett : `**Fett**`
+*   Kursiv : `*Kursiv*`
+*   Absätze : Freie Zeile zwischen Absätzen
+*   Listen : `* Ein Sternchen für jeden neuen Listenpunkt`
+*   Zitate : `> Zitat`
+*   Code : `` `Code` ``
 *   HR : `==========`
 
-####  Images
+####  Bilder
 
-To insert an image into your post, you need to first enter `![]()` into the Markdown editor panel.
-This should create an image upload box in your preview panel.
+Um ein Bild in deinen Post einzufügen, musst du zuerst `![]()` in dein Markdown-Editor-Feld eingeben.
+Das sollte eine Bilder-Hochlade-Box in deinem Vorschaufeld erstellen.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png)
 
-You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup.
-If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+Du kannst nun durch Drag & Drop jedes Bild (.png, .gif, .jpg) von deinem Desktop über die Bilder-Hochlade-Box in deinen Post einbringen oder klicke alternativ auf die Bilder-Hochlade-Box um das standardmäßige Bilder-Hochlade-Popup zu benutzen.
+Wenn du lieber eine Bilder-URL einfügen würdest, klicke auf das 'Link'-Icon in der unteren linken Ecke der Bilder-Hochlade-Box, was dir dann die Möglichkeit gibt, eine Bilder-URL einzutragen.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png)
 
-To title your image, all you need to do is place your title text inbetween the square brackets, e.g; `![This is a title]()`. 
+Um deinem Bild einen Titel zu geben brauchst du nur deinen Titeltext zwischen die eckigen Klammern platzieren, zum Beispiel; `![Das ist ein Titel]()`. 
 
-##### Removing Images
+##### Bilder entfernen
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
-To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
+Um ein Bild zu entfernen klicke auf das 'Entfernen'-Icon in der oberen rechten Ecke des gerade platzierten Bildes. Das zeigt dir nun wieder eine leere Bilder-Hochlade-Box, in die du ein neues Bild einfügen kannst.
 

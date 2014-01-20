@@ -49,6 +49,11 @@ translations:
     deploy:       'Einsetzen'
     upgrading:    'Aktualisieren' 
     troubleshooting: 'Problembehebung'
+    configuration: 'Konfiguration'
+    faq: 'FAQ'
+    managing: 'Verwalten'
+    settings: 'Einstellungen'
+    writing: 'Schreiben'
   fr:
     site_title:   'Guide Ghost'
     installation: 'Installation'
