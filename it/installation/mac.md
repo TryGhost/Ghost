@@ -26,7 +26,7 @@ Per installare Node.js e Ghost sul tuo mac avrai bisogno di un terminale. Puoi a
 
 <p class="note"><strong>Nota:</strong> Se '/usr/local/bin' non è presente nel tuo $PATH, dai un'occhiata alla <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">risoluzione dei problemi</a> per capire come aggiungerlo.</p>
 
-Se rimani bloccato puoi guardare [l'intero processo in azione qui](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Installa Node sul Mac").
+Se hai problemi e non sai come andare avanti puoi guardare [l'intero processo in azione qui](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Installa Node sul Mac").
 
 ### Installa e Lancia Ghost
 
@@ -34,10 +34,10 @@ Se rimani bloccato puoi guardare [l'intero processo in azione qui](https://s3-eu
 *   Nella pagina download, premi il pulsante per scaricare il file zip più recente.
 *   Clicca sulla freccia a fianco del file appena scaricato, e seleziona 'mostra nel finder'.
 *   Nel finder, fai doppio-click sullo zip scaricato per estrarlo.
-*   Poi, prendi la cartella 'ghost-#.#.#' appena estratta e trascinala nella barra dei tab del terminale, in modo che venga aperto un nuovo tab del terminale nella posizione corretta.
-*   Nel nuovo tab scrivi `npm install --production` <span class="note">fai attenzione ai due trattini</span>.
+*   Dopodich&egrave;, prendi la cartella 'ghost-#.#.#' appena estratta e trascinala nella barra delle tab del terminale, in modo che venga aperta una nuova tab del terminale nella posizione corretta.
+*   Nella nuova tab scrivi `npm install --production` <span class="note">fai attenzione ai due trattini</span>.
 *   Quando npm ha terminato l'installazione, scrivi `npm start` per lanciare Ghost in modalità sviluppo.
-*   In un browser, vai alla pagina <code class="path">127.0.0.1:2368</code> per vedere il tuo nuovo Blog Ghost.
+*   Apri il tuo browser preferito, vai alla pagina <code class="path">127.0.0.1:2368</code> per vedere il tuo nuovo Blog Ghost.
 *   Visita la pagina <code class="path">127.0.0.1:2368/ghost</code> per creare un utente admin e loggarti all'interno di Ghost.
 *   Guarda la [documentazione sull'utilizzo](/usage) per i prossimi passi.
 

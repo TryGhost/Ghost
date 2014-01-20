@@ -18,25 +18,25 @@ prev_section: upgrading
     <dt id="export-path">'/usr/local/bin' non appare in $PATH</dt>
     <dd>Puoi aggiungerlo come segue:
         <ul>
-            <li>Da terminale digita <code>cd ~</code>, ti porterà alla tua cartella home</li>
+            <li>Da terminale digita <code>cd ~</code>, ti porterà alla tua cartella home (per digitare il carattere ~ con la tastiera italiana, premi ALT + 126)</li>
             <li>Ora digita <code>ls -al</code> per mostrare tutti i files e le sottocartelle in questa cartella, inclusi quelli nascosti</li>
-            <li>Dovresti vedere un file <code class="path">.profile</code> o <code class="path">.bash_profile</code> in caso contrario digita <code>touch .bash_profile</code> per crearlo</li>
+            <li>Dovresti vedere un file <code class="path">.profile</code> o <code class="path">.bash_profile</code>, in caso contrario digita <code>touch .bash_profile</code> per crearlo</li>
             <li>Successivamente digita <code>open -a Textedit .bash_profile</code> per aprire il file con Textedit.</li>
-            <li>Add <code>export PATH=$PATH:/usr/local/bin/</code> at the end of the file and save it</li>
-            <li>Questa nuova configurazione sarà caricata al prossimo all'avvio di una nuova finestra di terminale, quindi apri una nuova scheda o finestra di terminale e digita <code>echo $PATH</code> per verificare che '/usr/local/bin/' sia ora presente.</li>
+            <li>Aggiungi <code>export PATH=$PATH:/usr/local/bin/</code> alla fine del file e salvalo</li>
+            <li>Questa nuova configurazione sarà caricata al prossimo avvio di una nuova finestra di terminale, quindi apri una nuova scheda o finestra di terminale e digita <code>echo $PATH</code> per verificare che '/usr/local/bin/' sia ora presente.</li>
         </ul>
     </dd>
     <dt id="sqlite3-errors">SQLite3 non si installa</dt>
     <dd>
         <p>Il pacchetto SQLite3 comprende binari precompilati per le più comuni architetture. Se stai usando una distro linux meno popolare o altri sistemi unix-like, potresti ottenere da SQLite3 un errore 404 in quanto non è in grado di trovare i binari per la tua piattaforma.</p>
-        <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno python & gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
-        <p>In caso di errore probabilmente ti mancano dipendenze di python o di gcc, su linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
+        <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno Python & gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
+        <p>In caso di errore probabilmente ti mancano dipendenze di Python o di gcc, su Linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
         <p>Per ulteriori informazioni sulla compilazione consulta: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
         <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instruzioni qui</a> per inoltrare i binari al progetto node-sqlite, in questo modo in futuro altri utenti non incorreranno nello stesso problema.</p>
     </dd>
-    <dt id="image-uploads">Non riesco a fare l'upload delle images</dt>
+    <dt id="image-uploads">Non riesco a fare l'upload delle immagini</dt>
     <dd>
-        <p>Se utilizzi una DigitalOcean Droplet con installato Ghost v0.3.2 o se usi nginx su altre piattaforme, potrebbe risultarti impossibile l'upload delle immagini.</p>
+        <p>Se utilizzi una Droplet di DigitalOcean con Ghost v0.3.2 installato o se usi nginx su altre piattaforme, potrebbe risultarti impossibile l'upload delle immagini.</p>
         <p>In realtà non riesci a caricare immagini oltre 1MB (prova un'immagine più piccola, vedrai che funzionerà). Un limite piuttosto basso!</p>
         <p>Per incrementare il limite devi modificare il file di configurazione di nginx impostando il nuovo limite.</p>
         <ul>
