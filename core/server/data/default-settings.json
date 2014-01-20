@@ -10,7 +10,7 @@
             "defaultValue": null
         },
         "displayUpdateNotification": {
-            "defaultValue": false
+            "defaultValue": null
         }
     },
     "blog": {
