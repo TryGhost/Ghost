@@ -11,14 +11,14 @@ var moment            = require('moment'),
     corePath          = path.resolve(appRoot, 'core/'),
     contentPath       = path.resolve(appRoot, 'content/'),
     themePath         = path.resolve(contentPath + '/themes'),
-    pluginPath        = path.resolve(contentPath + '/plugins'),
+    appPath           = path.resolve(contentPath + '/apps'),
     themeDirectories  = requireTree(themePath),
-    pluginDirectories = requireTree(pluginPath),
+    appDirectories    = requireTree(appPath),
     localPath = '',
     configUrl = '',
 
     availableThemes,
-    availablePlugins;
+    availableApps;
 
 
 function paths() {
@@ -32,7 +32,7 @@ function paths() {
         'contentPath':      contentPath,
         'corePath':         corePath,
         'themePath':        themePath,
-        'pluginPath':       pluginPath,
+        'appPath':          appPath,
         'imagesPath':       path.resolve(contentPath, 'images/'),
         'imagesRelPath':    'content/images',
         'adminViews':       path.join(corePath, '/server/views/'),
@@ -41,7 +41,7 @@ function paths() {
         'lang':             path.join(corePath, '/shared/lang/'),
         'debugPath':        subdir + '/ghost/debug/',
         'availableThemes':  availableThemes,
-        'availablePlugins': availablePlugins
+        'availableApps':    availableApps
     };
 }
 
@@ -56,9 +56,9 @@ function update(configURL) {
         localPath = localPath.replace(/\/$/, '');
     }
 
-    return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
+    return when.all([themeDirectories, appDirectories]).then(function (paths) {
         availableThemes = paths[0];
-        availablePlugins = paths[1];
+        availableApps = paths[1];
         return;
     });
 }

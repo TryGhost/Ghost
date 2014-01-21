@@ -16,7 +16,7 @@
 // - post count - total number of posts
 // - user count - total number of users
 // - theme - name of the currently active theme
-// - apps - names of any active plugins
+// - apps - names of any active apps
 
 var crypto   = require('crypto'),
     exec     = require('child_process').exec,
@@ -51,7 +51,7 @@ function updateCheckData() {
 
     ops.push(api.settings.read('dbHash').otherwise(errors.rejectError));
     ops.push(api.settings.read('activeTheme').otherwise(errors.rejectError));
-    ops.push(api.settings.read('activePlugins')
+    ops.push(api.settings.read('activeApps')
         .then(function (apps) {
             try {
                 apps = JSON.parse(apps.value);

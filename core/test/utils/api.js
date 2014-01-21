@@ -11,7 +11,7 @@ var _ = require('underscore'),
             'updated_by', 'published_at', 'published_by', 'page', 'author', 'user', 'tags'],
         // TODO: remove databaseVersion, dbHash
         settings: ['databaseVersion', 'dbHash', 'title', 'description', 'email', 'logo', 'cover', 'defaultLang',
-            "permalinks", 'postsPerPage', 'forceI18n', 'activeTheme', 'activePlugins', 'installedPlugins',
+            "permalinks", 'postsPerPage', 'forceI18n', 'activeTheme', 'activeApps', 'installedApps',
             'availableThemes', 'nextUpdateCheck', 'displayUpdateNotification'],
         tag: ['id', 'uuid', 'name', 'slug', 'description', 'parent_id',
             'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
