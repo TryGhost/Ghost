@@ -385,14 +385,14 @@ coreHelpers.ghost_foot = function (options) {
 
 coreHelpers.meta_title = function (options) {
     /*jslint unparam:true*/
-    var title,
+    var title = "",
         blog;
 
     if (_.isString(this.relativeUrl)) {
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             title = blog.title;
-        } else {
+        } else if (this.post) {
             title = this.post.title;
         }
     }
