@@ -19,6 +19,8 @@ languages:
       key: 'ja'
     - name: 'Italiano'
       key: 'it'
+    - name: '繁體中文'
+      key: 'zh_TW'
 
 port:         4478
 
@@ -96,6 +98,14 @@ translations:
     deploy:       'Deploy'
     upgrading:    'Aggiornamento' 
     troubleshooting: 'Risoluzione dei Problemi'
+  zh_TW:
+    site_title:   'Ghost 使用手冊'
+    installation: '安裝'
+    usage:        '使用說明'
+    email:        '電子郵件'
+    themes:       '佈景主題'
+    translations: '翻譯'
+    help:         '說明'
 
 # If running locally, simply comment out the line below to make all urls relative
 
