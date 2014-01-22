@@ -140,9 +140,6 @@
     Ghost.Views.Notification = Ghost.View.extend({
         templateName: 'notification',
         className: 'js-bb-notification',
-        template: function (data) {
-            return JST[this.templateName](data);
-        },
         render: function () {
             var html = this.template(this.model);
             this.$el.html(html);
