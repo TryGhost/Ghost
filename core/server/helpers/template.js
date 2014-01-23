@@ -17,8 +17,7 @@ templates.execute = function (name, context) {
 
     // If the partial view is not compiled, it compiles and saves in handlebars
     if (typeof partial === 'string') {
-        partial = hbs.handlebars.compile(partial);
-        hbs.handlebars.partials[name] = partial;
+        hbs.registerPartial(partial);
     }
 
     return new hbs.handlebars.SafeString(partial(context));
