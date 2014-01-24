@@ -142,13 +142,18 @@ function manageAdminAndTheme(req, res, next) {
             if (!config.paths().availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
-                    errors.logAndThrowError('The currently active theme ' + activeTheme.value + ' is missing.');
+                    return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
                 }
             } else {
                 activateTheme(activeTheme.value);
             }
         }
         next();
+    }).otherwise(function (err) {
+        // Trying to start up without the active theme present, setup a simple hbs instance
+        // and render an error page straight away.
+        expressServer.engine('hbs', hbs.express3());
+        next(err);
     });
 }
 
