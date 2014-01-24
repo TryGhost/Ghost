@@ -294,7 +294,7 @@ describe('Config', function () {
                 'contentPath',
                 'corePath',
                 'themePath',
-                'pluginPath',
+                'appPath',
                 'imagesPath',
                 'imagesRelPath',
                 'adminViews',
@@ -303,7 +303,7 @@ describe('Config', function () {
                 'lang',
                 'debugPath',
                 'availableThemes',
-                'availablePlugins'
+                'availableApps'
             );
         });
 

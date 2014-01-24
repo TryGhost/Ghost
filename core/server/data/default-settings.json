@@ -68,11 +68,11 @@
             "defaultValue": "casper"
         }
     },
-    "plugin": {
-        "activePlugins": {
+    "app": {
+        "activeApps": {
             "defaultValue": "[]"
         },
-        "installedPlugins": {
+        "installedApps": {
             "defaultValue": "[]"
         }
     }

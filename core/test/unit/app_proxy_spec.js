@@ -6,7 +6,7 @@ var should = require('should'),
     filters = require('../../server/filters'),
 
     // Stuff we are testing
-    appProxy = require('../../server/plugins/proxy');
+    appProxy = require('../../server/apps/proxy');
 
 describe('App Proxy', function () {
 

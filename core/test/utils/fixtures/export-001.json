@@ -284,9 +284,9 @@
             {
                 "id": 13,
                 "uuid": "f3afce35-5166-453e-86c3-50dfff74dca7",
-                "key": "activePlugins",
+                "key": "activeApps",
                 "value": "[]",
-                "type": "plugin",
+                "type": "app",
                 "created_at": 1388318310831,
                 "created_by": 1,
                 "updated_at": 1388318310831,
@@ -295,9 +295,9 @@
             {
                 "id": 14,
                 "uuid": "2ea560a3-2304-449d-a62b-f7b622987510",
-                "key": "installedPlugins",
+                "key": "installedApps",
                 "value": "[]",
-                "type": "plugin",
+                "type": "app",
                 "created_at": 1388318310831,
                 "created_by": 1,
                 "updated_at": 1388318310831,

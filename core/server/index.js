@@ -18,7 +18,7 @@ var crypto      = require('crypto'),
     middleware  = require('./middleware'),
     models      = require('./models'),
     permissions = require('./permissions'),
-    plugins     = require('./plugins'),
+    apps        = require('./apps'),
     routes      = require('./routes'),
     packageInfo = require('../../package.json'),
 
@@ -71,7 +71,7 @@ function initDbHashAndFirstRun() {
 }
 
 // Sets up the express server instance.
-// Instantiates the ghost singleton, helpers, routes, middleware, and plugins.
+// Instantiates the ghost singleton, helpers, routes, middleware, and apps.
 // Finally it starts the http server.
 function setup(server) {
 
@@ -200,8 +200,8 @@ function setup(server) {
 
         }
 
-        // Initialize plugins then start the server
-        plugins.init().then(function () {
+        // Initialize apps then start the server
+        apps.init().then(function () {
 
             // ## Start Ghost App
             if (getSocket()) {
