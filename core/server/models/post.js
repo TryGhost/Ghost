@@ -61,6 +61,9 @@ Post = ghostBookshelf.Model.extend({
             }
             // This will need to go elsewhere in the API layer.
             this.set('published_by', 1);
+        } else if (this.get('status') === 'published' && !this.get('published_at')) {
+            // If somehow this is a published post with no date, fix it... see #2015
+            this.set('published_at', new Date());
         }
 
         ghostBookshelf.Model.prototype.saving.call(this);
