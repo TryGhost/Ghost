@@ -97,7 +97,11 @@
             var self = this,
                 slug = self.model.get('slug'),
                 slugEl = e.currentTarget,
-                newSlug = slugEl.value;
+                newSlug = slugEl.value,
+                temp_settings = {
+                    published_at: $(".post-setting-date").val(),
+                    page: $(".post-setting-static-page").is(":checked")
+                };
 
             // If the model doesn't currently
             // exist on the server (aka has no id)
@@ -122,6 +126,15 @@
                     /*jslint unparam:true*/
                     // Repopulate slug in case it changed on the server (e.g. 'new-slug-2')
                     slugEl.value = model.get('slug');
+
+                    // Fix the published date and static page checkbox
+                    $(".post-setting-date").val(temp_settings.published_at);
+                    if (temp_settings.page) {
+                        $(".post-setting-static-page").attr("checked", "checked");
+                    } else {
+                        $(".post-setting-static-page").removeAttr("checked");
+                    }
+
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: "Permalink successfully changed to <strong>" + model.get('slug') + '</strong>.',
@@ -149,7 +162,11 @@
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
                 pubDateMoment,
-                newPubDateMoment;
+                newPubDateMoment,
+                temp_settings = {
+                    slug: $(".post-setting-slug").val(),
+                    page: $(".post-setting-static-page").is(":checked")
+                };
 
             // if there is no new pub date do nothing
             if (!newPubDate) {
@@ -220,6 +237,15 @@
             }, {
                 success : function (model) {
                     pubDateEl.value = moment(model.get('published_at')).format(displayDateFormat);
+
+                    // Fix the published date and static page checkbox
+                    $(".post-setting-slug").val(temp_settings.slug);
+                    if (temp_settings.page) {
+                        $(".post-setting-static-page").attr("checked", "checked");
+                    } else {
+                        $(".post-setting-static-page").removeAttr("checked");
+                    }
+
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: 'Publish date successfully changed to <strong>' + pubDateEl.value + '</strong>.',
@@ -240,7 +266,11 @@
 
         toggleStaticPage: _.debounce(function (e) {
             var pageEl = $(e.currentTarget),
-                page = pageEl.prop('checked');
+                page = pageEl.prop('checked'),
+                temp_settings = {
+                    slug: $(".post-setting-slug").val(),
+                    published_at: $(".post-setting-date").val()
+                };
 
             // Don't try to save
             // if the model doesn't currently
@@ -258,6 +288,11 @@
                 success : function (model, response, options) {
                     /*jslint unparam:true*/
                     pageEl.prop('checked', page);
+
+                    // Fix the published date and static page checkbox
+                    $(".post-setting-slug").val(temp_settings.slug);
+                    $(".post-setting-date").val(temp_settings.published_at);
+
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: "Successfully converted " + (page ? "to static page" : "to post") + '.',
