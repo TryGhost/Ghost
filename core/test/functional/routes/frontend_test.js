@@ -84,14 +84,13 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should not work with date permalinks', function (done) {
+        it('should 301 with date permalinks', function (done) {
             // get today's date
             var date  = moment().format("YYYY/MM/DD");
 
             request.get('/' + date + '/welcome-to-ghost/')
-                .expect('Cache-Control', cacheRules.hour)
-                .expect(404)
-                .expect(/Page Not Found/)
+                .expect('Location', '/welcome-to-ghost/')
+                .expect(301)
                 .end(doEnd(done));
         });
 
