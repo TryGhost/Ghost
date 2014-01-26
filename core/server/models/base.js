@@ -213,8 +213,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 });
             };
 
+        slug = base.trim();
+
+        // Remove non ascii characters
+        slug = unidecode(slug);
+
         // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = base.trim().replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
+        slug = slug.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
             // Replace dots and spaces with a dash
             .replace(/(\s|\.)/g, '-')
             // Convert 2 or more dashes into a single dash
@@ -224,8 +229,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
-        // Remove non ascii characters
-        slug = unidecode(slug);
+
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users|rss)$/g
             .test(slug) ? slug + '-post' : slug;
