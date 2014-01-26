@@ -21,6 +21,8 @@ languages:
       key: 'it'
     - name: '繁體中文'
       key: 'zh_TW'
+    - name: 'Nederlands'
+      key: 'nl_NL'
 
 port:         4478
 
@@ -114,6 +116,21 @@ translations:
     themes:       '佈景主題'
     translations: '翻譯'
     help:         '說明'
+  nl_NL:
+    site_title:   'Ghost handleiding'
+    installation: 'Installatie'
+    usage:        'Gebruik'
+    email:        'E-Mail'
+    themes:       'Thema's'
+    help:         'Help'
+    deploy:       'Verspreiden'
+    upgrading:    'Vernieuwen' 
+    troubleshooting: 'Probleemoplossing'
+    configuration: 'Configuratie'
+    faq: 'FAQ'
+    managing: 'Beheren'
+    settings: 'Instellingen'
+    writing: 'Schrijven'  
 
 # If running locally, simply comment out the line below to make all urls relative
 
