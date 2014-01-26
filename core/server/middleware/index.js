@@ -226,12 +226,15 @@ module.exports = function (server, dbHash) {
     // First determine whether we're serving admin or theme content
     expressServer.use(manageAdminAndTheme);
 
-    // Force SSL
-    expressServer.use(checkSSL);
-
 
     // Admin only config
     expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
+
+    // Force SSL
+    // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
+    //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
+    //       not display properly when HTTPS is not available!
+    expressServer.use(checkSSL);
 
     // Theme only config
     expressServer.use(subdir, middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
