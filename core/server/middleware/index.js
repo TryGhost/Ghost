@@ -183,11 +183,7 @@ function isSSLrequired(isAdmin) {
 // and redirect if needed
 function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin)) {
-        // Check if X-Forarded-Proto headers are sent, if they are check for https.
-        // If they are not assume true to avoid infinite redirect loop.
-        // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
-        var httpsHeader = req.header('X-Forwarded-Proto') !== undefined ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
-        if (!req.secure && !httpsHeader) {
+        if (!req.secure) {
             return res.redirect(301, url.format({
                 protocol: 'https:',
                 hostname: url.parse(config().url).hostname,
@@ -207,6 +203,10 @@ module.exports = function (server, dbHash) {
     // Cache express server instance
     expressServer = server;
     middleware.cacheServer(expressServer);
+
+    // Make sure 'req.secure' is valid for proxied requests
+    // (X-Forwarded-Proto header will be checked, if present)
+    expressServer.enable('trust proxy');
 
     // Logging configuration
     if (expressServer.get('env') !== 'development') {
