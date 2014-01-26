@@ -1,30 +1,30 @@
 ---
 lang: zh
 layout: quickstart
-meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+meta_title: Ghost 快速入门
+heading: Ghost 快速入门
+subheading: 立即安装并启动 Ghost.
 chapter: quickstart
 section: quickstart
 ---
 
-# Overview <a id="overview"></a>
+# 概述 <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+快速入门指南是在假定你已经熟悉 [Node](http://nodejs.org)，或者 ruby on rails 这种类似架构的前提下，帮助你安装并运行 Ghost。如果你不太了解上述语言，我们建议你查看更加详尽的[安装指南](/installation.html)。
 
-## Get Ghost running locally <a id="ghost-local"></a>
+## 本地运行 Ghost <a id="ghost-local"></a>
 
-Ghost requires node `0.10.*` (the latest stable version).
+Ghost 需要 node `0.10.*` （最新的稳定版）的支持。
 
-If you haven't already got it, head over to <http://nodejs.org> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.
+如果你尚未安装 Node，那么请前往 <http://nodejs.org> 下载最新版本的 Node.js 安装包。安装包会将 Node 及其非常优秀的包管理器 npm 安装到你的电脑上。 
 
-For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+对于使用 Linux 系统的用户，你可能更愿意使用自带的[包管理器来安装 Node](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)，而不是通过 .tar.gz 压缩包来安装。
 
-Download the latest version of Ghost from [Ghost.org](http://ghost.org). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+接下来，从 [Ghost.org](http://ghost.org) 下载最新的 Ghost。将压缩包解压到你希望运行 Ghost 的目录下 - 任何地方都行！
 
-Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
+打开终端（mac/linux）或者命令提示符（windows）程序，然后定位到刚才解压的 Ghost 目录（package.json 文件所在的地方）
 
-To install Ghost, run `npm install --production`
+运行 `npm install --production` 命令来安装 Ghost。
 
 <!--<h2 id="customise">Customise & Configure Ghost</h2>
 

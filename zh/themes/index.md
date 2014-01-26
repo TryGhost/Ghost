@@ -1,10 +1,10 @@
 ---
 lang: zh
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: 如何制作 Ghost 主题 - Ghost 文档
+meta_description: 一份详细的指南，教你如何为 Ghost 博客平台制作主题。开发 Ghost 主题所需要知道的一切。
+heading: Ghost 主题
+subheading: 开始创建属于你的 Ghost 主题
 chapter: themes
 ---
 
