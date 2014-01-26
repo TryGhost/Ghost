@@ -65,6 +65,7 @@
 
         initialize: function () {
             this.render();
+            this.submitted = 'no';
         },
 
         templateName: "signup",
@@ -95,10 +96,12 @@
             Ghost.Validate.check(name, "Please enter a name").len(1);
             Ghost.Validate.check(email, "Please enter a correct email address").isEmail();
             Ghost.Validate.check(password, "Your password is not long enough. It must be at least 8 characters long.").len(8);
+            Ghost.Validate.check(this.submitted, "You've already submitted the form. Please wait...").equals("no");
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
             } else {
+                this.submitted = 'yes';
                 $.ajax({
                     url: Ghost.paths.subdir + '/ghost/signup/',
                     type: 'POST',
@@ -114,6 +117,7 @@
                         window.location.href = msg.redirect;
                     },
                     error: function (xhr) {
+                        this.submitted = 'no';
                         Ghost.notifications.clearEverything();
                         Ghost.notifications.addItem({
                             type: 'error',
