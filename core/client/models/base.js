@@ -4,37 +4,29 @@
     "use strict";
     NProgress.configure({ showSpinner: false });
 
-    Ghost.ProgressModel = Backbone.Model.extend({
-
-        // Adds in a call to start a loading bar
-        // This is sets up a success function which completes the loading bar
-        fetch : function (options) {
-            options = options || {};
-
+    // Adds in a call to start a loading bar
+    // This is sets up a success function which completes the loading bar
+    function wrapSync(method, model, options) {
+        if (options !== undefined && _.isObject(options)) {
             NProgress.start();
+
+            var self = this,
+                oldSuccess = options.success;
 
             options.success = function () {
                 NProgress.done();
+                return oldSuccess.apply(self, arguments);
             };
-
-            return Backbone.Model.prototype.fetch.call(this, options);
         }
+
+        return Backbone.sync.call(this, method, model, options);
+    }
+
+    Ghost.ProgressModel = Backbone.Model.extend({
+        sync: wrapSync
     });
 
     Ghost.ProgressCollection = Backbone.Collection.extend({
-
-        // Adds in a call to start a loading bar
-        // This is sets up a success function which completes the loading bar
-        fetch : function (options) {
-            options = options || {};
-
-            NProgress.start();
-
-            options.success = function () {
-                NProgress.done();
-            };
-
-            return Backbone.Collection.prototype.fetch.call(this, options);
-        }
+        sync: wrapSync
     });
 }());
