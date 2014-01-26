@@ -185,7 +185,7 @@ describe('Tag Model', function () {
                 }).then(null, done);
             });
 
-            it('creates and attaches tags that are new to the Tags table', function (done) {
+            it('creates and attaches a tag that is new to the Tags table', function (done) {
                 var seededTagNames = ['tag1', 'tag2'];
 
                 seedTags(seededTagNames).then(function (postModel) {
@@ -205,6 +205,87 @@ describe('Tag Model', function () {
                 }).then(null, done);
             });
 
+            it('creates and attaches multiple tags that are new to the Tags table', function (done) {
+                var seededTagNames = ['tag1'];
+
+                seedTags(seededTagNames).then(function (postModel) {
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+
+                    // add the additional tags, and save
+                    tagData.push({id: null, name: 'tag2'});
+                    tagData.push({id: null, name: 'tag3'});
+                    return postModel.set('tags', tagData).save();
+                }).then(function (postModel) {
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
+                }).then(function (reloadedPost) {
+                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
+                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
+
+                    done();
+                }).then(null, done);
+            });
+
+            it('attaches one tag that exists in the Tags database and one tag that is new to the Tags database', function (done) {
+                var seededTagNames = ['tag1'],
+                    postModel;
+
+                seedTags(seededTagNames).then(function (_postModel) {
+                    postModel = _postModel;
+                    return TagModel.add({name: 'tag2'});
+                }).then(function () {
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+
+                    // Add the tag that exists in the database
+                    tagData.push({id: 2, name: 'tag2'});
+
+                    // Add the tag that doesn't exist in the database
+                    tagData.push({id: 3, name: 'tag3'});
+
+                    return postModel.set('tags', tagData).save();
+                }).then(function () {
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
+                }).then(function (reloadedPost) {
+                    var tagModels = reloadedPost.related('tags').models,
+                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
+                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
+                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
+
+                    done();
+                }).then(null, done);
+            });
+
+            it('attaches one tag that exists in the Tags database and two tags that are new to the Tags database', function (done) {
+                var seededTagNames = ['tag1'],
+                    postModel;
+
+                seedTags(seededTagNames).then(function (_postModel) {
+                    postModel = _postModel;
+                    return TagModel.add({name: 'tag2'});
+                }).then(function () {
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+
+                    // Add the tag that exists in the database
+                    tagData.push({id: 2, name: 'tag2'});
+
+                    // Add the tags that doesn't exist in the database
+                    tagData.push({id: 3, name: 'tag3'});
+                    tagData.push({id: 4, name: 'tag4'});
+
+                    return postModel.set('tags', tagData).save();
+                }).then(function () {
+                    return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
+                }).then(function (reloadedPost) {
+                    var tagModels = reloadedPost.related('tags').models,
+                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
+                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3', 'tag4']);
+                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
+
+                    done();
+                }).then(null, done);
+            });
 
             it('can add a tag to a post on creation', function (done) {
                 var newPost = _.extend(testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]})

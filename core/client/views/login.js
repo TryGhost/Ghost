@@ -212,6 +212,7 @@
                 ne2Password = this.$('input[name="ne2password"]').val();
 
             if (newPassword !== ne2Password) {
+                Ghost.notifications.clearEverything();
                 Ghost.notifications.addItem({
                     type: 'error',
                     message: "Your passwords do not match.",

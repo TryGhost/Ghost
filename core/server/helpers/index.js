@@ -12,15 +12,27 @@ var downsize        = require('downsize'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,
+    updateCheck     = require('../update-check'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     isProduction    = process.env.NODE_ENV === 'production',
 
     coreHelpers     = {},
-    registerHelpers;
+    registerHelpers,
 
-
+    scriptFiles = {
+        production: [
+            'ghost.min.js'
+        ],
+        development: [
+            'vendor.js',
+            'helpers.js',
+            'templates.js',
+            'models.js',
+            'views.js'
+        ]
+    };
 
 /**
  * [ description]
@@ -262,28 +274,16 @@ coreHelpers.fileStorage = function (context, options) {
 };
 
 coreHelpers.ghostScriptTags = function () {
-    var scriptFiles = [];
+    var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
-    if (isProduction) {
-        scriptFiles.push("ghost.min.js");
-    } else {
-        scriptFiles = [
-            'vendor.js',
-            'helpers.js',
-            'templates.js',
-            'models.js',
-            'views.js'
-        ];
-    }
-
-    scriptFiles = _.map(scriptFiles, function (fileName) {
+    scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
             source: config.paths().subdir + '/ghost/scripts/' + fileName,
             version: coreHelpers.assetHash
         });
     });
 
-    return scriptFiles.join('');
+    return scriptList.join('');
 };
 
 /*
@@ -385,14 +385,14 @@ coreHelpers.ghost_foot = function (options) {
 
 coreHelpers.meta_title = function (options) {
     /*jslint unparam:true*/
-    var title,
+    var title = "",
         blog;
 
     if (_.isString(this.relativeUrl)) {
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             title = blog.title;
-        } else {
+        } else if (this.post) {
             title = this.post.title;
         }
     }
@@ -569,8 +569,8 @@ coreHelpers.updateNotification = function () {
         return when(output);
     }
 
-    return api.settings.read('displayUpdateNotification').then(function (display) {
-        if (display && display.value && display.value === 'true') {
+    return updateCheck.showUpdateNotification().then(function (result) {
+        if (result) {
             output = '<div class="notification-success">' +
                 'A new version of Ghost is available! Hot damn. ' +
                 '<a href="http://ghost.org/download">Upgrade now</a></div>';
@@ -677,3 +677,4 @@ module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;
 module.exports.registerThemeHelper = registerThemeHelper;
 module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;
+module.exports.scriptFiles = scriptFiles;

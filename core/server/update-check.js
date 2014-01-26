@@ -31,10 +31,11 @@ var crypto   = require('crypto'),
     api      = require('./api'),
     config   = require('./config'),
     errors   = require('./errorHandling'),
+    packageInfo = require('../../package.json'),
 
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
-    currentVersion;
+    currentVersion = packageInfo.version;
 
 function updateCheckError(error) {
     errors.logError(
@@ -140,13 +141,12 @@ function updateCheckRequest() {
 // 1. Updates the time we can next make a check
 // 2. Checks if the version in the response is new, and updates the notification setting
 function updateCheckResponse(response) {
-    var ops = [],
-        displayUpdateNotification = currentVersion && semver.gt(response.version, currentVersion);
+    var ops = [];
 
     ops.push(api.settings.edit('nextUpdateCheck', response.next_check)
         .otherwise(errors.rejectError));
 
-    ops.push(api.settings.edit('displayUpdateNotification', displayUpdateNotification)
+    ops.push(api.settings.edit('displayUpdateNotification', response.version)
                 .otherwise(errors.rejectError));
 
     return when.settle(ops).then(function (descriptors) {
@@ -159,7 +159,7 @@ function updateCheckResponse(response) {
     });
 }
 
-function updateCheck(res) {
+function updateCheck() {
     var deferred = when.defer();
 
     // The check will not happen if:
@@ -175,8 +175,7 @@ function updateCheck(res) {
                 // It's not time to check yet
                 deferred.resolve();
             } else {
-                // We need to do a check, store the current version
-                currentVersion = res.locals.version;
+                // We need to do a check
                 return updateCheckRequest()
                     .then(updateCheckResponse)
                     .otherwise(updateCheckError);
@@ -188,4 +187,21 @@ function updateCheck(res) {
     return deferred.promise;
 }
 
+function showUpdateNotification() {
+    return api.settings.read('displayUpdateNotification').then(function (display) {
+        // Version 0.4 used boolean to indicate the need for an update. This special case is
+        // translated to the version string.
+        // TODO: remove in future version.
+        if (display.value === 'false' || display.value === 'true') {
+            display.value = '0.4.0';
+        }
+
+        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
+            return when(true);
+        }
+        return when(false);
+    });
+}
+
 module.exports = updateCheck;
+module.exports.showUpdateNotification = showUpdateNotification;

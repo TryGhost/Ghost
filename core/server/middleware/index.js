@@ -10,6 +10,7 @@ var middleware = require('./middleware'),
     slashes     = require('connect-slashes'),
     errors      = require('../errorHandling'),
     api         = require('../api'),
+    fs          = require('fs'),
     path        = require('path'),
     hbs         = require('express-hbs'),
     config      = require('../config'),
@@ -91,6 +92,7 @@ function initViews(req, res, next) {
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
     var hbsOptions,
+        themePartials = path.join(config.paths().themePath, activeTheme, 'partials'),
         stackLocation = _.indexOf(expressServer.stack, _.find(expressServer.stack, function (stackItem) {
             return stackItem.route === config.paths().subdir && stackItem.handle.name === 'settingEnabled';
         }));
@@ -106,10 +108,14 @@ function activateTheme(activeTheme) {
 
     // set view engine
     hbsOptions = { partialsDir: [ config.paths().helperTemplates ] };
-    if (config.paths().availableThemes[activeTheme].hasOwnProperty('partials')) {
+
+    fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it
-        hbsOptions.partialsDir.push(path.join(config.paths().themePath, activeTheme, 'partials'));
-    }
+        if (!err && stats && stats.isDirectory()) {
+            hbsOptions.partialsDir.push(themePartials);
+        }
+    });
+
     expressServer.set('theme view engine', hbs.express3(hbsOptions));
 
     // Update user error template
@@ -136,13 +142,18 @@ function manageAdminAndTheme(req, res, next) {
             if (!config.paths().availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
-                    errors.logAndThrowError('The currently active theme ' + activeTheme.value + ' is missing.');
+                    return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
                 }
             } else {
                 activateTheme(activeTheme.value);
             }
         }
         next();
+    }).otherwise(function (err) {
+        // Trying to start up without the active theme present, setup a simple hbs instance
+        // and render an error page straight away.
+        expressServer.engine('hbs', hbs.express3());
+        next(err);
     });
 }
 

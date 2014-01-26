@@ -41,7 +41,8 @@ function paths() {
         'lang':             path.join(corePath, '/shared/lang/'),
         'debugPath':        subdir + '/ghost/debug/',
         'availableThemes':  availableThemes,
-        'availableApps':    availableApps
+        'availableApps':    availableApps,
+        'builtScriptPath':  path.join(corePath, 'built/scripts/')
     };
 }
 
