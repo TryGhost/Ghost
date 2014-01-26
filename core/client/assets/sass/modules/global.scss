@@ -540,7 +540,7 @@ nav {
 }//.navbar
 
 // The user menu in the top right corner of the screen
-#usermenu {
+.usermenu.subnav {
     position:absolute;
     top:0;
     right:0;
@@ -636,7 +636,7 @@ nav {
 
         }
 
-        #usermenu {
+        .usermenu {
             position:fixed;
             top:0;
             right:auto;
@@ -928,7 +928,7 @@ nav {
    Notifications
    ========================================================================== */
 
-#notifications {
+.notifications {
     @include breakpoint($biggerthan-mobile) {
         position: absolute;
         bottom: 0;
