@@ -75,6 +75,18 @@ frontendControllers = {
             var permalink = promises[0].value,
                 post = promises[1];
 
+            function redirectCorrectSlug(withdate) {
+                var slug = post.slug;
+
+                if (withdate) {
+                    slug = moment(post.published_at).format('YYYY/MM/DD/') +
+                        slug;
+                }
+
+                res.writeHead(301, {"Location": '/' + slug + '/'});
+                return res.end();
+            }
+
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
                 if (req.params[2] && req.params[2] === 'edit') {
@@ -94,11 +106,6 @@ frontendControllers = {
                 return next();
             }
 
-            // Check that the date in the URL matches the published date of the post, else 404
-            if (dateInSlug && req.params[0] !== moment(post.published_at).format('YYYY/MM/DD/')) {
-                return next();
-            }
-
             // A page can only be rendered when there is no date in the url.
             // A post can either be rendered with a date in the url depending on the permalink setting.
             // For all other conditions return 404.
@@ -107,6 +114,25 @@ frontendControllers = {
             }
 
             if (post.page === 0) {
+
+                // If slug don't need a date but date was set in slug, 301
+                if (!req.params[2] && permalink === '/:slug/' && dateInSlug === true) {
+                    return redirectCorrectSlug();
+                }
+
+                // If slug need a date but no date was set in slug, 301
+                if (!req.params[2] && permalink !== '/:slug/' && dateInSlug === false) {
+                    return redirectCorrectSlug(true);
+                }
+
+                // Check that the date in the URL matches the published date of the post, else 301
+                if (dateInSlug && req.params[0] !== moment(post.published_at).format('YYYY/MM/DD/')) {
+                    if (!req.params[2]) {
+                        return redirectCorrectSlug(true);
+                    }
+                    return next();
+                }
+
                 // Handle post rendering
                 if ((permalink === '/:slug/' && dateInSlug === false) ||
                         (permalink !== '/:slug/' && dateInSlug === true)) {

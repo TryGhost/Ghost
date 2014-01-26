@@ -306,6 +306,23 @@ describe('Frontend Controller', function () {
                     done();
                 });
             });
+
+            it('will redirect to normal post without date accessed with date url', function (done) {
+                var req = {
+                        params: ['2012/12/30/', mockPost.slug]
+                    },
+                    res = {
+                        render: sinon.spy(),
+                        writeHead: function(code, data) {
+                            res.render.called.should.be.false;
+                            code.should.eql(301);
+                            data.Location.should.eql('/' + mockPost.slug + '/');
+                            done();
+                        }
+                    };
+
+                frontend.single(req, res);
+            });
         });
 
         describe('permalink set to date', function () {
@@ -453,6 +470,23 @@ describe('Frontend Controller', function () {
                     res.redirect.called.should.be.false;
                     done();
                 });
+            });
+
+            it('will redirect to normal post with date accessed without date url', function (done) {
+                var req = {
+                        params: [null, mockPost.slug]
+                    },
+                    res = {
+                        render: sinon.spy(),
+                        writeHead: function(code, data) {
+                            res.render.called.should.be.false;
+                            code.should.eql(301);
+                            data.Location.should.eql('/2014/01/02/' + mockPost.slug + '/');
+                            done();
+                        }
+                    };
+
+                frontend.single(req, res);
             });
         });
     });
