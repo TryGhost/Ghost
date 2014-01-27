@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="{{asset "css/screen.css" ghost="true"}}">
     {{{block "pageStyles"}}}
 </head>
-<body class="{{bodyClass}}">
+    <body class="{{bodyClass}}{{updateNotification classOnly="true"}}">
     {{#unless hideNavbar}}
         {{> navbar}}
     {{/unless}}
