@@ -26,12 +26,12 @@ Ghost 需要 node `0.10.*` （最新的稳定版）的支持。
 
 运行 `npm install --production` 命令来安装 Ghost。
 
-<!--<h2 id="customise">Customise & Configure Ghost</h2>
+<!--<h2 id="customise">自定义和配置 Ghost</h2>
 
-<h2 id="ghost-deploy">Deploy Ghost</h2>
+<h2 id="ghost-deploy">部署 Ghost</h2>
 
 <ol>
-    <li>In the Terminal / Command Prompt, type <code>npm start</code></li>
-    <li><p>This will have launched your Ghost blog, visit one  <a href="http://localhost:2368/">http://localhost:2368/</a> to see</p></li>
+    <li>在终端 / 命令行中，执行 <code>npm start</code></li>
+    <li><p>你的 Ghost 博客应该已经开始运行了，访问 <a href="http://localhost:2368/">http://localhost:2368/</a> 来看看效果</p></li>
 </ol>
 -->
