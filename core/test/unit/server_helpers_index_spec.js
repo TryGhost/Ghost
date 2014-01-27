@@ -940,21 +940,30 @@ describe('Core Helpers', function () {
     });
     describe('updateNotification', function () {
         it('outputs a correctly formatted notification when db version is higher than package version', function (done) {
-            var output = '<div class="notification-success">' +
+            var defaultOutput = '<div class="notification-success">' +
                 'A new version of Ghost is available! Hot damn. ' +
-                '<a href="http://ghost.org/download">Upgrade now</a></div>';
+                '<a href="http://ghost.org/download">Upgrade now</a></div>',
+                classOutput = ' update-available';
 
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
                 var futureversion = packageInfo.version.split('.');
-                futureversion[futureversion.length-1] = parseInt(futureversion[futureversion.length-1], 10) + 1;
+                futureversion[futureversion.length - 1] = parseInt(futureversion[futureversion.length - 1], 10) + 1;
                 return when({value: futureversion.join('.')});
             });
 
             helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
 
-                rendered.should.equal(output);
+                rendered.should.equal(defaultOutput);
+
+                // Test classOnly option
+                return helpers.updateNotification.call({currentUser: {name: 'bob'}}, {'hash': {'classOnly': 'true'}});
+            }).then(function (rendered) {
+                should.exist(rendered);
+
+                rendered.should.equal(classOutput);
+
                 done();
             }).then(null, done);
         });
