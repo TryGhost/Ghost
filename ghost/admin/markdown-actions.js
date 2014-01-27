@@ -15,46 +15,34 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, md, cursor, line, word, letterCount, converter;
+            var text = this.elem.getSelection(), pass = true, cursor = this.elem.getCursor(), line = this.elem.getLine(cursor.line), md, word, letterCount, converter;
             switch (this.style) {
             case 'h1':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '# ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 2);
                 pass = false;
                 break;
             case 'h2':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '## ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 3);
                 pass = false;
                 break;
             case 'h3':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 4);
                 pass = false;
                 break;
             case 'h4':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '#### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 5);
                 pass = false;
                 break;
             case 'h5':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '##### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 6);
                 pass = false;
                 break;
             case 'h6':
-                cursor = this.elem.getCursor();
-                line = this.elem.getLine(cursor.line);
                 this.elem.setLine(cursor.line, '###### ' + line);
                 this.elem.setCursor(cursor.line, cursor.ch + 7);
                 pass = false;
@@ -62,14 +50,12 @@
             case 'link':
                 md = this.options.syntax.link.replace('$1', text);
                 this.elem.replaceSelection(md, 'end');
-                cursor = this.elem.getCursor();
                 this.elem.setSelection({line: cursor.line, ch: cursor.ch - 8}, {line: cursor.line, ch: cursor.ch - 1});
                 pass = false;
                 break;
             case 'image':
-                cursor = this.elem.getCursor();
                 md = this.options.syntax.image.replace('$1', text);
-                if (this.elem.getLine(cursor.line) !== '') {
+                if (line !== '') {
                     md = "\n\n" + md;
                 }
                 this.elem.replaceSelection(md, "end");
@@ -87,7 +73,6 @@
                 md = text.toTitleCase();
                 break;
             case 'selectword':
-                cursor = this.elem.getCursor();
                 word = this.elem.getTokenAt(cursor);
                 if (!/\w$/g.test(word.string)) {
                     this.elem.setSelection({line: cursor.line, ch: word.start}, {line: cursor.line, ch: word.end - 1});
@@ -117,9 +102,8 @@
                 pass = false;
                 break;
             case 'newLine':
-                cursor = this.elem.getCursor();
-                if (this.elem.getLine(cursor.line) !== "") {
-                    this.elem.setLine(cursor.line, this.elem.getLine(cursor.line) + "\n\n");
+                if (line !== "") {
+                    this.elem.setLine(cursor.line, line + "\n\n");
                 }
                 pass = false;
                 break;
@@ -132,7 +116,6 @@
                 this.elem.replaceSelection(md, 'end');
                 if (!text) {
                     letterCount = md.length;
-                    cursor = this.elem.getCursor();
                     this.elem.setCursor({line: cursor.line, ch: cursor.ch - (letterCount / 2)});
                 }
             }
