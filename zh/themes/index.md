@@ -10,42 +10,41 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## 变更主题 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost 的主题放在 <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+如果你想用其他主题替换缺省的 Casper 主题，可以看看我们的 [marketplace gallery](http://marketplace.ghost.org/) 上的这些自定义主题。下载你喜欢的主题，解压之后放进<code class="path">content/themes</code>里，和 Casper 放一起。
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+如果你想自己做个主题，我们建议你复制 casper 文件夹，然后在复制的文件夹里修改模版，按你喜欢来做。
 
-To switch to your newly added theme:
+要切换到你新添加的主题：
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  重启 Ghost 。Ghost 不会立即发现你往<code class="path">content/themes</code>新添加了文件夹，所以你需要重启 Ghost。
+2.  登录 Ghost 管理后台，进入<code class="path">/ghost/settings/general/</code>页面。
+3.  在“Theme”下拉菜单里选择你的主题的名字。
+4.  点“保存”。
+5.  查看博客的前端，欣赏你的新主题吧！
 
+## Handlebars 是什么？ <a id="what-is-handlebars"></a>
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+[Handlebars](http://handlebarsjs.com/) 是 Ghost 使用的模版语言。
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+Handlebars 提供了可以使你轻松高效地建立语义模版的功能。
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+如果你正打算开始自己写主题，也许先熟悉熟悉 handlebars 的语法是个不错的选择。看看 [handlebars 文档](http://handlebarsjs.com/expressions.html)，或者看看 [Treehouse 上的教程](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) —— 这样你就可以跳过开始的安装和使用步骤（我们帮你做好了一部分），同时避免和“基本表达”纠缠。
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+## 关于 Ghost 主题 <a id="about"></a>
 
-## About Ghost themes <a id="about"></a>
+Ghost 的主题旨在做到易于编写和维护。Ghost 主题推崇模版（HTML）和业务逻辑（JavaScript）之间的分离。Handlebars （几乎）是没有逻辑，并且强化了这个分离，同时提供部件来帮助用来显示内容的业务逻辑保持独立。这种分离使在制作主题时，开发者和设计师之间的合作更加容易。
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Handlebars 模版是分等级的（一个模版可以扩展另一个），也支持模块化的模版。Ghost 拥有这些特性，使得代码的重复得以减少，同时每一个模版可以保持专注于实现单一功能，并且做到好。拥有良好架构的主题将很容易维护，而各个组成部分之间的分离使得他们可以在不同主题之间重复利用。
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+希望你喜欢我们构造主题的方法。
 
-We really hope you'll enjoy our approach to theming.
+## Ghost 主题的文件架构 <a id="file-structure"></a>
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
-
-The recommended file structure is:
+我们推荐如下架构：
 
 ```
 .
@@ -56,8 +55,8 @@ The recommended file structure is:
 |   ├── /images
 |   ├── /js
 ├── default.hbs
-├── index.hbs [required]
-└── post.hbs [required]
+├── index.hbs [必需]
+└── post.hbs [必需]
 ```
 
 For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
