@@ -183,15 +183,27 @@ function isSSLrequired(isAdmin) {
 // and redirect if needed
 function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin)) {
-        // Check if X-Forarded-Proto headers are sent, if they are check for https.
-        // If they are not assume true to avoid infinite redirect loop.
-        // If the X-Forwarded-Proto header is missing and Express cannot automatically sense HTTPS the redirect will not be made.
-        var httpsHeader = req.header('X-Forwarded-Proto') !== undefined ? req.header('X-Forwarded-Proto').toLowerCase() === 'https' ? true : false : true;
-        if (!req.secure && !httpsHeader) {
-            return res.redirect(301, url.format({
+        if (!req.secure) {
+            // Use a different response, if configured - for example, to return
+            // 401 Unauthorized when accessing admin pages via non-secure connection
+            // forceAdminSSLResponse: [301, 'https://secure.ghostblog.com']
+
+            var response = config().forceAdminSSLResponse, redirectUrl;
+            if (response && (response[0] || response) !== 301 && (response[0] || response) !== 302) {
+                return res.send.apply(res, [].concat(response));
+            }
+
+            // If forceAdminSSLResponse provides a URL as a 2nd parameter, then
+            // use it to redirect there; otherwise use configured blog URL but
+            // with HTTPS protocol. Configuring different URL is useful in scenarios
+            // where site is hosted via HTTP on custom domain, but HTTPS is accessed
+            // via different hostname, like it is on Heroku.
+
+            redirectUrl = url.parse((response && response[1]) || config().url);
+            return res.redirect((response && response[0]) || response || 301, url.format({
                 protocol: 'https:',
-                hostname: url.parse(config().url).hostname,
-                pathname: req.path,
+                hostname: redirectUrl.hostname,
+                pathname: redirectUrl.pathname.replace(/\/+$/, '') + req.path,
                 query: req.query
             }));
         }
@@ -226,12 +238,15 @@ module.exports = function (server, dbHash) {
     // First determine whether we're serving admin or theme content
     expressServer.use(manageAdminAndTheme);
 
-    // Force SSL
-    expressServer.use(checkSSL);
-
-
     // Admin only config
     expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
+
+    // Force SSL
+    // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
+    //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
+    //       not display properly when HTTPS is not available!
+    expressServer.enable('trust proxy'); // makes sure `req.secure` is valid for proxied requests
+    expressServer.use(checkSSL);
 
     // Theme only config
     expressServer.use(subdir, middleware.whenEnabled(expressServer.get('activeTheme'), middleware.staticTheme()));
