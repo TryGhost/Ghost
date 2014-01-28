@@ -562,7 +562,7 @@ coreHelpers.adminUrl = function (options) {
     return config.paths.urlFor(context, absolute);
 };
 
-coreHelpers.updateNotification = function () {
+coreHelpers.updateNotification = function (options) {
     var output = '';
 
     if (config().updateCheck === false || !this.currentUser) {
@@ -571,9 +571,13 @@ coreHelpers.updateNotification = function () {
 
     return updateCheck.showUpdateNotification().then(function (result) {
         if (result) {
-            output = '<div class="notification-success">' +
-                'A new version of Ghost is available! Hot damn. ' +
-                '<a href="http://ghost.org/download">Upgrade now</a></div>';
+            if (options && options.hash && options.hash.classOnly) {
+                output = ' update-available';
+            } else {
+                output = '<div class="notification-success">' +
+                    'A new version of Ghost is available! Hot damn. ' +
+                    '<a href="http://ghost.org/download">Upgrade now</a></div>';
+            }
         }
 
         return output;
