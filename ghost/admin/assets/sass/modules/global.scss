@@ -1028,6 +1028,12 @@ nav {
     background: $blue;
 }
 
+// Hide extra space taken up by update notification
+.update-available main {
+    bottom: 56px;
+}
+
+
 /* ==========================================================================
    Modals
    ========================================================================== */
