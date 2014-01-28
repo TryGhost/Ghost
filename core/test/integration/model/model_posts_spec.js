@@ -243,13 +243,13 @@ describe('Post Model', function () {
 
     it('can generate slugs without duplicate hyphens', function (done) {
         var newPost = {
-            title: 'apprehensive  titles  have  too  many  spaces  ',
+            title: 'apprehensive  titles  have  too  many  spaces—and m-dashes  —  –  and also n-dashes  ',
             markdown: 'Test Content 1'
         };
 
         PostModel.add(newPost).then(function (createdPost) {
 
-            createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces');
+            createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
             done();
         }).then(null, done);
