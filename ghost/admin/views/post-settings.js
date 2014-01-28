@@ -5,6 +5,10 @@
 (function () {
     "use strict";
 
+    var parseDateFormats = ['DD MMM YY  HH:mm', 'DD MMM YYYY HH:mm', 'DD/MM/YY HH:mm', 'DD/MM/YYYY HH:mm',
+            'DD-MM-YY HH:mm', 'DD-MM-YYYY HH:mm'],
+        displayDateFormat = 'DD MMM YY @ HH:mm';
+
     Ghost.View.PostSettings = Ghost.View.extend({
 
         events: {
@@ -17,11 +21,10 @@
 
         initialize: function () {
             if (this.model) {
+                // These three items can be updated outside of the post settings menu, so have to be listened to.
                 this.listenTo(this.model, 'change:id', this.render);
-                this.listenTo(this.model, 'change:status', this.render);
-                this.listenTo(this.model, 'change:published_at', this.render);
-                this.listenTo(this.model, 'change:page', this.render);
                 this.listenTo(this.model, 'change:title', this.updateSlugPlaceholder);
+                this.listenTo(this.model, 'change:published_at', this.updatePublishedDate);
             }
         },
 
@@ -29,8 +32,7 @@
             var slug = this.model ? this.model.get('slug') : '',
                 pubDate = this.model ? this.model.get('published_at') : 'Not Published',
                 $pubDateEl = this.$('.post-setting-date'),
-                $postSettingSlugEl = this.$('.post-setting-slug'),
-                publishedDateFormat = 'DD MMM YY @ HH:mm';
+                $postSettingSlugEl = this.$('.post-setting-slug');
 
             $postSettingSlugEl.val(slug);
 
@@ -41,10 +43,10 @@
 
             // Insert the published date, and make it editable if it exists.
             if (this.model && this.model.get('published_at')) {
-                pubDate = moment(pubDate).format(publishedDateFormat);
+                pubDate = moment(pubDate).format(displayDateFormat);
                 $pubDateEl.attr('placeholder', '');
             } else {
-                $pubDateEl.attr('placeholder', moment().format(publishedDateFormat));
+                $pubDateEl.attr('placeholder', moment().format(displayDateFormat));
             }
 
             if (this.model && this.model.get('id')) {
@@ -130,6 +132,7 @@
                 },
                 error : function (model, xhr) {
                     /*jslint unparam:true*/
+                    slugEl.value = model.previous('slug');
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -139,13 +142,23 @@
             });
         }, 500),
 
+
+        updatePublishedDate: function () {
+            var pubDate = this.model.get('published_at') ? moment(this.model.get('published_at'))
+                    .format(displayDateFormat) : '',
+                $pubDateEl = this.$('.post-setting-date');
+
+            // Only change the date if it's different
+            if (pubDate && $pubDateEl.val() !== pubDate) {
+                $pubDateEl.val(pubDate);
+            }
+        },
+
         editDate: _.debounce(function (e) {
             e.preventDefault();
             var self = this,
-                parseDateFormats = ['DD MMM YY HH:mm', 'DD MMM YYYY HH:mm', 'DD/MM/YY HH:mm', 'DD/MM/YYYY HH:mm', 'DD-MM-YY HH:mm', 'DD-MM-YYYY HH:mm'],
-                displayDateFormat = 'DD MMM YY @ HH:mm',
                 errMessage = '',
-                pubDate = self.model.get('published_at'),
+                pubDate = moment(self.model.get('published_at')).format(displayDateFormat),
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
                 pubDateMoment,
@@ -228,6 +241,8 @@
                 },
                 error : function (model, xhr) {
                     /*jslint unparam:true*/
+                    //  Reset back to original value
+                    pubDateEl.value = pubDateMoment ? pubDateMoment.format(displayDateFormat) : '';
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
@@ -266,6 +281,7 @@
                 },
                 error : function (model, xhr) {
                     /*jslint unparam:true*/
+                    pageEl.prop('checked', model.previous('page'));
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: Ghost.Views.Utils.getRequestErrorMessage(xhr),

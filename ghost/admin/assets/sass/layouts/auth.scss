@@ -55,7 +55,7 @@
    1. Login
    ============================================================================= */
 
-#login {
+.login-form {
     @include box-sizing(border-box);
     max-width: 530px;
     color: lighten($midgrey, 15%);
@@ -182,7 +182,7 @@
    2. Signup and Reset
    ============================================================================= */
 
-#signup, #reset {
+.signup-form, .reset-form {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
@@ -270,7 +270,7 @@
    3. Forgotten
    ============================================================================= */
 
-#forgotten {
+.forgotten-form {
     @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
