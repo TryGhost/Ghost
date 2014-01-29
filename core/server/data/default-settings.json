@@ -20,6 +20,9 @@
         "description": {
             "defaultValue": "Just a blogging platform."
         },
+        "customSiteHtml": {
+            "defaultValue": ""
+        },
         "email": {
             "defaultValue": "ghost@example.com",
             "validations": {

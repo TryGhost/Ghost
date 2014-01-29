@@ -21,14 +21,16 @@ function update(settings, configUrl) {
         settings.read('title'),
         settings.read('description'),
         settings.read('logo'),
-        settings.read('cover')
+        settings.read('cover'),
+        settings.read('customSiteHtml')
     ]).then(function (globals) {
         // normalise the URL by removing any trailing slash
-        themeConfig.url = configUrl.replace(/\/$/, '');
-        themeConfig.title = globals[0].value;
-        themeConfig.description = globals[1].value;
-        themeConfig.logo = globals[2] ? globals[2].value : '';
-        themeConfig.cover = globals[3] ? globals[3].value : '';
+        themeConfig.url            = configUrl.replace(/\/$/, '');
+        themeConfig.title          = globals[0].value;
+        themeConfig.description    = globals[1].value;
+        themeConfig.logo           = globals[2] ? globals[2].value : '';
+        themeConfig.cover          = globals[3] ? globals[3].value : '';
+        themeConfig.customSiteHtml = globals[4] ? globals[4].value : '';
         return;
     });
 }
