@@ -77,7 +77,7 @@ Settings = ghostBookshelf.Model.extend({
 
 
     saving: function () {
-
+        // Remember to add "customSiteHtml" to sanitization. (thanks!)
          // disabling sanitization until we can implement a better version
          // All blog setting keys that need their values to be escaped.
          // if (this.get('type') === 'blog' && _.contains(['title', 'description', 'email'], this.get('key'))) {

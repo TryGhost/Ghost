@@ -150,12 +150,13 @@
         },
 
         saveSettings: function () {
-            var self = this,
-                title = this.$('#blog-title').val(),
-                description = this.$('#blog-description').val(),
-                email = this.$('#email-address').val(),
-                postsPerPage = this.$('#postsPerPage').val(),
-                permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/';
+            var self           = this,
+                title          = this.$('#blog-title').val(),
+                description    = this.$('#blog-description').val(),
+                customSiteHtml = this.$('#blog-custom-site-html').val(),
+                email          = this.$('#email-address').val(),
+                postsPerPage   = this.$('#postsPerPage').val(),
+                permalinks     = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/';
 
             Ghost.Validate._errors = [];
             Ghost.Validate
@@ -173,18 +174,22 @@
             Ghost.Validate
                 .check(postsPerPage, {message: "Please use a number greater than 0", el: $('postsPerPage')})
                 .isInt().min(0);
+            // Ghost.Validate
+            //     .check(customSiteHtml, {message: "Custom site Html too long", el: $('#blog-custom-site-html')})
+            //     .max(32000);
 
 
             if (Ghost.Validate._errors.length > 0) {
                 Ghost.Validate.handleErrors();
             } else {
                 this.model.save({
-                    title: title,
-                    description: description,
-                    email: email,
-                    postsPerPage: postsPerPage,
-                    activeTheme: this.$('#activeTheme').val(),
-                    permalinks: permalinks
+                    title          : title,
+                    description    : description,
+                    email          : email,
+                    postsPerPage   : postsPerPage,
+                    activeTheme    : this.$('#activeTheme').val(),
+                    permalinks     : permalinks,
+                    customSiteHtml : customSiteHtml,
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
