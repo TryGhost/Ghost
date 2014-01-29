@@ -153,7 +153,7 @@
             var self           = this,
                 title          = this.$('#blog-title').val(),
                 description    = this.$('#blog-description').val(),
-                customSiteHtml = this.$('#blog-custom-site-html'),
+                customSiteHtml = this.$('#blog-custom-site-html').val(),
                 email          = this.$('#email-address').val(),
                 postsPerPage   = this.$('#postsPerPage').val(),
                 permalinks     = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/';
