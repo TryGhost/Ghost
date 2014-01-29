@@ -8,8 +8,8 @@ var dataExport       = require('../data/export'),
     _                = require('lodash'),
     schema           = require('../data/schema').tables,
     config           = require('../config'),
+    errors           = require('../../server/errorHandling'),
     api              = {},
-
     db;
 
 api.notifications    = require('./notifications');
@@ -76,7 +76,8 @@ db = {
             try {
                 importData = JSON.parse(fileContents);
             } catch (e) {
-                return when.reject(new Error("Failed to parse the import file"));
+                errors.logError(e, "API DB import content", "check that the import file is valid JSON.");
+                return when.reject(new Error("Failed to parse the import JSON file"));
             }
 
             if (!importData.meta || !importData.meta.version) {
