@@ -22,6 +22,7 @@ frontendControllers = {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             postsPerPage,
+            customSiteHtml,
             options = {};
 
         // No negative pages, or page 1
@@ -39,6 +40,9 @@ frontendControllers = {
             }
             return;
         }).then(function () {
+            return api.settings.read('customSiteHtml');
+        }).then(function (_customSiteHtml) {
+            customSiteHtml = _customSiteHtml;
             return api.posts.browse(options);
         }).then(function (page) {
             var maxPage = page.pages;
@@ -56,7 +60,7 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
+                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}, customSiteHtml: customSiteHtml.value});
             });
         }).otherwise(function (err) {
             var e = new Error(err.message);
@@ -70,10 +74,12 @@ frontendControllers = {
         var dateInSlug = req.params[0] ? true : false;
         when.join(
             api.settings.read('permalinks'),
-            api.posts.read({slug: req.params[1]})
+            api.posts.read({slug: req.params[1]}),
+            api.settings.read('customSiteHtml')
         ).then(function (promises) {
             var permalink = promises[0].value,
-                post = promises[1];
+                post = promises[1],
+                customSiteHtml = promises[2];
 
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
@@ -85,7 +91,7 @@ frontendControllers = {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config.paths().availableThemes[activeTheme.value],
                             view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
-                        res.render(view, {post: post});
+                        res.render(view, {post: post, customSiteHtml: customSiteHtml.value});
                     });
                 });
             }
