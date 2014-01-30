@@ -11,7 +11,9 @@ var User,
     Role           = require('./role').Role,
     Permission     = require('./permission').Permission,
     http           = require('http'),
-    crypto         = require('crypto');
+    crypto         = require('crypto'),
+
+    tokenSecurity  = {};
 
 function validatePasswordLength(password) {
     try {
@@ -268,6 +270,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     validateToken: function (token, dbHash) {
+        /*jslint bitwise:true*/
         // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
         var tokenText = new Buffer(token, 'base64').toString('ascii'),
             parts,
@@ -288,17 +291,36 @@ User = ghostBookshelf.Model.extend({
             return when.reject(new Error("Invalid token expiration"));
         }
 
-        // This is easy to fake, but still check anyway.
+        // Check if token is expired to prevent replay attacks
         if (expires < Date.now()) {
             return when.reject(new Error("Expired token"));
         }
 
+        // to prevent brute force attempts to reset the password the combination of email+expires is only allowed for 10 attempts
+        if (tokenSecurity[email + '+' + expires] && tokenSecurity[email + '+' + expires].count >= 10) {
+            return when.reject(new Error("Token locked"));
+        }
+
         return this.generateResetToken(email, expires, dbHash).then(function (generatedToken) {
-            // Check for matching tokens
-            if (token === generatedToken) {
+            // Check for matching tokens with timing independent comparison
+            var diff = 0,
+                i;
+
+            // check if the token lenght is correct
+            if (token.length !== generatedToken.length) {
+                diff = 1;
+            }
+
+            for (i = token.length - 1; i >= 0; i = i - 1) {
+                diff |= token.charCodeAt(i) ^ generatedToken.charCodeAt(i);
+            }
+
+            if (diff === 0) {
                 return when.resolve(email);
             }
 
+            // increase the count for email+expires for each failed attempt
+            tokenSecurity[email + '+' + expires] = {count: tokenSecurity[email + '+' + expires] ? tokenSecurity[email + '+' + expires].count + 1 : 1};
             return when.reject(new Error("Invalid token"));
         });
     },
