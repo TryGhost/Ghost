@@ -5,8 +5,8 @@
 (function () {
     "use strict";
 
-    var parseDateFormats = ['DD MMM YY  HH:mm', 'DD MMM YYYY HH:mm', 'DD/MM/YY HH:mm', 'DD/MM/YYYY HH:mm',
-            'DD-MM-YY HH:mm', 'DD-MM-YYYY HH:mm'],
+    var parseDateFormats = ["DD MMM YY HH:mm", "DD MMM YYYY HH:mm", "DD/MM/YY HH:mm", "DD/MM/YYYY HH:mm",
+            "DD-MM-YY HH:mm", "DD-MM-YYYY HH:mm", "YYYY-MM-DD HH:mm"],
         displayDateFormat = 'DD MMM YY @ HH:mm';
 
     Ghost.View.PostSettings = Ghost.View.extend({
@@ -158,7 +158,8 @@
             e.preventDefault();
             var self = this,
                 errMessage = '',
-                pubDate = moment(self.model.get('published_at')).format(displayDateFormat),
+                pubDate = self.model.get('published_at') ? moment(self.model.get('published_at'))
+                    .format(displayDateFormat) : '',
                 pubDateEl = e.currentTarget,
                 newPubDate = pubDateEl.value,
                 pubDateMoment,
