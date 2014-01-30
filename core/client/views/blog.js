@@ -40,8 +40,11 @@
 
         isLoading: false,
 
+        statusFilter: 'all',
+
         events: {
-            'click .content-list-content'    : 'scrollHandler'
+            'click .content-list-content' : 'scrollHandler',
+            'click .content-filter'       : 'filterByStatus'
         },
 
         initialize: function () {
@@ -83,14 +86,19 @@
         },
 
         checkScroll: function (event) {
-            var self = this,
-                element = event.target,
+            var element = event.target,
                 triggerPoint = 100;
 
             // If we haven't passed our threshold, exit
             if (this.isLoading || (element.scrollTop + element.clientHeight + triggerPoint <= element.scrollHeight)) {
                 return;
             }
+
+            this.loadNextPage(false);
+        },
+
+        loadNextPage: function (remove) {
+            var self = this;
 
             // If we've loaded the max number of pages, exit
             if (this.collection.currentPage >=  this.collection.totalPages) {
@@ -100,17 +108,17 @@
             // Load moar posts!
             this.isLoading = true;
             this.collection.fetch({
-                update: true,
-                remove: false,
+                update: !remove,
+                remove: remove,
                 data: {
-                    status: 'all',
+                    status: self.statusFilter,
                     page: (self.collection.currentPage + 1),
                     staticPages: 'all'
                 }
             }).then(function onSuccess(response) {
+                self.isLoading = false;
                 /*jslint unparam:true*/
                 self.render();
-                self.isLoading = false;
             }, function onError(e) {
                 self.reportLoadError(e);
             });
@@ -130,6 +138,20 @@
                 $list.append(this.addSubview(new ContentItem({model: model})).render().el);
             }, this);
             this.showNext();
+        },
+
+        filterByStatus: function(event) {
+            var element = event.target;
+            this.statusFilter = $(element).data('filter');
+
+            if (self.isLoading === true) {
+              // Do nothing for now.
+              return;
+            }
+
+            // Load again from page 1, clearing what is already there
+            this.collection.currentPage = 0;
+            this.loadNextPage(true);
         }
 
     });
