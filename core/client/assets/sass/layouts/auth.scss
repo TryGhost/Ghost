@@ -95,7 +95,8 @@
             @include transition(none);
         }
         
-        &:focus { 
+        &:focus {
+            border: none;
             background: lighten($darkgrey, 15%); 
         }
 
