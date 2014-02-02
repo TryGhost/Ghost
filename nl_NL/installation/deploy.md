@@ -1,70 +1,70 @@
 ---
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Hoe installeer je Ghost op je eigen server - Ghost Docs
+meta_description: Alle informatie om het Ghost blogging platform op je eigen lokale en online server te installeren en te draaien.
+heading: Installeer Ghost & beginnen
+subheading: De eerste stappen om je nieuwe blog te installeren.
 permalink: /nl_NL/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-## Getting Ghost Live <a id="deploy"></a>
+## Start met Ghost <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Je bent er klaar voor om Ghost te gebruiken? Geweldig!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+De eerste keuze die je maakt, is of je Ghost zelf wilt installeren en configureren, of je liever een installatieprogramma gebruikt.
 
-### Installers
+### Installatieprogramma
 
-There are a couple of options for simple installers at the moment:
+Er zijn een paar installatieprogramma's op dit moment beschikbaar.
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+* Gebruik de clouddienst van [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+* Installeer Ghost via een [Rackspace installatie](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+* Begin met Ghost via de [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### Handmatige installatie
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Je hebt een hostingpakket nodig dat de beschikking heeft over [Node.js](http://nodejs.org) of je de mogelijkheid geeft dit te installeren.
+Dit betekent dat je gebruik kunt maken van een clouddienst ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) of elk pakket met SSH toegang (terminal)  en de mogelijkheid om Node.js te installeren. Er zijn veel mogelijkheden en de startprijzen kunnen laag zijn.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Wat nu nog *niet* werkt zijn hostingproviders met cPanel-achtige omgevingen. Deze zijn veelal gericht op PHP omgevingen. Sommigen kunnen Ruby aanbieden en zouden in de toekomst dan Node.js kunnen aanbieden.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+Helaas zijn een aantal Node-specifieke cloud diensten zoals **Nodejitsu** en **Heroku** niet compatibel met Ghost. Ze lijken in het begin te werken, maar de kans bestaat dat je bestanden worden verwijderd en je database verdwijnt. Heroku ondersteunt MySQL, maar je loopt nog altijd het risico dat bestanden onbedoeld worden verwijderd.
 
-The following links contain instructions on how to get up and running with:
+Onderstaande lijst bevat instructies hoe je kunt starten met Ghost bij diverse cloud diensten. 
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - via  [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - via [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - via  [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - via [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - via [Gregg Housh](http://0v.org/)
+*   ...bekijk het [installatie forum](https://en.ghost.org/forum/installation) voor meer gidsen ...
 
-## Making Ghost run forever
+## Laat Ghost continu draaien
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+De methode die we beschreven om Ghost te starten is `npm start`. Dit is een prima manier om lokaal te ontwikkelen en te testen, maar met de methode via de commandline stopt Ghost als je je terminal scherm sluit of uitlogt uit SSH. Om te voorkomen dat Ghost stopt dien je het als een service te draaien. Er zijn twee manieren om dit te doen
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+Je kunt  `forever` gebruiken om Ghost als achtergrond taak te draaien. `forever` zorgt voor de Ghost installatie en herstart het proces na een crash. 
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+* 	Installeer `forever` middels `npm install forever -g`
+*  Om Ghost middels `forever` te starten uit de Ghost directory type `NODE_ENV=production forever start index.js`
+*   Om Ghost te stoppen type je `forever stop index.js`
+*   Om te kijken of Ghost nog draait type je `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Populaire Linux distributies &mdash; zoals Fedora, Debian, and Ubuntu&mdash;maken gebruik van een pakket voor Supervisor: Een process controle systeem wat je de mogelijkheid biedt om Ghost te draaien vanaf de startup zonder gebruik te maken van init scripts. In tegenstelling tot init scripts is Supervisor uitwisselbaar tussen Linux distributies en versies.
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Installeer Supervisor](http://supervisord.org/installing.html) voor jouw Linux distributie. Dit is doorgaans:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   De meeste andere distributies: `easy_install supervisor`
+*   Verifieer dat Supervisor draait via `service supervisor start`
+*   Maak het startscript voor je Ghost installatie. Dit plaats je doorgaans in `/etc/supervisor/conf.d/ghost.conf` Bijvoorbeeld:
 
     ```
     [program:ghost]
@@ -78,44 +78,45 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Start Ghost via Supervisor: `supervisorctl start ghost`
+*   Stop Ghost via: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+Bekijk de [documentatie van Supervisor](http://supervisord.org) voor meer informatie.
 
 ### Init Script <a id="init-script"></a>
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Linux systemen gebruiken init scripts bij het opstarten van het systeem. Deze scripts staan in /etc/init.d. 
+Om Ghost altijd te laten draaien, zelfs na een reboot, kun je een init script maken. Het volgende voorbeeld werkt voor Ubuntu en is getest op **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   Maak het bestand /etc/init.d/ghost met het volgende commando:
 
     ```
     $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   Open het bestand `nano /etc/init.d/ghost` en maak de volgende aanpassingen:
+*   Verander de variabele `GHOST_ROOT` naar je eigen pad waar je Ghost hebt geinstalleerd.
+*   Check of de `DAEMON` variabele gelijk is aan de output van `which node`
+*   Het init script draait met zijn eigen Ghost gebruiker en groep op je systeem. Deze maak je als volgt:
 
     ```
     $ sudo useradd -r ghost -U
     ```
 
-*   Let's also make sure the Ghost user can access the installation:
+*   Geef de Ghost gebruiker direct toegang tot de installatie:
 
     ```
     $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
-*   Change the execution permission for the init script by typing
+*   Verander de lees- en schrijfrechten van het init script
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   Nu kun je Ghost gebruiken met de volgende commando's:
 
     ```
     $ sudo service ghost start
@@ -124,40 +125,42 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line:
+*   Registreer het nieuwe script om Ghost met een systeem startup mee te starten. 
+
+	Type de volgende twee commando's op de command line:
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
 
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+*   Verzeker jezelf dat de gebruiker bestanden kan veranderen zoals config.js in de Ghost directory. Voeg jezelf toe aan de ghost groep:
+
     ```
     $ sudo adduser USERNAME ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   Herstart de server en Ghost draait dan al voor je.
 
 
-## Setting up Ghost with a domain name <a id="nginx-domain"></a>
+## Ghost aan een domeinnaam koppelen <a id="nginx-domain"></a>
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
+Als je Ghost hebt geinstalleerd om altijd te blijven draaien, kun je eveneens een web server instellen om je blog met een eigen domein te draaien.
+In onderstaand voorbeeld gaan we er van uit dat je **Ubuntu 12.04** draait en  **nginx** als web server gebruikt
+Tevens nemen we aan dat Ghost al op de achtergrond draait op een van de bovenstaande wijzen.
 
-*   Install nginx
+*   Installeer nginx
 
     ```
     $ sudo apt-get install nginx
     ```
-    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+    <span class="note">Dit installeert nginx en configureert alle noodzakelijke directories en basis instellingen</span>
 
-*   Configure your site
+*   Configureer je site
 
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   Maak een nieuw bestand `/etc/nginx/sites-available/ghost.conf`
+    *   Open het bestand met een tekst editor (bv `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        en voeg onderstaande toe
 
         ```
         server {
@@ -173,35 +176,35 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   Verander `server_name` in je eigen domeinnaam
+    *   Symlink je configuratie in `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
 
-    *   Restart nginx
+    *   Herstart nginx
 
     ```
     $ sudo service nginx restart
     ```
 
-## Setting up Ghost with SSL <a id="ssl"></a>
+## Configureer Ghost met SSL <a id="ssl"></a>
 
-After setting up a custom domain it is a good idea to secure the admin interface or maybe your whole blog using HTTPS. It is advisable to protect the admin interface with HTTPS because username and password are going to be transmitted in plaintext if you do not enable encryption.
+Na het installeren en instellen van je eigen domein is het een goed idee om het beheer van je blog of je complete blog te beveiligen met HTTPS. Wij adviseren om in elk geval het beheer te beveiligen omdat je loginnaam en wachtwoord als plaintext wordt verstuurd als je geen encryptie instelt.
 
-The following example will show you how to set up SSL. We assume, that you have followed this guide so far and use nginx as your proxy server. A setup with another proxy server should look similar.
+Onderstaand voorbeeld laat zien hoe je SSL kunt instellen. We nemen aan dat je de documentatie hebt gevolgd en nginx gebruikt als proxy server. De setup met een andere proxy server is echter vergelijkbaar.
 
-First you need to obtain a SSL certificate from a provider you trust. Your provider will guide you through the process of generating your private key and a certificate signing request (CSR). After you have received the certificate file you have to copy the CRT file from your certificate provider and the KEY file which is generated during issuing the CSR to the server.
+Eerst dien je een SSL certificaat van een vertrouwde leverancier aan te schaffen. De leverancier zal je door het proces helpen om een private key te maken en het *certificate signing request* (CSR). Na ontvangst van het certificaat bestand copieer je deze samen met het gegenereerde KEY bestand naar de server.
 
 - `mkdir /etc/nginx/ssl`
 - `cp server.crt /etc/nginx/ssl/server.crt`
 - `cp server.key /etc/nginx/ssl/server.key`
 
-After these two files are in place you need to update your nginx configuration.
+Als deze twee bestanden aanwezig zijn update je de nginx configuratie.
 
-*   Open the nginx configuration file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-*   Add the settings indicated with a plus to your configuration file:
+*   Open het  file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+*   Voeg onderstaande instellingen toe die door het plusteken worden voorafgegaan:
 
     ```
      server {
@@ -221,14 +224,14 @@ After these two files are in place you need to update your nginx configuration.
      }
     ```
 
-    *   Restart nginx
+    *   Herstart nginx
 
     ```
     $ sudo service nginx restart
     ```
 
-After these steps you should be able to reach the admin area of your blog using a secure HTTPS connection. If you want to force all your traffic to use SSL it is possible to change the protocol of the url setting in your config.js file to https (e.g.: `url: 'https://my-ghost-blog.com'`). This will force the use of SSL for frontend and admin. All requests sent over HTTP will be redirected to HTTPS. If you include images in your post that are retrieved from domains that are using HTTP an 'insecure content' warning will appear. Scripts and fonts from HTTP domains will stop working.
+Na deze stappen is het mogelijk om het beheer van je blog te bereiken via een HTTPS verbinding. Wil je al het verkeer van je blog via SSL leiden, pas dan het protocol van de URL instellingen aan in config.js naar https (bv: `url: 'https://my-ghost-blog.com'`). Dit bepaalt het gebruik van SSL bij zowel je blog als het beheer. Alle HTTP aanvragen worden omgeleid naar HTTPS. Als je afbeeldingen in je artikel plaatst die je ophaalt met een HTTP verbinding, krijg je de melding dat er 'onveilige inhoud' aanwezig is, Scripts en fonts vanaf HTTP domeinen zullen niet meer werken. 
 
-In most cases you'll want to force SSL for the administration interface and serve the frontend using HTTP and HTTPS. To force SSL for the admin area the option `forceAdminSSL: true` was introduced.
+In de meeste gevallen wil je SSL gebruiken in de administratie en je blog gewoon via HTTP en HTTPS serveren. Om SSL te gebruiken in de administratie, gebruik je de optie  `forceAdminSSL: true` .
 
-If you need further information on how to set up SSL for your proxy server the official SSL documention of [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) and [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) are a perfect place to start.
+Als je meer informatie wilt over het opzetten van SSL voor je eigen proxy server, dan zijn de officiële documentatie van [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) en [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) een prima plaats om te starten.
