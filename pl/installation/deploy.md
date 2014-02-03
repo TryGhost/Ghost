@@ -1,10 +1,10 @@
 ---
 lang: pl
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
+meta_title: Jak zainstalować Ghost'a na Swoim Serwerze - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: Instalacja Ghost'a &amp; Pierwsze kroki
+subheading: Pierwsze kroki do utworzenia nowego bloga po raz pierwszy.
 permalink: /pl/installation/deploy/
 chapter: installation
 section: deploy
@@ -12,13 +12,13 @@ prev_section: linux
 next_section: upgrading
 ---
 
-## Getting Ghost Live <a id="deploy"></a>
+## Pierwsze ożywienie Ghost'a <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Więc jesteś gotowy, aby Duch (eng. Ghost) ożył? Doskonale!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+Pierwszą decyzją jaką trzeba zrobić, jest to, czy chcesz zainstalować i skonfigurować Ghost'a, bądź wolisz użyć instalatora.
 
-### Installers
+### Instalacja
 
 There are a couple of options for simple installers at the moment:
 
