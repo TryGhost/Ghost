@@ -99,64 +99,71 @@ User = ghostBookshelf.Model.extend({
      *
      * Hashes the password provided before saving to the database.
      */
-    add: function (_user) {
-
-        var self = this,
-            // Clone the _user so we don't expose the hashed password unnecessarily
-            userData = _.extend({}, _user);
-        /**
-         * This only allows one user to be added to the database, otherwise fails.
-         * @param  {object} user
-         * @author javorszky
-         */
-        return validatePasswordLength(userData.password).then(function () {
-            return self.forge().fetch();
-        }).then(function (user) {
-            // Check if user exists
-            if (user) {
-                return when.reject(new Error('A user is already registered. Only one user for now!'));
+    add: (function () {
+        // This closure variable prevents multiple users from being created simultaneously.
+        var addedUser = false;
+        return function (_user) {
+            if (_user === "resetclosure") {
+                // This is only used by tests to reset the closure variable. This should not be used
+                // in production.
+                addedUser = false;
             }
-        }).then(function () {
-            // Generate a new password hash
-            return generatePasswordHash(_user.password);
-        }).then(function (hash) {
-            // Assign the hashed password
-            userData.password = hash;
-            // LookupGravatar
-            return self.gravatarLookup(userData);
-        }).then(function (userData) {
-            // Save the user with the hashed password
-            return ghostBookshelf.Model.add.call(self, userData);
-        }).then(function (addedUser) {
-            // Assign the userData to our created user so we can pass it back
-            userData = addedUser;
-            // Add this user to the admin role (assumes admin = role_id: 1)
-            return userData.roles().attach(1);
-        }).then(function (addedUserRole) {
-            /*jslint unparam:true*/
-            // Return the added user as expected
+            var self = this,
+                // Clone the _user so we don't expose the hashed password unnecessarily
+                userData = _.extend({}, _user);
+            /**
+             * This only allows one user to be added to the database, otherwise fails.
+             * @param  {object} user
+             * @author javorszky
+             */
+            return validatePasswordLength(userData.password).then(function () {
+                return self.forge().fetch();
+            }).then(function (user) {
+                // Check if user exists
+                if (user || addedUser === true) {
+                    return when.reject(new Error('A user is already registered. Only one user for now!'));
+                }
+                addedUser = true;
+            }).then(function () {
+                // Generate a new password hash
+                return generatePasswordHash(_user.password);
+            }).then(function (hash) {
+                // Assign the hashed password
+                userData.password = hash;
+                // LookupGravatar
+                return self.gravatarLookup(userData);
+            }).then(function (userData) {
+                // Save the user with the hashed password
+                return ghostBookshelf.Model.add.call(self, userData);
+            }).then(function (addedUser) {
+                // Assign the userData to our created user so we can pass it back
+                userData = addedUser;
+                // Add this user to the admin role (assumes admin = role_id: 1)
+                return userData.roles().attach(1);
+            }).then(function (addedUserRole) {
+                /*jslint unparam:true*/
+                // Return the added user as expected
+                return when.resolve(userData);
+            });
 
-            return when.resolve(userData);
-        });
+            /**
+             * Temporarily replacing the function below with another one that checks
+             * whether there's anyone registered at all. This is due to #138
+             * @author  javorszky
+             */
 
-        /**
-         * Temporarily replacing the function below with another one that checks
-         * whether there's anyone registered at all. This is due to #138
-         * @author  javorszky
-         */
-
-        // return this.forge({email: userData.email}).fetch().then(function (user) {
-        //     if (user !== null) {
-        //         return when.reject(new Error('A user with that email address already exists.'));
-        //     }
-        //     return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
-        //         userData.password = hash;
-        //         ghostBookshelf.Model.add.call(UserRole, userRoles);
-        //         return ghostBookshelf.Model.add.call(User, userData);
-        //     }, errors.logAndThrowError);
-        // }, errors.logAndThrowError);
-
-    },
+            // return this.forge({email: userData.email}).fetch().then(function (user) {
+            //     if (user !== null) {
+            //         return when.reject(new Error('A user with that email address already exists.'));
+            //     }
+            //     return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
+            //         userData.password = hash;
+            //         ghostBookshelf.Model.add.call(UserRole, userRoles);
+            //         return ghostBookshelf.Model.add.call(User, userData);
+            //     }, errors.logAndThrowError);
+            // }, errors.logAndThrowError);
+        };
+    }()),
 
     setWarning: function (user) {
         var status = user.get('status'),
