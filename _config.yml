@@ -7,7 +7,7 @@ languages:
       key: 'en'
     - name: '中文'
       key: 'zh'
-    - name: '한국의'
+    - name: '한국어'
       key: 'ko'
     - name: 'Deutsch'
       key: 'de'
