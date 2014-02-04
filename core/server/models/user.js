@@ -104,38 +104,39 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
+
+        userData.password = "";
         /**
          * This only allows one user to be added to the database, otherwise fails.
          * @param  {object} user
          * @author javorszky
          */
-        return validatePasswordLength(userData.password).then(function () {
-            return self.forge().fetch();
-        }).then(function (user) {
-            // Check if user exists
-            if (user) {
-                return when.reject(new Error('A user is already registered. Only one user for now!'));
+        return validatePasswordLength(_user.password).then(function () {
+            return ghostBookshelf.Model.add.call(self, userData);
+        }).then(function (addedUser) {
+            if (addedUser.id !== 1) {
+                return addedUser.destroy().then(function () {
+                    return when.reject(new Error('A user is already registered. Only one user for now!'));
+                });
             }
-        }).then(function () {
+            return when.resolve(addedUser);
+        }).then(function (addedUser) {
+            userData = addedUser;
+            // LookupGravatar
+            return self.gravatarLookup(userData.toJSON());
+        }).then(function (jsonUser) {
             // Generate a new password hash
+            userData.set("image", jsonUser.image);
             return generatePasswordHash(_user.password);
         }).then(function (hash) {
             // Assign the hashed password
-            userData.password = hash;
-            // LookupGravatar
-            return self.gravatarLookup(userData);
-        }).then(function (userData) {
-            // Save the user with the hashed password
-            return ghostBookshelf.Model.add.call(self, userData);
-        }).then(function (addedUser) {
-            // Assign the userData to our created user so we can pass it back
-            userData = addedUser;
+            userData.set("password", hash);
+            return userData.save();
+        }).then(function () {
             // Add this user to the admin role (assumes admin = role_id: 1)
             return userData.roles().attach(1);
         }).then(function (addedUserRole) {
             /*jslint unparam:true*/
-            // Return the added user as expected
-
             return when.resolve(userData);
         });
 
