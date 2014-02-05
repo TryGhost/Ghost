@@ -29,32 +29,14 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     });
 }, false);
 
-CasperTest.begin('Ensure that RSS is available and author element should be after item element NOT before which is channel element', 12, function suite(test) {
+CasperTest.begin('Ensure that RSS is available and author element should be after item element NOT before which is channel element', 2, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getPageContent(),
-            siteTitle = '<title><![CDATA[Ghost]]></title>',
-            siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
-            siteUrl = '<link>http://127.0.0.1:2369/</link>',
-            postTitle = '<![CDATA[Welcome to Ghost]]>',
-            postStart = '<description><![CDATA[<p>You\'re live!',
-            postEnd = 'you think :)</p>]]></description>',
-            postLink = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
-            postCreator = '<dc:creator><![CDATA[Test User]]>',
             author = '<author>';
 
         test.assertEqual(response.status, 200, 'Response status should be 200.');
-        test.assert(content.indexOf('<rss') >= 0, 'Feed should contain <rss');
-        test.assert(content.indexOf(siteTitle) >= 0, 'Feed should contain blog title.');
-        test.assert(content.indexOf(siteDescription) >= 0, 'Feed should contain blog description.');
-        test.assert(content.indexOf(siteUrl) >= 0, 'Feed should contain link to blog.');
-        test.assert(content.indexOf(postTitle) >= 0, 'Feed should contain welcome post title.');
-        test.assert(content.indexOf(postStart) >= 0, 'Feed should contain start of welcome post content.');
-        test.assert(content.indexOf(postEnd) >= 0, 'Feed should contain end of welcome post content.');
-        test.assert(content.indexOf(postLink) >= 0, 'Feed should have link to the welcome post.');
-        test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
         test.assert(content.indexOf(author) < 0, 'Author should not be included since there is dc:creator already');
-        test.assert(content.indexOf('</rss>') >= 0, 'Feed should contain </rss>');
     });
 }, false);
 
