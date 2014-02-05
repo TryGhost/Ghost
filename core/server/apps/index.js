@@ -1,5 +1,5 @@
 
-var _           = require('underscore'),
+var _           = require('lodash'),
     when        = require('when'),
     errors      = require('../errorHandling'),
     api         = require('../api'),

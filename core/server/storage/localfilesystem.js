@@ -1,7 +1,7 @@
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
 
-var _       = require('underscore'),
+var _       = require('lodash'),
     express = require('express'),
     fs      = require('fs-extra'),
     nodefn  = require('when/node/function'),

@@ -5,7 +5,7 @@ var should         = require('should'),
     when           = require('when'),
     path           = require('path'),
     fs             = require('fs'),
-    _              = require('underscore'),
+    _              = require('lodash'),
     rewire         = require("rewire"),
 
     testUtils      = require('../utils'),

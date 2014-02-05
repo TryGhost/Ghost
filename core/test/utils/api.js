@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     url = require('url'),
     ApiRouteBase = '/ghost/api/v0.1/',
     host = 'localhost',

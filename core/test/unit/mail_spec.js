@@ -4,7 +4,7 @@ var testUtils = require('../utils'),
     sinon = require('sinon'),
     when = require('when'),
 
-    _ = require("underscore"),
+    _ = require("lodash"),
     cp = require('child_process'),
 
     // Stuff we are testing

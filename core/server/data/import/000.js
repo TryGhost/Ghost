@@ -1,5 +1,5 @@
 var when   = require('when'),
-    _      = require('underscore'),
+    _      = require('lodash'),
     models = require('../../models'),
     errors = require('../../errorHandling'),
     Importer000;

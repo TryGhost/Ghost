@@ -1,4 +1,4 @@
-var _            = require('underscore'),
+var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
     errors       = require('../errorHandling'),

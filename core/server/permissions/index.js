@@ -1,7 +1,7 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-var _                   = require('underscore'),
+var _                   = require('lodash'),
     when                = require('when'),
     Models              = require('../models'),
     objectTypeModelMap  = require('./objectTypeModelMap'),

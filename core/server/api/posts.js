@@ -1,5 +1,5 @@
 var when                   = require('when'),
-    _                      = require('underscore'),
+    _                      = require('lodash'),
     dataProvider           = require('../models'),
     permissions            = require('../permissions'),
     canThis                = permissions.canThis,
