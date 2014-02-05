@@ -7,7 +7,7 @@ var crypto      = require('crypto'),
     path        = require('path'),
     Polyglot    = require('node-polyglot'),
     semver      = require('semver'),
-    _           = require('underscore'),
+    _           = require('lodash'),
     when        = require('when'),
 
     api         = require('./api'),

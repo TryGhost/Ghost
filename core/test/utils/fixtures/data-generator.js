@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     uuid = require('node-uuid'),
     DataGenerator = {};
 

@@ -25,7 +25,7 @@ var crypto   = require('crypto'),
     semver   = require('semver'),
     when     = require('when'),
     nodefn   = require('when/node/function'),
-    _        = require('underscore'),
+    _        = require('lodash'),
     url      = require('url'),
 
     api      = require('./api'),

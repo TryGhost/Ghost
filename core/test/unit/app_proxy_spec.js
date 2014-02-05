@@ -1,7 +1,7 @@
 /*globals describe, beforeEach, afterEach,  before, it*/
 var should = require('should'),
     sinon = require('sinon'),
-    _ = require("underscore"),
+    _ = require("lodash"),
     helpers = require('../../server/helpers'),
     filters = require('../../server/filters'),
 

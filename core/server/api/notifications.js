@@ -1,5 +1,5 @@
 var when               = require('when'),
-    _                  = require('underscore'),
+    _                  = require('lodash'),
     // Holds the persistent notifications
     notificationsStore = [],
     notifications;
