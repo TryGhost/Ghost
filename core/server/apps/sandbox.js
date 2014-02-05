@@ -1,8 +1,8 @@
 
-var fs = require('fs'),
-    path = require('path'),
-    Module = require('module'),
-    _ = require('underscore');
+var fs      = require('fs'),
+    path    = require('path'),
+    Module  = require('module'),
+    _       = require('lodash');
 
 function AppSandbox(opts) {
     this.opts = _.defaults(opts || {}, AppSandbox.defaults);

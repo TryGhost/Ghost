@@ -4,7 +4,7 @@
 
 var middleware = require('./middleware'),
     express     = require('express'),
-    _           = require('underscore'),
+    _           = require('lodash'),
     url         = require('url'),
     when        = require('when'),
     slashes     = require('connect-slashes'),

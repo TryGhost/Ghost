@@ -1,7 +1,7 @@
 // # Ghost Data API
 // Provides access to the data model
 
-var _             = require('underscore'),
+var _             = require('lodash'),
     when          = require('when'),
     config        = require('../config'),
     errors        = require('../errorHandling'),

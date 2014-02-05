@@ -3,7 +3,7 @@ var downsize        = require('downsize'),
     moment          = require('moment'),
     path            = require('path'),
     polyglot        = require('node-polyglot').instance,
-    _               = require('underscore'),
+    _               = require('lodash'),
     when            = require('when'),
 
     api             = require('../api'),

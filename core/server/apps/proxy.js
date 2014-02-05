@@ -1,4 +1,4 @@
-var _           = require('underscore'),
+var _           = require('lodash'),
     api         = require('../api'),
     helpers     = require('../helpers'),
     filters     = require('../filters');

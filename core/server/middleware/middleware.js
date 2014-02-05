@@ -2,7 +2,7 @@
 // The following custom middleware functions are all unit testable, and have accompanying unit tests in
 // middleware_spec.js
 
-var _           = require('underscore'),
+var _           = require('lodash'),
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),

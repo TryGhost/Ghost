@@ -1,7 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     when = require('when'),
     sequence = require('when/sequence'),
 

@@ -1,14 +1,14 @@
 /*globals describe, beforeEach, afterEach,  before, it*/
-var fs = require('fs'),
-    path = require('path'),
-    should = require('should'),
-    sinon = require('sinon'),
-    _ = require("underscore"),
-    helpers = require('../../server/helpers'),
-    filters = require('../../server/filters'),
+var fs         = require('fs'),
+    path       = require('path'),
+    should     = require('should'),
+    sinon      = require('sinon'),
+    _          = require('lodash'),
+    helpers    = require('../../server/helpers'),
+    filters    = require('../../server/filters'),
 
     // Stuff we are testing
-    appProxy = require('../../server/apps/proxy'),
+    appProxy   = require('../../server/apps/proxy'),
     AppSandbox = require('../../server/apps/sandbox');
 
 describe('Apps', function () {

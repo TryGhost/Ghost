@@ -4,7 +4,7 @@ var testUtils = require('../utils'),
     sinon = require('sinon'),
     when = require('when'),
     path = require('path'),
-    _ = require('underscore'),
+    _ = require('lodash'),
 
     // Stuff we are testing
     Filters = require('../../server/filters').Filters;

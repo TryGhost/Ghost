@@ -1,5 +1,5 @@
 var config        = require('../config'),
-    _             = require('underscore'),
+    _             = require('lodash'),
     path          = require('path'),
     when          = require('when'),
     api           = require('../api'),

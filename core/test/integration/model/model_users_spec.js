@@ -2,7 +2,7 @@
 var testUtils = require('../../utils'),
     should = require('should'),
     when = require('when'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     errors = require('../../../server/errorHandling'),
     sinon = require('sinon'),
     uuid = require('node-uuid'),
