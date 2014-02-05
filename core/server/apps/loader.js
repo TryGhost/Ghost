@@ -4,9 +4,8 @@ var path = require('path'),
     when = require('when'),
     appProxy = require('./proxy'),
     config = require('../config'),
+    AppSandbox = require('./sandbox'),
     loader;
-
-
 
 // Get a relative path to the given apps root, defaults
 // to be relative to __dirname
@@ -16,10 +15,16 @@ function getAppRelativePath(name, relativeTo) {
     return path.relative(relativeTo, path.join(config.paths().appPath, name));
 }
 
+// Load apps through a psuedo sandbox
+function loadApp(appPath) {
+    var sandbox = new AppSandbox();
+
+    return sandbox.loadApp(appPath);
+}
 
 function getAppByName(name) {
     // Grab the app class to instantiate
-    var AppClass = require(getAppRelativePath(name)),
+    var AppClass = loadApp(getAppRelativePath(name)),
         app;
 
     // Check for an actual class, otherwise just use whatever was returned
