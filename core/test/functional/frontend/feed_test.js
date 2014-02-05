@@ -29,6 +29,17 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     });
 }, false);
 
+CasperTest.begin('Ensure that RSS is available and author element should be after item element NOT before which is channel element', 2, function suite(test) {
+    CasperTest.Routines.togglePermalinks.run('off');
+    casper.thenOpen(url + 'rss/', function (response) {
+        var content = this.getPageContent(),
+            author = '<author>';
+
+        test.assertEqual(response.status, 200, 'Response status should be 200.');
+        test.assert(content.indexOf(author) < 0, 'Author should not be included since there is dc:creator already');
+    });
+}, false);
+
 CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('on');
     casper.thenOpen(url + 'rss/', function (response) {

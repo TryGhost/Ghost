@@ -155,7 +155,6 @@ frontendControllers = {
                 title: title,
                 description: description,
                 generator: 'Ghost v' + res.locals.version,
-                author: user ? user.name : null,
                 feed_url: feedUrl,
                 site_url: siteUrl,
                 ttl: '60'
@@ -184,7 +183,8 @@ frontendControllers = {
                                 guid: post.uuid,
                                 url: config.paths.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
-                                categories: _.pluck(post.tags, 'name')
+                                categories: _.pluck(post.tags, 'name'),
+                                author: user ? user.name : null
                             },
                             content = post.html;
 
