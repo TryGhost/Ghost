@@ -121,13 +121,6 @@ describe("Github showdown extensions", function () {
         });
     });
 
-    it("should auto-link Email", function () {
-        var testPhrase = {input: "info@tryghost.org", output: /^<a href=\'mailto:info@tryghost.org\'>info@tryghost.org<\/a>$/},
-            processedMarkup = _ConvertPhrase(testPhrase.input);
-
-        processedMarkup.should.match(testPhrase.output);
-    });
-
     it("should NOT auto-link URL in HTML", function () {
         var testPhrases = [
                 {
