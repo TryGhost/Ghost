@@ -52,13 +52,7 @@ Documentation on updating can be found in the [Ghost Guide](http://docs.ghost.or
 
 ### Logging in For The First Time
 
-Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted for a login.
-
-1.  Click on the "register new user" link
-2.  Enter your user details
-3.  Return to the login screen and use those details to log in.
-
-Note - this is still very alpha. Not everything works yet.
+Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted to register a new user. Once you have entered your desired credentials you will be automatically logged in to the admin area.
 
 
 ## Community
