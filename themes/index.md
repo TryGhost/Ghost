@@ -67,6 +67,8 @@ For the time being there is no requirement that <code class="path">default.hbs</
 
 <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
 
+*Note:* While edits to existing files are generated on the fly, you will need to restart Ghost each time you add or remove a file from the theme directory for it to be recognised and used.
+
 ### Partials <a id="partials"></a>
 
 You can also optionally add a <code class="path">partials</code> directory to your theme. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. To output the <code class="path">list-post.hbs</code> example you would use `{{> list-post}}`. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
