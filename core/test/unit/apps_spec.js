@@ -80,7 +80,7 @@ describe('Apps', function () {
             should.not.exist(appProxy.api.settings.add);
         });
     });
-    
+
     describe('Sandbox', function () {
         it('loads apps in a sandbox', function () {
             var appBox = new AppSandbox(),
@@ -151,7 +151,7 @@ describe('Apps', function () {
                     BadApp = appBox.loadApp(badAppPath);
                 };
 
-            loadApp.should.throw('Unsafe App require: ../example');
+            loadApp.should.throw(/^Unsafe App require[\w\W]*example$/);
         });
     });
 });
