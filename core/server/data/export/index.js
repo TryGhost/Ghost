@@ -1,5 +1,5 @@
 var when      = require('when'),
-    _         = require('underscore'),
+    _         = require('lodash'),
     migration = require('../migration'),
     knex      = require('../../models/base').knex,
     schema    = require('../schema').tables,

@@ -1,6 +1,6 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
-    _ = require("underscore"),
+    _ = require("lodash"),
     when = require('when'),
     sequence = require('when/sequence'),
     should = require('should'),

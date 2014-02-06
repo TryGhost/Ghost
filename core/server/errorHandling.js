@@ -1,5 +1,5 @@
 /*jslint regexp: true */
-var _           = require('underscore'),
+var _           = require('lodash'),
     colors      = require('colors'),
     fs          = require('fs'),
     configPaths = require('./config/paths'),
@@ -227,16 +227,16 @@ errors = {
     }
 };
 
-// Ensure our 'this' context in the functions
-_.bindAll(
-    errors,
-    'throwError',
-    'logError',
+// Ensure our 'this' context for methods and preserve method arity by
+// using Function#bind for expressjs
+_.each([
     'logAndThrowError',
     'logErrorWithRedirect',
     'renderErrorPage',
     'error404',
     'error500'
-);
+], function (funcName) {
+    errors[funcName] = errors[funcName].bind(errors);
+});
 
 module.exports = errors;

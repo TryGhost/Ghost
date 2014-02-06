@@ -1,6 +1,6 @@
 var Post,
     Posts,
-    _ = require('underscore'),
+    _ = require('lodash'),
     uuid = require('node-uuid'),
     when = require('when'),
     errors = require('../errorHandling'),

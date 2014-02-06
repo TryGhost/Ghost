@@ -6,7 +6,7 @@
 
 var moment      = require('moment'),
     RSS         = require('rss'),
-    _           = require('underscore'),
+    _           = require('lodash'),
     url         = require('url'),
     when        = require('when'),
 
