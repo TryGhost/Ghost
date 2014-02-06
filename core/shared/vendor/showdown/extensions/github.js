@@ -115,11 +115,6 @@
                             return lookBehind ? wholeMatch : "<a href='" + wholeMatch + "'>" + wholeMatch + "</a>";
                         });
 
-                    // match email
-                    text = text.replace(/[a-z0-9_\-+=.]+@[a-z0-9\-]+(\.[a-z0-9-]+)+/gmi, function (wholeMatch) {
-                        return "<a href='mailto:" + wholeMatch + "'>" + wholeMatch + "</a>";
-                    });
-
                     // replace extractions
                     text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {
                         return preExtractions[y];
