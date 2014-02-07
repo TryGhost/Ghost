@@ -103,6 +103,34 @@ describe('Core Helpers', function () {
             rendered.string.should.equal("<p><img src='example.jpg' /></p>");
         });
 
+        it('can truncate html to 0 words, leaving image tag if it is first and if it has an alt text with a single quote in the string', function () {
+            var html = "<p><img src='example.jpg' alt=\"It's me!\" />Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            { html: html },
+                            { "hash": { "words": "0" } }
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p><img src='example.jpg' alt=\"It's me!\" /></p>");
+        });
+
+        it('can truncate html to 0 words, leaving image tag if it is first and if it has an alt text with a double quote in the string', function () {
+            var html = "<p><img src='example.jpg' alt='A double quote is \"' />Hello <strong>World! It's me!</strong></p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            { html: html },
+                            { "hash": { "words": "0" } }
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p><img src='example.jpg' alt='A double quote is \"' /></p>");
+        });
+
         it('can truncate html by character', function () {
             var html = "<p>Hello <strong>World! It's me!</strong></p>",
                 rendered = (
