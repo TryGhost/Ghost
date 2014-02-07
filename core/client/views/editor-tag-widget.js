@@ -125,7 +125,7 @@
                 /*jslint regexp: true */ // - would like to remove this
                 highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
 
-                suggestionHTML = "<li data-tag-id='" + matchingTag.id + "' data-tag-name='" + matchingTag.name + "'><a href='#'>" + highlightedName + "</a></li>";
+                suggestionHTML = "<li data-tag-id='" + matchingTag.id + "' data-tag-name='" + _.escape(matchingTag.name) + "'><a href='#'>" + highlightedName + "</a></li>";
                 this.$suggestions.append(suggestionHTML);
             }, this);
         },
@@ -133,12 +133,6 @@
         handleKeyup: function (e) {
             var $target = $(e.currentTarget),
                 searchTerm = $.trim($target.val());
-
-            if (searchTerm) {
-                this.showSuggestions($target, searchTerm);
-            } else {
-                this.$suggestions.hide();
-            }
 
             if (e.keyCode === this.keys.UP) {
                 e.preventDefault();
@@ -160,6 +154,12 @@
                 }
             } else if (e.keyCode === this.keys.ESC) {
                 this.$suggestions.hide();
+            } else {
+                if (searchTerm) {
+                    this.showSuggestions($target, searchTerm);
+                } else {
+                    this.$suggestions.hide();
+                }
             }
 
             if (e.keyCode === this.keys.UP || e.keyCode === this.keys.DOWN) {
@@ -195,8 +195,8 @@
                 $selectedSuggestion = this.$suggestions.children(".selected");
                 if (this.$suggestions.is(":visible") && $selectedSuggestion.length !== 0) {
 
-                    if ($('.tag:containsExact("' + $selectedSuggestion.data('tag-name') + '")').length === 0) {
-                        tag = {id: $selectedSuggestion.data('tag-id'), name: $selectedSuggestion.data('tag-name')};
+                    if ($('.tag:containsExact("' + _.unescape($selectedSuggestion.data('tag-name')) + '")').length === 0) {
+                        tag = {id: $selectedSuggestion.data('tag-id'), name: _.unescape($selectedSuggestion.data('tag-name'))};
                         this.addTag(tag);
                     }
                 } else {
@@ -232,7 +232,7 @@
         handleSuggestionClick: function (e) {
             var $target = $(e.currentTarget);
             if (e) { e.preventDefault(); }
-            this.addTag({id: $target.data('tag-id'), name: $target.data('tag-name')});
+            this.addTag({id: $target.data('tag-id'), name: _.unescape($target.data('tag-name'))});
         },
 
         handleTagClick: function (e) {
