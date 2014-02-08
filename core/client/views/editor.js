@@ -220,11 +220,22 @@
         },
 
         savePost: function (data) {
+            var publishButton = $('.js-publish-button'),
+                saved,
+                enablePublish = function (deferred) {
+                    deferred.always(function () {
+                        publishButton.prop('disabled', false);
+                    });
+                    return deferred;
+                };
+
+            publishButton.prop('disabled', true);
+
             _.each(this.model.blacklist, function (item) {
                 this.model.unset(item);
             }, this);
 
-            var saved = this.model.save(_.extend({
+            saved = this.model.save(_.extend({
                 title: $('#entry-title').val(),
                 markdown: Ghost.currentView.getEditorValue()
             }, data));
@@ -232,9 +243,10 @@
             // TODO: Take this out if #2489 gets merged in Backbone. Or patch Backbone
             // ourselves for more consistent promises.
             if (saved) {
-                return saved;
+                return enablePublish(saved);
             }
-            return $.Deferred().reject();
+
+            return enablePublish($.Deferred().reject());
         },
 
         reportSaveSuccess: function (status, prevStatus) {
