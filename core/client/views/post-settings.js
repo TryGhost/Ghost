@@ -99,7 +99,10 @@
             var self = this,
                 slug = self.model.get('slug'),
                 slugEl = e.currentTarget,
-                newSlug = slugEl.value;
+                newSlug = slugEl.value,
+                placeholder = slugEl.placeholder;
+
+            newSlug = (_.isEmpty(newSlug) && placeholder) ? placeholder : newSlug;
 
             // If the model doesn't currently
             // exist on the server (aka has no id)
