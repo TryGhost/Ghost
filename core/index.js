@@ -7,10 +7,11 @@ var bootstrap = require('./bootstrap'),
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-function startGhost(app) {
-    bootstrap().then(function () {
+function startGhost(options) {
+    options = options || {};
+    bootstrap(options.config).then(function () {
         var ghost = require('./server');
-        ghost(app);
+        ghost(options.app);
     }).otherwise(errors.logAndThrowError);
 }
 

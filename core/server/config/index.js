@@ -47,7 +47,7 @@ function updateConfig(config) {
         paths: {
             'appRoot':          appRoot,
             'subdir':           subdir,
-            'config':           path.join(appRoot, 'config.js'),
+            'config':           ghostConfig.paths.config || path.join(appRoot, 'config.js'),
             'configExample':    path.join(appRoot, 'config.example.js'),
             'corePath':         corePath,
 

@@ -51,6 +51,18 @@ describe('Bootstrap', function () {
         }).then(null, done);
     });
 
+    it('uses the passed in config file location', function (done) {
+        bootstrap(path.join(config().paths.appRoot, 'config.example.js')).then(function (config) {
+            config.url.should.equal(defaultConfig.url);
+            config.database.client.should.equal(defaultConfig.database.client);
+            config.database.connection.should.eql(defaultConfig.database.connection);
+            config.server.host.should.equal(defaultConfig.server.host);
+            config.server.port.should.equal(defaultConfig.server.port);
+
+            done();
+        }).then(null, done);
+    });
+
     it('creates the config file if one does not exist', function (done) {
 
         var deferred = when.defer(),
