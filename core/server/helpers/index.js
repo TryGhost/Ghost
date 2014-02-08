@@ -181,10 +181,10 @@ coreHelpers.tags = function (options) {
         tagNames = _.pluck(this.tags, 'name');
 
     if (tagNames.length) {
-        output = prefix + tagNames.join(separator) + suffix;
+        output = prefix + _.escape(tagNames.join(separator)) + suffix;
     }
 
-    return output;
+    return new hbs.handlebars.SafeString(output);
 };
 
 // ### Content Helper

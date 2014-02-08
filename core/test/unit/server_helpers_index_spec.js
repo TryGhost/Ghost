@@ -640,6 +640,18 @@ describe('Core Helpers', function () {
             String(rendered).should.equal('on haunted, ghost forever');
         });
 
+        it('can add a prefix and suffix with HTML', function () {
+            var tags = [{name: 'haunted'}, {name: 'ghost'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {suffix: ' &bull;', prefix: '&hellip; '}}
+                );
+
+            should.exist(rendered);
+
+            String(rendered).should.equal('&hellip; haunted, ghost &bull;');
+        });
+
         it('does not add prefix or suffix if no tags exist', function () {
             var rendered = handlebars.helpers.tags.call(
                     {},
