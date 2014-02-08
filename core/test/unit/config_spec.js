@@ -69,15 +69,13 @@ describe('Config', function () {
     });
 
     describe('Index', function () {
-        var defaultContentPath = config().paths.contentPath;
+        // Make a copy of the default config file
+        // so we can restore it after every test.
+        // Using _.merge to recursively apply every property.
+        var defaultConfigFile = _.merge({}, config());
 
         afterEach(function () {
-            configUpdate({
-                url: defaultConfig.url,
-                paths: {
-                    contentPath: defaultContentPath
-                }
-            });
+            configUpdate(defaultConfigFile);
         });
 
         it('should have exactly the right keys', function () {
@@ -136,15 +134,18 @@ describe('Config', function () {
             config().paths.should.have.property('subdir', '/my/blog');
         });
 
-        it('should set contentPath and sub-directories correctly', function () {
-            var contentPath = config().paths.appRoot + '/otherContent/';
+        it('should allow specific properties to be user defined', function () {
+            var contentPath = config().paths.appRoot + '/otherContent/',
+                configFile = 'configFileDanceParty.js';
 
             configUpdate({
+                config: configFile,
                 paths: {
                     contentPath: contentPath
                 }
             });
 
+            config().should.have.property('config', configFile);
             config().paths.should.have.property('contentPath', contentPath);
             config().paths.should.have.property('themePath', contentPath + 'themes');
             config().paths.should.have.property('appPath', contentPath + 'apps');
