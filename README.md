@@ -29,7 +29,7 @@ For detailed instructions for various platforms visit the [Ghost Installation Gu
    **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers).**
 1. Create a new directory where you would like to run the code, and unzip the package to that location.
 1. Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
-1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
+1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again. If you see `Error: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.14'` by sqlite3, then you run `npm install sqlite3 --build-from-source` at frist. This Error is typical for Debian.
 1. To start ghost, run `npm start`
 1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
 
