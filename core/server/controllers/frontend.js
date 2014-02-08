@@ -118,7 +118,7 @@ frontendControllers = {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config().paths.availableThemes[activeTheme.value],
-                            view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
+                            view = post.page && paths.hasOwnProperty('page.hbs') ? 'page' : 'post';
                         res.render(view, {post: post});
                     });
                 });
