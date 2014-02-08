@@ -412,6 +412,8 @@ coreHelpers.meta_description = function (options) {
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             description = blog.description;
+        } else if (this.post) {
+            description = coreHelpers.excerpt.call(this.post).toString() + '…';
         } else {
             description = '';
         }

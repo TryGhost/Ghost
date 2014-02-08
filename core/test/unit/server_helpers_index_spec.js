@@ -693,11 +693,12 @@ describe('Core Helpers', function () {
             }).then(null, done);
         });
 
-        it('can return empty description on post', function (done) {
-            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
+        it('can return post description', function (done) {
+            var content = '<p>Post Content</p>';
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title', html: content}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('');
+                rendered.string.should.startWith(helpers.excerpt.call({html:content}));
 
                 done();
             }).then(null, done);
