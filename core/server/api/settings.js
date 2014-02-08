@@ -77,7 +77,7 @@ readSettingsResult = function (result) {
             settings[member.attributes.key] = val;
         }
     })).then(function () {
-        return when(config.paths().availableThemes).then(function (themes) {
+        return when(config().paths.availableThemes).then(function (themes) {
             var themeKeys = Object.keys(themes),
                 res = [],
                 i,

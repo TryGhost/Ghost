@@ -10,7 +10,7 @@ I18n = function (ghost) {
 
     // TODO: validate
     var lang = ghost.settings('defaultLang'),
-        path = config.paths().lang,
+        path = config().paths.lang,
         langFilePath = path + lang + '.json';
 
     return function (req, res, next) {

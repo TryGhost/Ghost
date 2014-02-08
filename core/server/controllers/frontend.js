@@ -26,7 +26,7 @@ frontendControllers = {
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
-            return res.redirect(config.paths().subdir + '/');
+            return res.redirect(config().paths.subdir + '/');
         }
 
         return api.settings.read('postsPerPage').then(function (postPP) {
@@ -51,7 +51,7 @@ frontendControllers = {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? config.paths().subdir + '/' : (config.paths().subdir + '/page/' + maxPage + '/'));
+                return res.redirect(maxPage === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + maxPage + '/'));
             }
 
             // Render the page of posts
@@ -78,12 +78,12 @@ frontendControllers = {
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
                 if (req.params[2] && req.params[2] === 'edit') {
-                    return res.redirect(config.paths().subdir + '/ghost/editor/' + post.id + '/');
+                    return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
                 }
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
-                        var paths = config.paths().availableThemes[activeTheme.value],
+                        var paths = config().paths.availableThemes[activeTheme.value],
                             view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
                         res.render(view, {post: post});
                     });
@@ -134,7 +134,7 @@ frontendControllers = {
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/rss/:page/')) {
-            return res.redirect(config.paths().subdir + '/rss/');
+            return res.redirect(config().paths.subdir + '/rss/');
         }
 
         // TODO: needs refactor for multi user to not use first user as default
@@ -148,8 +148,8 @@ frontendControllers = {
                 title = result[1].value.value,
                 description = result[2].value.value,
                 permalinks = result[3].value,
-                siteUrl = config.paths.urlFor('home', null, true),
-                feedUrl =  config.paths.urlFor('rss', null, true);
+                siteUrl = config.urlFor('home', null, true),
+                feedUrl =  config.urlFor('rss', null, true);
 
             feed = new RSS({
                 title: title,
@@ -172,7 +172,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect(config.paths().subdir + '/rss/' + maxPage + '/');
+                    return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
                 }
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
@@ -181,7 +181,7 @@ frontendControllers = {
                             item = {
                                 title:  _.escape(post.title),
                                 guid: post.uuid,
-                                url: config.paths.urlFor('post', {post: post, permalinks: permalinks}, true),
+                                url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
                                 categories: _.pluck(post.tags, 'name'),
                                 author: user ? user.name : null

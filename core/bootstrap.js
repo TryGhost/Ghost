@@ -7,13 +7,13 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
-    errors  = require('../errorHandling'),
     path    = require('path'),
-    paths   = require('./paths'),
+    errors  = require('./server/errorHandling'),
+    config  = require('./server/config'),
 
-    appRoot = paths().appRoot,
-    configExample = paths().configExample,
-    configFile =  process.env.GHOST_CONFIG || paths().config,
+    appRoot = config().paths.appRoot,
+    configExample = config().paths.configExample,
+    configFile =  process.env.GHOST_CONFIG || config().paths.config,
     rejectMessage = 'Unable to load config';
 
 function readConfigFile(envVal) {
@@ -112,8 +112,11 @@ function loadConfig() {
         if (!configExists) {
             pendingConfig = writeConfigFile();
         }
-        when(pendingConfig).then(validateConfigEnvironment).then(loaded.resolve).otherwise(loaded.reject);
+        when(pendingConfig).then(validateConfigEnvironment).then(function (rawConfig) {
+            return config.init(rawConfig).then(loaded.resolve);
+        }).otherwise(loaded.reject);
     });
+
     return loaded.promise;
 }
 
