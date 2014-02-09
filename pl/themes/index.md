@@ -1,66 +1,66 @@
 ---
 lang: pl
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
+meta_title: Jak robić motywy do Ghost - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+heading: Ghost Motyw
+subheading: Zacznij tworzyć swoje własne motywy do Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Włączanie motywu <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Motyw Ghost'a mieści się w <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Jeśli chcesz użyć innego motywu niż domyślny (Casper) możesz wyszukać coś dla siebie w [marketplace gallery](http://marketplace.ghost.org/). Ściągnij wybraną paczkę z motywem, rozpakuj ją w <code class="path">content/themes</code> obok Casper.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Jeśli chcesz stworzyć własną, zalecamy skopiowanie i zmianę nazwy katalogu Casper & wyedytuj szablon wyglądu.
 
-To switch to your newly added theme:
+Aby przełączyć się do nowo dodanego motywu:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Zrestartuj Ghost'a. Na chcwilę obecną Ghost nie zauważy tego, iż został dodany nowy motyw <code class="path">content/themes</code> więc musimy go zrestrtować.
+2.  Zaloguj się na konto administratora. W nawigacji przejdź do <code class="path">/ghost/settings/general/</code>.
+3.  Wybierz swoją nazwę motywu z rozwijanej listy 'Theme'.
+4.  Kliknij na 'Save'.
+5.  Przejdź do frontendu swojego bloga i podziwiaj nowy wygląd.
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Co to jest Handlebars? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars](http://handlebarsjs.com/) jest to język szablonowy używany w Ghost.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars daje możliwość pracy niezbędną do skutecznej budowy semantycznych szablonów bez frustracji.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+Jeśli szukasz sposobu w jaki sposób zacząć pisanie własnego motywu, to zapewne będziesz chciał zapoznać się na samym początku z składnią Handlebars. Przeczytaj [handlebars documentation](http://handlebarsjs.com/expressions.html), lub sprawdź w [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – możesz pominąć pierwszy rozdział o instalacji i użytkowaniu (my zrobiliśmy ten kawałek dla Ciebie) and get stuck in with ‘Basic Expressions’.
 
-## About Ghost themes <a id="about"></a>
+## O motywach Ghost <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Motywy Ghost'a mają być proste w budowie i utrzymaniu. Zalecają one silną separację pomiędzy szablonami (HTML) i wszelkiej logiki biznesowej (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. Taki podział ułatwia współpracę projektantów i programistów przy tworzeniu motywów.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+Szablony Handlebars są hierarchiczne (jeden szablon może rozszerzyć kolejny szablon) i jest wsparcie dla częsciowych szablony. Ghost  wykorzystuje te możliwości w celu ograniczenia powielania kodu i na skupieniu się na jednym szablonie, aby robił pojedyńczą czynność i robi to dobrze. Dobrze zorganizowany motyw będzie łatwy w utrzymaniu i dzięki zachowaniu elementów oddzielonych od siebie ułatwi ich ponowne użycie między szablonami.
 
-We really hope you'll enjoy our approach to theming.
+Mamy nadzieję, że przypadnie Wam do gustu nasze podejście kategoryzacji.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Struktura plików w motywie Ghost'a <a id="file-structure"></a>
 
-The recommended file structure is:
+Zalecana struktura plików wygląda tak:
 
 ```
 .
 ├── /assets
-|   └── /css
+|   └── /css (style .css)
 |       ├── screen.css
-|   ├── /fonts
-|   ├── /images
-|   ├── /js
+|   ├── /fonts (czcionki)
+|   ├── /images (grafika)
+|   ├── /js (skrypty np. js)
 ├── default.hbs
-├── index.hbs [required]
-└── post.hbs [required]
+├── index.hbs [wymagany]
+└── post.hbs [wymagany]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+Na chwilę obecną nie ma wymogu, aby istniał plik default.hbs lub dowolny folder. <code class="path">index.hbs</code> i <code class="path">post.hbs</code> są wymagane - Ghost nie będzie działał, jeśli nie ondajdzie tych dwóch szablonów. <code class="path">partials</code> jest specjalnym katalogiem. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Dodano plik <code class="path">pagination.hbs</code> wewnątrz <code class="path">partials</code> pozwoli Ci on określić na określenie, stworzenie specyficznego twojego własnego kodu HTML do paginacji.
 
 ### default.hbs
 
@@ -359,10 +359,10 @@ You can override the HTML output by the pagination helper by placing a file call
 
 `{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## Rozwiązywanie problemów z motywem <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. Widzę błąd: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+Upewnij się, że folder motywu zawiera poprawne nazwy plików index.hbs i post.hbs ponieważ są one wymagane
 
 {% endraw %}
