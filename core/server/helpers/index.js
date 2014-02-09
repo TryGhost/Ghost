@@ -193,6 +193,7 @@ coreHelpers.tags = function (options) {
 // `{{content}}`
 // `{{content words="20"}}`
 // `{{content characters="256"}}`
+// `{{content words="20" append="..."}}`
 //
 // Turns content html into a safestring so that the user doesn't have to
 // escape it or tell handlebars to leave it alone with a triple-brace.
@@ -202,8 +203,8 @@ coreHelpers.tags = function (options) {
 // **returns** SafeString content html, complete or truncated.
 //
 coreHelpers.content = function (options) {
-    var truncateOptions = (options || {}).hash || {};
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    var contentOptions = (options || {}).hash || {},
+        truncateOptions = _.pick(contentOptions, ['words', 'characters']);
     _.keys(truncateOptions).map(function (key) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
@@ -214,6 +215,10 @@ coreHelpers.content = function (options) {
         // TODO: when downsize fixes this quirk remove this hack.
         if (truncateOptions.hasOwnProperty('words')) {
             truncateOptions.words = truncateOptions.words.toString();
+        }
+
+        if (contentOptions.hasOwnProperty('append')) {
+            truncateOptions.append = contentOptions.append;
         }
         return new hbs.handlebars.SafeString(
             downsize(this.html, truncateOptions)
