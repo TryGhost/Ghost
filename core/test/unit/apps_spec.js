@@ -1,15 +1,17 @@
 /*globals describe, beforeEach, afterEach,  before, it*/
-var fs         = require('fs'),
-    path       = require('path'),
-    should     = require('should'),
-    sinon      = require('sinon'),
-    _          = require('lodash'),
-    helpers    = require('../../server/helpers'),
-    filters    = require('../../server/filters'),
+var fs           = require('fs'),
+    path         = require('path'),
+    EventEmitter = require('events').EventEmitter,
+    should       = require('should'),
+    sinon        = require('sinon'),
+    _            = require('lodash'),
+    helpers      = require('../../server/helpers'),
+    filters      = require('../../server/filters'),
 
     // Stuff we are testing
     appProxy   = require('../../server/apps/proxy'),
-    AppSandbox = require('../../server/apps/sandbox');
+    AppSandbox = require('../../server/apps/sandbox'),
+    AppDependencies = require('../../server/apps/dependencies');
 
 describe('Apps', function () {
 
@@ -152,6 +154,39 @@ describe('Apps', function () {
                 };
 
             loadApp.should.throw(/^Unsafe App require[\w\W]*example$/);
+        });
+    });
+
+    describe('Dependencies', function () {
+        it('can install by package.json', function (done) {
+            var deps = new AppDependencies(process.cwd()),
+                fakeEmitter = new EventEmitter();
+
+            deps.spawnCommand = sandbox.stub().returns(fakeEmitter);
+
+            deps.install().then(function () {
+                deps.spawnCommand.calledWith('npm').should.equal(true);
+                done();
+            }).otherwise(done);
+
+            _.delay(function () {
+                fakeEmitter.emit('exit');
+            }, 30);
+        });
+        it('does not install when no package.json', function (done) {
+            var deps = new AppDependencies(__dirname),
+                fakeEmitter = new EventEmitter();
+
+            deps.spawnCommand = sandbox.stub().returns(fakeEmitter);
+
+            deps.install().then(function () {
+                deps.spawnCommand.called.should.equal(false);
+                done();
+            }).otherwise(done);
+
+            _.defer(function () {
+                fakeEmitter.emit('exit');
+            });
         });
     });
 });

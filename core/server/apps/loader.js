@@ -5,14 +5,20 @@ var path = require('path'),
     appProxy = require('./proxy'),
     config = require('../config'),
     AppSandbox = require('./sandbox'),
+    AppDependencies = require('./dependencies'),
     loader;
+
+// Get the full path to an app by name
+function getAppAbsolutePath(name) {
+    return path.join(config().paths.appPath, name);
+}
 
 // Get a relative path to the given apps root, defaults
 // to be relative to __dirname
 function getAppRelativePath(name, relativeTo) {
     relativeTo = relativeTo || __dirname;
 
-    return path.relative(relativeTo, path.join(config().paths.appPath, name));
+    return path.relative(relativeTo, getAppAbsolutePath(name));
 }
 
 // Load apps through a psuedo sandbox
@@ -41,17 +47,22 @@ function getAppByName(name) {
 loader = {
     // Load a app and return the instantiated app
     installAppByName: function (name) {
-        var app = getAppByName(name);
+        // Install the apps dependendencies first
+        var deps = new AppDependencies(getAppAbsolutePath(name));
+        return deps.install().then(function () {
+            var app = getAppByName(name);
 
-        // Check for an install() method on the app.
-        if (!_.isFunction(app.install)) {
-            return when.reject(new Error("Error loading app named " + name + "; no install() method defined."));
-        }
+            // Check for an install() method on the app.
+            if (!_.isFunction(app.install)) {
+                return when.reject(new Error("Error loading app named " + name + "; no install() method defined."));
+            }
 
-        // Wrapping the install() with a when because it's possible
-        // to not return a promise from it.
-        return when(app.install(appProxy)).then(function () {
-            return when.resolve(app);
+            // Run the app.install() method
+            // Wrapping the install() with a when because it's possible
+            // to not return a promise from it.
+            return when(app.install(appProxy)).then(function () {
+                return when.resolve(app);
+            });
         });
     },
 
