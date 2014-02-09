@@ -9,9 +9,8 @@ matrix:
   allow_failures:
     - env: DB=pg
 before_install:
-  - git submodule update --init
-  - gem update --system
-  - gem install sass bourbon
+  - rvm use 1.9.3
+  - gem install bundler
   - npm install -g grunt-cli
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs
@@ -23,4 +22,3 @@ before_install:
 before_script:
   - phantomjs --version
   - casperjs --version
-  - grunt init

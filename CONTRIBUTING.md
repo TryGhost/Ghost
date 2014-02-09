@@ -192,8 +192,6 @@ developing Ghost.
 1. Check you have the pre-requisites listed above!
 1. Clone the git repo
 1. cd into the project folder
-1. Run `git submodule update --init`
-1. Run `bundle install`
 1. Run `npm install -g grunt-cli`
 1. Run `npm install`.
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install 
