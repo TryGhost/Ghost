@@ -49,6 +49,19 @@ describe("Filters", function () {
         filters.filterCallbacks[filterName][defaultPriority].should.include(testFilterHandler);
     });
 
+    it("can register filters with priority null with default priority", function () {
+        var filterName = 'test',
+            defaultPriority = 5,
+            testFilterHandler = sandbox.spy();
+
+        filters.registerFilter(filterName, null, testFilterHandler);
+
+        should.exist(filters.filterCallbacks[filterName]);
+        should.exist(filters.filterCallbacks[filterName][defaultPriority]);
+
+        filters.filterCallbacks[filterName][defaultPriority].should.include(testFilterHandler);
+    });
+
     it("executes filters in priority order", function (done) {
         var filterName = 'testpriority',
             testFilterHandler1 = sandbox.spy(),
