@@ -46,6 +46,8 @@ Full instructions can be found in the [Contributing Guide](https://github.com/Tr
 
 Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
+If you want to use [Ghost as a NPM module there is a Wiki entry](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-a-NPM-module) where you can find instructions on how to get set up.
+
 ### Updating with the latest changes
 
 Documentation on updating can be found in the [Ghost Guide](http://docs.ghost.org/installation/upgrading/)
