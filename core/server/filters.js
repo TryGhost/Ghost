@@ -38,7 +38,7 @@ Filters.prototype.registerFilter = function (name, priority, fn) {
 };
 
 // Unregister a filter callback function
-Filters.prototype.unregisterFilter = function (name, priority, fn) {
+Filters.prototype.deregisterFilter = function (name, priority, fn) {
     // Curry the priority optional parameter to a default of 5
     if (_.isFunction(priority)) {
         fn = priority;
