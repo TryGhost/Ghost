@@ -161,11 +161,25 @@ describe('Frontend Controller', function () {
                 'markdown': 'The test normal post content',
                 'page': 0,
                 'published_at': new Date('2014/1/2').getTime()
+            },
+            // Helper function to prevent unit tests
+            // from failing via timeout when they
+            // should just immediately fail
+            failTest = function(done, msg) {
+                return function() {
+                    done(new Error(msg));
+                };
             };
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {
-                return when(args.slug === mockStaticPost.slug ? mockStaticPost : mockPost);
+                if (args.slug) {
+                    return when(args.slug === mockStaticPost.slug ? mockStaticPost : mockPost);
+                } else if (args.id) {
+                    return when(args.id === mockStaticPost.id ? mockStaticPost : mockPost);
+                } else {
+                    return when({});
+                }
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -191,282 +205,407 @@ describe('Frontend Controller', function () {
             }));
         });
 
-        describe('permalink set to slug', function () {
-            beforeEach(function () {
-                apiSettingsStub.withArgs('permalinks').returns(when({
-                    value: '/:slug/'
-                }));
-            });
+        describe('static pages', function () {
 
-            it('can render a static page', function (done) {
-                var req = {
-                        params: [undefined, mockStaticPost.slug]
-                    },
-                    res = {
-                        render: function (view, context) {
-                            assert.equal(view, 'page');
-                            assert.equal(context.post, mockStaticPost);
-                            done();
-                        }
-                    };
+            describe('permalink set to slug', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:slug/'
+                    }));
+                });
 
-                frontend.single(req, res, null);
-            });
+                it('will render static page via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockStaticPost.slug
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'page');
+                                assert.equal(context.post, mockStaticPost);
+                                done();
+                            }
+                        };
 
-            it('will NOT render a static page accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', mockStaticPost.slug]
-                    },
-                    res = {
-                        render: sinon.spy()
-                    };
+                    frontend.single(req, res, failTest(done));
+                });
 
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    done();
+                it('will NOT render static page via /YYY/MM/DD/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockStaticPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will redirect static page to admin edit page via /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockStaticPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: function(arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockStaticPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
                 });
             });
 
-            it('can render a normal post', function (done) {
-                var req = {
-                        params: [undefined, mockPost.slug]
-                    },
-                    res = {
-                        render: function (view, context) {
-                            assert.equal(view, 'post');
-                            assert(context.post, 'Context object has post attribute');
-                            assert.equal(context.post, mockPost);
-                            done();
-                        }
-                    };
-
-                frontend.single(req, res, null);
-            });
-
-            it('will NOT render a normal post accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', mockPost.slug]
-                    },
-                    res = {
-                        render: sinon.spy()
-                    };
-
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    done();
+            describe('permalink set to date', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:year/:month/:day/:slug/'
+                    }));
                 });
-            });
 
-            // Handle Edit append
-            it('will redirect to admin edit page for a normal post', function (done) {
-                var req = {
-                        params: [undefined, mockPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: function(arg) {
-                            res.render.called.should.be.false;
-                            arg.should.eql(adminEditPagePath + mockPost.id + '/');
-                            done();
-                        }
-                    };
+                it('will render static page via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockStaticPost.slug
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'page');
+                                assert.equal(context.post, mockStaticPost);
+                                done();
+                            }
+                        };
 
-                frontend.single(req, res, null);
-            });
-
-            it('will NOT redirect to admin edit page for a normal post accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', mockPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: sinon.spy()
-                    };
-
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    res.redirect.called.should.be.false;
-                    done();
+                    frontend.single(req, res, failTest(done));
                 });
-            });
 
-            it('will redirect to admin edit page for a static page accessed as a slug', function (done) {
-                var req = {
-                        params: [undefined, mockStaticPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: function(arg) {
-                            res.render.called.should.be.false;
-                            arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
-                            done();
-                        }
-                    };
+                it('will NOT render static page via /YYYY/MM/DD/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockStaticPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
 
-                frontend.single(req, res, null);
-            });
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
 
-            it('will NOT redirect to admin edit page for a static page accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', mockStaticPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: sinon.spy()
-                    };
+                it('will redirect static page to admin edit page via /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockStaticPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: function (arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
+                                done();
+                            }
+                        };
 
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    res.redirect.called.should.be.false;
-                    done();
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockStaticPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
                 });
             });
         });
 
-        describe('permalink set to date', function () {
-            beforeEach(function () {
-                apiSettingsStub.withArgs('permalinks').returns(when({
-                    value: '/:year/:month/:day/:slug/'
-                }));
-            });
+        describe('post', function () {
+            describe('permalink set to slug', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:slug'
+                    }));
+                });
 
-            it('can render a static page', function (done) {
-                var req = {
-                        params: [undefined, mockStaticPost.slug]
-                    },
-                    res = {
-                        render: function (view, context) {
-                            assert.equal(view, 'page');
-                            assert.equal(context.post, mockStaticPost);
-                            done();
-                        }
-                    };
+                it('will render post via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockPost.slug
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'post');
+                                assert(context.post, 'Context object has post attribute');
+                                assert.equal(context.post, mockPost);
+                                done();
+                            }
+                        };
 
-                frontend.single(req, res, null);
-            });
+                    frontend.single(req, res, failTest(done));
+                });
 
-            it('will NOT render a static page accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', 'test-static-page']
-                    },
-                    res = {
-                        render: sinon.spy()
-                    };
+                it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
 
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    done();
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                // Handle Edit append
+                it('will redirect post to admin edit page via /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: function(arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['2012/12/30', mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
                 });
             });
 
-            it('can render a normal post', function (done) {
-                var date = moment(mockPost.published_at).format('YYYY/MM/DD/'),
-                    req = {
-                        params: [date, mockPost.slug]
-                    },
-                    res = {
-                        render: function (view, context) {
-                            assert.equal(view, 'post');
-                            assert(context.post, 'Context object has post attribute');
-                            assert.equal(context.post, mockPost);
-                            done();
-                        }
-                    };
+            describe('permalink set to date', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:year/:month/:day/:slug'
+                    }));
+                });
 
-                frontend.single(req, res, null);
-            });
+                it('will render post via /YYYY/MM/DD/:slug', function (done) {
+                    var date = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [date, mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'post');
+                                assert(context.post, 'Context object has post attribute');
+                                assert.equal(context.post, mockPost);
+                                done();
+                            }
+                        };
 
-            it('will NOT render a normal post with the wrong date', function (done) {
-                var date = moment(mockPost.published_at).subtract('days', 1).format('YYYY/MM/DD/'),
-                    req = {
-                        params: [date, mockPost.slug]
-                    },
-                    res = {
-                        render: sinon.spy()
-                    };
+                    frontend.single(req, res, failTest(done));
+                });
 
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    done();
+                it('will NOT render post via /YYYY/MM/DD/:slug with non-matching date in url', function (done) {
+                    var date = moment(mockPost.published_at).subtract('days', 1).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [date, mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT render post via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockPost.slug
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                // Handle Edit append
+                it('will redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
+                    var dateFormat = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [dateFormat, mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: function (arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect post to admin edit page via /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
                 });
             });
 
-            it('will NOT render a normal post accessed as a slug url', function (done) {
-                var req = {
-                        params: [undefined, mockPost.slug]
-                    },
-                    res = {
-                        render: sinon.spy()
-                    };
-
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    done();
+            describe('permalink set to custom format', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:year/:slug'
+                    }));
                 });
-            });
 
-            // Handle Edit append
-            it('will redirect to admin edit page for a normal post', function (done) {
-                var req = {
-                        params: [moment(mockPost.published_at).format('YYYY/MM/DD/'), mockPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: function (arg) {
-                            res.render.called.should.be.false;
-                            arg.should.eql(adminEditPagePath + mockPost.id + '/');
-                            done();
-                        }
-                    };
+                it('will render post via /:year/:slug', function (done) {
+                    var date = moment(mockPost.published_at).format('YYYY'),
+                        req = {
+                            path: '/' + [date, mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'post');
+                                assert(context.post, 'Context object has post attribute');
+                                assert.equal(context.post, mockPost);
+                                done();
+                            }
+                        };
 
-                frontend.single(req, res, null);
-            });
-
-            it('will NOT redirect to admin edit page for a normal post accessed as a slug url', function (done) {
-                var req = {
-                        params: [undefined, mockPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: sinon.spy()
-                    };
-
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    res.redirect.called.should.be.false;
-                    done();
+                    frontend.single(req, res, failTest(done));
                 });
-            });
 
-            it('will redirect to admin edit page for a static page accessed as a slug url', function (done) {
-                var req = {
-                        params: [undefined, mockStaticPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: function (arg) {
-                            res.render.called.should.be.false;
-                            arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
-                            done();
-                        }
-                    };
+                it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
+                    var date = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [date, mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
 
-                frontend.single(req, res, null);
-            });
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
 
-            it('will NOT redirect to admin edit page for a static page accessed as a date url', function (done) {
-                var req = {
-                        params: ['2012/12/30/', mockStaticPost.slug, 'edit']
-                    },
-                    res = {
-                        render: sinon.spy(),
-                        redirect: sinon.spy()
-                    };
+                it('will NOT render post via /:year/slug when year does not match post year', function (done) {
+                    var date = moment(mockPost.published_at).subtract('years', 1).format('YYYY'),
+                        req = {
+                            path: '/' + [date, mockPost.slug].join('/')
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
 
-                frontend.single(req, res, function () {
-                    res.render.called.should.be.false;
-                    res.redirect.called.should.be.false;
-                    done();
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT render post via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockPost.slug
+                        },
+                        res = {
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                // Handle Edit append
+                it('will redirect post to admin edit page via /:year/:slug/edit', function (done) {
+                    var date = moment(mockPost.published_at).format('YYYY'),
+                        req = {
+                            path: '/' + [date, mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: function (arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect post to admin edit page /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                        },
+                        res = {
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
                 });
             });
         });
