@@ -49,7 +49,7 @@ describe('Frontend Controller', function () {
             }));
         });
 
-        it('Redirects to home if page number is 0', function () {
+        it('Redirects to home if page number is -1', function () {
             var req = {params: {page: -1}, route: {path: '/page/:page/'}};
 
             frontend.homepage(req, res, null);
