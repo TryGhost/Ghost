@@ -25,7 +25,8 @@
     "main": "./core/index",
     "scripts": {
         "start": "node index",
-        "test": "grunt validate --verbose"
+        "test": "./node_modules/.bin/grunt validate --verbose",
+        "install": "git submodule update --init && bundle install && ./node_modules/.bin/grunt init"
     },
     "engines": {
         "node": "~0.10.0"
@@ -61,6 +62,7 @@
     "devDependencies": {
         "blanket": "~1.1.5",
         "grunt": "~0.4.1",
+        "grunt-cli": "~0.1.13",
         "grunt-contrib-clean": "~0.5.0",
         "grunt-contrib-compress": "~0.5.2",
         "grunt-contrib-concat": "~0.3.0",
