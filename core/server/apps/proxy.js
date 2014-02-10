@@ -7,7 +7,7 @@ var proxy = {
 
     filters: {
         register: filters.registerFilter.bind(filters),
-        unregister: filters.unregisterFilter.bind(filters)
+        deregister: filters.deregisterFilter.bind(filters)
     },
     helpers: {
         register: helpers.registerThemeHelper.bind(helpers),

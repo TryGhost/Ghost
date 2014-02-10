@@ -57,7 +57,7 @@ describe('Apps', function () {
         it('creates a ghost proxy', function () {
             should.exist(appProxy.filters);
             should.exist(appProxy.filters.register);
-            should.exist(appProxy.filters.unregister);
+            should.exist(appProxy.filters.deregister);
 
             should.exist(appProxy.helpers);
             should.exist(appProxy.helpers.register);
