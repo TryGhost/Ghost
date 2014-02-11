@@ -26,7 +26,7 @@
     "scripts": {
         "start": "node index",
         "test": "./node_modules/.bin/grunt validate --verbose",
-        "install": "git submodule update --init && bundle install && ./node_modules/.bin/grunt init"
+        "install": "bundle install && grunt init"
     },
     "engines": {
         "node": "~0.10.0"
