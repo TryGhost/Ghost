@@ -25,11 +25,11 @@ var _        = require('lodash'),
                 if (jsonContainer.hasOwnProperty('name') && jsonContainer.hasOwnProperty('version')) {
                     packageDeferred.resolve(jsonContainer);
                 } else {
-                    messages.errors.push({message: '"name" or "version" is missing from theme package.json file.', context: path});
+                    messages.errors.push({message: '"name" or "version" is missing from package.json file.', context: path});
                     packageDeferred.resolve(false);
                 }
             } catch (e) {
-                messages.errors.push({message: 'Theme package.json file is malformed', context: path});
+                messages.errors.push({message: 'package.json file is malformed', context: path});
                 packageDeferred.resolve(false);
             }
         });
