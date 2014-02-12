@@ -10,6 +10,7 @@ module.exports = {
     Tag: require('./tag').Tag,
     Base: require('./base'),
     Session: require('./session').Session,
+    App: require('./app').App,
 
     init: function () {
         return migrations.init();

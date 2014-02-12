@@ -67,7 +67,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404'
+                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                     return when.resolve(userData);
                 });
 
@@ -208,16 +208,6 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
-        });
-
-        it("can get effective permissions", function (done) {
-            UserModel.effectivePermissions(1).then(function (effectivePermissions) {
-                should.exist(effectivePermissions);
-
-                effectivePermissions.length.should.be.above(0);
-
-                done();
             }).then(null, done);
         });
 
