@@ -8,12 +8,15 @@ var testUtils = require('../utils'),
 
     // Stuff we are testing
     permissions = require('../../server/permissions'),
+    effectivePerms = require('../../server/permissions/effective'),
     Models = require('../../server/models'),
     UserProvider = Models.User,
     PermissionsProvider = Models.Permission,
     PostProvider = Models.Post;
 
 describe('Permissions', function () {
+
+    var sandbox;
 
     before(function (done) {
         testUtils.clearData().then(function () {
@@ -22,13 +25,17 @@ describe('Permissions', function () {
     });
 
     beforeEach(function (done) {
+        sandbox = sinon.sandbox.create();
         testUtils.initData()
-            .then(testUtils.insertDefaultUser).then(function () {
+            .then(testUtils.insertDefaultUser)
+            .then(testUtils.insertDefaultApp)
+            .then(function () {
                 done();
             }, done);
     });
 
     afterEach(function (done) {
+        sandbox.restore();
         testUtils.clearData()
             .then(function () {
                 done();
@@ -243,7 +250,6 @@ describe('Permissions', function () {
             .then(function (updatedUser) {
 
                 // TODO: Verify updatedUser.related('permissions') has the permission?
-
                 var canThisResult = permissions.canThis(updatedUser.id);
 
                 should.exist(canThisResult.edit);
@@ -258,7 +264,7 @@ describe('Permissions', function () {
 
     it('can use permissable function on Model to allow something', function (done) {
         var testUser,
-            permissableStub = sinon.stub(PostProvider, 'permissable', function () {
+            permissableStub = sandbox.stub(PostProvider, 'permissable', function () {
                 return when.resolve();
             });
 
@@ -286,29 +292,109 @@ describe('Permissions', function () {
 
     it('can use permissable function on Model to forbid something', function (done) {
         var testUser,
-            permissableStub = sinon.stub(PostProvider, 'permissable', function () {
+            permissableStub = sandbox.stub(PostProvider, 'permissable', function () {
                 return when.reject();
             });
-
 
         // createTestUser()
         UserProvider.browse()
             .then(function (foundUser) {
                 testUser = foundUser.models[0];
 
-
                 return permissions.canThis(testUser).edit.post(123);
             })
             .then(function () {
                 permissableStub.restore();
 
-                errors.logError(new Error("Allowed testUser to edit post"));
+                done(new Error("Allowed testUser to edit post"));
             })
             .otherwise(function () {
                 permissableStub.restore();
-                permissableStub.calledWith(123, testUser.id, 'edit').should.equal(true);
+                permissableStub.calledWith(123, { user: testUser.id, app: null }, 'edit').should.equal(true);
+                done();
+            });
+    });
+
+    it("can get effective user permissions", function (done) {
+        effectivePerms.user(1).then(function (effectivePermissions) {
+            should.exist(effectivePermissions);
+
+            effectivePermissions.length.should.be.above(0);
+
+            done();
+        }).then(null, done);
+    });
+
+    it('can check an apps effective permissions', function (done) {
+        effectivePerms.app('Kudos')
+            .then(function (effectivePermissions) {
+                should.exist(effectivePermissions);
+
+                effectivePermissions.length.should.be.above(0);
 
                 done();
+            })
+            .otherwise(done);
+    });
+    it('does not allow an app to edit a post without permission', function (done) {
+        // Change the author of the post so the author override doesn't affect the test
+        PostProvider.edit({id: 1, 'author_id': 2})
+            .then(function (updatedPost) {
+                // Add user permissions
+                return Models.User.read({id: 1})
+                    .then(function (foundUser) {
+                        var newPerm = new Models.Permission({
+                            name: "app test edit post",
+                            action_type: "edit",
+                            object_type: "post"
+                        });
+
+                        return newPerm.save().then(function () {
+                            return foundUser.permissions().attach(newPerm).then(function () {
+                                return when.all([updatedPost, foundUser]);
+                            });
+                        });
+                    });
+            })
+            .then(function (results) {
+                var updatedPost = results[0],
+                    updatedUser = results[1];
+
+                return permissions.canThis({ user: updatedUser.id })
+                    .edit
+                    .post(updatedPost.id)
+                    .then(function () {
+                        return results;
+                    })
+                    .otherwise(function (err) {
+                        done(new Error("Did not allow user 1 to edit post 1"));
+                    });
+            })
+            .then(function (results) {
+                var updatedPost = results[0],
+                    updatedUser = results[1];
+
+                // Confirm app cannot edit it.
+                return permissions.canThis({ app: 'Hemingway', user: updatedUser.id })
+                    .edit
+                    .post(updatedPost.id)
+                    .then(function () {
+                        done(new Error("Allowed an edit of post 1"));
+                    })
+                    .otherwise(function () {
+                        done();
+                    });
+            }).otherwise(done);
+    });
+    it('allows an app to edit a post with permission', function (done) {
+        permissions.canThis({ app: 'Kudos', user: 1 })
+            .edit
+            .post(1)
+            .then(function () {
+                done();
+            })
+            .otherwise(function () {
+                done(new Error("Allowed an edit of post 1"));
             });
     });
 });

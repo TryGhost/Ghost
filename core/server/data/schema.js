@@ -81,6 +81,11 @@ var db = {
             role_id: {type: 'integer', nullable: false},
             permission_id: {type: 'integer', nullable: false}
         },
+        permissions_apps: {
+            id: {type: 'increments', nullable: false, primary: true},
+            app_id: {type: 'integer', nullable: false},
+            permission_id: {type: 'integer', nullable: false}
+        },
         sessions: {
             id: {type: 'string', nullable: false, primary: true},
             expires: {type: 'bigInteger', nullable: false},
@@ -115,12 +120,21 @@ var db = {
             id: {type: 'increments', nullable: false, primary: true},
             post_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'posts'},
             tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'tags'}
+        },
+        apps: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            name: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
         }
     };
 
 function isPost(jsonData) {
-    return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown')
-        && jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
+    return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown') &&
+           jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
 }
 
 function isTag(jsonData) {

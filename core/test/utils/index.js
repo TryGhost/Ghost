@@ -91,9 +91,27 @@ function insertDefaultUser() {
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
     userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
-    return when(knex('users').insert(users).then(function () {
-        return knex('roles_users').insert(userRoles);
-    }));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
+function insertDefaultApp() {
+    var apps = [];
+
+    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
+
+    return knex('apps')
+        .insert(apps)
+        .then(function () {
+            return knex('permissions_apps')
+                .insert({
+                    app_id: 1,
+                    permission_id: 1
+                });
+        });
 }
 
 function insertDefaultFixtures() {
@@ -127,6 +145,7 @@ module.exports = {
     insertMorePosts: insertMorePosts,
     insertMorePostsTags: insertMorePostsTags,
     insertDefaultUser: insertDefaultUser,
+    insertDefaultApp: insertDefaultApp,
 
     loadExportFixture: loadExportFixture,
 

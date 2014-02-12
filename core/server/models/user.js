@@ -334,35 +334,6 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    effectivePermissions: function (id) {
-        return this.read({id: id}, { withRelated: ['permissions', 'roles.permissions'] })
-            .then(function (foundUser) {
-                var seenPerms = {},
-                    rolePerms = _.map(foundUser.related('roles').models, function (role) {
-                        return role.related('permissions').models;
-                    }),
-                    allPerms = [];
-
-                rolePerms.push(foundUser.related('permissions').models);
-
-                _.each(rolePerms, function (rolePermGroup) {
-                    _.each(rolePermGroup, function (perm) {
-                        var key = perm.get('action_type') + '-' + perm.get('object_type') + '-' + perm.get('object_id');
-
-                        // Only add perms once
-                        if (seenPerms[key]) {
-                            return;
-                        }
-
-                        allPerms.push(perm);
-                        seenPerms[key] = true;
-                    });
-                });
-
-                return when.resolve(allPerms);
-            }, errors.logAndThrowError);
-    },
-
     gravatarLookup: function (userData) {
         var gravatarUrl = '//www.gravatar.com/avatar/' +
                             crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
