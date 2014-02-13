@@ -267,8 +267,6 @@ module.exports = function (server, dbHash) {
         cookie: cookie
     }));
 
-    // enable express csrf protection
-    expressServer.use(middleware.conditionalCSRF);
 
     // local data
     expressServer.use(ghostLocals);
@@ -286,6 +284,9 @@ module.exports = function (server, dbHash) {
     // ### Routing
     expressServer.use(subdir, expressServer.router);
 
+    // enable express csrf protection
+    expressServer.use(middleware.conditionalCSRF);
+    
     // ### Error handling
     // 404 Handler
     expressServer.use(errors.error404);
