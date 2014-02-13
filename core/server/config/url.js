@@ -114,6 +114,8 @@ function urlFor(context, data, absolute) {
         // trying to create a url for an object
         if (context === 'post' && data.post && data.permalinks) {
             urlPath = urlPathForPost(data.post, data.permalinks);
+        } else if (context === 'tag' && data.tag) {
+            urlPath = '/tag/' + data.tag.slug + '/';
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {

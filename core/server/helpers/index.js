@@ -15,6 +15,7 @@ var downsize        = require('downsize'),
     updateCheck     = require('../update-check'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
+    linkTemplate    = _.template('<a href="<%= url %>"><%= text %></a>'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     isProduction    = process.env.NODE_ENV === 'production',
 
@@ -111,6 +112,10 @@ coreHelpers.url = function (options) {
         return config.urlForPost(api.settings, this, absolute);
     }
 
+    if (schema.isTag(this)) {
+        return when(config.urlFor('tag', {tag: this}, absolute));
+    }
+
     return when(config.urlFor(this, absolute));
 };
 
@@ -174,14 +179,28 @@ coreHelpers.author = function (context, options) {
 // Note that the standard {{#each tags}} implementation is unaffected by this helper
 // and can be used for more complex templates.
 coreHelpers.tags = function (options) {
-    var separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
+    var autolink = _.isString(options.hash.autolink) && options.hash.autolink === "false" ? false : true,
+        separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
         prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
         suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
-        output = '',
-        tagNames = _.pluck(this.tags, 'name');
+        output = '';
 
-    if (tagNames.length) {
-        output = prefix + _.escape(tagNames.join(separator)) + suffix;
+    function createTagList(tags) {
+        var tagNames = _.pluck(tags, 'name');
+
+        if (autolink) {
+            return _.map(tags, function (tag) {
+                return linkTemplate({
+                    url: config.urlFor('tag', {tag: tag}),
+                    text: _.escape(tag.name)
+                });
+            }).join(separator);
+        }
+        return _.escape(tagNames.join(separator));
+    }
+
+    if (this.tags && this.tags.length) {
+        output = prefix + createTagList(this.tags) + suffix;
     }
 
     return new hbs.handlebars.SafeString(output);

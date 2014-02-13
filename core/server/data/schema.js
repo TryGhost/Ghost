@@ -123,7 +123,13 @@ function isPost(jsonData) {
         && jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
 }
 
+function isTag(jsonData) {
+    return jsonData.hasOwnProperty('name') && jsonData.hasOwnProperty('slug')
+        && jsonData.hasOwnProperty('description') && jsonData.hasOwnProperty('parent_id');
+}
+
 module.exports.tables = db;
 module.exports.checks = {
-    isPost: isPost
+    isPost: isPost,
+    isTag: isTag
 };
