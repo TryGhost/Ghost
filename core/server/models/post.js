@@ -254,30 +254,23 @@ Post = ghostBookshelf.Model.extend({
      * @params opts
      */
     findPage: function (opts) {
-        var postCollection,
+        var postCollection = Posts.forge(),
+            tagInstance = opts.tag !== undefined ? Tag.forge({slug: opts.tag}) : false,
             permittedOptions = ['page', 'limit', 'status', 'staticPages'];
 
-        // sanitize opts
+        // sanitize opts so we are not automatically passing through any and all
+        // query strings to Bookshelf / Knex. Although the API requires auth, we
+        // should prevent this until such time as we can design the API properly and safely.
         opts = _.pick(opts, permittedOptions);
 
-        // Allow findPage(n)
-        if (_.isString(opts) || _.isNumber(opts)) {
-            opts = {page: opts};
-        }
-
-        // Without this we are automatically passing through any and all query strings
-        // to Bookshelf / Knex. Although the API requires auth, we should prevent this
-        // until such time as we can design the API properly and safely.
-        opts.where = {};
-
+        // Set default settings for options
         opts = _.extend({
             page: 1, // pagination page
             limit: 15,
             staticPages: false, // include static pages
-            status: 'published'
+            status: 'published',
+            where: {}
         }, opts);
-
-        postCollection = Posts.forge();
 
         if (opts.staticPages !== 'all') {
             // convert string true/false to boolean
@@ -301,53 +294,96 @@ Post = ghostBookshelf.Model.extend({
             postCollection.query('where', opts.where);
         }
 
+        // Fetch related models
         opts.withRelated = [ 'author', 'user', 'tags' ];
 
-        // Set the limit & offset for the query, fetching
-        // with the opts (to specify any eager relations, etc.)
-        // Omitting the `page`, `limit`, `where` just to be sure
-        // aren't used for other purposes.
-        return postCollection
-            .query('limit', opts.limit)
-            .query('offset', opts.limit * (opts.page - 1))
-            .query('orderBy', 'status', 'ASC')
-            .query('orderBy', 'published_at', 'DESC')
-            .query('orderBy', 'updated_at', 'DESC')
-            .fetch(_.omit(opts, 'page', 'limit'))
-            .then(function (collection) {
-                var qb;
+        // If a query param for a tag is attached
+        // we need to fetch the tag model to find its id
+        function fetchTagQuery() {
+            if (tagInstance) {
+                return tagInstance.fetch();
+            }
+            return false;
+        }
+
+        return when(fetchTagQuery())
+
+            // Set the limit & offset for the query, fetching
+            // with the opts (to specify any eager relations, etc.)
+            // Omitting the `page`, `limit`, `where` just to be sure
+            // aren't used for other purposes.
+            .then(function () {
+                // If we have a tag instance we need to modify our query.
+                // We need to ensure we only select posts that contain
+                // the tag given in the query param.
+                if (tagInstance) {
+                    postCollection
+                        .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
+                        .query('where', 'posts_tags.tag_id', '=', tagInstance.id);
+                }
+
+                return postCollection
+                    .query('limit', opts.limit)
+                    .query('offset', opts.limit * (opts.page - 1))
+                    .query('orderBy', 'status', 'ASC')
+                    .query('orderBy', 'published_at', 'DESC')
+                    .query('orderBy', 'updated_at', 'DESC')
+                    .fetch(_.omit(opts, 'page', 'limit'));
+            })
+
+            // Fetch pagination information
+            .then(function () {
+                var qb,
+                    tableName = _.result(postCollection, 'tableName'),
+                    idAttribute = _.result(postCollection, 'idAttribute');
 
                 // After we're done, we need to figure out what
                 // the limits are for the pagination values.
-                qb = ghostBookshelf.knex(_.result(collection, 'tableName'));
+                qb = ghostBookshelf.knex(tableName);
 
                 if (opts.where) {
                     qb.where(opts.where);
                 }
 
-                return qb.count(_.result(collection, 'idAttribute') + ' as aggregate').then(function (resp) {
-                    var totalPosts = parseInt(resp[0].aggregate, 10),
-                        data = {
-                            posts: collection.toJSON(),
-                            page: parseInt(opts.page, 10),
-                            limit: opts.limit,
-                            pages: Math.ceil(totalPosts / opts.limit),
-                            total: totalPosts
-                        };
+                if (tagInstance) {
+                    qb.join('posts_tags', 'posts_tags.post_id', '=', 'posts.id');
+                    qb.where('posts_tags.tag_id', '=', tagInstance.id);
+                }
 
-                    if (data.pages > 1) {
-                        if (data.page === 1) {
-                            data.next = data.page + 1;
-                        } else if (data.page === data.pages) {
-                            data.prev = data.page - 1;
-                        } else {
-                            data.next = data.page + 1;
-                            data.prev = data.page - 1;
-                        }
+                return qb.count(tableName + '.' + idAttribute + ' as aggregate');
+            })
+
+            // Format response of data
+            .then(function (resp) {
+                var totalPosts = parseInt(resp[0].aggregate, 10),
+                    data = {
+                        posts: postCollection.toJSON(),
+                        page: parseInt(opts.page, 10),
+                        limit: opts.limit,
+                        pages: Math.ceil(totalPosts / opts.limit),
+                        total: totalPosts
+                    };
+
+                if (data.pages > 1) {
+                    if (data.page === 1) {
+                        data.next = data.page + 1;
+                    } else if (data.page === data.pages) {
+                        data.prev = data.page - 1;
+                    } else {
+                        data.next = data.page + 1;
+                        data.prev = data.page - 1;
                     }
-                    return data;
-                }, errors.logAndThrowError);
-            }, errors.logAndThrowError);
+                }
+
+                if (tagInstance) {
+                    data.aspect = {
+                        tag: tagInstance.toJSON()
+                    };
+                }
+
+                return data;
+            })
+            .catch(errors.logAndThrowError);
     },
 
     permissable: function (postModelOrId, userId, action_type, userPermissions) {

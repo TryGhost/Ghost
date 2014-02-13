@@ -92,7 +92,19 @@ coreHelpers.encode = function (context, str) {
 //
 coreHelpers.pageUrl = function (context, block) {
     /*jslint unparam:true*/
-    return config().paths.subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
+    var url = config().paths.subdir;
+
+    if (this.tagSlug !== undefined) {
+        url += '/tag/' + this.tagSlug;
+    }
+
+    if (context > 1) {
+        url += '/page/' + context;
+    }
+
+    url += '/';
+
+    return url;
 };
 
 // ### URL helper
@@ -296,7 +308,7 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/page/)) {
+    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page|tag)/)) {
         classes.push('archive-template');
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
@@ -542,7 +554,13 @@ coreHelpers.pagination = function (options) {
         errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
         return;
     }
-    return template.execute('pagination', this.pagination);
+    var context = _.merge({}, this.pagination);
+
+    if (this.tag !== undefined) {
+        context.tagSlug = this.tag.slug;
+    }
+
+    return template.execute('pagination', context);
 };
 
 coreHelpers.helperMissing = function (arg) {

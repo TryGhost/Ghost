@@ -290,6 +290,68 @@ describe('Frontend Routing', function () {
         // });
     });
 
+    describe('Tag pages', function () {
+
+        // Add enough posts to trigger tag pages
+        before(function (done) {
+            testUtils.clearData().then(function () {
+                // we initialise data, but not a user. No user should be required for navigating the frontend
+                return testUtils.initData();
+            }).then(function () {
+
+                return testUtils.insertPosts();
+            }).then(function () {
+                return testUtils.insertMorePosts(22);
+            }).then(function() {
+                return testUtils.insertMorePostsTags(22);
+            }).then(function () {
+                done();
+            }).then(null, done);
+
+        });
+
+        it('should redirect without slash', function (done) {
+            request.get('/tag/injection/page/2')
+                .expect('Location', '/tag/injection/page/2/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should respond with html', function (done) {
+            request.get('/tag/injection/page/2/')
+                .expect('Content-Type', /html/)
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should redirect page 1', function (done) {
+            request.get('/tag/injection/page/1/')
+                .expect('Location', '/tag/injection/')
+                .expect('Cache-Control', cacheRules['public'])
+                // TODO: This should probably be a 301?
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to last page is page too high', function (done) {
+            request.get('/tag/injection/page/4/')
+                .expect('Location', '/tag/injection/page/2/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to first page is page too low', function (done) {
+            request.get('/tag/injection/page/0/')
+                .expect('Location', '/tag/injection/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+    });
+
     // ### The rest of the tests switch to date permalinks
 
 //    describe('Date permalinks', function () {

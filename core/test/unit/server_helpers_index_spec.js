@@ -486,6 +486,29 @@ describe('Core Helpers', function () {
             helpers.pageUrl(2).should.equal('/blog/page/2/');
             helpers.pageUrl(50).should.equal('/blog/page/50/');
         });
+
+        it('can return a valid url for tag pages', function () {
+            var tagContext = {
+                tagSlug: 'pumpkin'
+            };
+            helpers.pageUrl.call(tagContext, 1).should.equal('/tag/pumpkin/');
+            helpers.pageUrl.call(tagContext, 2).should.equal('/tag/pumpkin/page/2/');
+            helpers.pageUrl.call(tagContext, 50).should.equal('/tag/pumpkin/page/50/');
+        });
+
+        it('can return a valid url for tag pages with subdirectory', function () {
+            helpers.__set__('config', function() {
+                return {
+                    paths: {'subdir': '/blog'}
+                };
+            });
+            var tagContext = {
+                tagSlug: 'pumpkin'
+            };
+            helpers.pageUrl.call(tagContext, 1).should.equal('/blog/tag/pumpkin/');
+            helpers.pageUrl.call(tagContext, 2).should.equal('/blog/tag/pumpkin/page/2/');
+            helpers.pageUrl.call(tagContext, 50).should.equal('/blog/tag/pumpkin/page/50/');
+        });
     });
 
     describe("Pagination helper", function () {

@@ -20,53 +20,121 @@ var moment      = require('moment'),
     // Cache static post permalink regex
     staticPostPermalink = new Route(null, '/:slug/:edit?');
 
+function getPostPage(options) {
+    return api.settings.read('postsPerPage').then(function (postPP) {
+        var postsPerPage = parseInt(postPP.value, 10);
+
+        // No negative posts per page, must be number
+        if (!isNaN(postsPerPage) && postsPerPage > 0) {
+            options.limit = postsPerPage;
+        }
+
+        return api.posts.browse(options);
+    }).then(function (page) {
+
+        // A bit of a hack for situations with no content.
+        if (page.pages === 0) {
+            page.pages = 1;
+        }
+
+        return page;
+    });
+}
+
+function formatPageResponse(posts, page) {
+    return {
+        posts: posts,
+        pagination: {
+            page: page.page,
+            prev: page.prev,
+            next: page.next,
+            limit: page.limit,
+            total: page.total,
+            pages: page.pages
+        }
+    };
+}
+
+function handleError(next) {
+    return function (err) {
+        var e = new Error(err.message);
+        e.status = err.errorCode;
+        return next(e);
+    };
+}
 
 frontendControllers = {
     'homepage': function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            postsPerPage,
-            options = {};
+            options = {
+                page: pageParam
+            };
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
             return res.redirect(config().paths.subdir + '/');
         }
 
-        return api.settings.read('postsPerPage').then(function (postPP) {
-            postsPerPage = parseInt(postPP.value, 10);
-            options.page = pageParam;
-
-            // No negative posts per page, must be number
-            if (!isNaN(postsPerPage) && postsPerPage > 0) {
-                options.limit = postsPerPage;
-            }
-            return;
-        }).then(function () {
-            return api.posts.browse(options);
-        }).then(function (page) {
-            var maxPage = page.pages;
-
-            // A bit of a hack for situations with no content.
-            if (maxPage === 0) {
-                maxPage = 1;
-                page.pages = 1;
-            }
+        return getPostPage(options).then(function (page) {
 
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + maxPage + '/'));
+            if (pageParam > page.pages) {
+                return res.redirect(page.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.pages + '/'));
             }
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
+                res.render('index', formatPageResponse(posts, page));
             });
-        }).otherwise(function (err) {
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
-        });
+        }).otherwise(handleError(next));
+    },
+    'tag': function (req, res, next) {
+        // Parse the page number
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            options = {
+                page: pageParam,
+                tag: req.params.slug
+            };
+
+        // Get url for tag page
+        function tagUrl(tag, page) {
+            var url = config().paths.subdir + '/tag/' + tag + '/';
+
+            if (page && page > 1) {
+                url += 'page/' + page + '/';
+            }
+
+            return url;
+        }
+
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
+            return res.redirect(tagUrl(options.tag));
+        }
+
+        return getPostPage(options).then(function (page) {
+
+            // If page is greater than number of pages we have, redirect to last page
+            if (pageParam > page.pages) {
+                return res.redirect(tagUrl(options.tag, page.pages));
+            }
+
+            // Render the page of posts
+            filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+                api.settings.read('activeTheme').then(function (activeTheme) {
+                    var paths = config().paths.availableThemes[activeTheme.value],
+                        view = paths.hasOwnProperty('tag') ? 'tag' : 'index',
+
+                        // Format data for template
+                        response = _.extend(formatPageResponse(posts, page), {
+                            tag: page.aspect.tag
+                        });
+
+                    res.render(view, response);
+                });
+            });
+        }).otherwise(handleError(next));
     },
     'single': function (req, res, next) {
         var path = req.path,
@@ -177,14 +245,8 @@ frontendControllers = {
                 return next();
             }
 
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
+            return handleError(next)(err);
         });
-    },
-    'edit': function (req, res, next) {
-        req.params[2] = 'edit';
-        return frontendControllers.single(req, res, next);
     },
     'rss': function (req, res, next) {
         // Initialize RSS
@@ -271,11 +333,7 @@ frontendControllers = {
                     res.send(feed.xml());
                 });
             });
-        }).otherwise(function (err) {
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
-        });
+        }).otherwise(handleError(next));
     }
 };
 
