@@ -8,23 +8,23 @@ chapter: quickstart
 section: quickstart
 ---
 
-# Overview <a id="overview"></a>
+# 개요 <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+Ghost 실행 퀵스타트 가이드는 이미 [Node](http://nodejs.org) 또는 루비 온 레일즈 같은 것에 익숙한 분을 위한 것입니다. 이런 것들을 잘 모른다면 좀더 차근차근한 설명이 들어있는 [설치 가이드](/installation.html)를 읽기 바랍니다.
 
-## Get Ghost running locally <a id="ghost-local"></a>
+## 로컬에서 Ghost 실행하기 <a id="ghost-local"></a>
 
-Ghost requires node `0.10.*` (the latest stable version).
+Ghost를 실행하려면 node `0.10.*` (the latest stable version)이 필요합니다.
 
-If you haven't already got it, head over to <http://nodejs.org> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.
+아직 없다면 <http://nodejs.org>에 방문해 Node.js 최신 버전을 다운로드하기 바랍니다. 설치파일은 Node뿐 아니라 Node 패키지 관리자인 npm도 함께 설치할 것입니다.
 
-For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+리눅스 사용자는 .tar.gz 아카이브 보다는 [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)로 설치하기를 원할 것입니다.
 
-Download the latest version of Ghost from [Ghost.org/download/](https://ghost.org/download/). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+[Ghost.org/download/](https://ghost.org/download/)에서 Ghost 최신 버전을 다운로드해, Ghost를 실행할 폴더(아무 폴더나 상관 없습니다!)에 압축을 해제합니다.
 
-Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
+터미널(맥/리눅스) 또는 도스창(윈도우)을 열어 Ghost 압축을 해제한 디렉터리(package.json 파일이 있는)로 갑니다.
 
-To install Ghost, run `npm install --production`
+`npm install --production`를 실행해 Ghost를 설치합니다.
 
 <!--<h2 id="customise">Customise & Configure Ghost</h2>
 
