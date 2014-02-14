@@ -100,4 +100,20 @@ describe('User API', function () {
             });
         });
     });
+
+    it('can\'t edit a user with invalid CSRF token', function (done) {
+        request.get(testUtils.API.getApiURL('users/me/'), function (error, response, body) {
+            var jsonResponse = JSON.parse(body),
+                changedValue = 'joe-bloggs.ghost.org';
+            jsonResponse.should.exist;
+            jsonResponse.website = changedValue;
+
+            request.put({uri: testUtils.API.getApiURL('users/me/'),
+                    headers: {'X-CSRF-Token': 'invalid-token'},
+                    json: jsonResponse}, function (error, response, putBody) {
+                response.should.have.status(403);
+                done();
+            });
+        });
+    });
 });

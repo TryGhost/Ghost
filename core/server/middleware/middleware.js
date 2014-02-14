@@ -24,6 +24,28 @@ function cacheServer(server) {
 
 var middleware = {
 
+    // ### Authenticate Middleware
+    // authentication has to be done for /ghost/* routes with 
+    // exceptions for signin, signout, signup, forgotten, reset only
+    // api and frontend use different authentication mechanisms atm
+    authenticate: function (req, res, next) {
+        if (res.isAdmin) {
+            if (req.path.indexOf("/ghost/api/") === 0) {
+                return middleware.authAPI(req, res, next);
+            }
+
+            var noAuthNeeded = [
+                '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
+                '/ghost/forgotten/', '/ghost/reset/'
+            ];
+
+            if (noAuthNeeded.indexOf(req.path) < 0) {
+                return middleware.auth(req, res, next);
+            }
+        }
+        next();
+    },
+
     // ### Auth Middleware
     // Authenticate a request by redirecting to login if not logged in.
     // We strip /ghost/ out of the redirect parameter for neatness

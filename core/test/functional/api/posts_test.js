@@ -247,6 +247,22 @@ describe('Post API', function () {
                 });
             });
         });
+
+        it('can\'t edit a post with invalid CSRF token', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body),
+                    changedValue = 'My new Title';
+                jsonResponse.should.exist;
+                jsonResponse.title = changedValue;
+
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': 'invalid-token'},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(403);
+                    done();
+                });
+            });
+        });
     });
 
     // ## delete

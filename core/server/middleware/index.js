@@ -267,6 +267,14 @@ module.exports = function (server, dbHash) {
         cookie: cookie
     }));
 
+    // ### Caching
+    expressServer.use(middleware.cacheControl('public'));
+    expressServer.use('/api/', middleware.cacheControl('private'));
+    expressServer.use('/ghost/', middleware.cacheControl('private'));
+
+    // enable authentication; has to be done before CSRF handling
+    expressServer.use(middleware.authenticate);
+
     // enable express csrf protection
     expressServer.use(middleware.conditionalCSRF);
 
@@ -276,12 +284,6 @@ module.exports = function (server, dbHash) {
     expressServer.use(middleware.cleanNotifications);
      // Initialise the views
     expressServer.use(initViews);
-
-
-    // ### Caching
-    expressServer.use(middleware.cacheControl('public'));
-    expressServer.use('/api/', middleware.cacheControl('private'));
-    expressServer.use('/ghost/', middleware.cacheControl('private'));
 
     // ### Routing
     expressServer.use(subdir, expressServer.router);
