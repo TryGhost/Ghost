@@ -43,7 +43,7 @@ projectFilesBackup
 /_site
 /content/tmp/*
 /content/data/*
-/content/plugins/**/*
+/content/apps/**/*
 /content/themes/**/*
 /content/images/**/*
 !/content/themes/casper/**

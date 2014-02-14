@@ -2,7 +2,7 @@ var Settings,
     ghostBookshelf = require('./base'),
     validator      = ghostBookshelf.validator,
     uuid           = require('node-uuid'),
-    _              = require('underscore'),
+    _              = require('lodash'),
     errors         = require('../errorHandling'),
     when           = require('when'),
     defaultSettings;

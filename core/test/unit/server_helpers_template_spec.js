@@ -3,7 +3,7 @@ var testUtils = require('../utils'),
     should    = require('should'),
     sinon     = require('sinon'),
     when      = require('when'),
-    _         = require('underscore'),
+    _         = require('lodash'),
     path      = require('path'),
     hbs = require('express-hbs'),
 

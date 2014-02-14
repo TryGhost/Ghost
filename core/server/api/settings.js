@@ -1,4 +1,4 @@
-var _            = require('underscore'),
+var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
     errors       = require('../errorHandling'),
@@ -77,7 +77,7 @@ readSettingsResult = function (result) {
             settings[member.attributes.key] = val;
         }
     })).then(function () {
-        return when(config.paths().availableThemes).then(function (themes) {
+        return when(config().paths.availableThemes).then(function (themes) {
             var themeKeys = Object.keys(themes),
                 res = [],
                 i,

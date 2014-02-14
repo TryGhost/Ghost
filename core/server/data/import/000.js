@@ -1,5 +1,5 @@
 var when   = require('when'),
-    _      = require('underscore'),
+    _      = require('lodash'),
     models = require('../../models'),
     errors = require('../../errorHandling'),
     Importer000;
@@ -12,7 +12,8 @@ Importer000 = function () {
 
     this.importFrom = {
         '000': this.basicImport,
-        '001': this.basicImport
+        '001': this.basicImport,
+        '002': this.basicImport
     };
 };
 

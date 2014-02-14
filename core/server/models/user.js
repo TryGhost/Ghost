@@ -1,6 +1,6 @@
 var User,
     Users,
-    _              = require('underscore'),
+    _              = require('lodash'),
     uuid           = require('node-uuid'),
     when           = require('when'),
     errors         = require('../errorHandling'),
@@ -11,7 +11,9 @@ var User,
     Role           = require('./role').Role,
     Permission     = require('./permission').Permission,
     http           = require('http'),
-    crypto         = require('crypto');
+    crypto         = require('crypto'),
+
+    tokenSecurity  = {};
 
 function validatePasswordLength(password) {
     try {
@@ -69,11 +71,10 @@ User = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         // this.set('name', this.sanitize('name'));
-        // this.set('email', this.sanitize('email').toLocaleLowerCase());
+        // this.set('email', this.sanitize('email'));
         // this.set('location', this.sanitize('location'));
         // this.set('website', this.sanitize('website'));
         // this.set('bio', this.sanitize('bio'));
-        this.set('email', this.get('email').toLocaleLowerCase());
 
         return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
@@ -182,9 +183,8 @@ User = ghostBookshelf.Model.extend({
     check: function (_userdata) {
         var self = this,
             s;
-        return this.forge({
-            email: _userdata.email.toLocaleLowerCase()
-        }).fetch({require: true}).then(function (user) {
+
+        return this.getByEmail(_userdata.email).then(function (user) {
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
                     if (!matched) {
@@ -205,8 +205,11 @@ User = ghostBookshelf.Model.extend({
                 'the "Forgotten password?" link!'));
 
         }, function (error) {
-            /*jslint unparam:true*/
-            return when.reject(new Error('There is no user with that email address.'));
+            if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
+                return when.reject(new Error('There is no user with that email address.'));
+            }
+
+            return when.reject(error);
         });
     },
 
@@ -248,7 +251,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     generateResetToken: function (email, expires, dbHash) {
-        return this.forge({email: email.toLocaleLowerCase()}).fetch({require: true}).then(function (foundUser) {
+        return this.getByEmail(email).then(function (foundUser) {
             var hash = crypto.createHash('sha256'),
                 text = "";
 
@@ -267,6 +270,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     validateToken: function (token, dbHash) {
+        /*jslint bitwise:true*/
         // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
         var tokenText = new Buffer(token, 'base64').toString('ascii'),
             parts,
@@ -287,17 +291,36 @@ User = ghostBookshelf.Model.extend({
             return when.reject(new Error("Invalid token expiration"));
         }
 
-        // This is easy to fake, but still check anyway.
+        // Check if token is expired to prevent replay attacks
         if (expires < Date.now()) {
             return when.reject(new Error("Expired token"));
         }
 
+        // to prevent brute force attempts to reset the password the combination of email+expires is only allowed for 10 attempts
+        if (tokenSecurity[email + '+' + expires] && tokenSecurity[email + '+' + expires].count >= 10) {
+            return when.reject(new Error("Token locked"));
+        }
+
         return this.generateResetToken(email, expires, dbHash).then(function (generatedToken) {
-            // Check for matching tokens
-            if (token === generatedToken) {
+            // Check for matching tokens with timing independent comparison
+            var diff = 0,
+                i;
+
+            // check if the token lenght is correct
+            if (token.length !== generatedToken.length) {
+                diff = 1;
+            }
+
+            for (i = token.length - 1; i >= 0; i = i - 1) {
+                diff |= token.charCodeAt(i) ^ generatedToken.charCodeAt(i);
+            }
+
+            if (diff === 0) {
                 return when.resolve(email);
             }
 
+            // increase the count for email+expires for each failed attempt
+            tokenSecurity[email + '+' + expires] = {count: tokenSecurity[email + '+' + expires] ? tokenSecurity[email + '+' + expires].count + 1 : 1};
             return when.reject(new Error("Invalid token"));
         });
     },
@@ -375,8 +398,28 @@ User = ghostBookshelf.Model.extend({
         });
 
         return checkPromise.promise;
-    }
+    },
 
+    // Get the user by email address, enforces case insensitivity rejects if the user is not found
+    // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
+    // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
+    getByEmail: function (email) {
+        // We fetch all users and process them in JS as there is no easy way to make this query across all DBs
+        // Although they all support `lower()`, sqlite can't case transform unicode characters
+        // This is somewhat mute, as validator.isEmail() also doesn't support unicode, but this is much easier / more
+        // likely to be fixed in the near future.
+        return Users.forge().fetch({require: true}).then(function (users) {
+            var userWithEmail = users.find(function (user) {
+                return user.get('email').toLowerCase() === email.toLowerCase();
+            });
+
+            if (userWithEmail) {
+                return when.resolve(userWithEmail);
+            }
+
+            return when.reject(new Error('NotFound'));
+        });
+    }
 });
 
 Users = ghostBookshelf.Collection.extend({

@@ -18,7 +18,7 @@
 
 .editor {
 
-    #notifications {
+    .notifications {
         @include breakpoint($biggerthan-mobile) {
             bottom: 40px;
         }
@@ -376,7 +376,7 @@
 
 body.zen {
     background: lighten($lightbrown, 3%);
-    #usermenu {display: none;}
+    .usermenu {display: none;}
     #global-header, #publish-bar {
         opacity: 0;
         height: 0;

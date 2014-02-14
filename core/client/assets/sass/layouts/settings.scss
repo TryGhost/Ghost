@@ -309,6 +309,17 @@
             @include breakpoint(550px) { padding: 0 15px 40px; }
         }
 
+        .description-container, .bio-container {
+            max-width: 370px;
+        }
+
+        .word-count {
+            margin-right: 30px;
+            float: right;
+            font-weight: bold;
+            color: darken($brown, 5%);
+        }
+
     }//.settings-content
 
 }//.settings

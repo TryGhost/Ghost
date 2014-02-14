@@ -1,4 +1,4 @@
-var _               = require('underscore'),
+var _               = require('lodash'),
     when            = require('when'),
     errors          = require('../../errorHandling'),
     client          = require('../../models/base').client,
@@ -77,11 +77,15 @@ function createTable(table) {
         var column,
             columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (key) {
-            if (schema[table][key].hasOwnProperty('maxlength')) {
+            // creation distinguishes between text with fieldtype, string with maxlength and all others
+            if (schema[table][key].type === 'text' && schema[table][key].hasOwnProperty('fieldtype')) {
+                column = t[schema[table][key].type](key, schema[table][key].fieldtype);
+            } else if (schema[table][key].type === 'string' && schema[table][key].hasOwnProperty('maxlength')) {
                 column = t[schema[table][key].type](key, schema[table][key].maxlength);
             } else {
                 column = t[schema[table][key].type](key);
             }
+
             if (schema[table][key].hasOwnProperty('nullable') && schema[table][key].nullable === true) {
                 column.nullable();
             } else {
@@ -229,12 +233,37 @@ migrateUpFreshDb = function () {
     });
 };
 
+// This function changes the type of posts.html and posts.markdown columns to mediumtext. Due to
+// a wrong datatype in schema.js some installations using mysql could have been created using the
+// data type text instead of mediumtext.
+// For details see: https://github.com/TryGhost/Ghost/issues/1947 
+function checkMySQLPostTable() {
+    return knex.raw("SHOW FIELDS FROM posts where Field ='html' OR Field = 'markdown'").then(function (response) {
+        return _.flatten(_.map(response[0], function (entry) {
+            if (entry.Type.toLowerCase() !== 'mediumtext') {
+                return knex.raw("ALTER TABLE posts MODIFY " + entry.Field + " MEDIUMTEXT").then(function () {
+                    return when.resolve();
+                });
+            }
+        }));
+    });
+}
+
 // Migrate from a specific version to the latest
 migrateUp = function () {
     return getTables().then(function (oldTables) {
+        // if tables exist and lient is mysqls check if posts table is okay
+        if (!_.isEmpty(oldTables) && client === 'mysql') {
+            return checkMySQLPostTable().then(function () {
+                return oldTables;
+            });
+        }
+        return oldTables;
+    }).then(function (oldTables) {
         var deleteCommands = getDeleteCommands(oldTables, schemaTables),
             addCommands = getAddCommands(oldTables, schemaTables),
             commands = [];
+
         if (!_.isEmpty(deleteCommands)) {
             commands = commands.concat(deleteCommands);
         }

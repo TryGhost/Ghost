@@ -2,7 +2,7 @@
 // The following custom middleware functions are all unit testable, and have accompanying unit tests in
 // middleware_spec.js
 
-var _           = require('underscore'),
+var _           = require('lodash'),
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
@@ -47,7 +47,7 @@ var middleware = {
                     }
                     redirect = '?r=' + encodeURIComponent(reqPath);
                 }
-                return res.redirect(config.paths().subdir + '/ghost/signin/' + redirect);
+                return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
             });
         }
         next();
@@ -68,7 +68,7 @@ var middleware = {
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
         if (req.session.user) {
-            return res.redirect(config.paths().subdir + '/ghost/');
+            return res.redirect(config().paths.subdir + '/ghost/');
         }
 
         next();
@@ -140,7 +140,7 @@ var middleware = {
     forwardToExpressStatic: function (req, res, next) {
         api.settings.read('activeTheme').then(function (activeTheme) {
             // For some reason send divides the max age number by 1000
-            express['static'](path.join(config.paths().themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
+            express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
         });
     },
 

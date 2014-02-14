@@ -3,7 +3,7 @@ var downsize        = require('downsize'),
     moment          = require('moment'),
     path            = require('path'),
     polyglot        = require('node-polyglot').instance,
-    _               = require('underscore'),
+    _               = require('lodash'),
     when            = require('when'),
 
     api             = require('../api'),
@@ -12,15 +12,27 @@ var downsize        = require('downsize'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,
+    updateCheck     = require('../update-check'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     scriptTemplate  = _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     isProduction    = process.env.NODE_ENV === 'production',
 
     coreHelpers     = {},
-    registerHelpers;
+    registerHelpers,
 
-
+    scriptFiles = {
+        production: [
+            'ghost.min.js'
+        ],
+        development: [
+            'vendor.js',
+            'helpers.js',
+            'templates.js',
+            'models.js',
+            'views.js'
+        ]
+    };
 
 /**
  * [ description]
@@ -80,7 +92,7 @@ coreHelpers.encode = function (context, str) {
 //
 coreHelpers.pageUrl = function (context, block) {
     /*jslint unparam:true*/
-    return config.paths().subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
+    return config().paths.subdir + (context === 1 ? '/' : ('/page/' + context + '/'));
 };
 
 // ### URL helper
@@ -96,10 +108,10 @@ coreHelpers.url = function (options) {
     var absolute = options && options.hash.absolute;
 
     if (schema.isPost(this)) {
-        return config.paths.urlForPost(api.settings, this, absolute);
+        return config.urlForPost(api.settings, this, absolute);
     }
 
-    return when(config.paths.urlFor(this, absolute));
+    return when(config.urlFor(this, absolute));
 };
 
 // ### Asset helper
@@ -113,7 +125,7 @@ coreHelpers.asset = function (context, options) {
     var output = '',
         isAdmin = options && options.hash && options.hash.ghost;
 
-    output += config.paths().subdir + '/';
+    output += config().paths.subdir + '/';
 
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
@@ -169,10 +181,10 @@ coreHelpers.tags = function (options) {
         tagNames = _.pluck(this.tags, 'name');
 
     if (tagNames.length) {
-        output = prefix + tagNames.join(separator) + suffix;
+        output = prefix + _.escape(tagNames.join(separator)) + suffix;
     }
 
-    return output;
+    return new hbs.handlebars.SafeString(output);
 };
 
 // ### Content Helper
@@ -262,28 +274,16 @@ coreHelpers.fileStorage = function (context, options) {
 };
 
 coreHelpers.ghostScriptTags = function () {
-    var scriptFiles = [];
+    var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
-    if (isProduction) {
-        scriptFiles.push("ghost.min.js");
-    } else {
-        scriptFiles = [
-            'vendor.js',
-            'helpers.js',
-            'templates.js',
-            'models.js',
-            'views.js'
-        ];
-    }
-
-    scriptFiles = _.map(scriptFiles, function (fileName) {
+    scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
-            source: config.paths().subdir + '/ghost/scripts/' + fileName,
+            source: config().paths.subdir + '/ghost/scripts/' + fileName,
             version: coreHelpers.assetHash
         });
     });
 
-    return scriptFiles.join('');
+    return scriptList.join('');
 };
 
 /*
@@ -356,7 +356,7 @@ coreHelpers.ghost_head = function (options) {
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
     head.push('<link rel="alternate" type="application/rss+xml" title="'
-        + _.escape(blog.title)  + '" href="' + config.paths.urlFor('rss') + '">');
+        + _.escape(blog.title)  + '" href="' + config.urlFor('rss') + '">');
 
     return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
         head.push('<link rel="canonical" href="' + url + '" />');
@@ -373,7 +373,7 @@ coreHelpers.ghost_foot = function (options) {
     var foot = [];
 
     foot.push(scriptTemplate({
-        source: config.paths().subdir + '/shared/vendor/jquery/jquery.js',
+        source: config().paths.subdir + '/shared/vendor/jquery/jquery.js',
         version: coreHelpers.assetHash
     }));
 
@@ -385,14 +385,14 @@ coreHelpers.ghost_foot = function (options) {
 
 coreHelpers.meta_title = function (options) {
     /*jslint unparam:true*/
-    var title,
+    var title = "",
         blog;
 
     if (_.isString(this.relativeUrl)) {
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
             blog = config.theme();
             title = blog.title;
-        } else {
+        } else if (this.post) {
             title = this.post.title;
         }
     }
@@ -559,21 +559,25 @@ coreHelpers.adminUrl = function (options) {
         // Ghost isn't a named route as currently it violates the must start-and-end with slash rule
         context = !options || !options.hash || !options.hash.frontend ? {relativeUrl: '/ghost'} : 'home';
 
-    return config.paths.urlFor(context, absolute);
+    return config.urlFor(context, absolute);
 };
 
-coreHelpers.updateNotification = function () {
+coreHelpers.updateNotification = function (options) {
     var output = '';
 
     if (config().updateCheck === false || !this.currentUser) {
         return when(output);
     }
 
-    return api.settings.read('displayUpdateNotification').then(function (display) {
-        if (display && display.value && display.value === 'true') {
-            output = '<div class="notification-success">' +
-                'A new version of Ghost is available! Hot damn. ' +
-                '<a href="http://ghost.org/download">Upgrade now</a></div>';
+    return updateCheck.showUpdateNotification().then(function (result) {
+        if (result) {
+            if (options && options.hash && options.hash.classOnly) {
+                output = ' update-available';
+            } else {
+                output = '<div class="notification-success">' +
+                    'A new version of Ghost is available! Hot damn. ' +
+                    '<a href="http://ghost.org/download">Upgrade now</a></div>';
+            }
         }
 
         return output;
@@ -677,3 +681,4 @@ module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;
 module.exports.registerThemeHelper = registerThemeHelper;
 module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;
+module.exports.scriptFiles = scriptFiles;

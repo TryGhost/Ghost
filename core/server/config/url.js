@@ -2,65 +2,17 @@
 // the codebase.
 
 var moment            = require('moment'),
-    path              = require('path'),
-    when              = require('when'),
-    url               = require('url'),
-    _                 = require('underscore'),
-    requireTree       = require('../require-tree'),
-    appRoot           = path.resolve(__dirname, '../../../'),
-    corePath          = path.resolve(appRoot, 'core/'),
-    contentPath       = path.resolve(appRoot, 'content/'),
-    themePath         = path.resolve(contentPath + '/themes'),
-    pluginPath        = path.resolve(contentPath + '/plugins'),
-    themeDirectories  = requireTree(themePath),
-    pluginDirectories = requireTree(pluginPath),
-    localPath = '',
-    configUrl = '',
+    _                 = require('lodash'),
+    ghostConfig = '';
 
-    availableThemes,
-    availablePlugins;
-
-
-function paths() {
-    var subdir = localPath === '/' ? '' : localPath;
-
-    return {
-        'appRoot':          appRoot,
-        'subdir':           subdir,
-        'config':           path.join(appRoot, 'config.js'),
-        'configExample':    path.join(appRoot, 'config.example.js'),
-        'contentPath':      contentPath,
-        'corePath':         corePath,
-        'themePath':        themePath,
-        'pluginPath':       pluginPath,
-        'imagesPath':       path.resolve(contentPath, 'images/'),
-        'imagesRelPath':    'content/images',
-        'adminViews':       path.join(corePath, '/server/views/'),
-        'helperTemplates':  path.join(corePath, '/server/helpers/tpl/'),
-        'exportPath':       path.join(corePath, '/server/data/export/'),
-        'lang':             path.join(corePath, '/shared/lang/'),
-        'debugPath':        subdir + '/ghost/debug/',
-        'availableThemes':  availableThemes,
-        'availablePlugins': availablePlugins
-    };
-}
-
-// TODO: remove configURL and give direct access to config object?
-// TODO: not called when executing tests
-function update(configURL) {
-    configUrl = configURL;
-    localPath = url.parse(configURL).path;
-
-    // Remove trailing slash
-    if (localPath !== '/') {
-        localPath = localPath.replace(/\/$/, '');
-    }
-
-    return when.all([themeDirectories, pluginDirectories]).then(function (paths) {
-        availableThemes = paths[0];
-        availablePlugins = paths[1];
-        return;
-    });
+// ## setConfig
+// Simple utility function to allow
+// passing of the ghostConfig
+// object here to be used locally
+// to ensure clean depedency graph
+// (i.e. no circular dependencies).
+function setConfig(config) {
+    ghostConfig = config;
 }
 
 // ## createUrl
@@ -84,9 +36,9 @@ function createUrl(urlPath, absolute) {
 
     // create base of url, always ends without a slash
     if (absolute) {
-        output += configUrl.replace(/\/$/, '');
+        output += ghostConfig.url.replace(/\/$/, '');
     } else {
-        output += paths().subdir;
+        output += ghostConfig.paths.subdir;
     }
 
     // append the path, always starts and ends with a slash
@@ -185,7 +137,6 @@ function urlForPost(settings, post, absolute) {
     });
 }
 
-module.exports = paths;
-module.exports.update = update;
+module.exports.setConfig = setConfig;
 module.exports.urlFor = urlFor;
 module.exports.urlForPost = urlForPost;

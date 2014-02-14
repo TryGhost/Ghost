@@ -1,15 +1,16 @@
 /*jslint regexp: true */
-var _           = require('underscore'),
+var _           = require('lodash'),
     colors      = require('colors'),
     fs          = require('fs'),
-    configPaths = require('./config/paths'),
+    config      = require('./config'),
     path        = require('path'),
     when        = require('when'),
+    hbs         = require('express-hbs'),
     errors,
 
     // Paths for views
-    defaultErrorTemplatePath = path.resolve(configPaths().adminViews, 'user-error.hbs'),
-    userErrorTemplatePath    = path.resolve(configPaths().themePath, 'error.hbs'),
+    defaultErrorTemplatePath = path.resolve(config().paths.adminViews, 'user-error.hbs'),
+    userErrorTemplatePath    = path.resolve(config().paths.themePath, 'error.hbs'),
     userErrorTemplateExists   = false,
 
     ONE_HOUR_S  = 60 * 60;
@@ -19,7 +20,7 @@ var _           = require('underscore'),
  */
 errors = {
     updateActiveTheme: function (activeTheme, hasErrorTemplate) {
-        userErrorTemplatePath = path.resolve(configPaths().themePath, activeTheme, 'error.hbs');
+        userErrorTemplatePath = path.resolve(config().paths.themePath, activeTheme, 'error.hbs');
         userErrorTemplateExists = hasErrorTemplate;
     },
 
@@ -121,6 +122,8 @@ errors = {
     renderErrorPage: function (code, err, req, res, next) {
         /*jslint unparam:true*/
 
+        var self = this;
+
         function parseStack(stack) {
             if (!_.isString(stack)) {
                 return stack;
@@ -158,16 +161,30 @@ errors = {
                 stack = parseStack(err.stack);
             }
 
-            // TODO: Attach node-polyglot
             res.status(code).render((errorView || 'error'), {
                 message: err.message || err,
                 code: code,
                 stack: stack
+            }, function (templateErr, html) {
+                if (!templateErr) {
+                    return res.send(code, html);
+                }
+                // There was an error trying to render the error page, output the error
+                self.logError(templateErr, 'Error whilst rendering error page', 'Error template has an error');
+
+                // And then try to explain things to the user...
+                // Cheat and output the error using handlebars escapeExpression
+                return res.send(500, "<h1>Oops, seems there is an an error in the error template.</h1>"
+                    + "<p>Encountered the error: </p>"
+                    + "<pre>" + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + "</pre>"
+                    + "<br ><p>whilst trying to render an error page for the error: </p>"
+                    + code + " " + "<pre>"  + hbs.handlebars.Utils.escapeExpression(err.message || err) + "</pre>"
+                    );
             });
         }
 
         if (code >= 500) {
-            this.logError(err, "ErrorPage", "Ghost caught a processing error in the middleware layer.");
+            this.logError(err, "Rendering Error Page", "Ghost caught a processing error in the middleware layer.");
         }
 
         // Are we admin? If so, don't worry about the user template
@@ -210,16 +227,16 @@ errors = {
     }
 };
 
-// Ensure our 'this' context in the functions
-_.bindAll(
-    errors,
-    'throwError',
-    'logError',
+// Ensure our 'this' context for methods and preserve method arity by
+// using Function#bind for expressjs
+_.each([
     'logAndThrowError',
     'logErrorWithRedirect',
     'renderErrorPage',
     'error404',
     'error500'
-);
+], function (funcName) {
+    errors[funcName] = errors[funcName].bind(errors);
+});
 
 module.exports = errors;

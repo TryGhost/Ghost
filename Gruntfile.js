@@ -6,11 +6,11 @@ var path           = require('path'),
     when           = require('when'),
     semver         = require('semver'),
     fs             = require('fs'),
-    _              = require('underscore'),
+    _              = require('lodash'),
     spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
-    config         = require('./core/server/config'),
+    bootstrap      = require('./core/bootstrap'),
 
 
     // ## Build File Patterns
@@ -23,8 +23,8 @@ var path           = require('path'),
         'content/images/README.md',
         '!content/themes/**',
         'content/themes/casper/**',
-        '!content/plugins/**',
-        'content/plugins/README.md',
+        '!content/apps/**',
+        'content/apps/README.md',
         '!node_modules/**',
         '!core/test/**',
         '!core/client/assets/sass/**',
@@ -380,7 +380,7 @@ var path           = require('path'),
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
                             'core/client/assets/lib/jquery-utils.js',
                             'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/underscore.js',
+                            'core/shared/vendor/lodash.underscore.js',
                             'core/shared/vendor/backbone/backbone.js',
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
                             'core/shared/vendor/moment.js',
@@ -435,7 +435,7 @@ var path           = require('path'),
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
                             'core/client/assets/lib/jquery-utils.js',
                             'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/underscore.js',
+                            'core/shared/vendor/lodash.underscore.js',
                             'core/shared/vendor/backbone/backbone.js',
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
                             'core/shared/vendor/moment.js',
@@ -501,7 +501,7 @@ var path           = require('path'),
 
         grunt.registerTask('loadConfig', function () {
             var done = this.async();
-            config.load().then(function () {
+            bootstrap().then(function () {
                 done();
             });
         });
