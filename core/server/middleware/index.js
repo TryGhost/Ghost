@@ -2,22 +2,22 @@
 // The following custom middleware functions cannot yet be unit tested, and as such are kept separate from
 // the testable custom middleware functions in middleware.js
 
-var middleware = require('./middleware'),
+var api         = require('../api'),
+    BSStore     = require('../bookshelf-session'),
+    config      = require('../config'),
+    errors      = require('../errorHandling'),
     express     = require('express'),
-    _           = require('lodash'),
+    fs          = require('fs'),
+    hbs         = require('express-hbs'),
+    middleware  = require('./middleware'),
+    models      = require('../models'),
+    packageInfo = require('../../../package.json'),
+    path        = require('path'),
+    slashes     = require('connect-slashes'),
+    storage     = require('../storage'),
     url         = require('url'),
     when        = require('when'),
-    slashes     = require('connect-slashes'),
-    errors      = require('../errorHandling'),
-    api         = require('../api'),
-    fs          = require('fs'),
-    path        = require('path'),
-    hbs         = require('express-hbs'),
-    config      = require('../config'),
-    storage     = require('../storage'),
-    packageInfo = require('../../../package.json'),
-    BSStore     = require('../bookshelf-session'),
-    models      = require('../models'),
+    _           = require('lodash'),
 
     expressServer,
     ONE_HOUR_S  = 60 * 60,
@@ -196,7 +196,8 @@ function checkSSL(req, res, next) {
 }
 
 module.exports = function (server, dbHash) {
-    var subdir = config().paths.subdir,
+    var logging = config().logging,
+        subdir = config().paths.subdir,
         corePath = config().paths.corePath,
         cookie;
 
@@ -209,10 +210,12 @@ module.exports = function (server, dbHash) {
     expressServer.enable('trust proxy');
 
     // Logging configuration
-    if (expressServer.get('env') !== 'development') {
-        expressServer.use(express.logger());
-    } else {
-        expressServer.use(express.logger('dev'));
+    if (logging !== false) {
+        if (expressServer.get('env') !== 'development') {
+            expressServer.use(express.logger(logging || {}));
+        } else {
+            expressServer.use(express.logger(logging || 'dev'));
+        }
     }
 
     // Favicon
