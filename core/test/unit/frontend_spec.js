@@ -195,10 +195,10 @@ describe('Frontend Controller', function () {
                     'availableThemes': {
                         'casper': {
                             'assets': null,
-                            'default': '/content/themes/casper/default.hbs',
-                            'index': '/content/themes/casper/index.hbs',
-                            'page': '/content/themes/casper/page.hbs',
-                            'post': '/content/themes/casper/post.hbs'
+                            'default.hbs': '/content/themes/casper/default.hbs',
+                            'index.hbs': '/content/themes/casper/index.hbs',
+                            'page.hbs': '/content/themes/casper/page.hbs',
+                            'post.hbs': '/content/themes/casper/post.hbs'
                         }
                     }
                 }

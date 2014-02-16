@@ -71,7 +71,7 @@ function initDbHashAndFirstRun() {
 }
 
 // Checks for the existence of the "built" javascript files from grunt concat.
-// Returns a promise that will be resolved if all files exist or rejected if 
+// Returns a promise that will be resolved if all files exist or rejected if
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
@@ -262,7 +262,12 @@ function setup(server) {
                     startGhost
                 );
             }
-
+            _.each(config().paths.availableThemes._messages.errors, function (error) {
+                errors.logError(error.message, error.context);
+            });
+            _.each(config().paths.availableThemes._messages.warns, function (warn) {
+                errors.logWarn(warn.message, warn.context);
+            });
         });
     }, function (err) {
         errors.logErrorAndExit(err, err.context, err.help);
