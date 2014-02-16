@@ -377,6 +377,11 @@ coreHelpers.ghost_foot = function (options) {
         version: coreHelpers.assetHash
     }));
 
+    foot.push(scriptTemplate({
+        source: config().paths.subdir + '/shared/vendor/react-with-addons-0.8.0.js',
+        version: coreHelpers.assetHash
+    }));
+
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(footString.trim());

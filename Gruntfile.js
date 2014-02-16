@@ -376,6 +376,7 @@ var path           = require('path'),
                 dev: {
                     files: {
                         'core/built/scripts/vendor.js': [
+                            'core/shared/vendor/react-with-addons-0.8.0.min.js',
                             'core/shared/vendor/jquery/jquery.js',
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
                             'core/client/assets/lib/jquery-utils.js',
@@ -431,6 +432,7 @@ var path           = require('path'),
                 prod: {
                     files: {
                         'core/built/scripts/ghost.js': [
+                            'core/shared/vendor/react-with-addons-0.8.0.js',
                             'core/shared/vendor/jquery/jquery.js',
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
                             'core/client/assets/lib/jquery-utils.js',
