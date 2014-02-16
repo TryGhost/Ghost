@@ -19,7 +19,7 @@
 
   var SettingsGeneralContent = React.createClass({
     render: function() {
-      if (!this.props.title) {
+      if (!this.props.hasOwnProperty('title')) {
         // Data hasn't loaded yet. Display a loading indicator of some kind.
         return <div>Loading...</div>;
       }
