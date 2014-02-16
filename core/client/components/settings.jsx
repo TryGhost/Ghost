@@ -19,6 +19,25 @@
 
   var SettingsGeneralContent = React.createClass({
     render: function() {
+      var logo;
+      var cover;
+
+      if (this.props.logo) {
+        logo = <a className="js-modal-logo" href="#"><img id="blog-logo" src={this.props.logo} alt="logo" /></a>;
+      } else {
+        logo = <a className="button-add js-modal-logo">Upload Image</a>;
+      }
+
+      if (this.props.cover) {
+        cover = <a className="js-modal-cover" href="#"><img id="blog-cover" src={this.props.cover} alt="cover photo" /></a>;
+      } else {
+        cover = <a className="button-add js-modal-cover">Upload Image</a>;
+      }
+
+      var availableThemes = this.props.availableThemes.map(function(theme) {
+        return <option value={theme.name} key={theme.name} selected={theme.selected}>{theme.name}</option>
+      });
+
       return (
         <section className="content">
           <form id="settings-general" novalidate="novalidate">
@@ -26,13 +45,13 @@
 
               <div className="form-group">
                 <label htmlFor="blog-title">Blog Title</label>
-                <input id="blog-title" name="general[title]" type="text" value="{{title}}" />
+                <input id="blog-title" name="general[title]" type="text" value={this.props.title} />
                 <p>The name of your blog</p>
               </div>
 
               <div className="form-group description-container">
                 <label htmlFor="blog-description">Blog Description</label>
-                <textarea id="blog-description">{{description}}</textarea>
+                <textarea id="blog-description">{this.props.description}</textarea>
                 <p>
                   Describe what your blog is about
                   <span className="word-count">0</span>
@@ -42,33 +61,25 @@
             </fieldset>
             <div className="form-group">
               <label htmlFor="blog-logo">Blog Logo</label>
-              {{#if logo}}
-                <a className="js-modal-logo" href="#"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
-              {{else}}
-                <a className="button-add js-modal-logo" >Upload Image</a>
-              {{/if}}
+              {logo}
               <p>Display a sexy logo for your publication</p>
             </div>
 
             <div className="form-group">
               <label htmlFor="blog-cover">Blog Cover</label>
-              {{#if cover}}
-                <a className="js-modal-cover" href="#"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
-              {{else}}
-                <a className="button-add js-modal-cover">Upload Image</a>
-              {{/if}}
+              {cover}
               <p>Display a cover image on your site</p>
             </div>
             <fieldset>
               <div className="form-group">
                 <label htmlFor="email-address">Email Address</label>
-                <input id="email-address" name="general[email-address]" type="email" value="{{email}}" autocapitalize="off" autocorrect="off" />
+                <input id="email-address" name="general[email-address]" type="email" value={this.props.email} autocapitalize="off" autocorrect="off" />
                 <p>Address to use for admin notifications</p>
               </div>
 
               <div className="form-group">
                 <label htmlFor="postsPerPage">Posts per page</label>
-                <input id="postsPerPage" name="general[postsPerPage]" type="number" value="{{postsPerPage}}" />
+                <input id="postsPerPage" name="general[postsPerPage]" type="number" value={this.props.postsPerPage} />
                 <p>How many posts should be displayed on each page</p>
               </div>
 
@@ -82,9 +93,7 @@
               <div className="form-group">
                 <label htmlFor="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
-                  {{#each availableThemes}}
-                    <option value="{{name}}" {{#if active}}selected{{/if}}>{{name}}</option>
-                  {{/each}}
+                  {availableThemes}
                 </select>
                 <p>Select a theme for your blog</p>
               </div>
