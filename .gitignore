@@ -30,6 +30,7 @@ projectFilesBackup
 .build
 .dist
 
+/core/client/components/*.js
 /core/client/tpl/hbs-tpl.js
 /core/client/assets/css
 .sass-cache/

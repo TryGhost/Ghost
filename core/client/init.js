@@ -14,6 +14,7 @@
 
     var Ghost = {
         Layout      : {},
+        Components  : {},
         Views       : {},
         Collections : {},
         Models      : {},
