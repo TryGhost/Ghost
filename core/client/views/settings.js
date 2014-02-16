@@ -160,13 +160,13 @@
             Ghost.Validate._errors = [];
             Ghost.Validate
                 .check(title, {message: "Title is too long", el: $('#blog-title')})
-                .len(0, 150);
+                .len(0, 151);
             Ghost.Validate
                 .check(description, {message: "Description is too long", el: $('#blog-description')})
-                .len(0, 200);
+                .len(0, 201);
             Ghost.Validate
                 .check(email, {message: "Please supply a valid email address", el: $('#email-address')})
-                .isEmail().len(0, 254);
+                .isEmail().len(0, 255);
             Ghost.Validate
                 .check(postsPerPage, {message: "Please use a number less than 1000", el: $('postsPerPage')})
                 .isInt().max(1000);
