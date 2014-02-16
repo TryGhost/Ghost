@@ -18,6 +18,9 @@
   });
 
   var SettingsGeneralField = React.createClass({
+    getInputDOMNode: function() {
+      return this.getDOMNode().childNodes[1];
+    },
     render: function() {
       return this.transferPropsTo(
         <div className="form-group">
@@ -25,6 +28,34 @@
           {this.props.children}
           <p>{this.props.subtitle}</p>
         </div>
+      );
+    }
+  });
+
+  var SettingsGeneralCountableField = React.createClass({
+    getInitialState: function() {
+      return {count: 0};
+    },
+    componentDidMount: function() {
+      Countable.live(this.refs.field.getInputDOMNode(), this.handleCounter);
+    },
+    handleCounter: function(counter) {
+      this.setState({count: counter.all});
+    },
+    render: function() {
+      var countColor = this.state.count > 180 ? '#e25440' : '#9e9d95';
+      var subtitle = (
+        <span>
+          {this.props.subtitle}
+          <span className="word-count" style={{color: countColor}}>
+            {200 - this.state.count}
+          </span>
+        </span>
+      );
+      return this.transferPropsTo(
+        <SettingsGeneralField subtitle={subtitle} ref="field">
+          {this.props.children}
+        </SettingsGeneralField>
       );
     }
   });
@@ -64,12 +95,12 @@
                 <input id="blog-title" name="general[title]" type="text" defaultValue={this.props.title} />
               </SettingsGeneralField>
 
-              <SettingsGeneralField
+              <SettingsGeneralCountableField
                 className="description-container"
                 caption="Blog Description"
-                subtitle={<span>Describe what your blog is about <span className="word-count">0</span></span>}>
+                subtitle="Describe what your blog is about">
                 <textarea id="blog-description" defaultValue={this.props.description} />
-              </SettingsGeneralField>
+              </SettingsGeneralCountableField>
             </fieldset>
 
             <SettingsGeneralField caption="Blog Logo" subtitle="Display a sexy logo for your publication">
