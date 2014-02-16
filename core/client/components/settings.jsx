@@ -7,10 +7,10 @@
     render: function() {
       return (
         <header>
-          <button class="button-back">Back</button>
-          <h2 class="title">General</h2>
-          <section class="page-actions">
-            <button class="button-save">Save</button>
+          <button className="button-back">Back</button>
+          <h2 className="title">General</h2>
+          <section className="page-actions">
+            <button className="button-save">Save</button>
           </section>
         </header>
       );
@@ -20,67 +20,67 @@
   var SettingsGeneralContent = React.createClass({
     render: function() {
       return (
-        <section class="content">
+        <section className="content">
           <form id="settings-general" novalidate="novalidate">
             <fieldset>
 
-              <div class="form-group">
-                <label for="blog-title">Blog Title</label>
+              <div className="form-group">
+                <label htmlFor="blog-title">Blog Title</label>
                 <input id="blog-title" name="general[title]" type="text" value="{{title}}" />
                 <p>The name of your blog</p>
               </div>
 
-              <div class="form-group description-container">
-                <label for="blog-description">Blog Description</label>
+              <div className="form-group description-container">
+                <label htmlFor="blog-description">Blog Description</label>
                 <textarea id="blog-description">{{description}}</textarea>
                 <p>
                   Describe what your blog is about
-                  <span class="word-count">0</span>
+                  <span className="word-count">0</span>
                 </p>
 
               </div>
             </fieldset>
-            <div class="form-group">
-              <label for="blog-logo">Blog Logo</label>
+            <div className="form-group">
+              <label htmlFor="blog-logo">Blog Logo</label>
               {{#if logo}}
-                <a class="js-modal-logo" href="#"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
+                <a className="js-modal-logo" href="#"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
               {{else}}
-                <a class="button-add js-modal-logo" >Upload Image</a>
+                <a className="button-add js-modal-logo" >Upload Image</a>
               {{/if}}
               <p>Display a sexy logo for your publication</p>
             </div>
 
-            <div class="form-group">
-              <label for="blog-cover">Blog Cover</label>
+            <div className="form-group">
+              <label htmlFor="blog-cover">Blog Cover</label>
               {{#if cover}}
-                <a class="js-modal-cover" href="#"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
+                <a className="js-modal-cover" href="#"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
               {{else}}
-                <a class="button-add js-modal-cover">Upload Image</a>
+                <a className="button-add js-modal-cover">Upload Image</a>
               {{/if}}
               <p>Display a cover image on your site</p>
             </div>
             <fieldset>
-              <div class="form-group">
-                <label for="email-address">Email Address</label>
+              <div className="form-group">
+                <label htmlFor="email-address">Email Address</label>
                 <input id="email-address" name="general[email-address]" type="email" value="{{email}}" autocapitalize="off" autocorrect="off" />
                 <p>Address to use for admin notifications</p>
               </div>
 
-              <div class="form-group">
-                <label for="postsPerPage">Posts per page</label>
+              <div className="form-group">
+                <label htmlFor="postsPerPage">Posts per page</label>
                 <input id="postsPerPage" name="general[postsPerPage]" type="number" value="{{postsPerPage}}" />
                 <p>How many posts should be displayed on each page</p>
               </div>
 
-              <div class="form-group">
-                <label for="permalinks">Dated Permalinks</label>
+              <div className="form-group">
+                <label htmlFor="permalinks">Dated Permalinks</label>
                 <input id="permalinks" name="general[permalinks]" type="checkbox" value='permalink'/>
-                <label class="checkbox" for="permalinks"></label>
+                <label className="checkbox" htmlFor="permalinks"></label>
                 <p>Include the date in your post URLs</p>
               </div>
 
-              <div class="form-group">
-                <label for="activeTheme">Theme</label>
+              <div className="form-group">
+                <label htmlFor="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
                   {{#each availableThemes}}
                     <option value="{{name}}" {{#if active}}selected{{/if}}>{{name}}</option>
