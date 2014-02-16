@@ -56,7 +56,7 @@
 
               <div className="form-group description-container">
                 <label htmlFor="blog-description">Blog Description</label>
-                <textarea id="blog-description">{this.props.description}</textarea>
+                <textarea id="blog-description" defaultValue={this.props.description} />
                 <p>
                   Describe what your blog is about
                   <span className="word-count">0</span>
@@ -78,7 +78,7 @@
             <fieldset>
               <div className="form-group">
                 <label htmlFor="email-address">Email Address</label>
-                <input id="email-address" name="general[email-address]" type="email" defaultValue={this.props.email} autocapitalize="off" autocorrect="off" />
+                <input id="email-address" name="general[email-address]" type="email" defaultValue={this.props.email} autoCapitalize="off" autoCorrect="off" />
                 <p>Address to use for admin notifications</p>
               </div>
 
