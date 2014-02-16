@@ -17,6 +17,18 @@
     }
   });
 
+  var SettingsGeneralField = React.createClass({
+    render: function() {
+      return this.transferPropsTo(
+        <div className="form-group">
+          <label htmlFor={this.props.children.props.id}>{this.props.caption}</label>
+          {this.props.children}
+          <p>{this.props.subtitle}</p>
+        </div>
+      );
+    }
+  });
+
   var SettingsGeneralContent = React.createClass({
     render: function() {
       if (!this.props.hasOwnProperty('title')) {
@@ -28,15 +40,15 @@
       var cover;
 
       if (this.props.logo) {
-        logo = <a className="js-modal-logo" href="#"><img id="blog-logo" src={this.props.logo} alt="logo" /></a>;
+        logo = <a className="js-modal-logo" id="blog-logo" href="#"><img src={this.props.logo} alt="logo" /></a>;
       } else {
-        logo = <a className="button-add js-modal-logo">Upload Image</a>;
+        logo = <a className="button-add js-modal-logo" id="blog-logo">Upload Image</a>;
       }
 
       if (this.props.cover) {
-        cover = <a className="js-modal-cover" href="#"><img id="blog-cover" src={this.props.cover} alt="cover photo" /></a>;
+        cover = <a className="js-modal-cover" href="#" id="blog-cover"><img src={this.props.cover} alt="cover photo" /></a>;
       } else {
-        cover = <a className="button-add js-modal-cover">Upload Image</a>;
+        cover = <a className="button-add js-modal-cover" id="blog-cover">Upload Image</a>;
       }
 
       var availableThemes = this.props.availableThemes.map(function(theme) {
@@ -48,60 +60,44 @@
           <form id="settings-general" novalidate="novalidate">
             <fieldset>
 
-              <div className="form-group">
-                <label htmlFor="blog-title">Blog Title</label>
+              <SettingsGeneralField caption="Blog Title" subtitle="The name of your blog">
                 <input id="blog-title" name="general[title]" type="text" defaultValue={this.props.title} />
-                <p>The name of your blog</p>
-              </div>
+              </SettingsGeneralField>
 
-              <div className="form-group description-container">
-                <label htmlFor="blog-description">Blog Description</label>
+              <SettingsGeneralField
+                className="description-container"
+                caption="Blog Description"
+                subtitle={<span>Describe what your blog is about <span className="word-count">0</span></span>}>
                 <textarea id="blog-description" defaultValue={this.props.description} />
-                <p>
-                  Describe what your blog is about
-                  <span className="word-count">0</span>
-                </p>
-
-              </div>
+              </SettingsGeneralField>
             </fieldset>
-            <div className="form-group">
-              <label htmlFor="blog-logo">Blog Logo</label>
+
+            <SettingsGeneralField caption="Blog Logo" subtitle="Display a sexy logo for your publication">
               {logo}
-              <p>Display a sexy logo for your publication</p>
-            </div>
+            </SettingsGeneralField>
 
-            <div className="form-group">
-              <label htmlFor="blog-cover">Blog Cover</label>
+            <SettingsGeneralField caption="Blog Cover" subtitle="Display a cover image on your site">
               {cover}
-              <p>Display a cover image on your site</p>
-            </div>
+            </SettingsGeneralField>
+
             <fieldset>
-              <div className="form-group">
-                <label htmlFor="email-address">Email Address</label>
+              <SettingsGeneralField caption="Email Address" subtitle="Address to use for admin notifications">
                 <input id="email-address" name="general[email-address]" type="email" defaultValue={this.props.email} autoCapitalize="off" autoCorrect="off" />
-                <p>Address to use for admin notifications</p>
-              </div>
+              </SettingsGeneralField>
 
-              <div className="form-group">
-                <label htmlFor="postsPerPage">Posts per page</label>
+              <SettingsGeneralField caption="Posts per page" subtitle="How many posts should be displayed on each page">
                 <input id="postsPerPage" name="general[postsPerPage]" type="number" defaultValue={this.props.postsPerPage} />
-                <p>How many posts should be displayed on each page</p>
-              </div>
+              </SettingsGeneralField>
 
-              <div className="form-group">
-                <label htmlFor="permalinks">Dated Permalinks</label>
+              <SettingsGeneralField caption="Dated Permalinks" subtitle="Include the date in your post URLs">
                 <input id="permalinks" name="general[permalinks]" type="checkbox" defaultValue='permalink'/>
-                <label className="checkbox" htmlFor="permalinks"></label>
-                <p>Include the date in your post URLs</p>
-              </div>
+              </SettingsGeneralField>
 
-              <div className="form-group">
-                <label htmlFor="activeTheme">Theme</label>
+              <SettingsGeneralField caption="Theme" subtitle="Select a theme for your blog">
                 <select id="activeTheme" name="general[activeTheme]">
                   {availableThemes}
                 </select>
-                <p>Select a theme for your blog</p>
-              </div>
+              </SettingsGeneralField>
 
             </fieldset>
           </form>
