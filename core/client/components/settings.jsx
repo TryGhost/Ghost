@@ -35,7 +35,7 @@
       }
 
       var availableThemes = this.props.availableThemes.map(function(theme) {
-        return <option value={theme.name} key={theme.name} selected={theme.selected}>{theme.name}</option>
+        return <option defaultValue={theme.name} key={theme.name} selected={theme.selected}>{theme.name}</option>
       });
 
       return (
@@ -45,7 +45,7 @@
 
               <div className="form-group">
                 <label htmlFor="blog-title">Blog Title</label>
-                <input id="blog-title" name="general[title]" type="text" value={this.props.title} />
+                <input id="blog-title" name="general[title]" type="text" defaultValue={this.props.title} />
                 <p>The name of your blog</p>
               </div>
 
@@ -73,19 +73,19 @@
             <fieldset>
               <div className="form-group">
                 <label htmlFor="email-address">Email Address</label>
-                <input id="email-address" name="general[email-address]" type="email" value={this.props.email} autocapitalize="off" autocorrect="off" />
+                <input id="email-address" name="general[email-address]" type="email" defaultValue={this.props.email} autocapitalize="off" autocorrect="off" />
                 <p>Address to use for admin notifications</p>
               </div>
 
               <div className="form-group">
                 <label htmlFor="postsPerPage">Posts per page</label>
-                <input id="postsPerPage" name="general[postsPerPage]" type="number" value={this.props.postsPerPage} />
+                <input id="postsPerPage" name="general[postsPerPage]" type="number" defaultValue={this.props.postsPerPage} />
                 <p>How many posts should be displayed on each page</p>
               </div>
 
               <div className="form-group">
                 <label htmlFor="permalinks">Dated Permalinks</label>
-                <input id="permalinks" name="general[permalinks]" type="checkbox" value='permalink'/>
+                <input id="permalinks" name="general[permalinks]" type="checkbox" defaultValue='permalink'/>
                 <label className="checkbox" htmlFor="permalinks"></label>
                 <p>Include the date in your post URLs</p>
               </div>
