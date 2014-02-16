@@ -19,6 +19,11 @@
 
   var SettingsGeneralContent = React.createClass({
     render: function() {
+      if (!this.props.title) {
+        // Data hasn't loaded yet. Display a loading indicator of some kind.
+        return <div>Loading...</div>;
+      }
+
       var logo;
       var cover;
 
@@ -110,7 +115,7 @@
       return (
         <div>
           <SettingsGeneralHeader />
-          <SettingsGeneralContent />
+          {this.transferPropsTo(<SettingsGeneralContent />)}
         </div>
       );
     }

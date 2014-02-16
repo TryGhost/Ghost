@@ -232,6 +232,7 @@
         templateName: 'settings/general',
 
         afterRender: function () {
+            React.renderComponent(Ghost.Components.SettingsGeneral(this.model.toJSON()), this.el);
             var self = this;
 
             this.$('#permalinks').prop('checked', this.model.get('permalinks') !== '/:slug/');
