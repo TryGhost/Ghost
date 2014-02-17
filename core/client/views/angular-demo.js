@@ -31,9 +31,18 @@
             },
             controller: function($scope, BackboneData) {
 
+                var post;
+
                 $scope.state = {};
 
-                $scope.$watch(BackboneData.getPost, function(post) {
+                /*
+                    We see when the post has been set,
+                    and when it is we assign it to our $scope object
+                    which is accessible in the template.
+                 */
+                $scope.$watch(BackboneData.getPost, function(p) {
+                    post = p;
+
                     if (!post) {
                         $scope.post = {};
                         return;
@@ -54,6 +63,48 @@
                 });
 
 
+                /*
+                    Save Post
+
+                    Called by all input fields when their data changes.
+
+                    It's properly debounced.
+                 */
+                $scope.savePost = _.debounce(function() {
+                    console.log('Properly debounced');
+
+                    $scope.post.published_at = moment($scope.post.published_at, parseDateFormats);
+
+                    // Save new 'Published' date
+                    post.save($scope.post, {
+                        success : function (model) {
+                            $scope.post.published_at = moment(model.get('published_at')).format(displayDateFormat);
+                            Ghost.notifications.addItem({
+                                type: 'success',
+                                message: 'Date successfully changed',
+                                status: 'passive'
+                            });
+                        },
+                        error : function (model, xhr) {
+                            /*jslint unparam:true*/
+                            //  Reset back to original value
+                            $scope.post.published_at = moment(post.get('published_at')).format(displayDateFormat);
+                            Ghost.notifications.addItem({
+                                type: 'error',
+                                message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                                status: 'passive'
+                            });
+                        }
+                    });
+
+                }, 300);
+
+                /*
+                    Delete post
+                 */
+                $scope.deletePost = function() {
+                    alert('Delete post');
+                };
             }
         };
     });

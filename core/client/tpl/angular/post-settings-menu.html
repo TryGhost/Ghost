@@ -7,7 +7,7 @@
                 </td>
                 <td class="post-setting-field">
                     <input id="url" class="post-setting-slug" type="text" placeholder="" value=""
-                        ng-model="post.slug" />
+                        ng-model="post.slug" ng-change="savePost()" />
                 </td>
             </tr>
             <tr class="post-setting">
@@ -15,7 +15,7 @@
                     <label for="pub-date">Pub Date</label>
                 </td>
                 <td class="post-setting-field">
-                    <input id="pub-date" class="post-setting-date" type="text" placeholder="{{state.datePlaceholder}}" ng-model="post.published_at" value=""><!--<span class="post-setting-calendar"></span>-->
+                    <input id="pub-date" class="post-setting-date" type="text" placeholder="{{state.datePlaceholder}}" ng-model="post.published_at" ng-change="savePost()" value=""><!--<span class="post-setting-calendar"></span>-->
                 </td>
             </tr>
             <tr class="post-setting">
@@ -24,11 +24,11 @@
                 </td>
                 <td class="post-setting-item">
                     <input id="static-page" class="post-setting-static-page" type="checkbox" value=""
-                        ng-checked="post.page" />
+                        ng-model="post.page" ng-change="savePost()" ng-checked="post.page" />
                     <label class="checkbox" for="static-page"></label>
                 </td>
             </tr>
         </table>
     </form>
-    <a class="delete" href="#" ng-class="{hidden: !post.id}">Delete This Post</a>
+    <a class="delete" href="#" ng-class="{hidden: !post.id}" ng-click="deletePost()">Delete This Post</a>
 </div>
