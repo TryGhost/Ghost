@@ -268,9 +268,9 @@
                 $(e.currentTarget).attr('target', '_blank');
             });
 
-            if (this.model !== undefined) {
-                this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
-            }
+            // if (this.model !== undefined) {
+            //     this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
+            // }
 
             Ghost.temporary.initToggles(this.$el);
             return this;

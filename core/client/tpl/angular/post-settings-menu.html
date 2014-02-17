@@ -1,30 +1,34 @@
-<form>
-    <table class="plain">
-        <tr class="post-setting">
-            <td class="post-setting-label">
-                <label for="url">URL</label>
-            </td>
-            <td class="post-setting-field">
-                <input id="url" class="post-setting-slug" type="text" placeholder="" value="" />
-            </td>
-        </tr>
-        <tr class="post-setting">
-            <td class="post-setting-label">
-                <label for="pub-date">Pub Date</label>
-            </td>
-            <td class="post-setting-field">
-                <input id="pub-date" class="post-setting-date" type="text" placeholder="Now" value=""><!--<span class="post-setting-calendar"></span>-->
-            </td>
-        </tr>
-        <tr class="post-setting">
-            <td class="post-setting-label">
-                <span class="label">Static Page</span>
-            </td>
-            <td class="post-setting-item">
-                <input id="static-page" class="post-setting-static-page" type="checkbox" value="">
-                <label class="checkbox" for="static-page"></label>
-            </td>
-        </tr>
-    </table>
-</form>
-<a class="delete" href="#">Delete This Post</a>
+<div class="post-settings-menu" ng-class="klasses" style="display: none">
+    <form>
+        <table class="plain">
+            <tr class="post-setting">
+                <td class="post-setting-label">
+                    <label for="url">URL</label>
+                </td>
+                <td class="post-setting-field">
+                    <input id="url" class="post-setting-slug" type="text" placeholder="" value=""
+                        ng-model="post.slug" />
+                </td>
+            </tr>
+            <tr class="post-setting">
+                <td class="post-setting-label">
+                    <label for="pub-date">Pub Date</label>
+                </td>
+                <td class="post-setting-field">
+                    <input id="pub-date" class="post-setting-date" type="text" placeholder="{{state.datePlaceholder}}" ng-model="post.published_at" value=""><!--<span class="post-setting-calendar"></span>-->
+                </td>
+            </tr>
+            <tr class="post-setting">
+                <td class="post-setting-label">
+                    <span class="label">Static Page</span>
+                </td>
+                <td class="post-setting-item">
+                    <input id="static-page" class="post-setting-static-page" type="checkbox" value=""
+                        ng-checked="post.page" />
+                    <label class="checkbox" for="static-page"></label>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <a class="delete" href="#" ng-class="{hidden: !post.id}">Delete This Post</a>
+</div>
