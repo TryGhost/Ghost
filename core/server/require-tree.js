@@ -1,18 +1,9 @@
-var when     = require('when'),
-    keys     = require('when/keys'),
+var _        = require('lodash'),
     fs       = require('fs'),
+    keys     = require('when/keys'),
     path     = require('path'),
-    _        = require('lodash'),
+    when     = require('when'),
     messages = {errors: [], warns: []},
-    extend   = function (obj, source) {
-        var key;
-        for (key in source) {
-            if (source.hasOwnProperty(key)) {
-                obj[key] = source[key];
-            }
-        }
-        return obj;
-    },
     parsePackageJson = function (path) {
         var packageDeferred = when.defer(),
             packagePromise = packageDeferred.promise,
@@ -42,7 +33,7 @@ var when     = require('when'),
     readDir = function (dir, options, depth) {
         depth = depth || 0;
 
-        options = extend({
+        options = _.extend({
             index: true
         }, options);
 
