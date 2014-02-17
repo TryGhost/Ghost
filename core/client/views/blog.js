@@ -277,6 +277,7 @@
         },
 
         compileAngular: function() {
+            angular.ghost.setPost(this.model);
             var self = this;
             angular.ghost.injector().invoke(function($compile) {
               var scope = angular.element(self.el).scope();
