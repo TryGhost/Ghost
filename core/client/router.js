@@ -64,6 +64,7 @@
             if (id) {
                 post.id = id;
                 post.fetch({ data: {status: 'all'}}).then(function () {
+                    angular.ghost.setPost(post);
                     Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
                 });
             } else {

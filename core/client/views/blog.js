@@ -261,6 +261,8 @@
             this.model = this.collection.get(this.activeId);
             this.$el.html(this.template(this.templateData()));
 
+            this.compileAngular();
+
             this.$('.content-preview-content').scrollClass({target: '.content-preview', offset: 10});
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');
@@ -272,6 +274,14 @@
 
             Ghost.temporary.initToggles(this.$el);
             return this;
+        },
+
+        compileAngular: function() {
+            var self = this;
+            angular.ghost.injector().invoke(function($compile) {
+              var scope = angular.element(self.el).scope();
+              $compile(self.el)(scope);
+            });
         }
 
     });
