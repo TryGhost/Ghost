@@ -97,6 +97,18 @@ DataGenerator.Content = {
             email: 'info@ghost.org',
             password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
         }
+    ],
+
+    apps: [
+        {
+            name: 'Kudos'
+        },
+        {
+            name: 'Importer'
+        },
+        {
+            name: 'Hemingway'
+        }
     ]
 };
 
@@ -174,6 +186,14 @@ DataGenerator.forKnex = (function () {
         };
     }
 
+    function createApp(overrides) {
+        return _.defaults(overrides, {
+            uuid: uuid.v4(),
+            created_by: 1,
+            created_at: new Date()
+        });
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -206,6 +226,7 @@ DataGenerator.forKnex = (function () {
         createUser: createUser,
         createGenericUser: createGenericUser,
         createUserRole: createUserRole,
+        createApp: createApp,
 
         posts: posts,
         tags: tags,
