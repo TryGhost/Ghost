@@ -143,6 +143,120 @@ describe('Frontend Controller', function () {
         });
     });
 
+    describe('tag redirects', function () {
+        var res;
+
+        beforeEach(function () {
+            res = {
+                redirect: sandbox.spy(),
+                render: sandbox.spy()
+            };
+
+            sandbox.stub(api.posts, 'browse', function () {
+                return when({posts: {}, pages: 3});
+            });
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs('postsPerPage').returns(when({
+                'key': 'postsPerPage',
+                'value': 6
+            }));
+        });
+
+        it('Redirects to base tag page if page number is -1', function () {
+            var req = {params: {page: -1, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/tag/pumpkin/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to base tag page if page number is 0', function () {
+            var req = {params: {page: 0, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/tag/pumpkin/').should.be.true;
+            res.render.called.should.be.false;
+
+        });
+
+        it('Redirects to base tag page if page number is 1', function () {
+            var req = {params: {page: 1, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/tag/pumpkin/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to base tag page if page number is 0 with subdirectory', function () {
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
+
+            var req = {params: {page: 0, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/tag/pumpkin/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to base tag page if page number is 1 with subdirectory', function () {
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
+
+            var req = {params: {page: 1, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, null);
+
+            res.redirect.called.should.be.true;
+            res.redirect.calledWith('/blog/tag/pumpkin/').should.be.true;
+            res.render.called.should.be.false;
+        });
+
+        it('Redirects to last page if page number too big', function (done) {
+            var req = {params: {page: 4, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, done).then(function () {
+                res.redirect.called.should.be.true;
+                res.redirect.calledWith('/tag/pumpkin/page/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+        });
+
+        it('Redirects to last page if page number too big with subdirectory', function (done) {
+            frontend.__set__('config', function() {
+                return {
+                    paths: {subdir: '/blog'}
+                };
+            });
+
+            var req = {params: {page: 4, slug: 'pumpkin'}};
+
+            frontend.tag(req, res, done).then(function () {
+                res.redirect.calledOnce.should.be.true;
+                res.redirect.calledWith('/blog/tag/pumpkin/page/3/').should.be.true;
+                res.render.called.should.be.false;
+                done();
+            });
+
+        });
+    });
+
     describe('single', function () {
         var mockStaticPost = {
                 'status': 'published',
