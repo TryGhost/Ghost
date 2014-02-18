@@ -449,7 +449,14 @@ describe('Core Helpers', function () {
             });
         });
 
-        it('should return empty string if not a post', function () {
+        it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
+            helpers.url.call({name: 'the tag', slug: "the-tag", description: null, parent_id: null}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.should.equal('/tag/the-tag/');
+            });
+        });
+
+        it('should return empty string if not a post or tag', function () {
             helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).then(function (rendered) {
                 rendered.should.equal('');
             });
@@ -608,7 +615,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'foo'}, {name: 'bar'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {}}
+                    {"hash": {autolink: 'false'}}
                 );
             should.exist(rendered);
 
@@ -619,7 +626,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {separator: '|'}}
+                    {"hash": {separator: '|', autolink: 'false'}}
                 );
 
             should.exist(rendered);
@@ -631,7 +638,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {prefix: 'on '}}
+                    {"hash": {prefix: 'on ', autolink: 'false'}}
                 );
 
             should.exist(rendered);
@@ -643,7 +650,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {suffix: ' forever'}}
+                    {"hash": {suffix: ' forever', autolink: 'false'}}
                 );
 
             should.exist(rendered);
@@ -655,7 +662,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {suffix: ' forever', prefix: 'on '}}
+                    {"hash": {suffix: ' forever', prefix: 'on ', autolink: 'false'}}
                 );
 
             should.exist(rendered);
@@ -667,7 +674,7 @@ describe('Core Helpers', function () {
             var tags = [{name: 'haunted'}, {name: 'ghost'}],
                 rendered = handlebars.helpers.tags.call(
                     {tags: tags},
-                    {"hash": {suffix: ' &bull;', prefix: '&hellip; '}}
+                    {"hash": {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}}
                 );
 
             should.exist(rendered);
@@ -678,12 +685,23 @@ describe('Core Helpers', function () {
         it('does not add prefix or suffix if no tags exist', function () {
             var rendered = handlebars.helpers.tags.call(
                     {},
-                    {"hash": {prefix: 'on ', suffix: ' forever'}}
+                    {"hash": {prefix: 'on ', suffix: ' forever', autolink: 'false'}}
                 );
 
             should.exist(rendered);
 
             String(rendered).should.equal('');
+        });
+
+        it('can autolink tags to tag pages', function () {
+            var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
+                rendered = handlebars.helpers.tags.call(
+                    {tags: tags},
+                    {"hash": {}}
+                );
+            should.exist(rendered);
+
+            String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>');
         });
     });
 
