@@ -272,8 +272,8 @@ module.exports = function (server, dbHash) {
 
     // ### Caching
     expressServer.use(middleware.cacheControl('public'));
-    expressServer.use('/api/', middleware.cacheControl('private'));
-    expressServer.use('/ghost/', middleware.cacheControl('private'));
+    expressServer.use(subdir + '/api/', middleware.cacheControl('private'));
+    expressServer.use(subdir + '/ghost/', middleware.cacheControl('private'));
 
     // enable authentication; has to be done before CSRF handling
     expressServer.use(middleware.authenticate);
