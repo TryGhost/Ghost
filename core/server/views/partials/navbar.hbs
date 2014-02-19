@@ -1,11 +1,11 @@
 <header id="global-header" class="navbar">
-    <a class="ghost-logo" href="{{adminUrl absolute="true" frontend="true"}}" data-off-canvas="left" title="{{adminUrl absolute="true" frontend="true"}}">
+    <a class="ghost-logo" href="{{admin_url absolute="true" frontend="true"}}" data-off-canvas="left" title="{{admin_url absolute="true" frontend="true"}}">
         <span class="hidden">Ghost </span>
     </a>
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
             {{#each adminNav}}
-                <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="{{adminUrl}}{{path}}">{{name}}</a></li>
+                <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="{{admin_url}}{{path}}">{{name}}</a></li>
             {{/each}}
 
             <li id="usermenu" class="usermenu subnav">
@@ -14,11 +14,11 @@
                     <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
                 </a>
                 <ul class="overlay">
-                    <li class="usermenu-profile"><a href="{{adminUrl}}/settings/user/">Your Profile</a></li>
+                    <li class="usermenu-profile"><a href="{{admin_url}}/settings/user/">Your Profile</a></li>
                     <li class="divider"></li>
                     <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
                     <li class="divider"></li>
-                    <li class="usermenu-signout"><a href="{{adminUrl}}/signout/">Sign Out</a></li>
+                    <li class="usermenu-signout"><a href="{{admin_url}}/signout/">Sign Out</a></li>
                 </ul>
             </li>
         </ul>
