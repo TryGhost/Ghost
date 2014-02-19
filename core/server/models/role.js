@@ -1,14 +1,13 @@
 var User           = require('./user').User,
     Permission     = require('./permission').Permission,
     ghostBookshelf = require('./base'),
+
     Role,
     Roles;
 
 Role = ghostBookshelf.Model.extend({
 
     tableName: 'roles',
-
-    permittedAttributes: ['id', 'uuid', 'name', 'description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
 
     validate: function () {
         ghostBookshelf.validator.check(this.get('name'), "Role name cannot be blank").notEmpty();

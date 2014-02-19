@@ -1,5 +1,4 @@
-var ghostBookshelf,
-    Bookshelf = require('bookshelf'),
+var Bookshelf = require('bookshelf'),
     when      = require('when'),
     moment    = require('moment'),
     _         = require('lodash'),
@@ -7,7 +6,10 @@ var ghostBookshelf,
     config    = require('../config'),
     Validator = require('validator').Validator,
     unidecode = require('unidecode'),
-    sanitize  = require('validator').sanitize;
+    sanitize  = require('validator').sanitize,
+    schema    = require('../data/schema'),
+
+    ghostBookshelf;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
 ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
@@ -21,6 +23,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasTimestamps: true,
 
+    // get permitted attributs from schema.js
+    permittedAttributes: function () {
+        return _.keys(schema.tables[this.tableName]);
+    },
+
     defaults: function () {
         return {
             uuid: uuid.v4()
@@ -28,9 +35,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     initialize: function () {
+        var self = this;
         this.on('creating', this.creating, this);
-        this.on('saving', this.saving, this);
-        this.on('saving', this.validate, this);
+        this.on('saving', function (model, attributes, options) {
+            return when(self.saving(model, attributes, options)).then(function () {
+                return self.validate(model, attributes, options);
+            });
+        });
+    },
+
+    validate: function () {
+        return true;
     },
 
     creating: function () {
@@ -40,10 +55,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     saving: function () {
-         // Remove any properties which don't belong on the post model
-        this.attributes = this.pick(this.permittedAttributes);
+         // Remove any properties which don't belong on the model
+        this.attributes = this.pick(this.permittedAttributes());
 
-        this.set('updated_by', 1);
+        // sessions do not have 'updated_by' column
+        if (this.tableName !== 'sessions') {
+            this.set('updated_by', 1);
+        }
     },
 
     // Base prototype properties will go here
