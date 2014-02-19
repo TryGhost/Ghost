@@ -50,7 +50,7 @@ module.exports = function (server) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
-    server.get(/\/(ghost$\/?)/, function (req, res) {
+    server.get(/\/ghost$/, function (req, res) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
