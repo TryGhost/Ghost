@@ -29,17 +29,17 @@ var middleware = {
     // exceptions for signin, signout, signup, forgotten, reset only
     // api and frontend use different authentication mechanisms atm
     authenticate: function (req, res, next) {
-        if (res.isAdmin) {
-            if (req.path.indexOf("/ghost/api/") === 0) {
-                return middleware.authAPI(req, res, next);
-            }
-
-            var noAuthNeeded = [
+        var subPath = req.path.substring(config().paths.subdir.length),
+            noAuthNeeded = [
                 '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
                 '/ghost/forgotten/', '/ghost/reset/'
             ];
+        if (res.isAdmin) {
+            if (subPath.indexOf('/ghost/api/') === 0) {
+                return middleware.authAPI(req, res, next);
+            }
 
-            if (noAuthNeeded.indexOf(req.path) < 0) {
+            if (noAuthNeeded.indexOf(subPath) < 0) {
                 return middleware.auth(req, res, next);
             }
         }
@@ -51,7 +51,8 @@ var middleware = {
     // We strip /ghost/ out of the redirect parameter for neatness
     auth: function (req, res, next) {
         if (!req.session.user) {
-            var reqPath = req.path.replace(/^\/ghost\/?/gi, ''),
+            var subPath = req.path.substring(config().paths.subdir.length),
+                reqPath = subPath.replace(/^\/ghost\/?/gi, ''),
                 redirect = '',
                 msg;
 
