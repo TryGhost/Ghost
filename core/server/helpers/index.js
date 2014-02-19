@@ -35,6 +35,10 @@ var downsize        = require('downsize'),
         ]
     };
 
+if (!isProduction) {
+    hbs.handlebars.logger.level = 0;
+}
+
 /**
  * [ description]
  * @todo ghost core helpers + a way for themes to register them
