@@ -6,7 +6,7 @@ var dataExport       = require('../data/export'),
     when             = require('when'),
     nodefn           = require('when/node/function'),
     _                = require('lodash'),
-    schema           = require('../data/schema').tables,
+    validation       = require('../data/validation'),
     config           = require('../config'),
     api              = {},
 
@@ -69,8 +69,7 @@ db = {
             return nodefn.call(fs.readFile, options.importfile.path);
         }).then(function (fileContents) {
             var importData,
-                error = '',
-                tableKeys = _.keys(schema);
+                error = '';
 
             // Parse the json data
             try {
@@ -83,28 +82,13 @@ db = {
                 return when.reject(new Error("Import data does not specify version"));
             }
 
-            _.each(tableKeys, function (constkey) {
-                _.each(importData.data[constkey], function (elem) {
-                    var prop;
-                    for (prop in elem) {
-                        if (elem.hasOwnProperty(prop)) {
-                            if (schema[constkey].hasOwnProperty(prop)) {
-                                if (!_.isNull(elem[prop])) {
-                                    if (elem[prop].length > schema[constkey][prop].maxlength) {
-                                        error += error !== "" ? "<br>" : "";
-                                        error += "Property '" + prop + "' exceeds maximum length of " + schema[constkey][prop].maxlength + " (element:" + constkey + " / id:" + elem.id + ")";
-                                    }
-                                } else {
-                                    if (!schema[constkey][prop].nullable) {
-                                        error += error !== "" ? "<br>" : "";
-                                        error += "Property '" + prop + "' is not nullable (element:" + constkey + " / id:" + elem.id + ")";
-                                    }
-                                }
-                            } else {
-                                error += error !== "" ? "<br>" : "";
-                                error += "Property '" + prop + "' is not allowed (element:" + constkey + " / id:" + elem.id + ")";
-                            }
-                        }
+            _.each(_.keys(importData.data), function (tableName) {
+                _.each(importData.data[tableName], function (importValues) {
+                    try {
+                        validation.validateSchema(tableName, importValues);
+                    } catch (err) {
+                        error += error !== "" ? "<br>" : "";
+                        error += err.message;
                     }
                 });
             });

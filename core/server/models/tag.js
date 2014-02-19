@@ -8,11 +8,6 @@ Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
-    validate: function () {
-
-        return true;
-    },
-
     saving: function () {
         var self = this;
         ghostBookshelf.Model.prototype.saving.apply(this, arguments);
