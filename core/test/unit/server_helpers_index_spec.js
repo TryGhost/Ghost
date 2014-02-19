@@ -471,8 +471,54 @@ describe('Core Helpers', function () {
             });
         });
     });
-
+    
     describe('Page Url Helper', function () {
+        it('has loaded page_url helper', function () {
+            should.exist(handlebars.helpers.page_url);
+        });
+
+        it('can return a valid url', function () {
+            helpers.page_url(1).should.equal('/');
+            helpers.page_url(2).should.equal('/page/2/');
+            helpers.page_url(50).should.equal('/page/50/');
+        });
+
+        it('can return a valid url with subdirectory', function () {
+            helpers.__set__('config', function() {
+                return {
+                    paths: {'subdir': '/blog'}
+                };
+            });
+            helpers.page_url(1).should.equal('/blog/');
+            helpers.page_url(2).should.equal('/blog/page/2/');
+            helpers.page_url(50).should.equal('/blog/page/50/');
+        });
+
+        it('can return a valid url for tag pages', function () {
+            var tagContext = {
+                tagSlug: 'pumpkin'
+            };
+            helpers.page_url.call(tagContext, 1).should.equal('/tag/pumpkin/');
+            helpers.page_url.call(tagContext, 2).should.equal('/tag/pumpkin/page/2/');
+            helpers.page_url.call(tagContext, 50).should.equal('/tag/pumpkin/page/50/');
+        });
+
+        it('can return a valid url for tag pages with subdirectory', function () {
+            helpers.__set__('config', function() {
+                return {
+                    paths: {'subdir': '/blog'}
+                };
+            });
+            var tagContext = {
+                tagSlug: 'pumpkin'
+            };
+            helpers.page_url.call(tagContext, 1).should.equal('/blog/tag/pumpkin/');
+            helpers.page_url.call(tagContext, 2).should.equal('/blog/tag/pumpkin/page/2/');
+            helpers.page_url.call(tagContext, 50).should.equal('/blog/tag/pumpkin/page/50/');
+        });
+    });
+
+    describe('Page Url Helper: DEPRECATED', function () {
         it('has loaded pageUrl helper', function () {
             should.exist(handlebars.helpers.pageUrl);
         });
@@ -886,11 +932,11 @@ describe('Core Helpers', function () {
         });
 
         it('has loaded ghostScriptTags  helper', function () {
-            should.exist(helpers.ghostScriptTags);
+            should.exist(helpers.ghost_script_tags);
         });
 
         it('outputs correct scripts for development mode', function () {
-            rendered = helpers.ghostScriptTags();
+            rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
                 '<script src="/ghost/scripts/vendor.js?v=abc"></script>' +
@@ -905,7 +951,7 @@ describe('Core Helpers', function () {
             });
 
             // with subdirectory
-            rendered = helpers.ghostScriptTags();
+            rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
                 '<script src="/blog/ghost/scripts/vendor.js?v=abc"></script>' +
@@ -920,7 +966,7 @@ describe('Core Helpers', function () {
 
             helpers.__set__('isProduction', true);
 
-            rendered = helpers.ghostScriptTags();
+            rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal('<script src="/ghost/scripts/ghost.min.js?v=abc"></script>');
 
@@ -929,7 +975,7 @@ describe('Core Helpers', function () {
             });
 
             // with subdirectory
-            rendered = helpers.ghostScriptTags();
+            rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal('<script src="/blog/ghost/scripts/ghost.min.js?v=abc"></script>');
         });
@@ -945,14 +991,14 @@ describe('Core Helpers', function () {
 
 
         it('should output the path to admin', function () {
-            rendered = helpers.adminUrl();
+            rendered = helpers.admin_url();
             should.exist(rendered);
             rendered.should.equal('/ghost');
         });
 
         it('should output the path to admin with subdirectory', function () {
             configUpdate({url: 'http://testurl.com/blog/'});
-            rendered = helpers.adminUrl();
+            rendered = helpers.admin_url();
             should.exist(rendered);
             rendered.should.equal('/blog/ghost');
         });
@@ -961,26 +1007,26 @@ describe('Core Helpers', function () {
             // no trailing slash
             configUpdate({url: 'http://testurl.com'});
 
-            rendered = helpers.adminUrl({"hash": {absolute: true}});
+            rendered = helpers.admin_url({"hash": {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/ghost');
 
             // test trailing slash
             configUpdate({url: 'http://testurl.com/'});
-            rendered = helpers.adminUrl({"hash": {absolute: true}});
+            rendered = helpers.admin_url({"hash": {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/ghost');
         });
 
         it('should output absolute path with subdirectory', function () {
             configUpdate({url: 'http://testurl.com/blog'});
-            rendered = helpers.adminUrl({"hash": {absolute: true}});
+            rendered = helpers.admin_url({"hash": {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/blog/ghost');
         });
 
         it('should output the path to frontend if frontend is set', function () {
-            rendered = helpers.adminUrl({"hash": {frontend: true}});
+            rendered = helpers.admin_url({"hash": {frontend: true}});
             should.exist(rendered);
             rendered.should.equal('/');
         });
@@ -988,26 +1034,26 @@ describe('Core Helpers', function () {
         it('should output the absolute path to frontend if both are set', function () {
             configUpdate({url: 'http://testurl.com'});
 
-            rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+            rendered = helpers.admin_url({"hash": {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/');
 
             configUpdate({url: 'http://testurl.com/'});
-            rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+            rendered = helpers.admin_url({"hash": {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/');
         });
 
         it('should output the path to frontend with subdirectory', function () {
             configUpdate({url: 'http://testurl.com/blog/'});
-            rendered = helpers.adminUrl({"hash": {frontend: true}});
+            rendered = helpers.admin_url({"hash": {frontend: true}});
             should.exist(rendered);
             rendered.should.equal('/blog/');
         });
 
         it('should output the absolute path to frontend with subdirectory', function () {
             configUpdate({url: 'http://testurl.com/blog/'});
-            rendered = helpers.adminUrl({"hash": {frontend: true, absolute: true}});
+            rendered = helpers.admin_url({"hash": {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/blog/');
         });
@@ -1026,13 +1072,13 @@ describe('Core Helpers', function () {
                 return when({value: futureversion.join('.')});
             });
 
-            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+            helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
 
                 rendered.should.equal(defaultOutput);
 
                 // Test classOnly option
-                return helpers.updateNotification.call({currentUser: {name: 'bob'}}, {'hash': {'classOnly': 'true'}});
+                return helpers.update_notification.call({currentUser: {name: 'bob'}}, {'hash': {'classOnly': 'true'}});
             }).then(function (rendered) {
                 should.exist(rendered);
 
@@ -1048,7 +1094,7 @@ describe('Core Helpers', function () {
                 return when({value: packageInfo.version});
             });
 
-            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+            helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();
@@ -1063,7 +1109,7 @@ describe('Core Helpers', function () {
                 return when({value: 'true'});
             });
 
-            helpers.updateNotification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
+            helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();
@@ -1078,7 +1124,7 @@ describe('Core Helpers', function () {
                 return when({value: futureversion.join('.')});
             });
 
-            helpers.updateNotification.call().then(function (rendered) {
+            helpers.update_notification.call().then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();

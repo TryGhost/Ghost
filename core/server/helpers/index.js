@@ -90,12 +90,12 @@ coreHelpers.encode = function (context, str) {
 // ### Page URL Helper
 //
 // *Usage example:*
-// `{{pageUrl 2}}`
+// `{{page_url 2}}`
 //
 // Returns the URL for the page specified in the current object
 // context.
 //
-coreHelpers.pageUrl = function (context, block) {
+coreHelpers.page_url = function (context, block) {
     /*jslint unparam:true*/
     var url = config().paths.subdir;
 
@@ -110,6 +110,25 @@ coreHelpers.pageUrl = function (context, block) {
     url += '/';
 
     return url;
+};
+
+// ### Page URL Helper: DEPRECATED
+//
+// *Usage example:*
+// `{{pageUrl 2}}`
+//
+// Returns the URL for the page specified in the current object
+// context. This helper is deprecated and will be removed in future versions.
+//
+coreHelpers.pageUrl = function (context, block) {
+    errors.logWarn('Warning: pageUrl is deprecated, please use page_url instead\n' +
+                    'The helper pageUrl has been replaced with page_url in Ghost 0.5, and will be removed entirely in Ghost 0.6\n' +
+                    'In your theme\'s pagination.hbs file, pageUrl should be renamed to page_url');
+
+    /*jslint unparam:true*/
+    var self = this;
+
+    return coreHelpers.page_url.call(self, context, block);
 };
 
 // ### URL helper
@@ -297,10 +316,10 @@ coreHelpers.excerpt = function (options) {
 // ### Filestorage helper
 //
 // *Usage example:*
-// `{{fileStorage}}`
+// `{{file_storage}}`
 //
 // Returns the config value for fileStorage.
-coreHelpers.fileStorage = function (context, options) {
+coreHelpers.file_storage = function (context, options) {
     /*jslint unparam:true*/
     if (config().hasOwnProperty('fileStorage')) {
         return config().fileStorage.toString();
@@ -308,7 +327,7 @@ coreHelpers.fileStorage = function (context, options) {
     return "true";
 };
 
-coreHelpers.ghostScriptTags = function () {
+coreHelpers.ghost_script_tags = function () {
     var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
     scriptList = _.map(scriptList, function (fileName) {
@@ -595,7 +614,7 @@ coreHelpers.helperMissing = function (arg) {
 
 // ## Admin URL helper
 // uses urlFor to generate a URL for either the admin or the frontend.
-coreHelpers.adminUrl = function (options) {
+coreHelpers.admin_url = function (options) {
     var absolute = options && options.hash && options.hash.absolute,
         // Ghost isn't a named route as currently it violates the must start-and-end with slash rule
         context = !options || !options.hash || !options.hash.frontend ? {relativeUrl: '/ghost'} : 'home';
@@ -603,7 +622,7 @@ coreHelpers.adminUrl = function (options) {
     return config.urlFor(context, absolute);
 };
 
-coreHelpers.updateNotification = function (options) {
+coreHelpers.update_notification = function (options) {
     var output = '';
 
     if (config().updateCheck === false || !this.currentUser) {
@@ -683,6 +702,8 @@ registerHelpers = function (adminHbs, assetHash) {
 
     registerThemeHelper('foreach', coreHelpers.foreach);
 
+    registerThemeHelper('page_url', coreHelpers.page_url);
+
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 
     registerThemeHelper('pagination', coreHelpers.pagination);
@@ -709,13 +730,13 @@ registerHelpers = function (adminHbs, assetHash) {
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);
 
-    registerAdminHelper('ghostScriptTags', coreHelpers.ghostScriptTags);
+    registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
 
-    registerAdminHelper('fileStorage', coreHelpers.fileStorage);
+    registerAdminHelper('file_storage', coreHelpers.file_storage);
 
-    registerAdminHelper('adminUrl', coreHelpers.adminUrl);
+    registerAdminHelper('admin_url', coreHelpers.admin_url);
 
-    registerAsyncAdminHelper('updateNotification', coreHelpers.updateNotification);
+    registerAsyncAdminHelper('update_notification', coreHelpers.update_notification);
 };
 
 module.exports = coreHelpers;
