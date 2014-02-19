@@ -1,26 +1,22 @@
-var Post,
+var _              = require('lodash'),
+    uuid           = require('node-uuid'),
+    when           = require('when'),
+    errors         = require('../errorHandling'),
+    Showdown       = require('showdown'),
+    github         = require('../../shared/vendor/showdown/extensions/github'),
+    converter      = new Showdown.converter({extensions: [github]}),
+    User           = require('./user').User,
+    Tag            = require('./tag').Tag,
+    Tags           = require('./tag').Tags,
+    ghostBookshelf = require('./base'),
+
+    Post,
     Posts,
-    _ = require('lodash'),
-    uuid = require('node-uuid'),
-    when = require('when'),
-    errors = require('../errorHandling'),
-    Showdown = require('showdown'),
-    github = require('../../shared/vendor/showdown/extensions/github'),
-    converter = new Showdown.converter({extensions: [github]}),
-    User = require('./user').User,
-    Tag = require('./tag').Tag,
-    Tags = require('./tag').Tags,
-    ghostBookshelf = require('./base');
+    myTags;
 
 Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
-
-    permittedAttributes: [
-        'id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
-        'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at', 'updated_by',
-        'page', 'published_at', 'published_by'
-    ],
 
     defaults: function () {
         return {
@@ -30,15 +26,22 @@ Post = ghostBookshelf.Model.extend({
     },
 
     initialize: function () {
+        var self = this;
         this.on('creating', this.creating, this);
-        this.on('saving', this.updateTags, this);
-        this.on('saving', this.saving, this);
-        this.on('saving', this.validate, this);
+        this.on('saved', this.updateTags, this);
+        this.on('saving', function (model, attributes, options) {
+            return when(self.saving(model, attributes, options)).then(function () {
+                return self.validate(model, attributes, options);
+            });
+        });
     },
 
     validate: function () {
         ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
         ghostBookshelf.validator.check(this.get('title'), 'Post title maximum length is 150 characters.').len(0, 150);
+        ghostBookshelf.validator.check(this.get('slug'), "Post title cannot be blank").notEmpty();
+        ghostBookshelf.validator.check(this.get('slug'), 'Post title maximum length is 150 characters.').len(0, 150);
+
         return true;
     },
 
@@ -46,8 +49,10 @@ Post = ghostBookshelf.Model.extend({
         /*jslint unparam:true*/
         var self = this;
 
-        // Remove any properties which don't belong on the post model
-        this.attributes = this.pick(this.permittedAttributes);
+        // keep tags for 'saved' event
+        myTags = this.get('tags');
+
+        ghostBookshelf.Model.prototype.saving.call(this);
 
         this.set('html', converter.makeHtml(this.get('markdown')));
 
@@ -55,65 +60,45 @@ Post = ghostBookshelf.Model.extend({
         //this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
 
-        if (this.hasChanged('status') && this.get('status') === 'published') {
+        if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {
             if (!this.get('published_at')) {
                 this.set('published_at', new Date());
             }
             // This will need to go elsewhere in the API layer.
             this.set('published_by', 1);
-        } else if (this.get('status') === 'published' && !this.get('published_at')) {
-            // If somehow this is a published post with no date, fix it... see #2015
-            this.set('published_at', new Date());
         }
 
-        ghostBookshelf.Model.prototype.saving.call(this);
-
-        if (this.hasChanged('slug')) {
+        if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('slug'), {status: 'all', transacting: options.transacting})
+            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+                    {status: 'all', transacting: options.transacting})
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
         }
+
     },
 
     creating: function (newPage, attr, options) {
         /*jslint unparam:true*/
-        // set any dynamic default properties
-        var self = this;
 
+        // set any dynamic default properties
         if (!this.get('author_id')) {
             this.set('author_id', 1);
         }
 
         ghostBookshelf.Model.prototype.creating.call(this);
-
-        // We require a slug be set when creating a new post
-        // as the database doesn't allow null slug values.
-        if (!this.get('slug')) {
-            // Generating a slug requires a db call to look for conflicting slugs
-            return ghostBookshelf.Model.generateSlug(Post, this.get('title'), {status: 'all', transacting: options.transacting})
-                .then(function (slug) {
-                    self.set({slug: slug});
-                });
-        }
     },
 
-    updateTags: function (newTags, attr, options) {
+    updateTags: function (newPost, attr, options) {
         /*jslint unparam:true*/
-        var self = this;
         options = options || {};
 
-
-        if (newTags === this) {
-            newTags = this.get('tags');
-        }
-
-        if (!newTags || !this.id) {
+        if (!myTags) {
             return;
         }
 
-        return Post.forge({id: this.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (thisPostWithTags) {
+        return Post.forge({id: newPost.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (thisPostWithTags) {
 
             var existingTags = thisPostWithTags.related('tags').toJSON(),
                 tagOperations = [],
@@ -123,17 +108,17 @@ Post = ghostBookshelf.Model.extend({
 
             // First find any tags which have been removed
             _.each(existingTags, function (existingTag) {
-                if (!_.some(newTags, function (newTag) { return newTag.name === existingTag.name; })) {
+                if (!_.some(myTags, function (newTag) { return newTag.name === existingTag.name; })) {
                     tagsToDetach.push(existingTag.id);
                 }
             });
 
             if (tagsToDetach.length > 0) {
-                tagOperations.push(self.tags().detach(tagsToDetach, options));
+                tagOperations.push(newPost.tags().detach(tagsToDetach, options));
             }
 
             // Next check if new tags are all exactly the same as what is set on the model
-            _.each(newTags, function (newTag) {
+            _.each(myTags, function (newTag) {
                 if (!_.some(existingTags, function (existingTag) { return newTag.name === existingTag.name; })) {
                     // newTag isn't on this post yet
                     tagsToAttach.push(newTag);
@@ -143,7 +128,7 @@ Post = ghostBookshelf.Model.extend({
             if (!_.isEmpty(tagsToAttach)) {
                 return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch(options).then(function (matchingTags) {
                     _.each(matchingTags.toJSON(), function (matchingTag) {
-                        tagOperations.push(self.tags().attach(matchingTag.id, options));
+                        tagOperations.push(newPost.tags().attach(matchingTag.id, options));
                         tagsToAttach = _.reject(tagsToAttach, function (tagToAttach) {
                             return tagToAttach.name === matchingTag.name;
                         });
@@ -172,7 +157,7 @@ Post = ghostBookshelf.Model.extend({
 
                                 // Attach each newly created tag
                                 _.each(createdTagsToAttach, function (tagToAttach) {
-                                    self.tags().attach(tagToAttach.id, tagToAttach.name, options);
+                                    newPost.tags().attach(tagToAttach.id, tagToAttach.name, options);
                                 });
 
                             }
@@ -432,18 +417,16 @@ Post = ghostBookshelf.Model.extend({
     },
     add: function (newPostData, options) {
         var self = this;
+
         return ghostBookshelf.Model.add.call(this, newPostData, options).then(function (post) {
-            // associated models can't be created until the post has an ID, so run this after
-            return when(post.updateTags(newPostData.tags, null, options)).then(function () {
-                return self.findOne({status: 'all', id: post.id}, options);
-            });
+            return self.findOne({status: 'all', id: post.id}, options);
         });
     },
     edit: function (editedPost, options) {
         var self = this;
 
-        return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (editedObj) {
-            return self.findOne({status: 'all', id: editedObj.id}, options);
+        return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
+            return self.findOne({status: 'all', id: post.id}, options);
         });
     },
     destroy: function (_identifier, options) {

@@ -264,7 +264,7 @@ module.exports = function (server, dbHash) {
 
     expressServer.use(express.cookieParser());
     expressServer.use(express.session({
-        store: new BSStore(models),
+        store: new BSStore(),
         proxy: true,
         secret: dbHash,
         cookie: cookie

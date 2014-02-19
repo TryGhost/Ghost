@@ -1,6 +1,4 @@
-var User,
-    Users,
-    _              = require('lodash'),
+var _              = require('lodash'),
     uuid           = require('node-uuid'),
     when           = require('when'),
     errors         = require('../errorHandling'),
@@ -13,7 +11,9 @@ var User,
     http           = require('http'),
     crypto         = require('crypto'),
 
-    tokenSecurity  = {};
+    tokenSecurity  = {},
+    User,
+    Users;
 
 function validatePasswordLength(password) {
     try {
@@ -37,12 +37,6 @@ User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
-    permittedAttributes: [
-        'id', 'uuid', 'name', 'slug', 'password', 'email', 'image', 'cover', 'bio', 'website', 'location',
-        'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'last_login', 'created_at',
-        'created_by', 'updated_at', 'updated_by'
-    ],
-
     validate: function () {
         ghostBookshelf.validator.check(this.get('email'), "Please enter a valid email address. That one looks a bit dodgy.").isEmail();
         ghostBookshelf.validator.check(this.get('bio'), "We're not writing a novel here! I'm afraid your bio has to stay under 200 characters.").len(0, 200);
@@ -53,10 +47,16 @@ User = ghostBookshelf.Model.extend({
         return true;
     },
 
-    creating: function () {
+    saving: function () {
         var self = this;
+        // disabling sanitization until we can implement a better version
+        // this.set('name', this.sanitize('name'));
+        // this.set('email', this.sanitize('email'));
+        // this.set('location', this.sanitize('location'));
+        // this.set('website', this.sanitize('website'));
+        // this.set('bio', this.sanitize('bio'));
 
-        ghostBookshelf.Model.prototype.creating.call(this);
+        ghostBookshelf.Model.prototype.saving.apply(this, arguments);
 
         if (!this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
@@ -65,18 +65,7 @@ User = ghostBookshelf.Model.extend({
                     self.set({slug: slug});
                 });
         }
-    },
 
-    saving: function () {
-
-        // disabling sanitization until we can implement a better version
-        // this.set('name', this.sanitize('name'));
-        // this.set('email', this.sanitize('email'));
-        // this.set('location', this.sanitize('location'));
-        // this.set('website', this.sanitize('website'));
-        // this.set('bio', this.sanitize('bio'));
-
-        return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     },
 
     posts: function () {
