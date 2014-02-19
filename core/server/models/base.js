@@ -4,10 +4,10 @@ var Bookshelf = require('bookshelf'),
     _         = require('lodash'),
     uuid      = require('node-uuid'),
     config    = require('../config'),
-    Validator = require('validator').Validator,
     unidecode = require('unidecode'),
     sanitize  = require('validator').sanitize,
     schema    = require('../data/schema'),
+    validation     = require('../data/validation'),
 
     ghostBookshelf;
 
@@ -15,7 +15,6 @@ var Bookshelf = require('bookshelf'),
 ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
 ghostBookshelf.client = config().database.client;
 
-ghostBookshelf.validator = new Validator();
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
@@ -45,7 +44,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        return true;
+        validation.validateSchema(this.tableName, this.toJSON());
     },
 
     creating: function () {
