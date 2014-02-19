@@ -49,7 +49,7 @@ var path           = require('path'),
     configureGrunt = function (grunt) {
 
         // load all grunt tasks
-        require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+        require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 
         var cfg = {
             // Common paths to be used by tasks
@@ -277,6 +277,10 @@ var path           = require('path'),
             // ### config for grunt-shell
             // command line tools
             shell: {
+                // run bundle
+                bundle: {
+                    command: 'bundle install'
+                },
                 // install bourbon
                 bourbon: {
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
@@ -847,7 +851,7 @@ var path           = require('path'),
 
         // ### Tools for building assets
 
-        grunt.registerTask('init', 'Prepare the project for development', ['shell:bourbon', 'default']);
+        grunt.registerTask('init', 'Prepare the project for development', ['shell:bundle', 'shell:bourbon', 'default']);
 
         // Before running in production mode
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
