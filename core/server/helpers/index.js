@@ -553,6 +553,37 @@ coreHelpers.foreach = function (context, options) {
     return ret;
 };
 
+// ### Has Helper
+// `{{#has tag="video, music"}}`
+// Checks whether a post has at least one of the tags
+coreHelpers.has = function (options) {
+    var tags = _.pluck(this.tags, 'name'),
+        tagList = options && options.hash ? options.hash.tag : false;
+
+    function evaluateTagList(expr, tags) {
+        return expr.split(',').map(function (v) {
+            return v.trim();
+        }).reduce(function (p, c) {
+            return p || (_.findIndex(tags, function (item) {
+                // Escape regex special characters
+                item = item.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&');
+                item = new RegExp(item, 'i');
+                return item.test(c);
+            }) !== -1);
+        }, false);
+    }
+
+    if (!tagList) {
+        errors.logWarn("Invalid or no attribute given to has helper");
+        return;
+    }
+
+    if (tagList && evaluateTagList(tagList, tags)) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+};
+
 // ### Pagination Helper
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
@@ -682,6 +713,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerThemeHelper('excerpt', coreHelpers.excerpt);
 
     registerThemeHelper('foreach', coreHelpers.foreach);
+
+    registerThemeHelper('has', coreHelpers.has);
 
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
 

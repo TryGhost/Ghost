@@ -427,6 +427,64 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('has Block Helper', function () {
+        it('has loaded has block helper', function () {
+            should.exist(handlebars.helpers.has);
+        });
+
+        it('should handle tag list that validates true', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {tags: [{ name: 'foo'}, { name: 'bar'}, { name: 'baz'}]},
+                {hash: { tag: 'invalid, bar, wat'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle tags with case-insensitivity', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {tags: [{ name: 'ghost'}]},
+                {hash: { tag: 'GhoSt'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle tag list that validates false', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {tags: [{ name: 'foo'}, { name: 'bar'}, { name: 'baz'}]},
+                {hash: { tag: 'much, such, wow'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.true;
+        });
+
+        it('should not do anything when an invalid attribute is given', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {tags: [{ name: 'foo'}, { name: 'bar'}, { name: 'baz'}]},
+                {hash: { invalid: 'nonsense'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.false;
+        });
+    });
+
     describe('url Helper', function () {
         it('has loaded url helper', function () {
             should.exist(handlebars.helpers.url);
