@@ -371,41 +371,52 @@ Post = ghostBookshelf.Model.extend({
             .catch(errors.logAndThrowError);
     },
 
-    permissable: function (postModelOrId, userId, action_type, userPermissions) {
+    permissable: function (postModelOrId, context, action_type, loadedPermissions) {
         var self = this,
+            userId = context.user,
+            isAuthor,
             hasPermission,
-            postModel = postModelOrId;
+            userPermissions = loadedPermissions.user,
+            appPermissions = loadedPermissions.app,
+            postModel = postModelOrId,
+            checkPermission = function (perm) {
+                // Check for matching action type and object type
+                if (perm.get('action_type') !== action_type ||
+                        perm.get('object_type') !== 'post') {
+                    return false;
+                }
+
+                // If asking whether we can create posts,
+                // and we have a create posts permission then go ahead and say yes
+                if (action_type === 'create' && perm.get('action_type') === action_type) {
+                    return true;
+                }
+
+                // Check for either no object id or a matching one
+                return !perm.get('object_id') || perm.get('object_id') === postModel.id;
+            };
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
             return this.read({id: postModelOrId}).then(function (foundPostModel) {
-                return self.permissable(foundPostModel, userId, action_type, userPermissions);
+                return self.permissable(foundPostModel, context, action_type, loadedPermissions);
             }, errors.logAndThrowError);
         }
 
         // Check if any permissions apply for this user and post.
-        hasPermission = _.any(userPermissions, function (perm) {
-            // Check for matching action type and object type
-            if (perm.get('action_type') !== action_type ||
-                    perm.get('object_type') !== 'post') {
-                return false;
-            }
+        hasPermission = _.any(userPermissions, checkPermission);
 
-            // If asking whether we can create posts,
-            // and we have a create posts permission then go ahead and say yes
-            if (action_type === 'create' && perm.get('action_type') === action_type) {
-                return true;
-            }
-
-            // Check for either no object id or a matching one
-            return !perm.get('object_id') || perm.get('object_id') === postModel.id;
-        });
+        // If we have already have user permission and we passed in appPermissions check them
+        if (hasPermission && !_.isNull(appPermissions)) {
+            hasPermission = _.any(appPermissions, checkPermission);
+        }
 
         // If this is the author of the post, allow it.
         // Moved below the permissions checks because there may not be a postModel
         // in the case like canThis(user).create.post()
-        hasPermission = hasPermission || (postModel && userId === postModel.get('author_id'));
+        isAuthor = (postModel && userId === postModel.get('author_id'));
+        hasPermission = hasPermission || isAuthor;
 
         // Resolve if we have appropriate permissions
         if (hasPermission) {
