@@ -31,13 +31,13 @@
     <link rel="stylesheet" href="{{asset "css/screen.css" ghost="true"}}">
     {{{block "pageStyles"}}}
 </head>
-    <body class="{{bodyClass}}{{updateNotification classOnly="true"}}">
+    <body class="{{bodyClass}}{{update_notification classOnly="true"}}">
     {{#unless hideNavbar}}
         {{> navbar}}
     {{/unless}}
 
     <main role="main" id="main">
-        {{updateNotification}}
+        {{update_notification}}
 
         <aside id="notifications" class="notifications">
             {{> notifications}}
@@ -50,7 +50,7 @@
     </div>
     <div class="modal-background fade"></div>
 
-    {{{ghostScriptTags}}}
+    {{{ghost_script_tags}}}
 
     {{{block "bodyScripts"}}}
 </body>
