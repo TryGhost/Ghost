@@ -14,7 +14,7 @@ CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
 
     casper.thenClick('#usermenu a').waitFor(function checkOpaque() {
         return this.evaluate(function () {
-            var loginBox = document.querySelector('#usermenu .overlay.open');
+            var loginBox = document.querySelector('#usermenu .overlay');
             return window.getComputedStyle(loginBox).getPropertyValue('display') === "block"
                 && window.getComputedStyle(loginBox).getPropertyValue('opacity') === "1";
         });

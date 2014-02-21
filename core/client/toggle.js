@@ -33,7 +33,7 @@
 
             if (!isAlreadyActive) {
                 $this.toggleClass('active');
-                $(this).parent().children(toggle).toggleClass('open').fadeToggle(150);
+                $(this).parent().children(toggle).fadeToggle(150);
             }
         });
 
