@@ -1,7 +1,7 @@
 /*globals describe, before, after, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     request = require('request');
 
 request = request.defaults({jar: true});
@@ -193,7 +193,6 @@ describe('Post API', function () {
                 headers: {'X-CSRF-Token': csrfToken},
                 json: newPost}, function (error, response, draftPost) {
                 response.should.have.status(200);
-                //TODO: do drafts really need a x-cache-invalidate header
                 response.should.be.json;
                 draftPost.should.exist;
                 draftPost.title.should.eql(newTitle);
@@ -243,6 +242,43 @@ describe('Post API', function () {
                     putBody.should.exist;
                     putBody.title.should.eql(changedValue);
 
+                    testUtils.API.checkResponse(putBody, 'post');
+                    done();
+                });
+            });
+        });
+
+        it('can\'t edit a post with invalid CSRF token', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body);
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': 'invalid-token'},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(403);
+                    done();
+                });
+            });
+        });
+
+        it('published_at = null', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body),
+                    changedValue = 'My new Title';
+                jsonResponse.should.exist;
+                jsonResponse.title = changedValue;
+                jsonResponse.published_at = null;
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': csrfToken},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(200);
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.should.be.json;
+                    putBody.should.exist;
+                    putBody.title.should.eql(changedValue);
+                    if (_.isEmpty(putBody.published_at)) {
+                        should.fail('null', 'valid date', 'publish_at should not be empty');
+                        done();
+                    }
                     testUtils.API.checkResponse(putBody, 'post');
                     done();
                 });
@@ -308,7 +344,7 @@ describe('Post API', function () {
                 headers: {'X-CSRF-Token': csrfToken},
                 json: newPost}, function (error, response, draftPost) {
                 response.should.have.status(200);
-                //TODO: do drafts really need a x-cache-invalidate header
+
                 response.should.be.json;
                 draftPost.should.exist;
                 draftPost.title.should.eql(newTitle);
@@ -317,7 +353,6 @@ describe('Post API', function () {
                 request.del({uri: testUtils.API.getApiURL('posts/' + draftPost.id + '/'),
                     headers: {'X-CSRF-Token': csrfToken}}, function (error, response, body) {
                     response.should.have.status(200);
-                    //TODO: do drafts really need a x-cache-invalidate header
                     response.should.be.json;
                     var jsonResponse = JSON.parse(body);
                     jsonResponse.should.exist;

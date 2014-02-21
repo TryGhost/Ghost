@@ -1,7 +1,3 @@
-// If no env is set, default to development
-// This needs to be above all other require()
-// modules to ensure config gets right setting.
-
 // Module dependencies
 var crypto      = require('crypto'),
     express     = require('express'),
@@ -11,7 +7,7 @@ var crypto      = require('crypto'),
     path        = require('path'),
     Polyglot    = require('node-polyglot'),
     semver      = require('semver'),
-    _           = require('underscore'),
+    _           = require('lodash'),
     when        = require('when'),
 
     api         = require('./api'),
@@ -22,7 +18,7 @@ var crypto      = require('crypto'),
     middleware  = require('./middleware'),
     models      = require('./models'),
     permissions = require('./permissions'),
-    plugins     = require('./plugins'),
+    apps        = require('./apps'),
     routes      = require('./routes'),
     packageInfo = require('../../package.json'),
 
@@ -75,11 +71,11 @@ function initDbHashAndFirstRun() {
 }
 
 // Checks for the existence of the "built" javascript files from grunt concat.
-// Returns a promise that will be resolved if all files exist or rejected if 
+// Returns a promise that will be resolved if all files exist or rejected if
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config.paths().builtScriptPath,
+        location = config().paths.builtScriptPath,
 
         fileNames = process.env.NODE_ENV === 'production' ?
                 helpers.scriptFiles.production : helpers.scriptFiles.development;
@@ -112,8 +108,7 @@ function builtFilesExist() {
 }
 
 // Sets up the express server instance.
-// Instantiates the ghost singleton,
-// helpers, routes, middleware, and plugins.
+// Instantiates the ghost singleton, helpers, routes, middleware, and apps.
 // Finally it starts the http server.
 function setup(server) {
 
@@ -163,7 +158,7 @@ function setup(server) {
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        server.set('admin view engine', adminHbs.express3({partialsDir: config.paths().adminViews + 'partials'}));
+        server.set('admin view engine', adminHbs.express3({partialsDir: config().paths.adminViews + 'partials'}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
@@ -245,8 +240,8 @@ function setup(server) {
 
         }
 
-        // Initialize plugins then start the server
-        plugins.init().then(function () {
+        // Initialize apps then start the server
+        apps.init().then(function () {
 
             // ## Start Ghost App
             if (getSocket()) {
@@ -267,7 +262,12 @@ function setup(server) {
                     startGhost
                 );
             }
-
+            _.each(config().paths.availableThemes._messages.errors, function (error) {
+                errors.logError(error.message, error.context);
+            });
+            _.each(config().paths.availableThemes._messages.warns, function (warn) {
+                errors.logWarn(warn.message, warn.context);
+            });
         });
     }, function (err) {
         errors.logErrorAndExit(err, err.context, err.help);

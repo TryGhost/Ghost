@@ -1,7 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     request = require('request');
 
 request = request.defaults({jar:true})
@@ -47,7 +47,7 @@ describe('Tag API', function () {
             response.should.be.json;
             var jsonResponse = JSON.parse(body);
             jsonResponse.should.exist;
-            jsonResponse.should.have.length(5);
+            jsonResponse.should.have.length(6);
             testUtils.API.checkResponse(jsonResponse[0], 'tag');
             done();
         });

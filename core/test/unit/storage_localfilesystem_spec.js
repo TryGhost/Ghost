@@ -124,8 +124,6 @@ describe('Local File System Storage', function () {
 
 
     describe('on Windows', function () {
-        // TODO tests to check for working on windows
-
         var truePathSep = path.sep;
 
         beforeEach(function () {

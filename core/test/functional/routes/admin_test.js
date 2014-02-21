@@ -73,9 +73,9 @@ describe('Admin Routing', function () {
                 });
         });
 
-        it('should redirect from /ghost to /ghost/signup when no user', function (done) {
+        it('should redirect from /ghost to /ghost/signin when no user', function (done) {
             request.get('/ghost/')
-                .expect('Location', /ghost\/signup/)
+                .expect('Location', /ghost\/signin/)
                 .expect('Cache-Control', cacheRules['private'])
                 .expect(302)
                 .end(doEnd(done));

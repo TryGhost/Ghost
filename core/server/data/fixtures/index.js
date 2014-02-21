@@ -1,5 +1,5 @@
 var sequence   = require('when/sequence'),
-    _          = require('underscore'),
+    _          = require('lodash'),
     Post       = require('../../models/post').Post,
     Tag        = require('../../models/tag').Tag,
     Role       = require('../../models/role').Role,

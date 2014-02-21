@@ -1,5 +1,5 @@
 var migrations = require('../data/migration'),
-    _          = require('underscore');
+    _          = require('lodash');
 
 module.exports = {
     Post: require('./post').Post,

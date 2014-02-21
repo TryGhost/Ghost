@@ -1,5 +1,6 @@
 // # Ghost Configuration
 // Setup your Ghost install for various environments
+// Documentation can be found at http://docs.ghost.org/usage/configuration/
 
 var path = require('path'),
     config;
@@ -37,6 +38,9 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
+        },
+        paths: {
+            contentPath: path.join(__dirname, '/content/')
         }
     },
 
@@ -77,7 +81,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -93,7 +98,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -113,7 +119,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -133,7 +140,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     }
 };
 

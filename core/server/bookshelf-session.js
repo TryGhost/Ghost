@@ -1,18 +1,16 @@
-var Store = require('express').session.Store,
+var Store   = require('express').session.Store,
+    models  = require('./models'),
     time12h = 12 * 60 * 60 * 1000,
-    BSStore,
-    dataProvider,
-    db,
-    client;
+
+    BSStore;
 
 // Initialize store and clean old sessions
-BSStore = function BSStore(dataProvider, options) {
+BSStore = function BSStore(options) {
     var self = this;
-    this.dataProvider = dataProvider;
     options = options || {};
     Store.call(this, options);
 
-    this.dataProvider.Session.findAll()
+    models.Session.findAll()
         .then(function (model) {
             var i,
                 now = new Date().getTime();
@@ -31,7 +29,7 @@ BSStore.prototype.set = function (sid, sessData, callback) {
     var maxAge = sessData.cookie.maxAge,
         now = new Date().getTime(),
         expires = maxAge ? now + maxAge : now + time12h,
-        sessionModel = this.dataProvider.Session;
+        sessionModel = models.Session;
 
     sessData = JSON.stringify(sessData);
 
@@ -55,7 +53,7 @@ BSStore.prototype.get = function (sid, callback) {
         sess,
         expires;
 
-    this.dataProvider.Session.forge({id: sid})
+    models.Session.forge({id: sid})
         .fetch()
         .then(function (model) {
             if (model) {
@@ -74,7 +72,7 @@ BSStore.prototype.get = function (sid, callback) {
 
 // delete a given sessions
 BSStore.prototype.destroy = function (sid, callback) {
-    this.dataProvider.Session.forge({id: sid})
+    models.Session.forge({id: sid})
         .destroy()
         .then(function () {
             // check if callback is null
@@ -88,7 +86,7 @@ BSStore.prototype.destroy = function (sid, callback) {
 
 // get the count of all stored sessions
 BSStore.prototype.length = function (callback) {
-    this.dataProvider.Session.findAll()
+    models.Session.findAll()
         .then(function (model) {
             callback(null, model.length);
         });
@@ -96,7 +94,7 @@ BSStore.prototype.length = function (callback) {
 
 // delete all sessions
 BSStore.prototype.clear = function (callback) {
-    this.dataProvider.Session.destroyAll()
+    models.Session.destroyAll()
         .then(function () {
             callback();
         });

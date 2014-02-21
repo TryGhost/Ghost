@@ -114,7 +114,6 @@
         saveSuccess: function (model, response, options) {
             /*jslint unparam:true*/
             Ghost.notifications.clearEverything();
-            // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
                 message: 'Saved',
@@ -139,8 +138,6 @@
             });
         }
     });
-
-    // TODO: use some kind of data-binding for forms
 
     // ### General settings
     Settings.general = Settings.Pane.extend({
@@ -235,8 +232,23 @@
         templateName: 'settings/general',
 
         afterRender: function () {
-            this.$('#permalinks').prop('checked', this.model.get('permalinks') === '/:slug/' ? false : true);
+            var self = this;
+
+            this.$('#permalinks').prop('checked', this.model.get('permalinks') !== '/:slug/');
             this.$('.js-drop-zone').upload();
+
+            Countable.live(document.getElementById('blog-description'), function (counter) {
+                var descriptionContainer = self.$('.description-container .word-count');
+                if (counter.all > 180) {
+                    descriptionContainer.css({color: "#e25440"});
+                } else {
+                    descriptionContainer.css({color: "#9E9D95"});
+                }
+
+                descriptionContainer.text(200 - counter.all);
+
+            });
+
             Settings.Pane.prototype.afterRender.call(this);
         }
     });

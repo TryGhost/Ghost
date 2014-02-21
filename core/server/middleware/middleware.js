@@ -2,7 +2,7 @@
 // The following custom middleware functions are all unit testable, and have accompanying unit tests in
 // middleware_spec.js
 
-var _           = require('underscore'),
+var _           = require('lodash'),
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
@@ -24,12 +24,35 @@ function cacheServer(server) {
 
 var middleware = {
 
+    // ### Authenticate Middleware
+    // authentication has to be done for /ghost/* routes with 
+    // exceptions for signin, signout, signup, forgotten, reset only
+    // api and frontend use different authentication mechanisms atm
+    authenticate: function (req, res, next) {
+        var subPath = req.path.substring(config().paths.subdir.length),
+            noAuthNeeded = [
+                '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
+                '/ghost/forgotten/', '/ghost/reset/'
+            ];
+        if (res.isAdmin) {
+            if (subPath.indexOf('/ghost/api/') === 0) {
+                return middleware.authAPI(req, res, next);
+            }
+
+            if (noAuthNeeded.indexOf(subPath) < 0) {
+                return middleware.auth(req, res, next);
+            }
+        }
+        next();
+    },
+
     // ### Auth Middleware
     // Authenticate a request by redirecting to login if not logged in.
     // We strip /ghost/ out of the redirect parameter for neatness
     auth: function (req, res, next) {
         if (!req.session.user) {
-            var reqPath = req.path.replace(/^\/ghost\/?/gi, ''),
+            var subPath = req.path.substring(config().paths.subdir.length),
+                reqPath = subPath.replace(/^\/ghost\/?/gi, ''),
                 redirect = '',
                 msg;
 
@@ -47,7 +70,7 @@ var middleware = {
                     }
                     redirect = '?r=' + encodeURIComponent(reqPath);
                 }
-                return res.redirect(config.paths().subdir + '/ghost/signin/' + redirect);
+                return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
             });
         }
         next();
@@ -57,7 +80,6 @@ var middleware = {
     // Authenticate a request to the API by responding with a 401 and json error details
     authAPI: function (req, res, next) {
         if (!req.session.user) {
-            // TODO: standardize error format/codes/messages
             res.json(401, { error: 'Please sign in' });
             return;
         }
@@ -69,7 +91,7 @@ var middleware = {
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
         if (req.session.user) {
-            return res.redirect(config.paths().subdir + '/ghost/');
+            return res.redirect(config().paths.subdir + '/ghost/');
         }
 
         next();
@@ -141,7 +163,7 @@ var middleware = {
     forwardToExpressStatic: function (req, res, next) {
         api.settings.read('activeTheme').then(function (activeTheme) {
             // For some reason send divides the max age number by 1000
-            express['static'](path.join(config.paths().themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
+            express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
         });
     },
 

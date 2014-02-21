@@ -29,6 +29,19 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     });
 }, false);
 
+CasperTest.begin('Ensure that author element is not included. Only dc:creator', 3, function suite(test) {
+    CasperTest.Routines.togglePermalinks.run('off');
+    casper.thenOpen(url + 'rss/', function (response) {
+        var content = this.getPageContent(),
+            author = '<author>',
+            postCreator = '<dc:creator><![CDATA[Test User]]>';
+
+        test.assertEqual(response.status, 200, 'Response status should be 200.');
+        test.assert(content.indexOf(author) < 0, 'Author element should not be included');
+        test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
+    });
+}, false);
+
 CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('on');
     casper.thenOpen(url + 'rss/', function (response) {

@@ -6,130 +6,247 @@
 
 var moment      = require('moment'),
     RSS         = require('rss'),
-    _           = require('underscore'),
+    _           = require('lodash'),
     url         = require('url'),
     when        = require('when'),
+    Route       = require('express').Route,
 
     api         = require('../api'),
     config      = require('../config'),
     errors      = require('../errorHandling'),
     filters     = require('../../server/filters'),
-    coreHelpers = require('../helpers'),
 
-    frontendControllers;
+    frontendControllers,
+    // Cache static post permalink regex
+    staticPostPermalink = new Route(null, '/:slug/:edit?');
+
+function getPostPage(options) {
+    return api.settings.read('postsPerPage').then(function (postPP) {
+        var postsPerPage = parseInt(postPP.value, 10);
+
+        // No negative posts per page, must be number
+        if (!isNaN(postsPerPage) && postsPerPage > 0) {
+            options.limit = postsPerPage;
+        }
+
+        return api.posts.browse(options);
+    }).then(function (page) {
+
+        // A bit of a hack for situations with no content.
+        if (page.pages === 0) {
+            page.pages = 1;
+        }
+
+        return page;
+    });
+}
+
+function formatPageResponse(posts, page) {
+    return {
+        posts: posts,
+        pagination: {
+            page: page.page,
+            prev: page.prev,
+            next: page.next,
+            limit: page.limit,
+            total: page.total,
+            pages: page.pages
+        }
+    };
+}
+
+function handleError(next) {
+    return function (err) {
+        var e = new Error(err.message);
+        e.status = err.errorCode;
+        return next(e);
+    };
+}
 
 frontendControllers = {
     'homepage': function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            postsPerPage,
-            options = {};
+            options = {
+                page: pageParam
+            };
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
-            return res.redirect(config.paths().subdir + '/');
+            return res.redirect(config().paths.subdir + '/');
         }
 
-        return api.settings.read('postsPerPage').then(function (postPP) {
-            postsPerPage = parseInt(postPP.value, 10);
-            options.page = pageParam;
-
-            // No negative posts per page, must be number
-            if (!isNaN(postsPerPage) && postsPerPage > 0) {
-                options.limit = postsPerPage;
-            }
-            return;
-        }).then(function () {
-            return api.posts.browse(options);
-        }).then(function (page) {
-            var maxPage = page.pages;
-
-            // A bit of a hack for situations with no content.
-            if (maxPage === 0) {
-                maxPage = 1;
-                page.pages = 1;
-            }
+        return getPostPage(options).then(function (page) {
 
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > maxPage) {
-                return res.redirect(maxPage === 1 ? config.paths().subdir + '/' : (config.paths().subdir + '/page/' + maxPage + '/'));
+            if (pageParam > page.pages) {
+                return res.redirect(page.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.pages + '/'));
             }
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                res.render('index', {posts: posts, pagination: {page: page.page, prev: page.prev, next: page.next, limit: page.limit, total: page.total, pages: page.pages}});
+                res.render('index', formatPageResponse(posts, page));
             });
-        }).otherwise(function (err) {
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
-        });
+        }).otherwise(handleError(next));
+    },
+    'tag': function (req, res, next) {
+        // Parse the page number
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            options = {
+                page: pageParam,
+                tag: req.params.slug
+            };
+
+        // Get url for tag page
+        function tagUrl(tag, page) {
+            var url = config().paths.subdir + '/tag/' + tag + '/';
+
+            if (page && page > 1) {
+                url += 'page/' + page + '/';
+            }
+
+            return url;
+        }
+
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
+            return res.redirect(tagUrl(options.tag));
+        }
+
+        return getPostPage(options).then(function (page) {
+
+            // If page is greater than number of pages we have, redirect to last page
+            if (pageParam > page.pages) {
+                return res.redirect(tagUrl(options.tag, page.pages));
+            }
+
+            // Render the page of posts
+            filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+                api.settings.read('activeTheme').then(function (activeTheme) {
+                    var paths = config().paths.availableThemes[activeTheme.value],
+                        view = paths.hasOwnProperty('tag') ? 'tag' : 'index',
+
+                        // Format data for template
+                        response = _.extend(formatPageResponse(posts, page), {
+                            tag: page.aspect.tag
+                        });
+
+                    res.render(view, response);
+                });
+            });
+        }).otherwise(handleError(next));
     },
     'single': function (req, res, next) {
-        // From route check if a date was parsed
-        // from the regex
-        var dateInSlug = req.params[0] ? true : false;
-        when.join(
-            api.settings.read('permalinks'),
-            api.posts.read({slug: req.params[1]})
-        ).then(function (promises) {
-            var permalink = promises[0].value,
-                post = promises[1];
+        var path = req.path,
+            params,
+            editFormat,
+            usingStaticPermalink = false;
 
-            function render() {
-                // If we're ready to render the page
-                // but the last param is 'edit' then we'll
-                // actually kick you to the edit page.
-                if (req.params[2] && req.params[2] === 'edit') {
-                    return res.redirect(config.paths().subdir + '/ghost/editor/' + post.id + '/');
+        api.settings.read('permalinks').then(function (permalink) {
+            editFormat = permalink.value[permalink.value.length - 1] === '/' ? ':edit?' : '/:edit?';
+
+            // Convert saved permalink into an express Route object
+            permalink = new Route(null, permalink.value + editFormat);
+
+            // Check if the path matches the permalink structure.
+            //
+            // If there are no matches found we then
+            // need to verify it's not a static post,
+            // and test against that permalink structure.
+            if (permalink.match(path) === false) {
+                // If there are still no matches then return.
+                if (staticPostPermalink.match(path) === false) {
+                    // Throw specific error
+                    // to break out of the promise chain.
+                    throw new Error('no match');
                 }
 
-                filters.doFilter('prePostsRender', post).then(function (post) {
-                    api.settings.read('activeTheme').then(function (activeTheme) {
-                        var paths = config.paths().availableThemes[activeTheme.value],
-                            view = post.page && paths.hasOwnProperty('page') ? 'page' : 'post';
-                        res.render(view, {post: post});
-                    });
-                });
+                permalink = staticPostPermalink;
+                usingStaticPermalink = true;
             }
+
+            params = permalink.params;
+
+            // Sanitize params we're going to use to lookup the post.
+            var postLookup = _.pick(permalink.params, 'slug', 'id');
+
+            // Query database to find post
+            return api.posts.read(postLookup);
+        }).then(function (post) {
 
             if (!post) {
                 return next();
             }
 
-            // Check that the date in the URL matches the published date of the post, else 404
-            if (dateInSlug && req.params[0] !== moment(post.published_at).format('YYYY/MM/DD/')) {
+            function render() {
+                // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
+                if (params.edit !== undefined) {
+                    return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
+                }
+                filters.doFilter('prePostsRender', post).then(function (post) {
+                    api.settings.read('activeTheme').then(function (activeTheme) {
+                        var paths = config().paths.availableThemes[activeTheme.value],
+                            view = post.page && paths.hasOwnProperty('page.hbs') ? 'page' : 'post';
+                        res.render(view, {post: post});
+                    });
+                });
+            }
+
+            // If we've checked the path with the static permalink structure
+            // then the post must be a static post.
+            // If it is not then we must return.
+            if (usingStaticPermalink) {
+                if (post.page === 1) {
+                    return render();
+                }
+
                 return next();
             }
 
-            // A page can only be rendered when there is no date in the url.
-            // A post can either be rendered with a date in the url
-            // depending on the permalink setting.
-            // For all other conditions return 404.
-            if (post.page === 1 && dateInSlug === false) {
-                return render();
-            }
+            // If there is any date based paramter in the slug
+            // we will check it against the post published date
+            // to verify it's correct.
+            if (params.year || params.month || params.day) {
+                var slugDate = [],
+                    slugFormat = [];
 
-            if (post.page === 0) {
-                // Handle post rendering
-                if ((permalink === '/:slug/' && dateInSlug === false) ||
-                        (permalink !== '/:slug/' && dateInSlug === true)) {
+                if (params.year) {
+                    slugDate.push(params.year);
+                    slugFormat.push('YYYY');
+                }
+
+                if (params.month) {
+                    slugDate.push(params.month);
+                    slugFormat.push('MM');
+                }
+
+                if (params.day) {
+                    slugDate.push(params.day);
+                    slugFormat.push('DD');
+                }
+
+                slugDate = slugDate.join('/');
+                slugFormat = slugFormat.join('/');
+
+                if (slugDate === moment(post.published_at).format(slugFormat)) {
                     return render();
                 }
+
+                return next();
             }
 
-            next();
-
+            render();
 
         }).otherwise(function (err) {
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
+            // If we've thrown an error message
+            // of 'no match' then we found
+            // no path match.
+            if (err.message === 'no match') {
+                return next();
+            }
+
+            return handleError(next)(err);
         });
-    },
-    'edit': function (req, res, next) {
-        req.params[2] = 'edit';
-        return frontendControllers.single(req, res, next);
     },
     'rss': function (req, res, next) {
         // Initialize RSS
@@ -138,10 +255,10 @@ frontendControllers = {
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/rss/:page/')) {
-            return res.redirect(config.paths().subdir + '/rss/');
+            return res.redirect(config().paths.subdir + '/rss/');
         }
 
-        //needs refact for multi user to not use first user as default
+        // TODO: needs refactor for multi user to not use first user as default
         return when.settle([
             api.users.read({id : 1}),
             api.settings.read('title'),
@@ -152,14 +269,13 @@ frontendControllers = {
                 title = result[1].value.value,
                 description = result[2].value.value,
                 permalinks = result[3].value,
-                siteUrl = config.paths.urlFor('home', null, true),
-                feedUrl =  config.paths.urlFor('rss', null, true);
+                siteUrl = config.urlFor('home', null, true),
+                feedUrl =  config.urlFor('rss', null, true);
 
             feed = new RSS({
                 title: title,
                 description: description,
                 generator: 'Ghost v' + res.locals.version,
-                author: user ? user.name : null,
                 feed_url: feedUrl,
                 site_url: siteUrl,
                 ttl: '60'
@@ -177,7 +293,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect(config.paths().subdir + '/rss/' + maxPage + '/');
+                    return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
                 }
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
@@ -186,9 +302,10 @@ frontendControllers = {
                             item = {
                                 title:  _.escape(post.title),
                                 guid: post.uuid,
-                                url: config.paths.urlFor('post', {post: post, permalinks: permalinks}, true),
+                                url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
-                                categories: _.pluck(post.tags, 'name')
+                                categories: _.pluck(post.tags, 'name'),
+                                author: user ? user.name : null
                             },
                             content = post.html;
 
@@ -216,11 +333,7 @@ frontendControllers = {
                     res.send(feed.xml());
                 });
             });
-        }).otherwise(function (err) {
-            var e = new Error(err.message);
-            e.status = err.errorCode;
-            return next(e);
-        });
+        }).otherwise(handleError(next));
     }
 };
 

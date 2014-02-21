@@ -2,9 +2,10 @@ var Settings,
     ghostBookshelf = require('./base'),
     validator      = ghostBookshelf.validator,
     uuid           = require('node-uuid'),
-    _              = require('underscore'),
+    _              = require('lodash'),
     errors         = require('../errorHandling'),
     when           = require('when'),
+
     defaultSettings;
 
 // For neatness, the defaults file is split into categories.
@@ -32,8 +33,6 @@ defaultSettings = parseDefaultSettings();
 Settings = ghostBookshelf.Model.extend({
 
     tableName: 'settings',
-
-    permittedAttributes: ['id', 'uuid', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'update_by'],
 
     defaults: function () {
         return {

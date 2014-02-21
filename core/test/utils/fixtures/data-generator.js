@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     uuid = require('node-uuid'),
     DataGenerator = {};
 
@@ -62,6 +62,10 @@ DataGenerator.Content = {
         {
             name: "pollo",
             slug: "pollo"
+        },
+        {
+            name: "injection",
+            slug: "injection"
         }
     ],
 
@@ -174,6 +178,13 @@ DataGenerator.forKnex = (function () {
         };
     }
 
+    function createPostsTags(postId, tagId) {
+        return {
+            post_id: postId,
+            tag_id: tagId
+        };
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -188,12 +199,14 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[0]),
         createTag(DataGenerator.Content.tags[1]),
         createTag(DataGenerator.Content.tags[2]),
-        createTag(DataGenerator.Content.tags[3])
+        createTag(DataGenerator.Content.tags[3]),
+        createTag(DataGenerator.Content.tags[4])
     ];
 
     posts_tags = [
         { post_id: 2, tag_id: 2 },
         { post_id: 2, tag_id: 3 },
+        { post_id: 3, tag_id: 2 },
         { post_id: 3, tag_id: 3 },
         { post_id: 4, tag_id: 4 },
         { post_id: 5, tag_id: 5 }
@@ -206,6 +219,7 @@ DataGenerator.forKnex = (function () {
         createUser: createUser,
         createGenericUser: createGenericUser,
         createUserRole: createUserRole,
+        createPostsTags: createPostsTags,
 
         posts: posts,
         tags: tags,

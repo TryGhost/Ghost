@@ -1,5 +1,5 @@
 var config        = require('../config'),
-    _             = require('underscore'),
+    _             = require('lodash'),
     path          = require('path'),
     when          = require('when'),
     api           = require('../api'),
@@ -12,7 +12,6 @@ var config        = require('../config'),
     adminControllers,
     loginSecurity = [];
 
- // TODO: combine path/navClass to single "slug(?)" variable with no prefix
 adminNavbar = {
     content: {
         name: 'Content',
@@ -89,11 +88,11 @@ adminControllers = {
                 req.session.regenerate(function (err) {
                     if (!err) {
                         req.session.user = user.id;
-                        var redirect = config.paths().subdir + '/ghost/';
+                        var redirect = config().paths.subdir + '/ghost/';
                         if (req.body.redirect) {
                             redirect += decodeURIComponent(req.body.redirect);
                         }
-                        // If this IP address successfully logins we
+                        // If this IP address successfully logs in we
                         // can remove it from the array of failed login attempts.
                         loginSecurity = _.reject(loginSecurity, function (ipTime) {
                             return ipTime.ip === remoteAddress;
@@ -165,7 +164,7 @@ adminControllers = {
                         if (req.session.user === undefined) {
                             req.session.user = user.id;
                         }
-                        res.json(200, {redirect: config.paths().subdir + '/ghost/'});
+                        res.json(200, {redirect: config().paths.subdir + '/ghost/'});
                     }
                 });
             });
@@ -207,12 +206,11 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: config.paths().subdir + '/ghost/signin/'});
+                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
 
         }, function failure(error) {
             // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
-            // TODO: It's debatable whether we want to just tell the user we sent the email in this case or not, we are giving away sensitive info here.
             if (error && error.message === 'EmptyResponse') {
                 error.message = "Invalid email address";
             }
@@ -243,7 +241,7 @@ adminControllers = {
             errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
 
             return api.notifications.add(notification).then(function () {
-                res.redirect(config.paths().subdir + '/ghost/forgotten');
+                res.redirect(config().paths.subdir + '/ghost/forgotten');
             });
         });
     },
@@ -261,10 +259,9 @@ adminControllers = {
             };
 
             return api.notifications.add(notification).then(function () {
-                res.json(200, {redirect: config.paths().subdir + '/ghost/signin/'});
+                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
         }).otherwise(function (err) {
-            // TODO: Better error message if we can tell whether the passwords didn't match or something
             res.json(401, {error: err.message});
         });
     },
@@ -279,7 +276,7 @@ adminControllers = {
             };
 
         return api.notifications.add(notification).then(function () {
-            res.redirect(config.paths().subdir + '/ghost/signin/');
+            res.redirect(config().paths.subdir + '/ghost/signin/');
         });
     },
     'index': function (req, res) {
@@ -318,9 +315,7 @@ adminControllers = {
         });
     },
     'settings': function (req, res, next) {
-
-        // TODO: Centralise list/enumeration of settings panes, so we don't
-        // run into trouble in future.
+        // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
         var allowedSections = ['', 'general', 'user'],
             section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
 
@@ -333,7 +328,7 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'settings')
         });
     },
-    'debug': { /* ugly temporary stuff for managing the app before it's properly finished */
+    'debug': {
         index: function (req, res) {
             /*jslint unparam:true*/
             res.render('debug', {

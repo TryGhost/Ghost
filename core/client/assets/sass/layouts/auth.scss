@@ -95,7 +95,8 @@
             @include transition(none);
         }
         
-        &:focus { 
+        &:focus {
+            border: none;
             background: lighten($darkgrey, 15%); 
         }
 
@@ -220,7 +221,8 @@
         }
 
         &:focus { 
-           background: lighten($darkgrey, 15%); 
+            border: none;
+            background: lighten($darkgrey, 15%); 
         }
 
     }
@@ -305,7 +307,8 @@
             max-width: 244px;
         }
         
-        &:focus { 
+        &:focus {
+            border: none;
             background: lighten($darkgrey, 15%); 
         }
 

@@ -1,7 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     when = require('when'),
     sequence = require('when/sequence'),
 
@@ -243,13 +243,13 @@ describe('Post Model', function () {
 
     it('can generate slugs without duplicate hyphens', function (done) {
         var newPost = {
-            title: 'apprehensive  titles  have  too  many  spaces  ',
+            title: 'apprehensive  titles  have  too  many  spaces—and m-dashes  —  –  and also n-dashes  ',
             markdown: 'Test Content 1'
         };
 
         PostModel.add(newPost).then(function (createdPost) {
 
-            createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces');
+            createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
             done();
         }).then(null, done);
@@ -353,6 +353,8 @@ describe('Post Model', function () {
     it('can fetch a paginated set, with various options', function (done) {
         testUtils.insertMorePosts().then(function () {
 
+            return testUtils.insertMorePostsTags();
+        }).then(function () {
             return PostModel.findPage({page: 2});
         }).then(function (paginationResult) {
             paginationResult.page.should.equal(2);
@@ -384,6 +386,43 @@ describe('Post Model', function () {
             return PostModel.findPage({limit: 10, page: 2, status: 'all'});
         }).then(function (paginationResult) {
             paginationResult.pages.should.equal(11);
+
+            // Test tag filter
+            return PostModel.findPage({page: 1, tag: 'bacon'});
+        }).then(function (paginationResult) {
+            paginationResult.page.should.equal(1);
+            paginationResult.limit.should.equal(15);
+            paginationResult.posts.length.should.equal(2);
+            paginationResult.pages.should.equal(1);
+            paginationResult.aspect.tag.name.should.equal('bacon');
+            paginationResult.aspect.tag.slug.should.equal('bacon');
+
+            return PostModel.findPage({page: 1, tag: 'kitchen-sink'});
+        }).then(function (paginationResult) {
+            paginationResult.page.should.equal(1);
+            paginationResult.limit.should.equal(15);
+            paginationResult.posts.length.should.equal(2);
+            paginationResult.pages.should.equal(1);
+            paginationResult.aspect.tag.name.should.equal('kitchen sink');
+            paginationResult.aspect.tag.slug.should.equal('kitchen-sink');
+
+            return PostModel.findPage({page: 1, tag: 'injection'});
+        }).then(function (paginationResult) {
+            paginationResult.page.should.equal(1);
+            paginationResult.limit.should.equal(15);
+            paginationResult.posts.length.should.equal(15);
+            paginationResult.pages.should.equal(2);
+            paginationResult.aspect.tag.name.should.equal('injection');
+            paginationResult.aspect.tag.slug.should.equal('injection');
+
+            return PostModel.findPage({page: 2, tag: 'injection'});
+        }).then(function (paginationResult) {
+            paginationResult.page.should.equal(2);
+            paginationResult.limit.should.equal(15);
+            paginationResult.posts.length.should.equal(9);
+            paginationResult.pages.should.equal(2);
+            paginationResult.aspect.tag.name.should.equal('injection');
+            paginationResult.aspect.tag.slug.should.equal('injection');
 
             done();
         }).then(null, done);

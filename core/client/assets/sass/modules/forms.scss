@@ -45,6 +45,7 @@ form {
     }
 
     p {
+        max-width: 400px;
         color: darken($brown, 5%);
         font-size: 1em;
         margin: 0;
@@ -91,7 +92,7 @@ textarea {
     max-width: 340px;
     min-width: 250px;
     height: auto;
-    min-height: 80px;
+    min-height: 6.5em;
 }
 
 input, select, textarea {
@@ -126,6 +127,12 @@ select {
 
     @include breakpoint(550px) {
         width: 100%;
+    }
+}
+// 'vanilla' CSS hack to specifically target Firefox
+@-moz-document url-prefix() {
+    select {
+        height: auto;
     }
 }
 

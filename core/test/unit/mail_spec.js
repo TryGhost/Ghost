@@ -1,15 +1,15 @@
 /*globals describe, beforeEach, afterEach, it*/
-var testUtils = require('../utils'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
-
-    _ = require("underscore"),
-    cp = require('child_process'),
+var should          = require('should'),
+    sinon           = require('sinon'),
+    when            = require('when'),
+    _               = require("lodash"),
+    cp              = require('child_process'),
+    rewire          = require("rewire"),
+    testUtils       = require('../utils'),
 
     // Stuff we are testing
-    defaultConfig = require('../../../config'),
-    mailer = require('../../server/mail'),
+    mailer          = rewire('../../server/mail'),
+    defaultConfig   = require('../../../config'),
     SMTP,
     SENDMAIL,
     fakeConfig,
@@ -39,6 +39,11 @@ SENDMAIL = {
 };
 
 describe("Mail", function () {
+    var overrideConfig = function (newConfig) {
+        mailer.__set__('config',  sandbox.stub().returns(
+            _.extend({}, defaultConfig, newConfig)
+        ));
+    };
 
     beforeEach(function () {
         // Mock config and settings
@@ -72,7 +77,7 @@ describe("Mail", function () {
     });
 
     it('should setup SMTP transport on initialization', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = SMTP;
+        overrideConfig({mail: SMTP});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
             mailer.transport.transportType.should.eql('SMTP');
@@ -82,7 +87,7 @@ describe("Mail", function () {
     });
 
     it('should setup sendmail transport on initialization', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = SENDMAIL;
+        overrideConfig({mail: SENDMAIL});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
             mailer.transport.transportType.should.eql('SENDMAIL');
@@ -92,7 +97,7 @@ describe("Mail", function () {
     });
 
     it('should fallback to sendmail if no config set', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = null;
+        overrideConfig({mail: null});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
             mailer.transport.transportType.should.eql('SENDMAIL');
@@ -102,7 +107,7 @@ describe("Mail", function () {
     });
 
     it('should fallback to sendmail if config is empty', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = {};
+        overrideConfig({mail: {}});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
             mailer.transport.transportType.should.eql('SENDMAIL');
@@ -112,7 +117,7 @@ describe("Mail", function () {
     });
 
     it('should disable transport if config is empty & sendmail not found', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = {};
+        overrideConfig({mail: {}});
         mailer.detectSendmail.restore();
         sandbox.stub(mailer, "detectSendmail", when.reject);
         mailer.init().then(function () {
@@ -122,7 +127,7 @@ describe("Mail", function () {
     });
 
     it('should disable transport if config is empty & platform is win32', function (done) {
-        fakeConfig[process.env.NODE_ENV].mail = {};
+        overrideConfig({mail: {}});
         mailer.detectSendmail.restore();
         mailer.isWindows.restore();
         sandbox.stub(mailer, 'isWindows', function () {

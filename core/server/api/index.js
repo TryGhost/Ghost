@@ -1,7 +1,7 @@
 // # Ghost Data API
 // Provides access to the data model
 
-var _             = require('underscore'),
+var _             = require('lodash'),
     when          = require('when'),
     config        = require('../config'),
     errors        = require('../errorHandling'),
@@ -17,6 +17,7 @@ var _             = require('underscore'),
 // ## Request Handlers
 
 function cacheInvalidationHeader(req, result) {
+    //TODO: don't set x-cache-invalidate header for drafts
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[4],
@@ -30,7 +31,7 @@ function cacheInvalidationHeader(req, result) {
         } else if (endpoint === 'posts') {
             cacheInvalidate = "/, /page/*, /rss/, /rss/*";
             if (id && jsonResult.slug) {
-                return config.paths.urlForPost(settings, jsonResult).then(function (postUrl) {
+                return config.urlForPost(settings, jsonResult).then(function (postUrl) {
                     return cacheInvalidate + ', ' + postUrl;
                 });
             }

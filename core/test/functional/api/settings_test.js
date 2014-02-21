@@ -1,7 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     request = require('request');
 
 request = request.defaults({jar:true})
@@ -95,6 +95,22 @@ describe('Settings API', function () {
                 putBody.should.exist;
                 putBody.title.should.eql(changedValue);
                 testUtils.API.checkResponse(putBody, 'settings');
+                done();
+            });
+        });
+    });
+
+    it('can\'t edit settings with invalid CSRF token', function (done) {
+        request.get(testUtils.API.getApiURL('settings'), function (error, response, body) {
+            var jsonResponse = JSON.parse(body),
+                changedValue = 'Ghost changed';
+            jsonResponse.should.exist;
+            jsonResponse.title = changedValue;
+
+            request.put({uri: testUtils.API.getApiURL('settings/'),
+                    headers: {'X-CSRF-Token': 'invalid-token'},
+                    json: jsonResponse}, function (error, response, putBody) {
+                response.should.have.status(403);
                 done();
             });
         });

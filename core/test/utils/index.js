@@ -1,6 +1,7 @@
 var knex          = require('../../server/models/base').knex,
     when          = require('when'),
     nodefn        = require('when/node/function'),
+    _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
     migration     = require("../../server/data/migration/"),
@@ -50,6 +51,35 @@ function insertMorePosts(max) {
     return when.all(promises);
 }
 
+function insertMorePostsTags(max) {
+    max = max || 50;
+
+    return when.all([
+        knex('posts').select('id'),
+        knex('tags').select('id', 'name')
+    ]).then(function (results) {
+        var posts = _.pluck(results[0], 'id'),
+            injectionTagId = _.chain(results[1])
+                              .where({name: 'injection'})
+                              .pluck('id')
+                              .value()[0],
+            promises = [],
+            i;
+
+        if (max > posts.length) {
+            throw new Error('Trying to add more posts_tags than the number of posts.');
+        }
+
+        for (i = 0; i < max; i += 1) {
+            promises.push(DataGenerator.forKnex.createPostsTags(posts[i], injectionTagId));
+        }
+
+        promises.push(knex('posts_tags').insert(promises));
+
+        return when.all(promises);
+    });
+}
+
 function insertDefaultUser() {
     var users = [],
         userRoles = [];
@@ -90,6 +120,7 @@ module.exports = {
     insertDefaultFixtures: insertDefaultFixtures,
     insertPosts: insertPosts,
     insertMorePosts: insertMorePosts,
+    insertMorePostsTags: insertMorePostsTags,
     insertDefaultUser: insertDefaultUser,
 
     loadExportFixture: loadExportFixture,

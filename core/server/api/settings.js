@@ -1,4 +1,4 @@
-var _            = require('underscore'),
+var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
     errors       = require('../errorHandling'),
@@ -77,16 +77,21 @@ readSettingsResult = function (result) {
             settings[member.attributes.key] = val;
         }
     })).then(function () {
-        return when(config.paths().availableThemes).then(function (themes) {
+        return when(config().paths.availableThemes).then(function (themes) {
             var themeKeys = Object.keys(themes),
                 res = [],
                 i,
                 item;
             for (i = 0; i < themeKeys.length; i += 1) {
-                //do not include hidden files
-                if (themeKeys[i].indexOf('.') !== 0) {
+                //do not include hidden files or _messages
+                if (themeKeys[i].indexOf('.') !== 0 && themeKeys[i] !== '_messages') {
                     item = {};
                     item.name = themeKeys[i];
+                    if (themes[themeKeys[i]].hasOwnProperty('package.json')) {
+                        item.package = themes[themeKeys[i]]['package.json'];
+                    } else {
+                        item.package = false;
+                    }
                     //data about files currently not used
                     //item.details = themes[themeKeys[i]];
                     if (themeKeys[i] === settings.activeTheme.value) {

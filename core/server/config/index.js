@@ -3,10 +3,93 @@
 // This file itself is a wrapper for the root level config.js file.
 // All other files that need to reference config.js should use this file.
 
-var loader        = require('./loader'),
-    paths         = require('./paths'),
+var path          = require('path'),
+    when          = require('when'),
+    url           = require('url'),
+    _             = require('lodash'),
+    requireTree   = require('../require-tree'),
     theme         = require('./theme'),
-    ghostConfig;
+    configUrl     = require('./url'),
+    ghostConfig   = {},
+    appRoot       = path.resolve(__dirname, '../../../'),
+    corePath      = path.resolve(appRoot, 'core/');
+
+function updateConfig(config) {
+    var localPath,
+        contentPath,
+        subdir;
+
+    // Merge passed in config object onto
+    // the cached ghostConfig object
+    _.merge(ghostConfig, config);
+
+    // Protect against accessing a non-existant object.
+    // This ensures there's always at least a paths object
+    // because it's referenced in multiple places.
+    ghostConfig.paths = ghostConfig.paths || {};
+
+    // Parse local path location
+    if (ghostConfig.url) {
+        localPath = url.parse(ghostConfig.url).path;
+        // Remove trailing slash
+        if (localPath !== '/') {
+            localPath = localPath.replace(/\/$/, '');
+        }
+    }
+
+    subdir = localPath === '/' ? '' : localPath;
+
+    // Allow contentPath to be over-written by passed in config object
+    // Otherwise default to default content path location
+    contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
+
+    _.merge(ghostConfig, {
+        paths: {
+            'appRoot':          appRoot,
+            'subdir':           subdir,
+            'config':           ghostConfig.paths.config || path.join(appRoot, 'config.js'),
+            'configExample':    path.join(appRoot, 'config.example.js'),
+            'corePath':         corePath,
+
+            'contentPath':      contentPath,
+            'themePath':        path.resolve(contentPath, 'themes'),
+            'appPath':          path.resolve(contentPath, 'apps'),
+            'imagesPath':       path.resolve(contentPath, 'images'),
+            'imagesRelPath':    'content/images',
+
+            'adminViews':       path.join(corePath, '/server/views/'),
+            'helperTemplates':  path.join(corePath, '/server/helpers/tpl/'),
+            'exportPath':       path.join(corePath, '/server/data/export/'),
+            'lang':             path.join(corePath, '/shared/lang/'),
+            'debugPath':        subdir + '/ghost/debug/',
+
+            'availableThemes':  ghostConfig.paths.availableThemes || [],
+            'availableApps':    ghostConfig.paths.availableApps || [],
+            'builtScriptPath':  path.join(corePath, 'built/scripts/')
+        }
+    });
+
+    // Also pass config object to
+    // configUrl object to maintain
+    // clean depedency tree
+    configUrl.setConfig(ghostConfig);
+
+    return ghostConfig;
+}
+
+function initConfig(rawConfig) {
+    // Cache the config.js object's environment
+    // object so we can later refer to it.
+    // Note: this is not the entirety of config.js,
+    // just the object appropriate for this NODE_ENV
+    ghostConfig = updateConfig(rawConfig);
+
+    return when.all([requireTree(ghostConfig.paths.themePath), requireTree(ghostConfig.paths.appPath)]).then(function (paths) {
+        ghostConfig.paths.availableThemes = paths[0];
+        ghostConfig.paths.availableApps = paths[1];
+        return ghostConfig;
+    });
+}
 
 // Returns NODE_ENV config object
 function config() {
@@ -14,25 +97,18 @@ function config() {
     // This is currently needed for tests to load config file
     // successfully.  While running application we should never
     // have to directly delegate to the config.js file.
-    return ghostConfig || require(paths().config)[process.env.NODE_ENV];
+    if (_.isEmpty(ghostConfig)) {
+        try {
+            ghostConfig = require(path.resolve(__dirname, '../../../', 'config.js'))[process.env.NODE_ENV] || {};
+        } catch (ignore) {/*jslint sloppy: true */}
+        ghostConfig = updateConfig(ghostConfig);
+    }
+
+    return ghostConfig;
 }
-
-function loadConfig() {
-    return loader().then(function (config) {
-        // Cache the config.js object's environment
-        // object so we can later refer to it.
-        // Note: this is not the entirety of config.js,
-        // just the object appropriate for this NODE_ENV
-        ghostConfig = config;
-
-        // can't load theme settings yet as we don't have the API,
-        // but we can load the paths
-        return paths.update(config.url);
-    });
-}
-
-config.load = loadConfig;
-config.paths = paths;
-config.theme = theme;
 
 module.exports = config;
+module.exports.init = initConfig;
+module.exports.theme = theme;
+module.exports.urlFor = configUrl.urlFor;
+module.exports.urlForPost = configUrl.urlForPost;

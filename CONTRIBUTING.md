@@ -192,25 +192,26 @@ developing Ghost.
 1. Check you have the pre-requisites listed above!
 1. Clone the git repo
 1. cd into the project folder
-1. Run `git submodule update --init`
-1. Run `bundle install`
 1. Run `npm install -g grunt-cli`
 1. Run `npm install`.
-	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install 
+	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - this generates the Bourbon directory, compiles SASS and compiles Handlebars 
-templates
+1. Run `grunt init` from the root - this runs bundler, generates the Bourbon directory, compiles SASS and compiles Handlebars templates
 1. Run `npm start` from the root to start the server.
 
-If something goes wrong, please see the 
+If something goes wrong, please see the
 [troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
 
-Front-end can be located at <http://localhost:2368>, Admin is at <http://localhost:2368/ghost/>.
+### Developer Tips
+Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebar templates, stylesheets and javascripts. Some useful commands include:
+- `grunt dev` => Automatically compile assets in development environment
+- `grunt prod` => Automatically compile assets in production environment
+- `grunt watch` => Automatically compile sass and handlebars
 
-Whist developing you may wish to use **grunt watch** to watch for changes to handlebars and sass and recompile 
-automatically, if you run Ghost in **production** mode, you will need to run **grunt prod** - 
-please see the [Grunt Toolkit docs](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit).
+Addresses for development:
+- Front-end => <http://localhost:2368>
+- Admin => <http://localhost:2368/ghost/>
 
 ### Updating with the latest changes
 

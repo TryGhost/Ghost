@@ -1,6 +1,6 @@
 var cp         = require('child_process'),
     url        = require('url'),
-    _          = require('underscore'),
+    _          = require('lodash'),
     when       = require('when'),
     nodefn     = require('when/node/function'),
     nodemailer = require('nodemailer'),
@@ -16,7 +16,7 @@ function GhostMailer(opts) {
 // *This promise should always resolve to avoid halting Ghost::init*.
 GhostMailer.prototype.init = function () {
     var self = this;
-    if (config().mail && config().mail.transport && config().mail.options) {
+    if (config().mail && config().mail.transport) {
         this.createTransport();
         return when.resolve();
     }
@@ -53,7 +53,7 @@ GhostMailer.prototype.detectSendmail = function () {
 };
 
 GhostMailer.prototype.createTransport = function () {
-    this.transport = nodemailer.createTransport(config().mail.transport, _.clone(config().mail.options));
+    this.transport = nodemailer.createTransport(config().mail.transport, _.clone(config().mail.options) || {});
 };
 
 GhostMailer.prototype.usingSendmail = function () {

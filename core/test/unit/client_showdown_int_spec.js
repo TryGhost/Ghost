@@ -208,13 +208,6 @@ describe("Showdown client side converter", function () {
         });
     });
 
-    it("should auto-link Email", function () {
-        var testPhrase = {input: "info@tryghost.org", output: /^<p><a href=\'mailto:info@tryghost.org\'>info@tryghost.org<\/a><\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
-
-        processedMarkup.should.match(testPhrase.output);
-    });
-
     it("should convert reference format URL", function () {
         var testPhrases = [
                 {
