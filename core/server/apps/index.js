@@ -62,6 +62,12 @@ module.exports = {
                     if (_.contains(installedApps, app)) {
                         return loader.activateAppByName(app).then(function (loadedApp) {
                             return recordLoadedApp(app, loadedApp);
+                        }).otherwise(function (err) {
+                            errors.logError(
+                                err.message || err,
+                                'The app will not be loaded',
+                                'Check with the app creator, or read the app documentation for more details on app requirements'
+                            );
                         });
                     }
 
@@ -70,6 +76,12 @@ module.exports = {
                         return loader.activateAppByName(app);
                     }).then(function (loadedApp) {
                         return recordLoadedApp(app, loadedApp);
+                    }).otherwise(function (err) {
+                        errors.logError(
+                            err.message || err,
+                            'The app will not be loaded',
+                            'Check with the app creator, or read the app documentation for more details on app requirements'
+                        );
                     });
                 });
 

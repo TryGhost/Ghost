@@ -26,12 +26,20 @@ function loadApp(appPath) {
     var sandbox = new AppSandbox();
 
     return sandbox.loadApp(appPath);
+
 }
 
 function getAppByName(name) {
     // Grab the app class to instantiate
-    var AppClass = loadApp(getAppRelativePath(name)),
+    var AppClass,
         app;
+
+    // Attempt to load the app and error if it does not exist
+    try {
+        AppClass = loadApp(getAppRelativePath(name));
+    } catch (e) {
+        throw new Error("Error loading app " + name + "; app directory (/content/apps/" + name + ") does not exist.");
+    }
 
     // Check for an actual class, otherwise just use whatever was returned
     if (_.isFunction(AppClass)) {
