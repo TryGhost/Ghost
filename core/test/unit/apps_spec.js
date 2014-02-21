@@ -9,6 +9,7 @@ var fs           = require('fs'),
     filters      = require('../../server/filters'),
 
     // Stuff we are testing
+    loader     = require('../../server/apps/loader'),
     appProxy   = require('../../server/apps/proxy'),
     AppSandbox = require('../../server/apps/sandbox'),
     AppDependencies = require('../../server/apps/dependencies');
@@ -47,6 +48,7 @@ describe('Apps', function () {
                 add: sandbox.stub()
             }
         };
+
     });
 
     afterEach(function () {
@@ -84,6 +86,7 @@ describe('Apps', function () {
     });
 
     describe('Sandbox', function () {
+
         it('loads apps in a sandbox', function () {
             var appBox = new AppSandbox(),
                 appPath = path.resolve(__dirname, '..', 'utils', 'fixtures', 'app', 'good.js'),
@@ -154,6 +157,30 @@ describe('Apps', function () {
                 };
 
             loadApp.should.throw(/^Unsafe App require[\w\W]*example$/);
+        });
+
+        it('throws a friendly error for a nonexistent app being activated', function () {
+            var appName = 'doesnotexist';
+
+            loader.activateAppByName(appName).then(function (msg) {
+                done(new Error('Activation of nonexistent app did not fail'));
+            }).otherwise(function (err) {
+                err.should.equal('Error loading app ' + appName + '; app directory (/content/apps/' + appName + ') does not exist.');
+                done();
+            });
+
+        });
+
+        it('throws a friendly error for a nonexistent app being installed', function () {
+            var appName = 'doesnotexist';
+
+            loader.installAppByName(appName).then(function (msg) {
+                done(new Error('Installation of nonexistent app did not fail'));
+            }).otherwise(function (err) {
+                err.should.equal('Error loading app ' + appName + '; app directory (/content/apps/' + appName + ') does not exist.');
+                done();
+            });
+
         });
     });
 
