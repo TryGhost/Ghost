@@ -13,8 +13,7 @@ var _              = require('lodash'),
     validation     = require('../data/validation'),
 
     Post,
-    Posts,
-    myTags;
+    Posts;
 
 Post = ghostBookshelf.Model.extend({
 
@@ -47,7 +46,7 @@ Post = ghostBookshelf.Model.extend({
         var self = this;
 
         // keep tags for 'saved' event
-        myTags = this.get('tags');
+        this.myTags = this.get('tags');
 
         ghostBookshelf.Model.prototype.saving.call(this);
 
@@ -89,9 +88,10 @@ Post = ghostBookshelf.Model.extend({
 
     updateTags: function (newPost, attr, options) {
         /*jslint unparam:true*/
+        var self = this;
         options = options || {};
 
-        if (!myTags) {
+        if (!this.myTags) {
             return;
         }
 
@@ -105,7 +105,7 @@ Post = ghostBookshelf.Model.extend({
 
             // First find any tags which have been removed
             _.each(existingTags, function (existingTag) {
-                if (!_.some(myTags, function (newTag) { return newTag.name === existingTag.name; })) {
+                if (!_.some(self.myTags, function (newTag) { return newTag.name === existingTag.name; })) {
                     tagsToDetach.push(existingTag.id);
                 }
             });
@@ -115,7 +115,7 @@ Post = ghostBookshelf.Model.extend({
             }
 
             // Next check if new tags are all exactly the same as what is set on the model
-            _.each(myTags, function (newTag) {
+            _.each(self.myTags, function (newTag) {
                 if (!_.some(existingTags, function (existingTag) { return newTag.name === existingTag.name; })) {
                     // newTag isn't on this post yet
                     tagsToAttach.push(newTag);
