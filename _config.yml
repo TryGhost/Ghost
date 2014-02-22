@@ -5,6 +5,8 @@ markdown: redcarpet
 languages:
     - name: 'English'
       key: 'en'
+    - name: 'Español'
+    - key: 'es'
     - name: '中文'
       key: 'zh'
     - name: '한국의'
@@ -27,6 +29,13 @@ languages:
 port:         4478
 
 translations:
+   es:
+    site_title:   'Ghost Guide'
+    installation: 'Instalación'
+    usage:        'uso'
+    email:        'Email'
+    themes:       'temas'
+    help:         'ayudar'
   zh:
     site_title:   'Ghost使用指南'
     installation: '安装'
