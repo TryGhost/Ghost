@@ -45,6 +45,62 @@ h1:before, h2:before {
     position: relative;
 }
 
+
+/* ==========================================================================
+   Navigation - filling in styles that are not in Ghost's version of
+   bootstrap.css (even though it is v3.0.0) but are in Twitter's version of
+   Bootstrap v3.0.0. This is to get .navbar-right working in the expected
+   manner to enable cross-linking between language versions.
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .navbar-right .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-collapse {
+    width: auto;
+    border-top: 0;
+    box-shadow: none;
+  }
+  .navbar-collapse.collapse {
+    display: block !important;
+    height: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  .navbar-collapse.in {
+    overflow-y: auto;
+  }
+  .navbar-collapse .navbar-nav.navbar-left:first-child {
+    margin-left: -15px;
+  }
+  .navbar-collapse .navbar-nav.navbar-right:last-child {
+    margin-right: -15px;
+  }
+  .navbar-collapse .navbar-text:last-child {
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-left {
+    float: left !important;
+  }
+  .navbar-right {
+    float: right !important;
+  }
+}
+
+/* This can be removed once bootstrap.css is up to date */
+.navbar-nav .caret, .navbar-nav a:hover .caret {
+    border-top-color: inherit;
+    border-bottom-color: inherit;
+}
+
 /* ==========================================================================
    Navigation
    ========================================================================== */
@@ -61,6 +117,13 @@ h1:before, h2:before {
 .navbar-nav > li > a {
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .navbar-brand, .navbar-nav > li > a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
 }
 
 .bs-sidenav li a {
@@ -265,6 +328,10 @@ span.warn {
 
 #global-footer a {
     color: #e2edf2;
+}
+
+#global-footer .caret {
+    border-top-color: #e2edf2;
 }
 
 #global-footer .dropdown {
