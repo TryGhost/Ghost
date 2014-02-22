@@ -330,13 +330,15 @@
                                         });
                                     });
                                 },
-                                text: "Yes"
+                                text: "Delete",
+                                buttonClass: "button-delete"
                             },
                             reject: {
                                 func: function () {
                                     return true;
                                 },
-                                text: "No"
+                                text: "Cancel",
+                                buttonClass: "button"
                             }
                         },
                         type: "action",
