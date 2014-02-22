@@ -8,6 +8,7 @@
 var request    = require('supertest'),
     should     = require('should'),
     moment     = require('moment'),
+    path       = require('path'),
 
     testUtils  = require('../../utils'),
     config     = require('../../../server/config'),
@@ -100,6 +101,47 @@ describe('Frontend Routing', function () {
                 .expect('Cache-Control', cacheRules.hour)
                 .expect(404)
                 .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+    });
+    
+    // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
+    describe('HTTPS', function() {
+        var forkedGhost, request;
+        before(function (done) {
+            var configTestHttps = testUtils.fork.config();
+            configTestHttps.forceAdminSSL = {redirect: false};
+            configTestHttps.urlSSL = 'https://localhost/';
+
+            testUtils.fork.ghost(configTestHttps, 'testhttps')
+                .then(function(child) {
+                    forkedGhost = child;
+                    request = require('supertest');
+                    request = request(configTestHttps.url.replace(/\/$/, ''));
+                }, done)
+                .then(done);
+        });
+        
+        after(function (done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            }
+        });
+        
+        it('should set links to url over non-HTTPS', function(done) {
+            request.get('/')
+                .expect(200)
+                .expect(/\<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
+                .expect(/copyright \<a href="http:\/\/127.0.0.1:2370\/">Ghost\<\/a\>/)
+                .end(doEnd(done));
+        });
+
+        it('should set links to urlSSL over HTTPS', function(done) {
+            request.get('/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200)
+                .expect(/\<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
+                .expect(/copyright \<a href="https:\/\/localhost\/">Ghost\<\/a\>/)
                 .end(doEnd(done));
         });
     });

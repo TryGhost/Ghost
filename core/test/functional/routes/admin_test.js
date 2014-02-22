@@ -48,6 +48,80 @@ describe('Admin Routing', function () {
         // Setup the request object with the correct URL
         request = request(config().url);
     });
+    
+    // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
+    describe('Require HTTPS - no redirect', function() {
+        var forkedGhost, request;
+        before(function (done) {
+            var configTestHttps = testUtils.fork.config();
+            configTestHttps.forceAdminSSL = {redirect: false};
+            configTestHttps.urlSSL = 'https://localhost/';
+
+            testUtils.fork.ghost(configTestHttps, 'testhttps')
+                .then(function(child) {
+                    forkedGhost = child;
+                    request = require('supertest');
+                    request = request(configTestHttps.url.replace(/\/$/, ''));
+                }, done)
+                .then(done);
+        });
+        
+        after(function (done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            }
+        });
+        
+        it('should block admin access over non-HTTPS', function(done) {
+            request.get('/ghost/')
+                .expect(403)
+                .end(done);
+        });
+
+        it('should allow admin access over HTTPS', function(done) {
+            request.get('/ghost/signup/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });    
+
+    describe('Require HTTPS - redirect', function() {
+        var forkedGhost, request;
+        before(function (done) {
+            var configTestHttps = testUtils.fork.config();
+            configTestHttps.forceAdminSSL = {redirect: true};
+            configTestHttps.urlSSL = 'https://localhost/';
+
+            testUtils.fork.ghost(configTestHttps, 'testhttps')
+                .then(function(child) {
+                    forkedGhost = child;
+                    request = require('supertest');
+                    request = request(configTestHttps.url.replace(/\/$/, ''));
+                }, done)
+                .then(done);
+        });
+        
+        after(function (done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            }
+        });
+        
+        it('should redirect admin access over non-HTTPS', function(done) {
+            request.get('/ghost/')
+                .expect('Location', /^https:\/\/localhost\/ghost\//)
+                .expect(301)
+                .end(done);
+        });
+
+        it('should allow admin access over HTTPS', function(done) {
+            request.get('/ghost/signup/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200)
+                .end(done);
+        });
+    });    
 
     describe('Ghost Admin Signup', function () {
         it('should have a session cookie which expires in 12 hours', function (done) {
