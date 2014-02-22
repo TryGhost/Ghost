@@ -8,7 +8,8 @@ var knex          = require('../../server/models/base').knex,
     migration     = require("../../server/data/migration/"),
     Settings      = require('../../server/models/settings').Settings,
     DataGenerator = require('./fixtures/data-generator'),
-    API           = require('./api');
+    API           = require('./api'),
+    fork          = require('./fork');
 
 function initData() {
     return migration.init();
@@ -228,5 +229,7 @@ module.exports = {
     loadExportFixture: loadExportFixture,
 
     DataGenerator: DataGenerator,
-    API: API
+    API: API,
+    
+    fork: fork
 };
