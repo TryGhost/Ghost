@@ -24,7 +24,6 @@ languages:
     - name: 'Português'
       key: 'pt-BR'
 
->>>>>>> upstream/gh-pages
 port:         4478
 
 translations:
