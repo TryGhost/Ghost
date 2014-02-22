@@ -301,8 +301,9 @@ adminControllers = {
         var email = req.body.email;
 
         api.users.generateResetToken(email).then(function (token) {
-            var siteLink = '<a href="' + config().url + '">' + config().url + '</a>',
-                resetUrl = config().url.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
+            var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
+                siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
+                resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
                 resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
                 message = {
                     to: email,
