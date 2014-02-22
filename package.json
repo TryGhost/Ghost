@@ -15,7 +15,6 @@
     },
     "bugs"        : "https://github.com/TryGhost/Ghost/issues",
     "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
-    "private"     : true,
     "licenses"    : [
         {
             "type": "MIT",
