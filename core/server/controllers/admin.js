@@ -316,7 +316,7 @@ adminControllers = {
     },
     'settings': function (req, res, next) {
         // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
-        var allowedSections = ['', 'general', 'user'],
+        var allowedSections = ['', 'general', 'user', 'apps'],
             section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
 
         if (allowedSections.indexOf(section) < 0) {
