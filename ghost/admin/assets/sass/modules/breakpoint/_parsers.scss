@@ -1,0 +1,104 @@
+//////////////////////////////
+// Import Parser Pieces
+//////////////////////////////
+@import "parsers/query";
+@import "parsers/single";
+@import "parsers/double";
+@import "parsers/triple";
+@import "parsers/resolution";
+
+//////////////////////////////
+// General Breakpoint Parser
+//////////////////////////////
+@function breakpoint-parse($query) {
+  $private-breakpoint-context-placeholder: $private-breakpoint-context-placeholder + 1;
+
+  // Set up Media Type
+  $query-print: '';
+
+  $force-all: (($breakpoint-force-media-all == true) and ($breakpoint-default-media == 'all'));
+  $empty-media: true;
+  @if ($force-all == true) or ($breakpoint-default-media != 'all') {
+    // Force the print of the default media type if (force all is true and default media type is all) or (default media type is not all)
+    $query-print: $breakpoint-default-media;
+    $empty-media: false;
+  }
+
+
+  $query-resolution: false;
+
+  $query-holder: breakpoint-parse-query($query);
+
+
+
+  // Loop over each parsed out query and write it to $query-print
+  $first: true;
+
+  @each $feature in $query-holder {
+    $length: length($feature);
+
+    // Parse a single feature
+    @if ($length == 1) {
+      // Feature is currenty a list, grab the actual value
+      $feature: nth($feature, 1);
+
+      // Media Type must by convention be the first item, so it's safe to flat override $query-print, which right now should only be the default media type
+      @if (breakpoint-is-media($feature)) {
+        @if ($force-all == true) or ($feature != 'all') {
+          // Force the print of the default media type if (force all is true and default media type is all) or (default media type is not all)
+          $query-print: $feature;
+          $empty-media: false;
+
+          // Set Context
+          $context-setter: private-breakpoint-set-context(media, $query-print);
+        }
+      }
+      @else {
+        $parsed: breakpoint-parse-single($feature, $empty-media, $first);
+        $query-print: '#{$query-print} #{$parsed}';
+        $first: false;
+      }
+    }
+    // Parse a double feature
+    @else if ($length == 2) {
+      @if (breakpoint-is-resolution($feature) != false) {
+        $query-resolution: $feature;
+      }
+      @else {
+        $parsed: null;
+        // If it's a string/number pair,
+        // we check to see if one is a single-string value,
+        // then we parse it as a normal double
+        $alpha: nth($feature, 1);
+        $beta: nth($feature, 2);
+        @if breakpoint-single-string($alpha) or breakpoint-single-string($beta) {
+          $parsed: breakpoint-parse-single($alpha, $empty-media, $first);
+          $query-print: '#{$query-print} #{$parsed}';
+          $first: false;
+          $parsed: breakpoint-parse-single($beta, $empty-media, $first);
+          $query-print: '#{$query-print} #{$parsed}';
+        }
+        @else {
+          $parsed: breakpoint-parse-double($feature, $empty-media, $first);
+          $query-print: '#{$query-print} #{$parsed}';
+          $first: false;
+        }
+      }
+    }
+    // Parse a triple feature
+    @else if ($length == 3) {
+      $parsed: breakpoint-parse-triple($feature, $empty-media, $first);
+      $query-print: '#{$query-print} #{$parsed}';
+      $first: false;
+    }
+
+  }
+
+  @if ($query-resolution != false) {
+    $query-print: breakpoint-build-resolution($query-print, $query-resolution, $empty-media, $first);
+  }
+
+  // @return 'all';
+
+  @return $query-print;
+}
