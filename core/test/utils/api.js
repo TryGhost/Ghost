@@ -12,7 +12,7 @@ var _ = require('lodash'),
         // TODO: remove databaseVersion, dbHash
         settings: ['databaseVersion', 'dbHash', 'title', 'description', 'email', 'logo', 'cover', 'defaultLang',
             "permalinks", 'postsPerPage', 'forceI18n', 'activeTheme', 'activeApps', 'installedApps',
-            'availableThemes', 'nextUpdateCheck', 'displayUpdateNotification'],
+            'availableThemes', 'availableApps', 'nextUpdateCheck', 'displayUpdateNotification'],
         tag: ['id', 'uuid', 'name', 'slug', 'description', 'parent_id',
             'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
         user: ['id', 'uuid', 'name', 'slug', 'email', 'image', 'cover', 'bio', 'website',
