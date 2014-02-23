@@ -347,6 +347,7 @@ coreHelpers.ghost_script_tags = function () {
 coreHelpers.body_class = function (options) {
     /*jslint unparam:true*/
     var classes = [],
+        post = this.post,
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
@@ -366,9 +367,26 @@ coreHelpers.body_class = function (options) {
         classes.push('page');
     }
 
-    return filters.doFilter('body_class', classes).then(function (classes) {
-        var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
-        return new hbs.handlebars.SafeString(classString.trim());
+    return api.settings.read('activeTheme').then(function (activeTheme) {
+        var paths = config().paths.availableThemes[activeTheme.value],
+            view;
+
+        if (post) {
+            view = template.getThemeViewForPost(paths, post).split('-');
+
+            // If this is a page and we have a custom page template
+            // then we need to modify the class name we inject
+            // e.g. 'page-contact' is outputted as 'page-template-contact'
+            if (view[0] === 'page' && view.length > 1) {
+                view.splice(1, 0, 'template');
+                classes.push(view.join('-'));
+            }
+        }
+
+        return filters.doFilter('body_class', classes).then(function (classes) {
+            var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+            return new hbs.handlebars.SafeString(classString.trim());
+        });
     });
 };
 
