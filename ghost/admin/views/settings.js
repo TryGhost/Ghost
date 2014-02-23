@@ -446,4 +446,70 @@
         }
     });
 
+    // ### Apps page
+    Settings.apps = Settings.Pane.extend({
+        id: "apps",
+
+        events: {
+            'click .js-button-activate': 'activateApp',
+            'click .js-button-deactivate': 'deactivateApp'
+        },
+
+        beforeRender: function () {
+            this.availableApps = this.model.toJSON().availableApps;
+        },
+
+        activateApp: function (event) {
+            var button = $(event.currentTarget);
+
+            button.removeClass('button-add').addClass('button js-button-active').text('Working');
+
+            this.saveStates();
+        },
+
+        deactivateApp: function (event) {
+            var button = $(event.currentTarget);
+
+            button.removeClass('button-delete js-button-active').addClass('button').text('Working');
+
+            this.saveStates();
+        },
+
+        saveStates: function () {
+            var activeButtons = this.$el.find('.js-apps .js-button-active'),
+                toSave = [],
+                self = this;
+
+            _.each(activeButtons, function (app) {
+                toSave.push($(app).data('app'));
+            });
+
+            this.model.save({
+                activeApps: JSON.stringify(toSave)
+            }, {
+                success: this.saveSuccess,
+                error: this.saveError
+            }).then(function () { self.render(); });
+        },
+
+        saveSuccess: function () {
+            Ghost.notifications.addItem({
+                type: 'success',
+                message: 'Active applications updated.',
+                status: 'passive',
+                id: 'success-1100'
+            });
+        },
+
+        saveError: function (xhr) {
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                status: 'passive'
+            });
+        },
+
+        templateName: 'settings/apps'
+    });
+
 }());
