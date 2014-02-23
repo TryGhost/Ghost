@@ -235,6 +235,19 @@ describe('Config', function () {
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog' + postLink);
         });
 
+        it('should return url for a tag when asked for', function () {
+            var testContext = 'tag',
+                testData = {tag: testUtils.DataGenerator.Content.tags[0]};
+
+            configUpdate({url: 'http://my-ghost-blog.com'});
+            config.urlFor(testContext, testData).should.equal('/tag/kitchen-sink/');
+            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/tag/kitchen-sink/');
+
+            configUpdate({url: 'http://my-ghost-blog.com/blog'});
+            config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
+            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
+        });
+
     });
 
     describe('urlForPost', function () {

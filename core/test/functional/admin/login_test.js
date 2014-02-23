@@ -41,7 +41,7 @@ CasperTest.begin("Ghost admin will load login page", 2, function suite(test) {
 CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     casper.start(url + 'ghost/login/', function testRedirect(response) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
-        test.assertUrlMatch(/ghost\/signin\/$/, 'Should be redirected to /signin/.');
+        test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
 }, true);
 

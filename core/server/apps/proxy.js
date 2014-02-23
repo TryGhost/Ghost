@@ -6,12 +6,12 @@ var _           = require('lodash'),
 var proxy = {
 
     filters: {
-        register: filters.registerFilter,
-        unregister: filters.unregisterFilter
+        register: filters.registerFilter.bind(filters),
+        deregister: filters.deregisterFilter.bind(filters)
     },
     helpers: {
-        register: helpers.registerThemeHelper,
-        registerAsync: helpers.registerAsyncThemeHelper
+        register: helpers.registerThemeHelper.bind(helpers),
+        registerAsync: helpers.registerAsyncThemeHelper.bind(helpers)
     },
     api: {
         posts: _.pick(api.posts, 'browse', 'read'),

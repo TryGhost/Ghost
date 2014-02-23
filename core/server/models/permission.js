@@ -1,16 +1,13 @@
 var ghostBookshelf = require('./base'),
     User           = require('./user').User,
     Role           = require('./role').Role,
+
     Permission,
     Permissions;
 
 Permission = ghostBookshelf.Model.extend({
 
     tableName: 'permissions',
-
-    permittedAttributes: ['id', 'uuid', 'name', 'object_type', 'action_type', 'object_id', 'created_at', 'created_by',
-            'updated_at', 'updated_by'],
-
 
     validate: function () {
         // TODO: validate object_type, action_type and object_id

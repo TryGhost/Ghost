@@ -69,7 +69,8 @@
                 <label for="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
                     {{#each availableThemes}}
-                        <option value="{{name}}" {{#if active}}selected{{/if}}>{{name}}</option>
+                        <option value="{{name}}" {{#if active}}selected{{/if}}>{{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}}{{/if}}</option>
+                        {{#unless package}}<script>console.log('Hi! The theme named "{{name}}" does not have a package.json file or it\'s malformed. This will be required in the future. For more info, see http://docs.ghost.org/themes/.');</script>{{/unless}}
                     {{/each}}
                 </select>
                 <p>Select a theme for your blog</p>

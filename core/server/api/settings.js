@@ -83,10 +83,15 @@ readSettingsResult = function (result) {
                 i,
                 item;
             for (i = 0; i < themeKeys.length; i += 1) {
-                //do not include hidden files
-                if (themeKeys[i].indexOf('.') !== 0) {
+                //do not include hidden files or _messages
+                if (themeKeys[i].indexOf('.') !== 0 && themeKeys[i] !== '_messages') {
                     item = {};
                     item.name = themeKeys[i];
+                    if (themes[themeKeys[i]].hasOwnProperty('package.json')) {
+                        item.package = themes[themeKeys[i]]['package.json'];
+                    } else {
+                        item.package = false;
+                    }
                     //data about files currently not used
                     //item.details = themes[themeKeys[i]];
                     if (themeKeys[i] === settings.activeTheme.value) {

@@ -56,12 +56,12 @@ describe('Apps', function () {
     describe('Proxy', function () {
         it('creates a ghost proxy', function () {
             should.exist(appProxy.filters);
-            appProxy.filters.register.should.equal(filters.registerFilter);
-            appProxy.filters.unregister.should.equal(filters.unregisterFilter);
+            should.exist(appProxy.filters.register);
+            should.exist(appProxy.filters.deregister);
 
             should.exist(appProxy.helpers);
-            appProxy.helpers.register.should.equal(helpers.registerThemeHelper);
-            appProxy.helpers.registerAsync.should.equal(helpers.registerAsyncThemeHelper);
+            should.exist(appProxy.helpers.register);
+            should.exist(appProxy.helpers.registerAsync);
 
             should.exist(appProxy.api);
 

@@ -81,7 +81,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -97,7 +98,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -117,7 +119,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     },
 
     // ### Travis
@@ -137,7 +140,8 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2369'
-        }
+        },
+        logging: false
     }
 };
 

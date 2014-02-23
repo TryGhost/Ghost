@@ -192,18 +192,15 @@ developing Ghost.
 1. Check you have the pre-requisites listed above!
 1. Clone the git repo
 1. cd into the project folder
-1. Run `git submodule update --init`
-1. Run `bundle install`
 1. Run `npm install -g grunt-cli`
 1. Run `npm install`.
-	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install 
+	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - this generates the Bourbon directory, compiles SASS and compiles Handlebars 
-templates
+1. Run `grunt init` from the root - this runs bundler, generates the Bourbon directory, compiles SASS and compiles Handlebars templates
 1. Run `npm start` from the root to start the server.
 
-If something goes wrong, please see the 
+If something goes wrong, please see the
 [troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
 
 ### Developer Tips

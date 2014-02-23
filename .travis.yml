@@ -9,10 +9,7 @@ matrix:
   allow_failures:
     - env: DB=pg
 before_install:
-  - git submodule update --init
-  - gem update --system
-  - gem install sass bourbon
-  - npm install -g grunt-cli
+  - gem install bundler
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs
   - git checkout tags/1.1-beta3

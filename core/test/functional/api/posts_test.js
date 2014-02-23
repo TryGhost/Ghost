@@ -247,6 +247,43 @@ describe('Post API', function () {
                 });
             });
         });
+
+        it('can\'t edit a post with invalid CSRF token', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body);
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': 'invalid-token'},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(403);
+                    done();
+                });
+            });
+        });
+
+        it('published_at = null', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body),
+                    changedValue = 'My new Title';
+                jsonResponse.should.exist;
+                jsonResponse.title = changedValue;
+                jsonResponse.published_at = null;
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': csrfToken},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(200);
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.should.be.json;
+                    putBody.should.exist;
+                    putBody.title.should.eql(changedValue);
+                    if (_.isEmpty(putBody.published_at)) {
+                        should.fail('null', 'valid date', 'publish_at should not be empty');
+                        done();
+                    }
+                    testUtils.API.checkResponse(putBody, 'post');
+                    done();
+                });
+            });
+        });
     });
 
     // ## delete

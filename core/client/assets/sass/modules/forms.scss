@@ -129,6 +129,12 @@ select {
         width: 100%;
     }
 }
+// 'vanilla' CSS hack to specifically target Firefox
+@-moz-document url-prefix() {
+    select {
+        height: auto;
+    }
+}
 
 .form-group {
     position: relative;

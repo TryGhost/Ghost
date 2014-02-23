@@ -24,7 +24,7 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 
 For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our forum](http://ghost.org/forum/).
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.***
+1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
    **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers).**
 1. Create a new directory where you would like to run the code, and unzip the package to that location.
@@ -45,6 +45,8 @@ If you clone the GitHub repository, you will need to build a number of assets, s
 Full instructions can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
 
 Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+
+If you want to use [Ghost as a NPM module there is a Wiki entry](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-a-NPM-module) where you can find instructions on how to get set up.
 
 ### Updating with the latest changes
 
