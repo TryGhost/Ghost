@@ -3,7 +3,7 @@
 
 Ghost-UI is the user interface framework which is used to build the [Ghost](http://ghost.org) blogging platform, created and maintained by a [passionate group](http://github.com/TryGhost/Ghost-UI/contributors) of designers and front-end developers with the support and involvement of the Ghost community. It is structurally based on the [Bootstrap](http://getbootstrap.com) framework.
 
-To get started, check out <http://ui.ghost.org>!
+***Note: This repository is currently a reasonably broken work in progress. It's brand new, and we're just getting everything set up for the first time.***
 
 
 ## Table of Contents
