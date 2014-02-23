@@ -1,0 +1,181 @@
+/* =============================================================================
+   Plugins
+   ============================================================================= */
+
+.settings {
+
+    .plugin-section {
+        padding-bottom: 20px;
+    }
+
+    .plugin-section-header {
+        h3 {
+            margin: 15px 0;
+            font-size: 1.1em;
+            font-weight: normal;
+            color: $brown;
+        }
+    }
+
+    .plugin-section-footer {
+        text-align: right;
+    }
+
+    .button-update-all {
+        @include icon($i-lightning, 1em, #FFC125) {
+            margin-right: 5px;
+        };
+    }
+
+    .button-cancel {
+        @include icon($i-x, 1em, #fff) {
+            margin-right: 5px;
+        };
+    }
+
+    .plugin-section-table {
+        margin-top: 5px;
+
+        tbody > tr:nth-child(odd) > td {
+            background: none;
+        }
+
+        .plugin-section-item {
+
+            &.inactive {
+                .plugin-meta {
+                    opacity: 0.4;
+                }
+
+                td:last-child {
+                    .plugin-meta {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            td {
+                padding: 20px 0;
+                border-bottom:$lightbrown 1px solid;
+
+                &:first-child {
+                    padding-left: 0px;
+                    border-top:$lightbrown 1px solid;
+
+                    .plugin-meta {
+                        padding: 0px;
+                        width: 75%;
+                        border-left: none;
+                        text-align: left;
+                    }
+                }
+
+                &:last-child {
+                    .plugin-meta {
+                        padding: 0px;
+                        text-align: right;
+                    }
+                }
+            }
+        }
+
+        .plugin-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            background: #FFC125;
+            border-radius: 5px;
+            vertical-align: middle;
+
+            img {
+                width: 100%;
+            }
+        }
+
+        .plugin-meta {
+            @include box-sizing(border-box);
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            padding: 0 20px;
+            vertical-align: middle;
+            border-left: $lightbrown 1px solid;
+            text-align: center;
+        }
+
+        .plugin-info {
+            display: block;
+            color: lighten($grey, 5%);
+            font-size: 1.2em;
+            font-weight: normal;
+            vertical-align: top;
+        }
+
+        .plugin-title {
+            color: $grey;
+        }
+
+        .plugin-sub-info {
+            display: block;
+            color: $midgrey;
+        }
+
+        .plugin-download-progress {
+            position: relative;
+            display: block;
+            height: 6px;
+            margin-top: 10px;
+            background: $lightbrown;
+            border-radius: 3px;
+
+            > span {
+                position: absolute;
+                left: 0;
+                top: 0;
+                content: "";
+                height: 100%;
+                background-color: $blue;
+                border-radius: 3px;
+            }
+        }
+
+        .rating {
+
+            unicode-bidi: bidi-override;
+            text-align: center;
+
+            > span {
+                display: inline-block;
+                position: relative;
+                width: 1.1em;
+                height: 1.1em;
+                font-size: 0.8em;
+
+                &:before {
+                    content: "\2605";
+                    position: absolute;
+                    left: 0;
+                    opacity: 0.5;
+                }
+
+                &.active {
+                    &:before {
+                        content: "\2605";
+                        opacity: 1;
+                    }
+                }
+            }
+
+        }
+
+        .plugin-settings-icon {
+            display: block;
+            margin-top: 9px;
+            font-size: 1.4em;
+            @include icon($i-settings, 1em, $grey);
+        }
+
+    } //.plugin-section-table
+
+} //.settings
