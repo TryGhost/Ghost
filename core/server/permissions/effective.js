@@ -1,5 +1,4 @@
 var _ = require('lodash'),
-    when = require('when'),
     Models = require('../models'),
     errors = require('../errorHandling'),
     User = Models.User,
