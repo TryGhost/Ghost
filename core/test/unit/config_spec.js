@@ -135,7 +135,7 @@ describe('Config', function () {
         });
 
         it('should allow specific properties to be user defined', function () {
-            var contentPath = config().paths.appRoot + '/otherContent/',
+            var contentPath = path.join(config().paths.appRoot, 'otherContent', '/'),
                 configFile = 'configFileDanceParty.js';
 
             configUpdate({
