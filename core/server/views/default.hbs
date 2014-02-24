@@ -29,9 +29,8 @@
 
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700">
     <link rel="stylesheet" href="{{asset "css/screen.css" ghost="true"}}">
-    {{{block "pageStyles"}}}
 </head>
-    <body class="{{bodyClass}}{{update_notification classOnly="true"}}">
+<body class="{{bodyClass}}{{update_notification classOnly="true"}}">
     {{#unless hideNavbar}}
         {{> navbar}}
     {{/unless}}
@@ -46,12 +45,9 @@
         {{{body}}}
     </main>
 
-    <div id="modal-container">
-    </div>
+    <div id="modal-container"></div>
     <div class="modal-background fade"></div>
 
     {{{ghost_script_tags}}}
-
-    {{{block "bodyScripts"}}}
 </body>
 </html>
