@@ -15,6 +15,7 @@ var testUtils = require('../utils'),
     Importer000 = require('../../server/data/import/000'),
     Importer001 = require('../../server/data/import/001'),
     Importer002 = require('../../server/data/import/002'),
+    Importer003 = require('../../server/data/import/003'),
     fixtures = require('../../server/data/fixtures'),
     Settings = require('../../server/models/settings').Settings;
 
@@ -74,6 +75,21 @@ describe("Import", function () {
             fakeData = { test: true };
 
         importer("002", fakeData).then(function () {
+            importStub.calledWith(fakeData).should.equal(true);
+
+            importStub.restore();
+
+            done();
+        }).then(null, done);
+    });
+
+    it("resolves 003", function (done) {
+        var importStub = sandbox.stub(Importer003, "importData", function () {
+                return when.resolve();
+            }),
+            fakeData = { test: true };
+
+        importer("003", fakeData).then(function () {
             importStub.calledWith(fakeData).should.equal(true);
 
             importStub.restore();
@@ -336,7 +352,7 @@ describe("Import", function () {
     });
 
     describe("002", function () {
-        should.exist(Importer001);
+        should.exist(Importer002);
 
         beforeEach(function (done) {
             // migrate to current version
@@ -518,6 +534,55 @@ describe("Import", function () {
                     done();
                 });
 
+            }).then(null, done);
+        });
+    });
+
+    describe("003", function () {
+        should.exist(Importer003);
+
+        beforeEach(function (done) {
+            // migrate to current version
+            migration.migrateUp().then(function () {
+                // Load the fixtures
+                return fixtures.populateFixtures();
+            }).then(function () {
+                    // Initialise the default settings
+                    return Settings.populateDefaults();
+                }).then(function () {
+                    return testUtils.insertDefaultUser();
+                }).then(function () {
+                    done();
+                }).then(null, done);
+        });
+
+        it("safely imports data from 003", function (done) {
+            var exportData;
+
+            testUtils.loadExportFixture('export-003').then(function (exported) {
+                exportData = exported;
+                return importer("003", exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return when.all([
+                    knex("apps").select(),
+                    knex("app_settings").select()
+                ]);
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                importedData.length.should.equal(2, 'Did not get data successfully');
+
+                var apps = importedData[0],
+                    app_settings = importedData[1];
+
+                // test apps
+                apps.length.should.equal(exportData.data.apps.length, 'imported apps');
+
+                // test app settings
+                // app_settings.length.should.equal(exportData.data.app_settings.length, 'imported app settings');
+
+                done();
             }).then(null, done);
         });
     });

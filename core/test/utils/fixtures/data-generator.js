@@ -113,6 +113,30 @@ DataGenerator.Content = {
         {
             name: 'Hemingway'
         }
+    ],
+
+    app_fields: [
+        {
+            key: 'count',
+            value: '120',
+            type: 'number'
+        },
+        {
+            key: 'words',
+            value: '512',
+            type: 'number'
+        }
+    ],
+
+    app_settings: [
+        {
+            key: 'color',
+            value: 'ghosty'
+        },
+        {
+            key: 'setting',
+            value: 'value'
+        }
     ]
 };
 
@@ -120,7 +144,9 @@ DataGenerator.forKnex = (function () {
 
     var posts,
         tags,
-        posts_tags;
+        posts_tags,
+        apps,
+        app_fields;
 
     function createPost(overrides) {
         return _.defaults(overrides, {
@@ -205,6 +231,25 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createAppField(overrides) {
+        return _.defaults(overrides, {
+            uuid: uuid.v4(),
+            created_by: 1,
+            created_at: new Date(),
+            app_id: 1,
+            relatable_id: 1,
+            relatable_type: 'posts'
+        });
+    }
+
+    function createAppSetting(overrides) {
+        return _.defaults(overrides, {
+            uuid: uuid.v4(),
+            created_by: 1,
+            created_at: new Date()
+        });
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -232,6 +277,17 @@ DataGenerator.forKnex = (function () {
         { post_id: 5, tag_id: 5 }
     ];
 
+    apps = [
+        createApp(DataGenerator.Content.apps[0]),
+        createApp(DataGenerator.Content.apps[1]),
+        createApp(DataGenerator.Content.apps[2])
+    ];
+
+    app_fields = [
+        createAppField(DataGenerator.Content.app_fields[0]),
+        createAppField(DataGenerator.Content.app_fields[1])
+    ];
+
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
@@ -241,10 +297,14 @@ DataGenerator.forKnex = (function () {
         createUserRole: createUserRole,
         createPostsTags: createPostsTags,
         createApp: createApp,
+        createAppField: createAppField,
+        createAppSetting: createAppSetting,
 
         posts: posts,
         tags: tags,
-        posts_tags: posts_tags
+        posts_tags: posts_tags,
+        apps: apps,
+        app_fields: app_fields
     };
 
 }());
