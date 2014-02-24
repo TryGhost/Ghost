@@ -115,6 +115,35 @@ var db = {
             id: {type: 'increments', nullable: false, primary: true},
             post_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'posts'},
             tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'tags'}
+        },
+        app_settings: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            key: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            value: {type: 'text', maxlength: 65535, nullable: true},
+            owner: {type: 'string', maxlength: 150, nullable: false},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
+        },
+        app_fields: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            key: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            value: {type: 'text', maxlength: 65535, nullable: true},
+            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'html'},
+            owner: {type: 'string', maxlength: 150, nullable: false},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
+        },
+        app_fields_relations: {
+            id: {type: 'increments', nullable: false, primary: true},
+            relatable_id: {type: 'integer', nullable: false, unsigned: true},
+            relatable_type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'posts'},
+            app_fields_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'app_fields'}
         }
     };
 
