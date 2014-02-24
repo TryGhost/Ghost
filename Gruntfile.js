@@ -15,34 +15,17 @@ var path           = require('path'),
 
     // ## Build File Patterns
     // a list of files and paterns to process and exclude when running builds & releases
-    buildGlob = [
-        '**',
-        '!docs/**',
-        '!_site/**',
-        '!content/images/**',
-        'content/images/README.md',
-        '!content/themes/**',
-        'content/themes/casper/**',
-        '!content/apps/**',
-        'content/apps/README.md',
-        '!node_modules/**',
-        '!core/test/**',
-        '!core/client/assets/sass/**',
-        '!core/server/data/export/exported*',
-        '!**/*.db*',
-        '!*.db*',
-        '!.sass*',
-        '!.af*',
-        '!.git*',
-        '!.groc*',
-        '!*.iml',
-        '!config.js',
-        '!CONTRIBUTING.md',
-        '!SECURITY.md',
-        '!.travis.yml',
-        '!Gemfile*',
-        '!*.html'
-    ],
+    // It is taken from the .npmignore file and all patterns are inverted as the .npmignore
+    // file defines what to ignore, whereas we want to define what to include.
+    buildGlob = (function () {
+        /*jslint stupid:true */
+        return fs.readFileSync('.npmignore', {encoding: 'utf8'}).split('\n').map(function (pattern) {
+            if (pattern[0] === '!') {
+                return pattern.substr(1);
+            }
+            return '!' + pattern;
+        });
+    }()),
 
     // ## Grunt configuration
 
