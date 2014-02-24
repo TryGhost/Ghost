@@ -6,6 +6,10 @@
                     <label for="url">URL</label>
                 </td>
                 <td class="post-setting-field">
+                    <!-- ngModel is a built in Angular directive which lets you define
+                    two way data-binding between HTML and data in a controller.
+                    ngChange is another built in angular directive that allows you
+                    to define what function should be called when the input value changes. -->
                     <input id="url" class="post-setting-slug" type="text" placeholder="" value=""
                         ng-model="post.slug" ng-change="savePost()" />
                 </td>
