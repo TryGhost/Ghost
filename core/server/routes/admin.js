@@ -26,24 +26,24 @@ module.exports = function (server) {
         res.redirect(301, subdir + '/ghost/signin/');
     });
 
-    server.get('/ghost/signout/', admin.logout);
-    server.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.login);
+    server.get('/ghost/signout/', admin.signout);
+    server.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.signin);
+    server.post('/ghost/signin/', admin.doSignin);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
+    server.post('/ghost/signup/', admin.doSignup);
     server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
-    server.post('/ghost/forgotten/', admin.generateResetToken);
+    server.post('/ghost/forgotten/', admin.doForgotten);
     server.get('/ghost/reset/:token', admin.reset);
-    server.post('/ghost/reset/:token', admin.resetPassword);
-    server.post('/ghost/signin/', admin.auth);
-    server.post('/ghost/signup/', admin.doRegister);
+    server.post('/ghost/reset/:token', admin.doReset);
+    server.post('/ghost/changepw/', admin.doChangePassword);
 
-    server.post('/ghost/changepw/', admin.changepw);
     server.get('/ghost/editor(/:id)/', admin.editor);
     server.get('/ghost/editor/', admin.editor);
     server.get('/ghost/content/', admin.content);
     server.get('/ghost/settings*', admin.settings);
     server.get('/ghost/debug/', admin.debug.index);
 
-    server.post('/ghost/upload/', middleware.busboy, admin.uploader);
+    server.post('/ghost/upload/', middleware.busboy, admin.upload);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     server.get(/\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {

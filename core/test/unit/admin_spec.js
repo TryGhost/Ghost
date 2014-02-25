@@ -9,7 +9,7 @@ var fs      = require('fs-extra'),
     admin = require('../../server/controllers/admin');
 
 describe('Admin Controller', function () {
-    describe('uploader', function () {
+    describe('upload', function () {
 
         var req, res, store;
 
@@ -43,7 +43,7 @@ describe('Admin Controller', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.FILE';
                 req.files.uploadimage.type = 'application/octet-stream';
-                admin.uploader(req, res);
+                admin.upload(req, res);
                 res.send.calledOnce.should.be.true;
                 res.send.args[0][0].should.equal(415);
                 res.send.args[0][1].should.equal('Unsupported Media Type');
@@ -55,7 +55,7 @@ describe('Admin Controller', function () {
                 res.send = sinon.stub();
                 req.files.uploadimage.name = 'INVALID.jpg';
                 req.files.uploadimage.type = 'application/octet-stream';
-                admin.uploader(req, res);
+                admin.upload(req, res);
                 res.send.calledOnce.should.be.true;
                 res.send.args[0][0].should.equal(415);
                 res.send.args[0][1].should.equal('Unsupported Media Type');
@@ -80,7 +80,7 @@ describe('Admin Controller', function () {
                     return done();
                 });
 
-                admin.uploader(req, res);
+                admin.upload(req, res);
             });
 
             it('cannot upload jpg with incorrect extension', function (done) {
@@ -90,7 +90,7 @@ describe('Admin Controller', function () {
                     return done();
                 });
 
-                admin.uploader(req, res);
+                admin.upload(req, res);
             });
 
             it('can upload png', function (done) {
@@ -101,7 +101,7 @@ describe('Admin Controller', function () {
                     return done();
                 });
 
-                admin.uploader(req, res);
+                admin.upload(req, res);
             });
 
             it('can upload gif', function (done) {
@@ -112,7 +112,7 @@ describe('Admin Controller', function () {
                     return done();
                 });
 
-                admin.uploader(req, res);
+                admin.upload(req, res);
             });
 
             it('should send correct url', function (done) {
@@ -121,7 +121,7 @@ describe('Admin Controller', function () {
                     return done();
                 });
 
-                admin.uploader(req, res);
+                admin.upload(req, res);
             });
         });
     });
