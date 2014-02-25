@@ -1,6 +1,6 @@
 /*globals casper, __utils__, url */
 
-CasperTest.begin("Settings screen is correct", 15, function suite(test) {
+CasperTest.begin("Settings screen is correct", 18, function suite(test) {
     casper.thenOpen(url + "ghost/settings/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
@@ -10,6 +10,9 @@ CasperTest.begin("Settings screen is correct", 15, function suite(test) {
         test.assertExists(".wrapper", "Settings main view is present");
         test.assertExists(".settings-sidebar", "Settings sidebar view is present");
         test.assertExists(".settings-menu", "Settings menu is present");
+        test.assertExists(".settings-menu .general", "General tab is present");
+        test.assertExists(".settings-menu .users", "Users tab is present");
+        test.assertExists(".settings-menu .apps", "Apps is present");
         test.assertExists(".wrapper", "Settings main view is present");
         test.assertExists(".settings-content", "Settings content view is present");
         test.assertEval(function testGeneralIsActive() {
