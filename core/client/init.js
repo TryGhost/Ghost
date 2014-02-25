@@ -85,5 +85,5 @@
 
     window.Ghost = Ghost;
 
-    window.addEventListener("load", Ghost.init, false);
+    // window.addEventListener("load", Ghost.init, false);
 }());

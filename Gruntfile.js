@@ -63,7 +63,8 @@ var path           = require('path'),
                         'core/client/helpers/*.js',
                         'core/client/models/*.js',
                         'core/client/tpl/*.js',
-                        'core/client/views/*.js'
+                        'core/client/views/*.js',
+                        'core/client/marionette/**/*.js'
                     ],
                     tasks: ['concat']
                 },
@@ -389,7 +390,10 @@ var path           = require('path'),
                             'core/client/assets/vendor/to-title-case.js',
                             'core/client/assets/vendor/packery.pkgd.min.js',
                             'core/client/assets/vendor/fastclick.js',
-                            'core/client/assets/vendor/nprogress.js'
+                            'core/client/assets/vendor/nprogress.js',
+                            'core/client/assets/vendor/marionette.js',
+                            'core/client/marionette/app.js',
+                            'core/client/marionette/**/*.js'
                         ],
 
                         'core/built/scripts/helpers.js': [
