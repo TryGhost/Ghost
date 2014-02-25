@@ -43,7 +43,80 @@ function setSelected(list, name) {
 }
 
 adminControllers = {
-    'uploader': function (req, res) {
+    // Route: index
+    // Path: /ghost/
+    // Method: GET
+    'index': function (req, res) {
+        /*jslint unparam:true*/
+        function renderIndex() {
+            res.render('content', {
+                bodyClass: 'manage',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
+        }
+
+        when.join(
+            updateCheck(res),
+            when(renderIndex())
+            // an error here should just get logged
+        ).otherwise(errors.logError);
+    },
+    'content': function (req, res) {
+        /*jslint unparam:true*/
+        res.render('content', {
+            bodyClass: 'manage',
+            adminNav: setSelected(adminNavbar, 'content')
+        });
+    },
+    // Route: editor
+    // Path: /ghost/editor(/:id)?/
+    // Method: GET
+    'editor': function (req, res) {
+        if (req.params.id !== undefined) {
+            res.render('editor', {
+                bodyClass: 'editor',
+                adminNav: setSelected(adminNavbar, 'content')
+            });
+        } else {
+            res.render('editor', {
+                bodyClass: 'editor',
+                adminNav: setSelected(adminNavbar, 'add')
+            });
+        }
+    },
+    // Route: settings
+    // path: /ghost/settings/(*/)?
+    // Method: GET
+    'settings': function (req, res, next) {
+        // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
+        var allowedSections = ['', 'general', 'user'],
+            section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
+
+        if (allowedSections.indexOf(section) < 0) {
+            return next();
+        }
+
+        res.render('settings', {
+            bodyClass: 'settings',
+            adminNav: setSelected(adminNavbar, 'settings')
+        });
+    },
+    // Route: debug
+    // path: /ghost/debug/
+    // Method: GET
+    'debug': {
+        index: function (req, res) {
+            /*jslint unparam:true*/
+            res.render('debug', {
+                bodyClass: 'settings',
+                adminNav: setSelected(adminNavbar, 'settings')
+            });
+        }
+    },
+    // Route: upload
+    // Path: /ghost/upload/
+    // Method: POST
+    'upload': function (req, res) {
         var type = req.files.uploadimage.type,
             ext = path.extname(req.files.uploadimage.name).toLowerCase(),
             store = storage.get_storage();
@@ -63,7 +136,27 @@ adminControllers = {
                 return res.send(500, e.message);
             });
     },
-    'login': function (req, res) {
+    // Route: signout
+    // Path: /ghost/signout/
+    // Method: GET
+    'signout': function (req, res) {
+        req.session.destroy();
+
+        var notification = {
+            type: 'success',
+            message: 'You were successfully signed out',
+            status: 'passive',
+            id: 'successlogout'
+        };
+
+        return api.notifications.add(notification).then(function () {
+            res.redirect(config().paths.subdir + '/ghost/signin/');
+        });
+    },
+    // Route: signin
+    // Path: /ghost/signin/
+    // Method: GET
+    'signin': function (req, res) {
         /*jslint unparam:true*/
         res.render('login', {
             bodyClass: 'ghost-login',
@@ -71,7 +164,10 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
-    'auth': function (req, res) {
+    // Route: doSignin
+    // Path: /ghost/signin/
+    // Method: POST
+    'doSignin': function (req, res) {
         var currentTime = process.hrtime()[0],
             remoteAddress = req.connection.remoteAddress,
             denied = '';
@@ -107,18 +203,9 @@ adminControllers = {
             res.json(401, {error: 'Slow down, there are way too many login attempts!'});
         }
     },
-    'changepw': function (req, res) {
-        return api.users.changePassword({
-            currentUser: req.session.user,
-            oldpw: req.body.password,
-            newpw: req.body.newpassword,
-            ne2pw: req.body.ne2password
-        }).then(function () {
-            res.json(200, {msg: 'Password changed successfully'});
-        }, function (error) {
-            res.send(401, {error: error.message});
-        });
-    },
+    // Route: signup
+    // Path: /ghost/signup/
+    // Method: GET
     'signup': function (req, res) {
         /*jslint unparam:true*/
         res.render('signup', {
@@ -127,7 +214,10 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
-    'doRegister': function (req, res) {
+    // Route: doSignup
+    // Path: /ghost/signup/
+    // Method: POST
+    'doSignup': function (req, res) {
         var name = req.body.name,
             email = req.body.email,
             password = req.body.password;
@@ -172,6 +262,9 @@ adminControllers = {
             res.json(401, {error: error.message});
         });
     },
+    // Route: forgotten
+    // Path: /ghost/forgotten/
+    // Method: GET
     'forgotten': function (req, res) {
         /*jslint unparam:true*/
         res.render('forgotten', {
@@ -180,7 +273,10 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
-    'generateResetToken': function (req, res) {
+    // Route: doForgotten
+    // Path: /ghost/forgotten/
+    // Method: POST
+    'doForgotten': function (req, res) {
         var email = req.body.email;
 
         api.users.generateResetToken(email).then(function (token) {
@@ -218,6 +314,9 @@ adminControllers = {
             res.json(401, {error: error.message});
         });
     },
+    // Route: reset
+    // Path: /ghost/reset/:token
+    // Method: GET
     'reset': function (req, res) {
         // Validate the request token
         var token = req.params.token;
@@ -245,7 +344,10 @@ adminControllers = {
             });
         });
     },
-    'resetPassword': function (req, res) {
+    // Route: doReset
+    // Path: /ghost/reset/:token
+    // Method: POST
+    'doReset': function (req, res) {
         var token = req.params.token,
             newPassword = req.param('newpassword'),
             ne2Password = req.param('ne2password');
@@ -265,77 +367,20 @@ adminControllers = {
             res.json(401, {error: err.message});
         });
     },
-    'logout': function (req, res) {
-        req.session.destroy();
-
-        var notification = {
-                type: 'success',
-                message: 'You were successfully signed out',
-                status: 'passive',
-                id: 'successlogout'
-            };
-
-        return api.notifications.add(notification).then(function () {
-            res.redirect(config().paths.subdir + '/ghost/signin/');
+    // Route: doChangePassword
+    // Path: /ghost/changepw/
+    // Method: POST
+    'doChangePassword': function (req, res) {
+        return api.users.changePassword({
+            currentUser: req.session.user,
+            oldpw: req.body.password,
+            newpw: req.body.newpassword,
+            ne2pw: req.body.ne2password
+        }).then(function () {
+            res.json(200, {msg: 'Password changed successfully'});
+        }, function (error) {
+            res.send(401, {error: error.message});
         });
-    },
-    'index': function (req, res) {
-        /*jslint unparam:true*/
-        function renderIndex() {
-            res.render('content', {
-                bodyClass: 'manage',
-                adminNav: setSelected(adminNavbar, 'content')
-            });
-        }
-
-        when.join(
-            updateCheck(res),
-            when(renderIndex())
-        // an error here should just get logged
-        ).otherwise(errors.logError);
-    },
-    'editor': function (req, res) {
-        if (req.params.id !== undefined) {
-            res.render('editor', {
-                bodyClass: 'editor',
-                adminNav: setSelected(adminNavbar, 'content')
-            });
-        } else {
-            res.render('editor', {
-                bodyClass: 'editor',
-                adminNav: setSelected(adminNavbar, 'add')
-            });
-        }
-    },
-    'content': function (req, res) {
-        /*jslint unparam:true*/
-        res.render('content', {
-            bodyClass: 'manage',
-            adminNav: setSelected(adminNavbar, 'content')
-        });
-    },
-    'settings': function (req, res, next) {
-        // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
-        var allowedSections = ['', 'general', 'user'],
-            section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
-
-        if (allowedSections.indexOf(section) < 0) {
-            return next();
-        }
-
-        res.render('settings', {
-            bodyClass: 'settings',
-            adminNav: setSelected(adminNavbar, 'settings')
-        });
-    },
-    'debug': {
-        index: function (req, res) {
-            /*jslint unparam:true*/
-            res.render('debug', {
-                bodyClass: 'settings',
-                adminNav: setSelected(adminNavbar, 'settings')
-            });
-        }
     }
 };
 
