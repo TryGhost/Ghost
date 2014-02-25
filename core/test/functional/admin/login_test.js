@@ -31,10 +31,19 @@ CasperTest.begin('Ensure a User is Registered', 2, function suite(test) {
     });
 }, true);
 
-CasperTest.begin("Ghost admin will load login page", 2, function suite(test) {
+CasperTest.begin("Ghost admin will load login page", 3, function suite(test) {
     casper.thenOpen(url + "ghost", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
         test.assertUrlMatch(/ghost\/signin\/$/, 'We should be presented with the signin page.');
+
+        casper.then(function testLink() {
+            var link = this.evaluate(function (selector) {
+                return document.querySelector(selector).getAttribute('href');
+            }, '.forgotten-password');
+
+            casper.echo('LINK' + link);
+            test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
+        });
     });
 }, true);
 
@@ -98,7 +107,7 @@ CasperTest.begin("Login limit is in place", 3, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'We did not trip the login limit.');
     });
-    // This test used login, add a wait to 
+    // This test used login, add a wait to
     // ensure future tests don't get tripped up by this.
     casper.wait(2000);
 }, true);
