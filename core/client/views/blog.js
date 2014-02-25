@@ -261,17 +261,28 @@
             this.model = this.collection.get(this.activeId);
             this.$el.html(this.template(this.templateData()));
 
+            this.compileAngular();
+
             this.$('.content-preview-content').scrollClass({target: '.content-preview', offset: 10});
             this.$('.wrapper').on('click', 'a', function (e) {
                 $(e.currentTarget).attr('target', '_blank');
             });
 
-            if (this.model !== undefined) {
-                this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
-            }
+            // if (this.model !== undefined) {
+            //     this.addSubview(new Ghost.View.PostSettings({el: $('.post-controls'), model: this.model})).render();
+            // }
 
             Ghost.temporary.initToggles(this.$el);
             return this;
+        },
+
+        compileAngular: function() {
+            angular.ghost.setPost(this.model);
+            var self = this;
+            angular.ghost.injector().invoke(function($compile) {
+              var scope = angular.element(self.el).scope();
+              $compile(self.el)(scope);
+            });
         }
 
     });
