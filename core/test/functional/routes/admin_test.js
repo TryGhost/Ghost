@@ -73,7 +73,7 @@ describe('Admin Routing', function () {
                 });
         });
 
-        it('should redirect from /ghost to /ghost/signin when no user', function (done) {
+        it('should redirect from /ghost/ to /ghost/signin/ when no user', function (done) {
             request.get('/ghost/')
                 .expect('Location', /ghost\/signin/)
                 .expect('Cache-Control', cacheRules['private'])
@@ -81,7 +81,7 @@ describe('Admin Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect from /ghost/signin to /ghost/signup when no user', function (done) {
+        it('should redirect from /ghost/signin/ to /ghost/signup/ when no user', function (done) {
             request.get('/ghost/signin/')
                 .expect('Location', /ghost\/signup/)
                 .expect('Cache-Control', cacheRules['private'])
@@ -89,7 +89,7 @@ describe('Admin Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should respond with html for /ghost/signup', function (done) {
+        it('should respond with html for /ghost/signup/', function (done) {
             request.get('/ghost/signup/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', cacheRules['private'])
@@ -117,5 +117,32 @@ describe('Admin Routing', function () {
 //           done();
 //        });
 
+    });
+
+    describe('Ghost Admin Forgot Password', function () {
+
+        it('should respond with html for /ghost/forgotten/', function (done) {
+            request.get('/ghost/forgotten/')
+                .expect('Content-Type', /html/)
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should respond 404 for /ghost/reset/', function (done) {
+            request.get('/ghost/reset/')
+                .expect('Cache-Control', cacheRules.hour)
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+
+        it('should redirect /ghost/reset/*/', function (done) {
+            request.get('/ghost/reset/athing/')
+                .expect('Location', /ghost\/forgotten/)
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(302)
+                .end(doEnd(done));
+        });
     });
 });
