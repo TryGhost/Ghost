@@ -10,7 +10,7 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
             siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
             siteUrl = '<link>http://127.0.0.1:2369/</link>',
             postTitle = '<![CDATA[Welcome to Ghost]]>',
-            postStart = '<description><![CDATA[<p>You\'re live!',
+            postStart = '<description><![CDATA[<p>You’re live!',
             postEnd = 'you think :)</p>]]></description>',
             postLink = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
             postCreator = '<dc:creator><![CDATA[Test User]]>';
