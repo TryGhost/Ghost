@@ -11,11 +11,9 @@ content/apps/**
 !content/apps/README.md
 node_modules/**
 core/test/**
-core/client/assets/sass/**
 core/server/data/export/exported*
 **/*.db*
 *.db*
-.sass*
 .af*
 .git*
 .groc*
@@ -24,5 +22,4 @@ config.js
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
-Gemfile*
 *.html
