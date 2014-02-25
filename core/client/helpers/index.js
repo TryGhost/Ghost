@@ -29,7 +29,7 @@
         return date;
     });
 
-    Handlebars.registerHelper('adminUrl', function () {
+    Handlebars.registerHelper('admin_url', function () {
         return Ghost.paths.subdir + '/ghost';
     });
 
