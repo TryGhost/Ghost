@@ -17,7 +17,8 @@ var _ = require('lodash'),
             'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
         user: ['id', 'uuid', 'name', 'slug', 'email', 'image', 'cover', 'bio', 'website',
             'location', 'accessibility', 'status', 'language', 'meta_title', 'meta_description',
-            'created_at', 'updated_at']
+            'created_at', 'updated_at'],
+        notification: ['type', 'message', 'status', 'id']
     };
 
 
