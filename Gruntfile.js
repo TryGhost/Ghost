@@ -54,6 +54,10 @@ var path           = require('path'),
                     files: ['core/clientold/tpl/**/*.hbs'],
                     tasks: ['handlebars']
                 },
+                emberTemplates: {
+                    files: 'core/client/templates/**/*.hbs',
+                    tasks: ['emberTemplates']
+                },
                 sass: {
                     files: ['<%= paths.adminOldAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
@@ -67,6 +71,12 @@ var path           = require('path'),
                         'core/clientold/views/*.js'
                     ],
                     tasks: ['concat']
+                },
+                'concat-ember': {
+                    files: [
+                        'core/client/**/*.js'
+                    ],
+                    tasks: ['concat:dev-ember']
                 },
                 livereload: {
                     files: [
@@ -298,6 +308,19 @@ var path           = require('path'),
                 }
             },
 
+            // ### Config for grunt-ember-templates
+            // Compiles handlebar templates for ember
+            emberTemplates: {
+                compile: {
+                    options: {
+                        templateBasePath: /core\/client\/templates/
+                    },
+                    files: {
+                        "core/built/scripts/templates-ember.js": "core/client/templates/**/*.hbs"
+                    }
+                }
+            },
+
             // ### Config for grunt-groc
             // Generate documentation from code
             groc: {
@@ -412,6 +435,19 @@ var path           = require('path'),
                         'core/built/scripts/views.js': [
                             'core/clientold/views/**/*.js',
                             'core/clientold/router.js'
+                        ]
+                    }
+                },
+                'dev-ember': {
+                    files: {
+                        'core/built/scripts/vendor-ember.js': [
+                            'core/shared/vendor/jquery/jquery.js',
+                            'core/shared/vendor/handlebars/handlebars.js',
+                            'core/shared/vendor/ember/ember.js'
+                        ],
+
+                        'core/built/scripts/ghost-dev-ember.js': [
+                            'core/client/**/*.js'
                         ]
                     }
                 },
@@ -840,7 +876,7 @@ var path           = require('path'),
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'emberTemplates:compile', 'concat']);
     };
 
 module.exports = configureGrunt;
