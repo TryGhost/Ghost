@@ -1,8 +1,7 @@
 var when                   = require('when'),
     _                      = require('lodash'),
     dataProvider           = require('../models'),
-    permissions            = require('../permissions'),
-    canThis                = permissions.canThis,
+    canThis                = require('../permissions').canThis,
     filteredUserAttributes = require('./users').filteredAttributes,
     posts;
 
@@ -15,7 +14,7 @@ posts = {
         options = options || {};
 
         // **returns:** a promise for a page of posts in a json object
-        //return dataProvider.Post.findPage(options);
+
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
                 omitted = result;
@@ -43,7 +42,7 @@ posts = {
                 omitted.user = _.omit(omitted.user, filteredUserAttributes);
                 return omitted;
             }
-            return when.reject({errorCode: 404, message: 'Post not found'});
+            return when.reject({code: 404, message: 'Post not found'});
 
         });
     },
@@ -53,7 +52,7 @@ posts = {
             if (slug) {
                 return slug;
             }
-            return when.reject({errorCode: 500, message: 'Could not generate slug'});
+            return when.reject({code: 500, message: 'Could not generate slug'});
         });
     },
 
@@ -63,7 +62,7 @@ posts = {
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
         if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
+            return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
         }
         var self = this;
         return canThis(self.user).edit.post(postData.id).then(function () {
@@ -74,17 +73,17 @@ posts = {
                     omitted.user = _.omit(omitted.user, filteredUserAttributes);
                     return omitted;
                 }
-                return when.reject({errorCode: 404, message: 'Post not found'});
+                return when.reject({code: 404, message: 'Post not found'});
             }).otherwise(function (error) {
                 return dataProvider.Post.findOne({id: postData.id, status: 'all'}).then(function (result) {
                     if (!result) {
-                        return when.reject({errorCode: 404, message: 'Post not found'});
+                        return when.reject({code: 404, message: 'Post not found'});
                     }
                     return when.reject({message: error.message});
                 });
             });
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
+            return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
         });
     },
 
@@ -94,13 +93,13 @@ posts = {
     add: function add(postData) {
         // **returns:** a promise for the resulting post in a json object
         if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
+            return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         }
 
         return canThis(this.user).create.post().then(function () {
             return dataProvider.Post.add(postData);
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
+            return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         });
     },
 
@@ -110,7 +109,7 @@ posts = {
     destroy: function destroy(args) {
         // **returns:** a promise for a json response with the id of the deleted post
         if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
+            return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
         }
 
         return canThis(this.user).remove.post(args.id).then(function () {
@@ -121,7 +120,7 @@ posts = {
                 });
             });
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
+            return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
         });
     }
 };

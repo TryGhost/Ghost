@@ -1,13 +1,13 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should = require('should'),
-    _ = require('lodash'),
-    when = require('when'),
-    sequence = require('when/sequence'),
+var testUtils     = require('../../utils'),
+    should        = require('should'),
+    _             = require('lodash'),
+    when          = require('when'),
+    sequence      = require('when/sequence'),
 
     // Stuff we are testing
     DataGenerator = require('../../utils/fixtures/data-generator'),
-    Models = require('../../../server/models');
+    Models        = require('../../../server/models');
 
 describe('Post Model', function () {
 

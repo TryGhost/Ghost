@@ -227,7 +227,10 @@ var path           = require('path'),
                 },
 
                 integration: {
-                    src: ['core/test/integration/**/model*_spec.js']
+                    src: [
+                        'core/test/integration/**/model*_spec.js',
+                        'core/test/integration/**/api*_spec.js'
+                    ]
                 },
 
                 api: {

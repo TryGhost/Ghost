@@ -58,7 +58,7 @@ function formatPageResponse(posts, page) {
 function handleError(next) {
     return function (err) {
         var e = new Error(err.message);
-        e.status = err.errorCode;
+        e.status = err.code;
         return next(e);
     };
 }

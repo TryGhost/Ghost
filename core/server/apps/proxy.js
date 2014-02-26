@@ -15,7 +15,7 @@ var proxy = {
     },
     api: {
         posts: _.pick(api.posts, 'browse', 'read'),
-        tags: api.tags,
+        tags: _.pick(api.tags, 'browse'),
         notifications: _.pick(api.notifications, 'add'),
         settings: _.pick(api.settings, 'read')
     }
