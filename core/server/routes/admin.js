@@ -55,4 +55,6 @@ module.exports = function (server) {
         res.redirect(subdir + '/ghost/');
     });
     server.get('/ghost/', admin.index);
+
+    server.get('/ghost/ember/', admin.ember);
 };

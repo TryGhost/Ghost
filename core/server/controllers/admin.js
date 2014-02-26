@@ -336,6 +336,9 @@ adminControllers = {
                 adminNav: setSelected(adminNavbar, 'settings')
             });
         }
+    },
+    'ember': function( req, res, next) {
+        res.render('default-ember');
     }
 };
 
