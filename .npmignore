@@ -11,7 +11,7 @@ content/apps/**
 !content/apps/README.md
 node_modules/**
 core/test/**
-core/client/assets/sass/**
+core/clientold/assets/sass/**
 core/server/data/export/exported*
 **/*.db*
 *.db*
