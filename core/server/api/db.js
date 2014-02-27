@@ -16,32 +16,10 @@ api.notifications    = require('./notifications');
 api.settings         = require('./settings');
 
 db = {
-    'exportContent': function (req, res) {
-        /*jslint unparam:true*/
-        return dataExport().then(function (exportedData) {
-            // Save the exported data to the file system for download
-            var fileName = path.join(config().paths.exportPath, 'exported-' + (new Date().getTime()) + '.json');
-
-            return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
-                return when(fileName);
-            });
-        }).then(function (exportedFilePath) {
-            // Send the exported data file
-            res.download(exportedFilePath, 'GhostData.json');
-        }).otherwise(function (error) {
-            // Notify of an error if it occurs
-            return api.notifications.browse().then(function (notifications) {
-                var notification = {
-                    type: 'error',
-                    message: error.message || error,
-                    status: 'persistent',
-                    id: 'per-' + (notifications.length + 1)
-                };
-
-                return api.notifications.add(notification).then(function () {
-                    res.redirect(config().paths.debugPath);
-                });
-            });
+    'exportContent': function () {
+        // Export data, otherwise send error 500
+        return dataExport().otherwise(function (error) {
+            return when.reject({errorCode: 500, message: error.message || error});
         });
     },
     'importContent': function (options) {
