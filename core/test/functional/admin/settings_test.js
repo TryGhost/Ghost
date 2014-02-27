@@ -154,3 +154,29 @@ CasperTest.begin("User settings screen validates email", 6, function suite(test)
         test.assert(false, 'No success notification :(');
     });
 });
+
+CasperTest.begin("User settings screen shows remaining characters for Bio properly", 4, function suite(test) {
+
+    function getRemainingBioCharacterCount() {
+        return casper.getHTML('.word-count');
+    }
+
+    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.then(function checkCharacterCount() {
+        test.assert(getRemainingBioCharacterCount() === '200', 'Bio remaining characters is 200');
+    });
+
+    casper.then(function setBioToValid() {
+        casper.fillSelectors('.user-profile', {
+                '#user-bio': 'asdf\n' // 5 characters
+            }, false);
+    });
+
+    casper.then(function checkCharacterCount() {
+        test.assert(getRemainingBioCharacterCount() === '195', 'Bio remaining characters is 195');
+    });
+});
