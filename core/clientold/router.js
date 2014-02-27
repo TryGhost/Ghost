@@ -5,15 +5,15 @@
     Ghost.Router = Backbone.Router.extend({
 
         routes: {
-            ''                 : 'blog',
-            'content/'         : 'blog',
+            ''                  : 'blog',
+            'content/'          : 'blog',
             'settings(/:pane)/' : 'settings',
             'editor(/:id)/'     : 'editor',
-            'debug/'           : 'debug',
-            'register/'        : 'register',
-            'signup/'          : 'signup',
-            'signin/'          : 'login',
-            'forgotten/'       : 'forgotten',
+            'debug/'            : 'debug',
+            'register/'         : 'register',
+            'signup/'           : 'signup',
+            'signin/'           : 'login',
+            'forgotten/'        : 'forgotten',
             'reset/:token/'     : 'reset'
         },
 

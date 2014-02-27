@@ -37,7 +37,8 @@ var path           = require('path'),
         var cfg = {
             // Common paths to be used by tasks
             paths: {
-                adminAssets: './core/client/assets',
+                // adminAssets: './core/client/', ?? who knows...
+                adminOldAssets: './core/clientold/assets',
                 build: buildDirectory,
                 releaseBuild: path.join(buildDirectory, 'release'),
                 dist: distDirectory,
@@ -50,20 +51,20 @@ var path           = require('path'),
             // Watch files and livereload in the browser during development
             watch: {
                 handlebars: {
-                    files: ['core/client/tpl/**/*.hbs'],
+                    files: ['core/clientold/tpl/**/*.hbs'],
                     tasks: ['handlebars']
                 },
                 sass: {
-                    files: ['<%= paths.adminAssets %>/sass/**/*'],
+                    files: ['<%= paths.adminOldAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
                 },
                 concat: {
                     files: [
-                        'core/client/*.js',
-                        'core/client/helpers/*.js',
-                        'core/client/models/*.js',
-                        'core/client/tpl/*.js',
-                        'core/client/views/*.js'
+                        'core/clientold/*.js',
+                        'core/clientold/helpers/*.js',
+                        'core/clientold/models/*.js',
+                        'core/clientold/tpl/*.js',
+                        'core/clientold/views/*.js'
                     ],
                     tasks: ['concat']
                 },
@@ -74,7 +75,7 @@ var path           = require('path'),
                         // Theme JS
                         'content/themes/casper/js/*.js',
                         // Admin CSS
-                        '<%= paths.adminAssets %>/css/*.css',
+                        '<%= paths.adminOldAssets %>/css/*.css',
                         // Admin JS
                         'core/built/scripts/*.js'
                     ],
@@ -83,7 +84,7 @@ var path           = require('path'),
                     }
                 },
                 express: {
-                    // Restart any time client or server js files change
+                    // Restart any time clientold or server js files change
                     files:  ['core/server.js', 'core/server/**/*.js'],
                     tasks:  ['express:dev'],
                     options: {
@@ -152,8 +153,7 @@ var path           = require('path'),
                         src: 'core/client/**/*.js'
                     },
                     exclude: [
-                        'core/client/assets/vendor/**/*.js',
-                        'core/client/tpl/**/*.js'
+                        'core/client/templates/**/*.js'
                     ]
                 },
                 shared: {
@@ -199,8 +199,8 @@ var path           = require('path'),
                     src: ['core/test/integration/**/model*_spec.js']
                 },
 
-                client: {
-                    src: ['core/test/unit/**/client*_spec.js']
+                clientold: {
+                    src: ['core/test/unit/**/clientold*_spec.js']
                 },
 
                 server: {
@@ -244,7 +244,7 @@ var path           = require('path'),
             sass: {
                 admin: {
                     files: {
-                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
+                        '<%= paths.adminOldAssets %>/css/screen.css': '<%= paths.adminOldAssets %>/sass/screen.scss'
                     }
                 },
                 compress: {
@@ -252,7 +252,7 @@ var path           = require('path'),
                         style: 'compressed'
                     },
                     files: {
-                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
+                        '<%= paths.adminOldAssets %>/css/screen.css': '<%= paths.adminOldAssets %>/sass/screen.scss'
                     }
                 }
             },
@@ -266,7 +266,7 @@ var path           = require('path'),
                 },
                 // install bourbon
                 bourbon: {
-                    command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
+                    command: 'bourbon install --path <%= paths.adminOldAssets %>/sass/modules/'
                 },
                 // generate coverage report
                 coverage: {
@@ -282,18 +282,18 @@ var path           = require('path'),
             },
 
             // ### Config for grunt-contrib-handlebars
-            // Compile templates for admin client
+            // Compile templates for admin clientold
             handlebars: {
                 core: {
                     options: {
                         namespace: 'JST',
                         processName: function (filename) {
-                            filename = filename.replace('core/client/tpl/', '');
+                            filename = filename.replace('core/clientold/tpl/', '');
                             return filename.replace('.hbs', '');
                         }
                     },
                     files: {
-                        'core/client/tpl/hbs-tpl.js': 'core/client/tpl/**/*.hbs'
+                        'core/clientold/tpl/hbs-tpl.js': 'core/clientold/tpl/**/*.hbs'
                     }
                 }
             },
@@ -311,11 +311,11 @@ var path           = require('path'),
                             'core/*.js',
                             'core/server/**/*.js',
                             'core/shared/**/*.js',
-                            'core/client/**/*.js'
+                            'core/clientold/**/*.js'
                         ],
                         'except': [
                             '!core/**/vendor/**/*.js',
-                            '!core/client/tpl/**/*.js'
+                            '!core/clientold/tpl/**/*.js'
                         ]
                     }
                 }
@@ -365,8 +365,8 @@ var path           = require('path'),
                         'core/built/scripts/vendor.js': [
                             'core/shared/vendor/jquery/jquery.js',
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
+                            'core/clientold/assets/lib/jquery-utils.js',
+                            'core/clientold/assets/lib/uploader.js',
                             'core/shared/vendor/lodash.underscore.js',
                             'core/shared/vendor/backbone/backbone.js',
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
@@ -376,42 +376,42 @@ var path           = require('path'),
                             'core/shared/vendor/jquery/jquery.iframe-transport.js',
                             'core/shared/vendor/jquery/jquery.fileupload.js',
 
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
+                            'core/clientold/assets/vendor/codemirror/codemirror.js',
+                            'core/clientold/assets/vendor/codemirror/addon/mode/overlay.js',
+                            'core/clientold/assets/vendor/codemirror/mode/markdown/markdown.js',
+                            'core/clientold/assets/vendor/codemirror/mode/gfm/gfm.js',
+                            'core/clientold/assets/vendor/showdown/showdown.js',
+                            'core/clientold/assets/vendor/showdown/extensions/ghostdown.js',
                             'core/shared/vendor/showdown/extensions/github.js',
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
-                            'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js',
-                            'core/client/assets/vendor/nprogress.js'
+                            'core/clientold/assets/vendor/shortcuts.js',
+                            'core/clientold/assets/vendor/validator-client.js',
+                            'core/clientold/assets/vendor/countable.js',
+                            'core/clientold/assets/vendor/to-title-case.js',
+                            'core/clientold/assets/vendor/packery.pkgd.min.js',
+                            'core/clientold/assets/vendor/fastclick.js',
+                            'core/clientold/assets/vendor/nprogress.js'
                         ],
 
                         'core/built/scripts/helpers.js': [
-                            'core/client/init.js',
+                            'core/clientold/init.js',
 
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js'
+                            'core/clientold/mobile-interactions.js',
+                            'core/clientold/toggle.js',
+                            'core/clientold/markdown-actions.js',
+                            'core/clientold/helpers/index.js'
                         ],
 
                         'core/built/scripts/templates.js': [
-                            'core/client/tpl/hbs-tpl.js'
+                            'core/clientold/tpl/hbs-tpl.js'
                         ],
 
                         'core/built/scripts/models.js': [
-                            'core/client/models/**/*.js'
+                            'core/clientold/models/**/*.js'
                         ],
 
                         'core/built/scripts/views.js': [
-                            'core/client/views/**/*.js',
-                            'core/client/router.js'
+                            'core/clientold/views/**/*.js',
+                            'core/clientold/router.js'
                         ]
                     }
                 },
@@ -420,8 +420,8 @@ var path           = require('path'),
                         'core/built/scripts/ghost.js': [
                             'core/shared/vendor/jquery/jquery.js',
                             'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
+                            'core/clientold/assets/lib/jquery-utils.js',
+                            'core/clientold/assets/lib/uploader.js',
                             'core/shared/vendor/lodash.underscore.js',
                             'core/shared/vendor/backbone/backbone.js',
                             'core/shared/vendor/handlebars/handlebars-runtime.js',
@@ -431,35 +431,35 @@ var path           = require('path'),
                             'core/shared/vendor/jquery/jquery.iframe-transport.js',
                             'core/shared/vendor/jquery/jquery.fileupload.js',
 
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
+                            'core/clientold/assets/vendor/codemirror/codemirror.js',
+                            'core/clientold/assets/vendor/codemirror/addon/mode/overlay.js',
+                            'core/clientold/assets/vendor/codemirror/mode/markdown/markdown.js',
+                            'core/clientold/assets/vendor/codemirror/mode/gfm/gfm.js',
+                            'core/clientold/assets/vendor/showdown/showdown.js',
+                            'core/clientold/assets/vendor/showdown/extensions/ghostdown.js',
                             'core/shared/vendor/showdown/extensions/github.js',
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
-                            'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js',
-                            'core/client/assets/vendor/nprogress.js',
+                            'core/clientold/assets/vendor/shortcuts.js',
+                            'core/clientold/assets/vendor/validator-client.js',
+                            'core/clientold/assets/vendor/countable.js',
+                            'core/clientold/assets/vendor/to-title-case.js',
+                            'core/clientold/assets/vendor/packery.pkgd.min.js',
+                            'core/clientold/assets/vendor/fastclick.js',
+                            'core/clientold/assets/vendor/nprogress.js',
 
-                            'core/client/init.js',
+                            'core/clientold/init.js',
 
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js',
+                            'core/clientold/mobile-interactions.js',
+                            'core/clientold/toggle.js',
+                            'core/clientold/markdown-actions.js',
+                            'core/clientold/helpers/index.js',
 
-                            'core/client/tpl/hbs-tpl.js',
+                            'core/clientold/tpl/hbs-tpl.js',
 
-                            'core/client/models/**/*.js',
+                            'core/clientold/models/**/*.js',
 
-                            'core/client/views/**/*.js',
+                            'core/clientold/views/**/*.js',
 
-                            'core/client/router.js'
+                            'core/clientold/router.js'
                         ]
                     }
                 }

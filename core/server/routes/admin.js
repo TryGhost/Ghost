@@ -54,5 +54,5 @@ module.exports = function (server) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
-    server.get('/ghost/', admin.index);
+    server.get('/ghost/', admin.indexold);
 };
