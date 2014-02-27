@@ -1,7 +1,6 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
     validator = require('validator'),
-    when      = require('when'),
 
     validateSchema,
     validateSettings,
@@ -74,10 +73,11 @@ validate = function (value, key, validations) {
         if (validationOptions === true) {
             validationOptions = null;
         }
+        /* jshint ignore:start */
         if (typeof validationOptions !== 'array') {
             validationOptions = [validationOptions];
         }
-
+        /* jshint ignore:end */
         // equivalent of validation.isSomething(option1, option2)
         validation[validationName].apply(validation, validationOptions);
     }, this);

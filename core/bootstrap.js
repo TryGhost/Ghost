@@ -7,7 +7,6 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
-    path    = require('path'),
     errors  = require('./server/errorHandling'),
     config  = require('./server/config'),
 
@@ -36,14 +35,14 @@ function writeConfigFile() {
         // Copy config.example.js => config.js
         read = fs.createReadStream(configExample);
         read.on('error', function (err) {
-            /*jslint unparam:true*/
+            /*jshint unused:false*/
             return errors.logError(new Error('Could not open config.example.js for read.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
         read.on('end', written.resolve);
 
         write = fs.createWriteStream(configFile);
         write.on('error', function (err) {
-            /*jslint unparam:true*/
+            /*jshint unused:false*/
             return errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
         });
 

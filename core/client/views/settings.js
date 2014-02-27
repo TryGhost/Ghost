@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, Countable */
+/*global document, Ghost, $, _, Countable */
 (function () {
     "use strict";
 
@@ -117,7 +117,7 @@
             this.$el.addClass('active');
         },
         saveSuccess: function (model, response, options) {
-            /*jslint unparam:true*/
+            /*jshint unused:false*/
             Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'success',
@@ -126,7 +126,7 @@
             });
         },
         saveError: function (model, xhr) {
-            /*jslint unparam:true*/
+            /*jshint unused:false*/
             Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',

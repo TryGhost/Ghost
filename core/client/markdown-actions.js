@@ -1,6 +1,6 @@
 // # Surrounds given text with Markdown syntax
 
-/*global $, window, CodeMirror, Showdown, moment */
+/*global $, CodeMirror, Showdown, moment */
 (function () {
     'use strict';
     var Markdown = {

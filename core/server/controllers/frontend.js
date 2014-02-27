@@ -13,7 +13,6 @@ var moment      = require('moment'),
 
     api         = require('../api'),
     config      = require('../config'),
-    errors      = require('../errorHandling'),
     filters     = require('../../server/filters'),
     template    = require('../helpers/template'),
 

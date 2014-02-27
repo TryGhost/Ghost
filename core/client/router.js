@@ -1,4 +1,4 @@
-/*global window, document, Ghost, Backbone, $, _, NProgress */
+/*global Ghost, Backbone, NProgress */
 (function () {
     "use strict";
 

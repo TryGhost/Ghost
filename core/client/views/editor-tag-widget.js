@@ -1,6 +1,6 @@
 // The Tag UI area associated with a post
 
-/*global window, document, setTimeout, $, _, Backbone, Ghost */
+/*global window, document, setTimeout, $, _, Ghost */
 
 (function () {
     "use strict";

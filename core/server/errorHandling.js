@@ -1,7 +1,6 @@
 /*jslint regexp: true */
 var _           = require('lodash'),
     colors      = require('colors'),
-    fs          = require('fs'),
     config      = require('./config'),
     path        = require('path'),
     when        = require('when'),
@@ -14,6 +13,9 @@ var _           = require('lodash'),
     userErrorTemplateExists   = false,
 
     ONE_HOUR_S  = 60 * 60;
+
+// This is not useful but required for jshint
+colors.setTheme({silly: 'rainbow'});
 
 /**
  * Basic error handling helpers
@@ -107,7 +109,7 @@ errors = {
     },
 
     logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {
-        /*jslint unparam:true*/
+        /*jshint unused:false*/
         var self = this;
 
         return function () {
@@ -120,7 +122,7 @@ errors = {
     },
 
     renderErrorPage: function (code, err, req, res, next) {
-        /*jslint unparam:true*/
+        /*jshint unused:false*/
 
         var self = this;
 

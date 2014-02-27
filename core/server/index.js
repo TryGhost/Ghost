@@ -247,7 +247,7 @@ function setup(server) {
             if (getSocket()) {
                 // Make sure the socket is gone before trying to create another
                 fs.unlink(getSocket(), function (err) {
-                    /*jslint unparam:true*/
+                    /*jshint unused:false*/
                     server.listen(
                         getSocket(),
                         startGhost
