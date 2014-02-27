@@ -1,0 +1,7 @@
+{
+  "name": "ghost",
+  "dependencies": {
+    "handlebars": "~1.1.2",
+    "ember": "~1.4.0"
+  }
+}

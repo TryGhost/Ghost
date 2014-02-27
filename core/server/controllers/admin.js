@@ -45,8 +45,7 @@ function setSelected(list, name) {
 adminControllers = {
     'index': function (req, res) {
         /*jslint unparam:true*/
-        // Ember goes here.
-        res.send(200);
+        res.render('default-ember');
     },
     // Route: index
     // Path: /ghost/
