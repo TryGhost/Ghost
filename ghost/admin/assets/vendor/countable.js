@@ -3,7 +3,7 @@
  * counting on an HTML element.
  *
  * @author   Sacha Schmid (<https://github.com/RadLikeWhoa>)
- * @version  2.0.0
+ * @version  2.0.2
  * @license  MIT
  * @see      <http://radlikewhoa.github.io/Countable/>
  */
@@ -124,9 +124,11 @@
    * `_extendDefaults` is a function to extend a set of default options with the
    * ones given in the function call. Available options are described below.
    *
-   * {Boolean}  hardReturns  Use two returns to seperate a paragraph instead of
-   *                         one.
-   * {Boolean}  stripTags    Strip HTML tags before counting the values.
+   * {Boolean}  hardReturns    Use two returns to seperate a paragraph instead
+   *                           of one.
+   * {Boolean}  stripTags      Strip HTML tags before counting the values.
+   * {Boolean}  ignoreReturns  Ignore returns when calculating the `all`
+   *                           property.
    *
    * @private
    *
@@ -138,7 +140,7 @@
    */
 
   function _extendDefaults (options) {
-    var defaults = { hardReturns: false, stripTags: false }
+    var defaults = { hardReturns: false, stripTags: false, ignoreReturns: false }
 
     for (var prop in options) {
       if (defaults.hasOwnProperty(prop)) defaults[prop] = options[prop]
@@ -163,7 +165,7 @@
 
   function _count (element, options) {
     var original = 'value' in element ? element.value : element.innerText || element.textContent,
-        temp, trimmed
+        trimmed
 
     /**
      * The initial implementation to allow for HTML tags stripping was created
@@ -187,7 +189,7 @@
       paragraphs: trimmed ? (trimmed.match(options.hardReturns ? /\n{2,}/g : /\n+/g) || []).length + 1 : 0,
       words: trimmed ? (trimmed.replace(/['";:,.?¿\-!¡]+/g, '').match(/\S+/g) || []).length : 0,
       characters: trimmed ? _decode(trimmed.replace(/\s/g, '')).length : 0,
-      all: _decode(original.replace(/[\n\r]/g, '')).length
+      all: _decode(options.ignoreReturns ? original.replace(/[\n\r]/g, '') : original).length
     }
   }
 
