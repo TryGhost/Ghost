@@ -2,6 +2,10 @@
   "name": "ghost",
   "dependencies": {
     "handlebars": "~1.1.2",
+    "ember": "~1.4.0",
+    "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#9805033c178e7f857f801359664adb599444b430"
+  },
+  "resolutions": {
     "ember": "~1.4.0"
   }
 }

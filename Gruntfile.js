@@ -58,6 +58,12 @@ var path           = require('path'),
                     files: 'core/client/templates/**/*.hbs',
                     tasks: ['emberTemplates']
                 },
+                ember: {
+                    files: [
+                        'core/client/**/*.js'
+                    ],
+                    tasks: ['transpile', 'concat_sourcemap']
+                },
                 sass: {
                     files: ['<%= paths.adminOldAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
@@ -71,12 +77,6 @@ var path           = require('path'),
                         'core/clientold/views/*.js'
                     ],
                     tasks: ['concat']
-                },
-                'concat-ember': {
-                    files: [
-                        'core/client/**/*.js'
-                    ],
-                    tasks: ['concat:dev-ember']
                 },
                 livereload: {
                     files: [
@@ -311,12 +311,45 @@ var path           = require('path'),
             // ### Config for grunt-ember-templates
             // Compiles handlebar templates for ember
             emberTemplates: {
-                compile: {
+                dev: {
                     options: {
-                        templateBasePath: /core\/client\/templates/
+                        templateBasePath: /core\/client\//,
+                        templateFileExtensions: /\.hbs/,
+                        templateRegistration: function (name, template) {
+                            return grunt.config.process("define('ghost/") + name + "', ['exports'], function(__exports__){ __exports__['default'] = " + template + "; });";
+                        }
                     },
                     files: {
                         "core/built/scripts/templates-ember.js": "core/client/templates/**/*.hbs"
+                    }
+                }
+            },
+
+            // ### Config for grunt-es6-module-transpiler
+            // Compiles Ember es6 modules
+            transpile: {
+                client: {
+                    type: 'amd',
+                    moduleName: function (path) {
+                        return 'ghost/' + path;
+                    },
+                    files: [{
+                        expand: true,
+                        cwd: 'core/client/',
+                        src: ['**/*.js'],
+                        dest: '.tmp/ember-transpiled/'
+                    }]
+                }
+            },
+
+            // ### Config for grunt-es6-module-transpiler
+            // Compiles Ember es6 modules
+            concat_sourcemap: {
+                client: {
+                    src: ['.tmp/ember-transpiled/**/*.js'],
+                    dest: 'core/built/scripts/ghost-dev-ember.js',
+                    options: {
+                        sourcesContent: true
                     }
                 }
             },
@@ -441,13 +474,11 @@ var path           = require('path'),
                 'dev-ember': {
                     files: {
                         'core/built/scripts/vendor-ember.js': [
+                            'core/shared/vendor/loader.js',
                             'core/shared/vendor/jquery/jquery.js',
                             'core/shared/vendor/handlebars/handlebars.js',
-                            'core/shared/vendor/ember/ember.js'
-                        ],
-
-                        'core/built/scripts/ghost-dev-ember.js': [
-                            'core/client/**/*.js'
+                            'core/shared/vendor/ember/ember.js',
+                            'core/shared/vendor/ember-resolver/dist/ember-resolver.js'
                         ]
                     }
                 },
@@ -830,6 +861,7 @@ var path           = require('path'),
                 'sass:admin',
                 'handlebars',
                 'concat',
+                'emberBuild',
                 'express:dev',
                 'watch'
             ]);
@@ -875,8 +907,11 @@ var path           = require('path'),
         // Before running in production mode
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
 
+        // All tasks related to building the Ember client code
+        grunt.registerTask('emberBuild', 'Build Ember JS & templates for development', ['emberTemplates:dev', 'transpile', 'concat_sourcemap']);
+
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'emberTemplates:compile', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat', 'emberBuild']);
     };
 
 module.exports = configureGrunt;
