@@ -1,9 +1,11 @@
-/*global App */
+/*global Ember */
 
-App.Router.map(function () {
+// ensure we don't share routes between all Router instances
+var Router = Ember.Router.extend();
+
+Router.map(function () {
     'use strict';
-    this.resource('posts');
-    this.resource('post', {path: 'post/:id'}, function () {
-        this.route('edit');
-    });
+
 });
+
+export default Router;
