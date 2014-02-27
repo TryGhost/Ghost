@@ -100,7 +100,7 @@ function config() {
     if (_.isEmpty(ghostConfig)) {
         try {
             ghostConfig = require(path.resolve(__dirname, '../../../', 'config.js'))[process.env.NODE_ENV] || {};
-        } catch (ignore) {/*jslint sloppy: true */}
+        } catch (ignore) {/*jslint strict: true */}
         ghostConfig = updateConfig(ghostConfig);
     }
 

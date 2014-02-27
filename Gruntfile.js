@@ -113,21 +113,39 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-jslint
-            // JSLint all the things!
-            jslint: {
+            // ### Config for grunt-contrib-jshint
+            // JSHint all the things!
+            jshint: {
                 server: {
-                    directives: {
+                    options: {
                         // node environment
                         node: true,
                         // browser environment
                         browser: false,
                         // allow dangling underscores in var names
-                        nomen: true,
-                        // allow to do statements
-                        todo: true,
+                        nomen: false,
                         // don't require use strict pragma
-                        sloppy: true
+                        strict: false,
+                        sub: true,
+                        eqeqeq: true,
+                        laxbreak: true,
+                        bitwise: true,
+                        curly: true,
+                        forin: true,
+                        immed: true,
+                        latedef: true,
+                        newcap: true,
+                        noarg: true,
+                        noempty: true,
+                        nonew: true,
+                        plusplus: true,
+                        regexp: true,
+                        undef: true,
+                        unused: true,
+                        trailing: true,
+                        indent: 4,
+                        onevar: true,
+                        white: true
                     },
                     files: {
                         src: [
@@ -138,47 +156,88 @@ var path           = require('path'),
                     }
                 },
                 client: {
-                    directives: {
+                    options: {
+                        "predef": {
+                            "document": true,
+                            "window": true,
+                            "location": true,
+                            "setTimeout": true,
+                            "Ember": true,
+                            "Em": true,
+                            "DS": true,
+                            "$": true
+                        },
                         // node environment
                         node: false,
                         // browser environment
                         browser: true,
                         // allow dangling underscores in var names
-                        nomen: true,
-                        // allow to do statements
-                        todo: true
+                        nomen: false,
+                        bitwise: true,
+                        curly: true,
+                        eqeqeq: true,
+                        forin: true,
+                        immed: true,
+                        latedef: true,
+                        newcap: true,
+                        noarg: true,
+                        noempty: true,
+                        nonew: true,
+                        plusplus: true,
+                        regexp: true,
+                        undef: true,
+                        unused: true,
+                        trailing: true,
+                        indent: 4,
+                        esnext: true,
+                        onevar: true,
+                        white: true
                     },
                     files: {
-                        src: 'core/client/**/*.js'
-                    },
-                    exclude: [
-                        'core/client/assets/vendor/**/*.js',
-                        'core/client/tpl/**/*.js'
-                    ]
+                        src: [
+                            'core/client/**/*.js',
+                            // Ignore files
+                            '!core/client/assets/vendor/**/*.js',
+                            '!core/client/tpl/**/*.js'
+                        ]
+                    }
                 },
                 shared: {
-                    directives: {
+                    options: {
                         // node environment
                         node: true,
                         // browser environment
                         browser: false,
-                        // allow dangling underscores in var names
-                        nomen: true,
-                        // allow to do statements
-                        todo: true,
-                        // allow unused parameters
-                        unparam: true,
                         // don't require use strict pragma
-                        sloppy: true
+                        strict: false,
+                        // allow dangling underscores in var names
+                        nomen: false,
+                        bitwise: true,
+                        curly: true,
+                        eqeqeq: true,
+                        forin: true,
+                        immed: true,
+                        latedef: true,
+                        newcap: true,
+                        noarg: true,
+                        noempty: true,
+                        nonew: true,
+                        plusplus: true,
+                        regexp: true,
+                        undef: true,
+                        unused: true,
+                        trailing: true,
+                        indent: 4,
+                        onevar: true,
+                        white: true
                     },
                     files: {
                         src: [
-                            'core/shared/**/*.js'
+                            'core/shared/**/*.js',
+                            // Ignore files
+                            '!core/shared/vendor/**/*.js'
                         ]
-                    },
-                    exclude: [
-                        'core/shared/vendor/**/*.js'
-                    ]
+                    }
                 }
             },
 
@@ -520,7 +579,7 @@ var path           = require('path'),
                     stdio: 'inherit'
                 }
             }, function (error, result, code) {
-                /*jslint unparam:true*/
+                /*jshint unused:false*/
                 if (error) {
                     grunt.fail.fatal(result.stdout);
                 }
@@ -649,7 +708,7 @@ var path           = require('path'),
                 data.replace(
                     commitRegex,
                     function (wholeCommit, hash, author, email, date, message) {
-                        /*jslint unparam:true*/
+                        /*jshint unused:false*/
 
                         // The author name and commit message may have trailing space.
                         author = author.trim();
@@ -760,7 +819,7 @@ var path           = require('path'),
 
                 when.reduce(tags,
                     function (prev, tag, idx) {
-                        /*jslint unparam:true*/
+                        /*jshint unused:false*/
                         return when.promise(function (resolve) {
                             processTag(tag, function (releaseData) {
                                 resolve(prev + '\n' + releaseData);
@@ -824,7 +883,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:routes', 'express:test:stop']);
 
-        grunt.registerTask('validate', 'Run tests and lint code', ['jslint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
 
 
         // ### Coverage report for Unit and Integration Tests

@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone */
+/*global Ghost */
 (function () {
     'use strict';
 

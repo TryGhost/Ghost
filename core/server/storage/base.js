@@ -1,5 +1,4 @@
-var _       = require('lodash'),
-    moment  = require('moment'),
+var moment  = require('moment'),
     path    = require('path'),
     when    = require('when'),
     baseStore;

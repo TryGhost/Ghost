@@ -42,7 +42,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     saving: function (newPage, attr, options) {
-        /*jslint unparam:true*/
+        /*jshint unused:false*/
         var self = this;
 
         // keep tags for 'saved' event
@@ -76,7 +76,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     creating: function (newPage, attr, options) {
-        /*jslint unparam:true*/
+        /*jshint unused:false*/
 
         // set any dynamic default properties
         if (!this.get('author_id')) {
@@ -87,7 +87,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     updateTags: function (newPost, attr, options) {
-        /*jslint unparam:true*/
+        /*jshint unused:false*/
         var self = this;
         options = options || {};
 

@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, JST */
+/*global Ghost, $ */
 (function () {
     "use strict";
 
@@ -25,7 +25,7 @@
                 },
                 dataType: 'json',
                 add: function (e, data) {
-                    /*jslint unparam:true*/
+                    /*jshint unused:false*/
 
                     // Bind the upload data to the view, so it is
                     // available to the click handler, and enable the
@@ -34,7 +34,7 @@
                     data.context = view.uploadButton.removeProp('disabled');
                 },
                 done: function (e, data) {
-                    /*jslint unparam:true*/
+                    /*jshint unused:false*/
                     $('#startupload').text('Import');
                     if (!data.result) {
                         throw new Error('No response received from server.');

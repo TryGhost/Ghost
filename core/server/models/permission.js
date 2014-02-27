@@ -1,7 +1,6 @@
 var ghostBookshelf = require('./base'),
     User           = require('./user').User,
     Role           = require('./role').Role,
-    validation     = require('../data/validation'),
 
     Permission,
     Permissions;
