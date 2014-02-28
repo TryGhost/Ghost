@@ -327,6 +327,20 @@ coreHelpers.file_storage = function (context, options) {
     return "true";
 };
 
+// ### Apps helper
+//
+// *Usage example:*
+// `{{apps}}`
+//
+// Returns the config value for apps.
+coreHelpers.apps = function (context, options) {
+    /*jslint unparam:true*/
+    if (config().hasOwnProperty('apps')) {
+        return config().apps.toString();
+    }
+    return "false";
+};
+
 coreHelpers.ghost_script_tags = function () {
     var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
@@ -784,6 +798,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
 
     registerAdminHelper('file_storage', coreHelpers.file_storage);
+
+    registerAdminHelper('apps', coreHelpers.apps);
 
     registerAdminHelper('admin_url', coreHelpers.admin_url);
 
