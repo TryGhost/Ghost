@@ -20,6 +20,7 @@ describe('Core Helpers', function () {
 
     var sandbox,
         apiStub,
+        configStub,
         overrideConfig = function (newConfig) {
             helpers.__set__('config', function() {
                 return newConfig;
@@ -35,13 +36,28 @@ describe('Core Helpers', function () {
         });
 
         config = helpers.__get__('config');
-        config.theme = sandbox.stub(config, 'theme', function () {
-            return {
-                title: 'Ghost',
-                description: 'Just a blogging platform.',
-                url: 'http://testurl.com'
-            };
+        configStub = sandbox.stub().returns({
+            'paths': {
+                'subdir': '',
+                'availableThemes': {
+                    'casper': {
+                        'assets': null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'page-about.hbs': '/content/themes/casper/page-about.hbs',
+                        'post.hbs': '/content/themes/casper/post.hbs'
+                    }
+                }
+            }
         });
+        _.extend(configStub, config);
+        configStub.theme = sandbox.stub().returns({
+            title: 'Ghost',
+            description: 'Just a blogging platform.',
+            url: 'http://testurl.com'
+        });
+        helpers.__set__('config', configStub);
 
         helpers.loadCoreHelpers(adminHbs);
         // Load template helpers in handlebars
@@ -306,6 +322,22 @@ describe('Core Helpers', function () {
             }).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('home-template page');
+
+                done();
+            }).then(null, done);
+        });
+
+        it('can render class for static page with custom template', function (done) {
+            helpers.body_class.call({
+                relativeUrl: '/about',
+                post: {
+                    page: true,
+                    slug: 'about'
+
+                }
+            }).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('post-template page page-template-about');
 
                 done();
             }).then(null, done);

@@ -15,6 +15,7 @@ var moment      = require('moment'),
     config      = require('../config'),
     errors      = require('../errorHandling'),
     filters     = require('../../server/filters'),
+    template    = require('../helpers/template'),
 
     frontendControllers,
     // Cache static post permalink regex
@@ -186,7 +187,8 @@ frontendControllers = {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config().paths.availableThemes[activeTheme.value],
-                            view = post.page && paths.hasOwnProperty('page.hbs') ? 'page' : 'post';
+                            view = template.getThemeViewForPost(paths, post);
+
                         res.render(view, {post: post});
                     });
                 });
