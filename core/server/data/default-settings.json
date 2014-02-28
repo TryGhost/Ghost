@@ -23,7 +23,7 @@
         "email": {
             "defaultValue": "ghost@example.com",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isEmail": true
             }
         },
@@ -36,29 +36,29 @@
         "defaultLang": {
             "defaultValue": "en_US",
             "validations": {
-                "notNull": true
+                "isNull": false
             }
         },
         "postsPerPage": {
             "defaultValue": "6",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isInt": true,
-                "max": 1000
+                "isLength": [0, 1000]
             }
         },
         "forceI18n": {
             "defaultValue": "true",
             "validations": {
-                "notNull": true,
-                "isIn": ["true", "false"]
+                "isNull": false,
+                "isIn": [["true", "false"]]
             }
         },
         "permalinks": {
             "defaultValue": "/:slug/",
             "validations": {
-                "is": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "regex": "(:id|:slug|:year|:month|:day)",
+                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
+                "matches": "(:id|:slug|:year|:month|:day)",
                 "notContains": "/ghost/"
             }
         }
