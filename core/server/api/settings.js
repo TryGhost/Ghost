@@ -167,7 +167,7 @@ settings = {
         if (settingsCache) {
             return when(settingsCache[options.key]).then(function (setting) {
                 if (!setting) {
-                    return when.reject({errorCode: 404, message: 'Unable to find setting: ' + options.key});
+                    return when.reject({code: 404, message: 'Unable to find setting: ' + options.key});
                 }
                 var res = {};
                 res.key = options.key;
@@ -202,7 +202,7 @@ settings = {
             }).otherwise(function (error) {
                 return dataProvider.Settings.read(key.key).then(function (result) {
                     if (!result) {
-                        return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
+                        return when.reject({code: 404, message: 'Unable to find setting: ' + key});
                     }
                     return when.reject({message: error.message});
                 });
@@ -210,7 +210,7 @@ settings = {
         }
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
-                return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
+                return when.reject({code: 404, message: 'Unable to find setting: ' + key});
             }
             if (!_.isString(value)) {
                 value = JSON.stringify(value);

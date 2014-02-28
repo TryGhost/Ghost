@@ -25,7 +25,7 @@ var Filters = function () {
 
 // Register a new filter callback function
 Filters.prototype.registerFilter = function (name, priority, fn) {
-    // Curry the priority optional parameter to a default of 5
+    // Carry the priority optional parameter to a default of 5
     if (_.isFunction(priority)) {
         fn = priority;
         priority = null;

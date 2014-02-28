@@ -19,7 +19,7 @@ module.exports = function (server) {
     server.get('/ghost/api/v0.1/users/:id/', api.requestHandler(api.users.read));
     server.put('/ghost/api/v0.1/users/:id/', api.requestHandler(api.users.edit));
     // #### Tags
-    server.get('/ghost/api/v0.1/tags/', api.requestHandler(api.tags.all));
+    server.get('/ghost/api/v0.1/tags/', api.requestHandler(api.tags.browse));
     // #### Notifications
     server.del('/ghost/api/v0.1/notifications/:id', api.requestHandler(api.notifications.destroy));
     server.post('/ghost/api/v0.1/notifications/', api.requestHandler(api.notifications.add));
