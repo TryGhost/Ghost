@@ -15,6 +15,6 @@
         "nprogress": "0.1.2",
         "fastclick": "1.0.0",
         "Countable": "2.0.2",
-        "validator-js": "1.5.1"
+        "validator-js": "3.4.0"
     }
 }
