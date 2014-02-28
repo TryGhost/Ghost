@@ -18,6 +18,7 @@ api.settings         = require('./settings');
 db = {
     'exportContent': function (req, res) {
         /*jslint unparam:true*/
+
         return dataExport().then(function (exportedData) {
             // Save the exported data to the file system for download
             var fileName = path.join(config().paths.exportPath, 'exported-' + (new Date().getTime()) + '.json');
@@ -56,7 +57,7 @@ db = {
              * - If there is no path
              * - If the name doesn't have json in it
              */
-            return when.reject({errorCode: 500, message: 'Please select a .json file to import.'});
+            return when.reject({code: 500, message: 'Please select a .json file to import.'});
         }
 
         return api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
@@ -121,7 +122,7 @@ db = {
         }).then(function () {
             return when.resolve({message: 'Posts, tags and other data successfully imported'});
         }).otherwise(function importFailure(error) {
-            return when.reject({errorCode: 500, message: error.message || error});
+            return when.reject({code: 500, message: error.message || error});
         });
     },
     'deleteAllContent': function () {
@@ -129,7 +130,7 @@ db = {
             .then(function () {
                 return when.resolve({message: 'Successfully deleted all content from your blog.'});
             }, function (error) {
-                return when.reject({errorCode: 500, message: error.message || error});
+                return when.reject({code: 500, message: error.message || error});
             });
     }
 };
