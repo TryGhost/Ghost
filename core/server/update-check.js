@@ -192,7 +192,7 @@ function showUpdateNotification() {
         // Version 0.4 used boolean to indicate the need for an update. This special case is
         // translated to the version string.
         // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true') {
+        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
             display.value = '0.4.0';
         }
 
