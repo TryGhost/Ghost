@@ -24,7 +24,7 @@ module.exports = function (server) {
     server.del('/ghost/api/v0.1/notifications/:id', api.requestHandler(api.notifications.destroy));
     server.post('/ghost/api/v0.1/notifications/', api.requestHandler(api.notifications.add));
     // #### Import/Export
-    server.get('/ghost/api/v0.1/db/', api.db.exportContent);
+    server.get('/ghost/api/v0.1/db/', api.requestHandler(api.db.exportContent));
     server.post('/ghost/api/v0.1/db/', middleware.busboy, api.requestHandler(api.db.importContent));
     server.del('/ghost/api/v0.1/db/', api.requestHandler(api.db.deleteAllContent));
 };

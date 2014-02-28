@@ -43,6 +43,8 @@ module.exports = function (server) {
     server.get('/ghost/settings*', admin.settings);
     server.get('/ghost/debug/', admin.debug.index);
 
+    server.get('/ghost/export/', admin.debug.exportContent);
+
     server.post('/ghost/upload/', middleware.busboy, admin.upload);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
