@@ -1,6 +1,8 @@
 /*global Ember */
 
-var App = Ember.Application.create({
+import Resolver from 'ember/resolver';
+
+var App = Ember.Application.extend({
     /**
      * These are debugging flags, they are useful during development
      */
@@ -9,6 +11,8 @@ var App = Ember.Application.create({
     LOG_TRANSITIONS: true,
     LOG_TRANSITIONS_INTERNAL: true,
     LOG_VIEW_LOOKUPS: true,
-    rootElement: '#ember-app' // tells ember to inject this app into element with selector #ember-app
+    modulePrefix: 'ghost', // TODO: loaded via config
+    Resolver: Resolver['default']
 });
 
+export default App;

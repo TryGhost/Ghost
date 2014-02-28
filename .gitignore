@@ -29,6 +29,7 @@ projectFilesBackup
 
 .build
 .dist
+.tmp
 
 /core/clientold/tpl/hbs-tpl.js
 /core/clientold/assets/css
