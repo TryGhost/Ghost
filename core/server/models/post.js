@@ -10,6 +10,7 @@ var _              = require('lodash'),
     Tag            = require('./tag').Tag,
     Tags           = require('./tag').Tags,
     ghostBookshelf = require('./base'),
+    validation     = require('../data/validation'),
 
     Post,
     Posts;
@@ -37,12 +38,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        ghostBookshelf.validator.check(this.get('title'), "Post title cannot be blank").notEmpty();
-        ghostBookshelf.validator.check(this.get('title'), 'Post title maximum length is 150 characters.').len(0, 150);
-        ghostBookshelf.validator.check(this.get('slug'), "Post title cannot be blank").notEmpty();
-        ghostBookshelf.validator.check(this.get('slug'), 'Post title maximum length is 150 characters.').len(0, 150);
-
-        return true;
+        validation.validateSchema(this.tableName, this.toJSON());
     },
 
     saving: function (newPage, attr, options) {
