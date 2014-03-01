@@ -162,7 +162,7 @@
         .services a { @include icon($i-services) }
         .users a { @include icon($i-users) }
         .appearance a { @include icon($i-appearance) }
-        .plugins a { @include icon($i-plugins) }
+        .apps a { @include icon($i-app) }
 
     }//.settings-menu
 
