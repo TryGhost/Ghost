@@ -31,9 +31,8 @@ projectFilesBackup
 .build
 .dist
 .tmp
-
-
 .sass-cache/
+
 /core/clientold/tpl/hbs-tpl.js
 /core/clientold/assets/vendor
 /core/clientold/assets/css
