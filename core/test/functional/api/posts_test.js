@@ -248,6 +248,52 @@ describe('Post API', function () {
             });
         });
 
+        it('can change a post to a static page', function (done) {
+            request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body),
+                    changedValue = true;
+                jsonResponse.should.exist;
+		jsonResponse.page.should.eql(0);
+                jsonResponse.page = changedValue;
+
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': csrfToken},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(200);
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.should.be.json;
+                    putBody.should.exist;
+                    putBody.page.should.eql(changedValue);
+
+                    testUtils.API.checkResponse(putBody, 'post');
+                    done();
+                });
+            });
+        });
+
+        it('can change a static page to a post', function (done) {
+            request.get(testUtils.API.getApiURL('posts/7/'), function (error, response, body) {
+                var jsonResponse = JSON.parse(body),
+                    changedValue = false;
+                jsonResponse.should.exist;
+		jsonResponse.page.should.eql(1);
+                jsonResponse.page = changedValue;
+
+                request.put({uri: testUtils.API.getApiURL('posts/1/'),
+                    headers: {'X-CSRF-Token': csrfToken},
+                    json: jsonResponse}, function (error, response, putBody) {
+                    response.should.have.status(200);
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.should.be.json;
+                    putBody.should.exist;
+                    putBody.page.should.eql(changedValue);
+
+                    testUtils.API.checkResponse(putBody, 'post');
+                    done();
+                });
+            });
+        });
+
         it('can\'t edit a post with invalid CSRF token', function (done) {
             request.get(testUtils.API.getApiURL('posts/1/'), function (error, response, body) {
                 var jsonResponse = JSON.parse(body);
