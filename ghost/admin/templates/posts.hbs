@@ -1,0 +1,37 @@
+<section class="content-view-container">
+    <section class="content-list js-content-list">
+        <header class="floatingheader">
+            <section class="content-filter">
+                <small>All Posts</small>
+            </section>
+            {{#link-to "new" class="button button-add" title="New Post"}}New Post{{/link-to}}
+        </header>
+        <section class="content-list-content">
+            <ol class="posts-list">
+                {{#each posts itemController="post"}}
+                    {{#view "post-item-view" tagName="li" post=this}} <!-- needed because of "active" class on li item -->
+                        {{#link-to 'post' this class="permalink" title="Edit this post"}}
+                            <h3 class="entry-title">{{title}}</h3>
+                            <section class="entry-meta">
+                                <span class="status">
+                                  {{#if isDraft}}
+                                      <span class="draft">Draft</span>
+                                  {{/if}}
+                                    {{#if isPublished}}
+                                        <time datetime="{{unbound published_at}}" class="date published">
+                                            Published {{format-timeago published_at}}
+                                        </time>
+                                    {{/if}}
+                                </span>
+                            </section>
+                        {{/link-to}}
+                    {{/view}}
+                {{/each}}
+            </ol>
+        </section>
+    </section>
+
+    <section class="content-preview js-content-preview">
+        {{outlet}}
+    </section>
+</section>

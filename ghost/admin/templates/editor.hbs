@@ -1,0 +1,48 @@
+<style>
+   /*
+     Cosmetic changes to ghost styles, that help during development.
+     The contents should be solved properly or moved into the other assets.
+   */
+
+   .post-settings-menu {
+     display: none !important;
+   }
+
+   #entry-markdown, .entry-preview,
+   .CodeMirror.cm-s-default {
+     height: 500px !important;
+   }
+
+   .editor input {
+     -webkit-transition: none;
+     -moz-transition: none;
+     transition: none;
+   }
+</style>
+
+<section class="entry-container">
+    <header>
+        <section class="box entry-title">
+            {{input type="text" id="entry-title" placeholder="Your Post Title" value=title tabindex="1"}}
+        </section>
+    </header>
+
+    <section class="entry-markdown active">
+        <header class="floatingheader">
+            <small>Markdown</small>
+            <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
+        </header>
+        <section id="entry-markdown-content" class="entry-markdown-content">
+            {{code-mirror value=markdown scrollPosition=view.scrollPosition}}
+        </section>
+    </section>
+
+    <section class="entry-preview">
+        <header class="floatingheader">
+            <small>Preview <span class="entry-word-count js-entry-word-count">{{count-words markdown}} words</span></small>
+        </header>
+        {{mark-down markdown=markdown scrollPosition=view.scrollPosition}}
+    </section>
+</section>
+
+{{partial 'publish-bar'}}
