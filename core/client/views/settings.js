@@ -61,7 +61,7 @@
 
             Ghost.router.navigate('/settings/' + id + '/');
             Ghost.trigger('urlchange');
-            if (this.pane && id === this.pane.el.id) {
+            if (this.pane && id === this.pane.id) {
                 return;
             }
             _.result(this.pane, 'destroy');
