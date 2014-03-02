@@ -10,7 +10,7 @@ Router.reopen({
 
 Router.map(function () {
   this.resource('posts', { path: '/' }, function () {
-    this.resource('post', { path: '/:post_id' });
+    this.route('post', { path: ':post_id' });
   });
   this.resource('editor', { path: '/editor/:post_id' });
   this.route('new', { path: '/editor' });

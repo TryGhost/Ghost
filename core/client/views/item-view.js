@@ -3,5 +3,5 @@ export default Ember.View.extend({
 
   active: function() {
     return this.get('childViews.firstObject.active');
-  }.property('childViews.firstObject.active'),
+  }.property('childViews.firstObject.active')
 });

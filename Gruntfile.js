@@ -514,7 +514,7 @@ var path           = require('path'),
                             'bower_components/jquery-ui/ui/jquery-ui.js',
                             'core/clientold/assets/lib/jquery-utils.js',
                             'core/clientold/assets/lib/uploader.js',
-
+                            
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
                             'bower_components/handlebars.js/dist/handlebars.runtime.js',
