@@ -450,6 +450,9 @@ var path           = require('path'),
             // ### Config for grunt-contrib-clean
             // Clean up files as part of other tasks
             clean: {
+                built: {
+                    src: ['core/built/**']
+                },
                 release: {
                     src: ['<%= paths.releaseBuild %>/**']
                 },
@@ -517,7 +520,7 @@ var path           = require('path'),
 
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
-                            'bower_components/handlebars.js/dist/handlebars.runtime.js',
+                            'bower_components/handlebars/handlebars.runtime.js',
                             'bower_components/moment/moment.js',
                             'bower_components/jquery-file-upload/js/jquery.fileupload.js',
                             'bower_components/codemirror/lib/codemirror.js',
@@ -568,9 +571,21 @@ var path           = require('path'),
                         'core/built/scripts/vendor-ember.js': [
                             'core/client/assets/vendor/loader.js',
                             'bower_components/jquery/dist/jquery.js',
-                            'bower_components/handlebars.js/dist/handlebars.js',
+                            'bower_components/handlebars/handlebars.js',
                             'bower_components/ember/ember.js',
-                            'bower_components/ember-resolver/dist/ember-resolver.js'
+                            'bower_components/ember-resolver/dist/ember-resolver.js',
+                            'bower_components/ic-ajax/dist/globals/main.js',
+
+                            'bower_components/codemirror/lib/codemirror.js',
+                            'bower_components/codemirror/addon/mode/overlay.js',
+                            'bower_components/codemirror/mode/markdown/markdown.js',
+                            'bower_components/codemirror/mode/gfm/gfm.js',
+                            'bower_components/showdown/src/showdown.js',
+                            'core/clientold/assets/lib/showdown/extensions/ghostdown.js',
+                            'core/shared/lib/showdown/extensions/typography.js',
+                            'core/shared/lib/showdown/extensions/github.js',
+
+                            'bower_components/moment/moment.js'
                         ]
                     }
                 },
@@ -584,7 +599,7 @@ var path           = require('path'),
 
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
-                            'bower_components/handlebars.js/dist/handlebars.runtime.js',
+                            'bower_components/handlebars/handlebars.runtime.js',
                             'bower_components/moment/moment.js',
                             'bower_components/jquery-file-upload/js/jquery.fileupload.js',
                             'bower_components/codemirror/lib/codemirror.js',
