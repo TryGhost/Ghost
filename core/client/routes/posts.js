@@ -4,7 +4,9 @@ export default Ember.Route.extend({
   classNames: "manage",
 
   model: function() {
-    return ajax("/ghost/api/v0.1/posts");
+    return ajax("/ghost/api/v0.1/posts").then(function(response) {
+      return response.posts;
+    });
   },
 
   actions: {
