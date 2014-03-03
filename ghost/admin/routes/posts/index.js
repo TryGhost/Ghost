@@ -1,4 +1,4 @@
-export default Ember.Route.extend({
+var PostsIndexRoute = Ember.Route.extend({
     // redirect to first post subroute
     redirect: function () {
         var firstPost = (this.modelFor('posts') || []).get('firstObject');
@@ -8,3 +8,5 @@ export default Ember.Route.extend({
         }
     }
 });
+
+export default PostsIndexRoute;

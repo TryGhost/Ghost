@@ -15,30 +15,30 @@ var onScrollHandler = function (cm) {
     }, 50);
 };
 
-export default Ember.TextArea.extend({
+var Codemirror = Ember.TextArea.extend({
     initCodemirror: function () {
         // create codemirror
         this.codemirror = CodeMirror.fromTextArea(this.get('element'), {
             lineWrapping: true
         });
-
         this.codemirror.component = this; // save reference to this
 
         // propagate changes to value property
-        this.codemirror.on("change", onChangeHandler);
+        this.codemirror.on('change', onChangeHandler);
 
         // on scroll update scrollPosition property
-        this.codemirror.on("scroll", onScrollHandler);
-    }.on("didInsertElement"),
+        this.codemirror.on('scroll', onScrollHandler);
+    }.on('didInsertElement'),
 
     removeThrottle: function () {
         Ember.run.cancel(this.throttle);
-    }.on("willDestroyElement"),
+    }.on('willDestroyElement'),
 
     removeCodemirrorHandlers: function () {
         // not sure if this is needed.
-        this.codemirror.off("change", onChangeHandler);
-        this.codemirror.off("scroll", onScrollHandler);
-    }.on("willDestroyElement")
-
+        this.codemirror.off('change', onChangeHandler);
+        this.codemirror.off('scroll', onScrollHandler);
+    }.on('willDestroyElement')
 });
+
+export default Codemirror;

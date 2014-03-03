@@ -9,12 +9,15 @@
         <span class="author">{{author.name}}</span>
     </small>
     <section class="post-controls">
-            {{#link-to "editor" this class="post-edit" title="Edit Post"}}<span class="hidden">Edit Post</span>{{/link-to}}
+        {{#link-to "editor" this class="post-edit" title="Edit Post"}}
+            <span class="hidden">Edit Post</span>
+        {{/link-to}}
         <a class="post-settings" href="#" data-toggle=".post-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
         <div class="post-settings-menu menu-drop-right overlay" style="display: none;">
             <form>
                 <table class="plain">
-                    <tbody><tr class="post-setting">
+                    <tbody>
+                    <tr class="post-setting">
                         <td class="post-setting-label">
                             <label for="url">URL</label>
                         </td>
@@ -39,7 +42,8 @@
                             <label class="checkbox" for="static-page"></label>
                         </td>
                     </tr>
-                    </tbody></table>
+                    </tbody>
+                </table>
             </form>
             <a class="delete" href="#">Delete This Post</a>
         </div>
