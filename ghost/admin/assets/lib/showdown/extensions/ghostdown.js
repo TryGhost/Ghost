@@ -1,3 +1,4 @@
+/* jshint node:true, browser:true */
 (function () {
     var ghostdown = function () {
         return [
@@ -41,5 +42,7 @@
         window.Showdown.extensions.ghostdown = ghostdown;
     }
     // Server-side export
-    if (typeof module !== 'undefined') module.exports = ghostdown;
+    if (typeof module !== 'undefined') {
+        module.exports = ghostdown;
+    }
 }());
