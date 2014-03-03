@@ -10,8 +10,8 @@ var testUtils = require('../utils'),
 
 // Stuff we are testing
     Showdown = require('showdown'),
-    github = require('../../shared/vendor/showdown/extensions/github'),
-    ghostdown = require('../../client/assets/vendor/showdown/extensions/ghostdown'),
+    github = require('../../shared/lib/showdown/extensions/github'),
+    ghostdown = require('../../client/assets/lib/showdown/extensions/ghostdown'),
     converter = new Showdown.converter({extensions: [ghostdown, github]});
 
 describe("Showdown client side converter", function () {

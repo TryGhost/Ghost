@@ -45,7 +45,7 @@ CasperTest.begin("Ghost editor is correct", 10, function suite(test) {
     });
 });
 
-CasperTest.begin("Haunted markdown in editor works", 3, function suite(test) {
+CasperTest.begin("Markdown in editor works", 3, function suite(test) {
     casper.thenOpen(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     });

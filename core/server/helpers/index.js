@@ -458,7 +458,7 @@ coreHelpers.ghost_foot = function (options) {
     var foot = [];
 
     foot.push(scriptTemplate({
-        source: config().paths.subdir + '/shared/vendor/jquery/jquery.js',
+        source: config().paths.subdir + '/public/jquery.js',
         version: coreHelpers.assetHash
     }));
 

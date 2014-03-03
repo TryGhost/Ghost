@@ -10,7 +10,7 @@ var testUtils = require('../utils'),
     should = require('should'),
 
     // Stuff we are testing
-    gdPath = "../../client/assets/vendor/showdown/extensions/ghostdown.js",
+    gdPath = "../../client/assets/lib/showdown/extensions/ghostdown.js",
     ghostdown = require(gdPath);
 
 describe("Ghostdown showdown extensions", function () {

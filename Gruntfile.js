@@ -235,7 +235,8 @@ var path           = require('path'),
                         src: [
                             'core/shared/**/*.js',
                             // Ignore files
-                            '!core/shared/vendor/**/*.js'
+                            '!core/shared/vendor/**/*.js',
+                            '!core/shared/lib/**/*.js'
                         ]
                     }
                 }
@@ -397,11 +398,32 @@ var path           = require('path'),
             // ### Config for grunt-contrib-copy
             // Prepare files for builds / releases
             copy: {
+                dev: {
+                    files: [{
+                        cwd: 'bower_components/jquery/dist/',
+                        src: 'jquery.js',
+                        dest: 'core/built/public/',
+                        expand: true
+                    }]
+                },
+                prod: {
+                    files: [{
+                        cwd: 'bower_components/jquery/dist/',
+                        src: 'jquery.js',
+                        dest: 'core/built/public/',
+                        expand: true
+                    }]
+                },
                 release: {
                     files: [{
                         expand: true,
                         src: buildGlob,
                         dest: '<%= paths.releaseBuild %>/'
+                    }, {
+                        cwd: 'bower_components/jquery/dist/',
+                        src: 'jquery.js',
+                        dest: 'core/built/public/',
+                        expand: true
                     }]
                 }
             },
@@ -425,34 +447,34 @@ var path           = require('path'),
                 dev: {
                     files: {
                         'core/built/scripts/vendor.js': [
-                            'core/shared/vendor/jquery/jquery.js',
-                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
+                            'bower_components/jquery/dist/jquery.js',
+                            'bower_components/jquery-ui/ui/jquery-ui.js',
                             'core/client/assets/lib/jquery-utils.js',
                             'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/lodash.underscore.js',
-                            'core/shared/vendor/backbone/backbone.js',
-                            'core/shared/vendor/handlebars/handlebars-runtime.js',
-                            'core/shared/vendor/moment.js',
 
-                            'core/shared/vendor/jquery/jquery.ui.widget.js',
-                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
-                            'core/shared/vendor/jquery/jquery.fileupload.js',
+                            'bower_components/lodash/dist/lodash.underscore.js',
+                            'bower_components/backbone/backbone.js',
+                            'bower_components/handlebars.js/dist/handlebars.runtime.js',
+                            'bower_components/moment/moment.js',
+                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+                            'bower_components/codemirror/lib/codemirror.js',
+                            'bower_components/codemirror/lib/addon/mode/overlay.js',
+                            'bower_components/codemirror/lib/mode/markdown/markdown.js',
+                            'bower_components/codemirror/lib/mode/gfm/gfm.js',
+                            'bower_components/showdown/src/showdown.js',
+                            'bower_components/validator-js/validator.js',
 
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
-                            'core/shared/vendor/showdown/extensions/typography.js',
-                            'core/shared/vendor/showdown/extensions/github.js',
+                            'core/client/assets/lib/showdown/extensions/ghostdown.js',
+                            'core/shared/lib/showdown/extensions/typography.js',
+                            'core/shared/lib/showdown/extensions/github.js',
+
+                            // ToDo: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
                             'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js',
-                            'core/client/assets/vendor/nprogress.js'
+
+                            'bower_components/Countable/Countable.js',
+                            'bower_components/fastclick/lib/fastclick.js',
+                            'bower_components/nprogress/nprogress.js'
                         ],
 
                         'core/built/scripts/helpers.js': [
@@ -481,34 +503,34 @@ var path           = require('path'),
                 prod: {
                     files: {
                         'core/built/scripts/ghost.js': [
-                            'core/shared/vendor/jquery/jquery.js',
-                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
+                            'bower_components/jquery/dist/jquery.js',
+                            'bower_components/jquery-ui/ui/jquery-ui.js',
                             'core/client/assets/lib/jquery-utils.js',
                             'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/lodash.underscore.js',
-                            'core/shared/vendor/backbone/backbone.js',
-                            'core/shared/vendor/handlebars/handlebars-runtime.js',
-                            'core/shared/vendor/moment.js',
 
-                            'core/shared/vendor/jquery/jquery.ui.widget.js',
-                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
-                            'core/shared/vendor/jquery/jquery.fileupload.js',
+                            'bower_components/lodash/dist/lodash.underscore.js',
+                            'bower_components/backbone/backbone.js',
+                            'bower_components/handlebars.js/dist/handlebars.runtime.js',
+                            'bower_components/moment/moment.js',
+                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+                            'bower_components/codemirror/lib/codemirror.js',
+                            'bower_components/codemirror/lib/addon/mode/overlay.js',
+                            'bower_components/codemirror/lib/mode/markdown/markdown.js',
+                            'bower_components/codemirror/lib/mode/gfm/gfm.js',
+                            'bower_components/showdown/src/showdown.js',
+                            'bower_components/validator-js/validator.js',
 
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
-                            'core/shared/vendor/showdown/extensions/typography.js',
-                            'core/shared/vendor/showdown/extensions/github.js',
+                            'core/client/assets/lib/showdown/extensions/ghostdown.js',
+                            'core/shared/lib/showdown/extensions/typography.js',
+                            'core/shared/lib/showdown/extensions/github.js',
+
+                            // ToDo: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
                             'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js',
-                            'core/client/assets/vendor/nprogress.js',
+
+                            'bower_components/Countable/Countable.js',
+                            'bower_components/fastclick/lib/fastclick.js',
+                            'bower_components/nprogress/nprogress.js',
 
                             'core/client/init.js',
 
@@ -858,6 +880,7 @@ var path           = require('path'),
                 'sass:admin',
                 'handlebars',
                 'concat',
+                'copy:dev',
                 'express:dev',
                 'watch'
             ]);
@@ -877,7 +900,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:integration']);
 
-        grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'spawn-casperjs', 'express:test:stop']);
+        grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawn-casperjs', 'express:test:stop']);
 
         grunt.registerTask('test-api', 'Run functional api tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
 
@@ -901,10 +924,10 @@ var path           = require('path'),
         grunt.registerTask('init', 'Prepare the project for development', ['shell:bundle', 'shell:bourbon', 'default']);
 
         // Before running in production mode
-        grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify']);
+        grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify', 'copy:prod']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat']);
+        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat', 'copy:dev']);
     };
 
 module.exports = configureGrunt;
