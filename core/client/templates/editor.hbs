@@ -1,24 +1,42 @@
 <style>
-   /*
-     Cosmetic changes to ghost styles, that help during development.
-     The contents should be solved properly or moved into the other assets.
-   */
+/* Put your CSS here */
+/*
+@keyframes domChanged { from { background: yellow; } }
+@-webkit-keyframes domChanged { from { background: yellow; } }
+.ember-view { animation: domChanged 1s; -webkit-animation: domChanged 1s; }
+*/
 
-   .post-settings-menu {
-     display: none !important;
-   }
+@font-face {
+    font-family: "Icons";
+    src: url("https://testblog111.ghost.io/ghost/fonts/icons.woff") format('woff');
+}
+/*
+  Cosmetic changes to ghost styles, that help during development.
+  The contents should be solved properly or moved into the other assets.
+*/
+.post-settings-menu {
+    display: none !important;
+}
 
-   #entry-markdown, .entry-preview,
-   .CodeMirror.cm-s-default {
-     height: 500px !important;
-   }
+#entry-markdown, .entry-preview,
+.CodeMirror.cm-s-default {
+    height: 500px !important;
+}
 
-   .editor input {
-     -webkit-transition: none;
-     -moz-transition: none;
-     transition: none;
-   }
+.editor .entry-title {
+    box-shadow: none !important;
+    background: none !important;
+    padding: 0 !important;
+    height: auto !important;
+}
+
+.editor input {
+    -webkit-transition: none;
+    -moz-transition: none;
+    transition: none;
+}
 </style>
+
 
 <section class="entry-container">
     <header>
@@ -33,7 +51,7 @@
             <a class="markdown-help" href="#"><span class="hidden">What is Markdown?</span></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
-            {{code-mirror value=markdown scrollPosition=view.scrollPosition}}
+            {{-codemirror value=markdown scrollPosition=view.scrollPosition}}
         </section>
     </section>
 
@@ -41,7 +59,7 @@
         <header class="floatingheader">
             <small>Preview <span class="entry-word-count js-entry-word-count">{{count-words markdown}} words</span></small>
         </header>
-        {{mark-down markdown=markdown scrollPosition=view.scrollPosition}}
+        {{-markdown markdown=markdown scrollPosition=view.scrollPosition}}
     </section>
 </section>
 

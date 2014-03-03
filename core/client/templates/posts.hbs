@@ -14,9 +14,9 @@
                             <h3 class="entry-title">{{title}}</h3>
                             <section class="entry-meta">
                                 <span class="status">
-                                  {{#if isDraft}}
-                                      <span class="draft">Draft</span>
-                                  {{/if}}
+                                    {{#if isDraft}}
+                                        <span class="draft">Draft</span>
+                                    {{/if}}
                                     {{#if isPublished}}
                                         <time datetime="{{unbound published_at}}" class="date published">
                                             Published {{format-timeago published_at}}
