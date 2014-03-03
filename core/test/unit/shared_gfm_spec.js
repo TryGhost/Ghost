@@ -8,7 +8,7 @@ var testUtils = require('../utils'),
     should = require('should'),
 
     // Stuff we are testing
-    ghPath = "../../shared/vendor/showdown/extensions/github.js",
+    ghPath = "../../shared/lib/showdown/extensions/github.js",
     github = require(ghPath);
 
 function _ExecuteExtension(ext, text) {

@@ -224,6 +224,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared'), {maxAge: ONE_HOUR_MS}));
     expressServer.use(subdir + '/content/images', storage.get_storage().serve());
     expressServer.use(subdir + '/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: ONE_YEAR_MS}));
+    expressServer.use(subdir + '/public', express['static'](path.join(corePath, '/built/public'), {maxAge: ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
     expressServer.use(manageAdminAndTheme);
