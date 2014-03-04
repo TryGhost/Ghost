@@ -3,8 +3,13 @@ var _        = require('lodash'),
     keys     = require('when/keys'),
     path     = require('path'),
     when     = require('when'),
-    messages = {errors: [], warns: []},
-    parsePackageJson = function (path) {
+    parsePackageJson = function (path, messages) {
+        // Default the messages if non were passed
+        messages = messages || {
+            errors: [],
+            warns: []
+        };
+
         var packageDeferred = when.defer(),
             packagePromise = packageDeferred.promise,
             jsonContainer;
@@ -30,8 +35,12 @@ var _        = require('lodash'),
         });
         return when(packagePromise);
     },
-    readDir = function (dir, options, depth) {
+    readDir = function (dir, options, depth, messages) {
         depth = depth || 0;
+        messages = messages || {
+            errors: [],
+            warns: []
+        };
 
         options = _.extend({
             index: true
@@ -60,9 +69,9 @@ var _        = require('lodash'),
                 fs.lstat(fpath, function (error, result) {
                     /*jslint unparam:true*/
                     if (result.isDirectory()) {
-                        fileDeferred.resolve(readDir(fpath, options, depth + 1));
+                        fileDeferred.resolve(readDir(fpath, options, depth + 1, messages));
                     } else if (depth === 1 && file === "package.json") {
-                        fileDeferred.resolve(parsePackageJson(fpath));
+                        fileDeferred.resolve(parsePackageJson(fpath, messages));
                     } else {
                         fileDeferred.resolve(fpath);
                     }
@@ -79,7 +88,13 @@ var _        = require('lodash'),
         });
     },
     readAll = function (dir, options, depth) {
-        return when(readDir(dir, options, depth)).then(function (paths) {
+        // Start with clean messages, pass down along traversal
+        var messages = {
+            errors: [],
+            warns: []
+        };
+
+        return when(readDir(dir, options, depth, messages)).then(function (paths) {
             // for all contents of the dir, I'm interested in the ones that are directories and within /theme/
             if (typeof paths === "object" && dir.indexOf('theme') !== -1) {
                 _.each(paths, function (path, index) {
@@ -93,4 +108,8 @@ var _        = require('lodash'),
         });
     };
 
-module.exports = readAll;
+module.exports = {
+    readAll: readAll,
+    readDir: readDir,
+    parsePackageJson: parsePackageJson
+};
