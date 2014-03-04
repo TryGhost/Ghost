@@ -865,6 +865,16 @@ describe('Core Helpers', function () {
                 done();
             }).then(null, done);
         });
+
+        it('can return tag name', function (done) {
+            var post = {relativeUrl: '/tag/foo', tag: {name: 'foo'}};
+            helpers.meta_title.call(post).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('foo - Ghost');
+
+                done();
+            }).then(null, done);
+        });
     });
 
     describe("meta_description helper", function () {
