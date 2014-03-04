@@ -24,7 +24,8 @@
     "main": "./core/index",
     "scripts": {
         "start": "node index",
-        "test": "./node_modules/.bin/grunt validate --verbose"
+        "test": "./node_modules/.bin/grunt validate --verbose",
+        "postinstall": "bower install"
     },
     "engines": {
         "node": "~0.10.0"
@@ -59,6 +60,7 @@
     },
     "devDependencies": {
         "blanket": "~1.1.5",
+        "bower": "~1.2.8",
         "grunt": "~0.4.1",
         "grunt-cli": "~0.1.13",
         "grunt-contrib-clean": "~0.5.0",

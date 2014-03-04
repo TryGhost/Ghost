@@ -452,7 +452,7 @@ describe('Core Helpers', function () {
 
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script src=".*\/shared\/vendor\/jquery\/jquery.js\?v=abc"><\/script>/);
+                rendered.string.should.match(/<script src=".*\/public\/jquery.js\?v=abc"><\/script>/);
 
                 done();
             }).then(null, done);
