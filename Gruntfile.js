@@ -331,6 +331,12 @@ var path           = require('path'),
                 bourbon: {
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
                 },
+                bower: {
+                    command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
+                    options: {
+                        stdout: true
+                    }
+                },
                 // generate coverage report
                 coverage: {
                     command: function () {
@@ -416,14 +422,14 @@ var path           = require('path'),
                 },
                 release: {
                     files: [{
-                        expand: true,
-                        src: buildGlob,
-                        dest: '<%= paths.releaseBuild %>/'
-                    }, {
                         cwd: 'bower_components/jquery/dist/',
                         src: 'jquery.js',
                         dest: 'core/built/public/',
                         expand: true
+                    }, {
+                        expand: true,
+                        src: buildGlob,
+                        dest: '<%= paths.releaseBuild %>/'
                     }]
                 }
             },
@@ -865,6 +871,7 @@ var path           = require('path'),
             ' - Zip files in release-folder to dist-folder/#{version} directory',
             [
                 'shell:bourbon',
+                'shell:bower',
                 'sass:compress',
                 'handlebars',
                 'concat',
@@ -921,7 +928,7 @@ var path           = require('path'),
 
         // ### Tools for building assets
 
-        grunt.registerTask('init', 'Prepare the project for development', ['shell:bundle', 'shell:bourbon', 'default']);
+        grunt.registerTask('init', 'Prepare the project for development', ['shell:bundle', 'shell:bourbon', 'shell:bower', 'default']);
 
         // Before running in production mode
         grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify', 'copy:prod']);
