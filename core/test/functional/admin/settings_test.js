@@ -112,6 +112,111 @@ CasperTest.begin("Settings screen is correct", 18, function suite(test) {
     });
 });
 
+CasperTest.begin('Ensure general blog title field length validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#general', function then() {
+        this.fill("form#settings-general", {
+            'general[title]': new Array(152).join('a')
+        });
+    });
+
+    casper.thenClick('#general .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'too long');
+    }, function onTimeout() {
+        test.fail('Blog title length error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure general blog description field length validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#general', function then() {
+        this.fillSelectors("form#settings-general", {
+            '#blog-description': new Array(202).join('a')
+        });
+    });
+
+    casper.thenClick('#general .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'too long');
+    }, function onTimeout() {
+        test.fail('Blog description length error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure postsPerPage number field form validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#general', function then() {
+        this.fill("form#settings-general", {
+            'general[postsPerPage]': 'notaninteger'
+        });
+    });
+
+    casper.thenClick('#general .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number');
+    }, function onTimeout() {
+        test.fail('postsPerPage error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure postsPerPage max of 1000', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#general', function then() {
+        this.fill("form#settings-general", {
+            'general[postsPerPage]': '1001'
+        });
+    });
+
+    casper.thenClick('#general .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
+    }, function onTimeout() {
+        test.fail('postsPerPage max error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure postsPerPage min of 0', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#general', function then() {
+        this.fill("form#settings-general", {
+            'general[postsPerPage]': '-1'
+        });
+    });
+
+    casper.thenClick('#general .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
+    }, function onTimeout() {
+        test.fail('postsPerPage min error did not appear');
+    }, 2000);
+});
+
 CasperTest.begin("User settings screen validates email", 6, function suite(test) {
     var email, brokenEmail;
 
@@ -182,4 +287,67 @@ CasperTest.begin("User settings screen shows remaining characters for Bio proper
     casper.then(function checkCharacterCount() {
         test.assert(getRemainingBioCharacterCount() === '195', 'Bio remaining characters is 195');
     });
+});
+
+CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#user', function then() {
+        this.fillSelectors("form.user-profile", {
+            '#user-bio': new Array(202).join('a')
+        });
+    });
+
+    casper.thenClick('#user .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'is too long');
+    }, function onTimeout() {
+        test.fail('Bio field length error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#user', function then() {
+        this.fillSelectors("form.user-profile", {
+            '#user-website': 'notaurl'
+        });
+    });
+
+    casper.thenClick('#user .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a valid url');
+    }, function onTimeout() {
+        test.fail('Url validation error did not appear');
+    }, 2000);
+});
+
+CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#user', function then() {
+        this.fillSelectors("form.user-profile", {
+            '#user-location': new Array(1002).join('a')
+        });
+    });
+
+    casper.thenClick('#user .button-save');
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'is too long');
+    }, function onTimeout() {
+        test.fail('Location field length error did not appear');
+    }, 2000);
 });

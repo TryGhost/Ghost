@@ -1,4 +1,4 @@
-/*global document, Ghost, $, _, Countable */
+/*global document, Ghost, $, _, Countable, validator */
 (function () {
     "use strict";
 
@@ -160,28 +160,32 @@
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
                 postsPerPage = this.$('#postsPerPage').val(),
-                permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/';
+                permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/',
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate
-                .check(title, {message: "Title is too long", el: $('#blog-title')})
-                .len(0, 150);
-            Ghost.Validate
-                .check(description, {message: "Description is too long", el: $('#blog-description')})
-                .len(0, 200);
-            Ghost.Validate
-                .check(email, {message: "Please supply a valid email address", el: $('#email-address')})
-                .isEmail().len(0, 254);
-            Ghost.Validate
-                .check(postsPerPage, {message: "Please use a number less than 1000", el: $('postsPerPage')})
-                .isInt().max(1000);
-            Ghost.Validate
-                .check(postsPerPage, {message: "Please use a number greater than 0", el: $('postsPerPage')})
-                .isInt().min(0);
+            if (!validator.isLength(title, 0, 150)) {
+                validationErrors.push({message: "Title is too long", el: $('#blog-title')});
+            }
+
+            if (!validator.isLength(description, 0, 200)) {
+                validationErrors.push({message: "Description is too long", el: $('#blog-description')});
+            }
+
+            if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
+                validationErrors.push({message: "Please supply a valid email address", el: $('#email-address')});
+            }
+
+            if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
+                validationErrors.push({message: "Please use a number less than 1000", el: $('postsPerPage')});
+            }
+
+            if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
+                validationErrors.push({message: "Please use a number greater than 0", el: $('postsPerPage')});
+            }
 
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
                 this.model.save({
                     title: title,
@@ -343,30 +347,33 @@
                 userEmail = this.$('#user-email').val(),
                 userLocation = this.$('#user-location').val(),
                 userWebsite = this.$('#user-website').val(),
-                userBio = this.$('#user-bio').val();
+                userBio = this.$('#user-bio').val(),
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate
-                .check(userName, {message: "Name is too long", el: $('#user-name')})
-                .len(0, 150);
-            Ghost.Validate
-                .check(userBio, {message: "Bio is too long", el: $('#user-bio')})
-                .len(0, 200);
-            Ghost.Validate
-                .check(userEmail, {message: "Please supply a valid email address", el: $('#user-email')})
-                .isEmail();
-            Ghost.Validate
-                .check(userLocation, {message: "Location is too long", el: $('#user-location')})
-                .len(0, 150);
-            if (userWebsite.length > 0) {
-                Ghost.Validate
-                    .check(userWebsite, {message: "Please use a valid url", el: $('#user-website')})
-                    .isUrl()
-                    .len(0, 2000);
+            if (!validator.isLength(userName, 0, 150)) {
+                validationErrors.push({message: "Name is too long", el: $('#user-name')});
             }
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (!validator.isLength(userBio, 0, 200)) {
+                validationErrors.push({message: "Bio is too long", el: $('#user-bio')});
+            }
+
+            if (!validator.isEmail(userEmail)) {
+                validationErrors.push({message: "Please supply a valid email address", el: $('#user-email')});
+            }
+
+            if (!validator.isLength(userLocation, 0, 150)) {
+                validationErrors.push({message: "Location is too long", el: $('#user-location')});
+            }
+
+            if (userWebsite.length) {
+                if (!validator.isURL(userWebsite) || !validator.isLength(userWebsite, 0, 2000)) {
+                    validationErrors.push({message: "Please use a valid url", el: $('#user-website')});
+                }
+            }
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
 
                 this.model.save({
@@ -389,16 +396,20 @@
             var self = this,
                 oldPassword = this.$('#user-password-old').val(),
                 newPassword = this.$('#user-password-new').val(),
-                ne2Password = this.$('#user-new-password-verification').val();
+                ne2Password = this.$('#user-new-password-verification').val(),
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate.check(newPassword, {message: 'Your new passwords do not match'}).equals(ne2Password);
-            Ghost.Validate.check(newPassword, {message: 'Your password is not long enough. It must be at least 8 characters long.'}).len(8);
+            if (!validator.equals(newPassword, ne2Password)) {
+                validationErrors.push("Your new passwords do not match");
+            }
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (!validator.isLength(newPassword, 8)) {
+                validationErrors.push("Your password is not long enough. It must be at least 8 characters long.");
+            }
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
-
                 $.ajax({
                     url: Ghost.paths.subdir + '/ghost/changepw/',
                     type: 'POST',
