@@ -21,6 +21,8 @@ languages:
       key: 'it'
     - name: '繁體中文'
       key: 'zh_TW'
+    - name: 'Português'
+      key: 'pt-BR'
 
 port:         4478
 
@@ -116,6 +118,13 @@ translations:
     themes:       '佈景主題'
     translations: '翻譯'
     help:         '說明'
+  pt-BR:
+    site_title:   'Guia Ghost'
+    installation: 'Instalação'
+    usage:        'Uso'
+    email:        'Email'
+    themes:       'Temas'
+    help:         'Ajuda'
 
 # If running locally, simply comment out the line below to make all urls relative
 

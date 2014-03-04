@@ -1,0 +1,71 @@
+---
+lang: pt-BR
+layout: default
+meta_title: Como Usar o Ghost - Ghost Docs
+meta_description: Um guia mais a fundo para usar a plataforma de blog Ghost. Escolheu o Ghost mas não sabe por onde começar? Comece aqui!
+heading: Usando o Ghost
+subheading: Encontrando seu caminho, e configurando do jeito que você quer
+chapter: usage
+permalink: /pt-BR/usage/settings/
+prev_section: configuration
+next_section: managing
+---
+
+<div class="container">
+    <div class="row">
+
+        {% include subnav/usage.html %}
+
+        <section id="content" class="col-lg-9">
+
+            <h2 id="settings">Preferências do Ghost</h2>
+
+
+            <p>Vá para <code class="path">&lt;your URL&gt;/ghost/settings/</code>.</p>
+            <p>Depois que você tiver terminado de alterar as preferências, é <em>necessário</em> clicar no botão "Salvar", isso irá salvar suas mudanças.</p>
+            <p>Você pode conferir suas mudanças visitando a URL do seu blog.</p>
+
+            <h3>Preferências do Blog (<code class="path">/general/</code>)</h3>
+
+            <p>Essas são preferências específicas do Blog.</p>
+
+            <ul>
+                <li><strong>Blog Title</strong>: Muda o título do seu Blog. Código usado no Tema <code>@blog.title</code>.</li>
+                <li><strong>Blog Description</strong>: Muda a descrição do seu Blog. Código usado no Tema <code>@blog.description</code>.</li>
+                <li><strong>Blog Logo</strong>: Envia o logotipo do seu blog, no formato '.png', '.jpg' or '.gif'. Código usado no Tema <code>@blog.logo</code>.</li>
+                <li><strong>Blog Cover</strong>: Envia a imagem de capa do seu blog, no formato '.png', '.jpg' or '.gif'. Código usado no Tema <code>@blog.cover</code>.</li>
+                <li><strong>Email Address</strong>: Muda o e-mail que as notificações da administração são enviadas. É <em>necessário</em> que seja um e-mail válido.</li>
+                <li><strong>Posts per page</strong>: Quantos artigos serão mostrados por página. Deve ser um valor numérico.</li>
+                <li><strong>Theme</strong>: Lista os temas instalados na pasta <code class="path">content/themes</code>. Selecionar um deles no menu <em>dropdown</em> irá mudar a aparência do seu blog.
+
+            </ul>
+
+            <h3>Preferências do Usuário (<code class="path">/user/</code>)</h3>
+
+            <p>Essas são as preferências do seu usuário / perfil do autor</p>
+
+            <ul>
+                <li><strong>Your Name</strong>: Esse é o seu nome, que será usado para creditar um artigo publicado. Código usado no Tema (post) <code>author.name</code>.</li>
+                <li><strong>Cover Image</strong>: A imagem de capa do seu perfil é enviada aqui, no formato '.png', '.jpg' or '.gif' format. Código usado no Tema (post) <code>author.cover</code>.</li>
+                <li><strong>Display Picture</strong>: Aqui é aonde você envia a imagem do seu perfil pessoal, no formato '.png', '.jpg' or '.gif' format. Código usado no Tema (post) <code>author.image</code>.</li>
+                <li><strong>Email Address</strong>: Esse e-mail estará disponível como seu e-mail público e também irá receber notificações. Código usado no Tema (post) <code>author.email</code>.</li>
+                <li><strong>Location</strong>: Deve ser sua localização atual. Theme reference (post) <code>author.location</code>.</li>
+                <li><strong>Website</strong>: O endereço do seu site pessoal ou de um de seus perfis em redes sociais. Código usado no Tema (post) <code>author.website</code>.</li>
+                <li><strong>Bio</strong>: Sua biografia é aonde você pode escrever até 200 caracteres descrevendo você. Código usado no Tema (post) <code>author.bio</code>.</li>
+            </ul>
+
+            <h4>Mudando sua senha</h4>
+
+            <ol>
+                <li>Preencha os campos com a senha apropriada (atual / nova senha).</li>
+                <li>Clique em <strong>Mudar Senha</strong>.</li>
+            </ol>
+
+            <p class="note"><strong>Nota:</strong> Para sua senha ser alterada é necessário clicar no botão "Mudar Senha", o botão "Salvar" não mudará ela.</p>
+
+            {% if page.next_section || page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>

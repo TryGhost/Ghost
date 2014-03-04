@@ -1,0 +1,131 @@
+---
+lang: pt-BR
+layout: default
+meta_title: Configurar Email
+heading: Configurando o Email
+---
+
+<div class="container">
+    <div class="row">
+        <aside id="sidebar" class="col-lg-3">
+            <nav class="bs-sidebar">
+                <ul class="nav bs-sidenav">
+                    <li class="active"><a href="#email-config">Sobre</a></li>
+                    <li><a href="#how-to">Como</a></li>
+                    <li><a href="#mailgun">Mailgun</a></li>
+                    <li><a href="#ses">Amazon SES</a></li>
+                    <li><a href="#gmail">Gmail</a></li>
+                    <li><a href="#from">Endereço do Remetente</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <section id="content" class="col-lg-9">
+            <h2 id="email-config">Configuração do Email</h2>
+            <p>A documentação a seguir detalha como configurar o email no Ghost. O Ghost utiliza o <a href="https://github.com/andris9/Nodemailer">Nodemailer</a>, e a documentação deles contém ainda mais exemplos.</p>
+
+            <h3>Espera aí, o quê?</h3>
+
+            <p>Se você está familiar com o território do PHP, então você provavelmente está acostumado a ter seu email magicamente funcionando em sua plataforma de hospedagem. O Node é um pouco diferente, ele é novo em folha e algumas coisas não estão tão redondas em alguns quesitos.</p>
+
+            <p>Mas não tenha medo, configurar seu e-mail é algo que será necessário somente uma vez e estamos aqui para te ajudar a passar por isso.</p>
+
+            <h3>Mas por quê?</h3>
+
+            <p>No momento, o Ghost só utiliza o email para envia-lo uma mensagem com uma nova senha, caso você esqueça a sua. Não é muito, mas não subestime como isso pode ser uma função útil quando você por acaso precisar.</p>
+
+            <p>No futuro o Ghost também irá suportar assinaturas por e-mail para os seus blogs. Enviando um e-mail com os detalhes da conta de um novo usuário e outras pequenas funções que irão precisar que ele seja capaz de enviar um email.</p>
+
+            <h2 id="how-to">Ok, então como faço isso?</h2>
+
+            <p>A primeira coisa que você irá precisar é de uma conta em um serviço de envio de email. Nós recomendamos fortemente o Mailgun. Eles tem um ótimo plano gratuito para você começar, que vai lhe permitir enviar mais emails que qualquer blog com um serviço de assinaturas por email pode gerenciar. Você pode usar também o Gmail ou o Amazon SES.</p>
+
+            <p>Uma vez que você decidir qual serviço de email irá usar, você precisa adicionar as informações dele no arquivo de configuração do Ghost. Onde quer que você tenha instalado o Ghost, você deve achar um arquivo <code class="path">config.js</code> no diretório raiz junto do <code class="path">index.js</code>. Se você não tem um arquivo <code class="path">config.js</code> ainda, copie o <code class="path">config.example.js</code> e renomei-o.</p>
+
+
+            <h3 id="mailgun">Mailgun</h3>
+
+            <p>Entre no endereço do <a href="http://www.mailgun.com/">mailgun.com</a> e registre uma conta. Você irá precisar de um endereço de e-mail à mãos, e ele irá pedir para você informar o seu domínio, e escolher um subdomínio do serviço. Você pode mudar isso depois, então por agora, por que não registrar um subdomínio parecido com o nome do blog que você está configurando.</p>
+
+            <p>Verifique seu endereço de e-mail com o Mailgun, e então ele irá lhe dar acesso ao seu amável painel de controle. Você precisará encontrar o seu usuário e senha do novo serviço de email que o Mailgun terá criado para você. (não são aqueles que você se registrou), clicando no seu domínio no canto direito... veja esse pequeno <em>screencast</em> abaixo que irá lhe ajudar a achar seus detalhes.</p>
+
+            <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
+
+            <br /><br />
+
+            <p>Agora que você tem tudo que precisa, é hora de abrir seu arquivo de configuração. Abra seu arquivo <code class="path">config.js</code> no editor de sua escolha. Navegue para o ambiente que você quer configurar o email, e mude as configurações para que seja semelhante a isso:</p>
+
+            <pre>
+mail: {
+    transport: 'SMTP',
+    options: {
+        service: 'Mailgun',
+        auth: {
+            user: '',
+            pass: ''
+         }
+    }
+}</pre>
+
+            <p>Coloque seu 'Login' do mailgun entre as aspas simples depois do 'user' e seu 'Password' do mailgun entre as aspas simples que estão após 'pass'. Se você tiver configurado o mailgun para a conta 'tryhosttest', ele irá ser semelhante a isso:</p>
+
+            <pre>
+mail: {
+    transport: 'SMTP',
+    options: {
+        service: 'Mailgun',
+        auth: {
+            user: 'postmaster@tryghosttest.mailgun.org',
+            pass: '25ip4bzyjwo1'
+         }
+    }
+}</pre>
+
+            <p>Fique de olho nas vírgulas, aspas e chaves. Esqueça algum deles e você irá encontrar erros estranhos.</p>
+
+            <p>Você pode reutilizar suas configurações para ambos os ambientes, desenvolvimento e produção, caso você tenha os dois.</p>
+
+
+            <h3 id="ses">Amazon SES</h3>
+
+            <p>Você pode se registrar uma conta no Amazon Simple Email Service no link <a href="http://aws.amazon.com/ses/">http://aws.amazon.com/ses/</a>. Assim que você terminar de se registrar, você terá uma chave de acesso (access key) e uma chave secreta (secret).</p>
+
+            <p>Abra o arquivo <code class="path">config.js</code> do Ghost no seu editor de preferência. Navegue para o ambiente que você deseja configurar o email, e então adicione suas credênciais da Amazon, assim como mostrado abaixo:</p>
+
+            <pre>
+mail: {
+    transport: 'SES',
+    options: {
+        AWSAccessKeyID: "AWSACCESSKEY",
+        AWSSecretKey: "/AWS/SECRET"
+    }
+}</pre>
+
+            <h3 id="gmail">Gmail</h3>
+
+            <p>É possível utilizar o Gmail para enviar emails pelo Ghost. Se você for fazer isso, nós recomendamos que você <a href="https://accounts.google.com/SignUp">crie uma conta</a> com esse propósito, ao invés de utilizar os dados do seu e-mail pessoal.</p>
+
+            <p>Uma vez que você tenha criado sua nova conta, você pode configurar as preferências do Ghost no arquivo <code class="path">config.js</code>. Abra o arquivo no editor de sua preferência. Navegue para o ambiente que você quer configurar o email, e mude as configurações para que sejam semelhantes as à seguir:</p>
+
+            <pre>
+mail: {
+    transport: 'SMTP',
+    options: {
+        auth: {
+            user: 'seuemail@gmail.com',
+            pass: 'suasenha'
+         }
+    }
+}</pre>
+
+            <h3 id="from">Endereço do Remetente</h3>
+
+            <p>Por padrão o remetente (from) dos e-mails enviados pelo Ghost será o endereço de email que está na página de configurações gerais. Se você quer sobreescrever para algo diferente, você também pode configurar isso no arquivo <code class="path">config.js</code>.</p>
+
+            <pre>
+mail: {
+    fromaddress: 'meuemail@endereco.com',
+}</pre>
+
+        </section>
+    </div>
+</div>
