@@ -28,6 +28,7 @@ describe('User Model', function run() {
 
     describe('Registration', function runRegistration() {
         beforeEach(function (done) {
+            UserModel.add("resetclosure");
             testUtils.initData().then(function () {
                 done();
             }, done);
@@ -47,6 +48,23 @@ describe('User Model', function run() {
                 gravatarStub.restore();
                 done();
             }).then(null, done);
+        });
+
+        it('allows only one user to be created', function(done) {
+            var userData1 = testUtils.DataGenerator.forModel.users[0],
+                userData2 = testUtils.DataGenerator.forModel.users[1],
+                deferreds = [];
+
+            deferreds.push(UserModel.add(userData1));
+            deferreds.push(UserModel.add(userData2));
+            when.all(deferreds).then(function(user) {
+                should.not.exist(user);
+                done();
+            }, function(error) {
+                error.message.should.eql('A user is already registered. Only one user for now!');
+                done();
+            }).then(null, done);
+
         });
 
         it('does NOT lowercase email', function (done) {
