@@ -323,7 +323,7 @@ coreHelpers.file_storage = function (context, options) {
     if (config().hasOwnProperty('fileStorage')) {
         return config().fileStorage.toString();
     }
-    return "true";
+    return 'true';
 };
 
 // ### Apps helper
@@ -333,11 +333,11 @@ coreHelpers.file_storage = function (context, options) {
 //
 // Returns the config value for apps.
 coreHelpers.apps = function (context, options) {
-    /*jslint unparam:true*/
+    /*jshint unused:false*/
     if (config().hasOwnProperty('apps')) {
         return config().apps.toString();
     }
-    return "false";
+    return 'false';
 };
 
 coreHelpers.ghost_script_tags = function () {
