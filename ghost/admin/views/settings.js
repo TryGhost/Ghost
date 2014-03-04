@@ -38,6 +38,11 @@
         initialize: function (options) {
             this.render();
             this.menu = this.$('.settings-menu');
+            // Hides apps UI unless config.js says otherwise
+            // This will stay until apps UI is ready to ship
+            if ($(this.el).attr('data-apps') !== "true") {
+                this.menu.find('.apps').hide();
+            }
             this.showContent(options.pane);
         },
 
