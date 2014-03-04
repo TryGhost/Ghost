@@ -1,10 +1,10 @@
 ---
 lang: pl
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
+meta_title: Jak zainstalować Ghost'a na swoim serwerze - dokumentacja Ghost.
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: Instalowanie Ghost'a &amp; Pierwsze kroki
+subheading: Pierwsze kroki do utworzenia nowego bloga po raz pierwszy.
 permalink: /pl/installation/windows/
 chapter: installation
 section: windows
@@ -12,34 +12,34 @@ prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# Instalacja na Windows <a id="install-windows"></a>
 
-### Install Node
+### Instalowanie Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   Na stronie [http://nodejs.org](http://nodejs.org) znajdź plik instalatora dla Windows "Windows Installer (.msi)"
+*   Click on the download to open the installer, this is going to install both Node and npm. Kliknij odpowiednio dla siebie 32-bit lub 64-bit, dzięki czemu ściągniemy instalator, który zainstaluje Node and npm.
+*   Kliknij na instalator, przechodź przez poszczególne kroki do momentu gdy pojawi się informacja o pomyślnej instalacji Node.js.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+Jeśli zatrzymasz się na jakimś etapie, możesz obejrzeć ten [możesz obejrzeć ten proces tutaj](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Instalacja node na Windows").
 
-### Download & Extract Ghost
+### Ściągnij & Rozpakuj Ghost'a
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   Zaloguj się na [http://ghost.org](http://ghost.org) i kliknij na niebieski przycisk 'Download Ghost Source Code'.
+*   Na stronie pobierania naciśnij przycisk, aby pobrać najnowszy plik zip.
+*   Kliknij strzałkę obok nowo pobranego pliku i wybierz 'Pokaż w folderze ".
+*   Kiedy otwierzy folder, kliknij prawym przyciskiem myszy na pobrany plik zip i wybierz "Extract all '.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+Jeśli zatrzymasz się na jakimś etapie, możesz obejrzeć ten [możesz obejrzeć ten proces tutaj](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Instalowanie Ghost'a na Windows Część 1").
 
-### Install and Run Ghost
+### Instalacja i Uruchomienie Ghost'a
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt' W menu start znajdź "Node.js" a następnie wybierz opcję 'Node.js Command Prompt'.
+*   W 'Node command prompt' musisz zmienić ścieżkę na taką w której został rozpakowany Ghost. Standardowo: `cd Downloads/ghost-#.#.#` (hash zastąp wersją pobranego Ghost'a).
+*   Następnie, w wierszu polecenia wpisz: `npm install --production` <span class="note">zwróć uwagę na dwie kreski przed 'production'</span>
+*   Kiedy npm zakończy inbstalację , wybierz `npm start` to polecenie uruchomi Ghost'a w trybie development.
+*   W przeglądarce przejdź na adres <code class="path">127.0.0.1:2368</code>, aby zobaczyć nowo skonfigurowanego Ghost'a.
+*   Zmień url na <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin. i stwórz administratora, abyś mógł się zalogować na konto Ghost admin.
+*   Zobacz [dokumentację](/usage) w celu przejścia przez kolejne kroki.
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Instalacja Ghost'a ona Windows - Część 2")
 
