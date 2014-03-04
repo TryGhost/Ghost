@@ -1,6 +1,5 @@
 
-var fs      = require('fs'),
-    path    = require('path'),
+var path    = require('path'),
     Module  = require('module'),
     _       = require('lodash');
 

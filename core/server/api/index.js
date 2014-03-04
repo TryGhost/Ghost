@@ -4,7 +4,6 @@
 var _             = require('lodash'),
     when          = require('when'),
     config        = require('../config'),
-    errors        = require('../errorHandling'),
     db            = require('./db'),
     settings      = require('./settings'),
     notifications = require('./notifications'),

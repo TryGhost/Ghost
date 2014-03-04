@@ -1,7 +1,6 @@
 var when   = require('when'),
     _      = require('lodash'),
     models = require('../../models'),
-    errors = require('../../errorHandling'),
     Importer000;
 
 
