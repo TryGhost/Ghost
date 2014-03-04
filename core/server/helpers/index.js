@@ -461,11 +461,13 @@ coreHelpers.meta_title = function (options) {
         blog;
 
     if (_.isString(this.relativeUrl)) {
+        blog = config.theme();
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
-            blog = config.theme();
             title = blog.title;
         } else if (this.post) {
             title = this.post.title;
+        } else if (this.tag) {
+            title = this.tag.name + ' - ' + blog.title;
         }
     }
 
