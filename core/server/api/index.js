@@ -4,7 +4,6 @@
 var _             = require('lodash'),
     when          = require('when'),
     config        = require('../config'),
-    errors        = require('../errorHandling'),
     db            = require('./db'),
     settings      = require('./settings'),
     notifications = require('./notifications'),
@@ -61,7 +60,7 @@ requestHandler = function (apiMethod) {
                 }
             });
         }, function (error) {
-            var errorCode = error.errorCode || 500,
+            var errorCode = error.code || 500,
                 errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
             res.json(errorCode, errorMsg);
         });

@@ -5,7 +5,6 @@ var Router = Ember.Router.extend();
 
 Router.map(function () {
     'use strict';
-
 });
 
 export default Router;

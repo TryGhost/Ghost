@@ -4,7 +4,8 @@ var assert   = require('assert'),
     should   = require('should'),
     sinon    = require('sinon'),
     when     = require('when'),
-    rewire   = require("rewire"),
+    rewire   = require('rewire'),
+    _        = require('lodash'),
 
 // Stuff we are testing
     api      = require('../../server/api'),
@@ -143,6 +144,106 @@ describe('Frontend Controller', function () {
         });
     });
 
+    describe('tag', function() {
+        var mockPosts = [{
+                'status': 'published',
+                'id': 1,
+                'title': 'Test static page',
+                'slug': 'test-static-page',
+                'markdown': 'Test static page content',
+                'page': 1,
+                'published_at': new Date('2013/12/30').getTime()
+            }, {
+                'status': 'published',
+                'id': 2,
+                'title': 'Test normal post',
+                'slug': 'test-normal-post',
+                'markdown': 'The test normal post content',
+                'page': 0,
+                'published_at': new Date('2014/1/2').getTime()
+            }],
+            mockTags = [{
+                'name': 'video',
+                'slug': 'video',
+                'id': 1
+            },{
+                'name': 'audio',
+                'slug': 'audio',
+                'id': 2
+            }],
+            // Helper function to prevent unit tests
+            // from failing via timeout when they
+            // should just immediately fail
+            failTest = function(done, msg) {
+                return function() {
+                    done(new Error(msg));
+                };
+            };
+ 
+        beforeEach(function () {
+            sandbox.stub(api.posts, 'browse', function (args) {
+                return when({
+                  posts: mockPosts,
+                  page: 1,
+                  pages: 1,
+                  aspect: {tag: mockTags[0]}
+                });
+            });
+ 
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+ 
+            apiSettingsStub.withArgs('activeTheme').returns(when({
+                'key': 'activeTheme',
+                'value': 'casper'
+            }));
+ 
+            apiSettingsStub.withArgs('postsPerPage').returns(when({
+                'key': 'postsPerPage',
+                'value': '10'
+            }));
+ 
+            frontend.__set__('config',  sandbox.stub().returns({
+                'paths': {
+                    'subdir': '',
+                    'availableThemes': {
+                        'casper': {
+                            'assets': null,
+                            'default.hbs': '/content/themes/casper/default.hbs',
+                            'index.hbs': '/content/themes/casper/index.hbs',
+                            'page.hbs': '/content/themes/casper/page.hbs',
+                            'tag.hbs': '/content/themes/casper/tag.hbs'
+                        }
+                    }
+                }
+            }));
+        });
+        
+        describe('custom tag template', function () {
+ 
+            beforeEach(function () {
+                apiSettingsStub.withArgs('permalinks').returns(when({
+                    value: '/tag/:slug/'
+                }));
+            });
+ 
+            it('it will render custom tag template if it exists', function (done) {
+                var req = {
+                        path: '/tag/' + mockTags[0].slug,
+                        params: {}
+                    },
+                    res = {
+                        render: function (view, context) {
+                            assert.equal(view, 'tag');
+                            assert.equal(context.tag, mockTags[0]);
+                            done();
+                        }
+                    };
+ 
+                frontend.tag(req, res, failTest(done));
+            });
+        });
+    });
+
     describe('tag redirects', function () {
         var res;
 
@@ -258,7 +359,7 @@ describe('Frontend Controller', function () {
     });
 
     describe('single', function () {
-        var mockStaticPost = {
+        var mockPosts = [{
                 'status': 'published',
                 'id': 1,
                 'title': 'Test static page',
@@ -266,8 +367,7 @@ describe('Frontend Controller', function () {
                 'markdown': 'Test static page content',
                 'page': 1,
                 'published_at': new Date('2013/12/30').getTime()
-            },
-            mockPost = {
+            }, {
                 'status': 'published',
                 'id': 2,
                 'title': 'Test normal post',
@@ -275,7 +375,15 @@ describe('Frontend Controller', function () {
                 'markdown': 'The test normal post content',
                 'page': 0,
                 'published_at': new Date('2014/1/2').getTime()
-            },
+            }, {
+                'status': 'published',
+                'id': 3,
+                'title': 'About',
+                'slug': 'about',
+                'markdown': 'This is the about page content',
+                'page': 1,
+                'published_at': new Date('2014/1/30').getTime()
+            }],
             // Helper function to prevent unit tests
             // from failing via timeout when they
             // should just immediately fail
@@ -287,13 +395,7 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {
-                if (args.slug) {
-                    return when(args.slug === mockStaticPost.slug ? mockStaticPost : mockPost);
-                } else if (args.id) {
-                    return when(args.id === mockStaticPost.id ? mockStaticPost : mockPost);
-                } else {
-                    return when({});
-                }
+                return when(_.find(mockPosts, args));
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -312,6 +414,7 @@ describe('Frontend Controller', function () {
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'page.hbs': '/content/themes/casper/page.hbs',
+                            'page-about.hbs': '/content/themes/casper/page-about.hbs',
                             'post.hbs': '/content/themes/casper/post.hbs'
                         }
                     }
@@ -320,6 +423,29 @@ describe('Frontend Controller', function () {
         });
 
         describe('static pages', function () {
+
+            describe('custom page templates', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(when({
+                        value: '/:slug/'
+                    }));
+                });
+
+                it('it will render custom page template if it exists', function (done) {
+                    var req = {
+                            path: '/' + mockPosts[2].slug
+                        },
+                        res = {
+                            render: function (view, context) {
+                                assert.equal(view, 'page-' + mockPosts[2].slug);
+                                assert.equal(context.post, mockPosts[2]);
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+            });
 
             describe('permalink set to slug', function () {
                 beforeEach(function () {
@@ -330,12 +456,12 @@ describe('Frontend Controller', function () {
 
                 it('will render static page via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockStaticPost.slug
+                            path: '/' + mockPosts[0].slug
                         },
                         res = {
                             render: function (view, context) {
                                 assert.equal(view, 'page');
-                                assert.equal(context.post, mockStaticPost);
+                                assert.equal(context.post, mockPosts[0]);
                                 done();
                             }
                         };
@@ -345,7 +471,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT render static page via /YYY/MM/DD/:slug', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockStaticPost.slug].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[0].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -359,13 +485,13 @@ describe('Frontend Controller', function () {
 
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
                     var req = {
-                            path: '/' + [mockStaticPost.slug, 'edit'].join('/')
+                            path: '/' + [mockPosts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
                             redirect: function(arg) {
                                 res.render.called.should.be.false;
-                                arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
+                                arg.should.eql(adminEditPagePath + mockPosts[0].id + '/');
                                 done();
                             }
                         };
@@ -375,7 +501,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockStaticPost.slug, 'edit'].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
@@ -399,12 +525,12 @@ describe('Frontend Controller', function () {
 
                 it('will render static page via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockStaticPost.slug
+                            path: '/' + mockPosts[0].slug
                         },
                         res = {
                             render: function (view, context) {
                                 assert.equal(view, 'page');
-                                assert.equal(context.post, mockStaticPost);
+                                assert.equal(context.post, mockPosts[0]);
                                 done();
                             }
                         };
@@ -414,7 +540,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT render static page via /YYYY/MM/DD/:slug', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockStaticPost.slug].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[0].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -428,13 +554,13 @@ describe('Frontend Controller', function () {
 
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
                     var req = {
-                            path: '/' + [mockStaticPost.slug, 'edit'].join('/')
+                            path: '/' + [mockPosts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
-                                arg.should.eql(adminEditPagePath + mockStaticPost.id + '/');
+                                arg.should.eql(adminEditPagePath + mockPosts[0].id + '/');
                                 done();
                             }
                         };
@@ -444,7 +570,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockStaticPost.slug, 'edit'].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
@@ -470,13 +596,13 @@ describe('Frontend Controller', function () {
 
                 it('will render post via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPost.slug
+                            path: '/' + mockPosts[1].slug
                         },
                         res = {
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPost);
+                                assert.equal(context.post, mockPosts[1]);
                                 done();
                             }
                         };
@@ -486,7 +612,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockPost.slug].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -501,13 +627,13 @@ describe('Frontend Controller', function () {
                 // Handle Edit append
                 it('will redirect post to admin edit page via /:slug/edit', function (done) {
                     var req = {
-                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                            path: '/' + [mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
                             redirect: function(arg) {
                                 res.render.called.should.be.false;
-                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                arg.should.eql(adminEditPagePath + mockPosts[1].id + '/');
                                 done();
                             }
                         };
@@ -517,7 +643,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var req = {
-                            path: '/' + ['2012/12/30', mockPost.slug, 'edit'].join('/')
+                            path: '/' + ['2012/12/30', mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
@@ -540,15 +666,15 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /YYYY/MM/DD/:slug', function (done) {
-                    var date = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                    var date = moment(mockPosts[1].published_at).format('YYYY/MM/DD'),
                         req = {
-                            path: '/' + [date, mockPost.slug].join('/')
+                            path: '/' + [date, mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPost);
+                                assert.equal(context.post, mockPosts[1]);
                                 done();
                             }
                         };
@@ -557,9 +683,9 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug with non-matching date in url', function (done) {
-                    var date = moment(mockPost.published_at).subtract('days', 1).format('YYYY/MM/DD'),
+                    var date = moment(mockPosts[1].published_at).subtract('days', 1).format('YYYY/MM/DD'),
                         req = {
-                            path: '/' + [date, mockPost.slug].join('/')
+                            path: '/' + [date, mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -573,7 +699,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT render post via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPost.slug
+                            path: '/' + mockPosts[1].slug
                         },
                         res = {
                             render: sinon.spy()
@@ -587,15 +713,15 @@ describe('Frontend Controller', function () {
 
                 // Handle Edit append
                 it('will redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
-                    var dateFormat = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                    var dateFormat = moment(mockPosts[1].published_at).format('YYYY/MM/DD'),
                         req = {
-                            path: '/' + [dateFormat, mockPost.slug, 'edit'].join('/')
+                            path: '/' + [dateFormat, mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
-                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                arg.should.eql(adminEditPagePath + mockPosts[1].id + '/');
                                 done();
                             }
                         };
@@ -605,7 +731,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT redirect post to admin edit page via /:slug/edit', function (done) {
                     var req = {
-                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                            path: '/' + [mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
@@ -628,15 +754,15 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:year/:slug', function (done) {
-                    var date = moment(mockPost.published_at).format('YYYY'),
+                    var date = moment(mockPosts[1].published_at).format('YYYY'),
                         req = {
-                            path: '/' + [date, mockPost.slug].join('/')
+                            path: '/' + [date, mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPost);
+                                assert.equal(context.post, mockPosts[1]);
                                 done();
                             }
                         };
@@ -645,9 +771,9 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
-                    var date = moment(mockPost.published_at).format('YYYY/MM/DD'),
+                    var date = moment(mockPosts[1].published_at).format('YYYY/MM/DD'),
                         req = {
-                            path: '/' + [date, mockPost.slug].join('/')
+                            path: '/' + [date, mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -660,9 +786,9 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /:year/slug when year does not match post year', function (done) {
-                    var date = moment(mockPost.published_at).subtract('years', 1).format('YYYY'),
+                    var date = moment(mockPosts[1].published_at).subtract('years', 1).format('YYYY'),
                         req = {
-                            path: '/' + [date, mockPost.slug].join('/')
+                            path: '/' + [date, mockPosts[1].slug].join('/')
                         },
                         res = {
                             render: sinon.spy()
@@ -676,7 +802,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT render post via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPost.slug
+                            path: '/' + mockPosts[1].slug
                         },
                         res = {
                             render: sinon.spy()
@@ -690,15 +816,15 @@ describe('Frontend Controller', function () {
 
                 // Handle Edit append
                 it('will redirect post to admin edit page via /:year/:slug/edit', function (done) {
-                    var date = moment(mockPost.published_at).format('YYYY'),
+                    var date = moment(mockPosts[1].published_at).format('YYYY'),
                         req = {
-                            path: '/' + [date, mockPost.slug, 'edit'].join('/')
+                            path: '/' + [date, mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
-                                arg.should.eql(adminEditPagePath + mockPost.id + '/');
+                                arg.should.eql(adminEditPagePath + mockPosts[1].id + '/');
                                 done();
                             }
                         };
@@ -708,7 +834,7 @@ describe('Frontend Controller', function () {
 
                 it('will NOT redirect post to admin edit page /:slug/edit', function (done) {
                     var req = {
-                            path: '/' + [mockPost.slug, 'edit'].join('/')
+                            path: '/' + [mockPosts[1].slug, 'edit'].join('/')
                         },
                         res = {
                             render: sinon.spy(),

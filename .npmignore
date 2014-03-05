@@ -27,3 +27,4 @@ SECURITY.md
 .travis.yml
 Gemfile*
 *.html
+bower_components/**

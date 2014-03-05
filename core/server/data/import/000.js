@@ -1,7 +1,6 @@
 var when   = require('when'),
     _      = require('lodash'),
     models = require('../../models'),
-    errors = require('../../errorHandling'),
     Importer000;
 
 
@@ -112,13 +111,13 @@ function importUsers(ops, tableData, transaction) {
 
 function importSettings(ops, tableData, transaction) {
     // for settings we need to update individual settings, and insert any missing ones
-    // settings we MUST NOT update are the databaseVersion, dbHash, and activeTheme
+    // settings we MUST NOT update are 'core' and 'theme' settings
     // as all of these will cause side effects which don't make sense for an import
+    var blackList = ['core', 'theme'];
 
-    var blackList = ['databaseVersion', 'dbHash', 'activeTheme'];
     tableData = stripProperties(['id'], tableData);
     tableData = _.filter(tableData, function (data) {
-        return blackList.indexOf(data.key) === -1;
+        return blackList.indexOf(data.type) === -1;
     });
 
     ops.push(models.Settings.edit(tableData, transaction)

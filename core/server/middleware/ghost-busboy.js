@@ -55,7 +55,7 @@ function ghostBusBoy(req, res, next) {
 
         busboy.on('limit', function () {
             hasError = true;
-            res.send(413, { errorCode: 413, message: 'File size limit breached.' });
+            res.send(413, {code: 413, message: 'File size limit breached.'});
         });
 
         busboy.on('error', function (error) {

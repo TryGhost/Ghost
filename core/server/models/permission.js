@@ -9,11 +9,6 @@ Permission = ghostBookshelf.Model.extend({
 
     tableName: 'permissions',
 
-    validate: function () {
-        // TODO: validate object_type, action_type and object_id
-        ghostBookshelf.validator.check(this.get('name'), "Permission name cannot be blank").notEmpty();
-    },
-
     roles: function () {
         return this.belongsToMany(Role);
     },

@@ -13,8 +13,8 @@ var moment      = require('moment'),
 
     api         = require('../api'),
     config      = require('../config'),
-    errors      = require('../errorHandling'),
     filters     = require('../../server/filters'),
+    template    = require('../helpers/template'),
 
     frontendControllers,
     // Cache static post permalink regex
@@ -58,7 +58,7 @@ function formatPageResponse(posts, page) {
 function handleError(next) {
     return function (err) {
         var e = new Error(err.message);
-        e.status = err.errorCode;
+        e.status = err.code;
         return next(e);
     };
 }
@@ -124,7 +124,7 @@ frontendControllers = {
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 api.settings.read('activeTheme').then(function (activeTheme) {
                     var paths = config().paths.availableThemes[activeTheme.value],
-                        view = paths.hasOwnProperty('tag') ? 'tag' : 'index',
+                        view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
 
                         // Format data for template
                         response = _.extend(formatPageResponse(posts, page), {
@@ -186,7 +186,8 @@ frontendControllers = {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config().paths.availableThemes[activeTheme.value],
-                            view = post.page && paths.hasOwnProperty('page.hbs') ? 'page' : 'post';
+                            view = template.getThemeViewForPost(paths, post);
+
                         res.render(view, {post: post});
                     });
                 });

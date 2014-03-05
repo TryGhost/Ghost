@@ -1,11 +1,25 @@
 {
-  "name": "ghost",
-  "dependencies": {
-    "handlebars": "~1.1.2",
-    "ember": "~1.4.0",
-    "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#9805033c178e7f857f801359664adb599444b430"
-  },
-  "resolutions": {
-    "ember": "~1.4.0"
+    "name": "ghost",
+    "dependencies": {
+        "backbone": "1.0.0",
+        "codemirror": "3.15.0",
+        "Countable": "2.0.2",
+        "ember": "~1.4.0",
+        "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#9805033c178e7f857f801359664adb599444b430",
+        "fastclick": "1.0.0",
+        "handlebars": "~1.1.2",
+        "iCheck": "1.0.1",
+        "jquery": "1.11.0",
+        "jquery-file-upload": "9.5.6",
+        "jquery-hammerjs": "1.0.1",
+        "jquery-ui": "1.10.4",
+        "lodash": "2.4.1",
+        "moment": "2.4.0",
+        "nprogress": "0.1.2",
+        "showdown": "0.3.1",
+        "validator-js": "3.4.0"
+    },
+    "resolutions": {
+      "ember": "~1.4.0"
+    }
   }
-}

@@ -1,4 +1,4 @@
-/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut, NProgress */
+/*global Ghost, _, Backbone, NProgress */
 
 (function () {
     "use strict";
@@ -10,8 +10,10 @@
         if (options !== undefined && _.isObject(options)) {
             NProgress.start();
 
+            /*jshint validthis:true */
             var self = this,
                 oldSuccess = options.success;
+            /*jshint validthis:false */
 
             options.success = function () {
                 NProgress.done();
@@ -19,6 +21,7 @@
             };
         }
 
+        /*jshint validthis:true */
         return Backbone.sync.call(this, method, model, options);
     }
 

@@ -45,7 +45,7 @@ CasperTest.begin("Ghost editor is correct", 10, function suite(test) {
     });
 });
 
-CasperTest.begin("Haunted markdown in editor works", 3, function suite(test) {
+CasperTest.begin("Markdown in editor works", 3, function suite(test) {
     casper.thenOpen(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     });
@@ -89,6 +89,27 @@ CasperTest.begin("Word count and plurality", 4, function suite(test) {
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
         test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
     });
+});
+
+CasperTest.begin('Required Title', 4, function suite(test) {
+    casper.thenOpen(url + "ghost/editor/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.waitForSelector('#entry-title', function then() {
+        test.assertEvalEquals(function() {
+            return document.getElementById('entry-title').value;
+        }, '', 'Title is empty');
+    });
+
+    casper.thenClick('.js-publish-button');  // Safe to assume draft mode?
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'must specify a title');
+    }, function onTimeout() {
+        test.fail('Title required error did not appear');
+    }, 2000);
 });
 
 CasperTest.begin('Title Trimming', 2, function suite(test) {

@@ -93,7 +93,7 @@ adminControllers = {
     // Method: GET
     'settings': function (req, res, next) {
         // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
-        var allowedSections = ['', 'general', 'user'],
+        var allowedSections = ['', 'general', 'user', 'apps'],
             section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
 
         if (allowedSections.indexOf(section) < 0) {
@@ -114,6 +114,28 @@ adminControllers = {
             res.render('debug', {
                 bodyClass: 'settings',
                 adminNav: setSelected(adminNavbar, 'settings')
+            });
+        },
+        // frontend route for downloading a file
+        exportContent: function (req, res) {
+            /*jslint unparam:true*/
+            api.db.exportContent().then(function (exportData) {
+                // send a file to the client
+                res.set('Content-Disposition', 'attachment; filename="GhostData.json"');
+                res.json(exportData);
+            }).otherwise(function (err) {
+                var notification = {
+                    type: 'error',
+                    message: 'Your export file could not be generated.',
+                    status: 'persistent',
+                    id: 'errorexport'
+                };
+
+                errors.logError(err, 'admin.js', "Your export file could not be generated.");
+
+                return api.notifications.add(notification).then(function () {
+                    res.redirect(config().paths.subdir + '/ghost/debug');
+                });
             });
         }
     },

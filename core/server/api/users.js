@@ -8,8 +8,8 @@ var when               = require('when'),
 
 // ## Users
 users = {
-    // #### Browse
 
+    // #### Browse
     // **takes:** options object
     browse: function browse(options) {
         // **returns:** a promise for a collection of users in a json object
@@ -31,7 +31,6 @@ users = {
     },
 
     // #### Read
-
     // **takes:** an identifier (id or slug?)
     read: function read(args) {
         // **returns:** a promise for a single user in a json object
@@ -45,12 +44,11 @@ users = {
                 return omitted;
             }
 
-            return when.reject({errorCode: 404, message: 'User not found'});
+            return when.reject({code: 404, message: 'User not found'});
         });
     },
 
     // #### Edit
-
     // **takes:** a json object representing a user
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
@@ -60,12 +58,11 @@ users = {
                 var omitted = _.omit(result.toJSON(), filteredAttributes);
                 return omitted;
             }
-            return when.reject({errorCode: 404, message: 'User not found'});
+            return when.reject({code: 404, message: 'User not found'});
         });
     },
 
     // #### Add
-
     // **takes:** a json object representing a user
     add: function add(userData) {
 
@@ -83,7 +80,6 @@ users = {
     },
 
     // #### Change Password
-
     // **takes:** a json object representing a user
     changePassword: function changePassword(userData) {
         // **returns:** on success, returns a promise for the resulting user in a json object

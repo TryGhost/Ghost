@@ -9,6 +9,7 @@ var _            = require('lodash'),
     settingsFilter,
     updateSettingsCache,
     readSettingsResult,
+    filterPaths,
     // Holds cached settings
     settingsCache = {};
 
@@ -78,34 +79,67 @@ readSettingsResult = function (result) {
         }
     })).then(function () {
         return when(config().paths.availableThemes).then(function (themes) {
-            var themeKeys = Object.keys(themes),
-                res = [],
-                i,
-                item;
-            for (i = 0; i < themeKeys.length; i += 1) {
-                //do not include hidden files or _messages
-                if (themeKeys[i].indexOf('.') !== 0 && themeKeys[i] !== '_messages') {
-                    item = {};
-                    item.name = themeKeys[i];
-                    if (themes[themeKeys[i]].hasOwnProperty('package.json')) {
-                        item.package = themes[themeKeys[i]]['package.json'];
-                    } else {
-                        item.package = false;
-                    }
-                    //data about files currently not used
-                    //item.details = themes[themeKeys[i]];
-                    if (themeKeys[i] === settings.activeTheme.value) {
-                        item.active = true;
-                    }
-                    res.push(item);
-                }
-            }
-            settings.availableThemes = {};
-            settings.availableThemes.value = res;
-            settings.availableThemes.type = 'theme';
+            var res = filterPaths(themes, settings.activeTheme.value);
+            settings.availableThemes = {
+                value: res,
+                type: 'theme'
+            };
+            return settings;
+        });
+    }).then(function () {
+        return when(config().paths.availableApps).then(function (apps) {
+            var res = filterPaths(apps, JSON.parse(settings.activeApps.value));
+            settings.availableApps = {
+                value: res,
+                type: 'app'
+            };
             return settings;
         });
     });
+};
+
+/**
+ * Normalizes paths read by require-tree so that the apps and themes modules can use them.
+ * Creates an empty array (res), and populates it with useful info about the read packages
+ * like name, whether they're active (comparison with the second argument), and if they
+ * have a package.json, that, otherwise false
+ * @param  object           paths       as returned by require-tree()
+ * @param  array/string     active      as read from the settings object
+ * @return array                        of objects with useful info about
+ *                                      apps / themes
+ */
+filterPaths = function (paths, active) {
+    var pathKeys = Object.keys(paths),
+        res = [],
+        item;
+
+    // turn active into an array (so themes and apps can be checked the same)
+    if (!Array.isArray(active)) {
+        active = [active];
+    }
+
+    _.each(pathKeys, function (key) {
+        //do not include hidden files or _messages
+        if (key.indexOf('.') !== 0
+                && key !== '_messages'
+                && key !== 'README.md'
+                ) {
+            item = {
+                name: key
+            };
+            if (paths[key].hasOwnProperty('package.json')) {
+                item.package = paths[key]['package.json'];
+            } else {
+                item.package = false;
+            }
+
+            if (_.indexOf(active, key) !== -1) {
+                item.active = true;
+            }
+            res.push(item);
+        }
+    });
+    return res;
 };
 
 settings = {
@@ -133,7 +167,7 @@ settings = {
         if (settingsCache) {
             return when(settingsCache[options.key]).then(function (setting) {
                 if (!setting) {
-                    return when.reject({errorCode: 404, message: 'Unable to find setting: ' + options.key});
+                    return when.reject({code: 404, message: 'Unable to find setting: ' + options.key});
                 }
                 var res = {};
                 res.key = options.key;
@@ -153,6 +187,7 @@ settings = {
             var type = key.type;
             delete key.type;
             delete key.availableThemes;
+            delete key.availableApps;
 
             key = settingsCollection(key);
             return dataProvider.Settings.edit(key).then(function (result) {
@@ -167,7 +202,7 @@ settings = {
             }).otherwise(function (error) {
                 return dataProvider.Settings.read(key.key).then(function (result) {
                     if (!result) {
-                        return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
+                        return when.reject({code: 404, message: 'Unable to find setting: ' + key});
                     }
                     return when.reject({message: error.message});
                 });
@@ -175,7 +210,7 @@ settings = {
         }
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
-                return when.reject({errorCode: 404, message: 'Unable to find setting: ' + key});
+                return when.reject({code: 404, message: 'Unable to find setting: ' + key});
             }
             if (!_.isString(value)) {
                 value = JSON.stringify(value);
