@@ -72,3 +72,7 @@ config.js
 
 # Coverage reports
 coverage.html
+
+# sublime settings
+*.sublime-project
+*.sublime-workspace
