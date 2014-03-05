@@ -89,7 +89,7 @@ describe('Frontend Routing', function () {
             var date  = moment().format("YYYY/MM/DD");
 
             request.get('/' + date + '/welcome-to-ghost/')
-                .expect('Cache-Control', cacheRules.hour)
+                //.expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -97,7 +97,7 @@ describe('Frontend Routing', function () {
 
         it('should 404 for unknown post', function (done) {
             request.get('/spectacular/')
-                .expect('Cache-Control', cacheRules.hour)
+                .expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
