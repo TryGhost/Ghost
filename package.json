@@ -24,8 +24,7 @@
     "main": "./core/index",
     "scripts": {
         "start": "node index",
-        "test": "./node_modules/.bin/grunt validate --verbose",
-        "postinstall": "bower install"
+        "test": "./node_modules/.bin/grunt validate --verbose"
     },
     "engines": {
         "node": "~0.10.0"
