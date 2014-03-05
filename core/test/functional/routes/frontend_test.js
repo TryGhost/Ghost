@@ -171,7 +171,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page is page too high', function (done) {
+        it('should redirect to last page if page too high', function (done) {
             request.get('/page/4/')
                 .expect('Location', '/page/3/')
                 .expect('Cache-Control', cacheRules['public'])
@@ -179,7 +179,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page is page too low', function (done) {
+        it('should redirect to first page if page too low', function (done) {
             request.get('/page/0/')
                 .expect('Location', '/')
                 .expect('Cache-Control', cacheRules['public'])
@@ -214,7 +214,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page is page too high', function (done) {
+        it('should redirect to last page if page too high', function (done) {
             request.get('/rss/3/')
                 .expect('Location', '/rss/2/')
                 .expect('Cache-Control', cacheRules['public'])
@@ -222,9 +222,52 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page is page too low', function (done) {
+        it('should redirect to first page if page too low', function (done) {
             request.get('/rss/0/')
                 .expect('Location', '/rss/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+    });
+
+    describe('Tag based RSS pages', function () {
+        it('should redirect without slash', function (done) {
+            request.get('/tag/getting-started/rss')
+                .expect('Location', '/tag/getting-started/rss/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should respond with xml', function (done) {
+            request.get('/tag/getting-started/rss/')
+                .expect('Content-Type', /xml/)
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should redirect page 1', function (done) {
+            request.get('/tag/getting-started/rss/1/')
+                .expect('Location', '/tag/getting-started/rss/')
+                .expect('Cache-Control', cacheRules['public'])
+                // TODO: This should probably be a 301?
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to last page if page too high', function (done) {
+            request.get('/tag/getting-started/rss/2/')
+                .expect('Location', '/tag/getting-started/rss/1/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to first page if page too low', function (done) {
+            request.get('/tag/getting-started/rss/0/')
+                .expect('Location', '/tag/getting-started/rss/')
                 .expect('Cache-Control', cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
@@ -335,7 +378,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page is page too high', function (done) {
+        it('should redirect to last page if page too high', function (done) {
             request.get('/tag/injection/page/4/')
                 .expect('Location', '/tag/injection/page/2/')
                 .expect('Cache-Control', cacheRules['public'])
@@ -343,7 +386,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page is page too low', function (done) {
+        it('should redirect to first page if page too low', function (done) {
             request.get('/tag/injection/page/0/')
                 .expect('Location', '/tag/injection/')
                 .expect('Cache-Control', cacheRules['public'])

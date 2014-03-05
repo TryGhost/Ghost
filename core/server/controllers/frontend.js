@@ -252,11 +252,16 @@ frontendControllers = {
     'rss': function (req, res, next) {
         // Initialize RSS
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            feed;
+            tagParam = req.params.slug;
 
         // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/rss/:page/')) {
-            return res.redirect(config().paths.subdir + '/rss/');
+        if (isNaN(pageParam) || pageParam < 1 ||
+            (pageParam === 1 && (req.route.path === '/rss/:page/' || req.route.path === '/tag/:slug/rss/:page/'))) {
+            if (tagParam !== undefined) {
+                return res.redirect(config().paths.subdir + '/tag/' + tagParam + '/rss/');
+            } else {
+                return res.redirect(config().paths.subdir + '/rss/');
+            }
         }
 
         // TODO: needs refactor for multi user to not use first user as default
@@ -266,25 +271,37 @@ frontendControllers = {
             api.settings.read('description'),
             api.settings.read('permalinks')
         ]).then(function (result) {
-            var user = result[0].value,
-                title = result[1].value.value,
-                description = result[2].value.value,
-                permalinks = result[3].value,
-                siteUrl = config.urlFor('home', null, true),
-                feedUrl =  config.urlFor('rss', null, true);
 
-            feed = new RSS({
-                title: title,
-                description: description,
-                generator: 'Ghost v' + res.locals.version,
-                feed_url: feedUrl,
-                site_url: siteUrl,
-                ttl: '60'
-            });
+            var options = {};
+            if (pageParam) { options.page = pageParam; }
+            if (tagParam) { options.tag = tagParam; }
 
-            return api.posts.browse({page: pageParam}).then(function (page) {
-                var maxPage = page.pages,
-                    feedItems = [];
+            return api.posts.browse(options).then(function (page) {
+
+                var user = result[0].value,
+                    title = result[1].value.value,
+                    description = result[2].value.value,
+                    permalinks = result[3].value,
+                    siteUrl = config.urlFor('home', null, true),
+                    feedUrl =  config.urlFor('rss', null, true),
+                    maxPage = page.pages,
+                    feedItems = [],
+                    feed;
+
+                if (tagParam) {
+                    title = page.aspect.tag.name + ' - ' + title;
+                    feedUrl = feedUrl + 'tag/' + page.aspect.tag.slug + '/';
+                }
+
+                feed = new RSS({
+                    title: title,
+                    description: description,
+                    generator: 'Ghost v' + res.locals.version,
+                    feed_url: feedUrl,
+                    site_url: siteUrl,
+                    ttl: '60'
+                });
+
 
                 // A bit of a hack for situations with no content.
                 if (maxPage === 0) {
@@ -294,7 +311,11 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
+                    if (tagParam) {
+                        return res.redirect(config().paths.subdir + '/tag/' + tagParam + '/rss/' + maxPage + '/');
+                    } else {
+                        return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
+                    }
                 }
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
