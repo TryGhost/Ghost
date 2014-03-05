@@ -124,7 +124,7 @@ frontendControllers = {
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 api.settings.read('activeTheme').then(function (activeTheme) {
                     var paths = config().paths.availableThemes[activeTheme.value],
-                        view = paths.hasOwnProperty('tag') ? 'tag' : 'index',
+                        view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
 
                         // Format data for template
                         response = _.extend(formatPageResponse(posts, page), {

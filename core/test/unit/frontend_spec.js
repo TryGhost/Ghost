@@ -144,6 +144,106 @@ describe('Frontend Controller', function () {
         });
     });
 
+    describe('tag', function() {
+        var mockPosts = [{
+                'status': 'published',
+                'id': 1,
+                'title': 'Test static page',
+                'slug': 'test-static-page',
+                'markdown': 'Test static page content',
+                'page': 1,
+                'published_at': new Date('2013/12/30').getTime()
+            }, {
+                'status': 'published',
+                'id': 2,
+                'title': 'Test normal post',
+                'slug': 'test-normal-post',
+                'markdown': 'The test normal post content',
+                'page': 0,
+                'published_at': new Date('2014/1/2').getTime()
+            }],
+            mockTags = [{
+                'name': 'video',
+                'slug': 'video',
+                'id': 1
+            },{
+                'name': 'audio',
+                'slug': 'audio',
+                'id': 2
+            }],
+            // Helper function to prevent unit tests
+            // from failing via timeout when they
+            // should just immediately fail
+            failTest = function(done, msg) {
+                return function() {
+                    done(new Error(msg));
+                };
+            };
+ 
+        beforeEach(function () {
+            sandbox.stub(api.posts, 'browse', function (args) {
+                return when({
+                  posts: mockPosts,
+                  page: 1,
+                  pages: 1,
+                  aspect: {tag: mockTags[0]}
+                });
+            });
+ 
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+ 
+            apiSettingsStub.withArgs('activeTheme').returns(when({
+                'key': 'activeTheme',
+                'value': 'casper'
+            }));
+ 
+            apiSettingsStub.withArgs('postsPerPage').returns(when({
+                'key': 'postsPerPage',
+                'value': '10'
+            }));
+ 
+            frontend.__set__('config',  sandbox.stub().returns({
+                'paths': {
+                    'subdir': '',
+                    'availableThemes': {
+                        'casper': {
+                            'assets': null,
+                            'default.hbs': '/content/themes/casper/default.hbs',
+                            'index.hbs': '/content/themes/casper/index.hbs',
+                            'page.hbs': '/content/themes/casper/page.hbs',
+                            'tag.hbs': '/content/themes/casper/tag.hbs'
+                        }
+                    }
+                }
+            }));
+        });
+        
+        describe('custom tag template', function () {
+ 
+            beforeEach(function () {
+                apiSettingsStub.withArgs('permalinks').returns(when({
+                    value: '/tag/:slug/'
+                }));
+            });
+ 
+            it('it will render custom tag template if it exists', function (done) {
+                var req = {
+                        path: '/tag/' + mockTags[0].slug,
+                        params: {}
+                    },
+                    res = {
+                        render: function (view, context) {
+                            assert.equal(view, 'tag');
+                            assert.equal(context.tag, mockTags[0]);
+                            done();
+                        }
+                    };
+ 
+                frontend.tag(req, res, failTest(done));
+            });
+        });
+    });
+
     describe('tag redirects', function () {
         var res;
 
