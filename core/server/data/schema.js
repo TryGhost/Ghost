@@ -8,7 +8,7 @@ var db = {
             html: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
             image: {type: 'text', maxlength: 2000, nullable: true},
             featured: {type: 'bool', nullable: false, defaultTo: false},
-            page: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [['true', 'false']]}},
+            page: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [['0', '1']]}},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'draft'},
             language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
             meta_title: {type: 'string', maxlength: 150, nullable: true},
