@@ -1,4 +1,4 @@
-import count from "ghost/utils/word-count";
+import count from 'ghost/utils/word-count';
 
 var countWords = Ember.Handlebars.makeBoundHelper(function(markdown) {
     return count(markdown);
