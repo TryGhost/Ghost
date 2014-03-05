@@ -320,6 +320,26 @@
             color: darken($brown, 5%);
         }
 
+        &#code {
+
+            p {
+                font-size: 14px;
+                color: $midgrey;
+                margin-top: 0px;
+
+                &.description {
+                    font-size: 13px;
+                }
+
+            }
+
+            h3 {
+                font-size: 14px;
+                margin-bottom: 0px;
+            }
+
+        }
+
     }//.settings-content
 
 }//.settings

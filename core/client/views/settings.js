@@ -528,4 +528,38 @@
         templateName: 'settings/apps'
     });
 
+    // ### Code Injection page
+    Settings.code = Settings.Pane.extend({
+        id: "code",
+
+        events: {
+            'click .js-button-activate': 'activateApp',
+            'click .js-button-deactivate': 'deactivateApp'
+        },
+
+        templateName: 'settings/code-injection',
+
+        afterRender: function () {
+            var codemirrorSettings = {
+                mode: 'htmlmixed',
+                tabMode: 'indent',
+                tabindex: "2",
+                lineWrapping: true,
+                dragDrop: false,
+                lineNumbers: true
+            },
+                options = {
+                    element: 'entry-header',
+                    codemirror: codemirrorSettings
+                };
+
+            this.editorHeader = new Ghost.Views.TextArea({model: options});
+            options.element = 'entry-footer';
+            this.editorFooter = new Ghost.Views.TextArea({model: options});
+
+            Settings.Pane.prototype.afterRender.call(this);
+        }
+
+    });
+
 }());

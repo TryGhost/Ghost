@@ -1683,3 +1683,58 @@ main {
     }
 
 }
+
+/* ==========================================================================
+   CodeMirror general component
+   ========================================================================== */
+
+.cm-component {
+
+    &.CodeMirror {
+        border: 1px solid $midbrown;
+        margin-bottom: 50px;
+        height: auto;
+        min-height: 250px;
+        overflow-y: hidden;
+        font-size: 10px;
+        line-height: 14px;
+
+        .CodeMirror-gutter-elt {
+            position: absolute;
+            cursor: default;
+            z-index: 4;
+        }
+
+        .CodeMirror-gutters {
+            width: 30px;
+            text-align: right;
+            padding-right: 5px;
+            background: $lightbrown;
+        }
+
+        .CodeMirror-scroll {
+            min-height: 250px;
+
+            .CodeMirror-gutter {
+                white-space: normal;
+                height: 100%;
+                -moz-box-sizing: content-box;
+                box-sizing: content-box;
+                padding-bottom: 30px;
+                margin-bottom: -32px;
+                display: inline-block;
+                /* Hack to make IE7 behave */
+                *zoom:1;
+                *display:inline;
+            }
+
+        }
+
+        .CodeMirror-linenumber {
+            text-align: right;
+            color: $midgrey;
+        }
+
+    }
+
+}

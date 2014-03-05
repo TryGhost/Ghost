@@ -1,4 +1,4 @@
-/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut */
+/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut, CodeMirror */
 (function () {
     "use strict";
 
@@ -397,4 +397,62 @@
         }
 
     });
+
+    /**
+     * CodeMirror based input area generator
+     * 
+     * This is the view to generate the markup for a
+     * CodeMirror based input field
+     *
+     * It expects the model to contain
+     * - codemirror object which contains the settings
+     * - element ID to which the Codemirror instance is attached
+     * 
+     */
+    Ghost.Views.TextArea = Ghost.View.extend({
+
+        events: {
+            'orientationchange': 'orientationChange'
+        },
+
+        initialize: function () {
+            var self = this;
+            this.editor = CodeMirror.fromTextArea(document.getElementById(this.model.element), this.model.codemirror);
+            $("#" + this.model.element).next('.CodeMirror').addClass('cm-component');
+
+            setTimeout(function () {
+                self.editor.refresh();
+            }, 0);
+
+            this.editor.on('change', function () {
+                self.setEditorDirty(true);
+            });
+        },
+
+        unloadDirtyMessage: function () {
+            return "==============================\n\n" +
+                "Hey there! It looks like you're in the middle of writing" +
+                " something and you haven't saved all of your content." +
+                "\n\nSave before you go!\n\n" +
+                "==============================";
+        },
+
+        setEditorDirty: function (dirty) {
+            window.onbeforeunload = dirty ? this.unloadDirtyMessage : null;
+        },
+
+        // This is a hack to remove iOS6 white space on orientation change bug
+        // See: http://cl.ly/RGx9
+        orientationChange: function () {
+            if (/iPhone/.test(navigator.userAgent) && !/Opera Mini/.test(navigator.userAgent)) {
+                var focusedElement = document.activeElement,
+                    s = document.documentElement.style;
+                focusedElement.blur();
+                s.display = 'none';
+                setTimeout(function () { s.display = 'block'; focusedElement.focus(); }, 0);
+            }
+        }
+
+    });
+
 }());
