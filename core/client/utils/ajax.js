@@ -1,4 +1,7 @@
 /* global ic */
-export default window.ajax = function(){
-  return ic.ajax.request.apply(null, arguments);
+
+var ajax = window.ajax = function(){
+    return ic.ajax.request.apply(null, arguments);
 }
+
+export default ajax;

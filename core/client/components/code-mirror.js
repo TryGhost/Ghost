@@ -1,6 +1,7 @@
 /* global CodeMirror*/
 
 var onChangeHandler = function(cm) {
+
   var curValue = cm.getDoc().getValue();
   cm.component.set('value', cm.getDoc().getValue());
 };
@@ -23,23 +24,24 @@ export default Ember.TextArea.extend({
       lineWrapping: true
     });
 
-    this.codemirror.component = this; // save reference to this
+	this.codemirror.component = this; // save reference to this
 
-    // propagate changes to value property
-    this.codemirror.on("change", onChangeHandler);
+	// propagate changes to value property
+	this.codemirror.on("change", onChangeHandler);
 
-    // on scroll update scrollPosition property
-    this.codemirror.on("scroll", onScrollHandler);
-  }.on("didInsertElement"),
+	// on scroll update scrollPosition property
+	this.codemirror.on("scroll", onScrollHandler);
+    }.on("didInsertElement"),
 
-  removeThrottle: function() {
-    Ember.run.cancel(this.throttle);
-  }.on("willDestroyElement"),
+    removeThrottle: function() {
+	Ember.run.cancel(this.throttle);
+    }.on("willDestroyElement"),
 
-  removeCodemirrorHandlers: function() {
-    // not sure if this is needed.
-    this.codemirror.off("change", onChangeHandler);
-    this.codemirror.off("scroll", onScrollHandler);
-  }.on("willDestroyElement")
-
+    removeCodemirrorHandlers: function() {
+	// not sure if this is needed.
+	this.codemirror.off("change", onChangeHandler);
+	this.codemirror.off("scroll", onScrollHandler);
+    }.on("willDestroyElement")
 });
+
+export default Codemirror;

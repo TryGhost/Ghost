@@ -19,24 +19,24 @@ initFixtures();
 // TODO move into ext/route.js
 // needed to add body class depending on current route
 Ember.Route.reopen({
-  activate: function() {
-    var cssClasses = this.get('classNames'),
-	rootElement = this.router.namespace.get('rootElement');
+    activate: function() {
+        var cssClasses = this.get('classNames'),
+            rootElement = this.router.namespace.get('rootElement');
 
-    if (cssClasses) {
-      Ember.run.schedule('afterRender', null, function(){
-	Ember.$(rootElement).addClass(cssClasses);
-      });
+        if (cssClasses) {
+            Ember.run.schedule('afterRender', null, function(){
+                Ember.$(rootElement).addClass(cssClasses);
+            });
+        }
+    },
+    deactivate: function() {
+        var cssClasses = this.get('classNames'),
+            rootElement = this.router.namespace.get('rootElement');
+
+        Ember.run.schedule('afterRender', null, function(){
+            Ember.$(rootElement).removeClass(cssClasses);
+        });
     }
-  },
-  deactivate: function() {
-    var cssClasses = this.get('classNames'),
-	rootElement = this.router.namespace.get('rootElement');
-
-    Ember.run.schedule('afterRender', null, function(){
-      Ember.$(rootElement).removeClass(cssClasses);
-    });
-  }
 });
 
 export default App;

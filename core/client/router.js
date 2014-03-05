@@ -4,16 +4,16 @@
 var Router = Ember.Router.extend();
 
 Router.reopen({
-  //location: 'history', // use HTML5 History API instead of hash-tag based URLs
-  rootURL: '/ghost/ember/' // admin interface lives under sub-directory /ghost
+    //location: 'history', // use HTML5 History API instead of hash-tag based URLs
+    rootURL: '/ghost/ember/' // admin interface lives under sub-directory /ghost
 });
 
 Router.map(function () {
-  this.resource('posts', { path: '/' }, function () {
-    this.route('post', { path: ':post_id' });
-  });
-  this.resource('editor', { path: '/editor/:post_id' });
-  this.route('new', { path: '/editor' });
+    this.resource('posts', { path: '/' }, function () {
+	this.route('post', { path: ':post_id' });
+    });
+    this.resource('editor', { path: '/editor/:post_id' });
+    this.route('new', { path: '/editor' });
 });
 
 export default Router;
