@@ -176,7 +176,7 @@
             // Check for missing time stamp on new data
             // If no time specified, add a 12:00
             if (newPubDate && !newPubDate.slice(-5).match(/\d+:\d\d/)) {
-                newPubDate += " 12:00";
+                newPubDate += " " + moment().format('YYYY') + " 12:00";
             }
 
             newPubDateMoment = moment(newPubDate, parseDateFormats);
@@ -186,7 +186,7 @@
                  // Check for missing time stamp on current model
                 // If no time specified, add a 12:00
                 if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
-                    pubDate += " 12:00";
+                    newPubDate += " " + moment().format('YYYY') + " 12:00";
                 }
 
                 pubDateMoment = moment(pubDate, parseDateFormats);
