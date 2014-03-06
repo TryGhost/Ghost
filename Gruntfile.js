@@ -332,7 +332,7 @@ var path           = require('path'),
                     command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
                 },
                 bower: {
-                    command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
+                    command: path.resolve(__dirname + '/node_modules/.bin/bower install --allow-root'),
                     options: {
                         stdout: true
                     }
