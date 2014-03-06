@@ -9,23 +9,25 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Mudando de Tema <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Os temas para o Ghost estão em <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Se você quer usar um tema diferente do padrão Casper, dê uma olhada nos nossos temas personalizados na nosso [marketplace gallery](http://marketplace.ghost.org/). Baixe o tema de sua escolha, extraia ele e coloque em <code class="path">content/themes</code> ao lado do Casper.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Se você quer fazer seu próprio, nós recomendamos copiar e renomear o diretório casper e editar os templates para parecerem e funcionarem da maneira que você quer.
 
-To switch to your newly added theme:
+Para mudar para seu mais novo tema:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Reinicie o Ghost. Nesse momento o Ghost não sabe que você colocou uma nova pasta dentro de <code class="path">content/themes</code> então precisamos reiniciar ele
+2.  Entre na parte de administração do Ghost e navegue para <code class="path">/ghost/settings/general/</code>
+3.  Selecione o nome do tema nas opções 'Theme', no menu dropdown
+4.  Clique em 'Salvar'
+5.  Visite seu blog e maravilhe-se com seu novo tema.
 
-<p class="note">**Note:** If you're on the Ghost Hosted Service, rather than a self-install, to switch theme you'll need to go to your <a href="https://ghost.org/blogs/">blog management</a> page and click on "edit" beside the name of your blog.</p>
+<p class="note">** Nota: ** Se você está no com um serviço de hospedagem do Ghost, ao invés de uma auto-instalação, para mudar o tema que você precisa ir para a <a href="https://ghost.org/blogs/">adminsitração do seu blog</a> e clique em "Editar" ao lado do nome do seu blog.</p>
+
+
 
 
 ##  What is Handlebars? <a id="what-is-handlebars"></a>
