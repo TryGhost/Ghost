@@ -1,7 +1,7 @@
 /* global Showdown, Handlebars */
 var showdown = new Showdown.converter();
 
-var formatMarkdown = Ember.Handlebars.makeBoundHelper(function(markdown) {
+var formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
     return new Handlebars.SafeString(showdown.makeHtml(markdown));
 });
 

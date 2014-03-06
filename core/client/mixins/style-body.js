@@ -1,26 +1,27 @@
 // mixin used for routes that need to set a css className on the body tag
 
 var styleBody = Ember.Mixin.create({
-    activate: function() {
-	var cssClasses = this.get('classNames');
 
-	if (cssClasses) {
-	    Ember.run.schedule('afterRender', null, function() {
-		cssClasses.forEach(function(curClass) {
-		    Ember.$('body').addClass(curClass);
-		});
-	    });
-	}
+    activate: function () {
+        var cssClasses = this.get('classNames');
+
+        if (cssClasses) {
+            Ember.run.schedule('afterRender', null, function () {
+                cssClasses.forEach(function (curClass) {
+                    Ember.$('body').addClass(curClass);
+                });
+            });
+        }
     },
 
-    deactivate: function() {
-	var cssClasses = this.get('classNames');
+    deactivate: function () {
+        var cssClasses = this.get('classNames');
 
-	Ember.run.schedule('afterRender', null, function() {
-	    cssClasses.forEach(function(curClass) {
-		Ember.$('body').removeClass(curClass);
-	    });
-	});
+        Ember.run.schedule('afterRender', null, function () {
+            cssClasses.forEach(function (curClass) {
+                Ember.$('body').removeClass(curClass);
+            });
+        });
     }
 });
 

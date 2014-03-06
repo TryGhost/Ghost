@@ -8,7 +8,7 @@
     </header>
     <section class="content-list-content">
         <ol class="posts-list">
-        {{#each itemController="post"}}
+        {{#each itemController="posts/post"}}
             {{#view "post-item-view" tagName="li" post=this}} <!-- needed because of "active" class on li item -->
             {{#link-to 'posts.post' this class="permalink" title="Edit this post"}}
                 <h3 class="entry-title">{{title}}</h3>
