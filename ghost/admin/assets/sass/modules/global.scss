@@ -1089,13 +1089,6 @@ nav {
     }
 }
 
-.modal-info {
-    @extend .modal; 
-    // TODO: This is stupid and should not exist
-    // remove all references to it in Ghost core
-    // then delete it entirely.
-}
-
 .modal-action {
     @extend .modal;
     padding: 60px 0 30px;
