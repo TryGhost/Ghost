@@ -37,8 +37,7 @@ var path           = require('path'),
         var cfg = {
             // Common paths to be used by tasks
             paths: {
-                // adminAssets: './core/client/', ?? who knows...
-                adminOldAssets: './core/clientold/assets',
+                adminAssets: './core/client/assets',
                 build: buildDirectory,
                 releaseBuild: path.join(buildDirectory, 'release'),
                 dist: distDirectory,
@@ -65,7 +64,7 @@ var path           = require('path'),
                     tasks: ['transpile', 'concat_sourcemap']
                 },
                 sass: {
-                    files: ['<%= paths.adminOldAssets %>/sass/**/*'],
+                    files: ['<%= paths.adminAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
                 },
                 concat: {
@@ -85,7 +84,7 @@ var path           = require('path'),
                         // Theme JS
                         'content/themes/casper/js/*.js',
                         // Admin CSS
-                        '<%= paths.adminOldAssets %>/css/*.css',
+                        '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
                         'core/built/scripts/*.js'
                     ],
@@ -318,7 +317,7 @@ var path           = require('path'),
             sass: {
                 admin: {
                     files: {
-                        '<%= paths.adminOldAssets %>/css/screen.css': '<%= paths.adminOldAssets %>/sass/screen.scss'
+                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
                 },
                 compress: {
@@ -326,7 +325,7 @@ var path           = require('path'),
                         style: 'compressed'
                     },
                     files: {
-                        '<%= paths.adminOldAssets %>/css/screen.css': '<%= paths.adminOldAssets %>/sass/screen.scss'
+                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
                 }
             },
@@ -340,7 +339,7 @@ var path           = require('path'),
                 },
                 // install bourbon
                 bourbon: {
-                    command: 'bourbon install --path <%= paths.adminOldAssets %>/sass/modules/'
+                    command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
                 },
                 bower: {
                     command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
@@ -517,7 +516,7 @@ var path           = require('path'),
 
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
-                            'bower_components/handlebars.js/dist/handlebars.runtime.js',
+                            'bower_components/handlebars/handlebars.runtime.js',
                             'bower_components/moment/moment.js',
                             'bower_components/jquery-file-upload/js/jquery.fileupload.js',
                             'bower_components/codemirror/lib/codemirror.js',
@@ -566,11 +565,18 @@ var path           = require('path'),
                 'dev-ember': {
                     files: {
                         'core/built/scripts/vendor-ember.js': [
-                            'core/client/assets/vendor/loader.js',
+                            'core/client/assets/loader.js',
                             'bower_components/jquery/dist/jquery.js',
-                            'bower_components/handlebars.js/dist/handlebars.js',
+                            'bower_components/handlebars/handlebars.js',
                             'bower_components/ember/ember.js',
-                            'bower_components/ember-resolver/dist/ember-resolver.js'
+                            'bower_components/ember-resolver/dist/ember-resolver.js',
+                            'core/shared/vendor/ic-ajax/dist/globals/main.js',
+                            'bower_components/moment/moment.js',
+                            'bower_components/codemirror/lib/codemirror.js',
+                            'bower_components/codemirror/addon/mode/overlay.js',
+                            'bower_components/codemirror/mode/markdown/markdown.js',
+                            'bower_components/codemirror/mode/gfm/gfm.js',
+                            'bower_components/showdown/src/showdown.js'
                         ]
                     }
                 },

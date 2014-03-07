@@ -1,6 +1,5 @@
-/*global Ember */
-
 import Resolver from 'ember/resolver';
+import initFixtures from 'ghost/fixtures/init';
 
 var App = Ember.Application.extend({
     /**
@@ -11,8 +10,10 @@ var App = Ember.Application.extend({
     LOG_TRANSITIONS: true,
     LOG_TRANSITIONS_INTERNAL: true,
     LOG_VIEW_LOOKUPS: true,
-    modulePrefix: 'ghost', // TODO: loaded via config
+    modulePrefix: 'ghost',
     Resolver: Resolver['default']
 });
+
+initFixtures();
 
 export default App;

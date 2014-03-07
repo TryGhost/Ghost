@@ -1,0 +1,21 @@
+@function breakpoint-parse-default-pair($first, $second) {
+  $default: $breakpoint-default-pair;
+  $min: '';
+  $max: '';
+
+  // Sort into min and max
+  $min: min($first, $second);
+  $max: max($first, $second);
+
+  // Set Context
+  $context-setter: private-breakpoint-set-context(min-#{$default}, $min);
+  $context-setter: private-breakpoint-set-context(max-#{$default}, $max);
+
+  // Make them EMs if need be
+  @if ($breakpoint-to-ems == true) {
+    $min: breakpoint-to-base-em($min);
+    $max: breakpoint-to-base-em($max);
+  }
+
+  @return '(min-#{$default}: #{$min}) and (max-#{$default}: #{$max})';
+}
