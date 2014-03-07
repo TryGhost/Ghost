@@ -210,8 +210,8 @@ input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
     cursor: pointer;
     text-decoration: none;
     color: #fff;
-    font-size: 11px; // Hack because Firefox sucks ass.
-    line-height: 13px; // Hack because Firefox sucks ass.
+    font-size: 11px; // Hack because Firefox sucks.
+    line-height: 13px; // Hack because Firefox sucks.
     font-weight: 300;
     text-align: center;
     letter-spacing: 1px;
