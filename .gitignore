@@ -35,14 +35,12 @@ projectFilesBackup
 
 .sass-cache/
 /core/clientold/tpl/hbs-tpl.js
-/core/clientold/assets/vendor
 /core/clientold/assets/css
 /core/clientold/assets/sass/config.rb
 /core/clientold/assets/sass/layouts/config.rb
 /core/clientold/assets/sass/modules/config.rb
 /core/clientold/assets/sass/modules/bourbon
 /core/clientold/assets/sass/modules/bourbon/*
-/core/client/assets/vendor
 /core/client/assets/css
 /core/client/assets/sass/config.rb
 /core/client/assets/sass/layouts/config.rb
