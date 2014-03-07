@@ -26,7 +26,7 @@
 
     // The main post title
     .entry-title {
-        @extend %box;
+        @extend .box;
         height: 53px;
         padding: 2px 15px;
         margin-bottom: 5px;
