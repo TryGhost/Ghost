@@ -10,42 +10,42 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## 테마 바꾸기 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost 테마는 <code class="path">content/themes/</code>에 있습니다.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+디폴트 테마인 Casper 대신 다른 테마를 사용하고 싶다면 [marketplace gallery](http://marketplace.ghost.org/)에서 커스텀 테마를 확인하기 바랍니다. 선택한 테마 패키지를 다운로드한 다음, Casper와 나란히 있도록 <code class="path">content/themes</code>에 압축을 해제합니다.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+자신의 테마를 만들고 싶다면 casper 디렉터리를 복사한 다음 이름을 바꾼 다음, 원하는 대로 보이고 동작하도록 템플릿을 편집합니다.
 
-To switch to your newly added theme:
+새로 추가한 테마로 변경하려면:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1. Ghost를 재시작합니다. Ghost는 <code class="path">content/themes</code>에 새로운 폴더가 추가되었는지 알지 못하기 때문에 재시작이 필요합니다.
+2. Ghost 관리 페이지로 로그인해 <code class="path">/ghost/settings/general/</code>로 이동합니다.
+3. 'Theme' 옵션 드랍다운에서 테마를 선택합니다.
+4. 'Save'를 클릭합니다.
+5. 블로그 시작 페이지를 방문해 새로운 테마를 감상합니다.
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  핸들바가 뭔가요? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[핸들바(Handlebars)](http://handlebarsjs.com/)는 Ghost가 사용하는 템플릿 언어입니다.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> 핸들바를 이용하면 힘들이지 않고 효과적으로 시맨틱 템플릿을 만들 수 있습니다.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+자신의 테마를 직접 작성하고 싶다면, 먼저 핸들바 문법에 익숙해져야 할 것입니다. [핸들바 문서](http://handlebarsjs.com/expressions.html)나, [트리하우스 튜토리얼](http://blog.teamtreehouse.com/getting-started-with-handlebars-js)을 읽어보기 바랍니다. - 설치 및 사용법에 대한 처음 섹션은 우리가 이미 설명한 내용이므로 넘어가도 되고, ‘Basic Expressions’부터 시작하면 좋습니다..
 
-## About Ghost themes <a id="about"></a>
+## Ghost 테마에 대해 <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Ghost 테마는 쉽게 만들고 유지할 수 있도록 고안되었습니다. Ghost 테마에서는 템플릿(HTML)과 비즈니스 로직(JavaScritp)이 완전히 분리되는 것이 좋습니다. Handlebars는 로직이 (거의) 없고 템플릿과 로직의 분리를 강제하며, 내용을 표시하는 비즈니스 로직이 분리되어 독립적으로 존재하도록 하는 메커니즘을 제공합니다. 따라서 템플릿을 만들 때 디자이너와 개발자가 협업하기 쉬워집니다.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+핸들바 템플릿은 계층적이며(다른 템플릿을 확장하는 템플릿 가능) 부분 템플릿도 지원합니다. Ghost는 이런 기능을 활용해 코드 중복을 최소화하고 각 템플릿이 하나의 작업에 집중하도록 합니다. 구조가 잘 정의된 테마는 유지보수가 쉽고 컴포넌트가 분리되어있어 다른 테마에서 재사용하기 쉽습니다.
 
-We really hope you'll enjoy our approach to theming.
+테마 만드는 이런 방법이 마음에 들기를 바랍니다.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Ghost 테마의 파일 구조 <a id="file-structure"></a>
 
-The recommended file structure is:
+권장 파일 구조:
 
 ```
 .
@@ -60,41 +60,41 @@ The recommended file structure is:
 └── post.hbs [required]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+당분간은 default.hbs나 다른 폴더가 없어도 됩니다. <code class="path">index.hbs</code>와 <code class="path">post.hbs</code>는 필요합니다. 이 두 템플릿이 없으면 Ghost는 동작하지 않을 것입니다. <code class="path">partials</code>는 특별한 디렉터리입니다. 이 디렉터리에는 블로그 전반에 걸쳐 하용하고 싶은 템플릿 부분이 포함됩니다. 예를 들어 <code class="path">list-post.hbs</code>는 목록에서 게시글 하나를 출력하는 템플릿을 포함할 수 있으며, 이는 나중에 아카이브나 태그 페이지에 사용될 수 있습니다. <code class="path">partials</code>는 또한 페이징 처리와 같이 특정 헬퍼가 사용하는 내장 템플릿을 오버라이드하는 템플릿을 저장하는 위치기도 합니다. <code class="path">partials</code> 안에 <code class="path">pagination.hbs</code>를 포함시키면 페이징 처리를 위한 자신의 HTML을 지정할 수 있습니다.
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+가장 기본이 되는 템플릿입니다. `<html>`과 `<head>`, `<body>` 태그와 `{{ghost_head}}`, `{{ghost_foot}}` 헬터, 블로그 머리글(header)과 바닥글(footer)을 만드는 HTML 등 모든 페이지에 나타나는 HTML의 가장 지루한 부분을 담고 있습니다.
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+디폴트 템플릿은 템플릿의 내용이 들어갈 위치를 표시하기 위해 Handlebar 표현식 `{{{body}}}`를 사용합니다.
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+페이지 템플릿 첫 행에는 디폴트 템플릿을 확장하다는 것을 지정하기 위해 `{{!< default}}`이 있고, 그 내용은 default.hbs에 `{{{body}}}`가 정의된 곳에 들어가게 됩니다.
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+홈페이지를 위한 템플릿으로 <code class="path">default.hbs</code>를 확장합니다. 홈페이지에는 표시해야 할 목록이 전달되며, <code class="path">index.hbs</code>에서 목록을 어떻게 표시할지 정의합니다.
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+Casper(현재의 디폴트 테마)에서는 블로그 로고, 제목, 설명을 표시하기 위해 `@blog` 전역 설정을 사용하는 헤더가 있습니다. 그 뒤에 최근 글 목록을 표시하기 위해 `{{#foreach}}` 헬퍼가 나옵니다.
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+글 하나를 위한 템플릿으로 <code class="path">default.hbs</code>를 확장합니다.
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+Casper(현재의 디폴트 테마)에서는 자신의 헬퍼를 가지고 있으며 `@blog` 전역 설정 또한 사용하고 있으며 글의 상세 내용을 표시하기 위해 `{{#post}}` 데이터 접근자도 사용하고 있습니다.
 
-### Post styling & previewing
+### 글 스타일링과 미리보기
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+Ghost 테마를 만들 때 메인 스타일링과 글 스타일링간의 충돌을 방지하기 위해 클래스와 (특히) 아이디 범위에 신경쓰기 바랍니다. 헤딩에 대한 ID는 자동 생성되므로 글 안에서 사용될 아이디와 클래스를 알 방법은 없습니다. 따라서 페이지의 특정 부분에 대해 항상 범위를 지정하는 것이 최선입니다. 예를 들어, #my-id는 예상치 못한 것과 대응될 수 있지만 #themename-my-id는 좀더 안전할 것입니다.
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghost는 에디터의 분리된 창에 작성중인 글의 실질적인 미리보기를 제공하려 하고 있지만, 이를 위해서는 글에 대한 테마의 커스텀 스타일링을 로드해야 합니다. 이 기능은 아직 구현되지 않았지만, 글 스타일을 테마의 다른 스타일(style.css)과는 별도의 파일(post.css)에 보관하기 바랍니다. 그래야 나중에 이 기능을 재빨리 적용할 수 있습니다.
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## 자신의 테마 만들기 <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+자신의 Ghost 테마를 만들 때는 Casper를 복사하거나 <code class="path">content/themes</code> 디렉터리에 자신의 테마 이름으로 새 폴더, 예를 들어 my-theme(폴더 이름은 소문자와 숫자, 하이픈만 가능)를 추가하면 됩니다. 그 다음 테마 폴더에 두 개의 빈 파일 index.hbs와 post.hbs를 추가하면 됩니다. 이렇게 하면 아무 것도 표시되지 않겠지만 실제로 유효한 테마가 됩니다.
 
-### The post list
+### 글 목록
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+<code class="path">index.hbs</code>는 `posts`라 불리는 객체를 전달 받는데, 다음과 같은 식으로 foreach 헬퍼를 사용해 각각의 글을 표시할 수 있습니다.
 
 ```
 {{#foreach posts}}
@@ -103,54 +103,55 @@ Create your own Ghost theme by either copying Casper, or adding a new folder to 
 {{/foreach}}
 ```
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+좀더 자세한 사항은 [`{{#foreach}}`](#foreach-helper) 헬퍼 섹션을 참조하기 바랍니다.
 
-#### Pagination
+#### 페이지 처리
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+[`{{pagination}}`](#pagination-helper) 헬퍼 섹션을 참조하기 바랍니다.
 
-### Outputting individual posts
+### 개별 글 출력하기
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+`foreach`로 글 목록에 대한 루프를 돌 때나 또는 <code class="path">post.hbs</code> 안에 있을 때나, 글 하나에 대한 컨텍스트 안에서는 글에 대한 다음 속성에 접근할 수 있습니다.
 
-For the time being, these are:
+현재는 그 속성이 다음과 같습니다.
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+*   id – **글 아이디**
+*   title – **글 제목**
+*   url – **글에 대한 상대 URL**
+*   content – **글에 대한 HTML**
+*   published_at – **글 공개 날짜**
+*   author – **글 작성자에 대한 상세 사항** (상세 내용은 아래 참조)
 
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+각 속성은 `{{title}}`과 같은 표준 핸들바 표현식으로 출력할 수 있습니다.
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>노트:</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+         content 속성은 HTML 출력을 안전하고 올바르게 출력하도록 보장하는 <code>{{content}}</code> 헬퍼로 덮어쓸 수 있습니다. 상세한 내용은 <a href="#content-helper"><code>{{content}}</code> helper</a> 섹션을 참고하기 바랍니다.
       </li>
       <li>
         the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+        url 속성은 <code>{{url}}</code> 헬퍼가 제공합니다. 자세한 내용은 <a href="#url-helper"><code>{{url}}</code> helper</a> 섹션을 참고하기 바랍니다.
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### 작성자 정보
 
-When inside the context of a single post, the following author data is available:
+하나의 글에서 다음과 같은 작성자 정보를 사용할 수 있습니다.
 
-*   `{{author.name}}` – the name of the author
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – 작성자 이름
+*   `{{author.email}}` – 작성자 이메일 주소
+*   `{{author.bio}}` – 작성자 약력
+*   `{{author.website}}` – 작성자 웹사이트
+*   `{{author.image}}` – 작성자 프로파일 이미지
+*   `{{author.cover}}` – 작성자 커버 이미지
 
-You can use just`{{author}}` to output the author's name.
+그냥 `{{author}}`를 사용해 작성자 이름만 표시할 수도 있습니다.
 
-This can also be done by using a block expression:
+다음과 같이 블록 표현식을 사용할 수도 있습니다.
 
 ```
 {{#author}}
@@ -158,15 +159,15 @@ This can also be done by using a block expression:
 {{/author}}
 ```
 
-#### Post Tags
+#### 태그
 
-When inside the context of a single post, the following tag data is available
+하나의 글에서 다음과 같은 태그 정보를 사용할 수 있습니다.
 
-*   `{{tag.name}}` – the name of the tag
+*   `{{tag.name}}` – 태그 이름
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+`{{tags}}`를 사용해 쉼표로 분리된 태그 목록을 표시하거나, `{{tags separator=""}}`를 사용해 태그 사이 구분자를 지정할 수도 있습니다.
 
-This can also be done by using a block expression:
+다음과 같이 블록 표현식을 사용할 수도 있습니다.
 
 ```
 <ul>
@@ -176,16 +177,16 @@ This can also be done by using a block expression:
 </ul>
 ```
 
-### Global Settings
+### 전역 설정
 
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+Ghost 테마에서는 `@blog` 전역 데이터 접근자를 통해 전역 설정에 접근할 수 있습니다.
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – <code class="path">config.js</code>에 설정된 URL
+*   `{{@blog.title}}` – 설정 페이지에서 지정한 블로그 제목
+*   `{{@blog.description}}` – 설정 페이지에서 지정한 블로그 설명
+*   `{{@blog.logo}}` – 설정 페이지에서 지정한 블로그 로고
 
-## Built-in Helpers <a id="helpers"></a>
+## 내장 헬퍼 <a id="helpers"></a>
 
 Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
 
