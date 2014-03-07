@@ -707,7 +707,8 @@ nav {
 
 
 // This is the base menu extend used for styles on interaction menus
-%menu {
+// Default: Pop menu, chiclet bottom center.
+.menu {
     display: inline-block;
     position:absolute;
     z-index: 960;
@@ -768,7 +769,8 @@ nav {
 }
 
 // This extend moves the chiclet to the top, for menus which drop down.
-%menu-drop {
+.menu-drop {
+    @extend .menu;
     &:before {
         top: -10px;
         bottom: auto;
@@ -777,7 +779,8 @@ nav {
 }
 
 // Chiclet to the left, for menus appearing close to left edge of the screen.
-%menu-left {
+.menu-left {
+    @extend .menu;
     &:before {
         left:10px;
         margin-left:0;
@@ -785,7 +788,8 @@ nav {
 }
 
 // Chiclet to the right, for menus appearing close to right edge of the screen.
-%menu-right {
+.menu-right {
+    @extend .menu;
     &:before {
         left: auto;
         right:10px;
@@ -793,41 +797,18 @@ nav {
     }
 }
 
-// Pop menu, chiclet bottom center.
-.menu {
-    @extend %menu;
-}
-
-// Pop left, chiclet bottom left.
-.menu-left {
-    @extend %menu;
-    @extend %menu-left;
-}
-
-// Pop right, chiclet bottom right.
-.menu-right {
-    @extend %menu;
-    @extend %menu-right;
-}
-
-// Drop menu, chiclet top center.
-.menu-drop {
-    @extend %menu;
-    @extend %menu-drop;
-}
-
 // Drop left, chiclet top left.
 .menu-drop-left {
-    @extend %menu;
-    @extend %menu-drop;
-    @extend %menu-left;
+    @extend .menu;
+    @extend .menu-drop;
+    @extend .menu-left;
 }
 
 // Drop right, chiclet top right.
 .menu-drop-right {
-    @extend %menu;
-    @extend %menu-drop;
-    @extend %menu-right;
+    @extend .menu;
+    @extend .menu-drop;
+    @extend .menu-right;
 }
 
 /* ==========================================================================
@@ -870,7 +851,7 @@ nav {
         text-align: right;
     }
 
-    %label {
+    .label {
         position: static;
         width: auto;
         font-weight: normal;
@@ -950,7 +931,7 @@ nav {
     @include transform(translateZ(0));
 }
 
-%notification, .notification {
+.notification {
     @include icon($i-notification) {
         position: absolute;
         top: 0;
@@ -997,7 +978,7 @@ nav {
 }
 
 .notification-success {
-    @extend %notification;
+    @extend .notification;
     @include icon($i-success);
     background: $green;
 
@@ -1010,20 +991,20 @@ nav {
 }
 
 .notification-error {
-    @extend %notification;
+    @extend .notification;
     @include icon($i-error);
     background: $red;
 }
 
 
 .notification-warn {
-    @extend %notification;
+    @extend .notification;
     @include icon($i-info);
     background: $orange;
 }
 
 .notification-info {
-    @extend %notification;
+    @extend .notification;
     @include icon($i-info);
     background: $blue;
 }
@@ -1074,7 +1055,7 @@ nav {
     z-index: 1030;
 }
 
-%modal, .modal {
+.modal {
     @include box-sizing(border-box);
     left: 50%;
     right: auto;
@@ -1109,11 +1090,14 @@ nav {
 }
 
 .modal-info {
-    @extend %modal;
+    @extend .modal; 
+    // TODO: This is stupid and should not exist
+    // remove all references to it in Ghost core
+    // then delete it entirely.
 }
 
 .modal-action {
-    @extend %modal;
+    @extend .modal;
     padding: 60px 0 30px;
 
     @include breakpoint($tablet) {

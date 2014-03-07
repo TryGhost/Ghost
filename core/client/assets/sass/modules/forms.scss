@@ -16,7 +16,7 @@
    General
    ============================================================================= */
 
-%label {
+.label {
    display: inline-block;
    position: absolute;
    top: 0.5em;
@@ -39,9 +39,8 @@
 
 form {
 
-    label, 
-    .label {
-        @extend %label;
+    label {
+        @extend .label;
     }
 
     p {
@@ -202,7 +201,7 @@ input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
  */
 
 // This base style is used on all buttons
-%button {
+.btn {
     @include box-sizing(border-box);
     min-height: 35px;
     width: auto;
@@ -248,7 +247,7 @@ input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
 .button,
 button,
 input[type="button"] {
-    @extend %button;
+    @extend .btn;
     color:#777;
     font-weight: normal;
     background: #eee;
@@ -262,7 +261,7 @@ input[type="button"] {
 .button-save,
 button[type="submit"],
 input[type="submit"] {
-    @extend %button;
+    @extend .btn;
     background: $blue;
     box-shadow: none;
     &:hover {background: darken($blue, 10%);}
@@ -270,7 +269,7 @@ input[type="submit"] {
 
 // Button for actions which add stuff
 .button-add {
-    @extend %button;
+    @extend .btn;
     background: $green;
     &:hover {background: darken($green, 8%);}
 }
@@ -279,7 +278,7 @@ input[type="submit"] {
 .button-delete,
 button[type="reset"],
 input[type="reset"] {
-    @extend %button;
+    @extend .btn;
     background: $red;
     box-shadow: none;
     &:hover {background: darken($red, 10%);}
@@ -287,14 +286,14 @@ input[type="reset"] {
 
 // Alternative button with more visual attention, but no extra semantic meaning
 .button-alt {
-    @extend %button;
+    @extend .btn;
     background: lighten($darkgrey, 10%);
     &:hover {background: $darkgrey;}
 }
 
 // This applies normal link styles to de-emphasise a button
 .button-link {
-    @extend %button;
+    @extend .btn;
     color: $blue;
     background: transparent;
     border: none;
@@ -306,7 +305,7 @@ input[type="reset"] {
 
 // Back button for pane animations
 .button-back {
-    @extend %button;
+    @extend .btn;
     position: absolute;
     top: 20px;
     left: 20px;
@@ -363,7 +362,7 @@ input[type="reset"] {
  */
 
 // These are the base styles applied to all splitbuttons
-%splitbutton {
+.splitbtn {
     display: inline-block;
     position: relative;
     font-size: 0; // hack to stop space after button
@@ -440,7 +439,7 @@ input[type="reset"] {
 
 // The default splitbutton
 .splitbutton {
-    @extend %splitbutton;
+    @extend .splitbtn;
     .options {
         color:#777;
         &:hover {
@@ -454,7 +453,7 @@ input[type="reset"] {
 
 // For save/next/continue/confirm actions
 .splitbutton-save {
-    @extend %splitbutton;
+    @extend .splitbtn;
     .options {
         background: darken($blue, 5%);
         &:hover, &.active {background: darken($blue, 10%);}
@@ -463,7 +462,7 @@ input[type="reset"] {
 
 // For actions which add something
 .splitbutton-add {
-    @extend %splitbutton;
+    @extend .splitbtn;
     .options {
         background: darken($green, 6%);
         &:hover {background: darken($green, 8%);}
@@ -472,7 +471,7 @@ input[type="reset"] {
 
 // For actions which delete something
 .splitbutton-delete {
-    @extend %splitbutton;
+    @extend .splitbtn;
     .options {
         background: darken($red, 6%);
         &:hover {background: darken($red, 10%);}
@@ -481,7 +480,7 @@ input[type="reset"] {
 
 // Alternative style with more visual attention, but no extra semantic meaning
 .splitbutton-alt {
-    @extend %splitbutton;
+    @extend .splitbtn;
     .options {
         background: lighten($darkgrey, 4%);
         &:hover {background: $darkgrey;}
