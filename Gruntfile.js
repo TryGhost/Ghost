@@ -53,10 +53,6 @@ var path           = require('path'),
                     files: ['core/client/tpl/**/*.hbs'],
                     tasks: ['handlebars']
                 },
-                sass: {
-                    files: ['<%= paths.adminAssets %>/sass/**/*'],
-                    tasks: ['sass:admin']
-                },
                 concat: {
                     files: [
                         'core/client/*.js',
@@ -73,8 +69,6 @@ var path           = require('path'),
                         'content/themes/casper/css/*.css',
                         // Theme JS
                         'content/themes/casper/js/*.js',
-                        // Admin CSS
-                        '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
                         'core/built/scripts/*.js'
                     ],
@@ -302,35 +296,10 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-sass
-            // Compile all the SASS!
-            sass: {
-                admin: {
-                    files: {
-                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
-                    }
-                },
-                compress: {
-                    options: {
-                        style: 'compressed'
-                    },
-                    files: {
-                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
-                    }
-                }
-            },
 
             // ### config for grunt-shell
             // command line tools
             shell: {
-                // run bundle
-                bundle: {
-                    command: 'bundle install'
-                },
-                // install bourbon
-                bourbon: {
-                    command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
-                },
                 bower: {
                     command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
                     options: {
@@ -410,6 +379,11 @@ var path           = require('path'),
                         src: 'jquery.js',
                         dest: 'core/built/public/',
                         expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/client/assets/',
+                        expand: true
                     }]
                 },
                 prod: {
@@ -418,6 +392,11 @@ var path           = require('path'),
                         src: 'jquery.js',
                         dest: 'core/built/public/',
                         expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/client/assets/',
+                        expand: true
                     }]
                 },
                 release: {
@@ -425,6 +404,11 @@ var path           = require('path'),
                         cwd: 'bower_components/jquery/dist/',
                         src: 'jquery.js',
                         dest: 'core/built/public/',
+                        expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/client/assets/',
                         expand: true
                     }, {
                         expand: true,
@@ -864,15 +848,13 @@ var path           = require('path'),
 
         grunt.registerTask('release',
             'Release task - creates a final built zip\n' +
-            ' - Do our standard build steps (sass, handlebars, etc)\n' +
+            ' - Do our standard build steps (handlebars, etc)\n' +
             ' - Generate changelog for the past 14 releases\n' +
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
             [
-                'shell:bourbon',
                 'shell:bower',
-                'sass:compress',
                 'handlebars',
                 'concat',
                 'uglify',
@@ -884,7 +866,6 @@ var path           = require('path'),
         grunt.registerTask('dev',
             'Dev Mode; watch files and restart server on changes',
             [
-                'sass:admin',
                 'handlebars',
                 'concat',
                 'copy:dev',
@@ -928,13 +909,13 @@ var path           = require('path'),
 
         // ### Tools for building assets
 
-        grunt.registerTask('init', 'Prepare the project for development', ['shell:bundle', 'shell:bourbon', 'shell:bower', 'default']);
+        grunt.registerTask('init', 'Prepare the project for development', ['shell:bower', 'default']);
 
         // Before running in production mode
-        grunt.registerTask('prod', 'Build CSS, JS & templates for production', ['sass:compress', 'handlebars', 'concat', 'uglify', 'copy:prod']);
+        grunt.registerTask('prod', 'Build JS & templates for production', ['handlebars', 'concat', 'uglify', 'copy:prod']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', 'Build CSS, JS & templates for development', ['update_submodules', 'sass:compress', 'handlebars', 'concat', 'copy:dev']);
+        grunt.registerTask('default', 'Build JS & templates for development', ['update_submodules', 'handlebars', 'concat', 'copy:dev']);
     };
 
 module.exports = configureGrunt;

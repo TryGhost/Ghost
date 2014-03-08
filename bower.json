@@ -5,6 +5,7 @@
         "codemirror": "3.15.0",
         "Countable": "2.0.2",
         "fastclick": "1.0.0",
+        "ghost-ui": "0.1.0",
         "handlebars.js": "1.0.0",
         "iCheck": "1.0.1",
         "jquery": "1.11.0",

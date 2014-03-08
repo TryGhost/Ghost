@@ -180,8 +180,6 @@ developing Ghost.
 **Pre-requisites:**
 
 * Node 0.10.x
-* Ruby >= 1.9.3
-* Bundler Ruby Gem (`gem install bundler`)
 * for running functional tests: phantomjs 1.9.x and casperjs 1.1.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
 * for building docs: python and pygments
@@ -197,7 +195,7 @@ developing Ghost.
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - this runs bundler, generates the Bourbon directory, compiles SASS and compiles Handlebars templates
+1. Run `grunt init` from the root - copies assets and compiles Handlebars templates
 1. Run `npm start` from the root to start the server.
 
 If something goes wrong, please see the
@@ -207,7 +205,7 @@ If something goes wrong, please see the
 Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebar templates, stylesheets and javascripts. Some useful commands include:
 - `grunt dev` => Automatically compile assets in development environment
 - `grunt prod` => Automatically compile assets in production environment
-- `grunt watch` => Automatically compile sass and handlebars
+- `grunt watch` => Automatically compile handlebars
 
 Addresses for development:
 - Front-end => <http://localhost:2368>
@@ -220,8 +218,8 @@ or more of the following:
 
  * `npm install` - fetch any new dependencies
  * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt` - will recompile handlebars templates and sass for the admin (as long as you have previously
-run `grunt init` to install bourbon)
+ * `grunt` - will recompile handlebars templates for the admin (as long as you have previously
+run `grunt init` to install bower dependencies)
  * delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### Key Branches & Tags
@@ -230,12 +228,6 @@ run `grunt init` to install bourbon)
 release is here.
 - **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
 
-### Compiling CSS & JavaScript
-
-A SASS compiler is required to work with the CSS in this project. You can either do this by running `grunt` from
-the command line - or by using a 3rd party app. We recommend [CodeKit](http://incident57.com/codekit/) (Paid/Mac)
-& [Scout](http://mhs.github.io/scout-app/) (Free/Mac/PC).
-You will need to have Ruby installed, as well as having run `gem install sass && gem install bourbon`.
 
 ## Grunt Toolkit
 
@@ -250,11 +242,6 @@ contributor.
 
 Sounds like you don't have our default theme - Casper, your content/themes/casper folder is probably empty.
 When cloning from GitHub be sure to use SSH and to run `git submodule update --init`.
-
-### I get "Syntax error: File to import not found or unreadable: bourbon/_bourbon."
-
-Sounds like you don't have the Ruby gem "bourbon" installed. Make sure you have Ruby, and then
-run `gem install bourbon`, and `grunt init`.
 
 ### Ghost doesn't do anything - I get a blank screen
 

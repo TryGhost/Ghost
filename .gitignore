@@ -33,13 +33,9 @@ projectFilesBackup
 
 /core/client/tpl/hbs-tpl.js
 /core/client/assets/css
+/core/client/assets/fonts
 .sass-cache/
 /core/client/assets/vendor
-/core/client/assets/sass/config.rb
-/core/client/assets/sass/layouts/config.rb
-/core/client/assets/sass/modules/config.rb
-/core/client/assets/sass/modules/bourbon
-/core/client/assets/sass/modules/bourbon/*
 /core/server/data/export/exported*
 /docs
 /_site
