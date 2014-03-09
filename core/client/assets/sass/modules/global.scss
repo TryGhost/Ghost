@@ -1007,6 +1007,10 @@ nav {
         @include animation-iteration-count(1);
         @include animation-fill-mode(forwards);
     }
+    
+    &.notification-passive:hover {
+        @include animation(fade-in 1s linear);
+    }
 }
 
 .notification-error {
