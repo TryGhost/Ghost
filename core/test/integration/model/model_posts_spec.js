@@ -6,13 +6,12 @@ var testUtils = require('../../utils'),
     sequence = require('when/sequence'),
 
     // Stuff we are testing
-    DataGenerator = require('../../utils/fixtures/data-generator'),
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    DataGenerator = testUtils.DataGenerator;
 
 describe('Post Model', function () {
 
-    var PostModel = Models.Post,
-        UserModel = Models.User;
+    var PostModel = Models.Post;
 
     before(function (done) {
         testUtils.clearData().then(function () {
@@ -66,7 +65,7 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('can findAll, returning author and user data', function (done) {
+    it('can findAll, returning author, user and field data', function (done) {
         var firstPost;
 
         PostModel.findAll({}).then(function (results) {
@@ -76,14 +75,16 @@ describe('Post Model', function () {
 
             firstPost.author.should.be.an.Object;
             firstPost.user.should.be.an.Object;
+            firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.user.name.should.equal(DataGenerator.Content.users[0].name);
+            firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
         }, done);
     });
 
-    it('can findOne, returning author and user data', function (done) {
+    it('can findOne, returning author, user and field data', function (done) {
         var firstPost;
 
         PostModel.findOne({}).then(function (result) {
@@ -92,8 +93,10 @@ describe('Post Model', function () {
 
             firstPost.author.should.be.an.Object;
             firstPost.user.should.be.an.Object;
+            firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
             firstPost.user.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
+            firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
         }, done);
