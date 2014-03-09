@@ -23,6 +23,5 @@ config.js
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
-Gemfile*
 *.html
 bower_components/**

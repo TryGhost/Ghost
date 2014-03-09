@@ -34,7 +34,6 @@ projectFilesBackup
 /core/client/tpl/hbs-tpl.js
 /core/client/assets/css
 /core/client/assets/fonts
-.sass-cache/
 /core/client/assets/vendor
 /core/server/data/export/exported*
 /docs

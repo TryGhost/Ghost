@@ -9,7 +9,6 @@ matrix:
   allow_failures:
     - env: DB=pg
 before_install:
-  - gem install bundler
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs
   - git checkout tags/1.1-beta3
