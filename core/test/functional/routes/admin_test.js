@@ -131,7 +131,7 @@ describe('Admin Routing', function () {
 
         it('should respond 404 for /ghost/reset/', function (done) {
             request.get('/ghost/reset/')
-                .expect('Cache-Control', cacheRules.hour)
+                .expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));

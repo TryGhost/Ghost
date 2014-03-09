@@ -253,7 +253,7 @@ describe("Error handling", function () {
                 this.statusCode.should.equal(404);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('public, max-age=' + ONE_HOUR_S);
+                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                 done();
             });
@@ -280,7 +280,7 @@ describe("Error handling", function () {
                 this.statusCode.should.equal(404);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('public, max-age=' + ONE_HOUR_S);
+                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                 done();
             });

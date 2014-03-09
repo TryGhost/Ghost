@@ -10,9 +10,7 @@ var _           = require('lodash'),
     // Paths for views
     defaultErrorTemplatePath = path.resolve(config().paths.adminViews, 'user-error.hbs'),
     userErrorTemplatePath    = path.resolve(config().paths.themePath, 'error.hbs'),
-    userErrorTemplateExists   = false,
-
-    ONE_HOUR_S  = 60 * 60;
+    userErrorTemplateExists   = false;
 
 // This is not useful but required for jshint
 colors.setTheme({silly: 'rainbow'});
@@ -201,8 +199,8 @@ errors = {
     error404: function (req, res, next) {
         var message = res.isAdmin && req.session.user ? "No Ghost Found" : "Page Not Found";
 
-        // 404 errors should be briefly cached
-        res.set({'Cache-Control': 'public, max-age=' + ONE_HOUR_S});
+        // do not cache 404 error
+        res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
         if (req.method === 'GET') {
             this.renderErrorPage(404, message, req, res, next);
         } else {
