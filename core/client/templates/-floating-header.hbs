@@ -1,0 +1,51 @@
+<header class="floatingheader">
+    <button class="button-back" href="#">Back</button>
+    <a class="unfeatured" href="#" title="Feature this post">
+        <span class="hidden">Star</span>
+    </a>
+    <small>
+        <span class="status">Written</span>
+        <span class="normal">by</span>
+        <span class="author">{{author.name}}</span>
+    </small>
+    <section class="post-controls">
+        {{#link-to "editor" this class="post-edit" title="Edit Post"}}
+            <span class="hidden">Edit Post</span>
+        {{/link-to}}
+        <a class="post-settings" href="#" data-toggle=".post-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
+        <div class="post-settings-menu menu-drop-right overlay" style="display: none;">
+            <form>
+                <table class="plain">
+                    <tbody>
+                    <tr class="post-setting">
+                        <td class="post-setting-label">
+                            <label for="url">URL</label>
+                        </td>
+                        <td class="post-setting-field">
+                            <input id="url" class="post-setting-slug" type="text" value="">
+                        </td>
+                    </tr>
+                    <tr class="post-setting">
+                        <td class="post-setting-label">
+                            <label for="pub-date">Pub Date</label>
+                        </td>
+                        <td class="post-setting-field">
+                            <input id="pub-date" class="post-setting-date" type="text" value="" placeholder="17 Feb 14 @ 02:35"><!--<span class="post-setting-calendar"></span>-->
+                        </td>
+                    </tr>
+                    <tr class="post-setting">
+                        <td class="post-setting-label">
+                            <span class="label">Static Page</span>
+                        </td>
+                        <td class="post-setting-item">
+                            <input id="static-page" class="post-setting-static-page" type="checkbox" value="">
+                            <label class="checkbox" for="static-page"></label>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+            <a class="delete" href="#">Delete This Post</a>
+        </div>
+    </section>
+</header>
