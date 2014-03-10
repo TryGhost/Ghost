@@ -425,6 +425,9 @@ var path           = require('path'),
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
+                },
+                tmp: {
+                    src: ['.tmp/**']
                 }
             },
 

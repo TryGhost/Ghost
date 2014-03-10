@@ -19,7 +19,9 @@
         <header class="floatingheader">
             <small>Preview <span class="entry-word-count js-entry-word-count">{{count-words markdown}} words</span></small>
         </header>
-        {{-markdown markdown=markdown scrollPosition=view.scrollPosition}}
+        <section class="entry-preview-content">
+            {{-markdown markdown=markdown scrollPosition=view.scrollPosition}}
+        </section>
     </section>
 </section>
 

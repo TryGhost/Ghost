@@ -9,12 +9,21 @@ Router.reopen({
 });
 
 Router.map(function () {
-    this.route('login', { path: '/signin' });
+    this.route('signin');
+    this.route('signup');
+    this.route('forgotten');
+    this.route('reset');
     this.resource('posts', { path: '/' }, function () {
         this.route('post', { path: ':post_id' });
     });
     this.resource('editor', { path: '/editor/:post_id' });
     this.route('new', { path: '/editor' });
+    this.resource('settings', function () {
+        this.route('general');
+        this.route('user');
+        this.route('debug');
+        this.route('apps');
+    });
 });
 
 export default Router;
