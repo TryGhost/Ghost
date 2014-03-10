@@ -58,5 +58,5 @@ module.exports = function (server) {
     });
     server.get('/ghost/', admin.indexold);
 
-    server.get('/ghost/ember/', admin.index);
+    server.get('/ghost/ember/*', admin.index);
 };
