@@ -54,6 +54,14 @@ var path           = require('path'),
                     files: ['core/clientold/tpl/**/*.hbs'],
                     tasks: ['handlebars']
                 },
+                'handlebars-ember': {
+                    files: ['core/client/**/*.hbs'],
+                    tasks: ['emberTemplates:dev']
+                },
+                ember: {
+                    files: ['core/client/**/*.js'],
+                    tasks: ['transpile', 'concat_sourcemap']
+                },
                 concat: {
                     files: [
                         'core/clientold/*.js',
