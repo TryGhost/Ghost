@@ -3,7 +3,7 @@ import styleBody from 'ghost/mixins/style-body';
 
 var isEmpty = Ember.isEmpty;
 
-var LoginRoute = Ember.Route.extend(styleBody, {
+var SigninRoute = Ember.Route.extend(styleBody, {
     classNames: ['ghost-login'],
 
     actions: {
@@ -29,4 +29,4 @@ var LoginRoute = Ember.Route.extend(styleBody, {
     }
 });
 
-export default LoginRoute;
+export default SigninRoute;
