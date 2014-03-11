@@ -61,6 +61,9 @@
                 "matches": "(:id|:slug|:year|:month|:day)",
                 "notContains": "/ghost/"
             }
+        },
+        "timezone":{
+            "defaultValue":"00:00"
         }
     },
     "theme": {
