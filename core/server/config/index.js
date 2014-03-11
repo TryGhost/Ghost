@@ -14,6 +14,14 @@ var path          = require('path'),
     appRoot       = path.resolve(__dirname, '../../../'),
     corePath      = path.resolve(appRoot, 'core/');
 
+// Are we using sockets? Custom socket or the default?
+function getSocket() {
+    if (ghostConfig.server.hasOwnProperty('socket')) {
+        return _.isString(ghostConfig.server.socket) ? ghostConfig.server.socket : path.join(ghostConfig.paths.contentPath, process.env.NODE_ENV + '.socket');
+    }
+    return false;
+}
+
 function updateConfig(config) {
     var localPath,
         contentPath,
@@ -110,5 +118,6 @@ function config() {
 module.exports = config;
 module.exports.init = initConfig;
 module.exports.theme = theme;
+module.exports.getSocket = getSocket;
 module.exports.urlFor = configUrl.urlFor;
 module.exports.urlForPost = configUrl.urlForPost;
