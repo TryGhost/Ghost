@@ -301,7 +301,7 @@ frontendControllers = {
                     posts.forEach(function (post) {
                         var deferred = when.defer(),
                             item = {
-                                title:  _.escape(post.title),
+                                title: post.title,
                                 guid: post.uuid,
                                 url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
