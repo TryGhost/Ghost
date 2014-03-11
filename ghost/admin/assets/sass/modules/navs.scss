@@ -1,0 +1,30 @@
+//
+// Navigation Menus
+// --------------------------------------------------
+
+nav {
+    ul {
+        list-style: none;
+        margin:0;
+        padding:0;
+        border-top:$lightbrown 1px solid;
+    }
+
+    li { 
+        a {
+            display:block;
+            padding:10px 15px;
+            color:$brown;
+            border-bottom:$lightbrown 1px solid;
+
+            &:hover {
+                color:$darkgrey;
+                background: $lightbrown;
+                text-decoration: none;
+            }
+
+            &:before { margin-right:1em; } // Make space for icons
+
+        }
+    }
+}

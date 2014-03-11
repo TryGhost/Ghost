@@ -1,0 +1,108 @@
+//
+// Notifications
+// --------------------------------------------------
+
+.notifications {
+    @include breakpoint($biggerthan-mobile) {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 980;
+        width: 300px;
+    }
+
+    @include breakpoint($mobile) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+    }
+}
+
+.js-bb-notification {
+    @include transform(translateZ(0));
+}
+
+.notification {
+    @include icon($i-notification) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        @include box-sizing(border-box);
+        height: 100%;
+        width: 44px;
+        padding: 14px 15px;
+        text-align: center;
+        color: rgba(255,255,255,0.8);
+        background: rgba(0,0,0,0.1);
+    };
+    @include box-sizing(border-box);
+    width: 100%;
+    min-height: 40px;
+    padding: 10px 43px 10px 57px;
+    margin: 0 0 15px 0;
+    color: rgba(255,255,255,0.9);
+    background: $blue;
+    position:relative;
+    box-shadow: $shadow;
+    @include transform(translateZ(0));
+
+    @include breakpoint($mobile) {margin-bottom: 1px;}
+
+    .close {
+        @include icon-after($i-close) {
+            padding:6px;
+            position:absolute;
+            top:8px;
+            right:9px;
+        };
+        display: inline-block;
+        color: rgba(255,255,255,0.6);
+        cursor: pointer;
+        &:hover { color: #fff; }
+
+    }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+    }
+}
+
+.notification-success {
+    @extend .notification;
+    @include icon($i-success);
+    background: $green;
+
+    &.notification-passive {
+        @include animation(fade-out 1s linear);
+        @include animation-delay(3s);
+        @include animation-iteration-count(1);
+        @include animation-fill-mode(forwards);
+    }
+}
+
+.notification-error {
+    @extend .notification;
+    @include icon($i-error);
+    background: $red;
+}
+
+
+.notification-warn {
+    @extend .notification;
+    @include icon($i-info);
+    background: $orange;
+}
+
+.notification-info {
+    @extend .notification;
+    @include icon($i-info);
+    background: $blue;
+}
+
+// Hide extra space taken up by update notification
+.update-available main {
+    bottom: 56px;
+}

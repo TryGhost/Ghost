@@ -1,0 +1,51 @@
+//
+// Variables
+// --------------------------------------------------
+
+// Bourbon - http://bourbon.io/
+@import "_bourbon";
+$rounded: 2px;
+$shadow: rgba(0,0,0,0.05) 0 1px 5px;
+$default-transition-duration: 0.3s;
+
+// Breakpoint - http://breakpoint-sass.com/
+@import "breakpoint";
+$breakpoint-default-feature: max-width;
+
+// Max widths
+$netbook: 1000px;
+$tablet: 800px;
+$mobile: 400px;
+
+// Min widths
+$biggerthan-widescreen: min-width 1500px, min-width 1500px;
+$biggerthan-netbook: min-width 1000px, min-width 1000px;
+$biggerthan-tablet: min-width 800px, min-width 800px;
+$biggerthan-mobile: min-width 401px, min-width 401px;
+
+// Heights
+$letterbox: max-height 600px, max-height 600px;
+
+// Pixel Densities
+$retina: 2 device-pixel-ratio;
+
+
+// Colours
+$darkgrey: #242628;
+$grey: #35393b;
+$midgrey: #7d878a;
+$lightgrey: #e2edf2;
+
+$brown: #aaa9a2;
+$midbrown: #c0bfb6;
+$lightbrown: #edece4;
+
+$blue: #5BA4E5;
+$red: #e25440;
+$orange: #F2A925;
+$green: #9FBB58;
+
+// Typography
+$font-family: 'Open Sans', sans-serif;
+$font-family-serif: serif;
+$font-family-mono: Inconsolata, monospace;

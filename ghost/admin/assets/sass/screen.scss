@@ -1,55 +1,34 @@
-/*
- * Welcome to Ghost - all styles for the Ghost platform are located within
- * this set of Sass files. Use this file like a table of contents.
- */
+//
+// Ground Zero - This is where shit begins.
+// --------------------------------------------------
 
-/* ==========================================================================
-   Modules - These styles are re-used in many areas, grouped by type.
-   ========================================================================== */
+// Modules - These styles are re-used in many areas, grouped by type.
 
+@import "normalize.css";
+@import "modules/variables";
 @import "modules/mixins";
-/* Sass variables like colours, font sizes, basic styles. */
-
-@import "normalize";
-/* Browser cross compatibility normalisation*/
-
 @import "modules/icons";
-/* All the styles controlling icons. */
-
 @import "modules/animations";
-/* Keyframe animations. */
-
 @import "modules/global";
-/* Global elements for the UI, like the header and footer. */
-
+@import "modules/code";
 @import "modules/forms";
-/* All the styles controlling forms and form fields. */
+@import "modules/buttons";
+@import "modules/tables";
+@import "modules/navs";
+@import "modules/navbar";
+@import "modules/dropdowns";
+@import "modules/notifications";
+@import "modules/modals";
+@import "modules/uploader";
 
+// Layouts - Styles for specific admin screen layouts, grouped by screen.
 
-/* ==========================================================================
-   Layouts - Styles for specific admin screen layouts, grouped by screen.
-   ========================================================================== */
-
-@import "layouts/manage";
-/* The manage posts screen. */
-
+@import "layouts/content";
 @import "layouts/editor";
-/* The write/edit post screen. */
-
 @import "layouts/auth";
-/* The login screen. */
-
 @import "layouts/errors";
-/* The error screens. */
 
-
-/* ==========================================================================
-   Settings Layouts - Styles for the settings panes, grouped by pane.
-   ========================================================================== */
+// Settings Layouts - Styles for the settings panes, grouped by pane.
 
 @import "layouts/settings";
-/* The settings screen. */
-
 @import "layouts/users";
-/* The users pane. */
-

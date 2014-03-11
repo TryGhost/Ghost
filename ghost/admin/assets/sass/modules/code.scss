@@ -1,0 +1,52 @@
+//
+// Code (inline and block)
+// --------------------------------------------------
+
+code, tt {
+    font-family: $font-family-mono;
+    font-size: 0.85em;
+    white-space: pre-wrap;
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    border-radius: 2px;
+    padding: 1px 3px;
+}
+
+pre {
+    @include baseline;
+    @include box-sizing(border-box);
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    width: 100%;
+    padding: 10px;
+    font-family: $font-family-mono;
+    font-size: 0.9em;
+    white-space: pre;
+    overflow: auto;
+    border-radius: 3px;
+
+    code, tt {
+        font-size: inherit;
+        white-space: -moz-pre-wrap;
+        white-space: pre-wrap;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+}
+
+kbd {
+    display: inline-block;
+    margin-bottom: 0.4em;
+    padding: 1px 8px;
+    border: #ccc 1px solid;
+    color: $darkgrey;
+    text-shadow: #fff 0 1px 0;
+    font-size: 0.9em;
+    font-weight: bold;
+    background: #f4f4f4;
+    border-radius: 4px;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
+        0 1px 0 0 #fff inset;
+}

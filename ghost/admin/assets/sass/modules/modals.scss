@@ -1,0 +1,147 @@
+//
+// Modals
+// --------------------------------------------------
+
+#modal-container { // TODO: This should probably not be an ID
+    @include box-sizing(border-box);
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-x: auto;
+    overflow-y: scroll;
+    z-index: 1040;
+    pointer-events: none;
+    @include transition(all 0.15s linear 0s);
+    @include transform(translateZ(0));
+}
+
+.fade {
+    opacity: 0;
+    @include transition(opacity 0.2s linear 0s);
+    @include transform(translateZ(0));
+
+    &.in {
+        opacity: 1;
+    }
+}
+
+.modal-background {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1030;
+}
+
+.modal {
+    @include box-sizing(border-box);
+    left: 50%;
+    right: auto;
+    width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    z-index: 1050;
+    pointer-events: auto;
+
+
+    @include breakpoint($tablet) {
+        width: auto;
+        padding: 10px;
+    };
+
+    button {
+        min-width: 100px;
+    }
+
+    @include breakpoint($tablet) {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    //Uploaders
+    .image-uploader,
+    .pre-image-uploader {
+        margin: 0;
+    }
+}
+
+.modal-action {
+    @extend .modal;
+    padding: 60px 0 30px;
+
+    @include breakpoint($tablet) {
+        padding: 30px 0;
+    }
+}
+
+.modal-content {
+    @include box-sizing(padding-box);
+    position: relative;
+    padding: 20px;
+    background-clip: padding-box;
+    background-color: #FFFFFF;
+    border-radius: $rounded;
+    box-shadow: rgba(0,0,0,0.2) 0 0 0 6px;
+
+    .close {
+        @include box-sizing(border-box);
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 16px;
+        min-height: 16px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        z-index: 9999;
+
+        @include icon($i-x, 1em, $midgrey);
+        @include transition(opacity 0.3s linear);
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+}
+.modal-header {
+    position: relative;
+    padding: 20px;
+    border-bottom: 1px solid $lightbrown;
+
+    h1 {
+        display: inline-block;
+        margin: 0;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+}
+
+.modal-body {
+    position: relative;
+    min-height: 100px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    margin-top: 20px;
+}
+
+.modal-style-wide {
+    width: 550px;
+
+    @include breakpoint($tablet) {
+        width: 100%;
+    }
+}
+
+.modal-style-centered {
+    text-align: center;
+}
