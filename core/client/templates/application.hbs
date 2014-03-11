@@ -1,4 +1,6 @@
-{{partial "navbar"}}
+{{#unless isLogin}}
+    {{partial "navbar"}}
+{{/unless}}
 
 <main role="main" id="main">
     {{outlet}}

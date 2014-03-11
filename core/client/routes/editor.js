@@ -1,7 +1,8 @@
 import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 
-var EditorRoute = Ember.Route.extend(styleBody, {
+var EditorRoute = AuthenticatedRoute.extend(styleBody, {
     classNames: ['editor'],
 
     model: function (params) {

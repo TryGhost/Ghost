@@ -1,5 +1,6 @@
 import Resolver from 'ember/resolver';
 import initFixtures from 'ghost/fixtures/init';
+import {currentUser, injectCurrentUser} from 'ghost/initializers/current-user';
 
 var App = Ember.Application.extend({
     /**
@@ -15,5 +16,8 @@ var App = Ember.Application.extend({
 });
 
 initFixtures();
+
+App.initializer(currentUser);
+App.initializer(injectCurrentUser);
 
 export default App;
