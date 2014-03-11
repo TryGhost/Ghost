@@ -1,0 +1,19 @@
+<main role="main" id="main">
+    <aside id="notifications" class="notifications">
+    </aside>
+
+    <section class="login-box js-login-box" style="opacity: 1;">
+        <form id="login" class="login-form" method="post" novalidate="novalidate">
+            <div class="email-wrap">
+                {{input class="email" type="email" placeholder="Email Address" name="email" autocapitalize="off" autocorrect="off" value=email}}
+            </div>
+            <div class="password-wrap">
+                {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+            </div>
+            <button class="button-save" type="submit" {{action "login"}}>Log in</button>
+            <section class="meta">
+                <a class="forgotten-password" href="/ghost/forgotten/">Forgotten password?</a>
+            </section>
+        </form>
+    </section>
+</main>
