@@ -1,0 +1,297 @@
+//
+// Buttons
+// --------------------------------------------------
+
+/*
+ * Buttons are used for primary calls to action on a page.
+ *
+ * Usage:
+ * <button type="button" class="button">Default</button>
+ */
+
+// This base style is used on all buttons
+.btn {
+    @include box-sizing(border-box);
+    min-height: 35px;
+    width: auto;
+    display: inline-block;
+    padding: 0.9em 1.37em;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+    font-size: 11px; // Hack because Firefox sucks.
+    line-height: 13px; // Hack because Firefox sucks.
+    font-weight: 300;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: none;
+    border-radius: 0.2em;
+    border: rgba(0,0,0,0.05) 0.1em solid;
+    @include transition(background 0.3s ease, border-color 0.3s ease);
+
+    &:hover {
+        border-color: transparent;
+        background: #f8f8f8;
+        text-decoration: none;
+    }
+
+    &:active {
+        box-shadow: rgba(0,0,0,0.3) 0 1px 3px inset;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.large {
+        padding: 1em 1.8em;
+        font-size: 14px;
+        line-height: 16px;
+    }
+}
+
+// This is the default button style
+.button,
+button,
+input[type="button"] {
+    @extend .btn;
+    color:#777;
+    font-weight: normal;
+    background: #eee;
+    box-shadow: none;
+    &:hover {
+        border-color: rgba(0,0,0,0.1);
+    }
+}
+
+// Button for save/next/continue/confirm actions
+.button-save,
+button[type="submit"],
+input[type="submit"] {
+    @extend .btn;
+    background: $blue;
+    box-shadow: none;
+    &:hover {background: darken($blue, 10%);}
+}
+
+// Button for actions which add stuff
+.button-add {
+    @extend .btn;
+    background: $green;
+    &:hover {background: darken($green, 8%);}
+}
+
+// Button for deleting/removing stuff
+.button-delete,
+button[type="reset"],
+input[type="reset"] {
+    @extend .btn;
+    background: $red;
+    box-shadow: none;
+    &:hover {background: darken($red, 10%);}
+}
+
+// Alternative button with more visual attention, but no extra semantic meaning
+.button-alt {
+    @extend .btn;
+    background: lighten($darkgrey, 10%);
+    &:hover {background: $darkgrey;}
+}
+
+// This applies normal link styles to de-emphasise a button
+.button-link {
+    @extend .btn;
+    color: $blue;
+    background: transparent;
+    border: none;
+    &:hover {
+        background: transparent;
+        text-decoration: underline;
+    }
+}
+
+// Back button for pane animations
+.button-back {
+    @extend .btn;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    margin-right: 30px;
+    padding: 0.5em 1.37em 0.5em 1.10em;
+    display: none;
+    color: #fff;
+    background: $blue;
+    border: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    &:before {
+        content: ' ';
+        position: absolute;
+        top: 0;
+        left: -10px;
+        width: 0;
+        height: 0;
+        border-width: 18px 10px 18px 0;
+        border-color: transparent $blue transparent transparent;
+        border-style: solid solid solid none;
+        @include transform(scale(0.9999));
+        @include transition(border-color 0.3s ease);
+    }
+
+    &:hover {
+        color: #fff;
+        background: darken($blue, 10%);
+        border-color: darken($blue, 10%);
+        &:before {
+            border-right-color: darken($blue, 10%);
+        }
+    }
+
+    @include breakpoint($tablet) {
+        display: inline-block;
+    }
+}
+
+
+/* =============================================================================
+   Split Buttons
+   ============================================================================= */
+
+/*
+ * The splitbutton adds addition values to a button, via a dropdown (or drop-up).
+ *
+ * Usage:
+ * <section class="splitbutton">
+ *     <button type="button" class="button">Split Up</button>
+ *     <a class="options" href="#"><span class="hidden">Options</span></a>
+ * </section>
+ */
+
+// These are the base styles applied to all splitbuttons
+.splitbtn {
+    display: inline-block;
+    position: relative;
+    font-size: 0; // hack to stop space after button
+    white-space: nowrap;
+
+    button {
+        font-size: 11px; // hack to restore font size
+        @include border-right-radius(0);
+    }
+
+    // This is the additional dropdown arrow, to the right of the button.
+    .options {
+        display: inline-block;
+        position:relative;
+        width: 35px;
+        height: 35px;
+        margin-left: -1px;
+        vertical-align: top;
+        text-align: center;
+        color: #fff;
+        background: #e5e5e5;
+        border-radius: 0 2px 2px 0;
+        box-shadow:
+            rgba(0,0,0,0.02) 0 1px 0 inset,
+            rgba(0,0,0,0.02) -1px 0 0 inset,
+            rgba(0,0,0,0.02) 0 -1px 0 inset;
+        @include icon($i-chevron-down, 9px) {
+            position: absolute;
+            top: 50%;
+            right: 50%;
+            margin-top: -3px;
+            margin-right: -5px;
+            @include transition(margin-top 0.3s ease);
+            /* Transition of transform properties are split out due to a
+                defect in the vendor prefixing of transform transitions.
+                See: http://github.com/thoughtbot/bourbon/pull/86 */
+            @include transition-property(transform);
+            @include transition-duration(0.3);
+            @include transition-timing-function(ease);
+        };
+        @include transition(background-color 0.3s linear);
+
+        // Keep the arrow spun when the associated menu is open
+        &.active:before {
+            @include transform(rotate(360deg));
+        }
+
+        &.up.active:before {
+            margin-top:-4px;
+            @include transform(rotate(540deg));
+        }
+
+        // Spin the arrow on hover and while menu is open
+        &:hover {
+            box-shadow: none;
+            background: #f8f8f8;
+            @include icon($i-chevron-down) {
+                @include transform(rotate(360deg));
+            };
+        }
+
+        // If it has a class of "up" spin it an extra 180degress to point up
+        &.up:hover {
+            @include icon($i-chevron-down) {
+                margin-top:-4px;
+                @include transform(rotate(540deg));
+                @include transition-property(transform);
+                @include transition-duration(0.6);
+                @include transition-timing-function(ease);
+            };
+        }
+    }
+}
+
+// The default splitbutton
+.splitbutton {
+    @extend .splitbtn;
+    .options {
+        color:#777;
+        &:hover {
+            box-shadow:
+                rgba(0,0,0,0.07) 0 1px 0 inset,
+                rgba(0,0,0,0.07) -1px 0 0 inset,
+                rgba(0,0,0,0.07) 0 -1px 0 inset;
+        }
+    }
+}
+
+// For save/next/continue/confirm actions
+.splitbutton-save {
+    @extend .splitbtn;
+    .options {
+        background: darken($blue, 5%);
+        &:hover, &.active {background: darken($blue, 10%);}
+    }
+}
+
+// For actions which add something
+.splitbutton-add {
+    @extend .splitbtn;
+    .options {
+        background: darken($green, 6%);
+        &:hover {background: darken($green, 8%);}
+    }
+}
+
+// For actions which delete something
+.splitbutton-delete {
+    @extend .splitbtn;
+    .options {
+        background: darken($red, 6%);
+        &:hover {background: darken($red, 10%);}
+    }
+}
+
+// Alternative style with more visual attention, but no extra semantic meaning
+.splitbutton-alt {
+    @extend .splitbtn;
+    .options {
+        background: lighten($darkgrey, 4%);
+        &:hover {background: $darkgrey;}
+    }
+}

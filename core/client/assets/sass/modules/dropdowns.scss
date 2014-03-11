@@ -1,0 +1,214 @@
+//
+// Dropdowns
+// --------------------------------------------------
+
+.dropdown {
+    @include icon-after($i-chevron-down, 8px) {
+        padding-left: 6px;
+        vertical-align: 0;
+    };
+
+    &.active {
+        color: $darkgrey;
+        @include icon-after($i-chevron-down, 8px);
+    }
+}
+
+
+// This is the base menu extend used for styles on interaction menus
+// Default: Pop menu, chiclet bottom center.
+.menu {
+    display: inline-block;
+    position:absolute;
+    z-index: 960;
+    padding:6px 0;
+    border:none;
+    list-style: none;
+    color: $lightgrey;
+    background: $darkgrey;
+    border-radius: 3px;
+    box-shadow: rgba(0,0,0,0.5) 0 1px 15px;
+
+    // The triangle chiclet that points to where the menu came from
+    // By default, this is bottom center.
+    &:before {
+        content:"";
+        position:absolute;
+        bottom:-10px;
+        left:50%;
+        margin-left:-10px;
+        border-width:10px 10px 0 10px;
+        border-style:solid;
+        border-color:$darkgrey transparent;
+        display:block;
+        width:0;
+    }
+
+    li {overflow:hidden;} // Stop :hover shadow from overflowing
+
+    a, p {
+        @include box-sizing(border-box);
+        display: block;
+        position: relative;
+        padding:10px 25px 10px 35px;
+        border: none;
+        @include box-sizing(border-box);
+        color: $lightgrey !important; // It's dirty, but it's needed.
+        text-transform: none;
+        text-decoration: none;
+
+        &:hover {
+            background: $blue;
+            box-shadow:
+                rgba(255,255,255,0.2) 0 1px 0 inset,
+                rgba(0,0,0,0.5) 0 1px 5px;
+        }
+
+    }
+
+    // Add a check mark to the currently active menu item
+    .active a {
+        @include icon($i-check) {
+            position: absolute;
+            top: 14px;
+            left: 11px;
+        }
+    }
+
+}
+
+// This extend moves the chiclet to the top, for menus which drop down.
+.menu-drop {
+    @extend .menu;
+    &:before {
+        top: -10px;
+        bottom: auto;
+        border-width:0 10px 10px 10px;
+    }
+}
+
+// Chiclet to the left, for menus appearing close to left edge of the screen.
+.menu-left {
+    @extend .menu;
+    &:before {
+        left:10px;
+        margin-left:0;
+    }
+}
+
+// Chiclet to the right, for menus appearing close to right edge of the screen.
+.menu-right {
+    @extend .menu;
+    &:before {
+        left: auto;
+        right:10px;
+        margin-left:0;
+    }
+}
+
+// Drop left, chiclet top left.
+.menu-drop-left {
+    @extend .menu;
+    @extend .menu-drop;
+    @extend .menu-left;
+}
+
+// Drop right, chiclet top right.
+.menu-drop-right {
+    @extend .menu;
+    @extend .menu-drop;
+    @extend .menu-right;
+}
+
+/* ==========================================================================
+   Post Settings
+   ========================================================================== */
+
+.post-settings {
+    @include icon($i-settings, 14px);
+    @include box-sizing(border-box);
+    display: inline-block;
+    padding: 0 10px;
+    color: $midgrey;
+    @include transition;
+    position: relative;
+    top: 1px;
+
+    &:hover,
+    &.active {
+        color: $darkgrey;
+    }
+}
+
+.post-settings-menu {
+    padding-top: 0;
+    text-transform: none;
+
+    table {
+        margin: 0;
+    }
+
+    td {
+        padding: 0;
+        border-top: none;
+        border-bottom: lighten($grey, 5%) 1px solid;
+    }
+
+    .post-setting-label {
+        padding: 8px 10px 8px 15px;
+        border-right: lighten($grey, 5%) 1px solid;
+        text-align: right;
+    }
+
+    .label {
+        position: static;
+        width: auto;
+        font-weight: normal;
+        color: $midgrey;
+        white-space: nowrap;
+    }
+
+    input {
+        width: 200px;
+        margin: 0;
+
+        @include breakpoint(550px) { width: 200px; }
+
+        &[type="text"] {
+            border: none;
+            padding: 8px 0 8px 10px;
+            color: $lightgrey;
+            border-radius: 0;
+            background: transparent;
+
+            &:focus {
+                background: $grey;
+                border: none;
+            }
+        }
+    }
+
+    .post-setting-item {
+        padding: 5px 0 0 10px;
+    }
+
+    .checkbox {
+        position: relative;
+        margin-top: 0;
+        width: 18px;
+        border: lighten($grey, 10%) 1px solid;
+        background: $grey;
+    }
+
+    .delete {
+        display: block;
+        padding: 10px 15px;
+        @include icon($i-trash) { 
+            position: relative; 
+            top: -1px; 
+            margin-right: 10px 
+        };
+
+        &:hover { background: $red; }
+    }
+}
