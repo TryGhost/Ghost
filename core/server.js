@@ -21,7 +21,6 @@ var express     = require('express'),
     loading = when.defer(),
     server = express(),
     ghost = new Ghost();
-
 // ##Custom Middleware
 
 // ### Auth Middleware

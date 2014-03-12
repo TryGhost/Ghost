@@ -11,6 +11,7 @@ var Ghost  = require('../../ghost'),
     errors = require('../errorHandling'),
     when   = require('when'),
     url    = require('url'),
+    cheerio= require('cheerio'),
 
 
     ghost  = new Ghost(),
@@ -67,7 +68,33 @@ frontendControllers = {
         api.posts.read({'slug': req.params.slug}).then(function (post) {
             if (post) {
                 ghost.doFilter('prePostsRender', post, function (post) {
-                    res.render('post', {post: post});
+                    //1cook
+                    var desc1 = post.html.split("</p>")[0];
+                    var desc2 = desc1.split("p>")[1].trim();
+                    var desc3 = desc2.substring(0, desc2.length - +(desc2.lastIndexOf('.')==desc2.length-1));
+
+                    if (post.html.split("<img").length > 1) {
+                        $ = cheerio.load(post.html);
+                        var img3 = $("#main-img").attr("src");
+                        if (!img3) {
+                            var img1 = post.html.split("<img")[1];
+                            var img2 = img1.split('src="')[1];
+                            var img3 = img2.split('"')[0];
+                        }
+                        var img4 = img3.split(".");
+                        var ext1 = img4[img4.length - 1];
+                        if (post.published_at)
+                            var mdate = post.published_at.toISOString();
+                        else {
+                            var mdate = new Date();
+                            mdate = mdate.toISOString();
+                        }
+                        var img  = {url: img3, ext: ext1, date: mdate};
+                    } else {
+                        var img  = {url: "", ext: ""};
+                    }
+
+                    res.render('post', {post: post, article_description: desc3, article_image: img, post_title: post.title});
                 });
             } else {
                 next();

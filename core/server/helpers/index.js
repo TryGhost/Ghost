@@ -38,12 +38,16 @@ coreHelpers = function (ghost) {
             timeago = options.hash.timeago,
             date;
 
+        // 1cook_start
+        moment.lang('ru');
+        // 1cook_end
 
         if (timeago) {
             date = moment(context).fromNow();
         } else {
             date = moment(context).format(f);
         }
+
         return date;
     });
 
@@ -159,22 +163,28 @@ coreHelpers = function (ghost) {
     // **returns** SafeString truncated, HTML-free content.
     //
     ghost.registerThemeHelper('excerpt', function (options) {
-        var truncateOptions = (options || {}).hash || {},
+        /*var truncateOptions = (options || {}).hash || {},
             excerpt;
 
         truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
 
         /*jslint regexp:true */
-        excerpt = String(this.html).replace(/<\/?[^>]+>/gi, '');
+        //excerpt = String(this.html).replace(/<\/?[^>]+>/gi, '');
         /*jslint regexp:false */
 
-        if (!truncateOptions.words && !truncateOptions.characters) {
+        /*if (!truncateOptions.words && !truncateOptions.characters) {
             truncateOptions.words = 50;
         }
+        truncateOptions.wordChars = /[\u0400-\u04FFa-z0-9-\']/i ; 
 
         return new hbs.handlebars.SafeString(
             downsize(excerpt, truncateOptions)
-        );
+        );*/
+        //1cook
+        var desc1 = this.html.split("</p>")[0];
+        var desc2 = desc1.split("p>")[1].trim();
+        var desc3 = desc2.substring(0, desc2.length - +(desc2.lastIndexOf('.')==desc2.length-1));
+        return desc3;
     });
 
 

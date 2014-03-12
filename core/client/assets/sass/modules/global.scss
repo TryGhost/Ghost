@@ -385,7 +385,7 @@ nav {
    ========================================================================== */
 
 .ghost-logo {
-    @include icon($i-ghost) { line-height: 0; }
+    @include icon($i-ghost);
     display: block;
     float:left;
     height:40px;
@@ -1020,6 +1020,16 @@ nav {
     z-index: 1030;
 }
 
+body.blur > *:not(#modal-container) {
+    @include transition(all 0.15s linear 0s);
+    -webkit-filter: blur(2px);
+       -moz-filter: blur(2px);
+        -ms-filter: blur(2px);
+         -o-filter: blur(2px);
+    @include transform(translateZ(0));
+
+}
+
 %modal, .modal {
     @include box-sizing(border-box);
     left: 50%;
@@ -1046,12 +1056,6 @@ nav {
         width: 100%;
         margin-left: 0;
     }
-
-    //Uploaders
-    .image-uploader,
-    .pre-image-uploader {
-        margin: 0;
-    }
 }
 
 .modal-info {
@@ -1065,12 +1069,15 @@ nav {
     @include breakpoint($tablet) {
         padding: 30px 0;
     }
+
+    .modal-footer {
+        margin-top: 20px;
+    }
 }
 
 .modal-content {
     @include box-sizing(padding-box);
     position: relative;
-    padding: 20px;
     background-clip: padding-box;
     background-color: #FFFFFF;
     border-radius: $rounded;
@@ -1112,11 +1119,13 @@ nav {
 .modal-body {
     position: relative;
     min-height: 100px;
+    padding: 0 20px;
     overflow-y: auto;
 }
 
 .modal-footer {
-    margin-top: 20px;
+    padding: 20px;
+    padding-top: 0;
 }
 
 .modal-style-wide {
@@ -1130,8 +1139,6 @@ nav {
 .modal-style-centered {
     text-align: center;
 }
-
-
 /* ==========================================================================
    Main Elements
    ========================================================================== */
@@ -1270,10 +1277,7 @@ main {
             color: $darkgrey;
         }
     }
-    .description {
-        margin-top: 10px;
-        margin-bottom: -40px;
-    }
+    
     .centre{
         position: relative;
         top: 50px;
@@ -1318,17 +1322,17 @@ main {
         text-decoration: none;
     }
     .image-cancel {
-        @include icon($i-x, 16px);
+        @include icon($i-x, 14px);
         position: absolute;
-        color: white;
-        text-shadow: rgba(0,0,0,0.3) 0 0 3px;
         top: 10px;
         right: 10px;
+        padding: 8px;
+        color: $brown;
         text-decoration: none;
+        line-height: 0;
 
         &:hover {
             cursor: pointer;
-            color: white;
         }
     }
     input {
@@ -1397,6 +1401,13 @@ main {
         &.fail {
             background: $red;
         }
+    }
+}
+
+.image-uploader-url {
+    .description {
+        margin-top: 10px;
+        margin-bottom: -40px;
     }
 }
 

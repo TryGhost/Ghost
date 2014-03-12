@@ -206,8 +206,8 @@
 
         .img {
             display: block;
-            width: 110px;
-            height: 110px;
+            width: 100%;
+            height: 100%;
             background-image: url(/shared/img/user-image.png);
             background-size: cover;
             background-position: center center;
@@ -221,14 +221,15 @@
     }
 
     .edit-user-image {
-        @include position(absolute, 0px 0px 0px 0px);
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
         border-radius: 100%;
         background: rgba(0,0,0,0.5);
         opacity: 0;
         color: #fff;
-        line-height: 105px;
-        text-transform: uppercase;
-        text-decoration: none;
         @include transition(opacity 0.3s ease);
     }
 

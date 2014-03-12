@@ -72,6 +72,9 @@ function getUniqueFileName(dir, name, ext, i, done) {
 adminControllers = {
     'uploader': function (req, res) {
 
+        // 1cook_start
+        moment.lang('en');
+        // 1cook_end
         var currentDate = moment(),
             month = currentDate.format('MMM'),
             year =  currentDate.format('YYYY'),

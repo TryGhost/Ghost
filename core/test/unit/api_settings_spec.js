@@ -5,7 +5,7 @@ var testUtils = require('./testUtils'),
 
     // Stuff we are testing
     Models = require('../../server/models'),
-    knex = require('../../server/models/base').knex;
+    knex = require('../../server/models/base').Knex;
 
 describe('Settings Model', function () {
 
