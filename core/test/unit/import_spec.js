@@ -80,13 +80,7 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
                 done();
@@ -146,12 +140,8 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                    // Initialise the default settings
-                return Settings.populateDefaults();
             }).then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
@@ -333,13 +323,7 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                    // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
                 done();
