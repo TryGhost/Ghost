@@ -142,4 +142,4 @@ For more information on SemVer, please visit <http://semver.org/>.
 
 ## Copyright and License
 
-Copyright (C) 2014 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (C) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
