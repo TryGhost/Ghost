@@ -56,10 +56,7 @@ var path           = require('path'),
                 concat: {
                     files: [
                         'core/client/*.js',
-                        'core/client/helpers/*.js',
-                        'core/client/models/*.js',
-                        'core/client/tpl/*.js',
-                        'core/client/views/*.js'
+                        'core/client/**/*.js'
                     ],
                     tasks: ['concat']
                 },
@@ -482,7 +479,14 @@ var path           = require('path'),
                             'core/client/mobile-interactions.js',
                             'core/client/toggle.js',
                             'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js'
+                            'core/client/helpers/index.js',
+                            'core/client/assets/lib/editor/index.js',
+                            'core/client/assets/lib/editor/markerManager.js',
+                            'core/client/assets/lib/editor/uploadManager.js',
+                            'core/client/assets/lib/editor/markdownEditor.js',
+                            'core/client/assets/lib/editor/htmlPreview.js',
+                            'core/client/assets/lib/editor/scrollHandler.js'
+
                         ],
 
                         'core/built/scripts/templates.js': [
@@ -537,6 +541,14 @@ var path           = require('path'),
                             'core/client/toggle.js',
                             'core/client/markdown-actions.js',
                             'core/client/helpers/index.js',
+
+                            'core/client/assets/lib/editor/index.js',
+                            'core/client/assets/lib/editor/markerManager.js',
+                            'core/client/assets/lib/editor/uploadManager.js',
+                            'core/client/assets/lib/editor/markdownEditor.js',
+                            'core/client/assets/lib/editor/htmlPreview.js',
+                            'core/client/assets/lib/editor/scrollHandler.js',
+
 
                             'core/client/tpl/hbs-tpl.js',
 
