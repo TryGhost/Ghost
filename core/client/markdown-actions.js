@@ -130,13 +130,13 @@
     CodeMirror.prototype.addMarkdown.options = {
         style: null,
         syntax: {
-            bold: "**$1**",
-            italic: "*$1*",
-            strike: "~~$1~~",
-            code: "`$1`",
-            link: "[$1](http://)",
-            image: "![$1](http://)",
-            blockquote: "> $1"
+            bold: '**$1**',
+            italic: '*$1*',
+            strike: '~~$1~~',
+            code: '`$1`',
+            link: '[$1](http://)',
+            image: '![$1](http://)',
+            blockquote: '> $1'
         }
     };
 
