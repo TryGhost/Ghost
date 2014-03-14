@@ -1,10 +1,7 @@
 var ghostBookshelf = require('./base'),
-    _              = require('lodash'),
-    when           = require('when'),
     User           = require('./user').User,
     Role           = require('./role').Role,
     App            = require('./app').App,
-    validation     = require('../data/validation'),
 
     Permission,
     Permissions;
