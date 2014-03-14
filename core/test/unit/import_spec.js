@@ -1,23 +1,23 @@
 /*globals describe, beforeEach, it*/
 var testUtils = require('../utils'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
-    assert = require('assert'),
-    _ = require("lodash"),
-    errors = require('../../server/errorHandling'),
+    should    = require('should'),
+    sinon     = require('sinon'),
+    when      = require('when'),
+    assert    = require('assert'),
+    _         = require("lodash"),
+    errors    = require('../../server/errorHandling'),
 
     // Stuff we are testing
-    knex = require("../../server/models/base").knex,
-    migration = require('../../server/data/migration'),
-    exporter = require('../../server/data/export'),
-    importer = require('../../server/data/import'),
+    knex        = require("../../server/models/base").knex,
+    migration   = require('../../server/data/migration'),
+    exporter    = require('../../server/data/export'),
+    importer    = require('../../server/data/import'),
     Importer000 = require('../../server/data/import/000'),
     Importer001 = require('../../server/data/import/001'),
     Importer002 = require('../../server/data/import/002'),
     Importer003 = require('../../server/data/import/003'),
-    fixtures = require('../../server/data/fixtures'),
-    Settings = require('../../server/models/settings').Settings;
+    fixtures    = require('../../server/data/fixtures'),
+    Settings    = require('../../server/models/settings').Settings;
 
 describe("Import", function () {
 
@@ -103,13 +103,7 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
                 done();
@@ -169,12 +163,8 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                    // Initialise the default settings
-                return Settings.populateDefaults();
             }).then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
@@ -356,13 +346,7 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
-            }).then(function () {
-                    // Initialise the default settings
-                return Settings.populateDefaults();
-            }).then(function () {
+            migration.migrateUpFreshDb().then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
                 done();
@@ -543,17 +527,11 @@ describe("Import", function () {
 
         beforeEach(function (done) {
             // migrate to current version
-            migration.migrateUp().then(function () {
-                // Load the fixtures
-                return fixtures.populateFixtures();
+            migration.migrateUpFreshDb().then(function () {
+                return testUtils.insertDefaultUser();
             }).then(function () {
-                    // Initialise the default settings
-                    return Settings.populateDefaults();
-                }).then(function () {
-                    return testUtils.insertDefaultUser();
-                }).then(function () {
-                    done();
-                }).then(null, done);
+                done();
+            }).then(null, done);
         });
 
         it("safely imports data from 003", function (done) {

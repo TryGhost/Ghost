@@ -104,7 +104,7 @@ describe('Permissions', function () {
             .then(function (actionsMap) {
                 should.exist(actionsMap);
 
-                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page', 'setting'].sort());
 
                 actionsMap.should.equal(permissions.actionsMap);
 
