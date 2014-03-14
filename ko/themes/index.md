@@ -188,24 +188,24 @@ Ghost 테마에서는 `@blog` 전역 데이터 접근자를 통해 전역 설정
 
 ## 내장 헬퍼 <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghost는 테마를 만들 때 도움을 주는 내장 헬퍼를 제공합니다. 헬퍼는 블록 헬퍼와 출력 헬퍼 두 종류로 분류됩니다.
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[블록 헬퍼](http://handlebarsjs.com/block_helpers.html)** 는 `{{#foreach}}{{/foreach}}`와 같이 시작 태그와 종료 태그가 있습니다. 태그 안에서는 맥락이 변하며 이런 헬퍼는 `@` 기호로 접근할 수 있는 부가적 속성을 제공하기도 합니다.
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**출력 헬퍼**는 `{{content}}`와 같이 데이터를 출력할 때 사용하는 표현식과 닮았습니다. 데이터를 출력하기 전에 유용한 연산을 수행하며, 데이터 출력 양식을 선택할 수 있게 하기도 합니다. 일부 출력 헬퍼는 데이터 양식을 지정하기 위해 HTML과 함께 템플릿을 사용하기도 합니다. 출력 헬퍼는 또한 블록 헬퍼이기도 하며, 기능에 있어 변형을 제공하기도 합니다.
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   헬퍼 타입: 블록
+*   옵션: `columns` (number)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}`는 포스트 목록 처리를 위해 만들어진 특별한 루프 헬퍼입니다. 핸들바에서 각 헬퍼는 기본적으로 배열에 대해 `@index` 속성을 가지며 객체에 대해서는 `@key` 속성을 가지는데, 루프 안에서 사용될 수 있습니다.
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach`는 이를 확장해  배열과 객체 모두에 `@first`와 `@last`, `@even`, `@odd`, `@rowStart`, `@rowEnd` 속성을 추가합니다. 이를 이용해 포스트 목록과 다른 컨텐트에 대해 좀더 복잡한 레이아웃을 만들 수 있습니다. 예를 들어, 다음을 보기 바랍니다.
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+다음 예제는 배열이나 객체(예: `posts`)를 확인하고 첫 요소인기 확인합니다.
 
 ```
 {{#foreach posts}}
@@ -215,7 +215,7 @@ The following example checks through an array or object e.g `posts` and tests fo
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+여러 속성을 확인하기 위해 중첩 `if`를 사용할 수도 있습니다. 이 예제에서는 첫 포스트와 마지막 포스트를 다른 포스트와 구분해 표시하고 있습니다.
 
 ```
 {{#foreach posts}}
@@ -233,7 +233,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+다음 예는 짝수 또는 홀수 클래스를 추가해 컨텐트 색을 줄무늬로 표시할 수 있게 합니다.
 
 ```
 {{#foreach posts}}
