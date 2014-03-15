@@ -1,7 +1,8 @@
 import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 
-var PostsRoute = Ember.Route.extend(styleBody, {
+var PostsRoute = AuthenticatedRoute.extend(styleBody, {
     classNames: ['manage'],
 
     model: function () {

@@ -9,6 +9,7 @@ Router.reopen({
 });
 
 Router.map(function () {
+    this.route('login', { path: '/signin' });
     this.resource('posts', { path: '/' }, function () {
         this.route('post', { path: ':post_id' });
     });
