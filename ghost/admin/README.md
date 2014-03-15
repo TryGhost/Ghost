@@ -97,9 +97,24 @@ Run `grunt` to run tests locally and compile the CSS and JavaScript into `/dist`
 #### $ grunt test
 Runs [JSHint](http://jshint.com) and [QUnit](http://qunitjs.com/) tests headlessly in [PhantomJS](http://phantomjs.org/) (used for CI).
 
-#### $ grunt watch
-This is a convenience method for watching just Sass files and automatically building them whenever you save.
+#### $ grunt dev
+This is a convenience method for watching development files and automatically building them whenever they change.
 
+### Hooking Ghost-UI up to Ghost
+
+Want to see your Ghost-UI changes working live in your local development copy of [Ghost](http://github.com/TryGhost/Ghost)? Check out a copy of both repositories and follow these instructions:
+
+#### Inside the Ghost-UI repo:
+
+* `$ bower link`
+* `$ grunt dev`
+
+#### Inside the Ghost repo:
+
+* `$ bower link ghost-ui`
+* `$ grunt dev`
+
+Now whenever you save a file in Ghost-UI - the changes will filter into the core Ghost repository.
 
 ### Troubleshooting Dependencies
 
@@ -142,4 +157,4 @@ For more information on SemVer, please visit <http://semver.org/>.
 
 ## Copyright and License
 
-Copyright (C) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
