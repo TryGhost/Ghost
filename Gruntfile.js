@@ -63,14 +63,21 @@ var path           = require('path'),
                     ],
                     tasks: ['concat']
                 },
+                'ghost-ui': {
+                    files: [
+                        // Ghost UI CSS
+                        'bower_components/ghost-ui/dist/css/*.css'
+                    ],
+                    tasks: ['copy:dev']
+                },
                 livereload: {
                     files: [
                         // Theme CSS
                         'content/themes/casper/css/*.css',
-                        // Ghost UI CSS
-                        'bower_components/ghost-ui/dist/css/*.css',
                         // Theme JS
                         'content/themes/casper/js/*.js',
+                        // Client CSS
+                        'core/client/assets/css/*.css',
                         // Admin JS
                         'core/built/scripts/*.js'
                     ],
@@ -555,7 +562,6 @@ var path           = require('path'),
         };
 
         grunt.initConfig(cfg);
-
 
         // ## Custom Tasks
 
