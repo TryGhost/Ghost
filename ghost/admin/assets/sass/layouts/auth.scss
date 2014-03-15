@@ -268,10 +268,6 @@
     display: table-cell;
     vertical-align: middle;
 
-    @include breakpoint(630px) {
-        max-width: 264px;
-    }
-
     div { // Yes. Really.
         position:relative;
         margin:0 0 1em 0;
@@ -290,11 +286,6 @@
         background: transparent;
         box-shadow: none;
         @include transition(background ease 0.25s);
-
-        @include breakpoint(630px) {
-            @include transition(none);
-            max-width: 244px;
-        }
         
         &:focus {
             border: none;
@@ -304,6 +295,7 @@
     }
 
     .email-wrap {
+        width: 100%;
         position:relative;
         border-radius: 2px;
 
