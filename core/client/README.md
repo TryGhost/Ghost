@@ -74,12 +74,14 @@ Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com
 Ghost-UI uses [Grunt](http://gruntjs.com/) with convenient methods for working with the framework. It's how we compile our code, run tests, and more. To use it, install the required dependencies as directed below and then check out the available Grunt commands.
 
 
-### Install Grunt
+### Install Dependencies
 
 From the command line:
 
-1. Install `grunt-cli` globally with `npm install -g grunt-cli`.
-2. Navigate to the root `/Ghost-UI` directory, then run `npm install`. npm will look at [package.json](https://github.com/TryGhost/Ghost-UI/blob/master/package.json) and automatically install the necessary local dependencies listed there.
+1. Install Ruby and bundler globally with `gem install bundler`.
+2. Install Ruby dependencies with `bundle install`.
+3. Install `grunt-cli` globally with `npm install -g grunt-cli`.
+4. Navigate to the root `/Ghost-UI` directory, then run `npm install`. npm will look at [package.json](https://github.com/TryGhost/Ghost-UI/blob/master/package.json) and automatically install the necessary local dependencies listed there.
 
 When completed, you'll be able to run the various Grunt commands provided from the command line.
 
