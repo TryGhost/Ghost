@@ -387,7 +387,6 @@
                 model: {
                     options: {
                         close: true,
-                        type: "info",
                         style: ["wide"],
                         animation: 'fade'
                     },
@@ -531,7 +530,6 @@
                 model: {
                     options: {
                         close: true,
-                        type: "info",
                         style: ["wide"],
                         animation: 'fade'
                     },
