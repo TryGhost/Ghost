@@ -1,9 +1,8 @@
-var _ = require('lodash'),
-    when = require('when'),
+var _      = require('lodash'),
     Models = require('../models'),
     errors = require('../errorHandling'),
-    User = Models.User,
-    App = Models.App;
+    User   = Models.User,
+    App    = Models.App;
 
 var effective = {
     user: function (id) {
