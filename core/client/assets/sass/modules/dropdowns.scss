@@ -59,11 +59,8 @@
 
         &:hover {
             background: $blue;
-            box-shadow:
-                rgba(255,255,255,0.2) 0 1px 0 inset,
-                rgba(0,0,0,0.5) 0 1px 5px;
+            box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset;
         }
-
     }
 
     // Add a check mark to the currently active menu item
