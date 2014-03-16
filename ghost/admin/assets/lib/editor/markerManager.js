@@ -45,8 +45,15 @@
         // ln - line number
         addMarker = function (line, ln) {
             var marker,
-                magicId = '{<' + uploadId + '>}';
-            editor.setLine(ln, magicId + line.text);
+                magicId = '{<' + uploadId + '>}',
+                newText = magicId + line.text;
+
+            editor.replaceRange(
+                newText,
+                {line: ln, ch: 0},
+                {line: ln, ch: newText.length}
+            );
+
             marker = editor.markText(
                 {line: ln, ch: 0},
                 {line: ln, ch: (magicId.length)},
