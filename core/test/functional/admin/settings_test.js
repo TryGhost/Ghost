@@ -154,6 +154,89 @@ CasperTest.begin('Ensure general blog description field length validation', 3, f
     }, 2000);
 });
 
+CasperTest.begin('Ensure image upload modals display correctly', 6, function suite(test) {
+    casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, "Ghost doesn't require login this time");
+    });
+
+    function assertImageUploaderModalThenClose() {
+        test.assertExists('.js-drop-zone.image-uploader', 'Image drop zone modal renders correctly');
+        this.click('#modal-container .js-button-accept');
+        casper.waitForSelector('.notification-success', function onSuccess() {
+            test.assert(true, 'Got success notification');
+        }, function onTimeout() {
+            test.fail('No success notification');
+        }, 1000);
+    };
+
+    // Test Blog Logo Upload Button
+    casper.waitForSelector('#general', function then() {
+        this.click('#general .js-modal-logo');
+    });
+
+    casper.waitForSelector('#modal-container .modal-content', assertImageUploaderModalThenClose,
+        function onTimeout() {
+            test.fail('No upload logo modal container appeared');
+        }, 1000);
+
+    // Test Blog Cover Upload Button
+    casper.then(function() {
+        this.click('#general .js-modal-cover');
+    });
+
+    casper.waitForSelector('#modal-container .modal-content', assertImageUploaderModalThenClose,
+        function onTimeout() {
+            test.fail('No upload cover modal container appeared');
+        }, 1000);
+});
+
+CasperTest.begin("User settings screen validates email", 6, function suite(test) {
+    var email, brokenEmail;
+
+    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.then(function setEmailToInvalid() {
+        email = casper.getElementInfo('#user-email').attributes.value;
+        brokenEmail = email.replace('.', '-');
+
+        casper.fillSelectors('.user-profile', {
+            '#user-email': brokenEmail
+        }, false);
+    });
+
+    casper.thenClick('#user .button-save');
+
+    casper.waitForResource('/users/');
+
+    casper.waitForSelector('.notification-error', function onSuccess() {
+        test.assert(true, 'Got error notification');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'No error notification :(');
+    });
+
+    casper.then(function resetEmailToValid() {
+        casper.fillSelectors('.user-profile', {
+            '#user-email': email
+        }, false);
+    });
+
+    casper.thenClick('#user .button-save');
+
+    casper.waitForResource(/users/);
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+});
+
 CasperTest.begin('Ensure postsPerPage number field form validation', 3, function suite(test) {
     casper.thenOpen(url + "ghost/settings/general/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
@@ -215,52 +298,6 @@ CasperTest.begin('Ensure postsPerPage min of 0', 3, function suite(test) {
     }, function onTimeout() {
         test.fail('postsPerPage min error did not appear');
     }, 2000);
-});
-
-CasperTest.begin("User settings screen validates email", 6, function suite(test) {
-    var email, brokenEmail;
-
-    casper.thenOpen(url + "ghost/settings/user/", function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/settings\/user\/$/, "Ghost doesn't require login this time");
-    });
-
-    casper.then(function setEmailToInvalid() {
-        email = casper.getElementInfo('#user-email').attributes.value;
-        brokenEmail = email.replace('.', '-');
-
-        casper.fillSelectors('.user-profile', {
-            '#user-email': brokenEmail
-        }, false);
-    });
-
-    casper.thenClick('#user .button-save');
-
-    casper.waitForResource('/users/');
-
-    casper.waitForSelector('.notification-error', function onSuccess() {
-        test.assert(true, 'Got error notification');
-        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
-    }, function onTimeout() {
-        test.assert(false, 'No error notification :(');
-    });
-
-    casper.then(function resetEmailToValid() {
-        casper.fillSelectors('.user-profile', {
-            '#user-email': email
-        }, false);
-    });
-
-    casper.thenClick('#user .button-save');
-
-    casper.waitForResource(/users/);
-
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification :(');
-    });
 });
 
 CasperTest.begin("User settings screen shows remaining characters for Bio properly", 4, function suite(test) {

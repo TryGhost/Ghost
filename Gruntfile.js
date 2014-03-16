@@ -76,6 +76,8 @@ var path           = require('path'),
                     files: [
                         // Theme CSS
                         'content/themes/casper/css/*.css',
+                        // Ghost UI CSS
+                        'bower_components/ghost-ui/dist/css/*.css',
                         // Theme JS
                         'content/themes/casper/js/*.js',
                         // Admin JS

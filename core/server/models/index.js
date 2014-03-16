@@ -14,11 +14,6 @@ module.exports = {
     init: function () {
         return migrations.init();
     },
-    reset: function () {
-        return migrations.reset().then(function () {
-            return migrations.init();
-        });
-    },
     // ### deleteAllContent
     // Delete all content from the database (posts, tags, tags_posts)
     deleteAllContent: function () {
