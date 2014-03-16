@@ -64,7 +64,9 @@ Settings = ghostBookshelf.Model.extend({
         if (!_.isObject(_key)) {
             _key = { key: _key };
         }
-        return ghostBookshelf.Model.read.call(this, _key);
+        return when(ghostBookshelf.Model.read.call(this, _key)).then(function (element) {
+            return element;
+        });
     },
 
     edit: function (_data, t) {

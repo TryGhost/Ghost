@@ -177,9 +177,13 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
+                        tagNames = tagModels.map(function (t) { return t.attributes.name; }),
+                        tagIds = _.pluck(tagModels, 'id');
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
-                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
+                    
+                    // make sure it hasn't just added a new tag with the same name
+                    // Don't expect a certain order in results - check for number of items!
+                    Math.max.apply(Math, tagIds).should.eql(4);
 
                     done();
                 }).then(null, done);
@@ -248,9 +252,14 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
+                        tagNames = tagModels.map(function (t) { return t.attributes.name; }),
+                        tagIds = _.pluck(tagModels, 'id');
+
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
-                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
+                    
+                    // make sure it hasn't just added a new tag with the same name
+                    // Don't expect a certain order in results - check for number of items!
+                    Math.max.apply(Math, tagIds).should.eql(4);
 
                     done();
                 }).then(null, done);
@@ -279,9 +288,14 @@ describe('Tag Model', function () {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
                     var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.attributes.name; });
+                        tagNames = tagModels.map(function (t) { return t.get('name'); }),
+                        tagIds = _.pluck(tagModels, 'id');
+
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3', 'tag4']);
-                    tagModels[2].id.should.eql(4); // make sure it hasn't just added a new tag with the same name
+
+                    // make sure it hasn't just added a new tag with the same name
+                    // Don't expect a certain order in results - check for number of items!
+                    Math.max.apply(Math, tagIds).should.eql(5); 
 
                     done();
                 }).then(null, done);
