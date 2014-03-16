@@ -419,7 +419,7 @@ describe('Post Model', function () {
         }).then(function (paginationResult) {
             paginationResult.page.should.equal(2);
             paginationResult.limit.should.equal(15);
-            paginationResult.posts.length.should.equal(9);
+            paginationResult.posts.length.should.equal(11);
             paginationResult.pages.should.equal(2);
             paginationResult.aspect.tag.name.should.equal('injection');
             paginationResult.aspect.tag.slug.should.equal('injection');

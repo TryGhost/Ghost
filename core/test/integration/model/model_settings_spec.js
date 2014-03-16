@@ -65,7 +65,7 @@ describe('Settings Model', function () {
 
                 should.exist(found);
 
-                found.attributes.value.should.equal(firstSetting.attributes.value);
+                found.get('value').should.equal(firstSetting.attributes.value);
 
                 done();
 
@@ -206,7 +206,9 @@ describe('Settings Model', function () {
                 return SettingsModel.findAll();
             }).then(function (allSettings) {
                 allSettings.length.should.be.above(0);
-                return SettingsModel.read('description');
+                return SettingsModel.read('description').then(function (descriptionSetting) {
+                    return descriptionSetting;
+                });
             }).then(function (descriptionSetting) {
                 // Testing against the actual value in default-settings.json feels icky,
                 // but it's easier to fix the test if that ever changes than to mock out that behaviour
