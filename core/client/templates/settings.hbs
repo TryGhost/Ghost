@@ -1,0 +1,18 @@
+<div class="wrapper">
+    <aside class="settings-sidebar" role="complementary">
+        <header>
+            <h1 class="title">Settings</h1>
+        </header>
+        <nav class="settings-menu">
+            <ul>
+                <li class="general">{{#link-to 'settings.general'}}General{{/link-to}}</li>
+                <li class="users">{{#link-to 'settings.user'}}User{{/link-to}}</li>
+                <li class="apps">{{#link-to 'settings.apps'}}Apps{{/link-to}}</li>
+            </ul>
+        </nav>
+    </aside>
+
+    <section class="settings-content active">
+        {{outlet}}
+    </section>
+</div>

@@ -1,5 +1,5 @@
 var ApplicationController = Ember.Controller.extend({
-    isLogin: Ember.computed.equal('currentPath', 'login')
+    isLoggedOut: Ember.computed.match('currentPath', /(signin|signup|forgotten|reset)/)
 });
 
 export default ApplicationController;
