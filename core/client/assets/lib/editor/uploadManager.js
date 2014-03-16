@@ -61,7 +61,7 @@
             if (isImage) {
                 hasMarker = line.text.match(markerRegex);
 
-                if (hasMarker && mode === 'paste') {
+                if (hasMarker && (mode === 'paste' || mode === 'undo')) {
                     // this could be a duplicate, and won't be a real marker
                     markerMgr.stripMarkerFromLine(line);
                 }
