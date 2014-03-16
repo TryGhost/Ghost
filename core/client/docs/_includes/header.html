@@ -1,0 +1,21 @@
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+    {% if page.title == "Ghost UI" %}
+        {{ page.title }}
+    {% else %}
+        {{ page.title }} &middot; Ghost UI
+    {% endif %}
+</title>
+
+<!-- Ghost UI core CSS -->
+<link href="../dist/css/ghost-ui.min.css" rel="stylesheet">
+
+<!-- Documentation extras -->
+<link href="../assets/css/docs.min.css" rel="stylesheet">
+<!--[if lt IE 9]><script src="../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+<!-- Favicons -->
+<link rel="shortcut icon" href="../assets/ico/favicon.ico">
