@@ -2,7 +2,7 @@
     "name": "ghost",
     "dependencies": {
         "backbone": "1.0.0",
-        "codemirror": "3.15.0",
+        "codemirror": "4.0.1",
         "Countable": "2.0.2",
         "fastclick": "1.0.0",
         "ghost-ui": "0.1.2",
