@@ -81,6 +81,9 @@
                     $(document).trigger('markdownEditorChange');
                 });
             },
+            isCursorAtEnd: function () {
+                return codemirror.getCursor('end').line > codemirror.lineCount() - 5;
+            },
             value: function () {
                 return codemirror.getValue();
             }

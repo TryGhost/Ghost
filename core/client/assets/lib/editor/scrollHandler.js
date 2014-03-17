@@ -21,6 +21,10 @@
                 ratio = previewHeight / markdownHeight,
                 previewPosition = $markdownViewPort.scrollTop() * ratio;
 
+            if (markdown.isCursorAtEnd()) {
+                previewPosition = previewHeight + 30;
+            }
+
             // apply new scroll
             $previewViewPort.scrollTop(previewPosition);
         }, 10);
