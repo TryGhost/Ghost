@@ -68,7 +68,7 @@
                 <label for="Timezones">Timezone</label>
                 <select id="Timezones" name="general[timezone]">
                 {{#each timezone}}
-                    <option value="{{offSet}}" {{#if active}}selected{{/if}}>(GMT {{offSet}}) {{cities}}</option>
+                    <option value="{{offSet}}" {{#if active}}selected{{/if}}>(GMT {{offset}}) {{cities}}</option>
                 {{/each}}
                 </select>
                 <p>What time zone do you live in</p>
