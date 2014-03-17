@@ -485,8 +485,8 @@ var path           = require('path'),
                             'core/client/assets/lib/editor/uploadManager.js',
                             'core/client/assets/lib/editor/markdownEditor.js',
                             'core/client/assets/lib/editor/htmlPreview.js',
-                            'core/client/assets/lib/editor/scrollHandler.js'
-
+                            'core/client/assets/lib/editor/scrollHandler.js',
+                            'core/client/assets/lib/editor/mobileCodeMirror.js'
                         ],
 
                         'core/built/scripts/templates.js': [
@@ -548,7 +548,7 @@ var path           = require('path'),
                             'core/client/assets/lib/editor/markdownEditor.js',
                             'core/client/assets/lib/editor/htmlPreview.js',
                             'core/client/assets/lib/editor/scrollHandler.js',
-
+                            'core/client/assets/lib/editor/mobileCodeMirror.js',
 
                             'core/client/tpl/hbs-tpl.js',
 
