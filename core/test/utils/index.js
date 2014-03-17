@@ -1,5 +1,6 @@
 var knex          = require('../../server/models/base').knex,
     when          = require('when'),
+    sequence      = require('when/sequence'),
     nodefn        = require('when/node/function'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
@@ -29,14 +30,13 @@ function insertPosts() {
 function insertMorePosts(max) {
     var lang,
         status,
-        posts,
+        posts = [],
         promises = [],
         i, j, k = 0;
 
     max = max || 50;
 
     for (i = 0; i < 2; i += 1) {
-        posts = [];
         lang = i % 2 ? 'en' : 'fr';
         posts.push(DataGenerator.forKnex.createGenericPost(k++, null, lang));
 
@@ -44,18 +44,21 @@ function insertMorePosts(max) {
             status = j % 2 ? 'draft' : 'published';
             posts.push(DataGenerator.forKnex.createGenericPost(k++, status, lang));
         }
-
-        promises.push(knex('posts').insert(posts));
     }
 
-    return when.all(promises);
+    return sequence(_.times(posts.length, function(index) {
+        return function() {
+            return knex('posts').insert(posts[index]);
+        }
+    }));
 }
 
 function insertMorePostsTags(max) {
     max = max || 50;
 
     return when.all([
-        knex('posts').select('id'),
+        // PostgreSQL can return results in any order
+        knex('posts').orderBy('id', 'asc').select('id'),
         knex('tags').select('id', 'name')
     ]).then(function (results) {
         var posts = _.pluck(results[0], 'id'),
@@ -74,9 +77,11 @@ function insertMorePostsTags(max) {
             promises.push(DataGenerator.forKnex.createPostsTags(posts[i], injectionTagId));
         }
 
-        promises.push(knex('posts_tags').insert(promises));
-
-        return when.all(promises);
+        return sequence(_.times(promises.length, function(index) {
+            return function() {
+                return knex('posts_tags').insert(promises[index]);
+            };
+        }));
     });
 }
 
