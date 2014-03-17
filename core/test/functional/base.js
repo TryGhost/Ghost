@@ -49,12 +49,16 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
 casper.writeContentToCodeMirror = function (content) {
     var lines = content.split("\n");
 
-    casper.each(lines, function (self, line) {
-        self.sendKeys('.CodeMirror-wrap textarea', line, {keepFocus: true});
-        self.sendKeys('.CodeMirror-wrap textarea', casper.page.event.key.Enter, {keepFocus: true});
-    });
+    casper.waitForSelector('.CodeMirror-wrap textarea', function onSuccess() {
+        casper.each(lines, function (self, line) {
+            self.sendKeys('.CodeMirror-wrap textarea', line, {keepFocus: true});
+            self.sendKeys('.CodeMirror-wrap textarea', casper.page.event.key.Enter, {keepFocus: true});
+        });
 
-    return this;
+        return this;
+    }, function onTimeout() {
+        casper.test.fail('CodeMirror was not found.');
+    }, 2000);
 };
 
 casper.waitForOpaque = function (classname, then, timeout) {
