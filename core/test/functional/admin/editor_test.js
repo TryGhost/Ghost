@@ -228,13 +228,12 @@ CasperTest.begin("Tag editor", 6, function suite(test) {
 
     casper.thenClick(createdTagSelector);
 
-    casper.then(function () {
-        test.assertDoesntExist(createdTagSelector, "clicking the tag should delete the tag");
+    casper.waitWhileSelector(createdTagSelector, function onSuccess() {
+        test.assert(true, "clicking the tag should delete the tag");
     });
-
 });
 
-CasperTest.begin("Post settings menu", 17, function suite(test) {
+CasperTest.begin("Post settings menu", 18, function suite(test) {
     casper.thenOpen(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     });
@@ -271,7 +270,11 @@ CasperTest.begin("Post settings menu", 17, function suite(test) {
     casper.thenClick("#publish-bar a.post-settings");
 
     casper.waitUntilVisible("#publish-bar .post-settings-menu", function onSuccess() {
-        test.assertVisible(".post-settings-menu a.delete", "delete post button should be visible for saved drafts");
+        test.assert(true, "post settings menu should be visible after clicking post-settings icon");
+    });
+
+    casper.waitUntilVisible(".post-settings-menu a.delete", function onSuccess() {
+        test.assert(true, "delete post button should be visible for saved drafts");
     });
 
     // Test Static Page conversion
@@ -310,7 +313,9 @@ CasperTest.begin("Post settings menu", 17, function suite(test) {
 
     casper.thenClick("#publish-bar a.post-settings");
     casper.thenClick(".post-settings-menu a.delete");
-    casper.thenClick("#modal-container .js-button-accept");
+    casper.waitUntilVisible("#modal-container", function onSuccess() {
+        casper.thenClick("#modal-container .js-button-accept");
+    });
 
     casper.waitForUrl(/ghost\/content\/$/, function onSuccess() {
         test.assert(true, "clicking the delete post button should bring us to the content page");
