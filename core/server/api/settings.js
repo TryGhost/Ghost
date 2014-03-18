@@ -95,30 +95,31 @@ readSettingsResult = function (result) {
             };
             return settings;
         });
-    }).then(function(){
+    }).then(function () {
         //TODO: read the Timezones.json file and the settings timezone
         res = [
             {
-                offset:"-0100",
-                cities:"Iceland, Mid Atlantic",
-                active:false
+                offset: "-0100",
+                cities: "Iceland, Mid Atlantic",
+                active: false
             },
             {
-                offset:"+0000",
-                cities:"London, Dublin, etc",
-                active:true
+                offset: "+0000",
+                cities: "London, Dublin, etc",
+                active: true
             },
             {
-                offset:"+0100",
-                cities:"Paris, Madrid, Berlin",
-                active:false
-            }];
+                offset: "+0100",
+                cities: "Paris, Madrid, Berlin",
+                active: false
+            }
+        ];
 
         settings.timezone = {
                 value: res,
-                type:'app'
+                type: 'app'
             };
-            return settings;
+        return settings;
     });
 };
 
