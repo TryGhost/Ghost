@@ -76,7 +76,7 @@
             // and then update the placeholder value.
             if (title) {
                 $.ajax({
-                    url: Ghost.paths.apiRoot + '/posts/getSlug/' + encodeURIComponent(title) + '/',
+                    url: Ghost.paths.apiRoot + '/posts/slug/' + encodeURIComponent(title) + '/',
                     success: function (result) {
                         $postSettingSlugEl.attr('placeholder', result);
                     }
