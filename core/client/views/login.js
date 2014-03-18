@@ -144,6 +144,90 @@
         }
     });
 
+    Ghost.Views.Setup = Ghost.View.extend({
+
+        initialize: function () {
+            this.submitted = "no";
+            this.render();
+        },
+
+        templateName: "setup",
+
+        events: {
+            "submit #setup": "submitHandler"
+        },
+
+        afterRender: function () {
+            var self = this;
+
+            this.$el
+                .css({"opacity": 0})
+                .animate({"opacity": 1}, 500, function () {
+                    self.$("[name='blog-title']").focus();
+                });
+        },
+
+        submitHandler: function (event) {
+            event.preventDefault();
+            var title = this.$('.blog-title').val(),
+                name = this.$('.name').val(),
+                email = this.$('.email').val(),
+                password = this.$('.password').val(),
+                validationErrors = [];
+
+            if (!validator.isLength(title, 1)) {
+                validationErrors.push("Please enter a blog title.");
+            }
+
+            if (!validator.isLength(name, 1)) {
+                validationErrors.push("Please enter a name.");
+            }
+
+            if (!validator.isEmail(email)) {
+                validationErrors.push("Please enter a correct email address.");
+            }
+
+            if (!validator.isLength(password, 0)) {
+                validationErrors.push("Please enter a password");
+            }
+
+            if (!validator.equals(this.submitted, "no")) {
+                validationErrors.push("Ghost is signing you up. Please wait...");
+            }
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
+            } else {
+                this.submitted = "yes";
+                $.ajax({
+                    url: Ghost.paths.subdir + '/ghost/setup/',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
+                    data: {
+                        title: title,
+                        name: name,
+                        email: email,
+                        password: password
+                    },
+                    success: function (msg) {
+                        window.location.href = msg.redirect;
+                    },
+                    error: function (xhr) {
+                        this.submitted = "no";
+                        Ghost.notifications.clearEverything();
+                        Ghost.notifications.addItem({
+                            type: 'error',
+                            message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                            status: 'passive'
+                        });
+                    }
+                });
+            }
+        }
+    });
+
     Ghost.Views.Forgotten = Ghost.View.extend({
 
         initialize: function () {
