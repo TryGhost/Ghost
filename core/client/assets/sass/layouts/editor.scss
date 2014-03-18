@@ -619,7 +619,7 @@ body.zen {
     display: inline-block;
     position: relative;
     padding: 0;
-    z-index: 1;
+    z-index: 9000;
 
     &.unsaved {
         .post-settings-menu {
