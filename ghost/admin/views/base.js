@@ -316,7 +316,7 @@
         },
         afterRender: function () {
             this.$el.fadeIn(50);
-            $(".modal-background").fadeIn(10, function () {
+            $(".modal-background").show(10, function () {
                 $(this).addClass("in");
             });
             if (this.model.options.confirm) {
