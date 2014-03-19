@@ -451,3 +451,58 @@ CasperTest.begin('Publish menu - existing post', 22, function suite(test) {
         test.assert(false, 'Publish split button should have .splitbutton-delete');
     });
 });
+
+CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, "Ghost doesn't require login this time");
+    });
+
+    casper.then(function testNavItems() {
+        test.assertExists('a.ghost-logo', 'Ghost logo home page link exists');
+        test.assertEquals(this.getElementAttribute('a.ghost-logo', 'href'), '/', 'Ghost logo href is correct');
+
+        test.assertExists('#main-menu li.content a', 'Content nav item exists');
+        test.assertSelectorHasText('#main-menu li.content a', 'Content', 'Content nav item has correct text');
+        test.assertEquals(this.getElementAttribute('#main-menu li.content a', 'href'), '/ghost/', 'Content href is correct');
+         test.assertEval(function testContentIsNotActive() {
+            return !document.querySelector('#main-menu li.content').classList.contains('active');
+        }, 'Content nav item is not marked active');
+
+        test.assertExists('#main-menu li.editor a', 'Editor nav item exists');
+        test.assertSelectorHasText('#main-menu li.editor a', 'New Post', 'Editor nav item has correct text');
+        test.assertEquals(this.getElementAttribute('#main-menu li.editor a', 'href'), '/ghost/editor/', 'Editor href is correct');
+        test.assertEval(function testEditorIsNotActive() {
+            return document.querySelector('#main-menu li.editor').classList.contains('active');
+        }, 'Editor nav item is marked active');
+
+        test.assertExists('#main-menu li.settings a', 'Settings nav item exists');
+        test.assertSelectorHasText('#main-menu li.settings a', 'Settings', 'Settings nav item has correct text');
+        test.assertEquals(this.getElementAttribute('#main-menu li.settings a', 'href'), '/ghost/settings/', 'Settings href is correct');
+        test.assertEval(function testSettingsIsActive() {
+            return !document.querySelector('#main-menu li.settings').classList.contains('active');
+        }, 'Settings nav item is not marked active');
+    });
+
+    casper.then(function testUserMenuNotVisible() {
+        test.assertExists('#usermenu', 'User menu nav item exists');
+        test.assertNotVisible('#usermenu ul.overlay', 'User menu should not be visible');
+    });
+
+    casper.thenClick('#usermenu a');
+    casper.waitForSelector('#usermenu ul.overlay', function then() {
+        test.assertVisible('#usermenu ul.overlay', 'User menu should be visible');
+
+        test.assertExists('#usermenu li.usermenu-profile a', 'Profile menu item exists');
+        test.assertSelectorHasText('#usermenu li.usermenu-profile a', 'Your Profile', 'Profile menu item has correct text');
+        test.assertEquals(this.getElementAttribute('li.usermenu-profile a', 'href'), '/ghost/settings/user/', 'Profile href is correct');
+
+        test.assertExists('#usermenu li.usermenu-help a', 'Help menu item exists');
+        test.assertSelectorHasText('#usermenu li.usermenu-help a', 'Help / Support', 'Help menu item has correct text');
+        test.assertEquals(this.getElementAttribute('#usermenu li.usermenu-help a', 'href'), 'http://ghost.org/forum/', 'Help href is correct');
+
+        test.assertExists('#usermenu li.usermenu-signout a', 'Sign Out menu item exists');
+        test.assertSelectorHasText('#usermenu li.usermenu-signout a', 'Sign Out', 'Sign Out menu item has correct text');
+        test.assertEquals(this.getElementAttribute('#usermenu li.usermenu-signout a', 'href'), '/ghost/signout/', 'Sign Out href is correct');
+    });
+});
