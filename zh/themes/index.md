@@ -59,33 +59,33 @@ Handlebars 模版是分等级的（一个模版可以扩展另一个），也支
 └── post.hbs [必需]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+目前default.hbs和其他目录都不是必要的。 <code class="path">index.hbs</code> 和 <code class="path">post.hbs</code> 是必须的 – 如果这两个模板文件不存在的话，Ghost就无法正常运行。 <code class="path">partials</code> 是一个特殊的目录。 这个目录应该包含所有你想要在整个博客范围内使用的模板文件，比如 <code class="path">list-post.hbs</code> 可能是一个以列表形式展现一篇篇文章的模板文件，这个文件可能会被用于首页，之后可能被用于文章归档及标签页。 <code class="path">partials</code> 也应该存放那些你想要覆盖的有特定功能的缺省模板文件比如分页。 在<code class="path">partials</code>目录中添加<code class="path">pagination.hbs</code>文件可以让你自定义分页的HTML。
 
 ### default.hbs
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+这是一个基础模板，包含了所有需要出现在每个页面的HTML代码 – `<html>`， `<head>` 和 `<body>` 标签，伴随着 `{{ghost_head}}` 和 `{{ghost_foot}}`，同样还有组成了博客重复的头部和尾部的HTML。
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+默认模板包含了hanglebars表达式 `{{{body}}}` 来表示那些继承了默认模板的模板的内容。
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+页面模板使用 `{{!< default}}` 作为第一行来表明他们继承了默认的模板，这样一来他们的内容就被放置于默认模板中 `{{{body}}}` 定义的地方了。
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+这是首页的模板文件，继承了 <code class="path">default.hbs</code>。 首页有一系列文章需要展示，<code class="path">index.hbs</code> 定义了每篇文章该如何展示。
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+在Casper（目前的默认主题）中，首页有一个很大的头部，使用了`@blog`全局设置来展现博客的logo，标题和描述。 接下去使用了 `{{#foreach}}` 来展现一系列最新的文章。
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+这是单篇文章的模板文件，同样继承了 <code class="path">default.hbs</code>。
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+在Casper（目前的默认主题）中，单篇文章模板有属于自己的头部，同样使用了 `@blog` 的全局设置，然后使用了 `{{#post}}` 数据处理器展现整篇文章。
 
-### Post styling & previewing
+### 文章样式 & 预览
 
-When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
+当你在为Ghost创建主题的时候，请注意classes特别是IDS的使用范围，尽可能避免在主样式和文章样式之间造成冲突。你不会想到一个类名或者是一个ID（由于标题的ID将自动生成）可能已经在一篇文章样式中被使用。因此，最好将使用范围限定在特定的页面。比如，#my-id可能会造成无法预料的冲突，但是#themename-my-id将会更安全一些。
 
-Ghost aims to offer a realistic preview of your posts as part of the split screen editor, but in order to do this we must load a theme's custom styling for a post in the admin. This feature is not yet implemented, but we highly recommend keeping your post styles in a separate file (post.css) from other styles for your theme (style.css) so that you will quickly be able to take advantage of this feature in the future.
+Ghost计划在你写文章时提供实时预览功能，但是为了实现这个功能，我们必须在管理界面载入主题中定制的文章样式。这个特点还没有引入，但是我们强烈建议将你的文章样式从主题的其他样式(style.css)中独立出来形成一个单独的文件(post.css)，这样的话你就能在将来快速的利用这个特点了。
 
 ## Creating Your Own Theme <a id="create-your-own"></a>
 
