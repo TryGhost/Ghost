@@ -1,4 +1,5 @@
 /* jshint node:true, browser:true */
+var Ghost = Ghost || {};
 (function () {
     var ghostdown = function () {
         return [
@@ -12,15 +13,24 @@
                         pathRegex = /^(\/)?([^\/\0]+(\/)?)+$/i;
 
                     return text.replace(imageMarkdownRegex, function (match, key, alt, src) {
-                        var result = "";
+                        var result = '',
+                            output;
 
                         if (src && (src.match(uriRegex) || src.match(pathRegex))) {
                             result = '<img class="js-upload-target" src="' + src + '"/>';
                         }
-                        return '<section id="image_upload_' + key + '" class="js-drop-zone image-uploader">' + result +
-                               '<div class="description">Add image of <strong>' + alt + '</strong></div>' +
-                               '<input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage">' +
-                               '</section>';
+
+                        if (Ghost && Ghost.touchEditor) {
+                            output = '<section class="image-uploader">' +
+                                result + '<div class="description">Mobile uploads coming soon</div></section>';
+                        } else {
+                            output = '<section id="image_upload_' + key + '" class="js-drop-zone image-uploader">' +
+                                result + '<div class="description">Add image of <strong>' + alt + '</strong></div>' +
+                                '<input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage">' +
+                                '</section>';
+                        }
+
+                        return output;
                     });
                 }
             },
