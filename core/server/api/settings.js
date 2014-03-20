@@ -97,7 +97,8 @@ readSettingsResult = function (result) {
         });
     }).then(function () {
         //TODO: read the Timezones.json file and the settings timezone
-        var res = [
+        settings.timezone = {
+                value: [
             {
                 offset: "-0100",
                 cities: "Iceland, Mid Atlantic",
@@ -113,10 +114,7 @@ readSettingsResult = function (result) {
                 cities: "Paris, Madrid, Berlin",
                 active: false
             }
-        ];
-
-        settings.timezone = {
-                value: res,
+        ],
                 type: 'app'
             };
         return settings;
