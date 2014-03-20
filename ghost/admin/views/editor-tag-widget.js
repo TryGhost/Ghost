@@ -45,7 +45,7 @@
 
             if (tags) {
                 _.forEach(tags, function (tag) {
-                    var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
+                    var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + _.escape(tag.name) + '</span>');
                     $tags.append($tag);
                     $("[data-tag-id=" + tag.id + "]")[0].scrollIntoView(true);
                 });
@@ -120,11 +120,14 @@
             _.each(matchingTags, function (matchingTag) {
                 var highlightedName,
                     suggestionHTML;
-
-                highlightedName = matchingTag.name.replace(regexPattern, "<mark>$1</mark>");
+                highlightedName = matchingTag.name.replace(regexPattern, function (match, p1) {
+                    return "<mark>" + _.escape(p1) + "</mark>";
+                });
                 /*jslint regexp: true */ // - would like to remove this
-                highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
-
+                highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, function (match, p1, p2, p3, p4) {
+                    return _.escape(p1) + '</mark>' + _.escape(p2) + '<mark>' + _.escape(p4);
+                });
+                
                 suggestionHTML = "<li data-tag-id='" + matchingTag.id + "' data-tag-name='" + _.escape(matchingTag.name) + "'><a href='#'>" + highlightedName + "</a></li>";
                 this.$suggestions.append(suggestionHTML);
             }, this);
@@ -277,7 +280,7 @@
         },
 
         addTag: function (tag) {
-            var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
+            var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + _.escape(tag.name) + '</span>');
             this.$('.tags').append($tag);
             $(".tag").last()[0].scrollIntoView(true);
             window.scrollTo(0, 1);
