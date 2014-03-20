@@ -9,7 +9,7 @@
     'use strict';
 
     var HTMLPreview = function (markdown, uploadMgr) {
-        var converter = new Showdown.converter({extensions: ['typography', 'ghostdown', 'github']}),
+        var converter = new Showdown.converter({extensions: ['ghostdown', 'github']}),
             preview = document.getElementsByClassName('rendered-markdown')[0],
             update;
 

@@ -478,4 +478,19 @@ describe("Showdown client side converter", function () {
             processedMarkup.should.match(testPhrase.output);
         });
     });
+
+
+    //      Waiting for showdown typography to be updated
+    //    it("should correctly convert quotes to curly quotes", function () {
+    //        var testPhrases = [
+    //            {
+    //                input: "Hello world\nIt's a fine day\nout",
+    //                output: /^<p>Hello world <br \/>\nIt’s a fine day <br \/>\nout<\/p>$/}
+    //        ];
+    //
+    //        testPhrases.forEach(function (testPhrase) {
+    //            processedMarkup = converter.makeHtml(testPhrase.input);
+    //            processedMarkup.should.match(testPhrase.output);
+    //        });
+    //    })
 });
