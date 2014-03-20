@@ -10,6 +10,7 @@ var _              = require('lodash'),
     Tags           = require('./tag').Tags,
     ghostBookshelf = require('./base'),
     validation     = require('../data/validation'),
+    xmlrpc         = require('../xmlrpc'),
 
     Post,
     Posts;
@@ -28,7 +29,12 @@ Post = ghostBookshelf.Model.extend({
     initialize: function () {
         var self = this;
         this.on('creating', this.creating, this);
-        this.on('saved', this.updateTags, this);
+        this.on('saved', function (model, attributes, options) {
+            if (model.get('status') === 'published') {
+                xmlrpc.ping(model.attributes);
+            }
+            return self.updateTags(model, attributes, options);
+        });
         this.on('saving', function (model, attributes, options) {
             return when(self.saving(model, attributes, options)).then(function () {
                 return self.validate(model, attributes, options);
