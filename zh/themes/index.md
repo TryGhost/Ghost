@@ -87,69 +87,69 @@ Handlebars 模版是分等级的（一个模版可以扩展另一个），也支
 
 Ghost计划在你写文章时提供实时预览功能，但是为了实现这个功能，我们必须在管理界面载入主题中定制的文章样式。这个特点还没有引入，但是我们强烈建议将你的文章样式从主题的其他样式(style.css)中独立出来形成一个单独的文件(post.css)，这样的话你就能在将来快速的利用这个特点了。
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## 创建属于你自己的主题 <a id="create-your-own"></a>
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+你可以通过在<code class="path">content/themes</code>目录下拷贝Casper或者以你自己的名称新建一个目录，比如my-theme（名称应该小写并且只能包含字母，数字和连字符）来创建一个属于你自己的Ghost主题。然后在你新建的主题目录中新增两个空文件：index.hbs和post.hbs。 这个主题不会展示任何东西，但它实际上是一个有效的主题。
 
-### The post list
+### 文章列表
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+<code class="path">index.hbs</code>有一个叫做`posts`的对象， 它可以被foreach helper用来输出每篇文章。比如：
 
 ```
 {{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
+// 这里我们就在单篇文章的上下文环境下了
+// 无论你在这里放什么，文章列表中的每篇文章都会运行一遍
 {{/foreach}}
 ```
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+查看[`{{#foreach}}`](#foreach-helper) helper部分了解详情。
 
-#### Pagination
+#### 分页
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+请查看关于[`{{pagination}}`](#pagination-helper) helper部分的内容。
 
-### Outputting individual posts
+### 输出单篇文章
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+无论是通过使用`foreach`遍历文章列表或者在 <code class="path">post.hbs</code> 内部，一旦你进入了单篇文章的上下文环境，你就可以使用文章的相关属性了。
 
-For the time being, these are:
+目前为止，有以下相关属性：
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+*   id – *文章id*
+*   title – *文章标题*
+*   url – *文章的相对路径*
+*   content – *文章的HTML*
+*   published_at – *文章的发布日期*
+*   author – *作者的详细信息* （将会在下文中详细说明）
 
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
+每个属性都可以使用标准的handlebars表达式进行输出，比如`{{title}}`。
 
 <div class="note">
   <p>
-    <strong>Notes:</strong> <ul>
+    <strong>注意：</strong> <ul>
       <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
+        content属性被<code>{{content}}</code>helper覆写了，这样可以保证HTML可以安全并正确地得到输出。查看关于<a href="#content-helper"><code>{{content}}</code> helper</a>的部分了解详情。
       </li>
       <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
+        url属性由<code>{{url}}</code>helper提供。查看关于<a href="#url-helper"><code>{{url}}</code> helper</a>的部分了解详情。
       </li>
     </ul>
   </p>
 </div>
 
-#### Post author
+#### 文章作者
 
-When inside the context of a single post, the following author data is available:
+在单篇文章的情况下，可以使用以下这些与作者有关的信息：
 
-*   `{{author.name}}` – the name of the author
-*   `{{author.email}}` – the author's email address
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
+*   `{{author.name}}` – 作者的姓名 
+*   `{{author.email}}` – 作者的Email地址
+*   `{{author.bio}}` – 作者的自我简介
+*   `{{author.website}}` – 作者的网址
+*   `{{author.image}}` – 作者的个人头像
+*   `{{author.cover}}` – 作者的背景图像
 
-You can use just`{{author}}` to output the author's name.
+你可以直接使用`{{author}}`来输出作者的姓名。
 
-This can also be done by using a block expression:
+同样可以使用区块表达式：
 
 ```
 {{#author}}
@@ -157,32 +157,32 @@ This can also be done by using a block expression:
 {{/author}}
 ```
 
-#### Post Tags
+#### 文章标签
 
-When inside the context of a single post, the following tag data is available
+在单篇文章的情况下，可以使用以下这些与标签有关的信息：
 
-*   `{{tag.name}}` – the name of the tag
+*   `{{tag.name}}` – 标签的名称 
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
+你可以使用`{{tags}}`来输出一排以逗号分隔的标签，或者如果你喜欢，可以使用`{{tags separator=""}}`来指定分隔符
 
-This can also be done by using a block expression:
+区块表达式同样可以使用：
 
 ```
 <ul>
-    {{#foreach tags}}
+    {{#tags}}
         <li>{{name}}</li>
-    {{/foreach}}
+    {{/tags}}
 </ul>
 ```
 
-### Global Settings
+### 全局设置
 
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
+通过`@blog`全局数据存取器，Ghost主题可以使用许多全局设置。
 
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
+*   `{{@blog.url}}` – 在<code class="path">config.js</code>文件中当前环境（配置文件分开发环境和生产环境）下指定的网址 
+*   `{{@blog.title}}` – 设置页面中的博客标题
+*   `{{@blog.description}}` – 设置页面中的博客描述
+*   `{{@blog.logo}}` – 设置页面中的博客logo
 
 ## Built-in Helpers <a id="helpers"></a>
 
