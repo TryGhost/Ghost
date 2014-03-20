@@ -21,7 +21,6 @@ posts = {
         options = options || {};
 
         // **returns:** a promise for a page of posts in a json object
-
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
                 omitted = result;
@@ -37,7 +36,6 @@ posts = {
     // **takes:** an identifier (id or slug?)
     read: function read(args) {
         // **returns:** a promise for a single post in a json object
-
         return dataProvider.Post.findOne(args).then(function (result) {
             var omitted;
 
@@ -64,11 +62,7 @@ posts = {
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
-        }
-        var self = this;
-        return canThis(self.user).edit.post(postData.id).then(function () {
+        return canThis(this.user).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
                 return dataProvider.Post.edit(checkedPostData.posts[0]);
             }).then(function (result) {
@@ -88,10 +82,6 @@ posts = {
     // **takes:** a json object representing a post,
     add: function add(postData) {
         // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to add posts.'});
-        }
-
         return canThis(this.user).create.post().then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
                 return dataProvider.Post.add(checkedPostData.posts[0]);
@@ -109,10 +99,6 @@ posts = {
     // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
         // **returns:** a promise for a json response with the id of the deleted post
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
-        }
-
         return canThis(this.user).remove.post(args.id).then(function () {
             return posts.read({id : args.id, status: 'all'}).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
