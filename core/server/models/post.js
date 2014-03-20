@@ -43,12 +43,13 @@ Post = ghostBookshelf.Model.extend({
 
     saving: function (newPage, attr, options) {
         /*jshint unused:false*/
+        options = options || {};
         var self = this;
 
         // keep tags for 'saved' event
         this.myTags = this.get('tags');
 
-        ghostBookshelf.Model.prototype.saving.call(this);
+        ghostBookshelf.Model.prototype.saving.call(this, newPage, attr, options);
 
         this.set('html', converter.makeHtml(this.get('markdown')));
 
@@ -61,7 +62,7 @@ Post = ghostBookshelf.Model.extend({
                 this.set('published_at', new Date());
             }
             // This will need to go elsewhere in the API layer.
-            this.set('published_by', 1);
+            this.set('published_by', options.user);
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
@@ -77,13 +78,14 @@ Post = ghostBookshelf.Model.extend({
 
     creating: function (newPage, attr, options) {
         /*jshint unused:false*/
+        options = options || {};
 
         // set any dynamic default properties
         if (!this.get('author_id')) {
-            this.set('author_id', 1);
+            this.set('author_id', options.user);
         }
 
-        ghostBookshelf.Model.prototype.creating.call(this);
+        ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
     },
 
     updateTags: function (newPost, attr, options) {
@@ -111,7 +113,9 @@ Post = ghostBookshelf.Model.extend({
             });
 
             if (tagsToDetach.length > 0) {
-                tagOperations.push(newPost.tags().detach(tagsToDetach, options));
+                // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+                // (https://github.com/tgriesser/bookshelf/issues/294)
+                tagOperations.push(newPost.tags().detach(tagsToDetach, _.omit(options, 'query')));
             }
 
             // Next check if new tags are all exactly the same as what is set on the model
@@ -125,7 +129,9 @@ Post = ghostBookshelf.Model.extend({
             if (!_.isEmpty(tagsToAttach)) {
                 return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch(options).then(function (matchingTags) {
                     _.each(matchingTags.toJSON(), function (matchingTag) {
-                        tagOperations.push(newPost.tags().attach(matchingTag.id, options));
+                        // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+                        // (https://github.com/tgriesser/bookshelf/issues/294)
+                        tagOperations.push(newPost.tags().attach(matchingTag.id, _.omit(options, 'query')));
                         tagsToAttach = _.reject(tagsToAttach, function (tagToAttach) {
                             return tagToAttach.name === matchingTag.name;
                         });
@@ -154,7 +160,9 @@ Post = ghostBookshelf.Model.extend({
 
                                 // Attach each newly created tag
                                 _.each(createdTagsToAttach, function (tagToAttach) {
-                                    newPost.tags().attach(tagToAttach.id, tagToAttach.name, options);
+                                    // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+                                    // (https://github.com/tgriesser/bookshelf/issues/294)
+                                    newPost.tags().attach(tagToAttach.id, tagToAttach.name, _.omit(options, 'query'));
                                 });
 
                             }
@@ -414,6 +422,7 @@ Post = ghostBookshelf.Model.extend({
     },
     add: function (newPostData, options) {
         var self = this;
+        options = options || {};
 
         return ghostBookshelf.Model.add.call(this, newPostData, options).then(function (post) {
             return self.findOne({status: 'all', id: post.id}, options);
@@ -421,6 +430,7 @@ Post = ghostBookshelf.Model.extend({
     },
     edit: function (editedPost, options) {
         var self = this;
+        options = options || {};
 
         return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
             return self.findOne({status: 'all', id: post.id}, options);
@@ -428,6 +438,7 @@ Post = ghostBookshelf.Model.extend({
     },
     destroy: function (_identifier, options) {
         options = options || {};
+
         return this.forge({id: _identifier}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
             var tagIds = _.pluck(post.related('tags').toJSON(), 'id');
             if (tagIds) {

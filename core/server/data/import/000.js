@@ -82,7 +82,7 @@ function importTags(ops, tableData, transaction) {
     _.each(tableData, function (tag) {
         ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
             if (!_tag) {
-                return models.Tag.add(tag, {transacting: transaction})
+                return models.Tag.add(tag, {user: 1, transacting: transaction})
                     // add pass-through error handling so that bluebird doesn't think we've dropped it
                     .otherwise(function (error) { return when.reject(error); });
             }
@@ -94,7 +94,7 @@ function importTags(ops, tableData, transaction) {
 function importPosts(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (post) {
-        ops.push(models.Post.add(post, {transacting: transaction, importing: true})
+        ops.push(models.Post.add(post, {user: 1, transacting: transaction, importing: true})
             // add pass-through error handling so that bluebird doesn't think we've dropped it
             .otherwise(function (error) { return when.reject(error); }));
     });
@@ -104,7 +104,7 @@ function importUsers(ops, tableData, transaction) {
     // don't override the users credentials
     tableData = stripProperties(['id', 'email', 'password'], tableData);
     tableData[0].id = 1;
-    ops.push(models.User.edit(tableData[0], {transacting: transaction})
+    ops.push(models.User.edit(tableData[0], {user: 1, transacting: transaction})
         // add pass-through error handling so that bluebird doesn't think we've dropped it
         .otherwise(function (error) { return when.reject(error); }));
 }
@@ -119,8 +119,7 @@ function importSettings(ops, tableData, transaction) {
     tableData = _.filter(tableData, function (data) {
         return blackList.indexOf(data.type) === -1;
     });
-
-    ops.push(models.Settings.edit(tableData, transaction)
+    ops.push(models.Settings.edit(tableData, {user: 1, transacting: transaction})
          // add pass-through error handling so that bluebird doesn't think we've dropped it
          .otherwise(function (error) { return when.reject(error); }));
 }
@@ -177,10 +176,10 @@ Importer000.prototype.basicImport = function (data) {
                     rej = true;
                 }
             });
-            if (rej) {
-                t.rollback(error);
-            } else {
+            if (!rej) {
                 t.commit();
+            } else {
+                t.rollback(error);
             }
         });
     }).then(function () {
