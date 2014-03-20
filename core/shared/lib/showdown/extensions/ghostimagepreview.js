@@ -1,7 +1,15 @@
 /* jshint node:true, browser:true */
+
+// Ghost Image Preview
+//
+// Manages the conversion of image markdown `![]()` from markdown into the HTML image preview
+// This provides a dropzone and other interface elements for adding images
+// Is only used in the admin client.
+
+
 var Ghost = Ghost || {};
 (function () {
-    var ghostdown = function () {
+    var ghostimagepreview = function () {
         return [
             // ![] image syntax
             {
@@ -33,26 +41,16 @@ var Ghost = Ghost || {};
                         return output;
                     });
                 }
-            },
-
-            // 4 or more inline underscores e.g. Ghost rocks my _____!
-            {
-                type: 'lang',
-                filter: function (text) {
-                    return text.replace(/([^_\n\r])(_{4,})/g, function (match, prefix, underscores) {
-                        return prefix + underscores.replace(/_/g, '&#95;');
-                    });
-                }
             }
         ];
     };
 
     // Client-side export
     if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
-        window.Showdown.extensions.ghostdown = ghostdown;
+        window.Showdown.extensions.ghostimagepreview = ghostimagepreview;
     }
     // Server-side export
     if (typeof module !== 'undefined') {
-        module.exports = ghostdown;
+        module.exports = ghostimagepreview;
     }
 }());

@@ -460,8 +460,8 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/validator-js/validator.js',
 
-                            'core/client/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/github.js',
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // ToDo: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
@@ -522,8 +522,8 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/validator-js/validator.js',
 
-                            'core/client/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/github.js',
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // ToDo: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
