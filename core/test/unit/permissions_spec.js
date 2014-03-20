@@ -310,7 +310,7 @@ describe('Permissions', function () {
             })
             .otherwise(function () {
                 permissableStub.restore();
-                permissableStub.calledWith(123, { user: testUser.id, app: null }, 'edit').should.equal(true);
+                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }, 'edit').should.equal(true);
                 done();
             });
     });
@@ -336,6 +336,7 @@ describe('Permissions', function () {
             })
             .otherwise(done);
     });
+
     it('does not allow an app to edit a post without permission', function (done) {
         // Change the author of the post so the author override doesn't affect the test
         PostProvider.edit({id: 1, 'author_id': 2})
@@ -386,6 +387,7 @@ describe('Permissions', function () {
                     });
             }).otherwise(done);
     });
+
     it('allows an app to edit a post with permission', function (done) {
         permissions.canThis({ app: 'Kudos', user: 1 })
             .edit
@@ -395,6 +397,44 @@ describe('Permissions', function () {
             })
             .otherwise(function () {
                 done(new Error("Allowed an edit of post 1"));
+            });
+    });
+
+    it('checks for null context passed and rejects', function (done) {
+        permissions.canThis(undefined)
+            .edit
+            .post(1)
+            .then(function () {
+                done(new Error("Should not allow editing post"));
+            })
+            .otherwise(function () {
+                done();
+            });
+    });
+
+    it('allows \'internal\' to be passed for internal requests', function (done) {
+        // Using tag here because post implements the custom permissable interface
+        permissions.canThis('internal')
+            .edit
+            .tag(1)
+            .then(function () {
+                done();
+            })
+            .otherwise(function () {
+                done(new Error("Should allow editing post with 'internal'"));
+            });
+    });
+
+    it('allows { internal: true } to be passed for internal requests', function (done) {
+        // Using tag here because post implements the custom permissable interface
+        permissions.canThis({ internal: true })
+            .edit
+            .tag(1)
+            .then(function () {
+                done();
+            })
+            .otherwise(function () {
+                done(new Error("Should allow editing post with { internal: true }"));
             });
     });
 });
