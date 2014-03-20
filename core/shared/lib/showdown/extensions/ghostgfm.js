@@ -1,10 +1,16 @@
+/* jshint node:true, browser:true */
+
+// Ghost GFM
+// Taken and extended from the Showdown Github Extension (WIP)
+// Makes a number of pre and post-processing changes to the way markdown is handled
 //
-//  Github Extension (WIP)
-//  ~~strike-through~~   ->  <del>strike-through</del>
-//
+//  ~~strike-through~~   ->  <del>strike-through</del> (Pre)
+//  GFM newlines & underscores (Pre)
+//  4 or more underscores (Pre)
+//  autolinking / custom image handling (Post)
 
 (function () {
-    var github = function (converter) {
+    var ghostgfm = function () {
         return [
             {
                 // strike-through
@@ -73,6 +79,17 @@
                     return text;
                 }
             },
+
+            // 4 or more inline underscores e.g. Ghost rocks my _____!
+            {
+                type: 'lang',
+                filter: function (text) {
+                    return text.replace(/([^_\n\r])(_{4,})/g, function (match, prefix, underscores) {
+                        return prefix + underscores.replace(/_/g, '&#95;');
+                    });
+                }
+            },
+
             {
                 // GFM autolinking & custom image handling, happens AFTER showdown
                 type    : 'html',
@@ -131,7 +148,11 @@
     };
 
     // Client-side export
-    if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { window.Showdown.extensions.github = github; }
+    if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
+        window.Showdown.extensions.ghostgfm = ghostgfm;
+    }
     // Server-side export
-    if (typeof module !== 'undefined') module.exports = github;
+    if (typeof module !== 'undefined') {
+        module.exports = ghostgfm;
+    }
 }());
