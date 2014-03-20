@@ -26,14 +26,21 @@ function hasActionsMap() {
 function parseContext(context) {
     // Parse what's passed to canThis.beginCheck for standard user and app scopes
     var parsed = {
+            internal: false,
             user: null,
             app: null
         };
+    
+    if (context && (context === 'internal' || context.internal)) {
+        parsed.internal = true;
+    }
 
-    // Handle legacy passing of just userId or user model first
-    if (context.id) {
+    // @TODO: Refactor canThis() references to pass { user: id } explicitly instead of primitives.
+    if (context && context.id) {
+        // Handle passing of just user.id string
         parsed.user = context.id;
     } else if (_.isNumber(context)) {
+        // Handle passing of just user id number
         parsed.user = context;
     } else if (_.isObject(context)) {
         // Otherwise, use the new hotness { user: id, app: id } format
@@ -59,6 +66,11 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
         // the '.post()' in canThis(user).edit.post()
         obj_type_handlers[obj_type] = function (modelOrId) {
             var modelId;
+
+            // If it's an internal request, resolve immediately
+            if (context.internal) {
+                return when.resolve();
+            }
 
             if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
                 // It's an id already, do nothing
@@ -153,8 +165,14 @@ CanThisResult.prototype.beginCheck = function (context) {
         throw new Error("No actions map found, please call permissions.init() before use.");
     }
 
-    // Kick off loading of effective user permissions
-    userPermissionLoad = effectivePerms.user(context.user);
+    // Kick off loading of effective user permissions if necessary
+    if (context.user) {
+        userPermissionLoad = effectivePerms.user(context.user);
+    } else {
+        // Resolve null if no context.user to prevent db call
+        userPermissionLoad = when.resolve(null);
+    }
+    
 
     // Kick off loading of effective app permissions if necessary
     if (context.app) {
@@ -164,6 +182,7 @@ CanThisResult.prototype.beginCheck = function (context) {
         appPermissionLoad = when.resolve(null);
     }
 
+    // Wait for both user and app permissions to load
     permissionsLoad = when.all([userPermissionLoad, appPermissionLoad]).then(function (result) {
         return {
             user: result[0],
