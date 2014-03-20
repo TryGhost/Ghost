@@ -39,8 +39,16 @@ Check out the [Documentation](http://docs.ghost.org/) for more detailed instruct
 
 If you're a theme, app or core developer, or someone comfortable getting up and running from a `git clone`, this method is for you.
 
-If you clone the GitHub repository, you will need to build a number of assets, such as SASS and JavaScript templates. This requires you to have Ruby and a number of other pre-requisites.
-Full instructions can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
+If you clone the GitHub repository, you will need to build a number of assets using grunt. 
+
+#### Quickstart:
+
+1. `npm install -g grunt-cli`
+1. `npm install`
+1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
+1. `npm start`
+
+Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
 
 Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
