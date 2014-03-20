@@ -461,7 +461,6 @@ var path           = require('path'),
                             'bower_components/validator-js/validator.js',
 
                             'core/client/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/typography.js',
                             'core/shared/lib/showdown/extensions/github.js',
 
                             // ToDo: Remove or replace
@@ -524,7 +523,6 @@ var path           = require('path'),
                             'bower_components/validator-js/validator.js',
 
                             'core/client/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/typography.js',
                             'core/shared/lib/showdown/extensions/github.js',
 
                             // ToDo: Remove or replace
