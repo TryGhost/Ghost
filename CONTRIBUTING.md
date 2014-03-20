@@ -190,12 +190,13 @@ developing Ghost.
 1. Check you have the pre-requisites listed above!
 1. Clone the git repo
 1. cd into the project folder
-1. Run `npm install -g grunt-cli`
-1. Run `npm install`.
+1. Run `npm install -g grunt-cli` - to make it possible to run grunt commands
+1. Run `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - copies assets and compiles Handlebars templates
+1. Run `grunt init` from the root - updates bower dependencies, copies assets and compiles Handlebars templates
+1. If you're going to run in production mode, you also need to run `grunt prod`
 1. Run `npm start` from the root to start the server.
 
 If something goes wrong, please see the
@@ -204,7 +205,7 @@ If something goes wrong, please see the
 ### Developer Tips
 Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebar templates, stylesheets and javascripts. Some useful commands include:
 - `grunt dev` => Automatically compile assets in development environment
-- `grunt prod` => Automatically compile assets in production environment
+- `grunt prod` => Automatically compile assets for the production environment
 - `grunt watch` => Automatically compile handlebars
 
 Addresses for development:
@@ -218,8 +219,7 @@ or more of the following:
 
  * `npm install` - fetch any new dependencies
  * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt` - will recompile handlebars templates for the admin (as long as you have previously
-run `grunt init` to install bower dependencies)
+ * `grunt init` - will fetch bower dependencies and recompile handlebars templates for the admin
  * delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### Key Branches & Tags
@@ -245,7 +245,7 @@ When cloning from GitHub be sure to use SSH and to run `git submodule update --i
 
 ### Ghost doesn't do anything - I get a blank screen
 
-Sounds like you probably didn't run the right grunt command for building assets
+Sounds like you probably didn't run the right grunt command for building assets. You may need to run `grunt init` and if using production mode, `grunt prod` as well.
 
 ### SQLite3 doesn't install properly during npm install
 
