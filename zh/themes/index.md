@@ -184,26 +184,26 @@ Ghost计划在你写文章时提供实时预览功能，但是为了实现这个
 *   `{{@blog.description}}` – 设置页面中的博客描述
 *   `{{@blog.logo}}` – 设置页面中的博客logo
 
-## Built-in Helpers <a id="helpers"></a>
+## 内置的帮手 <a id="helpers"></a>
 
-Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
+Ghost有许多内置的帮手，他们为你创建主题提供需要的工具。有两种类型的帮手：区块帮手和输出帮手。
 
-**[Block Helpers](http://handlebarsjs.com/block_helpers.html)** have a start and end tag E.g. `{{#foreach}}{{/foreach}}`. The context between the tags changes and these helpers may also provide you with additional properties which you can access with the `@` symbol.
+**[区块帮手](http://handlebarsjs.com/block_helpers.html)** 有开始和结束标签，比如`{{#foreach}}{{/foreach}}`。标签之间的语境是变化的，你可以通过`@`标示符来使用这些帮手提供的额外属性。
 
-**Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
+**输出帮手** 看起来更像是用来输出数据的表达式，比如`{{content}}`。在输出数据前，他们对数据执行一些有用的操作，并且通常提供相关选项，让你选择如何格式化这些数据。 一些输出帮手使用HTML模板来格式化数据，就像局部模板一样。有些输出帮手同时也是区块帮手，他们的作用是动态变化的。
 
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
-*   Helper type: block
-*   Options: `columns` (number)
+*   类型: 区块
+*   选项: `columns` (数值)
 
-`{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
+`{{#foreach}}` 是一个特别的循环帮手，被用来处理文章列表。在handlebars中，每个帮手都会为数组添加私有属性`@index`，为对象添加私有属性`@key`，他们可以在每次循环的内部被使用。
 
-`foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
+`foreach`继承了这一点并且为数组和对象添加了额外的私有属性，`@first`, `@last`, `@even`, `@odd`, `@rowStart`和`@rowEnd`。这些私有属性可以被用来为文章列表和其他内容构造更复杂的布局。比如下面的例子：
 
 #### `@first` & `@last`
 
-The following example checks through an array or object e.g `posts` and tests for the first entry.
+下面这个例子在一个数组或对象，比如`posts`中测试第一个进入循环的元素。
 
 ```
 {{#foreach posts}}
@@ -213,7 +213,7 @@ The following example checks through an array or object e.g `posts` and tests fo
 {{/foreach}}
 ```
 
-We can also nest `if` statements to check multiple properties. In this example we are able to output the first and last post separately to other posts.
+我们还可以通过嵌套if声明来检查多个属性。在下面这个例子中，我们将单独输出第一篇和最后一篇文章，将他们与其他文章分开。
 
 ```
 {{#foreach posts}}
@@ -231,7 +231,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 
 #### `@even` & `@odd`
 
-The following example adds a class of even or odd, which could be used for zebra striping content:
+下面这个例子为属性class添加了even或者odd的值，他们可以被用在需要斑马条纹样式的内容上。
 
 ```
 {{#foreach posts}}
@@ -241,7 +241,7 @@ The following example adds a class of even or odd, which could be used for zebra
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+下面的例子想你展示了如何传递一个column选项，这样一来你就可以为一行中的第一个和最后一个元素设置属性了。内容可以以格子布局得到展示。
 
 ```
 {{#foreach posts columns=3}}
@@ -251,117 +251,117 @@ The following example shows you how to pass in a column argument so that you can
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   类型: 输出
+*   选项: `words` (数值), `characters` (数值) [默认显示全部内容]
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}`是一个用来输出文章内容的非常简单的帮手。它确保文章的HTML可以正确输出。
 
-You can limit the amount of HTML content to output by passing one of the options:
+你可以通过传递任何一个选项来限制输出的HTML内容数量。
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}` 将会输出100个HTML单词，包括正确的标签。
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   类型: 输出
+*   选项: `words` (数值), `characters` (数值) [默认是50个单词]
 
-`{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
+`{{excerpt}}`输出过滤掉所有HTML的内容。这在创建文章摘要的时候非常有用。
 
-You can limit the amount of text to output by passing one of the options:
+你可以通过传递任何一个选项来限制输出文字的数量：
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters="140"}}`将会输出140个字符。
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   类型: 输出帮手
+*   选项: `format` (日期格式，默认是 “MMM Do, YYYY”), `timeago` (布尔值)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}`是一个可以以各种格式输出日期的格式帮手。你可以传递一个日期和一个用来输出日期的格式字符串，就像这样：
 
 ```
-// outputs something like 'July 11, 2014'
+// 结果将会是这样 'July 11, 2014'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+或者你可以传递一个日期和timeago标识：
 
 ```
-// outputs something like '5 mins ago'
+// 结果将会是这样 '5 mins ago'
 {{date published_at timeago="true"}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+如果你直接使用`{{date}}` 不加任何格式，默认的格式是“MMM Do, YYYY”。
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+如果你在一篇文章的内部使用`{{date}}`但是并没有指定显示哪个日期，默认会是`published_at`。
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+如果你在一篇文章的外部使用`{{date}}`并且也没有指明显示哪个日期，默认会是当前日期。
 
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date`使用[moment.js](http://momentjs.com/)来格式化日期。查看他们的[文档](http://momentjs.com/docs/#/parsing/string-format/) ，那儿详细地解释了可以使用的所有不同格式。
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   类型: 输出帮手
+*   选项: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}`在一篇文章内部输出它的相对路径，在文章外部什么都不会输出。
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+你可以使用absolute选项来强制输出绝对路径，比如：`{{url absolute="true"}}`
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   类型: 输出, 模板驱动
+*   选项: 无 (马上就会有的)
 
-`{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
+`{{pagination}}`是一个模板驱动的帮手，如果'newer posts'和'older posts'的链接存在的话，它将输出他们的HTML并且告诉你正处于哪一页。
 
-You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
+你可以通过在<code class="path">content/themes/your-theme/partials</code>目录中放置一个叫做<code class="path">pagination.hbs</code>的文件来覆盖分页帮手输出的HTML。
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+`{{body_class}}` – 在<code class="path">default.hbs</code>中为`<body>`标签输出class属性，在为特定页面渲染样式时非常有用。
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
+`{{post_class}}` – 为文章容器输出class属性，在渲染文章样式的时候特别有用。
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+`{{ghost_head}}` – 位于<code class="path">default.hbs</code>中的`</head>`标签前，用来输出meta标签，脚本和样式。 计划使用钩子。
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
+`{{ghost_foot}}` – 位于<code class="path">default.hbs</code>中的`</body>`标签前，用来输出引入脚本。默认输出jquery。计划使用钩子。
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
+`{{meta_title}}` – 在文章中输出文章标题，其他地方输出博客标题。被用来在`</head>`块中输出title标签，比如：`<title>{{meta_title}}</title>` 计划使用钩子。
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   类型: 输出
+*   选项: 无
 
-`{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+`{{meta_description}}` - 在文章方面暂时不输出任何内容，在所有其他的页面输出博客的描述。一般用来输出描述元标签，比如：`<meta name="description" content="{{meta_description}}" />` 计划使用钩子。
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+## 主题错误排查 <a id="troubleshooting"></a>
 
-#### 1. I see Error: Failed to lookup view "index" or "post"
+#### 1. 我看到错误: Failed to lookup view "index" or "post"
 
-Check that your theme folder contains a correctly named index.hbs and post.hbs as these are required
+检查你的主题目录下是否存在index.hbs和post.hbs两个文件，他们是必须的。
 
 {% endraw %}
