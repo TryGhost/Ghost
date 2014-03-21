@@ -2,7 +2,7 @@
     <button class="button-back">Back</button>
     <h2 class="title">General</h2>
     <section class="page-actions">
-        <button class="button-save">Save</button>
+        <button class="button-save" {{action 'save'}}>Save</button>
     </section>
 </header>
 
@@ -21,7 +21,7 @@
                 {{textarea id="blog-description" value=description}}
                 <p>
                     Describe what your blog is about
-                    <span class="word-count">0</span>
+                    <span class="word-count">{{count-words description}}</span>
                 </p>
 
             </div>
@@ -29,7 +29,7 @@
             <div class="form-group">
                 <label for="blog-logo">Blog Logo</label>
                 {{#if logo}}
-                    <a class="js-modal-logo" href="#"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
+                    <a class="js-modal-logo" href="#" {{action 'openModal' 'upload'}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></a>
                 {{else}}
                     <a class="button-add js-modal-logo" {{action 'openModal' 'upload'}}>Upload Image</a>
                 {{/if}}
@@ -39,7 +39,7 @@
             <div class="form-group">
                 <label for="blog-cover">Blog Cover</label>
                 {{#if cover}}
-                    <a class="js-modal-cover" href="#"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
+                    <a class="js-modal-cover" href="#" {{action 'openModal' 'upload'}}><img id="blog-cover" {{bind-attr src=logo}} alt="cover photo"></a>
                 {{else}}
                     <a class="button-add js-modal-cover" {{action 'openModal' 'upload'}}>Upload Image</a>
                 {{/if}}
@@ -60,7 +60,7 @@
 
             <div class="form-group">
                 <label for="permalinks">Dated Permalinks</label>
-                {{input id="permalinks" name="general[permalinks]" type="checkbox" value='permalink'}}
+                {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
                 <label class="checkbox" for="permalinks"></label>
                 <p>Include the date in your post URLs</p>
             </div>
@@ -70,7 +70,6 @@
                 <select id="activeTheme" name="general[activeTheme]">
                     {{#each availableThemes}}
                         <option value="{{name}}" {{#if active}}selected{{/if}}>{{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}}{{/if}}</option>
-                        {{#unless package}}<script>console.log('Hi! The theme named "{{name}}" does not have a package.json file or it\'s malformed. This will be required in the future. For more info, see http://docs.ghost.org/themes/.');</script>{{/unless}}
                     {{/each}}
                 </select>
                 <p>Select a theme for your blog</p>
