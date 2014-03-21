@@ -47,23 +47,27 @@ errors = {
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
 
-            console.log('\nWarning:'.yellow, warn.yellow);
+            var msgs = ['\nWarning:'.yellow, warn.yellow, '\n'];
 
             if (context) {
-                console.log(context.white);
+                msgs.push(context.white, '\n');
             }
 
             if (help) {
-                console.log(help.green);
+                msgs.push(help.green);
             }
 
             // add a new line
-            console.log('');
+            msgs.push('\n');
+
+            console.log.apply(console, msgs);
         }
     },
 
     logError: function (err, context, help) {
-        var stack = err ? err.stack : null;
+        var stack = err ? err.stack : null,
+            msgs;
+
         if (err) {
             err = err.message || err || 'An unknown error occurred.';
         } else {
@@ -75,22 +79,24 @@ errors = {
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
 
-            console.error('\nERROR:'.red, err.red);
+            msgs = ['\nERROR:'.red, err.red, '\n'];
 
             if (context) {
-                console.error(context.white);
+                msgs.push(context.white, '\n');
             }
 
             if (help) {
-                console.error(help.green);
+                msgs.push(help.green);
             }
 
             // add a new line
-            console.error('');
+            msgs.push('\n');
 
             if (stack) {
-                console.error(stack, '\n');
+                msgs.push(stack, '\n');
             }
+
+            console.error.apply(console, msgs);
         }
     },
 
