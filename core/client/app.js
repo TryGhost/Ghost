@@ -1,6 +1,7 @@
 import Resolver from 'ember/resolver';
 import initFixtures from 'ghost/fixtures/init';
 import {currentUser, injectCurrentUser} from 'ghost/initializers/current-user';
+import {registerNotifications, injectNotifications} from 'ghost/initializers/notifications';
 import 'ghost/utils/link-view';
 
 var App = Ember.Application.extend({
@@ -20,5 +21,7 @@ initFixtures();
 
 App.initializer(currentUser);
 App.initializer(injectCurrentUser);
+App.initializer(registerNotifications);
+App.initializer(injectNotifications);
 
 export default App;
