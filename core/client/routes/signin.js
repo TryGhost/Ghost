@@ -23,7 +23,9 @@ var SigninRoute = Ember.Route.extend(styleBody, {
                     }
                 );
             } else {
-                window.alert('Must enter email + passwort. Todo: Must show as notification'); // Todo Show notification
+                this.notifications.clear();
+
+                this.notifications.showError('Must enter email + password');
             }
         }
     }
