@@ -364,12 +364,17 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page|tag)/)) {
+    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
         classes.push('archive-template');
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
-    } else {
+    } else if (post) {
         classes.push('post-template');
+    }
+
+    if (this.tag !== undefined) {
+        classes.push('tag-template');
+        classes.push('tag-' + this.tag.slug);
     }
 
     if (tags) {
