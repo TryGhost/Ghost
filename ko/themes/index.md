@@ -233,7 +233,7 @@ Ghost는 테마를 만들 때 도움을 주는 내장 헬퍼를 제공합니다.
 
 #### `@even` & `@odd`
 
-다음 예는 짝수 또는 홀수 클래스를 추가해 컨텐트 색을 줄무늬로 표시할 수 있게 합니다.
+다음 예에서는 짝수 또는 홀수 클래스를 추가해 컨텐트 색을 줄무늬로 표시할 수 있게 합니다.
 
 ```
 {{#foreach posts}}
@@ -243,7 +243,7 @@ Ghost는 테마를 만들 때 도움을 주는 내장 헬퍼를 제공합니다.
 
 #### `@rowStart` & `@rowEnd`
 
-The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
+다음 예는 컬럼 인자를 넘겨 행의 첫 번째와 마지막 요소의 속성을 설정하는 방법을 보입니다. 이렇게 해서 컨텐트를 그리드 레이아웃으로 출력할 수 있습니다.
 
 ```
 {{#foreach posts columns=3}}
@@ -253,66 +253,67 @@ The following example shows you how to pass in a column argument so that you can
 
 ### <code>content</code> <a id="content-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+*   헬퍼 타입: 출력
+*   옵션: `words` (number), `characters` (number) [디폴트는 모두 보이기]
 
-`{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
+`{{content}}`는 포스트 컨텐트를 출력하는 데 사용하는 아주 간단한 헬퍼입니다. 이 헬퍼는 HTML이 올바르게 출력되도록 합니다.
 
-You can limit the amount of HTML content to output by passing one of the options:
+다음 옵션을 지정해 HTML 컨텐트를 얼마나 표시할 지 제한할 수 있습니다.
 
-`{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
+`{{content words="100"}}`은 태그가 올바르게 매칭되는 상태에서 HTML 내용을 100 단어만 출력하도록 합니다.
 
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+*   헬퍼 타입: 출력
+*   옵션: `words` (number), `characters` (number) [디폴트는 50 단어]
 
-`{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
+`{{excerpt}}`는 컨텐트에서 HTML 태그를 제외하고 출력합니다. 포스트 내용을 발취하는데 유용하게 사용할 수 있습니다.
 
-You can limit the amount of text to output by passing one of the options:
+옵션을 설정해 출력되는 테스트 분량을 제한할 수 있습니다.
 
-`{{excerpt characters="140"}}` will output 140 characters of text.
+`{{excerpt characters="140"}}`는 140개의 문자만 출력할 것입니다.
 
 ### <code>date</code> <a id="date-helper"></a>
 
-*   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   헬퍼 타입: 출력
+*   옵션: `format` (날짜 형식. 디폴트는 “MMM Do, YYYY”), `timeago` (boolean)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
+`{{date}}`는 다양한 형식으로 날짜를 출력할 수 있게 해주는 포매팅 헬퍼입니다. 날짜와 날짜 형식 문자열을 넘겨 원하는 형식으로 날짜를 출력할 수 있습니다.
 
 ```
-// outputs something like 'July 11, 2014'
+// 'July 11, 2013' 형식으로 날짜 출력
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 
-Or you can pass it a date and the timeago flag:
+또는 날짜와 `timeago` 블래그를 남길 수도 있습니다.
 
 ```
-// outputs something like '5 mins ago'
+// '5 mins ago' 형식으로 출력
 {{date published_at timeago="true"}}
 ```
+날짜 형식을 지정하지 않고 `{{date}}`를 호출하면 디폴트 형식인 "MMM Do, YYYY"가 사용됩니다.
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+포스트 컨텍스트에서 어떤 날짜를 표시할지 지정하지 않고 `{{date}}`를 호출하면 디폴트로 `published_at`이 사용됩니다.
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
-
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+포스트 컨텍스트 밖에서 표시할 날짜를 지정하지 않고 `{{date}}`를 호출하면 디폴트로 현재 날짜를 사용합니다.
 
 `date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+`date`는 날짜를 포매팅하는 데 [moment.js](http://momentjs.com/)를 사용합니다. 어떤 포맷 문자열이 사용될 수 있는지 자세한 설명을 보고 싶다면 [moment.js 문서](http://momentjs.com/docs/#/parsing/string-format/)를 참조하기 바랍니다.
+
 
 ### <code>url</code> <a id="url-helper"></a>
 
-*   Helper type: output
-*   Options: `absolute`
+*   헬퍼 타입: 출력
+*   옵션: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}`은 포스트 컨텍스트 안에서 포스트에 대한 상대 URL을 출력합니다. 포스트 컨텍스트 밖에서는 아무 것도 출력하지 않습니다.
 
-You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+`{{url absolute="true"}}`과 같이 `absolute` 옵션을 통해 절대 URL을 출력하도록 지정할 수 있습니다.
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+*   헬퍼 타입: 출력, template-driven
+*   옵션: 없음 (곧 지원 예정)
 
 `{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
 
@@ -320,43 +321,43 @@ You can override the HTML output by the pagination helper by placing a file call
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
 
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
 
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
 
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
-*   Helper type: output
-*   Options: none
+*   헬퍼 타입: 출력
+*   옵션: none
 
 `{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
 
