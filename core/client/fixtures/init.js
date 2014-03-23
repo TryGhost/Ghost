@@ -1,4 +1,3 @@
-/*global ic */
 import postFixtures from 'ghost/fixtures/posts';
 import userFixtures from 'ghost/fixtures/users';
 
@@ -36,6 +35,10 @@ var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/1', post(1, status));
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/2', post(2, status));
     ic.ajax.defineFixture('/ghost/api/v0.1/signin', user(status));
+    ic.ajax.defineFixture('/ghost/api/v0.1/users/me/', user(status));
+    ic.ajax.defineFixture('/ghost/changepw/', response({
+        msg: 'Password changed successfully'
+    }));
 };
 
 export default defineFixtures;

@@ -170,7 +170,9 @@ var path           = require('path'),
                             "Ember": true,
                             "Em": true,
                             "DS": true,
-                            "$": true
+                            "$": true,
+                            "validator": true,
+                            "ic": true
                         },
                         // node environment
                         node: false,
@@ -577,17 +579,17 @@ var path           = require('path'),
                             'bower_components/ember/ember.js',
                             'bower_components/ember-resolver/dist/ember-resolver.js',
                             'bower_components/ic-ajax/dist/globals/main.js',
-
+                            'bower_components/validator-js/validator.js',
                             'bower_components/codemirror/lib/codemirror.js',
                             'bower_components/codemirror/addon/mode/overlay.js',
                             'bower_components/codemirror/mode/markdown/markdown.js',
                             'bower_components/codemirror/mode/gfm/gfm.js',
                             'bower_components/showdown/src/showdown.js',
+                            'bower_components/moment/moment.js',
+
                             'core/clientold/assets/lib/showdown/extensions/ghostdown.js',
                             'core/shared/lib/showdown/extensions/typography.js',
-                            'core/shared/lib/showdown/extensions/github.js',
-
-                            'bower_components/moment/moment.js'
+                            'core/shared/lib/showdown/extensions/github.js'
                         ]
                     }
                 },
