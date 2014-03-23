@@ -37,6 +37,21 @@ describe('Admin Routing', function () {
         };
     }
 
+    function doEndNoAuth(done) {
+        return function (err, res) {
+            if (err) {
+                return done(err);
+            }
+
+            should.not.exist(res.headers['x-cache-invalidate']);
+            should.not.exist(res.headers['X-CSRF-Token']);
+            should.not.exist(res.headers['set-cookie']);
+            should.exist(res.headers.date);
+
+            done();
+        };
+    }
+
     before(function (done) {
         testUtils.clearData().then(function () {
             // we initialise data, but not a user.
@@ -47,6 +62,41 @@ describe('Admin Routing', function () {
 
         // Setup the request object with the correct URL
         request = request(config().url);
+    });
+
+    describe('Legacy Redirects', function () {
+
+        it('should redirect /logout/ to /ghost/signout/', function (done) {
+            request.get('/logout/')
+                .expect('Location', '/ghost/signout/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signout/ to /ghost/signout/', function (done) {
+            request.get('/signout/')
+                .expect('Location', '/ghost/signout/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signin/ to /ghost/signin/', function (done) {
+            request.get('/signin/')
+                .expect('Location', '/ghost/signin/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signup/ to /ghost/signup/', function (done) {
+            request.get('/signup/')
+                .expect('Location', '/ghost/signup/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
     });
 
     describe('Ghost Admin Signup', function () {
