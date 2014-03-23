@@ -296,18 +296,24 @@ describe('Core Helpers', function () {
         it('can render class string for context', function (done) {
             when.all([
                 helpers.body_class.call({relativeUrl: '/'}),
-                helpers.body_class.call({relativeUrl: '/a-post-title'}),
-                helpers.body_class.call({relativeUrl: '/page/4'})
+                helpers.body_class.call({relativeUrl: '/a-post-title', post: {}}),
+                helpers.body_class.call({relativeUrl: '/page/4'}),
+                helpers.body_class.call({relativeUrl: '/tag/foo', tag: { slug: 'foo'}}),
+                helpers.body_class.call({relativeUrl: '/tag/foo/page/2', tag: { slug: 'foo'}})
             ]).then(function (rendered) {
-                rendered.length.should.equal(3);
+                rendered.length.should.equal(5);
 
                 should.exist(rendered[0]);
                 should.exist(rendered[1]);
                 should.exist(rendered[2]);
+                should.exist(rendered[3]);
+                should.exist(rendered[4]);
 
                 rendered[0].string.should.equal('home-template');
                 rendered[1].string.should.equal('post-template');
                 rendered[2].string.should.equal('archive-template');
+                rendered[3].string.should.equal('tag-template tag-foo');
+                rendered[4].string.should.equal('archive-template tag-template tag-foo');
 
                 done();
             }).then(null, done);
