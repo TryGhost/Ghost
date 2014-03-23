@@ -44,7 +44,7 @@ describe('Local File System Storage', function () {
     it('should send correct path to image when original file has spaces', function (done) {
         image.name = 'AN IMAGE.jpg';
         localfilesystem.save(image).then(function (url) {
-            url.should.equal('/content/images/2013/Sep/AN_IMAGE.jpg');
+            url.should.equal('/content/images/2013/Sep/AN-IMAGE.jpg');
             return done();
         }).then(null, done);
     });
