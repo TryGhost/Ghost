@@ -170,9 +170,9 @@ Puoi ottenere lo stesso risultato utilizzando una block expression:
 
 ```
 <ul>
-    {{#tags}}
+    {{#foreach tags}}
         <li>{{name}}</li>
-    {{/tags}}
+    {{/foreach}}
 </ul>
 ```
 

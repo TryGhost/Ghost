@@ -154,9 +154,9 @@ subheading: Comece a criar seus próprios temas para o Ghost
 <p>You can use <code>{{tags}}</code> to output a comma separated list of tags, or if you prefer, specify your own separator <code>{{tags separator=""}}</code></p>
 <p>This can also be done by using a block expression:</p>
             <pre>&lt;ul&gt;
-    {{#tags}}
+    {{#foreach tags}}
         &lt;li&gt;{{name}}&lt;/li&gt;
-    {{/tags}}
+    {{/foreach}}
 &lt;/ul&gt;</pre>
 
 <h3>Global Settings</h3>

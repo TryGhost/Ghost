@@ -169,9 +169,9 @@ Ghostの二画面エディタでは、実際の記事ページに近い、記事
 
 ```
 <ul>
-    {{#tags}}
+    {{#foreach tags}}
         <li>{{name}}</li>
-    {{/tags}}
+    {{/foreach}}
 </ul>
 ```
 

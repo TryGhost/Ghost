@@ -190,9 +190,9 @@ Du kannst `{{tags}}` verwenden, um eine veränderbare Liste von Tags auszugeben,
 
 ```
 <ul>
-    {{#tags}}
+    {{#foreach tags}}
         <li>{{name}}</li>
-    {{/tags}}
+    {{/foreach}}
 </ul>
 ```
 

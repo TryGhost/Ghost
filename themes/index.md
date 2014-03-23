@@ -191,9 +191,9 @@ You can use `{{tags}}` to output a customisable list of tags, this can also be d
 
 ```
 <ul>
-    {{#tags}}
+    {{#foreach tags}}
         <li>{{name}}</li>
-    {{/tags}}
+    {{/foreach}}
 </ul>
 ```
 
