@@ -239,6 +239,7 @@
             }, {
                 success : function () {
                     featuredEl.removeClass("featured unfeatured").addClass(featured ? "featured" : "unfeatured");
+                    Ghost.notifications.clearEverything();
                     Ghost.notifications.addItem({
                         type: 'success',
                         message: "Post successfully marked as " + (featured ? "featured" : "not featured") + ".",
