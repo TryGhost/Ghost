@@ -246,11 +246,11 @@ function init(server) {
 
         // Log all theme errors and warnings
         _.each(config().paths.availableThemes._messages.errors, function (error) {
-            errors.logError(error.message, error.context);
+            errors.logError(error.message, error.context, error.help);
         });
 
         _.each(config().paths.availableThemes._messages.warns, function (warn) {
-            errors.logWarn(warn.message, warn.context);
+            errors.logWarn(warn.message, warn.context, warn.help);
         });
 
         // ## Start Ghost App
