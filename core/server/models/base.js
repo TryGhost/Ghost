@@ -199,36 +199,39 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     generateSlug: function (Model, base, readOptions) {
         var slug,
             slugTryCount = 1,
+            baseName = Model.prototype.tableName.replace(/s$/, ''),
             // Look for a post with a matching slug, append an incrementing number if so
-            checkIfSlugExists = function (slugToFind) {
-                var args = {slug: slugToFind};
-                //status is needed for posts
-                if (readOptions && readOptions.status) {
-                    args.status = readOptions.status;
+            checkIfSlugExists;
+
+        checkIfSlugExists = function (slugToFind) {
+            var args = {slug: slugToFind};
+            //status is needed for posts
+            if (readOptions && readOptions.status) {
+                args.status = readOptions.status;
+            }
+            return Model.findOne(args, readOptions).then(function (found) {
+                var trimSpace;
+
+                if (!found) {
+                    return when.resolve(slugToFind);
                 }
-                return Model.findOne(args, readOptions).then(function (found) {
-                    var trimSpace;
 
-                    if (!found) {
-                        return when.resolve(slugToFind);
-                    }
+                slugTryCount += 1;
 
-                    slugTryCount += 1;
+                // If this is the first time through, add the hyphen
+                if (slugTryCount === 2) {
+                    slugToFind += '-';
+                } else {
+                    // Otherwise, trim the number off the end
+                    trimSpace = -(String(slugTryCount - 1).length);
+                    slugToFind = slugToFind.slice(0, trimSpace);
+                }
 
-                    // If this is the first time through, add the hyphen
-                    if (slugTryCount === 2) {
-                        slugToFind += '-';
-                    } else {
-                        // Otherwise, trim the number off the end
-                        trimSpace = -(String(slugTryCount - 1).length);
-                        slugToFind = slugToFind.slice(0, trimSpace);
-                    }
+                slugToFind += slugTryCount;
 
-                    slugToFind += slugTryCount;
-
-                    return checkIfSlugExists(slugToFind);
-                });
-            };
+                return checkIfSlugExists(slugToFind);
+            });
+        };
 
         slug = base.trim();
 
@@ -249,11 +252,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Check the filtered slug doesn't match any of the reserved keywords
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users|rss)$/g
-            .test(slug) ? slug + '-post' : slug;
+            .test(slug) ? slug + '-' + baseName : slug;
 
         //if slug is empty after trimming use "post"
         if (!slug) {
-            slug = 'post';
+            slug = baseName;
         }
         // Test for duplicate slugs.
         return checkIfSlugExists(slug);
