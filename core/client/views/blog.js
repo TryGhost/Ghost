@@ -228,6 +228,7 @@
         },
 
         toggleFeatured: function (e) {
+            e.preventDefault();
             var self = this,
                 featured = !self.model.get('featured'),
                 featuredEl = $(e.currentTarget),
