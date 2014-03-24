@@ -121,7 +121,7 @@ coreHelpers.page_url = function (context, block) {
 //
 coreHelpers.pageUrl = function (context, block) {
     errors.logWarn('Warning: pageUrl is deprecated, please use page_url instead\n' +
-                    'The helper pageUrl has been replaced with page_url in Ghost 0.5, and will be removed entirely in Ghost 0.6\n' +
+                    'The helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\n' +
                     'In your theme\'s pagination.hbs file, pageUrl should be renamed to page_url');
 
     /*jshint unused:false*/
