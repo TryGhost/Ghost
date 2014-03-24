@@ -188,7 +188,8 @@
                 searchTerm = $.trim($target.val()),
                 tag,
                 $selectedSuggestion,
-                isComma = ",".localeCompare(String.fromCharCode(e.keyCode || e.charCode)) === 0;
+                isComma = ",".localeCompare(String.fromCharCode(e.keyCode || e.charCode)) === 0,
+                hasAlreadyBeenAdded;
 
             // use localeCompare in case of international keyboard layout
             if ((e.keyCode === this.keys.ENTER || isComma) && searchTerm) {
@@ -197,16 +198,19 @@
 
                 $selectedSuggestion = this.$suggestions.children(".selected");
                 if (this.$suggestions.is(":visible") && $selectedSuggestion.length !== 0) {
-
-                    if ($('.tag:containsExact("' + _.unescape($selectedSuggestion.data('tag-name')) + '")').length === 0) {
-                        tag = {id: $selectedSuggestion.data('tag-id'), name: _.unescape($selectedSuggestion.data('tag-name'))};
+                    tag = {id: $selectedSuggestion.data('tag-id'), name: _.unescape($selectedSuggestion.data('tag-name'))};
+                    hasAlreadyBeenAdded = this.hasTagBeenAdded(tag.name);
+                    if (!hasAlreadyBeenAdded) {
                         this.addTag(tag);
                     }
                 } else {
                     if (isComma) {
+                        // Remove comma from string if comma is used to submit.
                         searchTerm = searchTerm.replace(/,/g, "");
-                    }  // Remove comma from string if comma is used to submit.
-                    if ($('.tag:containsExact("' + searchTerm + '")').length === 0) {
+                    }
+
+                    hasAlreadyBeenAdded = this.hasTagBeenAdded(searchTerm);
+                    if (!hasAlreadyBeenAdded) {
                         this.addTag({id: null, name: searchTerm});
                     }
                 }
@@ -219,13 +223,9 @@
         completeCurrentTag: function () {
             var $target = this.$('.tag-input'),
                 tagName = $target.val(),
-                usedTagNames,
                 hasAlreadyBeenAdded;
 
-            usedTagNames = _.map(this.model.get('tags'), function (tag) {
-                return tag.name.toUpperCase();
-            });
-            hasAlreadyBeenAdded = usedTagNames.indexOf(tagName.toUpperCase()) !== -1;
+            hasAlreadyBeenAdded = this.hasTagBeenAdded(tagName);
 
             if (tagName.length > 0 && !hasAlreadyBeenAdded) {
                 this.addTag({id: null, name: tagName});
@@ -270,9 +270,8 @@
 
                 tagNameMatches = tag.name.toUpperCase().indexOf(searchTerm) !== -1;
 
-                hasAlreadyBeenAdded = _.some(self.model.get('tags'), function (usedTag) {
-                    return tag.name.toUpperCase() === usedTag.name.toUpperCase();
-                });
+                hasAlreadyBeenAdded = self.hasTagBeenAdded(tag.name);
+
                 return tagNameMatches && !hasAlreadyBeenAdded;
             });
 
@@ -288,6 +287,12 @@
 
             this.$('.tag-input').val('').focus();
             this.$suggestions.hide();
+        },
+
+        hasTagBeenAdded: function (tagName) {
+            return _.some(this.model.get('tags'), function (usedTag) {
+                return tagName.toUpperCase() === usedTag.name.toUpperCase();
+            });
         }
     });
 
