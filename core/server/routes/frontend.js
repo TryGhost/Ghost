@@ -1,11 +1,22 @@
-var frontend    = require('../controllers/frontend');
+var frontend    = require('../controllers/frontend'),
+    config      = require('../config'),
+
+    ONE_HOUR_S  = 60 * 60,
+    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S;
 
 module.exports = function (server) {
-    /*jslint regexp: true */
+    var subdir = config().paths.subdir;
 
     // ### Frontend routes
     server.get('/rss/', frontend.rss);
     server.get('/rss/:page/', frontend.rss);
+    server.get('/feed/', function redirect(req, res) {
+        /*jshint unused:true*/
+        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
+        res.redirect(301, subdir + '/rss/');
+    });
+
+
     server.get('/tag/:slug/rss/', frontend.rss);
     server.get('/tag/:slug/rss/:page/', frontend.rss);
     server.get('/tag/:slug/page/:page/', frontend.tag);
@@ -13,4 +24,6 @@ module.exports = function (server) {
     server.get('/page/:page/', frontend.homepage);
     server.get('/', frontend.homepage);
     server.get('*', frontend.single);
+
+
 };

@@ -113,7 +113,7 @@ CasperTest.begin("Login limit is in place", 3, function suite(test) {
 }, true);
 
 CasperTest.begin("Can login to Ghost", 4, function suite(test) {
-    casper.thenOpen(url + "ghost/login/", function testTitle() {
+    casper.thenOpen(url + "ghost/signin/", function testTitle() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     });
 
