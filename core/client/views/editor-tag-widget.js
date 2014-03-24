@@ -106,8 +106,11 @@
                 styles = {
                     left: $target.position().left
                 },
-                maxSuggestions = 5, // Limit the suggestions number
-                regexTerm = searchTerm.replace(/(\s+)/g, "(<[^>]+>)*$1(<[^>]+>)*"),
+                // Limit the suggestions number
+                maxSuggestions = 5,
+                // Escape regex special characters
+                escapedTerm = searchTerm.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&'),
+                regexTerm = escapedTerm.replace(/(\s+)/g, "(<[^>]+>)*$1(<[^>]+>)*"),
                 regexPattern = new RegExp("(" + regexTerm + ")", "i");
 
             this.$suggestions.css(styles);
@@ -120,6 +123,7 @@
             _.each(matchingTags, function (matchingTag) {
                 var highlightedName,
                     suggestionHTML;
+
                 highlightedName = matchingTag.name.replace(regexPattern, function (match, p1) {
                     return "<mark>" + _.escape(p1) + "</mark>";
                 });
