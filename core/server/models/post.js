@@ -48,10 +48,21 @@ Post = ghostBookshelf.Model.extend({
 
     saving: function (newPage, attr, options) {
         /*jshint unused:false*/
-        var self = this;
+        var self = this,
+            tagsToCheck,
+            i;
 
-        // keep tags for 'saved' event
-        this.myTags = this.get('tags');
+        // keep tags for 'saved' event and deduplicate upper/lowercase tags
+        tagsToCheck = this.get('tags');
+        this.myTags = [];
+        _.each(tagsToCheck, function (item) {
+            for (i = 0; i < self.myTags.length; i = i + 1) {
+                if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    return;
+                }
+            }
+            self.myTags.push(item);
+        });
 
         ghostBookshelf.Model.prototype.saving.call(this);
 
