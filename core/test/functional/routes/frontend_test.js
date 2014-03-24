@@ -129,6 +129,14 @@ describe('Frontend Routing', function () {
                 .expect(302)
                 .end(doEnd(done));
         });
+
+        it('should get redirected to /rss/ from /feed/', function (done) {
+            request.get('/feed/')
+                .expect('Location', '/rss/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
     });
 
     // ### The rest of the tests require more data
