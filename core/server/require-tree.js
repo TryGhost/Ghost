@@ -120,6 +120,8 @@ var _        = require('lodash'),
             }
             paths._messages = messages;
             return paths;
+        }).otherwise(function () {
+            return {'_messages': messages};
         });
     };
 
