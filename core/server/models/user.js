@@ -81,7 +81,7 @@ User = ghostBookshelf.Model.extend({
      *
      * Hashes the password provided before saving to the database.
      */
-    add: function (_user) {
+    add: function (_user, options) {
 
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
@@ -108,7 +108,7 @@ User = ghostBookshelf.Model.extend({
             return self.gravatarLookup(userData);
         }).then(function (userData) {
             // Save the user with the hashed password
-            return ghostBookshelf.Model.add.call(self, userData);
+            return ghostBookshelf.Model.add.call(self, userData, options);
         }).then(function (addedUser) {
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;

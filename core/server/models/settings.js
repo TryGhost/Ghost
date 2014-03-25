@@ -48,7 +48,6 @@ Settings = ghostBookshelf.Model.extend({
 
 
     saving: function () {
-
          // disabling sanitization until we can implement a better version
          // All blog setting keys that need their values to be escaped.
          // if (this.get('type') === 'blog' && _.contains(['title', 'description', 'email'], this.get('key'))) {
@@ -69,20 +68,22 @@ Settings = ghostBookshelf.Model.extend({
         });
     },
 
-    edit: function (_data, t) {
-        var settings = this;
+    edit: function (_data, options) {
+
         if (!Array.isArray(_data)) {
             _data = [_data];
         }
+
         return when.map(_data, function (item) {
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
-            return settings.forge({ key: item.key }).fetch({transacting: t}).then(function (setting) {
+            return Settings.forge({ key: item.key }).fetch(options).then(function (setting) {
 
                 if (setting) {
-                    return setting.set('value', item.value).save(null, {transacting: t});
+                    return setting.save({value: item.value}, options);
                 }
-                return settings.forge({ key: item.key, value: item.value }).save(null, {transacting: t});
+
+                return Settings.forge({ key: item.key, value: item.value }).save(null, options);
 
             }, errors.logAndThrowError);
         });
@@ -101,7 +102,7 @@ Settings = ghostBookshelf.Model.extend({
                 }
                 if (isMissingFromDB) {
                     defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save());
+                    insertOperations.push(Settings.forge(defaultSetting).save(null, {user: 1}));
                 }
             });
 

@@ -66,7 +66,7 @@ posts = {
         }
         var self = this;
         return canThis(self.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData).then(function (result) {
+            return dataProvider.Post.edit(postData, {user: self.user}).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
                     omitted.author = _.omit(omitted.author, filteredUserAttributes);
@@ -95,9 +95,9 @@ posts = {
         if (!this.user) {
             return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         }
-
+        var self = this;
         return canThis(this.user).create.post().then(function () {
-            return dataProvider.Post.add(postData);
+            return dataProvider.Post.add(postData, {user: self.user});
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         });

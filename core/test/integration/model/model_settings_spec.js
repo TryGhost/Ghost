@@ -141,7 +141,7 @@ describe('Settings Model', function () {
                 value: 'Test Content 1'
             };
 
-            SettingsModel.add(newSetting).then(function (createdSetting) {
+            SettingsModel.add(newSetting, {user: 1}).then(function (createdSetting) {
 
                 should.exist(createdSetting);
                 createdSetting.has('uuid').should.equal(true);
@@ -218,7 +218,7 @@ describe('Settings Model', function () {
         });
 
         it('doesn\'t overwrite any existing settings', function (done) {
-            SettingsModel.edit({key: 'description', value: 'Adam\'s Blog'}).then(function () {
+            SettingsModel.edit({key: 'description', value: 'Adam\'s Blog'}, {user: 1}).then(function () {
                 return SettingsModel.populateDefaults();
             }).then(function () {
                 return SettingsModel.read('description');
