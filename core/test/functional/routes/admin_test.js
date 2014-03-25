@@ -6,11 +6,13 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 var request    = require('supertest'),
+    express    = require('express'),
     should     = require('should'),
     moment     = require('moment'),
 
     testUtils  = require('../../utils'),
-    config     = require('../../../server/config'),
+    ghost      = require('../../../../core'),
+    httpServer,
 
     ONE_HOUR_S = 60 * 60,
     ONE_YEAR_S = 365 * 24 * ONE_HOUR_S,
@@ -53,15 +55,26 @@ describe('Admin Routing', function () {
     }
 
     before(function (done) {
-        testUtils.clearData().then(function () {
-            // we initialise data, but not a user.
-            return testUtils.initData();
-        }).then(function () {
-            done();
-        }, done);
+        var app = express();
 
-        // Setup the request object with the correct URL
-        request = request(config().url);
+        ghost({app: app}).then(function (_httpServer) {
+            // Setup the request object with the ghost express app
+            httpServer = _httpServer;
+            request = request(app);
+            testUtils.clearData().then(function () {
+                // we initialise data, but not a user. No user should be required for navigating the frontend
+                return testUtils.initData();
+            }).then(function () {
+                done();
+            }, done);
+        }).otherwise(function (e) {
+            console.log('Ghost Error: ', e);
+            console.log(e.stack);
+        });
+    });
+
+    after(function () {
+        httpServer.close();
     });
 
     describe('Legacy Redirects', function () {
