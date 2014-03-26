@@ -4,10 +4,11 @@ var testUtils  = require('../utils'),
     when       = require('when'),
     sinon      = require('sinon'),
     express    = require('express'),
+    rewire     = require('rewire')
 
     // Stuff we are testing
     colors     = require('colors'),
-    errors     = require('../../server/errorHandling'),
+    errors     = rewire('../../server/errorHandling'),
     // storing current environment
     currentEnv = process.env.NODE_ENV;
 
@@ -197,10 +198,31 @@ describe('Error handling', function () {
     });
 
     describe('Rendering', function () {
-        var sandbox;
+        var sandbox,
+            originalConfig;
 
         before(function () {
-            errors.updateActiveTheme('casper', false);
+            originalConfig = errors.__get__('config');
+            errors.__set__('config', function () {
+                return {
+                    'paths': {
+                        'themePath': '/content/themes',
+                        'availableThemes': {
+                            'casper': {
+                                'assets': null,
+                                'default.hbs': '/content/themes/casper/default.hbs',
+                                'index.hbs': '/content/themes/casper/index.hbs',
+                                'page.hbs': '/content/themes/casper/page.hbs',
+                                'tag.hbs': '/content/themes/casper/tag.hbs'
+                            },
+                            'theme-with-error': {
+                                'error.hbs':''
+                            }
+                        }
+                    }
+                }
+            });
+            errors.updateActiveTheme('casper');
         });
 
         beforeEach(function () {
@@ -211,6 +233,9 @@ describe('Error handling', function () {
             sandbox.restore();
         });
 
+        after(function () {
+            errors.__set__('config', originalConfig);
+        });
 
         it('Renders end-of-middleware 404 errors correctly', function (done) {
             var req = {method: 'GET'},
@@ -321,5 +346,26 @@ describe('Error handling', function () {
             err.code = 500;
             errors.error500(err, req, res, null);
         });
+        
+        it('Renders custom error template if one exists', function(done){
+            var code = 404,
+                error = {message:'Custom view test'},
+                req = {
+                    session: null
+                },
+                res = {
+                    status: function(code) {
+                        return this;
+                    },
+                    render: function(view, model, fn){
+                        view.should.eql('error');
+                        errors.updateActiveTheme('casper');
+                        done();
+                    }
+                },
+                next = null;
+            errors.updateActiveTheme('theme-with-error');
+            errors.renderErrorPage(code, error, req, res, next);
+        })
     });
 });
