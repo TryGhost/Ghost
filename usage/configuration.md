@@ -33,7 +33,7 @@ Possibly the most important piece of configuration is setting up email so that G
 
 By default, Ghost comes configured to use an SQLite database, which requires no configuration on your part.
 
-If however you would like to use a MySQL database, you can do so by changing the database configuration.  You must create a database and user first, you can then change the existing sqlite3 config to something like:
+If however you would like to use a MySQL database, you can do so by changing the database configuration.  You must create a database and user first, you can then change the existing sqlite config to something like:
 
 ```
 database: {

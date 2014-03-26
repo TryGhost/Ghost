@@ -27,7 +27,6 @@ To switch to your newly added theme:
 
 <p class="note">**Note:** If you're on the Ghost Hosted Service, rather than a self-install, to switch theme you'll need to go to your <a href="https://ghost.org/blogs/">blog management</a> page and click on "edit" beside the name of your blog.</p>
 
-
 ##  What is Handlebars? <a id="what-is-handlebars"></a>
 
 [Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
