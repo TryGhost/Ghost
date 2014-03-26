@@ -1,10 +1,10 @@
 ---
 lang: id_ID
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Bagaimana Menginstal Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menginstal platform blogging Ghost dan menjalankannya pada server lokal atau remote.
+heading: Menginstal &amp; Mulai Menjalankan Ghost
+subheading: Langkah pertama untuk mengatur blog Anda untuk pertamakalinya.
 permalink: /id_ID/installation/windows/
 chapter: installation
 section: windows
@@ -12,34 +12,34 @@ prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# Menginstal di Windows <a id="install-windows"></a>
 
-### Install Node
+### Instal Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   Pada [http://nodejs.org](http://nodejs.org) tekan install, sebuah berkas '.msi' akan diunduh
+*   Klik pada file yang terunduh untuk membuka installer, ini akan menginstal Node dan npm.
+*   Klik installer, hingga Anda melihat laman yang mengatakan bahwa Node.js sudah terinstal.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+Jika Anda kebingungan, Anda bisa melihat seluruh [perjalanan proses di sini](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
 
-### Download & Extract Ghost
+### Unduh & Ekstrak Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   Log in ke [http://ghost.org](http://ghost.org), lalu klik tombol 'Download Ghost Source Code' warna biru.
+*   Pada laman unduhan, tekan tombol untuk mengunduh berkas zip termutakhir.
+*   Klik tanda panah di samping berkas yang baru saja terunduh, lalu pilih 'show in folder'.
+*   Sesudah folder terbuka, klik kanan pada berkas zip terunduh dan pilih 'Extract all'.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+Jika Anda kebingungan, Anda bisa melihat seluruh [perjalanan proses di sini](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
 
-### Install and Run Ghost
+### Instal dan Jalankan Ghost
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Pada start menu, temukan 'Node.js' lalu pilih 'Node.js Command Prompt'
+*   Pada Node command prompt, Anda harus mengganti direktori dimana Anda mengekstrak Ghost. Ketik: `cd Downloads/ghost-#.#.#` (gantikan tanda hash dengan versi Ghost yang Anda unduh).
+*   Berikutnya, pada command prompt ketik `npm install --production` <span class="note">perhatikan tanda strip (dash) ganda</span>
+*   Sesudah npm terinstal, ketik `npm start` untuk menjalankan Ghost dalam mode pengembangan
+*   Pada sebuah peramban (browser), navigasikan ke <code class="path">127.0.0.1:2368</code> untuk melihat blog Ghost Anda yang baru saja terbangun
+*   Ubah url ke <code class="path">127.0.0.1:2368/ghost</code> lalu buat admin user Anda untuk login ke Ghost admin.
+*   Baca [dokumentasi penggunaan](/usage) untuk instruksi selanjutnya
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
 
