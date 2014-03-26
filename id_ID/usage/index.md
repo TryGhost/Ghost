@@ -1,41 +1,41 @@
 ---
 lang: id_ID
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Cara Menggunakan Ghost - Ghost Docs
+meta_description: Panduan mendalam mengenai penggunaan platform blogging Ghost. Sudah memiliki Ghost namun belum tahu cara menggunakannya? Mulailah dari sini!
+heading: Menggunakan Ghost
+subheading: Mengetahui alur pengaturan dan menerapkan pengaturan yang Anda inginkan
 chapter: usage
 next_section: configuration
 ---
 
-## Overview <a id="overview"></a>
+## Ikhtisar <a id="overview"></a>
 
-Hopefully at this point you've got Ghost installed and running, and you're ready to get blogging. The following sections are going to walk you through absolutely everything you need to know about Ghost, so that you are familiar with everything, and set up exactly how you want to be.
+Semoga saat ini Anda telah berhasil menginstal dan menjalankan Ghost, dan siap mulai ngeblog. Sesi berikut akan menyajikan semua yang perlu Anda ketahui tentang Ghost, sehingga Anda akan akrab dengannya dan mampu menerapkan pengaturan sesuai dengan keinginan.
 
-### First run
+### Menjalankan Perdana
 
-If you are running Ghost for the very first time, then you need to create your admin user account. Navigate to your new blog in your favourite browser, and then change the URL to <code class="path">&lt;your URL&gt;/ghost/signup/</code>. You should see a screen just like this one:
+Jika Anda menjalankan Ghost untuk pertamakalinya, maka Anda perlu membuat akun admin user. Bukalah blog baru Anda pada peramban favorit Anda, lalu ubah URL ke <code class="path">&lt;URL Anda&gt;/ghost/signup/</code>. Anda akan melihat laman persis seperti ini:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
 
-*   Fill in your **Full Name** as the name you want to appear as the author of blog posts.
-*   Then enter your **Email Address** - make sure it's valid, and carefully enter a sensible **Password** (it needs to be at least 8 characters long).
-*   Hit the big blue **Sign Up** button, and you will be logged in to your blog.
+*   Isikan **Full Name** dengan nama yang ingin Anda tampilkan sebagai penulis pos-pos blog.
+*   Lalu isikan **Email Address** - pastikan alamat email itu sah, kemudian masukkan **Password** (sedikitnya 8 karakter).
+*   Tekan tombol **Sign Up** warna biru, dan Anda akan log in ke blog Anda.
 
-That's it! You can now start writing blog posts.
+Cukup sudah! Anda sekarang bisa mulai menulis pos blog.
 
-#### Messages
+#### Perpesanan
 
-On your first run of Ghost you should see a blue info message at the top of the screen that looks a little like this:
+Pada kali pertama Anda menjalankan Ghost, Anda mestinya akan melihat sebuah kotak pesan warna biru di bagian atas layar yang mirip seperti ini:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
 
-It let's you know some information about the way Ghost is configured, such as which environment you've started it in, and what you've got your URL set to. Jump to the [configuration](/usage/configuration/) section to find out more about environments, and how to configure Ghost. You won't be able to get rid of this message until you log in (this is a bug we're working on), but once you have, and you're familiar with the info, close it by pressing the x. It won't appear again.
+Ia memberitahukan kepada Anda beberapa informasi mengenai bagaimana Ghost dikonfigurasikan, misalnya lingkungan mana yang Anda pergunakan untuk meenjalankannya, dan URL apa yang Anda terapkan. Kunjungi sesi [konfigurasi](/usage/configuration/) untuk memahami lebih jauh mengenai lingkungan dan cara mengonfigurasikan Ghost. Anda tak akan bisa menyingkirkan pesan di atas sebelum Anda log in (ini sebuah bug yang masih kami perbaiki), namun setelah Anda log in sekali, dan Anda sudah cukup memahami informasi dalam pesan tersebut, tutuplah kotak pesan itu dengan menekan tanda silang (x). Ia tidak akan muncul lagi.
 
-You may also see an orange warning message with regard to email:
+Anda juga mungkin akan melihat kotak pesan warna oranye terkait dengan email:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
 
-This isn't critical to setting up your blog so you can get started writing, but it is a good idea to mosey on over to the [email documentation](/mail) at some point, and learn about configuring Ghost to send email. This is currently only used to send you a reset email if you forget your password. Not important for blogging, but really useful if you ever need it!
+Ini bukanlah hal yang kritis terkait pengaturan blog Anda, jadi Anda tetap bisa mulai menulis, namun lebih baik lagi jika Anda mengklik [dokumentasi email](/mail) sesekali, dan mempelajari cara mengonfigurasikan Ghost untuk mengirim email. Saat ini fitur ini masih belum digunakan untuk mengirimkan email reset apabila Anda kehilangan password. Kurang penting sehubungan dengan blogging, namun sungguh berguna jika suatu ketika Anda membutuhkannya!
 
