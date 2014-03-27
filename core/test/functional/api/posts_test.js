@@ -202,7 +202,7 @@ describe('Post API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: draftPost}, function (error, response, publishedPost) {
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + publishedPost.slug + '/');
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + publishedPost.slug + '/');
                     response.should.be.json;
                     publishedPost.should.exist;
                     publishedPost.title.should.eql(newTitle);
@@ -212,7 +212,7 @@ describe('Post API', function () {
                         headers: {'X-CSRF-Token': csrfToken},
                         json: publishedPost}, function (error, response, updatedPost) {
                         response.should.have.status(200);
-                        response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + updatedPost.slug + '/');
+                        response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + updatedPost.slug + '/');
                         response.should.be.json;
                         updatedPost.should.exist;
                         updatedPost.title.should.eql(newTitle);
@@ -237,7 +237,7 @@ describe('Post API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.slug + '/');
                     response.should.be.json;
                     putBody.should.exist;
                     putBody.title.should.eql(changedValue);
@@ -260,7 +260,7 @@ describe('Post API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.slug + '/');
                     response.should.be.json;
                     putBody.should.exist;
                     putBody.page.should.eql(changedValue);
@@ -283,7 +283,7 @@ describe('Post API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.slug + '/');
                     response.should.be.json;
                     putBody.should.exist;
                     putBody.page.should.eql(changedValue);
@@ -317,7 +317,7 @@ describe('Post API', function () {
                     headers: {'X-CSRF-Token': csrfToken},
                     json: jsonResponse}, function (error, response, putBody) {
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + putBody.slug + '/');
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.slug + '/');
                     response.should.be.json;
                     putBody.should.exist;
                     putBody.title.should.eql(changedValue);
@@ -361,7 +361,7 @@ describe('Post API', function () {
                 response.should.be.json;
                 var jsonResponse = JSON.parse(body);
                 jsonResponse.should.exist;
-                response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /' + jsonResponse.slug + '/');
+                response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + jsonResponse.slug + '/');
                 testUtils.API.checkResponse(jsonResponse, 'post');
                 jsonResponse.id.should.eql(deletePostId);
                 done();
@@ -482,7 +482,7 @@ describe('Post API', function () {
                         postLink = '/' + yyyy + '/' + mm + '/' + dd + '/' + putBody.slug + '/';
 
                     response.should.have.status(200);
-                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, ' + postLink);
+                    response.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, ' + postLink);
                     response.should.be.json;
                     putBody.should.exist;
                     putBody.title.should.eql(changedValue);
