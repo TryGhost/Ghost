@@ -1,24 +1,24 @@
 ---
-lang: example_translation
+lang: es
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Cómo usar Ghost - Documentación de Ghost
+meta_description: Una guía en profundidad para usar la plataforma de blogs Ghost. ¿Tienes Ghost pero no estás seguro de cómo comenzar? ¡Comienza aquí!
+heading: Usando Ghost
+subheading: Encuentra la forma de comenzar, y haz lo que quieras.
 chapter: usage
 section: faq
-permalink: /example_translation/usage/faq/
+permalink: /es/usage/faq/
 prev_section: writing
 ---
 
 
 ## FAQ <a id="faq"></a>
 
-### (When) Will Ghost support feature X?
+### ¿(Cuándo) Ghost soportará la característica X?
 
-Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing and [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) on the [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+Por favor revisa la lista de [Características Planeadas](https://github.com/TryGhost/Ghost/wiki/Planned-Features) y el [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) en la [wiki en Github](https://github.com/TryGhost/Ghost/wiki).
 
-### How do I insert images into a post?
+### ¿Cómo inserto imágenes en un post?
 
-Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
+Por favor revisa la [Guía Markdown](/es/usage/writing/#markdown) para una explicación completa de cómo funciona la carga de imágenes en el editor de Ghost.
 
