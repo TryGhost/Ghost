@@ -1,9 +1,9 @@
 ---
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Bagaimana Cara Menginstall Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menginstal platform blogging Ghost dan menjalankannya pada server lokal atau remote.
+heading: Menginstal &amp; Mulai Menjalankan Ghost
+subheading: Langkah pertama untuk mengatur blog Anda untuk pertamakalinya.
 permalink: /id_ID/installation/linux/
 chapter: installation
 section: linux
@@ -12,60 +12,60 @@ next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# Menginstal di Linux <a id="install-linux"></a>
 
-### Install Node
+### Instal Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   Anda bisa memilih untuk mengunduh arsip `.tar.gz` dari [http://nodejs.org](http://nodejs.org), atau mengikuti instruksi cara [menginstal dari package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
+*   Ricek apakah Anda sudah memiliki instalasi Node dan npm dengan mengetikkan `node -v` dan `npm -v` pada terminal
 
-### Install and Run Ghost
-
-
-**If you are using Linux on your desktop follow these steps:**
-
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+### Menginstal dan Menjalankan Ghost
 
 
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
+**Jika Anda menggunakan Linux pada desktop, ikuti langkah-langkah berikut:**
 
-*   Use the following command to download the latest release of Ghost:
+*   Log in ke [http://ghost.org](http://ghost.org), lalu klik tombol 'Download Ghost Source Code' warna biru
+*   Pada laman unduhan, tekan tombol untuk mengunduh berkas zip termutakhir kemudian ekstrak berkas itu ke lokasi yang Anda pilih untuk menjalankan Ghost
+
+
+**Jika And menggunakan Linux sebagai guest OS atau melalui SSH dan hanya memiliki terminal, maka:**
+
+*   Gunakan perintah berikut untuk mengunduh versi Ghost termutakhir:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   Unzip arsip tersebut dan masuk ke direktori dengan perintah berikut:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+**Setelah Anda berhasil mengekstrak Ghost, buka terminal, jika belum, maka:**
 
-*   Change into the directory you extracted Ghost to with the following command:
+*   Masuk ke direktori dimana Anda mengekstrak Ghost dengan perintah berikut:
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   Untuk menginstal Ghost, ketik:
 
     ```
     npm install --production
     ```
-    <span class="note">note the two dashes</span>
+    <span class="note">perhatikan tanda strip (dash) ganda</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode: 
+*   Sesudah npm usai menginstal, ketik perintah berikut untuk menjalankan Ghost dalam mode development: 
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   Ghost akan berjalan pada **127.0.0.1:2368**<br />
+    <span class="note">Anda bisa mengatur alamat IP dan port di **config.js**</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   Dalam sebuah peramban, navigasikan ke [http://127.0.0.1:2368](http://127.0.0.1:2368) untuk melihat blog Ghost Anda yang sudah terpasang
+*   Ubah url ke [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) dan buatlah akun admin user Anda untuk login ke panel administrasi Ghost
