@@ -125,6 +125,9 @@ translations:
     email:        'Email'
     themes:       'Temas'
     help:         'Ajuda'
+    deploy:       'Deploy'
+    upgrading:    'Atualização' 
+    troubleshooting: 'Resolução de Problemas'
 
 # If running locally, simply comment out the line below to make all urls relative
 
