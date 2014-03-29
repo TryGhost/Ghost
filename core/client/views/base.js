@@ -232,6 +232,7 @@
             }
         },
         closePassive: function (e) {
+            e.preventDefault();
             $(e.currentTarget)
                 .parent()
                 .fadeOut(250)
