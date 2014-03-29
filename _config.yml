@@ -23,7 +23,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
-
+    - name: 'Português'
+      key: 'pt-BR'
 port:         4478
 
 translations:
@@ -119,7 +120,7 @@ translations:
     translations: '翻譯'
     help:         '說明'
   pt-BR:
-    site_title:   'Guia Ghost'
+    site_title:   'Guia do Ghost'
     installation: 'Instalação'
     usage:        'Uso'
     email:        'Email'
