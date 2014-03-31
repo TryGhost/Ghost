@@ -2,6 +2,7 @@ import BaseModel from 'ghost/models/base';
 
 var UserModel = BaseModel.extend({
     url: BaseModel.apiRoot + '/users/me/',
+    forgottenUrl: BaseModel.apiRoot + '/forgotten/',
 
     save: function () {
         return ic.ajax.request(this.url, {
@@ -74,6 +75,26 @@ var UserModel = BaseModel.extend({
         this.set('passwordErrors', validationErrors);
 
         return this;
+    },
+    
+    fetchForgottenPasswordFor: function (email) {
+        var self = this;
+        return new Ember.RSVP.Promise(function (resolve, reject) {
+            if (!validator.isEmail(email)) {
+                reject(new Error('Please enter a correct email address.'));
+            } else {
+                resolve(ic.ajax.request(self.forgottenUrl, {
+                    type: 'POST',
+                    headers: {
+                        // @TODO Find a more proper way to do this.
+                        'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+                    },
+                    data: {
+                        email: email
+                    }
+                }));
+            }
+        });
     }
 });
 
