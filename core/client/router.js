@@ -12,7 +12,7 @@ Router.map(function () {
     this.route('signin');
     this.route('signup');
     this.route('forgotten');
-    this.route('reset');
+    this.route('reset', { path: '/reset/:token' });
     this.resource('posts', { path: '/' }, function () {
         this.route('post', { path: ':post_id' });
     });
