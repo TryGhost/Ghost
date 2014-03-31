@@ -16,14 +16,6 @@ var SettingsUserController = Ember.Controller.extend({
     }.property('user.image'),
 
     actions: {
-        cover: function () {
-            alert('@TODO: Show Upload modal for cover');
-        },
-
-        image: function () {
-            alert('@TODO: Show Upload modal for image');
-        },
-
         save: function () {
             alert('@TODO: Saving user...');
 
