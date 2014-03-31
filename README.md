@@ -8,8 +8,6 @@ Visit the project's website at <http://ghost.org> &bull; docs on <http://docs.gh
 
 Want to report a bug, request a feature, or help us build or translate Ghost? Check out our in depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
 
-
-
 ## Getting Started
 
 There are **two** main ways to get started with Ghost, take care to use the method which best suits your needs.
@@ -39,7 +37,9 @@ Check out the [Documentation](http://docs.ghost.org/) for more detailed instruct
 
 If you're a theme, app or core developer, or someone comfortable getting up and running from a `git clone`, this method is for you.
 
-If you clone the GitHub repository, you will need to build a number of assets using grunt. 
+If you clone the GitHub repository, you will need to build a number of assets using grunt.
+
+Please do **NOT** use the master branch of Ghost in production. If you are using git to deploy to production, please use the latest [release](https://github.com/TryGhost/Ghost/releases) or the [stable](https://github.com/TryGhost/Ghost/tree/stable) branch which contains the latest release.
 
 #### Quickstart:
 

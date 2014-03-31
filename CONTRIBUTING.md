@@ -226,8 +226,9 @@ or more of the following:
 ### Key Branches & Tags
 
 - **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next
-release is here.
-- **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
+release is here. Do **NOT** use this branch for a production site.
+- **[stable](https://github.com/TryGhost/Ghost/tree/stable)** contains the latest release of Ghost. This branch may be used in production.
+- **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org) documentation for Getting Started with Ghost.
 
 
 ## Grunt Toolkit
