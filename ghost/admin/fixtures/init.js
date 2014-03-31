@@ -42,6 +42,9 @@ var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/forgotten/', response({
         redirect: '/ghost/signin/'
     }));
+    ic.ajax.defineFixture('/ghost/api/v0.1/reset/', response({
+        msg: 'Password changed successfully'
+    }));
 };
 
 export default defineFixtures;
