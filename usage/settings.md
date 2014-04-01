@@ -41,7 +41,7 @@ These are the settings that control your user / author profile.
 *   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
 *   **Location**: This should be your current location. Theme reference (post) `author.location`.
 *   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Bio**: Your bio is where you can enter a 200 characters or less description about yourself. Theme reference (post) `author.bio`.
 
 #### Changing your password
 
