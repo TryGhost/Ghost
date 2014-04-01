@@ -261,6 +261,12 @@ coreHelpers.content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    if (truncateOptions.hasOwnProperty('readmore')) {
+        if (this.html.indexOf('<!--readmore-->') >= 1) {
+            this.html = this.html.substring(0, this.html.indexOf('<!--readmore-->'));
+        }
+    }
+
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         // Due to weirdness in downsize the 'words' option
         // must be passed as a string. refer to #1796
