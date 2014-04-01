@@ -278,11 +278,11 @@ coreHelpers.content = function (options) {
             truncateOptions.words = truncateOptions.words.toString();
         }
         return new hbs.handlebars.SafeString(
-            downsize(_data, truncateOptions)
+            downsize(contentHtml, truncateOptions)
         );
     }
 
-    return new hbs.handlebars.SafeString(_data);
+    return new hbs.handlebars.SafeString(contentHtml);
 };
 
 // ### Excerpt Helper
