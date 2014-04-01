@@ -261,10 +261,17 @@ coreHelpers.content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+<<<<<<< HEAD
     var _data = this.html
 
     if (truncateOptions.hasOwnProperty('readmore') && _data.indexOf('<!--readmore-->') >= 1){
             _data = _data.substring(0, _data.indexOf('<!--readmore-->'));
+=======
+    if (truncateOptions.hasOwnProperty('readmore')) {
+        if (this.html.indexOf('<!--readmore-->') >= 1) {
+            this.html = this.html.substring(0, this.html.indexOf('<!--readmore-->'));
+        }
+>>>>>>> 965378c... fix test
     }
 
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
@@ -275,11 +282,19 @@ coreHelpers.content = function (options) {
             truncateOptions.words = truncateOptions.words.toString();
         }
         return new hbs.handlebars.SafeString(
+<<<<<<< HEAD
             downsize(_data, truncateOptions)
         );
     }
 
     return new hbs.handlebars.SafeString(_data);
+=======
+            downsize(this.html, truncateOptions)
+        );
+    }
+
+    return new hbs.handlebars.SafeString(this.html);
+>>>>>>> 965378c... fix test
 };
 
 // ### Excerpt Helper
