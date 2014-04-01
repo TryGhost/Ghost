@@ -1,9 +1,9 @@
 ---
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Como instalar Ghost en tu Servidor - Documentación de Ghost
+meta_description: Todo lo que necesitas saber para instalar y correr la plataforma Ghost en tu ambiente local o remoto.
+heading: Instalando Ghost
+subheading: Los primeros pasos para configurar tu nuevo blog por primera vez.
 permalink: /es/installation/linux/
 chapter: installation
 section: linux
@@ -11,61 +11,57 @@ prev_section: windows
 next_section: deploy
 ---
 
+# Instalando en Linux <a id="install-linux"></a>
 
-# Installing on Linux <a id="install-linux"></a>
+### Instala Node
 
-### Install Node
+*   Puedes descargar el archivo `.tar.gz` desde [http://nodejs.org](http://nodejs.org), o puedes preferir seguir las instrucciones en cómo [instalar desde un gestor de paquetes](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
+*   Revisa que tienes Node y npm instalados escribiendo `node -v` y `npm -v` en una terminal.
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+### Instala e Inicia Ghost
 
-### Install and Run Ghost
+**Si en tu computador usas Linux sigue los siguientes pasos:**
 
+*   Inicia sesión en [http://ghost.org](http://ghost.org), y haz click en el botón azul 'Download Ghost Source Code'.
+*   En la página de descargas presiona el botón para descargar la versión más reciente y descomprime el archivo en la ubicación donde quieras correr Ghost.
 
-**If you are using Linux on your desktop follow these steps:**
+**Si estás usando Linux como invitado o a través de SSH y sólo tienes la terminal, entonces:**
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
-
-
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
-
-*   Use the following command to download the latest release of Ghost:
+*   Usa el siguiente comando para descargar la versión más reciente de Ghost:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   Descomprime el archivo y muévete al directorio usando lo siguiente:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
+**Después de que extraer correctamente Ghost abre una terminal, si no lo has hecho, y entonces:**
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
-
-*   Change into the directory you extracted Ghost to with the following command:
+*   Ubícate en la carpeta que donde extraíste Ghost con el siguiente comando: 
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   Para instalar Ghost escribe:
 
     ```
     npm install --production
     ```
-    <span class="note">note the two dashes</span>
+    <span class="note">nota las dos líneas</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode: 
+*   Cuando npm acabe de instalar, escribe lo siguiente para iniciar Ghost en modo desarrollador:
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   Ghost estará ahora corriendo en **127.0.0.1:2368**<br />
+    <span class="note">Puedes configurar la dirección IP y el puerto en **config.js**</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   En un navegador, ve a [http://127.0.0.1:2368](http://127.0.0.1:2368) para ver tu nueva instalación de Ghost.
+*   Cambia la url a [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) y crea tu usuario para acceder al administrador de Ghost.
