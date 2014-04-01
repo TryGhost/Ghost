@@ -262,11 +262,11 @@ coreHelpers.content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
-    var _data = this.html
+    var contentHtml = this.html
 
     if (truncateOptions.hasOwnProperty('readmore')){
-        if(_data.indexOf('<!--readmore-->') >= 1){
-            _data = _data.substring(0, _data.indexOf('<!--readmore-->'));
+        if(contentHtml.indexOf('<!--readmore-->') >= 1){
+            contentHtml = contentHtml.substring(0, contentHtml.indexOf('<!--readmore-->'));
         }
     }
 
