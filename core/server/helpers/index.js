@@ -261,6 +261,12 @@ coreHelpers.content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    var _data = this.html
+
+    if (truncateOptions.hasOwnProperty('readmore') && _data.indexOf('<!--readmore-->') >= 1){
+            _data = _data.substring(0, _data.indexOf('<!--readmore-->'));
+    }
+
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         // Due to weirdness in downsize the 'words' option
         // must be passed as a string. refer to #1796
@@ -269,11 +275,11 @@ coreHelpers.content = function (options) {
             truncateOptions.words = truncateOptions.words.toString();
         }
         return new hbs.handlebars.SafeString(
-            downsize(this.html, truncateOptions)
+            downsize(_data, truncateOptions)
         );
     }
 
-    return new hbs.handlebars.SafeString(this.html);
+    return new hbs.handlebars.SafeString(_data);
 };
 
 // ### Excerpt Helper
