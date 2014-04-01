@@ -262,11 +262,9 @@ coreHelpers.content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
-    var contentHtml = this.html
-
-    if (truncateOptions.hasOwnProperty('readmore')){
-        if(contentHtml.indexOf('<!--readmore-->') >= 1){
-            contentHtml = contentHtml.substring(0, contentHtml.indexOf('<!--readmore-->'));
+    if (truncateOptions.hasOwnProperty('readmore')) {
+        if (this.html.indexOf('<!--readmore-->') >= 1) {
+            this.html = this.html.substring(0, this.html.indexOf('<!--readmore-->'));
         }
     }
 
@@ -278,11 +276,11 @@ coreHelpers.content = function (options) {
             truncateOptions.words = truncateOptions.words.toString();
         }
         return new hbs.handlebars.SafeString(
-            downsize(contentHtml, truncateOptions)
+            downsize(this.html, truncateOptions)
         );
     }
 
-    return new hbs.handlebars.SafeString(contentHtml);
+    return new hbs.handlebars.SafeString(this.html);
 };
 
 // ### Excerpt Helper
