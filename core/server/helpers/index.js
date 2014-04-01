@@ -244,6 +244,7 @@ coreHelpers.tags = function (options) {
 //
 // *Usage example:*
 // `{{content}}`
+// `{{content readmore="true"}}`
 // `{{content words="20"}}`
 // `{{content characters="256"}}`
 //
@@ -256,15 +257,17 @@ coreHelpers.tags = function (options) {
 //
 coreHelpers.content = function (options) {
     var truncateOptions = (options || {}).hash || {};
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    truncateOptions = _.pick(truncateOptions, ['words', 'characters', 'readmore']);
     _.keys(truncateOptions).map(function (key) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
     var _data = this.html
 
-    if (truncateOptions.hasOwnProperty('readmore') && _data.indexOf('<!--readmore-->') >= 1){
+    if (truncateOptions.hasOwnProperty('readmore')){
+        if(_data.indexOf('<!--readmore-->') >= 1){
             _data = _data.substring(0, _data.indexOf('<!--readmore-->'));
+        }
     }
 
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
