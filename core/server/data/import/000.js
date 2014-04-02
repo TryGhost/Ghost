@@ -142,31 +142,31 @@ function importApps(ops, tableData, transaction) {
     });
 }
 
-function importAppSettings(ops, tableData, transaction) {
-    var appsData = tableData.apps,
-        appSettingsData = tableData.app_settings,
-        appName;
-
-    appSettingsData = stripProperties(['id'], appSettingsData);
-
-    _.each(appSettingsData, function (appSetting) {
-        // Find app to attach settings to
-        appName = _.find(appsData, function (app) {
-            return app.id === appSetting.app_id;
-        }).name;
-        ops.push(models.App.findOne({name: appName}, {transacting: transaction}).then(function (_app) {
-            if (_app) {
-                // Fix app_id
-                appSetting.app_id = _app.id;
-                return models.AppSetting.add(appSetting, {transacting: transaction})
-                    // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .otherwise(function (error) { return when.reject(error); });
-            }
-            // Gracefully ignore missing apps
-            return when.resolve(_app);
-        }));
-    });
-}
+// function importAppSettings(ops, tableData, transaction) {
+//     var appsData = tableData.apps,
+//         appSettingsData = tableData.app_settings,
+//         appName;
+// 
+//     appSettingsData = stripProperties(['id'], appSettingsData);
+// 
+//     _.each(appSettingsData, function (appSetting) {
+//         // Find app to attach settings to
+//         appName = _.find(appsData, function (app) {
+//             return app.id === appSetting.app_id;
+//         }).name;
+//         ops.push(models.App.findOne({name: appName}, {transacting: transaction}).then(function (_app) {
+//             if (_app) {
+//                 // Fix app_id
+//                 appSetting.app_id = _app.id;
+//                 return models.AppSetting.add(appSetting, {transacting: transaction})
+//                     // add pass-through error handling so that bluebird doesn't think we've dropped it
+//                     .otherwise(function (error) { return when.reject(error); });
+//             }
+//             // Gracefully ignore missing apps
+//             return when.resolve(_app);
+//         }));
+//     });
+// }
 
 // No data needs modifying, we just import whatever tables are available
 Importer000.prototype.basicImport = function (data) {
