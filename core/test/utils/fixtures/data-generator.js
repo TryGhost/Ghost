@@ -105,13 +105,22 @@ DataGenerator.Content = {
 
     apps: [
         {
-            name: 'Kudos'
+            name: 'Kudos',
+            slug: 'kudos',
+            version: '0.0.1',
+            status: 'installed'
         },
         {
-            name: 'Importer'
+            name: 'Importer',
+            slug: 'importer',
+            version: '0.1.0',
+            status: 'inactive'
         },
         {
-            name: 'Hemingway'
+            name: 'Hemingway',
+            slug: 'hemingway',
+            version: '1.0.0',
+            status: 'installed'
         }
     ],
 
