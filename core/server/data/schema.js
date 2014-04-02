@@ -129,6 +129,31 @@ var db = {
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},
             updated_by: {type: 'integer', nullable: true}
+        },
+        app_settings: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            key: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            value: {type: 'text', maxlength: 65535, nullable: true},
+            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'apps'},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
+        },
+        app_fields: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            key: {type: 'string', maxlength: 150, nullable: false},
+            value: {type: 'text', maxlength: 65535, nullable: true},
+            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'html'},
+            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'apps'},
+            relatable_id: {type: 'integer', nullable: false, unsigned: true},
+            relatable_type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'posts'},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
         }
     };
 

@@ -5,6 +5,7 @@ var _              = require('lodash'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
+    AppField       = require('./appField').AppField,
     User           = require('./user').User,
     Tag            = require('./tag').Tag,
     Tags           = require('./tag').Tags,
@@ -202,6 +203,10 @@ Post = ghostBookshelf.Model.extend({
 
     tags: function () {
         return this.belongsToMany(Tag);
+    },
+
+    fields: function () {
+        return this.morphMany(AppField, 'relatable');
     }
 
 }, {
@@ -210,7 +215,7 @@ Post = ghostBookshelf.Model.extend({
     // Extends base model findAll to eager-fetch author and user relationships.
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = [ 'author', 'user', 'tags' ];
+        options.withRelated = [ 'author', 'user', 'tags', 'fields' ];
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -227,7 +232,7 @@ Post = ghostBookshelf.Model.extend({
             delete args.status;
         }
 
-        options.withRelated = [ 'author', 'user', 'tags' ];
+        options.withRelated = [ 'author', 'user', 'tags', 'fields' ];
         return ghostBookshelf.Model.findOne.call(this, args, options);
     },
 
@@ -293,7 +298,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Fetch related models
-        opts.withRelated = [ 'author', 'user', 'tags' ];
+        opts.withRelated = [ 'author', 'user', 'tags', 'fields' ];
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
