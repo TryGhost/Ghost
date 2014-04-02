@@ -1,7 +1,9 @@
 var ghostBookshelf = require('./base'),
+    _              = require('lodash'),
+    when           = require('when'),
     User           = require('./user').User,
     Role           = require('./role').Role,
-
+    App            = require('./app').App,
     Permission,
     Permissions;
 
@@ -15,6 +17,10 @@ Permission = ghostBookshelf.Model.extend({
 
     users: function () {
         return this.belongsToMany(User);
+    },
+
+    apps: function () {
+        return this.belongsToMany(App);
     }
 });
 
