@@ -4,17 +4,9 @@
     </a>
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
-            {{!-- @TODO: don't nest link-to attributes
-                currently required to get proper class styling --}}
-            {{#link-to "posts" class="content" tagName="li" disabled=true}}
-                {{#link-to "posts"}}Content{{/link-to}}
-            {{/link-to}}
-            {{#link-to "new" class="editor" tagName="li" disabled=true}}
-                {{#link-to "new"}}New post{{/link-to}}
-            {{/link-to}}
-            {{#link-to "settings" class="settings" tagName="li" disabled=true}}
-                {{#link-to "settings"}}Settings{{/link-to}}
-            {{/link-to}}
+            {{activating-list-item route="posts" title="Content" classNames="content"}}
+            {{activating-list-item route="new" title="New post" classNames="content"}}
+            {{activating-list-item route="settings" title="Settings" classNames="content"}}
 
             <li id="usermenu" class="usermenu subnav">
                 <a href="#" class="dropdown">
