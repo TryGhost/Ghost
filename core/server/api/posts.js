@@ -59,8 +59,10 @@ posts = {
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        return canThis(this.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData).then(function (result) {
+        var self = this;
+
+        return canThis(self.user).edit.post(postData.id).then(function () {
+            return dataProvider.Post.edit(postData, {user: self.user}).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
                     omitted.author = _.omit(omitted.author, filteredUserAttributes);
@@ -85,9 +87,10 @@ posts = {
 
     // **takes:** a json object representing a post,
     add: function add(postData) {
+        var self = this;
         // **returns:** a promise for the resulting post in a json object
         return canThis(this.user).create.post().then(function () {
-            return dataProvider.Post.add(postData);
+            return dataProvider.Post.add(postData, {user: self.user});
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         });

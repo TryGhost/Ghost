@@ -59,7 +59,7 @@ function initDbHashAndFirstRun() {
 
         if (dbHash === null) {
             var initHash = uuid.v4();
-            return when(api.settings.edit('dbHash', initHash)).then(function (settings) {
+            return when(api.settings.edit.call({user: 1}, 'dbHash', initHash)).then(function (settings) {
                 dbHash = settings.dbHash;
                 return dbHash;
             }).then(doFirstRun);

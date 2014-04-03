@@ -164,8 +164,6 @@ describe("Import", function () {
         beforeEach(function (done) {
             // migrate to current version
             migration.migrateUpFreshDb().then(function () {
-                // Load the fixtures
-            }).then(function () {
                 return testUtils.insertDefaultUser();
             }).then(function () {
                 done();

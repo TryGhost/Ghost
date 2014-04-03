@@ -39,7 +39,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
@@ -55,7 +55,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
@@ -71,7 +71,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
@@ -86,7 +86,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
@@ -99,7 +99,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 email = testUtils.DataGenerator.forModel.users[2].email;
 
-            UserModel.add(userData).then(function () {
+            UserModel.add(userData, {user: 1}).then(function () {
                 // Test same case
                 return UserModel.getByEmail(email).then(function (user) {
                     should.exist(user);
@@ -144,7 +144,7 @@ describe('User Model', function run() {
         it('can\'t add second', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[1];
 
-            return UserModel.add(userData).then(done, function (failure) {
+            return UserModel.add(userData, {user: 1}).then(done, function (failure) {
                 failure.message.should.eql('A user is already registered. Only one user for now!');
                 done();
             }).then(null, done);
