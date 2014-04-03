@@ -62,9 +62,11 @@ posts = {
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        return canThis(this.user).edit.post(postData.id).then(function () {
+        var self = this;
+
+        return canThis(self.user).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.edit(checkedPostData.posts[0]);
+                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user})
             }).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
@@ -81,10 +83,11 @@ posts = {
     // #### Add
     // **takes:** a json object representing a post,
     add: function add(postData) {
+        var self = this;
         // **returns:** a promise for the resulting post in a json object
         return canThis(this.user).create.post().then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.add(checkedPostData.posts[0]);
+                return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user});
             }).then(function (result) {
                 var omitted = result.toJSON();
                 omitted.author = _.omit(omitted.author, filteredUserAttributes);

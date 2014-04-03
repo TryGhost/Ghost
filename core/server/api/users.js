@@ -53,7 +53,7 @@ users = {
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
         userData.id = this.user;
-        return dataProvider.User.edit(userData).then(function (result) {
+        return dataProvider.User.edit(userData, {user: this.user}).then(function (result) {
             if (result) {
                 var omitted = _.omit(result.toJSON(), filteredAttributes);
                 return omitted;
@@ -67,7 +67,15 @@ users = {
     add: function add(userData) {
 
         // **returns:** a promise for the resulting user in a json object
-        return dataProvider.User.add(userData);
+        return dataProvider.User.add(userData, {user: this.user});
+    },
+
+    // #### Register
+    // **takes:** a json object representing a user
+    register: function register(userData) {
+        // TODO: if we want to prevent users from being created with the signup form
+        // this is the right place to do it
+        return users.add.call({user: 1}, userData);
     },
 
     // #### Check

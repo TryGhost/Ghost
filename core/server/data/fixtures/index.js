@@ -128,29 +128,28 @@ var fixtures = {
     ]
 };
 
-
 populateFixtures = function () {
     var ops = [],
         relations = [];
 
     _.each(fixtures.posts, function (post) {
-        ops.push(function () {return Post.add(post); });
+        ops.push(function () {return Post.add(post, {user: 1}); });
     });
 
     _.each(fixtures.tags, function (tag) {
-        ops.push(function () {return Tag.add(tag); });
+        ops.push(function () {return Tag.add(tag, {user: 1}); });
     });
 
     _.each(fixtures.roles, function (role) {
-        ops.push(function () {return Role.add(role); });
+        ops.push(function () {return Role.add(role, {user: 1}); });
     });
 
     _.each(fixtures.permissions, function (permission) {
-        ops.push(function () {return Permission.add(permission); });
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
     });
 
     _.each(fixtures.permissions003, function (permission) {
-        ops.push(function () {return Permission.add(permission); });
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
     });
 
     // add the tag to the post
@@ -222,7 +221,7 @@ updateFixtures = function () {
         relations = [];
 
     _.each(fixtures.permissions003, function (permission) {
-        ops.push(function () {return Permission.add(permission); });
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
     });
 
     relations.push(function () {

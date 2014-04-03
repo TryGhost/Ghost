@@ -143,10 +143,10 @@ function updateCheckRequest() {
 function updateCheckResponse(response) {
     var ops = [];
 
-    ops.push(api.settings.edit('nextUpdateCheck', response.next_check)
+    ops.push(api.settings.edit.call({user: 1}, 'nextUpdateCheck', response.next_check)
         .otherwise(errors.rejectError));
 
-    ops.push(api.settings.edit('displayUpdateNotification', response.version)
+    ops.push(api.settings.edit.call({user: 1}, 'displayUpdateNotification', response.version)
                 .otherwise(errors.rejectError));
 
     return when.settle(ops).then(function (descriptors) {

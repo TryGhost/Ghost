@@ -87,7 +87,7 @@ describe('Permissions', function () {
                 object_type: obj
             };
 
-            return PermissionsProvider.add(newPerm);
+            return PermissionsProvider.add(newPerm, {user: 1});
         },
         createTestPermissions = function () {
             var createActions = _.map(testPerms, function (testPerm) {
@@ -127,7 +127,7 @@ describe('Permissions', function () {
 
             existingUserRoles = foundUser.related('roles').length;
 
-            return testRole.save().then(function () {
+            return testRole.save(null, {user: 1}).then(function () {
                 return foundUser.roles().attach(testRole);
             });
         }).then(function () {
@@ -151,7 +151,7 @@ describe('Permissions', function () {
 
             testUser.related('permissions').length.should.equal(0);
 
-            return testPermission.save().then(function () {
+            return testPermission.save(null, {user: 1}).then(function () {
                 return testUser.permissions().attach(testPermission);
             });
         }).then(function () {
@@ -171,7 +171,7 @@ describe('Permissions', function () {
             description: "test2 description"
         });
 
-        testRole.save()
+        testRole.save(null, {user: 1})
             .then(function () {
                 return testRole.load('permissions');
             })
@@ -184,7 +184,7 @@ describe('Permissions', function () {
 
                 testRole.related('permissions').length.should.equal(0);
 
-                return rolePermission.save().then(function () {
+                return rolePermission.save(null, {user: 1}).then(function () {
                     return testRole.permissions().attach(rolePermission);
                 });
             })
@@ -240,7 +240,7 @@ describe('Permissions', function () {
                     object_type: "post"
                 });
 
-                return newPerm.save().then(function () {
+                return newPerm.save(null, {user: 1}).then(function () {
                     return foundUser.permissions().attach(newPerm);
                 });
             })
@@ -350,7 +350,7 @@ describe('Permissions', function () {
                             object_type: "post"
                         });
 
-                        return newPerm.save().then(function () {
+                        return newPerm.save(null, {user: 1}).then(function () {
                             return foundUser.permissions().attach(newPerm).then(function () {
                                 return when.all([updatedPost, foundUser]);
                             });

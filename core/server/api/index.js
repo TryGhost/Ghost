@@ -47,7 +47,7 @@ requestHandler = function (apiMethod) {
     return function (req, res) {
         var options = _.extend(req.body, req.files, req.query, req.params),
             apiContext = {
-                user: req.session && req.session.user
+                user: (req.session && req.session.user) ? req.session.user : null
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {

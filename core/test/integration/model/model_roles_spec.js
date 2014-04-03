@@ -70,7 +70,7 @@ describe("Role Model", function () {
             description: "test1 description"
         };
 
-        RoleModel.add(newRole).then(function (createdRole) {
+        RoleModel.add(newRole, {user: 1}).then(function (createdRole) {
             should.exist(createdRole);
 
             createdRole.attributes.name.should.equal(newRole.name);

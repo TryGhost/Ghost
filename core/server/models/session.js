@@ -5,7 +5,21 @@ var ghostBookshelf = require('./base'),
 
 Session = ghostBookshelf.Model.extend({
 
-    tableName: 'sessions'
+    tableName: 'sessions',
+
+    // override for base function since we don't have
+    // a created_by field for sessions
+    creating: function (newObj, attr, options) {
+        /*jshint unused:false*/
+    },
+
+    // override for base function since we don't have
+    // a updated_by field for sessions
+    saving: function (newObj, attr, options) {
+        /*jshint unused:false*/
+        // Remove any properties which don't belong on the model
+        this.attributes = this.pick(this.permittedAttributes());
+    },
 
 }, {
     destroyAll:  function (options) {
