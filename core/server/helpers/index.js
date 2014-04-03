@@ -460,10 +460,11 @@ coreHelpers.ghost_head = function (options) {
 
 coreHelpers.ghost_foot = function (options) {
     /*jshint unused:false*/
-    var foot = [];
+    var jquery = isProduction ? 'jquery.min.js' : 'jquery.js',
+        foot = [];
 
     foot.push(scriptTemplate({
-        source: config().paths.subdir + '/public/jquery.js',
+        source: config().paths.subdir + '/public/' + jquery,
         version: coreHelpers.assetHash
     }));
 
