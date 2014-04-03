@@ -452,13 +452,24 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.ghost_foot);
         });
 
-        it('returns meta tag string', function (done) {
-
+        it('outputs correct jquery for development mode', function (done) {
             helpers.assetHash = 'abc';
 
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<script src=".*\/public\/jquery.js\?v=abc"><\/script>/);
+
+                done();
+            }).then(null, done);
+        });
+
+        it('outputs correct jquery for production mode', function (done) {
+            helpers.assetHash = 'abc';
+            helpers.__set__('isProduction', true);
+
+            helpers.ghost_foot.call().then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<script src=".*\/public\/jquery.min.js\?v=abc"><\/script>/);
 
                 done();
             }).then(null, done);
