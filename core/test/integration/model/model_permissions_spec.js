@@ -71,7 +71,7 @@ describe("Permission Model", function () {
             action_type: 'test'
         };
 
-        PermissionModel.add(newPerm).then(function (createdPerm) {
+        PermissionModel.add(newPerm, {user: 1}).then(function (createdPerm) {
             should.exist(createdPerm);
 
             createdPerm.attributes.name.should.equal(newPerm.name);
