@@ -565,7 +565,8 @@ var path           = require('path'),
             uglify: {
                 prod: {
                     files: {
-                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js',
+                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
                     }
                 }
             }
