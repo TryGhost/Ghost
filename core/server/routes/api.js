@@ -27,4 +27,7 @@ module.exports = function (server) {
     server.get('/ghost/api/v0.1/db/', api.requestHandler(api.db.exportContent));
     server.post('/ghost/api/v0.1/db/', middleware.busboy, api.requestHandler(api.db.importContent));
     server.del('/ghost/api/v0.1/db/', api.requestHandler(api.db.deleteAllContent));
+    // #### Mail
+    server.post('/ghost/api/v0.1/mail', api.requestHandler(api.mail.send));
+    server.post('/ghost/api/v0.1/mail/test', api.requestHandler(api.mail.sendTest));
 };
