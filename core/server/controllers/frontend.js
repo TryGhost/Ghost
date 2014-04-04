@@ -286,22 +286,13 @@ frontendControllers = {
                     feedUrl =  config.urlFor('rss', null, true),
                     maxPage = page.pages,
                     feedItems = [],
-                    feed;
+                    feed,
+                    feedOptions;
 
                 if (tagParam) {
                     title = page.aspect.tag.name + ' - ' + title;
                     feedUrl = feedUrl + 'tag/' + page.aspect.tag.slug + '/';
                 }
-
-                feed = new RSS({
-                    title: title,
-                    description: description,
-                    generator: 'Ghost v' + res.locals.version,
-                    feed_url: feedUrl,
-                    site_url: siteUrl,
-                    ttl: '60'
-                });
-
 
                 // A bit of a hack for situations with no content.
                 if (maxPage === 0) {
@@ -318,41 +309,60 @@ frontendControllers = {
                     }
                 }
 
-                filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                    posts.forEach(function (post) {
-                        var deferred = when.defer(),
-                            item = {
-                                title: post.title,
-                                guid: post.uuid,
-                                url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
-                                date: post.published_at,
-                                categories: _.pluck(post.tags, 'name'),
-                                author: user ? user.name : null
-                            },
-                            content = post.html;
+                feedOptions = {
+                    title: title,
+                    description: description,
+                    generator: 'Ghost v' + res.locals.version,
+                    feed_url: feedUrl,
+                    site_url: siteUrl,
+                    ttl: '60'
+                };
 
-                        //set img src to absolute url
-                        content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "src='" + p1 + "' ";
+                // Filter feed meta data before adding
+                filters.doFilter('rss.feed', feedOptions).then(function (options) {
+                    feed = new RSS(options);
+
+                    filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+                        posts.forEach(function (post) {
+                            var deferred = when.defer(),
+                                item = {
+                                    title: post.title,
+                                    guid: post.uuid,
+                                    url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
+                                    date: post.published_at,
+                                    categories: _.pluck(post.tags, 'name'),
+                                    author: user ? user.name : null
+                                },
+                                content = post.html;
+
+                            //set img src to absolute url
+                            content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                                /*jslint unparam:true*/
+                                p1 = url.resolve(siteUrl, p1);
+                                return "src='" + p1 + "' ";
+                            });
+                            //set a href to absolute url
+                            content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
+                                /*jslint unparam:true*/
+                                p1 = url.resolve(siteUrl, p1);
+                                return "href='" + p1 + "' ";
+                            });
+                            item.description = content;
+
+                            // Filter item before adding
+                            filters.doFilter('rss.item', item).then(function (item) {
+                                feed.item(item);
+                                deferred.resolve();
+                            });
+
+                            feedItems.push(deferred.promise);
                         });
-                        //set a href to absolute url
-                        content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "href='" + p1 + "' ";
-                        });
-                        item.description = content;
-                        feed.item(item);
-                        deferred.resolve();
-                        feedItems.push(deferred.promise);
                     });
-                });
-
-                when.all(feedItems).then(function () {
-                    res.set('Content-Type', 'text/xml');
-                    res.send(feed.xml());
+                }).then(function () {
+                    when.all(feedItems).then(function () {
+                        res.set('Content-Type', 'text/xml');
+                        res.send(feed.xml());
+                    });
                 });
             });
         }).otherwise(handleError(next));
