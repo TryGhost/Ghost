@@ -576,7 +576,7 @@ var path           = require('path'),
         // ## Custom Tasks
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
+            process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
             cfg.express.test.options.node_env = process.env.NODE_ENV;
         });
 
@@ -910,7 +910,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-api', 'Run functional api tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
 
-        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:routes', 'express:test:stop']);
+        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
         grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
 
