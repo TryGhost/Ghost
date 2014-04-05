@@ -177,7 +177,7 @@ User = ghostBookshelf.Model.extend({
                         });
                     }
 
-                    return when(user.set('status', 'active').save()).then(function (user) {
+                    return when(user.set({status : 'active', last_login : new Date()}).save()).then(function (user) {
                         return user;
                     });
                 }, errors.logAndThrowError);

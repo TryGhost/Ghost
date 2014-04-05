@@ -141,6 +141,15 @@ describe('User Model', function run() {
                 }, done);
         });
 
+        it('sets last login time on successful login', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            UserModel.check({email: userData.email, pw:userData.password}).then(function (activeUser) {
+                should.exist(activeUser.get('last_login'));
+                done();
+            }).then(null, done);
+        });
+
         it('can\'t add second', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[1];
 
