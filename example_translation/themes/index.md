@@ -62,15 +62,18 @@ The recommended file structure is:
 ├── default.hbs
 ├── index.hbs [required]
 └── post.hbs [required]
+└── package.json [will be required from 0.6]
 ```
 
 For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">asset</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
 
 <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
 
+*Note:* While edits to existing files are generated on the fly, you will need to restart Ghost each time you add or remove a file from the theme directory for it to be recognised and used.
+
 ### Partials <a id="partials"></a>
 
-You can also optionally add a <code class="path">partials</code> directory to your theme. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+You can also optionally add a <code class="path">partials</code> directory to your theme. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. To output the <code class="path">list-post.hbs</code> example you would use `{{> list-post}}`. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
 
 ### default.hbs <a id="default-layout"></a>
 
@@ -97,6 +100,14 @@ In Casper (the current default theme), the single post template has it's own hea
 You can optionally provide a page template for static pages. If your theme doesn't have a <code class="path">page.hbs</code> template, Ghost will use the standard <code class="path">post.hbs</code> template for pages.
 
 Pages have exactly the same data available as a post, they simply don't appear in the list of posts.
+
+If you want to have a custom template for a specific page you can do so by creating a template with the name <code class="path">page-{{slug}}.hbs</code>. For example if you have a page called 'About' that lives at <code class="path">/about/</code> then you can add a template called <code class="path">page-about.hbs</code> and this template will be used to render only the about page.
+
+### tag.hbs
+
+You can optionally provide a tag template for the tag listing pages. If your theme doesn't have a <code class="path">tag.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for tag pages.
+
+Tag pages have access to both a tag object, a list of posts and pagination properties.
 
 ### error.hbs
 
@@ -226,7 +237,7 @@ Ghost has a number of built in helpers which give you the tools you need to buil
 
 `foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
 
-#### `@first` & `@last`
+#### `@first` &amp; `@last`
 
 The following example checks through an array or object e.g `posts` and tests for the first entry.
 
@@ -254,7 +265,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 {{/foreach}}
 ```
 
-#### `@even` & `@odd`
+#### `@even` &amp; `@odd`
 
 The following example adds a class of even or odd, which could be used for zebra striping content:
 
@@ -264,7 +275,7 @@ The following example adds a class of even or odd, which could be used for zebra
 {{/foreach}}
 ```
 
-#### `@rowStart` & `@rowEnd`
+#### `@rowStart` &amp; `@rowEnd`
 
 The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
 
@@ -273,6 +284,49 @@ The following example shows you how to pass in a column argument so that you can
     <li class="{{#if @rowStart}}first{{/if}}{{#if @rowEnd}}last{{/if}}">{{title}}</li>
 {{/foreach}}
 ```
+
+----
+
+### <code>has</code> <a id="has-helper"></a>
+
+*   Helper type: block
+*   Options: `tag` (comma separated list)
+
+`{{has}}` intends to allow theme developers to ask questions about the current context and provide more flexibility for creating different post layouts in Ghost.
+
+Currently, the `{{has}}` helper only allows you to determine whether a tag is present on a post:
+
+```
+{{#post}}
+    {{#has tag="photo"}}
+        ...do something if this post has a tag of photo...
+    {{else}}
+        ...do something if this posts doesn't have a tag of photo...
+    {{/has}}
+{{/post}}
+```
+
+You can also supply a comma-separated list of tags, which is the equivalent of an 'or' query, asking if a post has any one of the given tags:
+
+```
+{{#has tag="photo, video, audio"}}
+    ...do something if this post has a tag of photo or video or audio...
+{{else}}
+    ...do something with other posts...
+{{/has}}
+```
+
+If you're interested in negating the query, i.e. determining if a post does **not** have a particular tag, this is also possible.
+Handlebars has a feature which is available with all block helpers that allows you to do the inverse of the helper by using `^` instead of `#` to start the helper:
+
+```
+{{^has tag="photo"}}
+    ...do something if this post does **not** have a tag of photo...
+{{else}}
+    ...do something if this posts does have a tag of photo...
+{{/has}}
+```
+
 
 ----
 
@@ -307,10 +361,10 @@ You can limit the amount of text to output by passing one of the options:
 *   Helper type: output
 *   Options: `separator` (string, default ", "), `suffix` (string), `prefix` (string)
 
-`{{tags}}` is a formatting helper for outputting a list of tags for a particular post. It defaults to a comma-separated list:
+`{{tags}}` is a formatting helper for outputting a linked list of tags for a particular post. It defaults to a comma-separated list:
 
 ```
-// outputs something like 'my-tag, my-other-tag, more-tagging'
+// outputs something like 'my-tag, my-other-tag, more-tagging' where each tag is linked to its own tag page
 {{tags}}
 ```
 
@@ -321,11 +375,25 @@ You can limit the amount of text to output by passing one of the options:
 {{tags separator=" | "}}
 ```
 
-As well as passing an optional prefix or suffix.
+as well as passing an optional prefix or suffix.
 
 ```
 // outputs something like 'Tagged in: my-tag | my-other-tag | more tagging'
 {{tags separator=" | " prefix="Tagged in:"}}
+```
+
+You can use HTML in the separator, prefix and suffix arguments:
+
+```
+// outputs something like 'my-tag • my-other-tag • more tagging'
+{{tags separator=" &bullet; "}}
+```
+
+If you don't want your list of tags to be automatically linked to their tag pages, you can turn this off:
+
+```
+// outputs tags without an <a> wrapped around them
+{{tags autolink="false"}}
 ```
 
 ----
@@ -442,6 +510,32 @@ This trailing slash tells Ghost not to serve the default favicon, but to serve i
 You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
 
 ----
+
+###  <code>log</code> <a href="log-helper"></a>
+*   Helper type: output
+*   Options: none
+
+`{{log}}` is a helper which is part of Handlebars, but until Ghost 0.4.2 this hasn't done anything useful.
+
+When running Ghost in development mode, you can now use the `{{log}}` helper to output debug messages to the server console. In particular you can get handlebars to output the details of objects or the current context
+
+For example, to output  the full 'context' that handlebars currently has access to:
+
+`{{log this}}`
+
+Or to just log each post in the loop:
+
+```
+{{#foreach posts}}
+   {{log post}}
+{{/foreach}}
+```
+
+----
+
+
+
+
 
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
