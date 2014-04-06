@@ -1,11 +1,11 @@
 <section class="reset-box js-reset-box">
-    <form id="reset" class="reset-form" method="post" novalidate="novalidate">
+    <form id="reset" class="reset-form" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
         <div class="password-wrap">
-            <input class="password" type="password" placeholder="Password" name="newpassword" />
+            {{input value=passwords.newPassword class="password" type="password" placeholder="Password" name="newpassword" }}
         </div>
         <div class="password-wrap">
-            <input class="password" type="password" placeholder="Confirm Password" name="ne2password" />
+            {{input value=passwords.ne2Password class="password" type="password" placeholder="Confirm Password" name="ne2password" }}
         </div>
-        <button class="button-save" type="submit">Reset Password</button>
+        <button class="button-save" type="submit" {{bind-attr disabled='submitButtonDisabled'}}>Reset Password</button>
     </form>
 </section>
