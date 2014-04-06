@@ -32,7 +32,7 @@ var SettingsUserController = Ember.Controller.extend({
 
         password: function () {
             alert('@TODO: Changing password...');
-            var passwordProperties = this.getProperties('password', 'newpassword', 'ne2password');
+            var passwordProperties = this.getProperties('password', 'newPassword', 'ne2Password');
 
             if (this.user.validatePassword(passwordProperties).get('passwordIsValid')) {
                 this.user.saveNewPassword(passwordProperties).then(function () {
