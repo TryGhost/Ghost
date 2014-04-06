@@ -19,6 +19,25 @@
     transition: none;
 }
 
+/*
+  By default nav menu should be displayed as it's visibility is controllerd
+  by GhostPopover
+*/
+.navbar .subnav ul {
+    display: block;
+}
+
+/*
+  Styles for GhostPopoverComponent
+ */
+
+.ghost-popover {
+    display: none;
+}
+
+.ghost-popover.open {
+    display: block;
+}
 .fade-in {
     animation: fadein 0.5s;
     -moz-animation: fadein 0.5s; /* Firefox */
