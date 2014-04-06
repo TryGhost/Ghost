@@ -3,6 +3,7 @@ import BaseModel from 'ghost/models/base';
 var UserModel = BaseModel.extend({
     url: BaseModel.apiRoot + '/users/me/',
     forgottenUrl: BaseModel.apiRoot + '/forgotten/',
+    resetUrl: BaseModel.apiRoot + '/reset/',
 
     save: function () {
         return ic.ajax.request(this.url, {
@@ -58,11 +59,11 @@ var UserModel = BaseModel.extend({
     validatePassword: function (password) {
         var validationErrors = [];
 
-        if (!validator.equals(password.newpassword, password.ne2password)) {
+        if (!validator.equals(password.newPassword, password.ne2Password)) {
             validationErrors.push("Your new passwords do not match");
         }
 
-        if (!validator.isLength(password.newpassword, 8)) {
+        if (!validator.isLength(password.newPassword, 8)) {
             validationErrors.push("Your password is not long enough. It must be at least 8 characters long.");
         }
 
@@ -91,6 +92,28 @@ var UserModel = BaseModel.extend({
                     },
                     data: {
                         email: email
+                    }
+                }));
+            }
+        });
+    },
+
+    resetPassword: function (passwords, token) {
+        var self = this;
+        return new Ember.RSVP.Promise(function (resolve, reject) {
+            if (!self.validatePassword(passwords).get('passwordIsValid')) {
+                reject(new Error('Errors found! ' + JSON.stringify(self.get('passwordErrors'))));
+            } else {
+                resolve(ic.ajax.request(self.resetUrl, {
+                    type: 'POST',
+                    headers: {
+                        // @TODO: find a more proper way to do this.
+                        'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+                    },
+                    data: {
+                        newpassword: passwords.newPassword,
+                        ne2password: passwords.ne2Password,
+                        token: token
                     }
                 }));
             }
