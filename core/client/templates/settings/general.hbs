@@ -31,7 +31,7 @@
                 {{#if logo}}
                     <a class="js-modal-logo" href="#"><img id="blog-logo" src="{{logo}}" alt="logo"></a>
                 {{else}}
-                    <a class="button-add js-modal-logo" >Upload Image</a>
+                    <a class="button-add js-modal-logo" {{action 'openModal' 'upload'}}>Upload Image</a>
                 {{/if}}
                 <p>Display a sexy logo for your publication</p>
             </div>
@@ -41,7 +41,7 @@
                 {{#if cover}}
                     <a class="js-modal-cover" href="#"><img id="blog-cover" src="{{cover}}" alt="cover photo"></a>
                 {{else}}
-                    <a class="button-add js-modal-cover">Upload Image</a>
+                    <a class="button-add js-modal-cover" {{action 'openModal' 'upload'}}>Upload Image</a>
                 {{/if}}
                 <p>Display a cover image on your site</p>
             </div>
