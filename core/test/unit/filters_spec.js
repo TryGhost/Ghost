@@ -128,4 +128,26 @@ describe("Filters", function () {
         });
     });
 
+    it("executes filters with a context", function (done) {
+        var filterName = 'textContext',
+            testFilterHandler1 = sinon.spy(function (args, context) {
+                args.context1 = _.isObject(context);
+                return args;
+            }),
+            testFilterHandler2 = sinon.spy(function (args, context) {
+                args.context2 = _.isObject(context);
+                return args;
+            });
+
+        filters.registerFilter(filterName, 0, testFilterHandler1);
+        filters.registerFilter(filterName, 1, testFilterHandler2);
+
+        filters.doFilter(filterName, { test: true }, { context: true }).then(function (newArgs) {
+
+            newArgs.context1.should.equal(true);
+            newArgs.context2.should.equal(true);
+            done();
+        });
+    });
+
 });
