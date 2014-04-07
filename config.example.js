@@ -85,34 +85,17 @@ config = {
         logging: false
     },
 
-    // ### Travis
-    // Automated testing run through GitHub
-    'travis-sqlite3': {
-        url: 'http://127.0.0.1:2369',
-        database: {
-            client: 'sqlite3',
-            connection: {
-                filename: path.join(__dirname, '/content/data/ghost-travis.db')
-            }
-        },
-        server: {
-            host: '127.0.0.1',
-            port: '2369'
-        },
-        logging: false
-    },
-
-    // ### Travis
-    // Automated testing run through GitHub
-    'travis-mysql': {
+    // ### Testing MySQL
+    // Used by Travis - Automated testing run through GitHub
+    'testing-mysql': {
         url: 'http://127.0.0.1:2369',
         database: {
             client: 'mysql',
             connection: {
                 host     : '127.0.0.1',
-                user     : 'travis',
+                user     : 'root',
                 password : '',
-                database : 'ghost_travis',
+                database : 'ghost_testing',
                 charset  : 'utf8'
             }
         },
@@ -123,9 +106,9 @@ config = {
         logging: false
     },
 
-    // ### Travis
-    // Automated testing run through GitHub
-    'travis-pg': {
+    // ### Testing pg
+    // Used by Travis - Automated testing run through GitHub
+    'testing-pg': {
         url: 'http://127.0.0.1:2369',
         database: {
             client: 'pg',
@@ -133,7 +116,7 @@ config = {
                 host     : '127.0.0.1',
                 user     : 'postgres',
                 password : '',
-                database : 'ghost_travis',
+                database : 'ghost_testing',
                 charset  : 'utf8'
             }
         },

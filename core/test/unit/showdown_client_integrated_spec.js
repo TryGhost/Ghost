@@ -5,14 +5,15 @@
  */
 
 /*globals describe, it */
-var testUtils = require('../utils'),
-    should = require('should'),
+var testUtils   = require('../utils'),
+    should      = require('should'),
 
 // Stuff we are testing
-    Showdown = require('showdown'),
-    github = require('../../shared/lib/showdown/extensions/github'),
-    ghostdown = require('../../clientold/assets/lib/showdown/extensions/ghostdown'),
-    converter = new Showdown.converter({extensions: [ghostdown, github]});
+    Showdown    = require('showdown'),
+    ghostgfm            = require('../../shared/lib/showdown/extensions/ghostgfm'),
+    ghostimagepreview   = require('../../shared/lib/showdown/extensions/ghostimagepreview'),
+
+    converter   = new Showdown.converter({extensions: [ghostimagepreview, ghostgfm]});
 
 describe("Showdown client side converter", function () {
     /*jslint regexp: true */
@@ -107,7 +108,7 @@ describe("Showdown client side converter", function () {
     it("should turn newlines into br tags in simple cases", function () {
         var testPhrases = [
                 {input: "fizz\nbuzz", output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
-                {input: "Hello world\nIt's a fine day", output: /^<p>Hello world <br \/>\nIt\'s a fine day<\/p>$/},
+                {input: "Hello world\nIt is a fine day", output: /^<p>Hello world <br \/>\nIt is a fine day<\/p>$/},
                 {input: "\"first\nsecond", output: /^<p>\"first <br \/>\nsecond<\/p>$/},
                 {input: "\'first\nsecond", output: /^<p>\'first <br \/>\nsecond<\/p>$/}
             ],
@@ -122,7 +123,7 @@ describe("Showdown client side converter", function () {
     it("should convert newlines in all groups", function () {
         var testPhrases = [
                 {input: "ruby\npython\nerlang", output: /^<p>ruby <br \/>\npython <br \/>\nerlang<\/p>$/},
-                {input: "Hello world\nIt's a fine day\nout", output: /^<p>Hello world <br \/>\nIt\'s a fine day <br \/>\nout<\/p>$/}
+                {input: "Hello world\nIt is a fine day\nout", output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\nout<\/p>$/}
             ],
             processedMarkup;
 
@@ -134,10 +135,13 @@ describe("Showdown client side converter", function () {
 
     it("should convert newlines in even long groups", function () {
         var testPhrases = [
-                {input: "ruby\npython\nerlang\ngo", output: /^<p>ruby <br \/>\npython <br \/>\nerlang <br \/>\ngo<\/p>$/},
                 {
-                    input: "Hello world\nIt's a fine day\noutside\nthe window",
-                    output: /^<p>Hello world <br \/>\nIt\'s a fine day <br \/>\noutside <br \/>\nthe window<\/p>$/
+                    input: "ruby\npython\nerlang\ngo",
+                    output: /^<p>ruby <br \/>\npython <br \/>\nerlang <br \/>\ngo<\/p>$/
+                },
+                {
+                    input: "Hello world\nIt is a fine day\noutside\nthe window",
+                    output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\noutside <br \/>\nthe window<\/p>$/
                 }
             ],
             processedMarkup;
@@ -150,8 +154,14 @@ describe("Showdown client side converter", function () {
 
     it("should not convert newlines in lists", function () {
         var testPhrases = [
-                {input: "#fizz\n# buzz\n### baz", output: /^<h1 id="fizz">fizz<\/h1>\n\n<h1 id="buzz">buzz<\/h1>\n\n<h3 id="baz">baz<\/h3>$/},
-                {input: "* foo\n* bar", output: /^<ul>\n<li>foo<\/li>\n<li>bar<\/li>\n<\/ul>$/}
+                {
+                    input: "#fizz\n# buzz\n### baz",
+                    output: /^<h1 id="fizz">fizz<\/h1>\n\n<h1 id="buzz">buzz<\/h1>\n\n<h3 id="baz">baz<\/h3>$/
+                },
+                {
+                    input: "* foo\n* bar",
+                    output: /^<ul>\n<li>foo<\/li>\n<li>bar<\/li>\n<\/ul>$/
+                }
             ],
             processedMarkup;
 
@@ -212,7 +222,7 @@ describe("Showdown client side converter", function () {
         var testPhrases = [
                 {
                     input: "[Google][1]\n\n[1]: http://google.co.uk",
-                    output: /^<p><a href="http:\/\/google.co.uk">Google<\/a><\/p>$/,
+                    output: /^<p><a href="http:\/\/google.co.uk">Google<\/a><\/p>$/
                 },
                 {
                     input: "[Google][1]\n\n[1]: http://google.co.uk \"some text\"",
@@ -456,4 +466,41 @@ describe("Showdown client side converter", function () {
             processedMarkup.should.match(testPhrase.output);
         });
     });
+
+    it("should output block HTML untouched", function () {
+        var testPhrases = [
+            {
+                input: "<table class=\"test\">\n    <tr>\n        <td>Foo</td>\n    </tr>\n    <tr>\n        <td>Bar</td>\n    </tr>\n</table>",
+                output: /^<table class=\"test\">  \n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
+            },
+            {
+                input: "<hr />",
+                output: /^<hr \/>$/
+            },
+            {   // audio isn't counted as a block tag by showdown so gets wrapped in <p></p>
+                input: "<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>",
+                output: /^<audio class=\"podcastplayer\" controls>  \n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/,
+            }
+        ];
+
+        testPhrases.forEach(function (testPhrase) {
+            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
+
+    //      Waiting for showdown typography to be updated
+    //    it("should correctly convert quotes to curly quotes", function () {
+    //        var testPhrases = [
+    //            {
+    //                input: "Hello world\nIt's a fine day\nout",
+    //                output: /^<p>Hello world <br \/>\nIt’s a fine day <br \/>\nout<\/p>$/}
+    //        ];
+    //
+    //        testPhrases.forEach(function (testPhrase) {
+    //            processedMarkup = converter.makeHtml(testPhrase.input);
+    //            processedMarkup.should.match(testPhrase.output);
+    //        });
+    //    })
 });

@@ -121,7 +121,7 @@ coreHelpers.page_url = function (context, block) {
 //
 coreHelpers.pageUrl = function (context, block) {
     errors.logWarn('Warning: pageUrl is deprecated, please use page_url instead\n' +
-                    'The helper pageUrl has been replaced with page_url in Ghost 0.5, and will be removed entirely in Ghost 0.6\n' +
+                    'The helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\n' +
                     'In your theme\'s pagination.hbs file, pageUrl should be renamed to page_url');
 
     /*jshint unused:false*/
@@ -368,12 +368,17 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page|tag)/)) {
+    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
         classes.push('archive-template');
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
-    } else {
+    } else if (post) {
         classes.push('post-template');
+    }
+
+    if (this.tag !== undefined) {
+        classes.push('tag-template');
+        classes.push('tag-' + this.tag.slug);
     }
 
     if (tags) {
@@ -459,10 +464,11 @@ coreHelpers.ghost_head = function (options) {
 
 coreHelpers.ghost_foot = function (options) {
     /*jshint unused:false*/
-    var foot = [];
+    var jquery = isProduction ? 'jquery.min.js' : 'jquery.js',
+        foot = [];
 
     foot.push(scriptTemplate({
-        source: config().paths.subdir + '/public/jquery.js',
+        source: config().paths.subdir + '/public/' + jquery,
         version: coreHelpers.assetHash
     }));
 

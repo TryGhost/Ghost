@@ -1,4 +1,4 @@
-# [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.png?branch=master)](https://travis-ci.org/TryGhost/Ghost)
+# [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost)
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
@@ -7,8 +7,6 @@ Visit the project's website at <http://ghost.org> &bull; docs on <http://docs.gh
 ## Getting Involved
 
 Want to report a bug, request a feature, or help us build or translate Ghost? Check out our in depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
-
-
 
 ## Getting Started
 
@@ -39,8 +37,18 @@ Check out the [Documentation](http://docs.ghost.org/) for more detailed instruct
 
 If you're a theme, app or core developer, or someone comfortable getting up and running from a `git clone`, this method is for you.
 
-If you clone the GitHub repository, you will need to build a number of assets, such as SASS and JavaScript templates. This requires you to have Ruby and a number of other pre-requisites.
-Full instructions can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
+If you clone the GitHub repository, you will need to build a number of assets using grunt.
+
+Please do **NOT** use the master branch of Ghost in production. If you are using git to deploy to production, please use the latest [release](https://github.com/TryGhost/Ghost/releases) or the [stable](https://github.com/TryGhost/Ghost/tree/stable) branch which contains the latest release.
+
+#### Quickstart:
+
+1. `npm install -g grunt-cli`
+1. `npm install`
+1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
+1. `npm start`
+
+Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
 
 Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 

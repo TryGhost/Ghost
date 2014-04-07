@@ -38,7 +38,9 @@ User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
-    saving: function () {
+    saving: function (newPage, attr, options) {
+          /*jshint unused:false*/
+
         var self = this;
         // disabling sanitization until we can implement a better version
         // this.set('name', this.sanitize('name'));
@@ -49,14 +51,14 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.apply(this, arguments);
 
-        if (!this.get('slug')) {
+        if (this.hasChanged('slug') || !this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
-            return ghostBookshelf.Model.generateSlug(User, this.get('name'))
+            return ghostBookshelf.Model.generateSlug(User, this.get('slug') || this.get('name'),
+                {transacting: options.transacting})
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
         }
-
     },
 
     posts: function () {
@@ -175,7 +177,7 @@ User = ghostBookshelf.Model.extend({
                         });
                     }
 
-                    return when(user.set('status', 'active').save()).then(function (user) {
+                    return when(user.set({status : 'active', last_login : new Date()}).save()).then(function (user) {
                         return user;
                     });
                 }, errors.logAndThrowError);

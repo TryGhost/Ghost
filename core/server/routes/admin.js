@@ -1,6 +1,9 @@
 var admin       = require('../controllers/admin'),
     config      = require('../config'),
-    middleware  = require('../middleware').middleware;
+    middleware  = require('../middleware').middleware,
+
+    ONE_HOUR_S  = 60 * 60,
+    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S;
 
 module.exports = function (server) {
     // Have ember route look for hits first
@@ -11,23 +14,23 @@ module.exports = function (server) {
     // ### Admin routes
     server.get('/logout/', function redirect(req, res) {
         /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
     server.get('/signout/', function redirect(req, res) {
         /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
     server.get('/signin/', function redirect(req, res) {
         /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signin/');
     });
     server.get('/signup/', function redirect(req, res) {
         /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signup/');
-    });
-    server.get('/ghost/login/', function redirect(req, res) {
-        /*jslint unparam:true*/
-        res.redirect(301, subdir + '/ghost/signin/');
     });
 
     server.get('/ghost/signout/', admin.signout);

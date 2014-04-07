@@ -4,12 +4,11 @@
  */
 
 /*globals describe, it */
-var testUtils = require('../utils'),
-    should = require('should'),
+var testUtils   = require('../utils'),
+    should      = require('should'),
 
     // Stuff we are testing
-    ghPath = "../../shared/lib/showdown/extensions/github.js",
-    github = require(ghPath);
+    ghostgfm    = require('../../shared/lib/showdown/extensions/ghostgfm');
 
 function _ExecuteExtension(ext, text) {
     if (ext.regex) {
@@ -21,20 +20,20 @@ function _ExecuteExtension(ext, text) {
 }
 
 function _ConvertPhrase(testPhrase) {
-    return github().reduce(function (text, ext) {
+    return ghostgfm().reduce(function (text, ext) {
         return _ExecuteExtension(ext, text);
     }, testPhrase);
 }
 
 
-describe("Github showdown extensions", function () {
+describe("Ghost GFM showdown extension", function () {
     /*jslint regexp: true */
 
     it("should export an array of methods for processing", function () {
-        github.should.be.a.function;
-        github().should.be.an.Array;
+        ghostgfm.should.be.a.function;
+        ghostgfm().should.be.an.Array;
 
-        github().forEach(function (processor) {
+        ghostgfm().forEach(function (processor) {
             processor.should.be.an.Object;
             processor.should.have.property("type");
             processor.type.should.be.a.String;
@@ -49,6 +48,14 @@ describe("Github showdown extensions", function () {
         // The image is the entire markup, so the image box should be too
         processedMarkup.should.match(testPhrase.output);
     });
+
+    it("should allow 4 underscores", function () {
+        var testPhrase = {input: 'Ghost ____', output: /Ghost\s(?:&#95;){4}$/},
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
 
     it("should auto-link URL in text with markdown syntax", function () {
         var testPhrases = [

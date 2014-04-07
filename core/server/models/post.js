@@ -3,14 +3,14 @@ var _              = require('lodash'),
     when           = require('when'),
     errors         = require('../errorHandling'),
     Showdown       = require('showdown'),
-    github         = require('../../shared/lib/showdown/extensions/github'),
-    typography     = require('../../shared/lib/showdown/extensions/typography'),
-    converter      = new Showdown.converter({extensions: [typography, github]}),
+    ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
+    converter      = new Showdown.converter({extensions: [ghostgfm]}),
     User           = require('./user').User,
     Tag            = require('./tag').Tag,
     Tags           = require('./tag').Tags,
     ghostBookshelf = require('./base'),
     validation     = require('../data/validation'),
+    xmlrpc         = require('../xmlrpc'),
 
     Post,
     Posts;
@@ -29,7 +29,12 @@ Post = ghostBookshelf.Model.extend({
     initialize: function () {
         var self = this;
         this.on('creating', this.creating, this);
-        this.on('saved', this.updateTags, this);
+        this.on('saved', function (model, attributes, options) {
+            if (model.get('status') === 'published') {
+                xmlrpc.ping(model.attributes);
+            }
+            return self.updateTags(model, attributes, options);
+        });
         this.on('saving', function (model, attributes, options) {
             return when(self.saving(model, attributes, options)).then(function () {
                 return self.validate(model, attributes, options);
@@ -43,10 +48,21 @@ Post = ghostBookshelf.Model.extend({
 
     saving: function (newPage, attr, options) {
         /*jshint unused:false*/
-        var self = this;
+        var self = this,
+            tagsToCheck,
+            i;
 
-        // keep tags for 'saved' event
-        this.myTags = this.get('tags');
+        // keep tags for 'saved' event and deduplicate upper/lowercase tags
+        tagsToCheck = this.get('tags');
+        this.myTags = [];
+        _.each(tagsToCheck, function (item) {
+            for (i = 0; i < self.myTags.length; i = i + 1) {
+                if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    return;
+                }
+            }
+            self.myTags.push(item);
+        });
 
         ghostBookshelf.Model.prototype.saving.call(this);
 

@@ -45,7 +45,7 @@
 
             if (tags) {
                 _.forEach(tags, function (tag) {
-                    var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
+                    var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + _.escape(tag.name) + '</span>');
                     $tags.append($tag);
                     $("[data-tag-id=" + tag.id + "]")[0].scrollIntoView(true);
                 });
@@ -106,8 +106,11 @@
                 styles = {
                     left: $target.position().left
                 },
-                maxSuggestions = 5, // Limit the suggestions number
-                regexTerm = searchTerm.replace(/(\s+)/g, "(<[^>]+>)*$1(<[^>]+>)*"),
+                // Limit the suggestions number
+                maxSuggestions = 5,
+                // Escape regex special characters
+                escapedTerm = searchTerm.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&'),
+                regexTerm = escapedTerm.replace(/(\s+)/g, "(<[^>]+>)*$1(<[^>]+>)*"),
                 regexPattern = new RegExp("(" + regexTerm + ")", "i");
 
             this.$suggestions.css(styles);
@@ -121,10 +124,14 @@
                 var highlightedName,
                     suggestionHTML;
 
-                highlightedName = matchingTag.name.replace(regexPattern, "<mark>$1</mark>");
+                highlightedName = matchingTag.name.replace(regexPattern, function (match, p1) {
+                    return "<mark>" + _.escape(p1) + "</mark>";
+                });
                 /*jslint regexp: true */ // - would like to remove this
-                highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, "$1</mark>$2<mark>$4");
-
+                highlightedName = highlightedName.replace(/(<mark>[^<>]*)((<[^>]+>)+)([^<>]*<\/mark>)/, function (match, p1, p2, p3, p4) {
+                    return _.escape(p1) + '</mark>' + _.escape(p2) + '<mark>' + _.escape(p4);
+                });
+                
                 suggestionHTML = "<li data-tag-id='" + matchingTag.id + "' data-tag-name='" + _.escape(matchingTag.name) + "'><a href='#'>" + highlightedName + "</a></li>";
                 this.$suggestions.append(suggestionHTML);
             }, this);
@@ -185,7 +192,8 @@
                 searchTerm = $.trim($target.val()),
                 tag,
                 $selectedSuggestion,
-                isComma = ",".localeCompare(String.fromCharCode(e.keyCode || e.charCode)) === 0;
+                isComma = ",".localeCompare(String.fromCharCode(e.keyCode || e.charCode)) === 0,
+                hasAlreadyBeenAdded;
 
             // use localeCompare in case of international keyboard layout
             if ((e.keyCode === this.keys.ENTER || isComma) && searchTerm) {
@@ -194,16 +202,19 @@
 
                 $selectedSuggestion = this.$suggestions.children(".selected");
                 if (this.$suggestions.is(":visible") && $selectedSuggestion.length !== 0) {
-
-                    if ($('.tag:containsExact("' + _.unescape($selectedSuggestion.data('tag-name')) + '")').length === 0) {
-                        tag = {id: $selectedSuggestion.data('tag-id'), name: _.unescape($selectedSuggestion.data('tag-name'))};
+                    tag = {id: $selectedSuggestion.data('tag-id'), name: _.unescape($selectedSuggestion.data('tag-name'))};
+                    hasAlreadyBeenAdded = this.hasTagBeenAdded(tag.name);
+                    if (!hasAlreadyBeenAdded) {
                         this.addTag(tag);
                     }
                 } else {
                     if (isComma) {
+                        // Remove comma from string if comma is used to submit.
                         searchTerm = searchTerm.replace(/,/g, "");
-                    }  // Remove comma from string if comma is used to submit.
-                    if ($('.tag:containsExact("' + searchTerm + '")').length === 0) {
+                    }
+
+                    hasAlreadyBeenAdded = this.hasTagBeenAdded(searchTerm);
+                    if (!hasAlreadyBeenAdded) {
                         this.addTag({id: null, name: searchTerm});
                     }
                 }
@@ -216,13 +227,9 @@
         completeCurrentTag: function () {
             var $target = this.$('.tag-input'),
                 tagName = $target.val(),
-                usedTagNames,
                 hasAlreadyBeenAdded;
 
-            usedTagNames = _.map(this.model.get('tags'), function (tag) {
-                return tag.name.toUpperCase();
-            });
-            hasAlreadyBeenAdded = usedTagNames.indexOf(tagName.toUpperCase()) !== -1;
+            hasAlreadyBeenAdded = this.hasTagBeenAdded(tagName);
 
             if (tagName.length > 0 && !hasAlreadyBeenAdded) {
                 this.addTag({id: null, name: tagName});
@@ -267,9 +274,8 @@
 
                 tagNameMatches = tag.name.toUpperCase().indexOf(searchTerm) !== -1;
 
-                hasAlreadyBeenAdded = _.some(self.model.get('tags'), function (usedTag) {
-                    return tag.name.toUpperCase() === usedTag.name.toUpperCase();
-                });
+                hasAlreadyBeenAdded = self.hasTagBeenAdded(tag.name);
+
                 return tagNameMatches && !hasAlreadyBeenAdded;
             });
 
@@ -277,7 +283,7 @@
         },
 
         addTag: function (tag) {
-            var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + tag.name + '</span>');
+            var $tag = $('<span class="tag" data-tag-id="' + tag.id + '">' + _.escape(tag.name) + '</span>');
             this.$('.tags').append($tag);
             $(".tag").last()[0].scrollIntoView(true);
             window.scrollTo(0, 1);
@@ -285,6 +291,12 @@
 
             this.$('.tag-input').val('').focus();
             this.$suggestions.hide();
+        },
+
+        hasTagBeenAdded: function (tagName) {
+            return _.some(this.model.get('tags'), function (usedTag) {
+                return tagName.toUpperCase() === usedTag.name.toUpperCase();
+            });
         }
     });
 

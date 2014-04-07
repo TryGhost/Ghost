@@ -6,11 +6,13 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 var request    = require('supertest'),
+    express    = require('express'),
     should     = require('should'),
     moment     = require('moment'),
 
     testUtils  = require('../../utils'),
-    config     = require('../../../server/config'),
+    ghost      = require('../../../../core'),
+    httpServer,
 
     ONE_HOUR_S = 60 * 60,
     ONE_YEAR_S = 365 * 24 * ONE_HOUR_S,
@@ -37,16 +39,77 @@ describe('Admin Routing', function () {
         };
     }
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            // we initialise data, but not a user.
-            return testUtils.initData();
-        }).then(function () {
-            done();
-        }, done);
+    function doEndNoAuth(done) {
+        return function (err, res) {
+            if (err) {
+                return done(err);
+            }
 
-        // Setup the request object with the correct URL
-        request = request(config().url);
+            should.not.exist(res.headers['x-cache-invalidate']);
+            should.not.exist(res.headers['X-CSRF-Token']);
+            should.not.exist(res.headers['set-cookie']);
+            should.exist(res.headers.date);
+
+            done();
+        };
+    }
+
+    before(function (done) {
+        var app = express();
+
+        ghost({app: app}).then(function (_httpServer) {
+            // Setup the request object with the ghost express app
+            httpServer = _httpServer;
+            request = request(app);
+            testUtils.clearData().then(function () {
+                // we initialise data, but not a user. No user should be required for navigating the frontend
+                return testUtils.initData();
+            }).then(function () {
+                done();
+            }, done);
+        }).otherwise(function (e) {
+            console.log('Ghost Error: ', e);
+            console.log(e.stack);
+        });
+    });
+
+    after(function () {
+        httpServer.close();
+    });
+
+    describe('Legacy Redirects', function () {
+
+        it('should redirect /logout/ to /ghost/signout/', function (done) {
+            request.get('/logout/')
+                .expect('Location', '/ghost/signout/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signout/ to /ghost/signout/', function (done) {
+            request.get('/signout/')
+                .expect('Location', '/ghost/signout/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signin/ to /ghost/signin/', function (done) {
+            request.get('/signin/')
+                .expect('Location', '/ghost/signin/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /signup/ to /ghost/signup/', function (done) {
+            request.get('/signup/')
+                .expect('Location', '/ghost/signup/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
     });
 
     describe('Ghost Admin Signup', function () {

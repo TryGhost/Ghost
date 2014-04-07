@@ -38,7 +38,7 @@ db = {
         return api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
             return when(setting.value);
         }, function () {
-            return when('001');
+            return when('002');
         }).then(function (version) {
             databaseVersion = version;
             // Read the file contents
@@ -82,6 +82,9 @@ db = {
             return when.resolve({message: 'Posts, tags and other data successfully imported'});
         }).otherwise(function importFailure(error) {
             return when.reject({code: 500, message: error.message || error});
+        }).finally(function () {
+            // Unlink the file after import
+            return nodefn.call(fs.unlink, options.importfile.path);
         });
     },
     'deleteAllContent': function () {

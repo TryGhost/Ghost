@@ -16,7 +16,10 @@ var _        = require('lodash'),
 
         fs.readFile(path, function (error, data) {
             if (error) {
-                messages.errors.push({message: 'Could not read package.json file', context: path});
+                messages.errors.push({
+                    message: 'Could not read package.json file',
+                    context: path
+                });
                 packageDeferred.resolve(false);
                 return;
             }
@@ -25,11 +28,19 @@ var _        = require('lodash'),
                 if (jsonContainer.hasOwnProperty('name') && jsonContainer.hasOwnProperty('version')) {
                     packageDeferred.resolve(jsonContainer);
                 } else {
-                    messages.errors.push({message: '"name" or "version" is missing from theme package.json file.', context: path});
+                    messages.errors.push({
+                        message: '"name" or "version" is missing from theme package.json file.',
+                        context: path,
+                        help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                    });
                     packageDeferred.resolve(false);
                 }
             } catch (e) {
-                messages.errors.push({message: 'Theme package.json file is malformed', context: path});
+                messages.errors.push({
+                    message: 'Theme package.json file is malformed',
+                    context: path,
+                    help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                });
                 packageDeferred.resolve(false);
             }
         });
@@ -70,7 +81,7 @@ var _        = require('lodash'),
                     /*jslint unparam:true*/
                     if (result.isDirectory()) {
                         fileDeferred.resolve(readDir(fpath, options, depth + 1, messages));
-                    } else if (depth === 1 && file === "package.json") {
+                    } else if (depth === 1 && file === 'package.json') {
                         fileDeferred.resolve(parsePackageJson(fpath, messages));
                     } else {
                         fileDeferred.resolve(fpath);
@@ -96,15 +107,21 @@ var _        = require('lodash'),
 
         return when(readDir(dir, options, depth, messages)).then(function (paths) {
             // for all contents of the dir, I'm interested in the ones that are directories and within /theme/
-            if (typeof paths === "object" && dir.indexOf('theme') !== -1) {
+            if (typeof paths === 'object' && dir.indexOf('theme') !== -1) {
                 _.each(paths, function (path, index) {
                     if (typeof path === 'object' && !path.hasOwnProperty('package.json') && index.indexOf('.') !== 0) {
-                        messages.warns.push({message: 'Theme does not have a package.json file', context: index});
+                        messages.warns.push({
+                            message: 'Found a theme with no package.json file',
+                            context: 'Theme name: ' + index,
+                            help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                        });
                     }
                 });
             }
             paths._messages = messages;
             return paths;
+        }).otherwise(function () {
+            return {'_messages': messages};
         });
     };
 

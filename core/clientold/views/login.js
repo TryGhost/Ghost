@@ -94,7 +94,8 @@
             var name = this.$('.name').val(),
                 email = this.$('.email').val(),
                 password = this.$('.password').val(),
-                validationErrors = [];
+                validationErrors = [],
+                self = this;
 
             if (!validator.isLength(name, 1)) {
                 validationErrors.push("Please enter a name.");
@@ -131,7 +132,7 @@
                         window.location.href = msg.redirect;
                     },
                     error: function (xhr) {
-                        this.submitted = "no";
+                        self.submitted = "no";
                         Ghost.notifications.clearEverything();
                         Ghost.notifications.addItem({
                             type: 'error',
