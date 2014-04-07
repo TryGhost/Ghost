@@ -24,6 +24,7 @@ Router.map(function () {
         this.route('debug');
         this.route('apps');
     });
+    this.route('debug');
 });
 
 export default Router;
