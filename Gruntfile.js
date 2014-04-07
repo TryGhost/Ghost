@@ -293,12 +293,8 @@ var path           = require('path'),
                     ]
                 },
 
-                api: {
-                    src: ['core/test/functional/api/*_test.js']
-                },
-
                 routes: {
-                    src: ['core/test/functional/routes/*_test.js']
+                    src: ['core/test/functional/routes/**/*_test.js']
                 }
             },
 
@@ -909,11 +905,9 @@ var path           = require('path'),
 
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawn-casperjs', 'express:test:stop']);
 
-        grunt.registerTask('test-api', 'Run functional api tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
-
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
-        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
 
         // ### Coverage report for Unit and Integration Tests
