@@ -298,7 +298,7 @@ var path           = require('path'),
                 },
 
                 routes: {
-                    src: ['core/test/functional/routes/*_test.js']
+                    src: ['core/test/functional/routes/**/*_test.js']
                 }
             },
 

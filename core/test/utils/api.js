@@ -21,6 +21,9 @@ var _ = require('lodash'),
         notification: ['type', 'message', 'status', 'id']
     };
 
+function getApiQuery (route) {
+    return url.resolve(ApiRouteBase, route);
+}
 
 function getApiURL (route) {
     var baseURL = url.resolve(schema + host + ':' + port, ApiRouteBase);
@@ -46,6 +49,7 @@ function checkResponseValue (jsonResponse, properties) {
 
 module.exports = {
     getApiURL: getApiURL,
+    getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
     checkResponse: checkResponse,
