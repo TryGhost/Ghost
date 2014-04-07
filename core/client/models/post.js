@@ -1,4 +1,6 @@
-var PostModel = Ember.Object.extend({
+import BaseModel from 'ghost/models/base';
+
+var PostModel = BaseModel.extend({
 
 });
 
