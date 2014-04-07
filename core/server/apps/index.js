@@ -26,7 +26,7 @@ function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
         var updatedAppsInstalled = _.uniq(installedApps.concat(currentInstalledApps));
 
-        return api.settings.edit('installedApps', updatedAppsInstalled);
+        return api.settings.edit.call({user: 1}, 'installedApps', updatedAppsInstalled);
     });
 }
 

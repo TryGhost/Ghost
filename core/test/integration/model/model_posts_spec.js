@@ -124,7 +124,7 @@ describe('Post Model', function () {
             newPost = testUtils.DataGenerator.forModel.posts[2],
             newPostDB = testUtils.DataGenerator.Content.posts[2];
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             return new PostModel({id: createdPost.id}).fetch();
         }).then(function (createdPost) {
             should.exist(createdPost);
@@ -155,7 +155,7 @@ describe('Post Model', function () {
             createdPostUpdatedDate = createdPost.get('updated_at');
 
             // Set the status to published to check that `published_at` is set.
-            return createdPost.save({status: 'published'});
+            return createdPost.save({status: 'published'}, {user: 1});
         }).then(function (publishedPost) {
             publishedPost.get('published_at').should.be.instanceOf(Date);
             publishedPost.get('published_by').should.equal(1);
@@ -176,7 +176,7 @@ describe('Post Model', function () {
             published_at: previousPublishedAtDate,
             title: 'published_at test',
             markdown: 'This is some content'
-        }).then(function (newPost) {
+        }, {user: 1}).then(function (newPost) {
 
             should.exist(newPost);
             new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
@@ -194,7 +194,7 @@ describe('Post Model', function () {
                 markdown: 'Test Content'
             };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             return new PostModel({ id: createdPost.id }).fetch();
         }).then(function (createdPost) {
             should.exist(createdPost);
@@ -220,7 +220,7 @@ describe('Post Model', function () {
                 return PostModel.add({
                     title: 'Test Title',
                     markdown: 'Test Content ' + (i+1)
-                });
+                }, {user: 1});
             };
         })).then(function (createdPosts) {
             // Should have created 12 posts
@@ -250,7 +250,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
 
             createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
@@ -264,7 +264,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             createdPost.get('slug').should.not.equal('rss');
             done();
         });
@@ -276,7 +276,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
             done();
         });
@@ -293,13 +293,13 @@ describe('Post Model', function () {
             };
 
         // Create the first post
-        PostModel.add(firstPost)
+        PostModel.add(firstPost, {user: 1})
             .then(function (createdFirstPost) {
                 // Store the slug for later
                 firstPost.slug = createdFirstPost.get('slug');
 
                 // Create the second post
-                return PostModel.add(secondPost);
+                return PostModel.add(secondPost, {user: 1});
             }).then(function (createdSecondPost) {
                 // Store the slug for comparison later
                 secondPost.slug = createdSecondPost.get('slug');
