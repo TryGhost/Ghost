@@ -26,9 +26,9 @@ function cacheInvalidationHeader(req, result) {
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
-            cacheInvalidate = "/*";
+            cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
-            cacheInvalidate = "/, /page/*, /rss/, /rss/*";
+            cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
             if (id && jsonResult.slug) {
                 return config.urlForPost(settings, jsonResult).then(function (postUrl) {
                     return cacheInvalidate + ', ' + postUrl;

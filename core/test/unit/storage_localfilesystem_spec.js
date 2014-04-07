@@ -2,6 +2,7 @@
 var fs = require('fs-extra'),
     path = require('path'),
     should = require('should'),
+    config = require('../../server/config'),
     sinon = require('sinon'),
     when = require('when'),
     localfilesystem = require('../../server/storage/localfilesystem');
@@ -44,7 +45,7 @@ describe('Local File System Storage', function () {
     it('should send correct path to image when original file has spaces', function (done) {
         image.name = 'AN IMAGE.jpg';
         localfilesystem.save(image).then(function (url) {
-            url.should.equal('/content/images/2013/Sep/AN_IMAGE.jpg');
+            url.should.equal('/content/images/2013/Sep/AN-IMAGE.jpg');
             return done();
         }).then(null, done);
     });
@@ -122,6 +123,27 @@ describe('Local File System Storage', function () {
         }).then(null, done);
     });
 
+    describe('when a custom content path is used', function () {
+        var origContentPath = config().paths.contentPath;
+        var origImagesPath = config().paths.imagesPath;
+
+        beforeEach(function () {
+            config().paths.contentPath = config().paths.appRoot + '/var/ghostcms';
+            config().paths.imagesPath = config().paths.appRoot + '/var/ghostcms/' + config().paths.imagesRelPath;
+        });
+
+        afterEach(function () {
+            config().paths.contentPath = origContentPath;
+            config().paths.imagesPath = origImagesPath;
+        });
+
+        it('should send the correct path to image', function (done) {
+            localfilesystem.save(image).then(function (url) {
+                url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
+                return done();
+            }).then(null, done);
+        });
+    });
 
     describe('on Windows', function () {
         var truePathSep = path.sep;
@@ -139,7 +161,15 @@ describe('Local File System Storage', function () {
             path.sep = '\\';
             path.join.returns('content\\images\\2013\\Sep\\IMAGE.jpg');
             localfilesystem.save(image).then(function (url) {
-                url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
+                if (truePathSep === '\\') {
+                    url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
+                } else {
+                    // if this unit test is run on an OS that uses forward slash separators,
+                    // localfilesystem.save() will use a path.relative() call on 
+                    // one path with backslash separators and one path with forward
+                    // slashes and it returns a path that needs to be normalized
+                    path.normalize(url).should.equal('/content/images/2013/Sep/IMAGE.jpg');
+                }
                 return done();
             }).then(null, done);
         });

@@ -65,21 +65,25 @@ var path           = require('path'),
                 concat: {
                     files: [
                         'core/clientold/*.js',
-                        'core/clientold/helpers/*.js',
-                        'core/clientold/models/*.js',
-                        'core/clientold/tpl/*.js',
-                        'core/clientold/views/*.js'
+                        'core/clientold/**/*.js'
                     ],
                     tasks: ['concat']
+                },
+                'ghost-ui': {
+                    files: [
+                        // Ghost UI CSS
+                        'bower_components/ghost-ui/dist/css/*.css'
+                    ],
+                    tasks: ['copy:dev']
                 },
                 livereload: {
                     files: [
                         // Theme CSS
                         'content/themes/casper/css/*.css',
-                        // Ghost UI CSS
-                        'bower_components/ghost-ui/dist/css/*.css',
                         // Theme JS
                         'content/themes/casper/js/*.js',
+                        // Client CSS
+                        'core/client/assets/css/*.css',
                         // Admin JS
                         'core/built/scripts/*.js'
                     ],
@@ -300,12 +304,8 @@ var path           = require('path'),
                     ]
                 },
 
-                api: {
-                    src: ['core/test/functional/api/*_test.js']
-                },
-
                 routes: {
-                    src: ['core/test/functional/routes/*_test.js']
+                    src: ['core/test/functional/routes/**/*_test.js']
                 }
             },
 
@@ -534,9 +534,8 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/validator-js/validator.js',
 
-                            'core/clientold/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/typography.js',
-                            'core/shared/lib/showdown/extensions/github.js',
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // ToDo: Remove or replace
                             'core/clientold/assets/vendor/shortcuts.js',
@@ -553,7 +552,14 @@ var path           = require('path'),
                             'core/clientold/mobile-interactions.js',
                             'core/clientold/toggle.js',
                             'core/clientold/markdown-actions.js',
-                            'core/clientold/helpers/index.js'
+                            'core/clientold/helpers/index.js',
+                            'core/clientold/assets/lib/editor/index.js',
+                            'core/clientold/assets/lib/editor/markerManager.js',
+                            'core/clientold/assets/lib/editor/uploadManager.js',
+                            'core/clientold/assets/lib/editor/markdownEditor.js',
+                            'core/clientold/assets/lib/editor/htmlPreview.js',
+                            'core/clientold/assets/lib/editor/scrollHandler.js',
+                            'core/clientold/assets/lib/editor/mobileCodeMirror.js'
                         ],
 
                         'core/built/scripts/templates.js': [
@@ -587,9 +593,8 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/moment/moment.js',
 
-                            'core/clientold/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/typography.js',
-                            'core/shared/lib/showdown/extensions/github.js'
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
                         ]
                     }
                 },
@@ -613,9 +618,8 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/validator-js/validator.js',
 
-                            'core/clientold/assets/lib/showdown/extensions/ghostdown.js',
-                            'core/shared/lib/showdown/extensions/typography.js',
-                            'core/shared/lib/showdown/extensions/github.js',
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // ToDo: Remove or replace
                             'core/clientold/assets/vendor/shortcuts.js',
@@ -631,6 +635,14 @@ var path           = require('path'),
                             'core/clientold/toggle.js',
                             'core/clientold/markdown-actions.js',
                             'core/clientold/helpers/index.js',
+
+                            'core/clientold/assets/lib/editor/index.js',
+                            'core/clientold/assets/lib/editor/markerManager.js',
+                            'core/clientold/assets/lib/editor/uploadManager.js',
+                            'core/clientold/assets/lib/editor/markdownEditor.js',
+                            'core/clientold/assets/lib/editor/htmlPreview.js',
+                            'core/clientold/assets/lib/editor/scrollHandler.js',
+                            'core/clientold/assets/lib/editor/mobileCodeMirror.js',
 
                             'core/clientold/tpl/hbs-tpl.js',
 
@@ -649,7 +661,8 @@ var path           = require('path'),
             uglify: {
                 prod: {
                     files: {
-                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js',
+                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
                     }
                 }
             }
@@ -657,11 +670,10 @@ var path           = require('path'),
 
         grunt.initConfig(cfg);
 
-
         // ## Custom Tasks
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
+            process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
             cfg.express.test.options.node_env = process.env.NODE_ENV;
         });
 
@@ -994,11 +1006,9 @@ var path           = require('path'),
 
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawn-casperjs', 'express:test:stop']);
 
-        grunt.registerTask('test-api', 'Run functional api tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
+        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
-        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:routes', 'express:test:stop']);
-
-        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
 
         // ### Coverage report for Unit and Integration Tests

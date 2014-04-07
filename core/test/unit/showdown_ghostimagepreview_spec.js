@@ -6,21 +6,20 @@
  */
 
 /*globals describe, it */
-var testUtils = require('../utils'),
-    should = require('should'),
+var testUtils   = require('../utils'),
+    should      = require('should'),
 
     // Stuff we are testing
-    gdPath = "../../clientold/assets/lib/showdown/extensions/ghostdown.js",
-    ghostdown = require(gdPath);
+    ghostimagepreview     = require('../../shared/lib/showdown/extensions/ghostimagepreview');
 
-describe("Ghostdown showdown extensions", function () {
+describe("Ghost Image Preview showdown extension", function () {
 
     it("should export an array of methods for processing", function () {
 
-        ghostdown.should.be.a.function;
-        ghostdown().should.be.an.instanceof(Array);
+        ghostimagepreview.should.be.a.function;
+        ghostimagepreview().should.be.an.instanceof(Array);
 
-        ghostdown().forEach(function (processor) {
+        ghostimagepreview().forEach(function (processor) {
             processor.should.be.an.Object;
             processor.should.have.property("type");
             processor.should.have.property("filter");
@@ -46,22 +45,13 @@ describe("Ghostdown showdown extensions", function () {
         ]
             .forEach(function (imageMarkup) {
                 var processedMarkup =
-                    ghostdown().reduce(function (prev, processor) {
+                    ghostimagepreview().reduce(function (prev, processor) {
                         return processor.filter(prev);
                     }, imageMarkup);
 
                 // The image is the entire markup, so the image box should be too
                 processedMarkup.should.match(/^<section.*?section>\n*$/);
             });
-    });
-
-    it("should allow 4 underscores", function () {
-        var processedMarkup =
-            ghostdown().reduce(function (prev, processor) {
-                return processor.filter(prev);
-            }, "Ghost ____");
-
-        processedMarkup.should.match(/Ghost\s(?:&#95;){4}$/);
     });
 
     it("should correctly include an image", function () {
@@ -75,7 +65,7 @@ describe("Ghostdown showdown extensions", function () {
         ]
             .forEach(function (imageMarkup) {
                 var processedMarkup =
-                    ghostdown().reduce(function (prev, processor) {
+                    ghostimagepreview().reduce(function (prev, processor) {
                         return processor.filter(prev);
                     }, imageMarkup);
 

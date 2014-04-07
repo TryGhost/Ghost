@@ -47,7 +47,7 @@ posts = {
         });
     },
 
-    getSlug: function getSlug(args) {
+    generateSlug: function getSlug(args) {
         return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
             if (slug) {
                 return slug;

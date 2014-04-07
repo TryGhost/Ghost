@@ -55,14 +55,14 @@ Guidelines for bug reports:
 helpful thing in the world is if we can *see* what you're talking about.
 Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
-5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A) to start creating a bug report with the template automatically.
+5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
 
 A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the
 details of your environment.
 
 Here is a [real example](https://github.com/TryGhost/Ghost/issues/413)
 
-Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A)):
+Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A)):
 ```
 Short and descriptive example bug report title
 
@@ -87,6 +87,7 @@ reported. Especially, why do you consider this to be a bug? What do you expect t
 * Server OS: CentOS 6.4
 * Node Version: 0.10.16
 * Browser: Chrome 29.0.1547.57
+* Database: SQLite / MySQL / postgres
 ```
 
 <a name="features"></a>
@@ -190,12 +191,13 @@ developing Ghost.
 1. Check you have the pre-requisites listed above!
 1. Clone the git repo
 1. cd into the project folder
-1. Run `npm install -g grunt-cli`
-1. Run `npm install`.
+1. Run `npm install -g grunt-cli` - to make it possible to run grunt commands
+1. Run `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - copies assets and compiles Handlebars templates
+1. Run `grunt init` from the root - updates bower dependencies, copies assets and compiles Handlebars templates
+1. If you're going to run in production mode, you also need to run `grunt prod`
 1. Run `npm start` from the root to start the server.
 
 If something goes wrong, please see the
@@ -204,7 +206,7 @@ If something goes wrong, please see the
 ### Developer Tips
 Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebar templates, stylesheets and javascripts. Some useful commands include:
 - `grunt dev` => Automatically compile assets in development environment
-- `grunt prod` => Automatically compile assets in production environment
+- `grunt prod` => Automatically compile assets for the production environment
 - `grunt watch` => Automatically compile handlebars
 
 Addresses for development:
@@ -218,15 +220,15 @@ or more of the following:
 
  * `npm install` - fetch any new dependencies
  * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt` - will recompile handlebars templates for the admin (as long as you have previously
-run `grunt init` to install bower dependencies)
+ * `grunt init` - will fetch bower dependencies and recompile handlebars templates for the admin
  * delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### Key Branches & Tags
 
 - **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next
-release is here.
-- **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
+release is here. Do **NOT** use this branch for a production site.
+- **[stable](https://github.com/TryGhost/Ghost/tree/stable)** contains the latest release of Ghost. This branch may be used in production.
+- **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org) documentation for Getting Started with Ghost.
 
 
 ## Grunt Toolkit
@@ -245,7 +247,7 @@ When cloning from GitHub be sure to use SSH and to run `git submodule update --i
 
 ### Ghost doesn't do anything - I get a blank screen
 
-Sounds like you probably didn't run the right grunt command for building assets
+Sounds like you probably didn't run the right grunt command for building assets. You may need to run `grunt init` and if using production mode, `grunt prod` as well.
 
 ### SQLite3 doesn't install properly during npm install
 
