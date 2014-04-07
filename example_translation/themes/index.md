@@ -1,5 +1,4 @@
 ---
-lang: example_translation
 layout: themes
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
@@ -65,7 +64,7 @@ The recommended file structure is:
 └── package.json [will be required from 0.6]
 ```
 
-For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">asset</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
+For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">assets</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
 
 <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
 
@@ -469,11 +468,11 @@ Secondly, it allows assets to be cached. All assets are served with a `?v=######
 
 Thirdly, it provides stability for theme developers so that as Ghost's asset handling and management evolves and matures, theme developers should not need to make further adjustments to their themes as long as they are using the asset helper.
 
-Finally, it imposes a little bit of structure on themes by requiring an <code class="path">asset</code> folder, meaning that Ghost knows where the assets are, and theme installing, switching live reloading will be easier in future.
+Finally, it imposes a little bit of structure on themes by requiring an <code class="path">assets</code> folder, meaning that Ghost knows where the assets are, and theme installing, switching live reloading will be easier in future.
 
 #### Usage
 
-To use the `{{asset}}` helper to output the path for an asset, simply provide it with the path for the asset you want to load, relative to the <code class="path">asset</code> folder.
+To use the `{{asset}}` helper to output the path for an asset, simply provide it with the path for the asset you want to load, relative to the <code class="path">assets</code> folder.
 
 ```
 // will output something like: <link rel="stylesheet" type="text/css" href="/path/to/blog/assets/css/style.css?v=1234567" />
@@ -492,11 +491,11 @@ Favicons are a slight exception to the rule on how to use the asset helper, beca
 By default `{{asset "favicon.ico"}}` works exactly the same as the browser's default request, serving Ghost's default favicon from the shared folder.
 This means it doesn't have to look up what theme the blog is using or where that theme lives before serving the request.
 
-If you would like to use a custom favicon, you can do so by putting a <code class="path">favicon.ico</code> in your theme's asset folder and using the asset helper with a leading slash:
+If you would like to use a custom favicon, you can do so by putting a <code class="path">favicon.ico</code> in your theme's <code class="path">assets</code> folder and using the asset helper with a leading slash:
 
 `{{asset "/favicon.ico"}}`
 
-This trailing slash tells Ghost not to serve the default favicon, but to serve it from the themes asset folder.
+This trailing slash tells Ghost not to serve the default favicon, but to serve it from the themes <code class="path">assets</code> folder.
 
 ----
 
