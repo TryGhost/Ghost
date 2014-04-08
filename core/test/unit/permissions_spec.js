@@ -268,17 +268,18 @@ describe('Permissions', function () {
                 return when.resolve();
             });
 
-        // createTestUser()
-        UserProvider.browse()
+        testUtils.insertAuthorUser()
+            .then(function () {
+                return UserProvider.browse();
+            })
             .then(function (foundUser) {
-                testUser = foundUser.models[0];
+                testUser = foundUser.models[1];
 
                 return permissions.canThis(testUser).edit.post(123);
             })
             .then(function () {
                 permissableStub.restore();
-
-                permissableStub.calledWith(123, testUser.id, 'edit').should.equal(true);
+                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }).should.equal(true);
 
                 done();
             })
@@ -296,10 +297,12 @@ describe('Permissions', function () {
                 return when.reject();
             });
 
-        // createTestUser()
-        UserProvider.browse()
+        testUtils.insertAuthorUser()
+            .then(function () {
+                return UserProvider.browse();
+            })
             .then(function (foundUser) {
-                testUser = foundUser.models[0];
+                testUser = foundUser.models[1];
 
                 return permissions.canThis(testUser).edit.post(123);
             })
@@ -310,7 +313,7 @@ describe('Permissions', function () {
             })
             .otherwise(function () {
                 permissableStub.restore();
-                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }, 'edit').should.equal(true);
+                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }).should.equal(true);
                 done();
             });
     });
