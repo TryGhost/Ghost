@@ -79,10 +79,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                 // It's a model, get the id
                 modelId = modelOrId.id;
             }
-
             // Wait for the user loading to finish
             return permissionLoad.then(function (loadedPermissions) {
-
                 // Iterate through the user permissions looking for an affirmation
                 var userPermissions = loadedPermissions.user,
                     appPermissions = loadedPermissions.app,
@@ -111,20 +109,9 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                         return modelId === permObjId;
                     };
 
-                // Allow for a target model to implement a "Permissable" interface
-                if (TargetModel && _.isFunction(TargetModel.permissable)) {
-                    return TargetModel.permissable(modelId, context, act_type, loadedPermissions);
-                }
-
                 // Check user permissions for matching action, object and id.
                 if (!_.isEmpty(userPermissions)) {
                     hasUserPermission = _.any(userPermissions, checkPermission);
-                }
-
-                // If we already checked user permissions and they failed, 
-                // no need to check app permissions
-                if (hasUserPermission === false) {
-                    return when.reject();
                 }
 
                 // Check app permissions if they were passed
@@ -136,12 +123,11 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                 if (hasUserPermission && hasAppPermission) {
                     return when.resolve();
                 }
-
                 return when.reject();
             }).otherwise(function () {
-                // Still check for permissable without permissions
+                // Check for special permissions on the model directly
                 if (TargetModel && _.isFunction(TargetModel.permissable)) {
-                    return TargetModel.permissable(modelId, context, act_type, []);
+                    return TargetModel.permissable(modelId, context);
                 }
 
                 return when.reject();

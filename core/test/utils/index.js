@@ -99,6 +99,32 @@ function insertDefaultUser() {
         });
 }
 
+function insertEditorUser() {
+    var users = [],
+        userRoles = [];
+
+    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
+    userRoles.push(DataGenerator.forKnex.createUserRole(1, 2));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
+function insertAuthorUser() {
+    var users = [],
+        userRoles = [];
+
+    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
+    userRoles.push(DataGenerator.forKnex.createUserRole(1, 3));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
 function insertDefaultApp() {
     var apps = [];
 
@@ -192,6 +218,8 @@ module.exports = {
     insertMorePosts: insertMorePosts,
     insertMorePostsTags: insertMorePostsTags,
     insertDefaultUser: insertDefaultUser,
+    insertEditorUser: insertEditorUser,
+    insertAuthorUser: insertAuthorUser,
     insertDefaultApp: insertDefaultApp,
     insertApps: insertApps,
     insertAppWithSettings: insertAppWithSettings,
