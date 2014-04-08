@@ -13,6 +13,9 @@ posts = {
     browse: function browse(options) {
         options = options || {};
 
+        if (!this.user) {
+            options.status = 'published';
+        }
         // **returns:** a promise for a page of posts in a json object
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
@@ -29,9 +32,15 @@ posts = {
     // #### Read
 
     // **takes:** an identifier (id or slug?)
-    read: function read(args) {
+    read: function read(options) {
+        options = options || {};
+        if (!this.user) {
+            // only published posts for 
+            options.status = 'published';
+        }
+
         // **returns:** a promise for a single post in a json object
-        return dataProvider.Post.findOne(args).then(function (result) {
+        return dataProvider.Post.findOne(options).then(function (result) {
             var omitted;
 
             if (result) {
@@ -42,15 +51,6 @@ posts = {
             }
             return when.reject({code: 404, message: 'Post not found'});
 
-        });
-    },
-
-    generateSlug: function getSlug(args) {
-        return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
-            if (slug) {
-                return slug;
-            }
-            return when.reject({code: 500, message: 'Could not generate slug'});
         });
     },
 
@@ -100,9 +100,11 @@ posts = {
 
     // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
+        var self = this;
         // **returns:** a promise for a json response with the id of the deleted post
         return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
+            // TODO: Would it be good to get rid of .call()?
+            return when(posts.read.call({user: self.user}, {id : args.id, status: 'all'})).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = result;
                     return deletedObj;
@@ -111,7 +113,25 @@ posts = {
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
         });
+    },
+
+    // #### Generate slug
+
+    // **takes:** a string to generate the slug from
+    generateSlug: function generateSlug(args) {
+
+        return canThis(this.user).slug.post().then(function () {
+            return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
+                if (slug) {
+                    return slug;
+                }
+                return when.reject({code: 500, message: 'Could not generate slug'});
+            });
+        }, function () {
+            return when.reject({code: 403, message: 'You do not have permission.'});
+        });
     }
+
 };
 
 module.exports = posts;

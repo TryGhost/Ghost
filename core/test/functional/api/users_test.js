@@ -1,8 +1,8 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils = require('../../utils'),
-    should = require('should'),
-    _ = require('lodash'),
-    request = require('request');
+    should    = require('should'),
+    _         = require('lodash'),
+    request   = require('request');
 
 request = request.defaults({jar:true})
 
