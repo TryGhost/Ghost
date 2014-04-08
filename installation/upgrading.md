@@ -109,4 +109,6 @@ If you originally installed Node.js from the [Node.js](nodejs.org) website, you 
 
 If you are on Ubuntu, or another linux distribution which uses `apt-get`, the command to upgrade node is the same as to install: `sudo apt-get install nodejs`.
 
+<p class="note"><strong>Note to Ubuntu users:</strong> from Ubuntu 12.04 to 13.04, an old version (0.6.x) of Node is in the standard repository. Ghost requires Node 0.10.x. To install it, follow the <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">instructions</a> on Node wiki.</p>
+
 You do **not** need to restart the server or Ghost.
