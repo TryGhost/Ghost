@@ -3,10 +3,11 @@ var testUtils = require('../../utils'),
     should    = require('should'),
 
     // Stuff we are testing
-    DataGenerator    = require('../../utils/fixtures/data-generator'),
-    dbAPI = require('../../../server/api/db');
-    TagsAPI = require('../../../server/api/tags');
-    PostAPI = require('../../../server/api/posts');
+    permissions   = require('../../../server/permissions'),
+    DataGenerator = require('../../utils/fixtures/data-generator'),
+    dbAPI         = require('../../../server/api/db');
+    TagsAPI       = require('../../../server/api/tags');
+    PostAPI       = require('../../../server/api/posts');
 
 describe('DB API', function () {
 
@@ -33,8 +34,9 @@ describe('DB API', function () {
     });
 
     it('delete all content', function (done) {
-        
-        dbAPI.deleteAllContent().then(function (result){
+        permissions.init().then(function () {
+            return dbAPI.deleteAllContent();
+        }).then(function (result){
             should.exist(result.message);
             result.message.should.equal('Successfully deleted all content from your blog.')
         }).then(function () {
@@ -48,6 +50,8 @@ describe('DB API', function () {
                 results.posts.length.should.equal(0);
                 done();
             });
-        }).then(null, done);
+        }).otherwise(function () {
+            done()
+        });
     });
 });

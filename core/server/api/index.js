@@ -51,13 +51,13 @@ requestHandler = function (apiMethod) {
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {
-            res.json(result || {});
             return cacheInvalidationHeader(req, result).then(function (header) {
                 if (header) {
                     res.set({
                         "X-Cache-Invalidate": header
                     });
                 }
+                res.json(result || {});
             });
         }, function (error) {
             var errorCode = error.code || 500,

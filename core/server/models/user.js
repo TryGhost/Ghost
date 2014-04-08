@@ -140,6 +140,26 @@ User = ghostBookshelf.Model.extend({
 
     },
 
+    permissable: function (userModelOrId, context) {
+        var self = this,
+            userId = context.user,
+            userModel = userModelOrId;
+
+        // If we passed in an id instead of a model, get the model
+        // then check the permissions
+        if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
+            return this.read({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
+                return self.permissable(foundUserModel, context);
+            }, errors.logAndThrowError);
+        }
+
+        // If this is the same user that requests the operation allow it.
+        if (userModel && userId === userModel.get('id')) {
+            return when.resolve();
+        }
+        return when.reject();
+    },
+
     setWarning: function (user) {
         var status = user.get('status'),
             regexp = /warn-(\d+)/i,

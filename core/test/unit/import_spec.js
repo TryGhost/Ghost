@@ -421,7 +421,9 @@ describe("Import", function () {
                 assert.equal(new Date(posts[1].published_at).getTime(), timestamp);
 
                 done();
-            }).then(null, done);
+            }).otherwise(function (error) {
+                done(new Error(error));
+            })
         });
 
         it("doesn't import invalid post data from 002", function (done) {

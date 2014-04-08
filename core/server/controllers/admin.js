@@ -122,7 +122,7 @@ adminControllers = {
             }).otherwise(function (err) {
                 var notification = {
                     type: 'error',
-                    message: 'Your export file could not be generated.',
+                    message: 'Your export file could not be generated. Error: ' + err.message,
                     status: 'persistent',
                     id: 'errorexport'
                 };
