@@ -303,7 +303,7 @@ var path           = require('path'),
             // command line tools
             shell: {
                 bower: {
-                    command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
+                    command: path.resolve(__dirname + '/node_modules/.bin/bower install --allow-root'),
                     options: {
                         stdout: true
                     }
