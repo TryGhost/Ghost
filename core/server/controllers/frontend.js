@@ -266,7 +266,7 @@ frontendControllers = {
 
         // TODO: needs refactor for multi user to not use first user as default
         return when.settle([
-            api.users.read({id : 1}),
+            api.users.read.call({user : 'internal'}, {id : 1}),
             api.settings.read('title'),
             api.settings.read('description'),
             api.settings.read('permalinks')

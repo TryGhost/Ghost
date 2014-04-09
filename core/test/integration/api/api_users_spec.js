@@ -3,8 +3,9 @@ var testUtils = require('../../utils'),
     should    = require('should'),
 
     // Stuff we are testing
+    permissions   = require('../../../server/permissions'),
     DataGenerator = require('../../utils/fixtures/data-generator'),
-    UsersAPI       = require('../../../server/api/users');
+    UsersAPI      = require('../../../server/api/users');
 
 describe('Users API', function () {
 
@@ -31,11 +32,15 @@ describe('Users API', function () {
     });
 
     it('can browse', function (done) {
-        UsersAPI.browse().then(function (results) {
+        permissions.init().then(function () {
+            return UsersAPI.browse.call({user:1})
+        }).then(function (results) {
             should.exist(results);
             results.length.should.be.above(0);
             testUtils.API.checkResponse(results[0], 'user');
             done();
-        }).then(null, done);
+        }).otherwise(function () {
+            done();
+        });
     });
 });

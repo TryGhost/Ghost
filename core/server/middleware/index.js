@@ -39,7 +39,7 @@ function ghostLocals(req, res, next) {
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
         when.all([
-            api.users.read({id: req.session.user}),
+            api.users.read.call({user: req.session.user}, {id: req.session.user}),
             api.notifications.browse()
         ]).then(function (values) {
             var currentUser = values[0],
@@ -159,8 +159,9 @@ function manageAdminAndTheme(req, res, next) {
 // Redirect to signup if no users are currently created
 function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
-    api.users.browse().then(function (users) {
-        if (users.length === 0) {
+
+    api.users.doesUserExist().then(function (exists) {
+        if (!exists) {
             return res.redirect(config().paths.subdir + '/ghost/signup/');
         }
         next();
