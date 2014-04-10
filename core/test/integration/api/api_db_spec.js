@@ -18,13 +18,15 @@ describe('DB API', function () {
     });
 
     beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            })
-            .then(function () {
-                done();
-            }, done);
+        testUtils.initData().then(function () {
+            return testUtils.insertDefaultFixtures();
+        }).then(function () {
+            return testUtils.insertEditorUser();
+        }).then(function () {
+            return testUtils.insertAuthorUser();
+        }).then(function () {
+            done();
+        }, done);
     });
 
     afterEach(function (done) {
@@ -35,7 +37,7 @@ describe('DB API', function () {
 
     it('delete all content', function (done) {
         permissions.init().then(function () {
-            return dbAPI.deleteAllContent();
+            return dbAPI.deleteAllContent.call({user: 1});
         }).then(function (result){
             should.exist(result.message);
             result.message.should.equal('Successfully deleted all content from your blog.')
@@ -50,8 +52,71 @@ describe('DB API', function () {
                 results.posts.length.should.equal(0);
                 done();
             });
-        }).otherwise(function () {
-            done()
+        }).otherwise(function (error) {
+            done(new Error(JSON.stringify(error)));
+        });
+    });
+
+    it('delete all content is denied', function (done) {
+        permissions.init().then(function () {
+            return dbAPI.deleteAllContent.call({user: 2});
+        }).then(function (){
+            done(new Error("Delete all content is not denied for editor."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.deleteAllContent.call({user: 3});
+        }).then(function (){
+            done(new Error("Delete all content is not denied for author."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.deleteAllContent();
+        }).then(function (){
+            done(new Error("Delete all content is not denied without authentication."));
+        }, function (error) {
+            error.code.should.eql(403);
+            done();
+        });
+    });
+
+    it('export content is denied', function (done) {
+        permissions.init().then(function () {
+            return dbAPI.exportContent.call({user: 2});
+        }).then(function (){
+            done(new Error("Export content is not denied for editor."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.exportContent.call({user: 3});
+        }).then(function (){
+            done(new Error("Export content is not denied for author."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.exportContent();
+        }).then(function (){
+            done(new Error("Export content is not denied without authentication."));
+        }, function (error) {
+            error.code.should.eql(403);
+            done();
+        });
+    });
+
+    it('import content is denied', function (done) {
+        permissions.init().then(function () {
+            return dbAPI.importContent.call({user: 2});
+        }).then(function (result){
+            done(new Error("Import content is not denied for editor."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.importContent.call({user: 3});
+        }).then(function (result){
+            done(new Error("Import content is not denied for author."));
+        }, function (error) {
+            error.code.should.eql(403);
+            return dbAPI.importContent();
+        }).then(function (result){
+            done(new Error("Import content is not denied without authentication."));
+        }, function (error) {
+            error.code.should.eql(403);
+            done();
         });
     });
 });
