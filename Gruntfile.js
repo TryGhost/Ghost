@@ -303,7 +303,7 @@ var path           = require('path'),
             // command line tools
             shell: {
                 bower: {
-                    command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
+                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower install'),
                     options: {
                         stdout: true
                     }
@@ -896,7 +896,6 @@ var path           = require('path'),
                 console.log('Type `grunt --help` to get the details of available grunt tasks, or alternatively visit https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit');
             });
 
-
         // ### Running the test suites
 
         grunt.registerTask('test-unit', 'Run unit tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:unit']);
@@ -907,7 +906,7 @@ var path           = require('path'),
 
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
-        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['shell:bower', 'concat:dev', 'jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
 
         // ### Coverage report for Unit and Integration Tests
