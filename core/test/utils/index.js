@@ -104,7 +104,7 @@ function insertEditorUser() {
         userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(1, 2));
+    userRoles.push(DataGenerator.forKnex.createUserRole(2, 2));
     return knex('users')
         .insert(users)
         .then(function () {
@@ -117,7 +117,7 @@ function insertAuthorUser() {
         userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(1, 3));
+    userRoles.push(DataGenerator.forKnex.createUserRole(3, 3));
     return knex('users')
         .insert(users)
         .then(function () {
@@ -186,11 +186,11 @@ function insertAppWithFields() {
 
 
 function insertDefaultFixtures() {
-    return when(insertDefaultUser().then(function () {
-        return insertPosts().then(function () {
-            return insertApps();
-        });
-    }));
+    return insertDefaultUser().then(function () {
+        return insertPosts()
+    }).then(function () {
+        return insertApps();
+    });
 }
 
 function loadExportFixture(filename) {
