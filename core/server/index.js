@@ -19,7 +19,6 @@ var crypto      = require('crypto'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
-    routes      = require('./routes'),
     packageInfo = require('../../package.json'),
 
 // Variables
@@ -265,19 +264,8 @@ function init(server) {
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
 
-        // ## Middleware
+        // ## Middleware and Routing
         middleware(server, dbHash);
-
-        // ## Routing
-
-        // Set up API routes
-        routes.api(server);
-
-        // Set up Admin routes
-        routes.admin(server);
-
-        // Set up Frontend routes
-        routes.frontend(server);
 
         // Log all theme errors and warnings
         _.each(config().paths.availableThemes._messages.errors, function (error) {

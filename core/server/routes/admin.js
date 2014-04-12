@@ -1,73 +1,77 @@
 var admin       = require('../controllers/admin'),
     config      = require('../config'),
-    middleware  = require('../middleware').middleware,
+    express     = require('express'),
 
     ONE_HOUR_S  = 60 * 60,
     ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
 
     adminRoutes;
 
-adminRoutes = function (server) {
+adminRoutes = function (middleware) {
+    var router = express.Router(),
+        subdir = config().paths.subdir;
+
     // Have ember route look for hits first
     // to prevent conflicts with pre-existing routes
-    server.get('/ghost/ember/*', middleware.redirectToSignup, admin.index);
+    router.get('/ghost/ember/*', middleware.redirectToSignup, admin.index);
 
-    var subdir = config().paths.subdir;
     // ### Admin routes
-    server.get('/logout/', function redirect(req, res) {
+    router.get('/logout/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
-    server.get('/signout/', function redirect(req, res) {
+    router.get('/signout/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
-    server.get('/signin/', function redirect(req, res) {
+    router.get('/signin/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signin/');
     });
-    server.get('/signup/', function redirect(req, res) {
+    router.get('/signup/', function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signup/');
     });
 
-    server.get('/ghost/signout/', admin.signout);
-    server.post('/ghost/signout/', admin.doSignout);
-    server.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.signin);
-    server.post('/ghost/signin/', admin.doSignin);
-    server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
-    server.post('/ghost/signup/', admin.doSignup);
-    server.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
-    server.post('/ghost/forgotten/', admin.doForgotten);
-    server.get('/ghost/reset/:token', admin.reset);
-    server.post('/ghost/reset/:token', admin.doReset);
-    server.post('/ghost/changepw/', admin.doChangePassword);
+    router.get('/ghost/signout/', admin.signout);
+    router.post('/ghost/signout/', admin.doSignout);
+    router.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.signin);
+    router.post('/ghost/signin/', admin.doSignin);
+    router.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
+    router.post('/ghost/signup/', admin.doSignup);
+    router.get('/ghost/forgotten/', middleware.redirectToDashboard, admin.forgotten);
+    router.post('/ghost/forgotten/', admin.doForgotten);
+    router.get('/ghost/reset/:token', admin.reset);
+    router.post('/ghost/reset/:token', admin.doReset);
+    router.post('/ghost/changepw/', admin.doChangePassword);
 
-    server.get('/ghost/editor/:id/:action', admin.editor);
-    server.get('/ghost/editor/:id/', admin.editor);
-    server.get('/ghost/editor/', admin.editor);
-    server.get('/ghost/content/', admin.content);
-    server.get('/ghost/settings*', admin.settings);
-    server.get('/ghost/debug/', admin.debug.index);
+    router.get('/ghost/editor/:id/:action', admin.editor);
+    router.get('/ghost/editor/:id/', admin.editor);
+    router.get('/ghost/editor/', admin.editor);
+    router.get('/ghost/content/', admin.content);
+    router.get('/ghost/settings*', admin.settings);
+    router.get('/ghost/debug/', admin.debug.index);
 
-    server.get('/ghost/export/', admin.debug.exportContent);
+    router.get('/ghost/export/', admin.debug.exportContent);
 
-    server.post('/ghost/upload/', middleware.busboy, admin.upload);
+    router.post('/ghost/upload/', middleware.busboy, admin.upload);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    server.get(/\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {
+    router.get(/\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
-    server.get(/\/ghost$/, function (req, res) {
+    router.get(/\/ghost$/, function (req, res) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
-    server.get('/ghost/', admin.indexold);
+    router.get('/ghost/', admin.indexold);
+
+    return router;
 };
 
 module.exports = adminRoutes;

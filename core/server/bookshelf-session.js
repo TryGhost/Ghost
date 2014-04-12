@@ -1,4 +1,4 @@
-var Store   = require('express').session.Store,
+var Store   = require('express-session').Store,
     models  = require('./models'),
     time12h = 12 * 60 * 60 * 1000,
 
