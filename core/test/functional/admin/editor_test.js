@@ -284,7 +284,7 @@ CasperTest.begin("Post settings menu", 18, function suite(test) {
     casper.waitForText(staticPageConversionText, function onSuccess() {
         test.assertSelectorHasText(
             ".notification-success", staticPageConversionText, "correct static page conversion notification appears");
-    })
+    });
 
     casper.thenClick(".post-settings-menu #static-page");
 

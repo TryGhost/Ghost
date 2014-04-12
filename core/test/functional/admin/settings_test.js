@@ -1,7 +1,5 @@
 /*globals casper, __utils__, url */
 
-// var navTest = require('../partials/partial_test');
-
 CasperTest.begin("Settings screen is correct", 18, function suite(test) {
     casper.thenOpen(url + "ghost/settings/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
