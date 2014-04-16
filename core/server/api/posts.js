@@ -20,8 +20,10 @@ posts = {
     browse: function browse(options) {
         options = options || {};
 
+        if (!this.user) {
+            options.status = 'published';
+        }
         // **returns:** a promise for a page of posts in a json object
-
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
                 omitted = result;
@@ -35,10 +37,15 @@ posts = {
 
     // #### Read
     // **takes:** an identifier (id or slug?)
-    read: function read(args) {
-        // **returns:** a promise for a single post in a json object
+    read: function read(options) {
+        options = options || {};
+        if (!this.user) {
+            // only published posts for 
+            options.status = 'published';
+        }
 
-        return dataProvider.Post.findOne(args).then(function (result) {
+        // **returns:** a promise for a single post in a json object
+        return dataProvider.Post.findOne(options).then(function (result) {
             var omitted;
 
             if (result) {
@@ -51,26 +58,15 @@ posts = {
         });
     },
 
-    generateSlug: function getSlug(args) {
-        return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
-            if (slug) {
-                return slug;
-            }
-            return when.reject({code: 500, message: 'Could not generate slug'});
-        });
-    },
-
     // #### Edit
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
-        }
         var self = this;
+
         return canThis(self.user).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.edit(checkedPostData.posts[0]);
+                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user});
             }).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
@@ -87,14 +83,11 @@ posts = {
     // #### Add
     // **takes:** a json object representing a post,
     add: function add(postData) {
+        var self = this;
         // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to add posts.'});
-        }
-
         return canThis(this.user).create.post().then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.add(checkedPostData.posts[0]);
+                return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user});
             }).then(function (result) {
                 var omitted = result.toJSON();
                 omitted.author = _.omit(omitted.author, filteredUserAttributes);
@@ -108,13 +101,11 @@ posts = {
     // #### Destroy
     // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
+        var self = this;
         // **returns:** a promise for a json response with the id of the deleted post
-        if (!this.user) {
-            return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
-        }
-
         return canThis(this.user).remove.post(args.id).then(function () {
-            return posts.read({id : args.id, status: 'all'}).then(function (result) {
+            // TODO: Would it be good to get rid of .call()?
+            return posts.read.call({user: self.user}, {id : args.id, status: 'all'}).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = result;
                     return deletedObj;
@@ -123,7 +114,25 @@ posts = {
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
         });
+    },
+
+    // #### Generate slug
+
+    // **takes:** a string to generate the slug from
+    generateSlug: function generateSlug(args) {
+
+        return canThis(this.user).slug.post().then(function () {
+            return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
+                if (slug) {
+                    return slug;
+                }
+                return when.reject({code: 500, message: 'Could not generate slug'});
+            });
+        }, function () {
+            return when.reject({code: 403, message: 'You do not have permission.'});
+        });
     }
+
 };
 
 module.exports = posts;

@@ -6,13 +6,12 @@ var testUtils     = require('../../utils'),
     sequence      = require('when/sequence'),
 
     // Stuff we are testing
-    DataGenerator = require('../../utils/fixtures/data-generator'),
-    Models        = require('../../../server/models');
+    Models = require('../../../server/models'),
+    DataGenerator = testUtils.DataGenerator;
 
 describe('Post Model', function () {
 
-    var PostModel = Models.Post,
-        UserModel = Models.User;
+    var PostModel = Models.Post;
 
     before(function (done) {
         testUtils.clearData().then(function () {
@@ -66,7 +65,7 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('can findAll, returning author and user data', function (done) {
+    it('can findAll, returning author, user and field data', function (done) {
         var firstPost;
 
         PostModel.findAll({}).then(function (results) {
@@ -75,13 +74,15 @@ describe('Post Model', function () {
             firstPost = results.models[0].toJSON();
 
             firstPost.author.should.be.an.Object;
+            firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
+            firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
         }, done);
     });
 
-    it('can findOne, returning author and user data', function (done) {
+    it('can findOne, returning author, user and field data', function (done) {
         var firstPost;
 
         PostModel.findOne({}).then(function (result) {
@@ -89,7 +90,9 @@ describe('Post Model', function () {
             firstPost = result.toJSON();
 
             firstPost.author.should.be.an.Object;
+            firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
+            firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
         }, done);
@@ -117,7 +120,7 @@ describe('Post Model', function () {
             newPost = testUtils.DataGenerator.forModel.posts[2],
             newPostDB = testUtils.DataGenerator.Content.posts[2];
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             return new PostModel({id: createdPost.id}).fetch();
         }).then(function (createdPost) {
             should.exist(createdPost);
@@ -148,7 +151,7 @@ describe('Post Model', function () {
             createdPostUpdatedDate = createdPost.get('updated_at');
 
             // Set the status to published to check that `published_at` is set.
-            return createdPost.save({status: 'published'});
+            return createdPost.save({status: 'published'}, {user: 1});
         }).then(function (publishedPost) {
             publishedPost.get('published_at').should.be.instanceOf(Date);
             publishedPost.get('published_by').should.equal(1);
@@ -169,7 +172,7 @@ describe('Post Model', function () {
             published_at: previousPublishedAtDate,
             title: 'published_at test',
             markdown: 'This is some content'
-        }).then(function (newPost) {
+        }, {user: 1}).then(function (newPost) {
 
             should.exist(newPost);
             new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
@@ -187,7 +190,7 @@ describe('Post Model', function () {
                 markdown: 'Test Content'
             };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             return new PostModel({ id: createdPost.id }).fetch();
         }).then(function (createdPost) {
             should.exist(createdPost);
@@ -213,7 +216,7 @@ describe('Post Model', function () {
                 return PostModel.add({
                     title: 'Test Title',
                     markdown: 'Test Content ' + (i+1)
-                });
+                }, {user: 1});
             };
         })).then(function (createdPosts) {
             // Should have created 12 posts
@@ -243,7 +246,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
 
             createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
@@ -257,7 +260,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             createdPost.get('slug').should.not.equal('rss');
             done();
         });
@@ -269,7 +272,7 @@ describe('Post Model', function () {
             markdown: 'Test Content 1'
         };
 
-        PostModel.add(newPost).then(function (createdPost) {
+        PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
             done();
         });
@@ -286,13 +289,13 @@ describe('Post Model', function () {
             };
 
         // Create the first post
-        PostModel.add(firstPost)
+        PostModel.add(firstPost, {user: 1})
             .then(function (createdFirstPost) {
                 // Store the slug for later
                 firstPost.slug = createdFirstPost.get('slug');
 
                 // Create the second post
-                return PostModel.add(secondPost);
+                return PostModel.add(secondPost, {user: 1});
             }).then(function (createdSecondPost) {
                 // Store the slug for comparison later
                 secondPost.slug = createdSecondPost.get('slug');

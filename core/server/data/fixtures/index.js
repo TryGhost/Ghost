@@ -1,9 +1,13 @@
-var sequence   = require('when/sequence'),
-    _          = require('lodash'),
-    Post       = require('../../models/post').Post,
-    Tag        = require('../../models/tag').Tag,
-    Role       = require('../../models/role').Role,
-    Permission = require('../../models/permission').Permission;
+var sequence    = require('when/sequence'),
+    _           = require('lodash'),
+    Post        = require('../../models/post').Post,
+    Tag         = require('../../models/tag').Tag,
+    Role        = require('../../models/role').Role,
+    Permission  = require('../../models/permission').Permission,
+    Permissions = require('../../models/permission').Permissions,
+
+    populateFixtures,
+    updateFixtures;
 
 var fixtures = {
     posts: [
@@ -63,42 +67,226 @@ var fixtures = {
             "action_type":      "create",
             "object_type":      "post"
         }
+    ],
+
+    permissions003: [
+        {
+            "name":             "Get slug",
+            "action_type":      "slug",
+            "object_type":      "post"
+        },
+        {
+            "name":             "Export database",
+            "action_type":      "exportContent",
+            "object_type":      "db"
+        },
+        {
+            "name":             "Import database",
+            "action_type":      "importContent",
+            "object_type":      "db"
+        },
+        {
+            "name":             "Delete all content",
+            "action_type":      "deleteAllContent",
+            "object_type":      "db"
+        },
+        {
+            "name":             "Browse users",
+            "action_type":      "browse",
+            "object_type":      "user"
+        },
+        {
+            "name":             "Read users",
+            "action_type":      "read",
+            "object_type":      "user"
+        },
+        {
+            "name":             "Edit users",
+            "action_type":      "edit",
+            "object_type":      "user"
+        },
+        {
+            "name":             "Add users",
+            "action_type":      "add",
+            "object_type":      "user"
+        },
+        {
+            "name":             "Browse settings",
+            "action_type":      "browse",
+            "object_type":      "setting"
+        },
+        {
+            "name":             "Read settings",
+            "action_type":      "read",
+            "object_type":      "setting"
+        },
+        {
+            "name":             "Edit settings",
+            "action_type":      "edit",
+            "object_type":      "setting"
+        }
     ]
 };
 
+populateFixtures = function () {
+    var ops = [],
+        relations = [];
+
+    _.each(fixtures.posts, function (post) {
+        ops.push(function () {return Post.add(post, {user: 1}); });
+    });
+
+    _.each(fixtures.tags, function (tag) {
+        ops.push(function () {return Tag.add(tag, {user: 1}); });
+    });
+
+    _.each(fixtures.roles, function (role) {
+        ops.push(function () {return Role.add(role, {user: 1}); });
+    });
+
+    _.each(fixtures.permissions, function (permission) {
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
+    });
+
+    _.each(fixtures.permissions003, function (permission) {
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
+    });
+
+    // add the tag to the post
+    relations.push(function () {
+        Post.forge({id: 1}).fetch({withRelated: ['tags']}).then(function (post) {
+            post.tags().attach([1]);
+        });
+    });
+
+    //grant permissions to roles
+    relations.push(function () {
+        // admins gets all permissions
+        Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var admin_perm = _.map(perms.toJSON(), function (perm) {
+                    return perm.id;
+                });
+                return role.permissions().attach(_.compact(admin_perm));
+            });
+        });
+
+        // editor gets access to posts, users and settings.browse, settings.read
+        Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var editor_perm = _.map(perms.toJSON(), function (perm) {
+                    if (perm.object_type === 'post' || perm.object_type === 'user') {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'setting' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    return null;
+                });
+                return role.permissions().attach(_.compact(editor_perm));
+            });
+        });
+
+        // author gets access to post.add, post.slug, settings.browse, settings.read, users.browse and users.read
+        Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var author_perm = _.map(perms.toJSON(), function (perm) {
+                    if (perm.object_type === 'post' &&
+                            (perm.action_type === 'add' || perm.action_type === 'slug')) {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'setting' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'user' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    return null;
+                });
+                return role.permissions().attach(_.compact(author_perm));
+            });
+        });
+    });
+
+    return sequence(ops).then(function () {
+        sequence(relations);
+    });
+};
+
+updateFixtures = function () {
+    var ops = [],
+        relations = [];
+
+    _.each(fixtures.permissions003, function (permission) {
+        ops.push(function () {return Permission.add(permission, {user: 1}); });
+    });
+
+    relations.push(function () {
+        // admin gets all new permissions
+        Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var admin_perm = _.map(perms.toJSON(), function (perm) {
+                    var result  = fixtures.permissions003.filter(function (object) {
+                        return object.object_type === perm.object_type && object.action_type === perm.action_type;
+                    });
+                    if (!_.isEmpty(result)) {
+                        return perm.id;
+                    }
+                    return null;
+                });
+                return role.permissions().attach(_.compact(admin_perm));
+            });
+        });
+
+        // editor gets access to posts, users and settings.browse, settings.read
+        Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var editor_perm = _.map(perms.toJSON(), function (perm) {
+                    if (perm.object_type === 'post' || perm.object_type === 'user') {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'setting' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    return null;
+                });
+                return role.permissions().attach(_.compact(editor_perm));
+            });
+        });
+
+        // author gets access to post.add, post.slug, settings.browse, settings.read, users.browse and users.read
+        Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            Permissions.forge().fetch().then(function (perms) {
+                var author_perm = _.map(perms.toJSON(), function (perm) {
+                    if (perm.object_type === 'post' &&
+                            (perm.action_type === 'add' || perm.action_type === 'slug')) {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'setting' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'user' &&
+                            (perm.action_type === 'browse' || perm.action_type === 'read')) {
+                        return perm.id;
+                    }
+                    return null;
+                });
+                return role.permissions().attach(_.compact(author_perm));
+            });
+        });
+    });
+
+    return sequence(ops).then(function () {
+        sequence(relations);
+    });
+};
+
 module.exports = {
-    populateFixtures: function () {
-        var ops = [];
-
-        _.each(fixtures.posts, function (post) {
-            ops.push(function () {return Post.add(post); });
-        });
-
-        _.each(fixtures.tags, function (tag) {
-            ops.push(function () {return Tag.add(tag); });
-        });
-
-        _.each(fixtures.roles, function (role) {
-            ops.push(function () {return Role.add(role); });
-        });
-        _.each(fixtures.permissions, function (permission) {
-            ops.push(function () {return Permission.add(permission); });
-        });
-
-        // add the tag to the post
-        ops.push(function () {
-            Post.forge({id: 1}).fetch({withRelated: ['tags']}).then(function (post) {
-                post.tags().attach([1]);
-            });
-        });
-
-        // finally, grant admins all permissions
-        ops.push(function () {
-            Role.forge({id: 1}).fetch({withRelated: ['permissions']}).then(function (role) {
-                role.permissions().attach([1, 2, 3]);
-            });
-        });
-
-        return sequence(ops);
-    }
+    populateFixtures: populateFixtures,
+    updateFixtures: updateFixtures
 };
