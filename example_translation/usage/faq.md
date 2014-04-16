@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: zh_CN
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
