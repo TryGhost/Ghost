@@ -18,6 +18,17 @@ var ApplicationRoute = Ember.Route.extend({
                 outlet: 'modal',
                 parentView: 'application'
             });
+        },
+
+        handleErrors: function (errors) {
+            this.notifications.clear();
+            errors.forEach(function (errorObj) {
+                this.notifications.showError(errorObj.message || errorObj);
+
+                if (errorObj.hasOwnProperty('el')) {
+                    errorObj.el.addClass('input-error');
+                }
+            });
         }
     }
 });
