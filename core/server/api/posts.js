@@ -5,10 +5,17 @@ var when                   = require('when'),
     filteredUserAttributes = require('./users').filteredAttributes,
     posts;
 
+function checkPostData(postData) {
+    if (_.isEmpty(postData) || _.isEmpty(postData.posts) || _.isEmpty(postData.posts[0])) {
+        return when.reject({code: 400, message: 'No root key (\'posts\') provided.'});
+    }
+    return when.resolve(postData);
+}
+
 // ## Posts
 posts = {
-    // #### Browse
 
+    // #### Browse
     // **takes:** filter / pagination parameters
     browse: function browse(options) {
         options = options || {};
@@ -21,14 +28,12 @@ posts = {
 
             for (i = 0; i < omitted.posts.length; i = i + 1) {
                 omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
-                omitted.posts[i].user = _.omit(omitted.posts[i].user, filteredUserAttributes);
             }
             return omitted;
         });
     },
 
     // #### Read
-
     // **takes:** an identifier (id or slug?)
     read: function read(args) {
         // **returns:** a promise for a single post in a json object
@@ -39,8 +44,7 @@ posts = {
             if (result) {
                 omitted = result.toJSON();
                 omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                return omitted;
+                return { posts: [ omitted ]};
             }
             return when.reject({code: 404, message: 'Post not found'});
 
@@ -57,7 +61,6 @@ posts = {
     },
 
     // #### Edit
-
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
@@ -66,21 +69,15 @@ posts = {
         }
         var self = this;
         return canThis(self.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData).then(function (result) {
+            return checkPostData(postData).then(function (checkedPostData) {
+                return dataProvider.Post.edit(checkedPostData.posts[0]);
+            }).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
                     omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                    omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                    return omitted;
+                    return { posts: [ omitted ]};
                 }
                 return when.reject({code: 404, message: 'Post not found'});
-            }).otherwise(function (error) {
-                return dataProvider.Post.findOne({id: postData.id, status: 'all'}).then(function (result) {
-                    if (!result) {
-                        return when.reject({code: 404, message: 'Post not found'});
-                    }
-                    return when.reject({message: error.message});
-                });
             });
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
@@ -88,7 +85,6 @@ posts = {
     },
 
     // #### Add
-
     // **takes:** a json object representing a post,
     add: function add(postData) {
         // **returns:** a promise for the resulting post in a json object
@@ -97,14 +93,19 @@ posts = {
         }
 
         return canThis(this.user).create.post().then(function () {
-            return dataProvider.Post.add(postData);
+            return checkPostData(postData).then(function (checkedPostData) {
+                return dataProvider.Post.add(checkedPostData.posts[0]);
+            }).then(function (result) {
+                var omitted = result.toJSON();
+                omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                return { posts: [ omitted ]};
+            });
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to add posts.'});
         });
     },
 
     // #### Destroy
-
     // **takes:** an identifier (id or slug?)
     destroy: function destroy(args) {
         // **returns:** a promise for a json response with the id of the deleted post
@@ -113,7 +114,7 @@ posts = {
         }
 
         return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
+            return posts.read({id : args.id, status: 'all'}).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = result;
                     return deletedObj;
