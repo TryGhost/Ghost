@@ -20,6 +20,7 @@ function clearData() {
 }
 
 function insertPosts() {
+    // ToDo: Get rid of pyramid of doom
     return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
         return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
             return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
@@ -91,15 +92,105 @@ function insertDefaultUser() {
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
     userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
-    return when(knex('users').insert(users).then(function () {
-        return knex('roles_users').insert(userRoles);
-    }));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
 }
 
+function insertEditorUser() {
+    var users = [],
+        userRoles = [];
+
+    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
+    userRoles.push(DataGenerator.forKnex.createUserRole(2, 2));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
+function insertAuthorUser() {
+    var users = [],
+        userRoles = [];
+
+    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
+    userRoles.push(DataGenerator.forKnex.createUserRole(3, 3));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
+function insertDefaultApp() {
+    var apps = [];
+
+    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
+
+    return knex('apps')
+        .insert(apps)
+        .then(function () {
+            return knex('permissions_apps')
+                .insert({
+                    app_id: 1,
+                    permission_id: 1
+                });
+        });
+}
+
+function insertApps() {
+    return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
+        return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
+    });
+}
+
+function insertAppWithSettings() {
+    var apps = [], app_settings = [];
+
+    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
+    app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[0]));
+    app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[1]));
+
+    return knex('apps').insert(apps, 'id')
+        .then(function (results) {
+            var appId = results[0];
+
+            for (var i = 0; i < app_settings.length; i++) {
+                app_settings[i].app_id = appId;
+            }
+
+            return knex('app_settings').insert(app_settings);
+        });
+}
+function insertAppWithFields() {
+    var apps = [], app_fields = [];
+
+    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
+    app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[0]));
+    app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[1]));
+
+    return knex('apps').insert(apps, 'id')
+        .then(function (results) {
+            var appId = results[0];
+
+            for (var i = 0; i < app_fields.length; i++) {
+                app_fields[i].app_id = appId;
+            }
+
+            return knex('app_fields').insert(app_fields);
+        });
+}
+
+
 function insertDefaultFixtures() {
-    return when(insertDefaultUser().then(function () {
-        return insertPosts();
-    }));
+    return insertDefaultUser().then(function () {
+        return insertPosts()
+    }).then(function () {
+        return insertApps();
+    });
 }
 
 function loadExportFixture(filename) {
@@ -127,6 +218,12 @@ module.exports = {
     insertMorePosts: insertMorePosts,
     insertMorePostsTags: insertMorePostsTags,
     insertDefaultUser: insertDefaultUser,
+    insertEditorUser: insertEditorUser,
+    insertAuthorUser: insertAuthorUser,
+    insertDefaultApp: insertDefaultApp,
+    insertApps: insertApps,
+    insertAppWithSettings: insertAppWithSettings,
+    insertAppWithFields: insertAppWithFields,
 
     loadExportFixture: loadExportFixture,
 

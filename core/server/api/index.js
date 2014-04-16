@@ -47,17 +47,17 @@ requestHandler = function (apiMethod) {
     return function (req, res) {
         var options = _.extend(req.body, req.files, req.query, req.params),
             apiContext = {
-                user: req.session && req.session.user
+                user: (req.session && req.session.user) ? req.session.user : null
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {
-            res.json(result || {});
             return cacheInvalidationHeader(req, result).then(function (header) {
                 if (header) {
                     res.set({
                         "X-Cache-Invalidate": header
                     });
                 }
+                res.json(result || {});
             });
         }, function (error) {
             var errorCode = error.code || 500,

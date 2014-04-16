@@ -5,13 +5,15 @@ var fs           = require('fs'),
     should       = require('should'),
     sinon        = require('sinon'),
     _            = require('lodash'),
+    when         = require('when'),
     helpers      = require('../../server/helpers'),
     filters      = require('../../server/filters'),
 
     // Stuff we are testing
     appProxy   = require('../../server/apps/proxy'),
     AppSandbox = require('../../server/apps/sandbox'),
-    AppDependencies = require('../../server/apps/dependencies');
+    AppDependencies = require('../../server/apps/dependencies'),
+    AppPermissions = require('../../server/apps/permissions');
 
 describe('Apps', function () {
 
@@ -187,6 +189,129 @@ describe('Apps', function () {
             _.defer(function () {
                 fakeEmitter.emit('exit');
             });
+        });
+    });
+
+    describe('Permissions', function () {
+        var noGhostPackageJson = {
+                "name": "myapp",
+                "version": "0.0.1",
+                "description": "My example app",
+                "main": "index.js",
+                "scripts": {
+                    "test": "echo \"Error: no test specified\" && exit 1"
+                },
+                "author": "Ghost",
+                "license": "MIT",
+                "dependencies": {
+                    "ghost-app": "0.0.1"
+                }
+            },
+            validGhostPackageJson = {
+                "name": "myapp",
+                "version": "0.0.1",
+                "description": "My example app",
+                "main": "index.js",
+                "scripts": {
+                    "test": "echo \"Error: no test specified\" && exit 1"
+                },
+                "author": "Ghost",
+                "license": "MIT",
+                "dependencies": {
+                    "ghost-app": "0.0.1"
+                },
+                "ghost": {
+                    "permissions": {
+                        "posts": ["browse", "read", "edit", "add", "delete"],
+                        "users": ["browse", "read", "edit", "add", "delete"],
+                        "settings": ["browse", "read", "edit", "add", "delete"]
+                    }
+                }
+            };
+
+        it('has default permissions to read and browse posts', function () {
+            should.exist(AppPermissions.DefaultPermissions);
+
+            should.exist(AppPermissions.DefaultPermissions.posts);
+
+            AppPermissions.DefaultPermissions.posts.should.contain('browse');
+            AppPermissions.DefaultPermissions.posts.should.contain('read');
+
+            // Make it hurt to add more so additional checks are added here
+            _.keys(AppPermissions.DefaultPermissions).length.should.equal(1);
+        });
+        it('uses default permissions if no package.json', function (done) {
+            var perms = new AppPermissions("test");
+
+            // No package.json in this directory
+            sandbox.stub(perms, "checkPackageContentsExists").returns(when.resolve(false));
+
+            perms.read().then(function (readPerms) {
+                should.exist(readPerms);
+
+                readPerms.should.equal(AppPermissions.DefaultPermissions);
+
+                done();
+            }).otherwise(done);
+        });
+        it('uses default permissions if no ghost object in package.json', function (done) {
+            var perms = new AppPermissions("test"),
+                noGhostPackageJsonContents = JSON.stringify(noGhostPackageJson, null, 2);
+
+            // package.json IS in this directory
+            sandbox.stub(perms, "checkPackageContentsExists").returns(when.resolve(true));
+            // no ghost property on package
+            sandbox.stub(perms, "getPackageContents").returns(when.resolve(noGhostPackageJsonContents));
+
+            perms.read().then(function (readPerms) {
+                should.exist(readPerms);
+
+                readPerms.should.equal(AppPermissions.DefaultPermissions);
+
+                done();
+            }).otherwise(done);
+        });
+        it('rejects when reading malformed package.json', function (done) {
+            var perms = new AppPermissions("test");
+
+            // package.json IS in this directory
+            sandbox.stub(perms, "checkPackageContentsExists").returns(when.resolve(true));
+            // malformed JSON on package
+            sandbox.stub(perms, "getPackageContents").returns(when.reject(new Error('package.json file is malformed')));
+
+            perms.read().then(function (readPerms) {
+                done(new Error('should not resolve'));
+            }).otherwise(function () {
+                done();
+            });
+        });
+        it('reads from package.json in root of app directory', function (done) {
+            var perms = new AppPermissions("test"),
+                validGhostPackageJsonContents = validGhostPackageJson;
+
+            // package.json IS in this directory
+            sandbox.stub(perms, "checkPackageContentsExists").returns(when.resolve(true));
+            // valid ghost property on package
+            sandbox.stub(perms, "getPackageContents").returns(when.resolve(validGhostPackageJsonContents));
+
+            perms.read().then(function (readPerms) {
+                should.exist(readPerms);
+
+                readPerms.should.not.equal(AppPermissions.DefaultPermissions);
+
+                should.exist(readPerms.posts);
+                readPerms.posts.length.should.equal(5);
+
+                should.exist(readPerms.users);
+                readPerms.users.length.should.equal(5);
+
+                should.exist(readPerms.settings);
+                readPerms.settings.length.should.equal(5);
+
+                _.keys(readPerms).length.should.equal(3);
+
+                done();
+            }).otherwise(done);
         });
     });
 });

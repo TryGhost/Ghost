@@ -122,7 +122,7 @@ adminControllers = {
             }).otherwise(function (err) {
                 var notification = {
                     type: 'error',
-                    message: 'Your export file could not be generated.',
+                    message: 'Your export file could not be generated. Error: ' + err.message,
                     status: 'persistent',
                     id: 'errorexport'
                 };
@@ -244,12 +244,12 @@ adminControllers = {
             email = req.body.email,
             password = req.body.password;
 
-        api.users.add({
+        api.users.register({
             name: name,
             email: email,
             password: password
         }).then(function (user) {
-            api.settings.edit('email', email).then(function () {
+            api.settings.edit.call({user: 1}, 'email', email).then(function () {
                 var message = {
                     to: email,
                     subject: 'Your New Ghost Blog',

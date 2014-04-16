@@ -40,8 +40,8 @@ describe('Tag Model', function () {
                 createdPostID;
 
             when.all([
-                PostModel.add(newPost),
-                TagModel.add(newTag)
+                PostModel.add(newPost, {user: 1}),
+                TagModel.add(newTag, {user: 1})
             ]).then(function (models) {
                 var createdPost = models[0],
                     createdTag = models[1];
@@ -67,8 +67,8 @@ describe('Tag Model', function () {
                 createdPostID;
 
             when.all([
-                PostModel.add(newPost),
-                TagModel.add(newTag)
+                PostModel.add(newPost, {user: 1}),
+                TagModel.add(newTag, {user: 1})
             ]).then(function (models) {
                 var createdPost = models[0],
                     createdTag = models[1];
@@ -95,10 +95,10 @@ describe('Tag Model', function () {
 
             function seedTags(tagNames) {
                 var createOperations = [
-                    PostModel.add(testUtils.DataGenerator.forModel.posts[0])
+                    PostModel.add(testUtils.DataGenerator.forModel.posts[0], {user: 1})
                 ];
 
-                var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}); });
+                var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}, {user: 1}); });
                 createOperations = createOperations.concat(tagModels);
 
                 return when.all(createOperations).then(function (models) {
@@ -165,7 +165,7 @@ describe('Tag Model', function () {
 
                 seedTags(seededTagNames).then(function (_postModel) {
                     postModel = _postModel;
-                    return TagModel.add({name: 'tag3'});
+                    return TagModel.add({name: 'tag3'}, {user: 1});
                 }).then(function () {
                     // the tag API expects tags to be provided like {id: 1, name: 'draft'}
                     var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
@@ -198,7 +198,7 @@ describe('Tag Model', function () {
 
                     // add the additional tag, and save
                     tagData.push({id: null, name: 'tag3'});
-                    return postModel.set('tags', tagData).save();
+                    return postModel.set('tags', tagData).save(null, {user: 1});
                 }).then(function (postModel) {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -219,7 +219,7 @@ describe('Tag Model', function () {
                     // add the additional tags, and save
                     tagData.push({id: null, name: 'tag2'});
                     tagData.push({id: null, name: 'tag3'});
-                    return postModel.set('tags', tagData).save();
+                    return postModel.set('tags', tagData).save(null, {user: 1});
                 }).then(function (postModel) {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -236,7 +236,7 @@ describe('Tag Model', function () {
 
                 seedTags(seededTagNames).then(function (_postModel) {
                     postModel = _postModel;
-                    return TagModel.add({name: 'tag2'});
+                    return TagModel.add({name: 'tag2'}, {user: 1});
                 }).then(function () {
                     // the tag API expects tags to be provided like {id: 1, name: 'draft'}
                     var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
@@ -247,7 +247,7 @@ describe('Tag Model', function () {
                     // Add the tag that doesn't exist in the database
                     tagData.push({id: 3, name: 'tag3'});
 
-                    return postModel.set('tags', tagData).save();
+                    return postModel.set('tags', tagData).save(null, {user: 1});
                 }).then(function () {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -271,7 +271,7 @@ describe('Tag Model', function () {
 
                 seedTags(seededTagNames).then(function (_postModel) {
                     postModel = _postModel;
-                    return TagModel.add({name: 'tag2'});
+                    return TagModel.add({name: 'tag2'}, {user: 1});
                 }).then(function () {
                     // the tag API expects tags to be provided like {id: 1, name: 'draft'}
                     var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
@@ -283,7 +283,7 @@ describe('Tag Model', function () {
                     tagData.push({id: 3, name: 'tag3'});
                     tagData.push({id: 4, name: 'tag4'});
 
-                    return postModel.set('tags', tagData).save();
+                    return postModel.set('tags', tagData).save(null, {user: 1});
                 }).then(function () {
                     return PostModel.read({id: postModel.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -304,7 +304,7 @@ describe('Tag Model', function () {
             it('can add a tag to a post on creation', function (done) {
                 var newPost = _.extend(testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]})
 
-                PostModel.add(newPost).then(function (createdPost) {
+                PostModel.add(newPost, {user: 1}).then(function (createdPost) {
                     return PostModel.read({id: createdPost.id, status: 'all'}, { withRelated: ['tags']});
                 }).then(function (postWithTag) {
                     postWithTag.related('tags').length.should.equal(1);
