@@ -192,10 +192,6 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // Relations
-    user: function () {
-        return this.belongsTo(User, 'created_by');
-    },
-
     author: function () {
         return this.belongsTo(User, 'author_id');
     },
@@ -210,7 +206,7 @@ Post = ghostBookshelf.Model.extend({
     // Extends base model findAll to eager-fetch author and user relationships.
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = [ 'author', 'user', 'tags' ];
+        options.withRelated = [ 'author', 'tags' ];
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -227,7 +223,7 @@ Post = ghostBookshelf.Model.extend({
             delete args.status;
         }
 
-        options.withRelated = [ 'author', 'user', 'tags' ];
+        options.withRelated = [ 'author', 'tags' ];
         return ghostBookshelf.Model.findOne.call(this, args, options);
     },
 
@@ -293,7 +289,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Fetch related models
-        opts.withRelated = [ 'author', 'user', 'tags' ];
+        opts.withRelated = [ 'author', 'tags' ];
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -439,7 +435,9 @@ Post = ghostBookshelf.Model.extend({
         var self = this;
 
         return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
-            return self.findOne({status: 'all', id: post.id}, options);
+            if (post) {
+                return self.findOne({status: 'all', id: post.id}, options);
+            }
         });
     },
     destroy: function (_identifier, options) {
