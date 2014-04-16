@@ -232,6 +232,7 @@
             }
         },
         closePassive: function (e) {
+            e.preventDefault();
             $(e.currentTarget)
                 .parent()
                 .fadeOut(250)
@@ -240,6 +241,7 @@
                 });
         },
         closePersistent: function (e) {
+            e.preventDefault();
             var self = e.currentTarget,
                 bbSelf = this;
             $.ajax({
