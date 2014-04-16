@@ -1,4 +1,4 @@
-/*global Ghost, _, Backbone */
+/*global Ghost, _, Backbone, JSON */
 (function () {
     'use strict';
 
@@ -11,6 +11,10 @@
         blacklist: ['published', 'draft'],
 
         parse: function (resp) {
+
+            if (resp.posts) {
+                resp = resp.posts[0];
+            }
             if (resp.status) {
                 resp.published = resp.status === 'published';
                 resp.draft = resp.status === 'draft';
@@ -39,6 +43,15 @@
                 return tag.id === tagToRemove.id || tag.name === tagToRemove.name;
             });
             this.set('tags', tags);
+        },
+        sync: function (method, model, options) {
+            //wrap post in {posts: [{...}]}
+            if (method === 'create' || method === 'update') {
+                options.data = JSON.stringify({posts: [this.attributes]});
+                options.contentType = 'application/json';
+            }
+
+            return Backbone.Model.prototype.sync.apply(this, arguments);
         }
     });
 

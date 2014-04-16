@@ -52,7 +52,7 @@ describe('Post API', function () {
             return PostAPI.read({slug: firstPost.slug});
         }).then(function (found) {
             should.exist(found);
-            testUtils.API.checkResponse(found, 'post');
+            testUtils.API.checkResponse(found.posts[0], 'post');
             done();
         }).then(null, done);
     });
