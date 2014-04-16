@@ -591,8 +591,6 @@ describe('Post API', function () {
                 .send(newPost)
                 .expect(200)
                 .end(function (err ,res) {
-                    console.log("end");
-                    console.log(err);
                     if (err) {
                         return done(err);
                     }
