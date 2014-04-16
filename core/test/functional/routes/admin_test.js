@@ -144,14 +144,6 @@ describe('Admin Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should redirect from /ghost/signin/ to /ghost/signup/ when no user', function (done) {
-            request.get('/ghost/signin/')
-                .expect('Location', /ghost\/signup/)
-                .expect('Cache-Control', cacheRules['private'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-
         it('should respond with html for /ghost/signup/', function (done) {
             request.get('/ghost/signup/')
                 .expect('Content-Type', /html/)
@@ -180,6 +172,47 @@ describe('Admin Routing', function () {
 //           done();
 //        });
 
+    });
+
+    describe("Ghost Admin Setup", function () {
+        it('should have a session cookie which expires in 12 hours', function (done) {
+            request.get('/ghost/setup/')
+                .end(function firstRequest(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    should.not.exist(res.headers['X-CSRF-Token']);
+                    should.exist(res.headers['set-cookie']);
+                    should.exist(res.headers.date);
+
+                    var expires;
+                    // Session should expire 12 hours after the time in the date header
+                    expires = moment.utc(res.headers.date).add('Hours', 12).format("ddd, DD MMM YYYY HH:mm");
+                    expires = new RegExp("Expires=" + expires);
+
+                    res.headers['set-cookie'].should.match(expires);
+
+                    done();
+                });
+        });
+
+        it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
+            request.get('/ghost/signin/')
+                .expect('Location', /ghost\/setup/)
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should respond with html for /ghost/setup/', function (done) {
+            request.get('/ghost/setup/')
+                .expect('Content-Type', /html/)
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(200)
+                .end(doEnd(done));
+        });
     });
 
     describe('Ghost Admin Forgot Password', function () {

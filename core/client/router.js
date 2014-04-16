@@ -12,6 +12,7 @@
             'debug/'           : 'debug',
             'register/'        : 'register',
             'signup/'          : 'signup',
+            'setup/'           : 'setup',
             'signin/'          : 'login',
             'forgotten/'       : 'forgotten',
             'reset/:token/'     : 'reset'
@@ -19,6 +20,10 @@
 
         signup: function () {
             Ghost.currentView = new Ghost.Views.Signup({ el: '.js-signup-box' });
+        },
+
+        setup: function () {
+            Ghost.currentView = new Ghost.Views.Setup({ el: '.js-setup-box' });
         },
 
         login: function () {

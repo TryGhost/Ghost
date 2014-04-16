@@ -284,6 +284,67 @@ adminControllers = {
             res.json(401, {error: error.message});
         });
     },
+    // Route: setup
+    // Path: /ghost/setup/
+    // Method: GET
+    'setup': function (req, res) {
+        /*jslint unparam:true*/
+        res.render('setup', {
+            bodyClass: 'ghost-setup',
+            hideNavbar: true,
+            adminNav: setSelected(adminNavbar, 'login')
+        });
+    },
+    // Route: doSetup
+    // Path: /ghost/setup/
+    // Method: POST
+    'doSetup': function (req, res) {
+        var title = req.body.title,
+            name = req.body.name,
+            email = req.body.email,
+            password = req.body.password,
+            description;
+
+        api.users.add({
+            name: name,
+            email: email,
+            password: password
+        }).then(function (user) {
+            description = 'Thoughts, stories and ideas by ' + name;
+
+            api.settings.edit('title', title)
+                .then(api.settings.edit('description', description))
+                .then(api.settings.edit('email', email)).then(function () {
+                    var message = {
+                        to: email,
+                        subject: 'Your New Ghost Blog',
+                        html: '<p><strong>Hello!</strong></p>' +
+                              '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
+                              '<p>You can log in to your admin account with the following details:</p>' +
+                              '<p> Email Address: ' + email + '<br>' +
+                              'Password: The password you chose when you signed up</p>' +
+                              '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
+                              '<p>xoxo</p>' +
+                              '<p>Team Ghost<br>' +
+                              '<a href="https://ghost.org">https://ghost.org</a></p>'
+                    };
+                    mailer.send(message).otherwise(function (error) {
+                        errors.logError('Unable to send welcome email. Reason: \n' + error.message);
+                    });
+
+                    req.session.regenerate(function (err) {
+                        if (!err) {
+                            if (req.session.user === undefined) {
+                                req.session.user = user.id;
+                            }
+                            res.json(200, {redirect: config().paths.subdir + '/ghost/'});
+                        }
+                    });
+                });
+        }).otherwise(function (error) {
+            res.json(401, {error: error.message});
+        });
+    },
     // Route: forgotten
     // Path: /ghost/forgotten/
     // Method: GET

@@ -31,7 +31,7 @@ var middleware = {
     authenticate: function (req, res, next) {
         var noAuthNeeded = [
                 '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
-                '/ghost/forgotten/', '/ghost/reset/'
+                '/ghost/setup/', '/ghost/forgotten/', '/ghost/reset/'
             ],
             subPath;
 

@@ -161,7 +161,7 @@ function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
     api.users.browse().then(function (users) {
         if (users.length === 0) {
-            return res.redirect(config().paths.subdir + '/ghost/signup/');
+            return res.redirect(config().paths.subdir + '/ghost/setup/');
         }
         next();
     }).otherwise(function (err) {
