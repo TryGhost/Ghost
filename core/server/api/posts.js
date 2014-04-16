@@ -66,7 +66,7 @@ posts = {
 
         return canThis(self.user).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user})
+                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user});
             }).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
