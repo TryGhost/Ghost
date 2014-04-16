@@ -149,7 +149,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     edit: function (editedObj, options) {
         options = options || {};
         return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            return foundObj.save(editedObj, options);
+            if (foundObj) {
+                return foundObj.save(editedObj, options);
+            }
         });
     },
 

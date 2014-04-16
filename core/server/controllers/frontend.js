@@ -172,7 +172,10 @@ frontendControllers = {
 
             // Query database to find post
             return api.posts.read(postLookup);
-        }).then(function (post) {
+        }).then(function (result) {
+            var post = result.posts[0],
+                slugDate = [],
+                slugFormat = [];
 
             if (!post) {
                 return next();
@@ -208,9 +211,6 @@ frontendControllers = {
             // we will check it against the post published date
             // to verify it's correct.
             if (params.year || params.month || params.day) {
-                var slugDate = [],
-                    slugFormat = [];
-
                 if (params.year) {
                     slugDate.push(params.year);
                     slugFormat.push('YYYY');

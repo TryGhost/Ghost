@@ -75,9 +75,7 @@ describe('Post Model', function () {
             firstPost = results.models[0].toJSON();
 
             firstPost.author.should.be.an.Object;
-            firstPost.user.should.be.an.Object;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
-            firstPost.user.name.should.equal(DataGenerator.Content.users[0].name);
 
             done();
         }, done);
@@ -91,9 +89,7 @@ describe('Post Model', function () {
             firstPost = result.toJSON();
 
             firstPost.author.should.be.an.Object;
-            firstPost.user.should.be.an.Object;
             firstPost.author.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
-            firstPost.user.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
 
             done();
         }, done);
