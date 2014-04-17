@@ -52,7 +52,7 @@ translations:
     email:        '이메일 설정'
     themes:       '테마'
     translations: '번역'
-    help:         '도움'
+    help:         '도움말'
     deploy:       '배포'
     upgrading:    '업그레이드'
     troubleshooting: '문제 해결'
