@@ -114,8 +114,7 @@ adminControllers = {
         },
         // frontend route for downloading a file
         exportContent: function (req, res) {
-            /*jslint unparam:true*/
-            api.db.exportContent().then(function (exportData) {
+            api.db.exportContent.call({user: req.session.user}).then(function (exportData) {
                 // send a file to the client
                 res.set('Content-Disposition', 'attachment; filename="GhostData.json"');
                 res.json(exportData);
