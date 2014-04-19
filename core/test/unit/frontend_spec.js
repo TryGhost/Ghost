@@ -40,7 +40,7 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, pages: 3});
+                return when({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -183,10 +183,14 @@ describe('Frontend Controller', function () {
         beforeEach(function () {
             sandbox.stub(api.posts, 'browse', function (args) {
                 return when({
-                  posts: mockPosts,
-                  page: 1,
-                  pages: 1,
-                  aspect: {tag: mockTags[0]}
+                    posts: mockPosts,
+                    meta: {
+                        pagination: {
+                            page: 1,
+                            pages: 1,
+                        },
+                    },
+                    aspect: {tag: mockTags[0]}
                 });
             });
  
@@ -254,7 +258,7 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, pages: 3});
+                return when({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -878,7 +882,7 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, pages: 3});
+                return when({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
             apiUsersStub = sandbox.stub(api.users, 'read').returns(when({}));

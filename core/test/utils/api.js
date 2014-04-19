@@ -5,7 +5,8 @@ var _ = require('lodash'),
     port = '2369';
     schema = "http://",
     expectedProperties = {
-        posts: ['posts', 'page', 'limit', 'pages', 'total'],
+        posts: ['posts', 'meta'],
+        pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at',
             'updated_by', 'published_at', 'published_by', 'page', 'author', 'tags', 'fields'],
