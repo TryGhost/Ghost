@@ -259,7 +259,7 @@ Post = ghostBookshelf.Model.extend({
      //     }
 
     /*
-     * @params opts
+     * @params {Object} opts
      */
     findPage: function (opts) {
         var postCollection = Posts.forge(),
@@ -364,22 +364,29 @@ Post = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalPosts = parseInt(resp[0].aggregate, 10),
-                    data = {
-                        posts: postCollection.toJSON(),
-                        page: parseInt(opts.page, 10),
-                        limit: opts.limit,
-                        pages: Math.ceil(totalPosts / opts.limit),
-                        total: totalPosts
-                    };
+                    pagination = {},
+                    meta = {},
+                    data = {};
 
-                if (data.pages > 1) {
-                    if (data.page === 1) {
-                        data.next = data.page + 1;
-                    } else if (data.page === data.pages) {
-                        data.prev = data.page - 1;
+                pagination['page'] = parseInt(opts.page, 10);
+                pagination['limit'] = opts.limit;
+                pagination['pages'] = Math.ceil(totalPosts / opts.limit);
+                pagination['total'] = totalPosts;
+                pagination['next'] = null;
+                pagination['prev'] = null;
+
+                data['posts'] = postCollection.toJSON();
+                data['meta'] = meta;
+                meta['pagination'] = pagination;
+
+                if (pagination.pages > 1) {
+                    if (pagination.page === 1) {
+                        pagination.next = pagination.page + 1;
+                    } else if (pagination.page === pagination.pages) {
+                        pagination.prev = pagination.page - 1;
                     } else {
-                        data.next = data.page + 1;
-                        data.prev = data.page - 1;
+                        pagination.next = pagination.page + 1;
+                        pagination.prev = pagination.page - 1;
                     }
                 }
 

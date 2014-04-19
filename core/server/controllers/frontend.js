@@ -33,8 +33,8 @@ function getPostPage(options) {
     }).then(function (page) {
 
         // A bit of a hack for situations with no content.
-        if (page.pages === 0) {
-            page.pages = 1;
+        if (page.meta.pagination.pages === 0) {
+            page.meta.pagination.pages = 1;
         }
 
         return page;
@@ -44,14 +44,7 @@ function getPostPage(options) {
 function formatPageResponse(posts, page) {
     return {
         posts: posts,
-        pagination: {
-            page: page.page,
-            prev: page.prev,
-            next: page.next,
-            limit: page.limit,
-            total: page.total,
-            pages: page.pages
-        }
+        pagination: page.meta.pagination
     };
 }
 
@@ -79,8 +72,8 @@ frontendControllers = {
         return getPostPage(options).then(function (page) {
 
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.pages) {
-                return res.redirect(page.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.pages + '/'));
+            if (pageParam > page.meta.pagination.pages) {
+                return res.redirect(page.meta.pagination.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
             }
 
             // Render the page of posts
@@ -116,8 +109,8 @@ frontendControllers = {
         return getPostPage(options).then(function (page) {
 
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.pages) {
-                return res.redirect(tagUrl(options.tag, page.pages));
+            if (pageParam > page.meta.pagination.pages) {
+                return res.redirect(tagUrl(options.tag, page.meta.pagination.pages));
             }
 
             // Render the page of posts
@@ -183,8 +176,11 @@ frontendControllers = {
 
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
-                if (params.edit !== undefined) {
+                if (params.edit === 'edit') {
                     return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
+                } else if (params.edit !== undefined) {
+                    // Use throw 'no match' to show 404.
+                    throw new Error('no match');
                 }
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
@@ -264,9 +260,7 @@ frontendControllers = {
             }
         }
 
-        // TODO: needs refactor for multi user to not use first user as default
         return when.settle([
-            api.users.read.call({user : 'internal'}, {id : 1}),
             api.settings.read('title'),
             api.settings.read('description'),
             api.settings.read('permalinks')
@@ -278,13 +272,12 @@ frontendControllers = {
 
             return api.posts.browse(options).then(function (page) {
 
-                var user = result[0].value,
-                    title = result[1].value.value,
-                    description = result[2].value.value,
-                    permalinks = result[3].value,
+                var title = result[0].value.value,
+                    description = result[1].value.value,
+                    permalinks = result[2].value,
                     siteUrl = config.urlFor('home', null, true),
                     feedUrl =  config.urlFor('rss', null, true),
-                    maxPage = page.pages,
+                    maxPage = page.meta.pagination.pages,
                     feedItems = [],
                     feed;
 
@@ -306,7 +299,7 @@ frontendControllers = {
                 // A bit of a hack for situations with no content.
                 if (maxPage === 0) {
                     maxPage = 1;
-                    page.pages = 1;
+                    page.meta.pagination.pages = 1;
                 }
 
                 // If page is greater than number of pages we have, redirect to last page
@@ -327,7 +320,7 @@ frontendControllers = {
                                 url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
                                 categories: _.pluck(post.tags, 'name'),
-                                author: user ? user.name : null
+                                author: post.author ? post.author.name : null
                             },
                             content = post.html;
 
