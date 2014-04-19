@@ -356,72 +356,72 @@ describe('Post Model', function () {
         }).then(function () {
             return PostModel.findPage({page: 2});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(2);
-            paginationResult.limit.should.equal(15);
+            paginationResult.meta.pagination.page.should.equal(2);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(4);
             paginationResult.posts.length.should.equal(15);
-            paginationResult.pages.should.equal(4);
 
             return PostModel.findPage({page: 5});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(5);
-            paginationResult.limit.should.equal(15);
+            paginationResult.meta.pagination.page.should.equal(5);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(4);
             paginationResult.posts.length.should.equal(0);
-            paginationResult.pages.should.equal(4);
 
             return PostModel.findPage({limit: 30});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(1);
-            paginationResult.limit.should.equal(30);
+            paginationResult.meta.pagination.page.should.equal(1);
+            paginationResult.meta.pagination.limit.should.equal(30);
+            paginationResult.meta.pagination.pages.should.equal(2);
             paginationResult.posts.length.should.equal(30);
-            paginationResult.pages.should.equal(2);
 
             return PostModel.findPage({limit: 10, staticPages: true});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(1);
-            paginationResult.limit.should.equal(10);
+            paginationResult.meta.pagination.page.should.equal(1);
+            paginationResult.meta.pagination.limit.should.equal(10);
+            paginationResult.meta.pagination.pages.should.equal(1);
             paginationResult.posts.length.should.equal(1);
-            paginationResult.pages.should.equal(1);
 
             return PostModel.findPage({limit: 10, page: 2, status: 'all'});
         }).then(function (paginationResult) {
-            paginationResult.pages.should.equal(11);
+            paginationResult.meta.pagination.pages.should.equal(11);
 
             // Test tag filter
             return PostModel.findPage({page: 1, tag: 'bacon'});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(1);
-            paginationResult.limit.should.equal(15);
-            paginationResult.posts.length.should.equal(2);
-            paginationResult.pages.should.equal(1);
+            paginationResult.meta.pagination.page.should.equal(1);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(1);
             paginationResult.aspect.tag.name.should.equal('bacon');
             paginationResult.aspect.tag.slug.should.equal('bacon');
+            paginationResult.posts.length.should.equal(2);
 
             return PostModel.findPage({page: 1, tag: 'kitchen-sink'});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(1);
-            paginationResult.limit.should.equal(15);
-            paginationResult.posts.length.should.equal(2);
-            paginationResult.pages.should.equal(1);
+            paginationResult.meta.pagination.page.should.equal(1);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(1);
             paginationResult.aspect.tag.name.should.equal('kitchen sink');
             paginationResult.aspect.tag.slug.should.equal('kitchen-sink');
+            paginationResult.posts.length.should.equal(2);
 
             return PostModel.findPage({page: 1, tag: 'injection'});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(1);
-            paginationResult.limit.should.equal(15);
-            paginationResult.posts.length.should.equal(15);
-            paginationResult.pages.should.equal(2);
+            paginationResult.meta.pagination.page.should.equal(1);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(2);
             paginationResult.aspect.tag.name.should.equal('injection');
             paginationResult.aspect.tag.slug.should.equal('injection');
+            paginationResult.posts.length.should.equal(15);
 
             return PostModel.findPage({page: 2, tag: 'injection'});
         }).then(function (paginationResult) {
-            paginationResult.page.should.equal(2);
-            paginationResult.limit.should.equal(15);
-            paginationResult.posts.length.should.equal(11);
-            paginationResult.pages.should.equal(2);
+            paginationResult.meta.pagination.page.should.equal(2);
+            paginationResult.meta.pagination.limit.should.equal(15);
+            paginationResult.meta.pagination.pages.should.equal(2);
             paginationResult.aspect.tag.name.should.equal('injection');
             paginationResult.aspect.tag.slug.should.equal('injection');
+            paginationResult.posts.length.should.equal(11);
 
             done();
         }).then(null, done);
