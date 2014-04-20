@@ -97,6 +97,20 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
+        it('should get redirected to /ghost/editor/1 from /welcome-to-ghost/edit', function (done) {
+            request.get('/welcome-to-ghost/edit/')
+                .expect('Location', '/ghost/editor/1/')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should not get redirected to edit screen', function (done) {
+            request.get('/welcome-to-ghost/noedit/')
+                .expect('Content-Type', /html/)
+                .expect(200)
+                .end(doEnd(done));
+        });
+
         it('should not work with date permalinks', function (done) {
             // get today's date
             var date  = moment().format("YYYY/MM/DD");
