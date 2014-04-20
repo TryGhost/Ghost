@@ -97,19 +97,9 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should get redirected to /ghost/editor/1 from /welcome-to-ghost/edit', function (done) {
-            request.get('/welcome-to-ghost/edit/')
-                .expect('Location', '/ghost/editor/1/')
-                .expect(302)
-                .end(doEnd(done));
-        });
 
-        it('should not get redirected to edit screen', function (done) {
-            request.get('/welcome-to-ghost/noedit/')
-                .expect('Content-Type', /html/)
-                .expect(200)
-                .end(doEnd(done));
-        });
+
+    
 
         it('should not work with date permalinks', function (done) {
             // get today's date
@@ -125,6 +115,36 @@ describe('Frontend Routing', function () {
         it('should 404 for unknown post', function (done) {
             request.get('/spectacular/')
                 .expect('Cache-Control', cacheRules['private'])
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+    });
+
+    describe('EDIT', function() {
+        it('should get redirected to /ghost/editor/1 from /welcome-to-ghost/edit', function (done) {
+            request.get('/welcome-to-ghost/edit/')
+                .expect('Location', '/ghost/editor/1/')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should not get redirected to edit screen', function (done) {
+            request.get('/welcome-to-ghost/noedit/')
+                .expect('Content-Type', /html/)
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should 404 on /edit/', function (done) {
+            request.get('/edit/')
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+
+        it('should 404 on non existent post + /edit/', function (done) {
+            request.get('/thispostdoesntexist/edit/')
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
