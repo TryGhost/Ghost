@@ -175,7 +175,6 @@ frontendControllers = {
             }
 
             function render() {
-                console.log(params);
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
                 if (params.edit !== undefined && params.edit === 'edit') {
                     return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');

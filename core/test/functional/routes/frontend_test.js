@@ -102,7 +102,6 @@ describe('Frontend Routing', function () {
             var date  = moment().format("YYYY/MM/DD");
 
             request.get('/' + date + '/welcome-to-ghost/')
-                //.expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -117,7 +116,7 @@ describe('Frontend Routing', function () {
         });
     });
 
-    describe('EDIT', function() {
+    describe('Edit', function() {
         it('should get redirected to /ghost/editor/1 from /welcome-to-ghost/edit', function (done) {
             request.get('/welcome-to-ghost/edit/')
                 .expect('Location', '/ghost/editor/1/')
