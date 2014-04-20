@@ -15,6 +15,11 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         });
     },
+    showErrors: function (errors) {
+        for (var i = 0; i < errors.length; i += 1) {
+            this.showError(errors[i].message || errors[i]);
+        }
+    },
     showInfo: function (message) {
         this.pushObject({
             type: 'info',
