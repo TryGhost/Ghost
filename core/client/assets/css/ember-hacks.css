@@ -3,10 +3,6 @@
   The contents should be solved properly or moved into ghost-ui package.
 */
 
-.post-settings-menu {
-    display: none !important;
-}
-
 #entry-markdown,
 .entry-preview,
 .CodeMirror.cm-s-default {
