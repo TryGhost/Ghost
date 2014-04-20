@@ -97,10 +97,6 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-
-
-    
-
         it('should not work with date permalinks', function (done) {
             // get today's date
             var date  = moment().format("YYYY/MM/DD");
@@ -129,10 +125,10 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should not get redirected to edit screen', function (done) {
+        it('should 404 on param that is not edit', function (done) {
             request.get('/welcome-to-ghost/noedit/')
-                .expect('Content-Type', /html/)
-                .expect(200)
+                .expect(404)
+                .expect(/Page Not Found/)
                 .end(doEnd(done));
         });
 
