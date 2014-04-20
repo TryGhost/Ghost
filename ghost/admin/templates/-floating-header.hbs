@@ -14,40 +14,8 @@
         {{#link-to "editor" this class="post-edit" title="Edit Post"}}
             <span class="hidden">Edit Post</span>
         {{/link-to}}
-        <a class="post-settings" href="#" data-toggle=".post-settings-menu" title="Post Settings"><span class="hidden">Post Settings</span></a>
-        <div class="post-settings-menu menu-drop-right overlay" style="display: none;">
-            <form>
-                <table class="plain">
-                    <tbody>
-                    <tr class="post-setting">
-                        <td class="post-setting-label">
-                            <label for="url">URL</label>
-                        </td>
-                        <td class="post-setting-field">
-                            <input id="url" class="post-setting-slug" type="text" value="">
-                        </td>
-                    </tr>
-                    <tr class="post-setting">
-                        <td class="post-setting-label">
-                            <label for="pub-date">Pub Date</label>
-                        </td>
-                        <td class="post-setting-field">
-                            <input id="pub-date" class="post-setting-date" type="text" value="" placeholder="17 Feb 14 @ 02:35"><!--<span class="post-setting-calendar"></span>-->
-                        </td>
-                    </tr>
-                    <tr class="post-setting">
-                        <td class="post-setting-label">
-                            <span class="label">Static Page</span>
-                        </td>
-                        <td class="post-setting-item">
-                            <input id="static-page" class="post-setting-static-page" type="checkbox" value="">
-                            <label class="checkbox" for="static-page"></label>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </form>
-            <a class="delete" href="#">Delete This Post</a>
-        </div>
+        <a class="post-settings" title="Post Settings" {{action 'editSettings'}}><span class="hidden">Post Settings</span></a>
+        <!-- @TODO use Ghost Popover (#2565) --->
+        {{view "post-settings-menu-view"}}
     </section>
 </header>
