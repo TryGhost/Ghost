@@ -682,7 +682,7 @@ describe('Core Helpers', function () {
         });
 
         it('can render single page with no pagination necessary', function () {
-            var rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: undefined, limit: 15, total: 8, pages: 1}});
+            var rendered = helpers.pagination.call({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1}});
             should.exist(rendered);
             // strip out carriage returns and compare.
             rendered.string.should.match(paginationRegex);
@@ -693,7 +693,7 @@ describe('Core Helpers', function () {
         });
 
         it('can render first page of many with older posts link', function () {
-            var rendered = helpers.pagination.call({pagination: {page: 1, prev: undefined, next: 2, limit: 15, total: 8, pages: 3}});
+            var rendered = helpers.pagination.call({pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}});
             should.exist(rendered);
 
             rendered.string.should.match(paginationRegex);
@@ -715,7 +715,7 @@ describe('Core Helpers', function () {
         });
 
         it('can render last page of many with newer posts link', function () {
-            var rendered = helpers.pagination.call({pagination: {page: 3, prev: 2, next: undefined, limit: 15, total: 8, pages: 3}});
+            var rendered = helpers.pagination.call({pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}});
             should.exist(rendered);
 
             rendered.string.should.match(paginationRegex);
@@ -733,7 +733,7 @@ describe('Core Helpers', function () {
                 };
             };
 
-            runErrorTest({pagination: {page: 3, prev: true, next: undefined, limit: 15, total: 8, pages: 3}})
+            runErrorTest({pagination: {page: 3, prev: true, next: null, limit: 15, total: 8, pages: 3}})
                 .should.throwError('Invalid value, Next/Prev must be a number');
             runErrorTest({pagination: {page: 3, prev: 2, next: true, limit: 15, total: 8, pages: 3}})
                 .should.throwError('Invalid value, Next/Prev must be a number');
@@ -747,13 +747,13 @@ describe('Core Helpers', function () {
             runErrorTest({pagination: {page: 3, limit: 15, total: 8}})
                 .should.throwError('All values must be defined for page, pages, limit and total');
 
-            runErrorTest({pagination: {page: null, limit: 15, total: 8, pages: 3}})
+            runErrorTest({pagination: {page: null, prev: null, next: null, limit: 15, total: 8, pages: 3}})
                 .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-            runErrorTest({pagination: {page: 1, limit: null, total: 8, pages: 3}})
+            runErrorTest({pagination: {page: 1, prev: null, next: null, limit: null, total: 8, pages: 3}})
                 .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-            runErrorTest({pagination: {page: 1, limit: 15, total: null, pages: 3}})
+            runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: null, pages: 3}})
                 .should.throwError('Invalid value, check page, pages, limit and total are numbers');
-            runErrorTest({pagination: {page: 1, limit: 15, total: 8, pages: null}})
+            runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
                 .should.throwError('Invalid value, check page, pages, limit and total are numbers');
         });
     });

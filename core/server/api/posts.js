@@ -19,7 +19,8 @@ posts = {
     // **takes:** filter / pagination parameters
     browse: function browse(options) {
         options = options || {};
-
+        
+        // only published posts if no user is present
         if (!this.user) {
             options.status = 'published';
         }
@@ -39,8 +40,9 @@ posts = {
     // **takes:** an identifier (id or slug?)
     read: function read(options) {
         options = options || {};
+
+        // only published posts if no user is present
         if (!this.user) {
-            // only published posts for 
             options.status = 'published';
         }
 

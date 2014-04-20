@@ -99,6 +99,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(5);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
         });
@@ -118,6 +119,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(6);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
                 
@@ -140,6 +142,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(8);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
         });
@@ -159,6 +162,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
         });
@@ -178,6 +182,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
         });
