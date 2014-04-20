@@ -117,6 +117,32 @@ describe('Frontend Routing', function () {
         });
     });
 
+    describe('Post edit', function () {
+        it('should redirect without slash', function (done) {
+            request.get('/welcome-to-ghost/edit')
+                .expect('Location', '/welcome-to-ghost/edit/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to editor', function (done) {
+            request.get('/welcome-to-ghost/edit/')
+                .expect('Location', '/ghost/editor/1/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should 404 for non-edit parameter', function (done) {
+            request.get('/welcome-to-ghost/notedit/')
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+    });
+
     describe('RSS', function () {
         it('should redirect without slash', function (done) {
             request.get('/rss')
