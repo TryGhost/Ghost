@@ -252,7 +252,7 @@ function checkMySQLPostTable() {
 // Migrate from a specific version to the latest
 migrateUp = function () {
     return getTables().then(function (oldTables) {
-        // if tables exist and lient is mysqls check if posts table is okay
+        // if tables exist and client is mysqls check if posts table is okay
         if (!_.isEmpty(oldTables) && client === 'mysql') {
             return checkMySQLPostTable().then(function () {
                 return oldTables;
@@ -274,6 +274,8 @@ migrateUp = function () {
             return sequence(commands);
         }
         return;
+    }).then(function () {
+        return fixtures.updateFixtures();
     });
 };
 

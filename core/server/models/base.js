@@ -47,20 +47,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         validation.validateSchema(this.tableName, this.toJSON());
     },
 
-    creating: function () {
+    creating: function (newObj, attr, options) {
         if (!this.get('created_by')) {
-            this.set('created_by', 1);
+            this.set('created_by', options.user);
         }
     },
 
-    saving: function () {
-         // Remove any properties which don't belong on the model
+    saving: function (newObj, attr, options) {
+        // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
-
-        // sessions do not have 'updated_by' column
-        if (this.tableName !== 'sessions') {
-            this.set('updated_by', 1);
-        }
+        this.set('updated_by', options.user);
     },
 
     // Base prototype properties will go here
@@ -149,7 +145,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     edit: function (editedObj, options) {
         options = options || {};
         return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            return foundObj.save(editedObj, options);
+            if (foundObj) {
+                return foundObj.save(editedObj, options);
+            }
         });
     },
 
