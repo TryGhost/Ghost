@@ -93,8 +93,9 @@ describe('Tag API', function () {
                 res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
-                jsonResponse.should.have.length(6);
-                testUtils.API.checkResponse(jsonResponse[0], 'tag');
+                jsonResponse.tags.should.exist;
+                jsonResponse.tags.should.have.length(6);
+                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
                 done();
             });
     });
