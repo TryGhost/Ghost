@@ -102,7 +102,6 @@ describe('Frontend Routing', function () {
             var date  = moment().format("YYYY/MM/DD");
 
             request.get('/' + date + '/welcome-to-ghost/')
-                //.expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -111,6 +110,36 @@ describe('Frontend Routing', function () {
         it('should 404 for unknown post', function (done) {
             request.get('/spectacular/')
                 .expect('Cache-Control', cacheRules['private'])
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+    });
+
+    describe('Edit', function() {
+        it('should get redirected to /ghost/editor/1 from /welcome-to-ghost/edit', function (done) {
+            request.get('/welcome-to-ghost/edit/')
+                .expect('Location', '/ghost/editor/1/')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should 404 on param that is not edit', function (done) {
+            request.get('/welcome-to-ghost/noedit/')
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+
+        it('should 404 on /edit/', function (done) {
+            request.get('/edit/')
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+
+        it('should 404 on non existent post + /edit/', function (done) {
+            request.get('/thispostdoesntexist/edit/')
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));

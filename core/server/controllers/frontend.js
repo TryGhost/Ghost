@@ -176,9 +176,12 @@ frontendControllers = {
 
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
-                if (params.edit !== undefined) {
+                if (params.edit !== undefined && params.edit === 'edit') {
                     return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
+                } else if (params.edit !== undefined) {
+                    throw new Error('no match');
                 }
+
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config().paths.availableThemes[activeTheme.value],
