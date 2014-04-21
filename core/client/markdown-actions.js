@@ -15,7 +15,7 @@
             self.replace();
         },
         replace: function () {
-            var text = this.elem.getSelection(), pass = true, cursor = this.elem.getCursor(), line = this.elem.getLine(cursor.line), md, word, letterCount, converter;
+            var text = this.elem.getSelection(), pass = true, cursor = this.elem.getCursor(), line = this.elem.getLine(cursor.line), md, word, letterCount, converter, textIndex, position;
             switch (this.style) {
             case 'h1':
                 this.elem.setLine(cursor.line, '# ' + line);
@@ -50,7 +50,13 @@
             case 'link':
                 md = this.options.syntax.link.replace('$1', text);
                 this.elem.replaceSelection(md, 'end');
-                this.elem.setSelection({line: cursor.line, ch: cursor.ch - 8}, {line: cursor.line, ch: cursor.ch - 1});
+                if (!text) {
+                    this.elem.setCursor(cursor.line, cursor.ch + 1);
+                } else {
+                    textIndex = line.indexOf(text, cursor.ch - text.length);
+                    position = textIndex + md.length - 1;
+                    this.elem.setSelection({line: cursor.line, ch: position - 7}, {line: cursor.line, ch: position});
+                }
                 pass = false;
                 break;
             case 'image':
