@@ -77,7 +77,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Naive user add
-     * @param  _user
+     * @param {object} _user
      *
      * Hashes the password provided before saving to the database.
      */
@@ -88,7 +88,7 @@ User = ghostBookshelf.Model.extend({
             userData = _.extend({}, _user);
         /**
          * This only allows one user to be added to the database, otherwise fails.
-         * @param  {object} user
+         * @param {object} user
          * @author javorszky
          */
         return validatePasswordLength(userData.password).then(function () {
@@ -217,8 +217,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Naive change password method
-     * @param  {object} _userdata email, old pw, new pw, new pw2
-     *
+     * @param {object} _userdata email, old pw, new pw, new pw2
      */
     changePassword: function (_userdata) {
         var self = this,
