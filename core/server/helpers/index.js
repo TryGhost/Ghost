@@ -660,8 +660,8 @@ coreHelpers.pagination = function (options) {
         errors.logAndThrowError('All values must be defined for page, pages, limit and total');
         return;
     }
-    if ((!_.isUndefined(this.pagination.next) && !_.isNumber(this.pagination.next))
-            || (!_.isUndefined(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
+    if ((!_.isNull(this.pagination.next) && !_.isNumber(this.pagination.next))
+            || (!_.isNull(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
         errors.logAndThrowError('Invalid value, Next/Prev must be a number');
         return;
     }

@@ -10,6 +10,7 @@ var _             = require('lodash'),
     posts         = require('./posts'),
     users         = require('./users'),
     tags          = require('./tags'),
+    mail          = require('./mail'),
     requestHandler,
     init;
 
@@ -29,8 +30,8 @@ function cacheInvalidationHeader(req, result) {
             cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
             cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
-            if (id && jsonResult.slug) {
-                return config.urlForPost(settings, jsonResult).then(function (postUrl) {
+            if (id && jsonResult.posts[0].slug) {
+                return config.urlForPost(settings, jsonResult.posts[0]).then(function (postUrl) {
                     return cacheInvalidate + ', ' + postUrl;
                 });
             }
@@ -47,17 +48,17 @@ requestHandler = function (apiMethod) {
     return function (req, res) {
         var options = _.extend(req.body, req.files, req.query, req.params),
             apiContext = {
-                user: req.session && req.session.user
+                user: (req.session && req.session.user) ? req.session.user : null
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {
-            res.json(result || {});
             return cacheInvalidationHeader(req, result).then(function (header) {
                 if (header) {
                     res.set({
                         "X-Cache-Invalidate": header
                     });
                 }
+                res.json(result || {});
             });
         }, function (error) {
             var errorCode = error.code || 500,
@@ -79,6 +80,7 @@ module.exports = {
     notifications: notifications,
     settings: settings,
     db: db,
+    mail: mail,
     requestHandler: requestHandler,
     init: init
 };
