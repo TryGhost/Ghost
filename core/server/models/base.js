@@ -112,7 +112,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive find all
-     * @param options (optional)
+     * @param {Object} options (optional)
      */
     findAll:  function (options) {
         options = options || {};
@@ -125,8 +125,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive find one where args match
-     * @param args
-     * @param options (optional)
+     * @param {Object} args
+     * @param {Object} options (optional)
      */
     findOne: function (args, options) {
         options = options || {};
@@ -139,8 +139,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive edit
-     * @param editedObj
-     * @param options (optional)
+     * @param {Object} editedObj
+     * @param {Object} options (optional)
      */
     edit: function (editedObj, options) {
         options = options || {};
@@ -157,8 +157,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive create
-     * @param newObj
-     * @param options (optional)
+     * @param {Object} newObj
+     * @param {Object} options (optional)
      */
     add: function (newObj, options) {
         options = options || {};
@@ -180,8 +180,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive destroy
-     * @param _identifier
-     * @param options (optional)
+     * @param {Object} _identifier
+     * @param {Object} options (optional)
      */
     destroy: function (_identifier, options) {
         options = options || {};

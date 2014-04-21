@@ -38,13 +38,13 @@ if (!isProduction) {
     hbs.handlebars.logger.level = 0;
 }
 
-/**
- * [ description]
- * @todo ghost core helpers + a way for themes to register them
- * @param  {Object} context date object
- * @param  {*} options
- * @return {Object} A Moment time / date object
- */
+
+ // [ description]
+ //
+ // @param  {Object} context date object
+ // @param  {*} options
+ // @return {Object} A Moment time / date object
+
 coreHelpers.date = function (context, options) {
     if (!options && context.hasOwnProperty('hash')) {
         options = context;
@@ -519,10 +519,10 @@ coreHelpers.meta_description = function (options) {
 /**
  * Localised string helpers
  *
- * @param String key
- * @param String default translation
+ * @param {String} key
+ * @param {String} default translation
  * @param {Object} options
- * @return String A correctly internationalised string
+ * @return {String} A correctly internationalised string
  */
 coreHelpers.e = function (key, defaultString, options) {
     var output;
