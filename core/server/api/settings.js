@@ -98,16 +98,15 @@ readSettingsResult = function (result) {
     });
 };
 
-/**
- * Normalizes paths read by require-tree so that the apps and themes modules can use them.
- * Creates an empty array (res), and populates it with useful info about the read packages
- * like name, whether they're active (comparison with the second argument), and if they
- * have a package.json, that, otherwise false
- * @param  object           paths       as returned by require-tree()
- * @param  array/string     active      as read from the settings object
- * @return array                        of objects with useful info about
- *                                      apps / themes
- */
+
+// Normalizes paths read by require-tree so that the apps and themes modules can use them.
+// Creates an empty array (res), and populates it with useful info about the read packages
+// like name, whether they're active (comparison with the second argument), and if they
+// have a package.json, that, otherwise false
+// @param  {object}           paths       as returned by require-tree()
+// @param  {array/string}     active      as read from the settings object
+// @return {array}                        of objects with useful info about apps / themes
+
 filterPaths = function (paths, active) {
     var pathKeys = Object.keys(paths),
         res = [],
