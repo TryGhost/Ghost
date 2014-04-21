@@ -10,6 +10,7 @@ var _             = require('lodash'),
     posts         = require('./posts'),
     users         = require('./users'),
     tags          = require('./tags'),
+    mail          = require('./mail'),
     requestHandler,
     init;
 
@@ -79,6 +80,7 @@ module.exports = {
     notifications: notifications,
     settings: settings,
     db: db,
+    mail: mail,
     requestHandler: requestHandler,
     init: init
 };
