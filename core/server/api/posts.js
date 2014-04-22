@@ -73,6 +73,10 @@ posts = {
                 if (result) {
                     var omitted = result.toJSON();
                     omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                    // If previously was not published and now is, signal the change
+                    if (result.updated('status') !== result.get('status')) {
+                        omitted.statusChanged = true;
+                    }
                     return { posts: [ omitted ]};
                 }
                 return when.reject({code: 404, message: 'Post not found'});
@@ -93,6 +97,10 @@ posts = {
             }).then(function (result) {
                 var omitted = result.toJSON();
                 omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                if (omitted.status === 'published') {
+                    // When creating a new post that is published right now, signal the change
+                    omitted.statusChanged = true;
+                }
                 return { posts: [ omitted ]};
             });
         }, function () {
@@ -110,6 +118,13 @@ posts = {
             return posts.read.call({user: self.user}, {id : args.id, status: 'all'}).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
                     var deletedObj = result;
+
+                    if (deletedObj.posts) {
+                        _.each(deletedObj.posts, function (post) {
+                            post.statusChanged = true;
+                        });
+                    }
+
                     return deletedObj;
                 });
             });
