@@ -1,50 +1,50 @@
 ---
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Bagaimana Cara Menginstall Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menginstal platform blogging Ghost dan menjalankannya pada server lokal atau remote.
+heading: Menginstal &amp; Mulai Menjalankan Ghost
+subheading: Langkah pertama untuk mengatur blog Anda untuk pertamakalinya.
 permalink: /id_ID/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-## Getting Ghost Live <a id="deploy"></a>
+## Menjalankan Ghost <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Sekarang anda siap untuk menjalankan Ghost? Salut!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+Keputusan pertama yang harus Anda buat adalah: apakah Anda hendak menginstal dan mengatur Ghost sendiri, atau hendak menggunakan installer.
 
-### Installers
+### Installer
 
-There are a couple of options for simple installers at the moment:
+Saat ini, ada sejumlah opsi installer sederhana:
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   Memasang Ghost di gemawan (cloud) dengan [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   Meluncurkan Ghost dengan [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   Membangun dan menjalankan dengan [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### Pengaturan Manual
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Anda akan membutuhkan sebuah paket hosting yang telah terinstal dengan - atau memampukan Anda untuk menginstal [Node.js](http://nodejs.org).
+    Hal ini berarti layanan hosting jenis gemawan ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) atau paket lainnya yang memiliki akses SSH (terminal) sehingga Anda bisa menginstal Node.js. Cukup banyak penyedia layanan seperti ini dengan biaya yang murah.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Yang tidak bisa digunakan saat ini adalah hosting terbagi (shared) ala cPanel sebab umumnya ditujukan khusus untuk memfasilitasi PHP. Meskipun demikian, ada beberapa yang menawarkan offer Ruby, dan begitu pula kedepannya akan menawarkan Node.js sebab mereka tak jauh berbeda.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>Sayangnya, banyak layanan hosting gemawan khusus Node seperti **Nodejitsu** & **Heroku** yang **TIDAK** kompatibel dengan Ghost. Mereka akan memfasilitasi pada awalnya, namun mereka akan menghapus berkas-berkas Anda, dan karenanya, semua unggahan gambar dan basis data Anda akan lenyap. Heroku mendukung MySQL jadi Anda bisa menggunakannya, namun tetap Anda akan kehilangan semua unggahan gambar.
 
-The following links contain instructions on how to get up and running with:
+Tautan-tautan berikut menyajikan instruksi mengenai cara membangun dan menjalankan Ghost dengan:
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - dari [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - dari [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - dari [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - dari [Gregg Housh](http://0v.org/)
+*   ...kunjungi [installation forum](https://en.ghost.org/forum/installation) untuk panduan lebih lengkap ...
 
-## Making Ghost run forever
+## Membuat Ghost berjalan terus
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+Metode untuk menjalankan Ghost yang telah diuraikan sebelumnya adalah is `npm start`. Ini metode yang cocok untuk pengembangan dan pengujian di server local server, namun jika Anda menjalankan Ghost dengan command line, ia akan berhenti tiap kali Anda menutup jendela terminal atau log out dari SSH. Untuk mencegah Ghost terhenti, Anda harus menjalankan Ghost sebagai suatu layanan. Ada sejumlah cara untuk melakukannya.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
