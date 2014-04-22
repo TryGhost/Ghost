@@ -17,23 +17,37 @@ var _             = require('lodash'),
 // ## Request Handlers
 
 function cacheInvalidationHeader(req, result) {
-    //TODO: don't set x-cache-invalidate header for drafts
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[4],
         id = parsedUrl[5],
         cacheInvalidate,
-        jsonResult = result.toJSON ? result.toJSON() : result;
+        jsonResult = result.toJSON ? result.toJSON() : result,
+        post,
+        wasPublished,
+        wasDeleted;
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
             cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
-            cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
-            if (id && jsonResult.posts[0].slug) {
-                return config.urlForPost(settings, jsonResult.posts[0]).then(function (postUrl) {
-                    return cacheInvalidate + ', ' + postUrl;
-                });
+            post = jsonResult.posts[0];
+            wasPublished = post.statusChanged && post.status === 'published';
+            wasDeleted = method === 'DELETE';
+
+            // Remove the statusChanged value from the response
+            if (post.statusChanged) {
+                delete post.statusChanged;
+            }
+
+            // Don't set x-cache-invalidate header for drafts
+            if (wasPublished || wasDeleted) {
+                cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
+                if (id && post.slug) {
+                    return config.urlForPost(settings, post).then(function (postUrl) {
+                        return cacheInvalidate + ', ' + postUrl;
+                    });
+                }
             }
         }
     }
