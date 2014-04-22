@@ -6,7 +6,7 @@ Visit the project's website at <http://ghost.org> &bull; docs on <http://docs.gh
 
 ## Getting Involved
 
-Want to report a bug, request a feature, or help us build or translate Ghost? Check out our in depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
+Want to report a bug, request a feature, contribute or translate Ghost? Check out our in-depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
 
 ## Getting Started
 
@@ -20,11 +20,11 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 
 For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our forum](http://ghost.org/forum/).
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.**
+1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
-   **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers).**
-1. Create a new directory where you would like to run the code, and unzip the package to that location.
-1. Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
+   **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers) here.**
+1. Create a new directory where you would like to run the code, and un-zip the package to that location.
+1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are)
 1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
 1. To start ghost, run `npm start`
 1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
