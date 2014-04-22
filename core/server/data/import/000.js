@@ -121,9 +121,27 @@ function importSettings(ops, tableData, transaction) {
     tableData = _.filter(tableData, function (data) {
         return blackList.indexOf(data.type) === -1;
     });
-    ops.push(models.Settings.edit(tableData, {user: 1, transacting: transaction})
-         // add pass-through error handling so that bluebird doesn't think we've dropped it
-         .otherwise(function (error) { return when.reject(error); }));
+
+    _.each(tableData, function (setting) {
+        // Avoid duplicates
+        ops.push(models.Settings.findOne({ key: setting.key }, { transacting: transaction }).then(function (_setting) {
+            var op;
+
+            if (!_setting) {
+                // Did not find existing setting
+                op = models.Settings.add(setting, { transacting: transaction });
+            } else {
+                // Found existing setting
+                // TODO: Also set UUID?
+                setting.id = _setting.id;
+
+                op = models.Settings.edit(setting, { transacting: transaction });
+            }
+
+            // add pass-through error handling so that bluebird doesn't think we've dropped it
+            return op.otherwise(function (error) { return when.reject(error); });
+        }));
+    });
 }
 
 function importApps(ops, tableData, transaction) {
@@ -171,6 +189,7 @@ function importApps(ops, tableData, transaction) {
 Importer000.prototype.basicImport = function (data) {
     var ops = [],
         tableData = data.data;
+
     return models.Base.transaction(function (t) {
 
         // Do any pre-processing of relationships (we can't depend on ids)
