@@ -64,7 +64,15 @@
                 <label class="checkbox" for="permalinks"></label>
                 <p>Include the date in your post URLs</p>
             </div>
-
+            <div class="form-group">
+                <label for="Timezones">Timezone</label>
+                <select id="Timezones" name="general[timezone]">
+                {{#each timezone}}
+                    <option value="{{offSet}}" {{#if active}}selected{{/if}}>(GMT {{offset}}) {{cities}}</option>
+                {{/each}}
+                </select>
+                <p>What time zone do you live in</p>
+            </div>
             <div class="form-group">
                 <label for="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
