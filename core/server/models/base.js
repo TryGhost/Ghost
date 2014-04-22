@@ -56,6 +56,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     saving: function (newObj, attr, options) {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
+        // Store the previous attributes so we can tell what was updated later
+        this._updatedAttributes = newObj.previousAttributes();
+
         this.set('updated_by', options.user);
     },
 
@@ -106,6 +109,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     sanitize: function (attr) {
         return sanitize(this.get(attr)).xss();
+    },
+
+    // Get attributes that have been updated (values before a .save() call)
+    updatedAttributes: function () {
+        return this._updatedAttributes || {};
+    },
+
+    // Get a specific updated attribute value
+    updated: function (attr) {
+        return this.updatedAttributes()[attr];
     }
 
 }, {

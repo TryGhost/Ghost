@@ -316,6 +316,7 @@ describe('Post API', function () {
                             }
 
                             var publishedPost = res.body;
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + publishedPost.posts[0].slug + '/');
                             res.should.be.json;
                             publishedPost.should.exist;
@@ -334,7 +335,7 @@ describe('Post API', function () {
                                     }
 
                                     var updatedPost = res.body;
-                                    res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + updatedPost.posts[0].slug + '/');
+                                    _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                                     res.should.be.json;
                                     updatedPost.should.exist;
                                     updatedPost.posts.should.exist;
@@ -373,7 +374,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.posts[0].slug + '/');
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);
@@ -407,7 +408,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.posts[0].slug + '/');
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].page.should.eql(changedValue);
@@ -442,7 +443,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.posts[0].slug + '/');
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].page.should.eql(changedValue);
@@ -498,7 +499,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + putBody.posts[0].slug + '/');
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts.should.exist;
@@ -539,7 +540,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            should.not.exist(res.headers['x-cache-invalidate']);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             testUtils.API.checkResponseValue(putBody, ['error']);
                             done();
@@ -724,7 +725,7 @@ describe('Post API', function () {
                                 yyyy = today.getFullYear(),
                                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/' + putBody.posts[0].slug + '/';
 
-                            res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, ' + postLink);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);
