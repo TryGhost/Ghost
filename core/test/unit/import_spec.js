@@ -423,7 +423,7 @@ describe("Import", function () {
                 done();
             }).otherwise(function (error) {
                 done(new Error(error));
-            })
+            });
         });
 
         it("doesn't import invalid post data from 002", function (done) {
