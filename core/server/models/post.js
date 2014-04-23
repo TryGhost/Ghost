@@ -444,7 +444,12 @@ Post = ghostBookshelf.Model.extend({
 
         return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
             if (post) {
-                return self.findOne({status: 'all', id: post.id}, options);
+                return self.findOne({status: 'all', id: post.id}, options)
+                    .then(function (found) {
+                        // Pass along the updated attributes for checking status changes
+                        found._updatedAttributes = post._updatedAttributes;
+                        return found;
+                    });
             }
         });
     },
