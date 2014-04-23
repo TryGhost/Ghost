@@ -73,6 +73,7 @@ describe('Post Model', function () {
             results.length.should.be.above(0);
             firstPost = results.models[0].toJSON();
 
+            should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object;
             firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
@@ -89,6 +90,7 @@ describe('Post Model', function () {
             should.exist(result);
             firstPost = result.toJSON();
 
+            should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object;
             firstPost.fields.should.be.an.Array;
             firstPost.author.name.should.equal(testUtils.DataGenerator.Content.users[0].name);
@@ -142,6 +144,7 @@ describe('Post Model', function () {
             createdPost.get('created_at').should.be.above(new Date(0).getTime());
             createdPost.get('created_by').should.equal(1);
             createdPost.get('author_id').should.equal(1);
+            createdPost.has('author').should.equal(false);
             createdPost.get('created_by').should.equal(createdPost.get('author_id'));
             createdPost.get('updated_at').should.be.above(new Date(0).getTime());
             createdPost.get('updated_by').should.equal(1);
