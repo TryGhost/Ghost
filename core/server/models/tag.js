@@ -27,6 +27,15 @@ Tag = ghostBookshelf.Model.extend({
 
     posts: function () {
         return this.belongsToMany(Posts);
+    },
+
+    toJSON: function (options) {
+        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        attrs.parent = attrs.parent || attrs.parent_id;
+        delete attrs.parent_id;
+
+        return attrs;
     }
 });
 
