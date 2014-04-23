@@ -57,3 +57,11 @@ CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(te
     });
     CasperTest.Routines.togglePermalinks.run('off');
 }, false);
+
+CasperTest.begin('Ensure that character set is UTF-8 for RSS feed', 1, function suite(test) {
+    CasperTest.Routines.togglePermalinks.run('off');
+    casper.thenOpen(url + 'rss/', function (response) {
+        test.assertEqual(response.headers.get('Content-Type'), 'text/xml; charset=UTF-8', 'Content type should include UTF-8 character set encoding.');
+    });
+}, false);
+

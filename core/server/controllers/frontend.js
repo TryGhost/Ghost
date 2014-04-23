@@ -344,7 +344,7 @@ frontendControllers = {
                 });
 
                 when.all(feedItems).then(function () {
-                    res.set('Content-Type', 'text/xml');
+                    res.set('Content-Type', 'text/xml; charset=UTF-8');
                     res.send(feed.xml());
                 });
             });
