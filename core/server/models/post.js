@@ -211,6 +211,15 @@ Post = ghostBookshelf.Model.extend({
 
     fields: function () {
         return this.morphMany(AppField, 'relatable');
+    },
+
+    toJSON: function (options) {
+        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        attrs.author = attrs.author || attrs.author_id;
+        delete attrs.author_id;
+        
+        return attrs;
     }
 
 }, {
