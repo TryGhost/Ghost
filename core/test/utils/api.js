@@ -5,15 +5,16 @@ var _ = require('lodash'),
     port = '2369';
     schema = "http://",
     expectedProperties = {
-        posts: ['posts', 'page', 'limit', 'pages', 'total'],
+        posts: ['posts', 'meta'],
+        pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
-            'featured', 'image', 'status', 'language', 'author_id', 'created_at', 'created_by', 'updated_at',
-            'updated_by', 'published_at', 'published_by', 'page', 'author', 'user', 'tags'],
+            'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',
+            'updated_by', 'published_at', 'published_by', 'page', 'author', 'tags', 'fields'],
         // TODO: remove databaseVersion, dbHash
         settings: ['databaseVersion', 'dbHash', 'title', 'description', 'email', 'logo', 'cover', 'defaultLang',
             "permalinks", 'postsPerPage', 'forceI18n', 'activeTheme', 'activeApps', 'installedApps',
             'availableThemes', 'availableApps', 'nextUpdateCheck', 'displayUpdateNotification'],
-        tag: ['id', 'uuid', 'name', 'slug', 'description', 'parent_id',
+        tag: ['id', 'uuid', 'name', 'slug', 'description', 'parent',
             'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
         user: ['id', 'uuid', 'name', 'slug', 'email', 'image', 'cover', 'bio', 'website',
             'location', 'accessibility', 'status', 'language', 'meta_title', 'meta_description',
@@ -21,6 +22,9 @@ var _ = require('lodash'),
         notification: ['type', 'message', 'status', 'id']
     };
 
+function getApiQuery (route) {
+    return url.resolve(ApiRouteBase, route);
+}
 
 function getApiURL (route) {
     var baseURL = url.resolve(schema + host + ':' + port, ApiRouteBase);
@@ -46,6 +50,7 @@ function checkResponseValue (jsonResponse, properties) {
 
 module.exports = {
     getApiURL: getApiURL,
+    getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
     checkResponse: checkResponse,

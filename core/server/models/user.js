@@ -77,18 +77,18 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Naive user add
-     * @param  _user
+     * @param {object} _user
      *
      * Hashes the password provided before saving to the database.
      */
-    add: function (_user) {
+    add: function (_user, options) {
 
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = _.extend({}, _user);
         /**
          * This only allows one user to be added to the database, otherwise fails.
-         * @param  {object} user
+         * @param {object} user
          * @author javorszky
          */
         return validatePasswordLength(userData.password).then(function () {
@@ -108,7 +108,7 @@ User = ghostBookshelf.Model.extend({
             return self.gravatarLookup(userData);
         }).then(function (userData) {
             // Save the user with the hashed password
-            return ghostBookshelf.Model.add.call(self, userData);
+            return ghostBookshelf.Model.add.call(self, userData, options);
         }).then(function (addedUser) {
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
@@ -138,6 +138,26 @@ User = ghostBookshelf.Model.extend({
         //     }, errors.logAndThrowError);
         // }, errors.logAndThrowError);
 
+    },
+
+    permissable: function (userModelOrId, context) {
+        var self = this,
+            userId = context.user,
+            userModel = userModelOrId;
+
+        // If we passed in an id instead of a model, get the model
+        // then check the permissions
+        if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
+            return this.read({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
+                return self.permissable(foundUserModel, context);
+            }, errors.logAndThrowError);
+        }
+
+        // If this is the same user that requests the operation allow it.
+        if (userModel && userId === userModel.get('id')) {
+            return when.resolve();
+        }
+        return when.reject();
     },
 
     setWarning: function (user) {
@@ -177,7 +197,7 @@ User = ghostBookshelf.Model.extend({
                         });
                     }
 
-                    return when(user.set('status', 'active').save()).then(function (user) {
+                    return when(user.set({status : 'active', last_login : new Date()}).save()).then(function (user) {
                         return user;
                     });
                 }, errors.logAndThrowError);
@@ -197,8 +217,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Naive change password method
-     * @param  {object} _userdata email, old pw, new pw, new pw2
-     *
+     * @param {object} _userdata email, old pw, new pw, new pw2
      */
     changePassword: function (_userdata) {
         var self = this,
@@ -332,35 +351,6 @@ User = ghostBookshelf.Model.extend({
 
             return foundUser;
         });
-    },
-
-    effectivePermissions: function (id) {
-        return this.read({id: id}, { withRelated: ['permissions', 'roles.permissions'] })
-            .then(function (foundUser) {
-                var seenPerms = {},
-                    rolePerms = _.map(foundUser.related('roles').models, function (role) {
-                        return role.related('permissions').models;
-                    }),
-                    allPerms = [];
-
-                rolePerms.push(foundUser.related('permissions').models);
-
-                _.each(rolePerms, function (rolePermGroup) {
-                    _.each(rolePermGroup, function (perm) {
-                        var key = perm.get('action_type') + '-' + perm.get('object_type') + '-' + perm.get('object_id');
-
-                        // Only add perms once
-                        if (seenPerms[key]) {
-                            return;
-                        }
-
-                        allPerms.push(perm);
-                        seenPerms[key] = true;
-                    });
-                });
-
-                return when.resolve(allPerms);
-            }, errors.logAndThrowError);
     },
 
     gravatarLookup: function (userData) {

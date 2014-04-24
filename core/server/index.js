@@ -22,6 +22,7 @@ var crypto      = require('crypto'),
     packageInfo = require('../../package.json'),
 
 // Variables
+    httpServer,
     dbHash;
 
 // If we're in development mode, require "when/console/monitor"
@@ -59,7 +60,7 @@ function initDbHashAndFirstRun() {
 
         if (dbHash === null) {
             var initHash = uuid.v4();
-            return when(api.settings.edit('dbHash', initHash)).then(function (settings) {
+            return when(api.settings.edit.call({user: 1}, 'dbHash', initHash)).then(function (settings) {
                 dbHash = settings.dbHash;
                 return dbHash;
             }).then(doFirstRun);
@@ -105,63 +106,58 @@ function builtFilesExist() {
     return when.all(deferreds);
 }
 
-function startGhost(deferred) {
+function ghostStartMessages() {
+    // Tell users if their node version is not supported, and exit
+    if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+        console.log(
+            "\nERROR: Unsupported version of Node".red,
+            "\nGhost needs Node version".red,
+            packageInfo.engines.node.yellow,
+            "you are using version".red,
+            process.versions.node.yellow,
+            "\nPlease go to http://nodejs.org to get a supported version".green
+        );
 
-    return function () {
-        // Tell users if their node version is not supported, and exit
-        if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+        process.exit(0);
+    }
+
+    // Startup & Shutdown messages
+    if (process.env.NODE_ENV === 'production') {
+        console.log(
+            "Ghost is running...".green,
+            "\nYour blog is now available on",
+            config().url,
+            "\nCtrl+C to shut down".grey
+        );
+
+        // ensure that Ghost exits correctly on Ctrl+C
+        process.on('SIGINT', function () {
             console.log(
-                "\nERROR: Unsupported version of Node".red,
-                "\nGhost needs Node version".red,
-                packageInfo.engines.node.yellow,
-                "you are using version".red,
-                process.versions.node.yellow,
-                "\nPlease go to http://nodejs.org to get a supported version".green
+                "\nGhost has shut down".red,
+                "\nYour blog is now offline"
             );
-
             process.exit(0);
-        }
-
-        // Startup & Shutdown messages
-        if (process.env.NODE_ENV === 'production') {
-            console.log(
-                "Ghost is running...".green,
-                "\nYour blog is now available on",
-                config().url,
-                "\nCtrl+C to shut down".grey
-            );
-
-            // ensure that Ghost exits correctly on Ctrl+C
-            process.on('SIGINT', function () {
-                console.log(
-                    "\nGhost has shut down".red,
-                    "\nYour blog is now offline"
-                );
-                process.exit(0);
-            });
-        } else {
-            console.log(
-                ("Ghost is running in " + process.env.NODE_ENV + "...").green,
-                "\nListening on",
+        });
+    } else {
+        console.log(
+            ("Ghost is running in " + process.env.NODE_ENV + "...").green,
+            "\nListening on",
                 config.getSocket() || config().server.host + ':' + config().server.port,
-                "\nUrl configured as:",
-                config().url,
-                "\nCtrl+C to shut down".grey
+            "\nUrl configured as:",
+            config().url,
+            "\nCtrl+C to shut down".grey
+        );
+        // ensure that Ghost exits correctly on Ctrl+C
+        process.on('SIGINT', function () {
+            console.log(
+                "\nGhost has shutdown".red,
+                "\nGhost was running for",
+                Math.round(process.uptime()),
+                "seconds"
             );
-            // ensure that Ghost exits correctly on Ctrl+C
-            process.on('SIGINT', function () {
-                console.log(
-                    "\nGhost has shutdown".red,
-                    "\nGhost was running for",
-                    Math.round(process.uptime()),
-                    "seconds"
-                );
-                process.exit(0);
-            });
-        }
-
-        deferred.resolve();
-    };
+            process.exit(0);
+        });
+    }
 }
 
 // ## Initializes the ghost application.
@@ -258,20 +254,24 @@ function init(server) {
             // Make sure the socket is gone before trying to create another
             fs.unlink(config.getSocket(), function (err) {
                 /*jshint unused:false*/
-                server.listen(
-                    config.getSocket(),
-                    startGhost(deferred)
+                httpServer = server.listen(
+                    config.getSocket()
                 );
                 fs.chmod(config.getSocket(), '0660');
             });
 
         } else {
-            server.listen(
+            httpServer = server.listen(
                 config().server.port,
-                config().server.host,
-                startGhost(deferred)
+                config().server.host
             );
         }
+
+        httpServer.on('listening', function () {
+            ghostStartMessages();
+            deferred.resolve(httpServer);
+        });
+
 
         return deferred.promise;
     });

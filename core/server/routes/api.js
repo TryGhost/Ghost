@@ -9,7 +9,7 @@ module.exports = function (server) {
     server.get('/ghost/api/v0.1/posts/:id', api.requestHandler(api.posts.read));
     server.put('/ghost/api/v0.1/posts/:id', api.requestHandler(api.posts.edit));
     server.del('/ghost/api/v0.1/posts/:id', api.requestHandler(api.posts.destroy));
-    server.get('/ghost/api/v0.1/posts/getSlug/:title', middleware.authAPI, api.requestHandler(api.posts.getSlug));
+    server.get('/ghost/api/v0.1/posts/slug/:title', middleware.authAPI, api.requestHandler(api.posts.generateSlug));
     // #### Settings
     server.get('/ghost/api/v0.1/settings/', api.requestHandler(api.settings.browse));
     server.get('/ghost/api/v0.1/settings/:key/', api.requestHandler(api.settings.read));
@@ -27,4 +27,7 @@ module.exports = function (server) {
     server.get('/ghost/api/v0.1/db/', api.requestHandler(api.db.exportContent));
     server.post('/ghost/api/v0.1/db/', middleware.busboy, api.requestHandler(api.db.importContent));
     server.del('/ghost/api/v0.1/db/', api.requestHandler(api.db.deleteAllContent));
+    // #### Mail
+    server.post('/ghost/api/v0.1/mail', api.requestHandler(api.mail.send));
+    server.post('/ghost/api/v0.1/mail/test', api.requestHandler(api.mail.sendTest));
 };

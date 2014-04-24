@@ -10,29 +10,44 @@ var _             = require('lodash'),
     posts         = require('./posts'),
     users         = require('./users'),
     tags          = require('./tags'),
+    mail          = require('./mail'),
     requestHandler,
     init;
 
 // ## Request Handlers
 
 function cacheInvalidationHeader(req, result) {
-    //TODO: don't set x-cache-invalidate header for drafts
     var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[4],
         id = parsedUrl[5],
         cacheInvalidate,
-        jsonResult = result.toJSON ? result.toJSON() : result;
+        jsonResult = result.toJSON ? result.toJSON() : result,
+        post,
+        wasPublished,
+        wasDeleted;
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
             cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
-            cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
-            if (id && jsonResult.slug) {
-                return config.urlForPost(settings, jsonResult).then(function (postUrl) {
-                    return cacheInvalidate + ', ' + postUrl;
-                });
+            post = jsonResult.posts[0];
+            wasPublished = post.statusChanged && post.status === 'published';
+            wasDeleted = method === 'DELETE';
+
+            // Remove the statusChanged value from the response
+            if (post.statusChanged) {
+                delete post.statusChanged;
+            }
+
+            // Don't set x-cache-invalidate header for drafts
+            if (wasPublished || wasDeleted) {
+                cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
+                if (id && post.slug) {
+                    return config.urlForPost(settings, post).then(function (postUrl) {
+                        return cacheInvalidate + ', ' + postUrl;
+                    });
+                }
             }
         }
     }
@@ -47,17 +62,17 @@ requestHandler = function (apiMethod) {
     return function (req, res) {
         var options = _.extend(req.body, req.files, req.query, req.params),
             apiContext = {
-                user: req.session && req.session.user
+                user: (req.session && req.session.user) ? req.session.user : null
             };
 
         return apiMethod.call(apiContext, options).then(function (result) {
-            res.json(result || {});
             return cacheInvalidationHeader(req, result).then(function (header) {
                 if (header) {
                     res.set({
                         "X-Cache-Invalidate": header
                     });
                 }
+                res.json(result || {});
             });
         }, function (error) {
             var errorCode = error.code || 500,
@@ -79,6 +94,7 @@ module.exports = {
     notifications: notifications,
     settings: settings,
     db: db,
+    mail: mail,
     requestHandler: requestHandler,
     init: init
 };

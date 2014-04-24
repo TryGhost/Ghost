@@ -30,7 +30,7 @@ describe('Post API', function () {
         }, done);
     });
 
-    it('can browse', function (done) {
+    it('browse', function (done) {
         PostAPI.browse().then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'posts');            
@@ -41,7 +41,7 @@ describe('Post API', function () {
         }).then(null, done);
     });
 
-    it('can read', function (done) {
+    it('read', function (done) {
         var firstPost;
 
         PostAPI.browse().then(function (results) {
@@ -52,7 +52,7 @@ describe('Post API', function () {
             return PostAPI.read({slug: firstPost.slug});
         }).then(function (found) {
             should.exist(found);
-            testUtils.API.checkResponse(found, 'post');
+            testUtils.API.checkResponse(found.posts[0], 'post');
             done();
         }).then(null, done);
     });

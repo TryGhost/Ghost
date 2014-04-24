@@ -32,7 +32,7 @@
     "engineStrict": true,
     "dependencies": {
         "bcryptjs": "0.7.10",
-        "bookshelf": "0.6.1",
+        "bookshelf": "0.6.8",
         "busboy": "0.0.12",
         "colors": "0.6.2",
         "connect-slashes": "1.2.0",
@@ -72,7 +72,7 @@
         "grunt-contrib-uglify": "~0.2.5",
         "grunt-contrib-watch": "~0.5.3",
         "grunt-express-server": "~0.4.11",
-        "grunt-groc": "~0.4.0",
+        "grunt-groc": "~0.4.5",
         "grunt-mocha-cli": "~1.4.0",
         "grunt-shell": "~0.6.1",
         "grunt-update-submodules": "~0.2.1",

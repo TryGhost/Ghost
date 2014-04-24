@@ -6,11 +6,13 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 var request    = require('supertest'),
+    express    = require('express'),
     should     = require('should'),
     moment     = require('moment'),
 
     testUtils  = require('../../utils'),
-    config     = require('../../../server/config'),
+    ghost      = require('../../../../core'),
+    httpServer,
 
     ONE_HOUR_S = 60 * 60,
     ONE_YEAR_S = 365 * 24 * ONE_HOUR_S,
@@ -38,15 +40,26 @@ describe('Frontend Routing', function () {
     }
 
     before(function (done) {
-        testUtils.clearData().then(function () {
-            // we initialise data, but not a user. No user should be required for navigating the frontend
-            return testUtils.initData();
-        }).then(function () {
-            done();
-        }, done);
+        var app = express();
 
-        // Setup the request object with the correct URL
-        request = request(config().url);
+        ghost({app: app}).then(function (_httpServer) {
+            // Setup the request object with the ghost express app
+            httpServer = _httpServer;
+            request = request(app);
+            testUtils.clearData().then(function () {
+                // we initialise data, but not a user. No user should be required for navigating the frontend
+                return testUtils.initData();
+            }).then(function () {
+                done();
+            }, done);
+        }).otherwise(function (e) {
+            console.log('Ghost Error: ', e);
+            console.log(e.stack);
+        });
+    });
+
+    after(function () {
+        httpServer.close();
     });
 
     describe('Home', function () {
@@ -97,6 +110,32 @@ describe('Frontend Routing', function () {
 
         it('should 404 for unknown post', function (done) {
             request.get('/spectacular/')
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(404)
+                .expect(/Page Not Found/)
+                .end(doEnd(done));
+        });
+    });
+
+    describe('Post edit', function () {
+        it('should redirect without slash', function (done) {
+            request.get('/welcome-to-ghost/edit')
+                .expect('Location', '/welcome-to-ghost/edit/')
+                .expect('Cache-Control', cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to editor', function (done) {
+            request.get('/welcome-to-ghost/edit/')
+                .expect('Location', '/ghost/editor/1/')
+                .expect('Cache-Control', cacheRules['public'])
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should 404 for non-edit parameter', function (done) {
+            request.get('/welcome-to-ghost/notedit/')
                 .expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)

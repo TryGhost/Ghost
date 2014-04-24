@@ -5,13 +5,13 @@
 var path           = require('path'),
     when           = require('when'),
     semver         = require('semver'),
+    colors         = require('colors'),
     fs             = require('fs'),
     _              = require('lodash'),
     spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
     bootstrap      = require('./core/bootstrap'),
-
 
     // ## Build File Patterns
     // a list of files and paterns to process and exclude when running builds & releases
@@ -30,6 +30,9 @@ var path           = require('path'),
     // ## Grunt configuration
 
     configureGrunt = function (grunt) {
+
+        // This is not useful but required for jshint
+        colors.setTheme({silly: 'rainbow'});
 
         // load all grunt tasks
         require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
@@ -293,12 +296,8 @@ var path           = require('path'),
                     ]
                 },
 
-                api: {
-                    src: ['core/test/functional/api/*_test.js']
-                },
-
                 routes: {
-                    src: ['core/test/functional/routes/*_test.js']
+                    src: ['core/test/functional/routes/**/*_test.js']
                 }
             },
 
@@ -307,7 +306,7 @@ var path           = require('path'),
             // command line tools
             shell: {
                 bower: {
-                    command: path.resolve(__dirname + '/node_modules/.bin/bower install'),
+                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower install'),
                     options: {
                         stdout: true
                     }
@@ -565,7 +564,8 @@ var path           = require('path'),
             uglify: {
                 prod: {
                     files: {
-                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js',
+                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
                     }
                 }
             }
@@ -576,7 +576,7 @@ var path           = require('path'),
         // ## Custom Tasks
 
         grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis-' + process.env.DB : 'testing';
+            process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
             cfg.express.test.options.node_env = process.env.NODE_ENV;
         });
 
@@ -891,6 +891,16 @@ var path           = require('path'),
                 'watch'
             ]);
 
+        // ### Warn git users not ot use master in production
+
+        grunt.registerTask('master-warn',
+            'Outputs a warning to runners of grunt prod, that master shouldn\'t be used for live blogs',
+            function () {
+                console.log('>', 'Always two there are, no more, no less. A master and a'.red, 'stable'.red.bold + '.'.red);
+                console.log('Use the', 'stable'.bold, 'branch for live blogs.', 'Never'.bold, 'master!');
+            });
+
+
         // ### Find out more about grunt task usage
 
         grunt.registerTask('help',
@@ -898,7 +908,6 @@ var path           = require('path'),
             function () {
                 console.log('Type `grunt --help` to get the details of available grunt tasks, or alternatively visit https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit');
             });
-
 
         // ### Running the test suites
 
@@ -908,11 +917,9 @@ var path           = require('path'),
 
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawn-casperjs', 'express:test:stop']);
 
-        grunt.registerTask('test-api', 'Run functional api tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:api', 'express:test:stop']);
+        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
-        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'mochacli:routes', 'express:test:stop']);
-
-        grunt.registerTask('validate', 'Run tests and lint code', ['jshint', 'test-routes', 'test-unit', 'test-api', 'test-integration', 'test-functional']);
+        grunt.registerTask('validate', 'Run tests and lint code', ['shell:bower', 'concat:dev', 'jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
 
         // ### Coverage report for Unit and Integration Tests
@@ -930,7 +937,7 @@ var path           = require('path'),
         grunt.registerTask('init', 'Prepare the project for development', ['shell:bower', 'default']);
 
         // Before running in production mode
-        grunt.registerTask('prod', 'Build JS & templates for production', ['handlebars', 'concat', 'uglify', 'copy:prod']);
+        grunt.registerTask('prod', 'Build JS & templates for production', ['handlebars', 'concat', 'uglify', 'copy:prod', 'master-warn']);
 
         // When you just say 'grunt'
         grunt.registerTask('default', 'Build JS & templates for development', ['update_submodules', 'handlebars', 'concat', 'copy:dev']);

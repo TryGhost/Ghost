@@ -39,7 +39,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
@@ -55,7 +55,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
@@ -67,11 +67,11 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404'
+                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
@@ -86,7 +86,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData).then(function (createdUser) {
+            UserModel.add(userData, {user: 1}).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
@@ -99,7 +99,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 email = testUtils.DataGenerator.forModel.users[2].email;
 
-            UserModel.add(userData).then(function () {
+            UserModel.add(userData, {user: 1}).then(function () {
                 // Test same case
                 return UserModel.getByEmail(email).then(function (user) {
                     should.exist(user);
@@ -141,10 +141,19 @@ describe('User Model', function run() {
                 }, done);
         });
 
+        it('sets last login time on successful login', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            UserModel.check({email: userData.email, pw:userData.password}).then(function (activeUser) {
+                should.exist(activeUser.get('last_login'));
+                done();
+            }).then(null, done);
+        });
+
         it('can\'t add second', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[1];
 
-            return UserModel.add(userData).then(done, function (failure) {
+            return UserModel.add(userData, {user: 1}).then(done, function (failure) {
                 failure.message.should.eql('A user is already registered. Only one user for now!');
                 done();
             }).then(null, done);
@@ -208,16 +217,6 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
-        });
-
-        it("can get effective permissions", function (done) {
-            UserModel.effectivePermissions(1).then(function (effectivePermissions) {
-                should.exist(effectivePermissions);
-
-                effectivePermissions.length.should.be.above(0);
-
-                done();
             }).then(null, done);
         });
 

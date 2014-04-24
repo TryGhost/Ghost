@@ -55,14 +55,14 @@ Guidelines for bug reports:
 helpful thing in the world is if we can *see* what you're talking about.
 Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
-5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A) to start creating a bug report with the template automatically.
+5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
 
 A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the
 details of your environment.
 
 Here is a [real example](https://github.com/TryGhost/Ghost/issues/413)
 
-Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A)):
+Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A)):
 ```
 Short and descriptive example bug report title
 
@@ -87,6 +87,7 @@ reported. Especially, why do you consider this to be a bug? What do you expect t
 * Server OS: CentOS 6.4
 * Node Version: 0.10.16
 * Browser: Chrome 29.0.1547.57
+* Database: SQLite / MySQL / postgres
 ```
 
 <a name="features"></a>
@@ -225,8 +226,9 @@ or more of the following:
 ### Key Branches & Tags
 
 - **[master](https://github.com/TryGhost/Ghost)** is the bleeding edge development branch. All work on the next
-release is here.
-- **[gh-pages](http://tryghost.github.io/Ghost)** is The Ghost Guide documentation for Getting Started with Ghost.
+release is here. Do **NOT** use this branch for a production site.
+- **[stable](https://github.com/TryGhost/Ghost/tree/stable)** contains the latest release of Ghost. This branch may be used in production.
+- **[gh-pages](http://github.com/TryGhost/Ghost/tree/gh-pages)** contains [The Ghost Guide](http://docs.ghost.org) documentation for Getting Started with Ghost.
 
 
 ## Grunt Toolkit

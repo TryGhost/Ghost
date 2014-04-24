@@ -9,10 +9,10 @@
 
     /**
      * Allows to check contents of each element exactly
-     * @param obj
-     * @param index
-     * @param meta
-     * @param stack
+     * @param {Object} obj
+     * @param {*} index
+     * @param {*} meta
+     * @param {*} stack
      * @returns {boolean}
      */
     $.expr[":"].containsExact = function (obj, index, meta, stack) {
@@ -133,7 +133,7 @@
      * Set interactions for all menus and overlays
      * This finds all visible 'hideClass' elements and hides them upon clicking away from the element itself.
      * A callback can be defined to customise the results. By default it will hide the element.
-     * @param callback
+     * @param {Function} callback
      */
     $.fn.hideAway = function (callback) {
         var $self = $(this);

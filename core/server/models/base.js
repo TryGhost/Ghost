@@ -47,20 +47,19 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         validation.validateSchema(this.tableName, this.toJSON());
     },
 
-    creating: function () {
+    creating: function (newObj, attr, options) {
         if (!this.get('created_by')) {
-            this.set('created_by', 1);
+            this.set('created_by', options.user);
         }
     },
 
-    saving: function () {
-         // Remove any properties which don't belong on the model
+    saving: function (newObj, attr, options) {
+        // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
+        // Store the previous attributes so we can tell what was updated later
+        this._updatedAttributes = newObj.previousAttributes();
 
-        // sessions do not have 'updated_by' column
-        if (this.tableName !== 'sessions') {
-            this.set('updated_by', 1);
-        }
+        this.set('updated_by', options.user);
     },
 
     // Base prototype properties will go here
@@ -110,13 +109,23 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     sanitize: function (attr) {
         return sanitize(this.get(attr)).xss();
+    },
+
+    // Get attributes that have been updated (values before a .save() call)
+    updatedAttributes: function () {
+        return this._updatedAttributes || {};
+    },
+
+    // Get a specific updated attribute value
+    updated: function (attr) {
+        return this.updatedAttributes()[attr];
     }
 
 }, {
 
     /**
      * Naive find all
-     * @param options (optional)
+     * @param {Object} options (optional)
      */
     findAll:  function (options) {
         options = options || {};
@@ -129,8 +138,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive find one where args match
-     * @param args
-     * @param options (optional)
+     * @param {Object} args
+     * @param {Object} options (optional)
      */
     findOne: function (args, options) {
         options = options || {};
@@ -143,13 +152,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive edit
-     * @param editedObj
-     * @param options (optional)
+     * @param {Object} editedObj
+     * @param {Object} options (optional)
      */
     edit: function (editedObj, options) {
         options = options || {};
         return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            return foundObj.save(editedObj, options);
+            if (foundObj) {
+                return foundObj.save(editedObj, options);
+            }
         });
     },
 
@@ -159,8 +170,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive create
-     * @param newObj
-     * @param options (optional)
+     * @param {Object} newObj
+     * @param {Object} options (optional)
      */
     add: function (newObj, options) {
         options = options || {};
@@ -182,8 +193,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Naive destroy
-     * @param _identifier
-     * @param options (optional)
+     * @param {Object} _identifier
+     * @param {Object} options (optional)
      */
     destroy: function (_identifier, options) {
         options = options || {};
@@ -251,7 +262,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|user|users|rss|feed)$/g
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|public|user|users|rss|feed)$/g
             .test(slug) ? slug + '-' + baseName : slug;
 
         //if slug is empty after trimming use "post"

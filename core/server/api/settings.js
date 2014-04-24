@@ -98,16 +98,15 @@ readSettingsResult = function (result) {
     });
 };
 
-/**
- * Normalizes paths read by require-tree so that the apps and themes modules can use them.
- * Creates an empty array (res), and populates it with useful info about the read packages
- * like name, whether they're active (comparison with the second argument), and if they
- * have a package.json, that, otherwise false
- * @param  object           paths       as returned by require-tree()
- * @param  array/string     active      as read from the settings object
- * @return array                        of objects with useful info about
- *                                      apps / themes
- */
+
+// Normalizes paths read by require-tree so that the apps and themes modules can use them.
+// Creates an empty array (res), and populates it with useful info about the read packages
+// like name, whether they're active (comparison with the second argument), and if they
+// have a package.json, that, otherwise false
+// @param  {object}           paths       as returned by require-tree()
+// @param  {array/string}     active      as read from the settings object
+// @return {array}                        of objects with useful info about apps / themes
+
 filterPaths = function (paths, active) {
     var pathKeys = Object.keys(paths),
         res = [],
@@ -181,16 +180,19 @@ settings = {
 
      // **takes:** either a json object representing a collection of settings, or a key and value pair
     edit: function edit(key, value) {
+        var self = this,
+            type;
+
         // Check for passing a collection of settings first
         if (_.isObject(key)) {
             //clean data
-            var type = key.type;
+            type = key.type;
             delete key.type;
             delete key.availableThemes;
             delete key.availableApps;
 
             key = settingsCollection(key);
-            return dataProvider.Settings.edit(key).then(function (result) {
+            return dataProvider.Settings.edit(key, {user: self.user}).then(function (result) {
                 result.models = result;
                 return when(readSettingsResult(result)).then(function (settings) {
                     updateSettingsCache(settings);
@@ -216,7 +218,7 @@ settings = {
                 value = JSON.stringify(value);
             }
             setting.set('value', value);
-            return dataProvider.Settings.edit(setting).then(function (result) {
+            return dataProvider.Settings.edit(setting, {user: self.user}).then(function (result) {
                 settingsCache[_.first(result).attributes.key].value = _.first(result).attributes.value;
             }).then(function () {
                 return config.theme.update(settings, config().url).then(function () {
