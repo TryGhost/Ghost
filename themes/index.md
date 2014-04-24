@@ -114,6 +114,18 @@ You can optionally provide an error template for any 404 or 500 errors. If your 
 
 To see how to access the data about an error, take a look at Ghost's default error template which is located in <code class="path">/core/server/views/user-error.hbs</code>
 
+### package.json
+
+Package.json is a format borrowed from [npm](https://www.npmjs.org/doc/json.html). Ghost currently looks for a `name` and `version` field.
+We highly recommend adding an `author` and `description` field. The fields that Ghost requires will change as Ghost evolves, but for now the following is enough to make Ghost happy:
+
+```
+{
+  "name": "mytheme",
+  "version": "0.1.0"
+}
+```
+
 ### Post styling & previewing
 
 When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
