@@ -74,24 +74,30 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // Convert bools to ints to be consistent
-    // across db providers
+    // Convert integers to real booleans
     fixBools: function (attrs) {
+        var self = this;
         _.each(attrs, function (value, key) {
-            if (typeof value === "boolean") {
-                attrs[key] = value ? 1 : 0;
+            if (schema.tables[self.tableName][key].type === "bool") {
+                attrs[key] = value ? true : false;
             }
         });
 
         return attrs;
     },
 
+    // format date before writing to DB, bools work
     format: function (attrs) {
+        return this.fixDates(attrs);
+    },
+
+    // format data and bool when fetching from DB
+    parse: function (attrs) {
         return this.fixBools(this.fixDates(attrs));
     },
 
     toJSON: function (options) {
-        var attrs = this.fixBools(this.fixDates(_.extend({}, this.attributes))),
+        var attrs = _.extend({}, this.attributes),
             relations = this.relations;
 
         if (options && options.shallow) {

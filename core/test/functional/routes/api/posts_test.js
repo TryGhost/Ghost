@@ -100,6 +100,8 @@ describe('Post API', function () {
                     jsonResponse.posts.should.have.length(5);
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     done();
                 });
         });
@@ -206,6 +208,8 @@ describe('Post API', function () {
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].page.should.eql(0);
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     done();
                 });
         });
@@ -224,7 +228,8 @@ describe('Post API', function () {
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].page.should.eql(1);
+                    jsonResponse.posts[0].page.should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     done();
                 });
         });
