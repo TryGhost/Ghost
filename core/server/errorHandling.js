@@ -1,22 +1,27 @@
 /*jslint regexp: true */
-var _      = require('underscore'),
-    colors = require('colors'),
-    fs     = require('fs'),
-    path   = require('path'),
+var _           = require('lodash'),
+    colors      = require('colors'),
+    config      = require('./config'),
+    path        = require('path'),
+    when        = require('when'),
+    hbs         = require('express-hbs'),
     errors,
 
     // Paths for views
-    appRoot                  = path.resolve(__dirname, '../'),
-    themePath                = path.resolve(appRoot + '/content/themes'),
-    adminTemplatePath        = path.resolve(appRoot + '/server/views/'),
-    defaultErrorTemplatePath = path.resolve(adminTemplatePath + '/user-error.hbs'),
-    userErrorTemplatePath    = path.resolve(themePath + '/error.hbs'),
-    userErrorTemplateExists;
+    defaultErrorTemplatePath = path.resolve(config().paths.adminViews, 'user-error.hbs'),
+    userErrorTemplateExists   = false;
+
+// This is not useful but required for jshint
+colors.setTheme({silly: 'rainbow'});
 
 /**
  * Basic error handling helpers
  */
 errors = {
+    updateActiveTheme: function (activeTheme) {
+        userErrorTemplateExists = config().paths.availableThemes[activeTheme].hasOwnProperty('error.hbs');
+    },
+
     throwError: function (err) {
         if (!err) {
             err = new Error("An error occurred");
@@ -29,31 +34,67 @@ errors = {
         throw err;
     },
 
+    // ## Reject Error
+    // Used to pass through promise errors when we want to handle them at a later time
+    rejectError: function (err) {
+        return when.reject(err);
+    },
+
+    logWarn: function (warn, context, help) {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
+
+            var msgs = ['\nWarning:'.yellow, warn.yellow, '\n'];
+
+            if (context) {
+                msgs.push(context.white, '\n');
+            }
+
+            if (help) {
+                msgs.push(help.green);
+            }
+
+            // add a new line
+            msgs.push('\n');
+
+            console.log.apply(console, msgs);
+        }
+    },
+
     logError: function (err, context, help) {
-        var stack = err ? err.stack : null;
-        err = err.message || err || 'Unknown';
+        var stack = err ? err.stack : null,
+            msgs;
+
+        if (err) {
+            err = err.message || err || 'An unknown error occurred.';
+        } else {
+            err = 'An unknown error occurred.';
+        }
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
 
-            console.error('\nERROR:'.red, err.red);
+            msgs = ['\nERROR:'.red, err.red, '\n'];
 
             if (context) {
-                console.error(context);
+                msgs.push(context.white, '\n');
             }
 
             if (help) {
-                console.error(help.green);
+                msgs.push(help.green);
             }
 
             // add a new line
-            console.error('');
+            msgs.push('\n');
 
             if (stack) {
-                console.error(stack, '\n');
+                msgs.push(stack, '\n');
             }
+
+            console.error.apply(console, msgs);
         }
     },
 
@@ -70,6 +111,7 @@ errors = {
     },
 
     logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {
+        /*jshint unused:false*/
         var self = this;
 
         return function () {
@@ -82,9 +124,12 @@ errors = {
     },
 
     renderErrorPage: function (code, err, req, res, next) {
+        /*jshint unused:false*/
+
+        var self = this;
 
         function parseStack(stack) {
-            if (typeof stack !== 'string') {
+            if (!_.isString(stack)) {
                 return stack;
             }
 
@@ -120,70 +165,82 @@ errors = {
                 stack = parseStack(err.stack);
             }
 
-            // TODO: Attach node-polyglot
-            res.render((errorView || 'error'), {
+            res.status(code).render((errorView || 'error'), {
                 message: err.message || err,
                 code: code,
                 stack: stack
+            }, function (templateErr, html) {
+                if (!templateErr) {
+                    return res.send(code, html);
+                }
+                // There was an error trying to render the error page, output the error
+                self.logError(templateErr, 'Error whilst rendering error page', 'Error template has an error');
+
+                // And then try to explain things to the user...
+                // Cheat and output the error using handlebars escapeExpression
+                return res.send(500, "<h1>Oops, seems there is an an error in the error template.</h1>"
+                    + "<p>Encountered the error: </p>"
+                    + "<pre>" + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + "</pre>"
+                    + "<br ><p>whilst trying to render an error page for the error: </p>"
+                    + code + " " + "<pre>"  + hbs.handlebars.Utils.escapeExpression(err.message || err) + "</pre>"
+                    );
             });
         }
 
         if (code >= 500) {
-            this.logError(err, "ErrorPage", "Ghost caught a processing error in the middleware layer.");
+            this.logError(err, "Rendering Error Page", "Ghost caught a processing error in the middleware layer.");
         }
 
         // Are we admin? If so, don't worry about the user template
-        if (res.isAdmin || userErrorTemplateExists === true) {
+        if ((res.isAdmin && req.session.user) || userErrorTemplateExists === true) {
             return renderErrorInt();
         }
 
         // We're not admin and the template doesn't exist. Render the default.
-        if (userErrorTemplateExists === false) {
-            return renderErrorInt(defaultErrorTemplatePath);
+        return renderErrorInt(defaultErrorTemplatePath);
+    },
+
+    error404: function (req, res, next) {
+        var message = res.isAdmin && req.session.user ? "No Ghost Found" : "Page Not Found";
+
+        // do not cache 404 error
+        res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
+        if (req.method === 'GET') {
+            this.renderErrorPage(404, message, req, res, next);
+        } else {
+            res.send(404, message);
+        }
+    },
+
+    error500: function (err, req, res, next) {
+        // 500 errors should never be cached
+        res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
+
+        if (err.status === 404) {
+            return this.error404(req, res, next);
         }
 
-        // userErrorTemplateExists is undefined, which means we
-        // haven't yet checked for it. Do so now!
-        fs.stat(userErrorTemplatePath, function (err, stat) {
-            userErrorTemplateExists = !err;
-            if (userErrorTemplateExists) {
-                return renderErrorInt();
+        if (req.method === 'GET') {
+            if (!err || !(err instanceof Error)) {
+                next();
             }
-
-            // Message only displays the first time an error is triggered.
-            errors.logError(
-                "Theme error template not found",
-                null,
-                "Add an error.hbs template to the theme for customised errors."
-            );
-
-            renderErrorInt(defaultErrorTemplatePath);
-        });
-    },
-
-    render404Page: function (req, res, next) {
-        var message = res.isAdmin ? "No Ghost Found" : "Page Not Found";
-        this.renderErrorPage(404, message, req, res, next);
-    },
-
-    render500Page: function (err, req, res, next) {
-        if (!err || !(err instanceof Error)) {
-            next();
+            errors.renderErrorPage(err.status || 500, err, req, res, next);
+        } else {
+            res.send(err.status || 500, err);
         }
-        errors.renderErrorPage(500, err, req, res, next);
     }
 };
 
-// Ensure our 'this' context in the functions
-_.bindAll(
-    errors,
-    'throwError',
-    'logError',
+// Ensure our 'this' context for methods and preserve method arity by
+// using Function#bind for expressjs
+_.each([
     'logAndThrowError',
     'logErrorWithRedirect',
     'renderErrorPage',
-    'render404Page',
-    'render500Page'
-);
+    'error404',
+    'error500'
+], function (funcName) {
+    errors[funcName] = errors[funcName].bind(errors);
+});
 
 module.exports = errors;

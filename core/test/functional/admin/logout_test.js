@@ -4,6 +4,8 @@
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
 CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
+    CasperTest.Routines.register.run(test);
+    CasperTest.Routines.logout.run(test);
     CasperTest.Routines.login.run(test);
 
     casper.thenOpen(url + "ghost/", function then() {
@@ -18,8 +20,9 @@ CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
         });
     });
 
+    casper.waitForSelector('.usermenu-signout a');
     casper.thenClick('.usermenu-signout a');
-    casper.waitForResource(/signin/);
+    casper.waitForResource(/ghost\/signin/);
 
     casper.waitForSelector('.notification-success', function onSuccess() {
         test.assert(true, 'Got success notification');

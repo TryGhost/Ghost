@@ -1,4 +1,4 @@
-<form id="login" method="post" novalidate="novalidate">
+<form id="login" class="login-form" method="post" novalidate="novalidate">
     <div class="email-wrap">
         <input class="email" type="email" placeholder="Email Address" name="email" autocapitalize="off" autocorrect="off">
     </div>
@@ -7,6 +7,6 @@
     </div>
     <button class="button-save" type="submit">Log in</button>
     <section class="meta">
-        <a class="forgotten-password" href="/ghost/forgotten/">Forgotten password?</a>{{! &bull; <a href="/ghost/signup/">Register new user</a>}}
+        <a class="forgotten-password" href="{{admin_url}}/forgotten/">Forgotten password?</a>
     </section>
 </form>

@@ -1,7 +1,16 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "000"
+            "defaultValue": "003"
+        },
+        "dbHash": {
+            "defaultValue": null
+        },
+        "nextUpdateCheck": {
+            "defaultValue": null
+        },
+        "displayUpdateNotification": {
+            "defaultValue": null
         }
     },
     "blog": {
@@ -14,7 +23,7 @@
         "email": {
             "defaultValue": "ghost@example.com",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isEmail": true
             }
         },
@@ -27,22 +36,30 @@
         "defaultLang": {
             "defaultValue": "en_US",
             "validations": {
-                "notNull": true
+                "isNull": false
             }
         },
         "postsPerPage": {
             "defaultValue": "6",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isInt": true,
-                "max": 1000
+                "isLength": [0, 1000]
             }
         },
         "forceI18n": {
             "defaultValue": "true",
             "validations": {
-                "notNull": true,
-                "isIn": ["true", "false"]
+                "isNull": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "permalinks": {
+            "defaultValue": "/:slug/",
+            "validations": {
+                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
+                "matches": "(:id|:slug|:year|:month|:day)",
+                "notContains": "/ghost/"
             }
         }
     },
@@ -51,11 +68,11 @@
             "defaultValue": "casper"
         }
     },
-    "plugin": {
-        "activePlugins": {
+    "app": {
+        "activeApps": {
             "defaultValue": "[]"
         },
-        "installedPlugins": {
+        "installedApps": {
             "defaultValue": "[]"
         }
     }

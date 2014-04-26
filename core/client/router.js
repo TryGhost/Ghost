@@ -1,4 +1,4 @@
-/*global window, document, Ghost, Backbone, $, _, NProgress */
+/*global Ghost, Backbone, NProgress */
 (function () {
     "use strict";
 
@@ -13,7 +13,8 @@
             'register/'        : 'register',
             'signup/'          : 'signup',
             'signin/'          : 'login',
-            'forgotten/'       : 'forgotten'
+            'forgotten/'       : 'forgotten',
+            'reset/:token/'     : 'reset'
         },
 
         signup: function () {
@@ -28,10 +29,14 @@
             Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-forgotten-box' });
         },
 
+        reset: function (token) {
+            Ghost.currentView = new Ghost.Views.ResetPassword({ el: '.js-reset-box', token: token });
+        },
+
         blog: function () {
             var posts = new Ghost.Collections.Posts();
             NProgress.start();
-            posts.fetch({ data: { status: 'all', orderBy: ['updated_at', 'DESC'] } }).then(function () {
+            posts.fetch({ data: { status: 'all', staticPages: 'all'} }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
                 NProgress.done();
             });
@@ -55,10 +60,10 @@
 
         editor: function (id) {
             var post = new Ghost.Models.Post();
-            post.urlRoot = Ghost.settings.apiRoot + '/posts';
+            post.urlRoot = Ghost.paths.apiRoot + '/posts';
             if (id) {
                 post.id = id;
-                post.fetch().then(function () {
+                post.fetch({ data: {status: 'all'}}).then(function () {
                     Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
                 });
             } else {

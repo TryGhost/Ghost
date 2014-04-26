@@ -1,9 +1,9 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('./testUtils'),
+var testUtils = require('../utils'),
     should = require('should'),
     sinon = require('sinon'),
     when = require('when'),
-    _ = require("underscore"),
+    _ = require("lodash"),
     errors = require('../../server/errorHandling'),
 
     // Stuff we are testing
@@ -15,6 +15,8 @@ describe("Exporter", function () {
 
     should.exist(exporter);
 
+    var sandbox;
+
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
@@ -22,13 +24,14 @@ describe("Exporter", function () {
     });
 
     beforeEach(function (done) {
-        this.timeout(5000);
+        sandbox = sinon.sandbox.create();
         testUtils.initData().then(function () {
             done();
         }, done);
     });
 
     afterEach(function (done) {
+        sandbox.restore();
         testUtils.clearData().then(function () {
             done();
         }, done);
@@ -36,8 +39,8 @@ describe("Exporter", function () {
 
     it("exports data", function (done) {
         // Stub migrations to return 000 as the current database version
-        var migrationStub = sinon.stub(migration, "getDatabaseVersion", function () {
-            return when.resolve("000");
+        var migrationStub = sandbox.stub(migration, "getDatabaseVersion", function () {
+            return when.resolve("003");
         });
 
         exporter().then(function (exportData) {
@@ -49,8 +52,8 @@ describe("Exporter", function () {
             should.exist(exportData.meta);
             should.exist(exportData.data);
 
-            exportData.meta.version.should.equal("000");
-            _.findWhere(exportData.data.settings, {key: "databaseVersion"}).value.should.equal("000");
+            exportData.meta.version.should.equal("003");
+            _.findWhere(exportData.data.settings, {key: "databaseVersion"}).value.should.equal("003");
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);

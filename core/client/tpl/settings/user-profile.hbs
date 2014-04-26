@@ -9,8 +9,9 @@
 <section class="content no-padding">
 
     <header class="user-profile-header">
-        <img id="user-cover" class="cover-image" src="{{#if cover}}{{cover}}{{else}}/shared/img/user-cover.png{{/if}}" title="{{name}}'s Cover Image"/>
-        <button class="edit-cover-image js-modal-cover">Change Cover</button>
+        <img id="user-cover" class="cover-image" src="{{#if cover}}{{cover}}{{else}}{{asset "shared/img/user-cover.png"}}{{/if}}" title="{{name}}'s Cover Image"/>
+
+        <a class="edit-cover-image js-modal-cover button" href="#">Change Cover</a>
     </header>
 
     <form class="user-profile" novalidate="novalidate">
@@ -18,13 +19,13 @@
         <fieldset class="user-details-top">
 
             <figure class="user-image">
-                <a id="user-image" class="img" {{#if image}}style="background-image: url({{image}});"{{/if}} href="#"><span class="hidden">{{name}}'s Picture</span></a>
-                <button type="button" class="edit-user-image js-modal-image">Edit Picture</button>
+                <div id="user-image" class="img" style="background-image: url({{#if image}}{{image}}{{else}}{{asset "shared/img/user-image.png"}}{{/if}});" href="#"><span class="hidden">{{name}}'s Picture</span></div>
+                <a href="#" class="edit-user-image js-modal-image">Edit Picture</a>
             </figure>
 
             <div class="form-group">
                 <label for="user-name" class="hidden">Full Name</label>
-                <input type="url" value="{{name}}" id="user-name" placeholder="Full Name" autocorrect="off" />
+                <input type="text" value="{{name}}" id="user-name" placeholder="Full Name" autocorrect="off" />
                 <p>Use your real name so people can recognise you</p>
             </div>
 
@@ -46,15 +47,17 @@
 
             <div class="form-group">
                 <label for="user-website">Website</label>
-                <input type="text" value="{{website}}" id="user-website" autocapitalize="off" autocorrect="off" />
+                <input type="url" value="{{website}}" id="user-website" autocapitalize="off" autocorrect="off" />
                 <p>Have a website or blog other than this one? Link it!</p>
             </div>
 
             <div class="form-group bio-container">
                 <label for="user-bio">Bio</label>
                 <textarea id="user-bio">{{bio}}</textarea>
-                <p class="bio-desc">Write about you, in 200 characters or less.</p>
-                <span class="word-count">0</span>
+                <p>
+                    Write about you, in 200 characters or less.
+                    <span class="word-count">0</span>
+                </p>
             </div>
 
             <hr />

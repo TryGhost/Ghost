@@ -161,6 +161,14 @@
             Ghost.on('urlchange', function () {
                 self.clearEverything();
             });
+            shortcut.add("ESC", function () {
+                // Make sure there isn't currently an open modal, as the escape key should close that first.
+                // This is a temporary solution to enable closing extra-long notifications, and should be refactored
+                // into something more robust in future
+                if ($('.js-modal').length < 1) {
+                    self.clearEverything();
+                }
+            });
         },
         events: {
             'animationend .js-notification': 'removeItem',
@@ -193,7 +201,7 @@
             this.renderItem(item);
         },
         clearEverything: function () {
-            this.$el.find('.js-notification.notification-passive').remove();
+            this.$el.find('.js-notification.notification-passive').parent().remove();
         },
         removeItem: function (e) {
             e.preventDefault();
@@ -202,8 +210,12 @@
             if (self.className.indexOf('notification-persistent') !== -1) {
                 $.ajax({
                     type: "DELETE",
-                    url: '/api/v0.1/notifications/' + $(self).find('.close').data('id')
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
+                    url: Ghost.paths.apiRoot + '/notifications/' + $(self).find('.close').data('id')
                 }).done(function (result) {
+                    /*jshint unused:false*/
                     bbSelf.$el.slideUp(250, function () {
                         $(this).show().css({height: "auto"});
                         $(self).remove();
@@ -214,6 +226,7 @@
                     $(this)
                         .show()
                         .css({height: "auto"})
+                        .parent()
                         .remove();
                 });
             }
@@ -231,8 +244,12 @@
                 bbSelf = this;
             $.ajax({
                 type: "DELETE",
-                url: '/api/v0.1/notifications/' + $(self).data('id')
+                headers: {
+                    'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                },
+                url: Ghost.paths.apiRoot + '/notifications/' + $(self).data('id')
             }).done(function (result) {
+                /*jshint unused:false*/
                 var height = bbSelf.$('.js-notification').outerHeight(true),
                     $parent = $(self).parent();
                 bbSelf.$el.css({height: height});
@@ -299,7 +316,7 @@
         },
         afterRender: function () {
             this.$el.fadeIn(50);
-            $(".modal-background").fadeIn(10, function () {
+            $(".modal-background").show(10, function () {
                 $(this).addClass("in");
             });
             if (this.model.options.confirm) {

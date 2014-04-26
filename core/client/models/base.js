@@ -1,23 +1,35 @@
-/*global window, document, setTimeout, Ghost, $, _, Backbone, JST, shortcut, NProgress */
+/*global Ghost, _, Backbone, NProgress */
 
 (function () {
     "use strict";
     NProgress.configure({ showSpinner: false });
 
-    Ghost.TemplateModel = Backbone.Model.extend({
-
-        // Adds in a call to start a loading bar
-        // This is sets up a success function which completes the loading bar
-        fetch : function (options) {
-            options = options || {};
-
+    // Adds in a call to start a loading bar
+    // This is sets up a success function which completes the loading bar
+    function wrapSync(method, model, options) {
+        if (options !== undefined && _.isObject(options)) {
             NProgress.start();
+
+            /*jshint validthis:true */
+            var self = this,
+                oldSuccess = options.success;
+            /*jshint validthis:false */
 
             options.success = function () {
                 NProgress.done();
+                return oldSuccess.apply(self, arguments);
             };
-
-            return Backbone.Collection.prototype.fetch.call(this, options);
         }
+
+        /*jshint validthis:true */
+        return Backbone.sync.call(this, method, model, options);
+    }
+
+    Ghost.ProgressModel = Backbone.Model.extend({
+        sync: wrapSync
+    });
+
+    Ghost.ProgressCollection = Backbone.Collection.extend({
+        sync: wrapSync
     });
 }());

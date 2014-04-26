@@ -1,10 +1,11 @@
 var Settings,
-    GhostBookshelf = require('./base'),
-    validator      = GhostBookshelf.validator,
+    ghostBookshelf = require('./base'),
     uuid           = require('node-uuid'),
-    _              = require('underscore'),
+    _              = require('lodash'),
     errors         = require('../errorHandling'),
     when           = require('when'),
+    validation     = require('../data/validation'),
+
     defaultSettings;
 
 // For neatness, the defaults file is split into categories.
@@ -29,11 +30,9 @@ defaultSettings = parseDefaultSettings();
 
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
-Settings = GhostBookshelf.Model.extend({
+Settings = ghostBookshelf.Model.extend({
 
     tableName: 'settings',
-
-    permittedAttributes: ['id', 'uuid', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'update_by'],
 
     defaults: function () {
         return {
@@ -42,48 +41,20 @@ Settings = GhostBookshelf.Model.extend({
         };
     },
 
-
-    // Validate default settings using the validator module.
-    // Each validation's key is a name and its value is an array of options
-    // Use true (boolean) if options aren't applicable
-    //
-    // eg:
-    //      validations: { isUrl: true, len: [20, 40] }
-    //
-    // will validate that a setting's length is a URL between 20 and 40 chars,
-    // available validators: https://github.com/chriso/node-validator#list-of-validation-methods
     validate: function () {
-        validator.check(this.get('key'), "Setting key cannot be blank").notEmpty();
-        validator.check(this.get('type'), "Setting type cannot be blank").notEmpty();
-
-        var matchingDefault = defaultSettings[this.get('key')];
-
-        if (matchingDefault && matchingDefault.validations) {
-            _.each(matchingDefault.validations, function (validationOptions, validationName) {
-                var validation = validator.check(this.get('value'));
-
-                if (validationOptions === true) {
-                    validationOptions = null;
-                }
-                if (typeof validationOptions !== 'array') {
-                    validationOptions = [validationOptions];
-                }
-
-                // equivalent of validation.isSomething(option1, option2)
-                validation[validationName].apply(validation, validationOptions);
-            }, this);
-        }
+        validation.validateSchema(this.tableName, this.toJSON());
+        validation.validateSettings(defaultSettings, this);
     },
 
 
     saving: function () {
+         // disabling sanitization until we can implement a better version
+         // All blog setting keys that need their values to be escaped.
+         // if (this.get('type') === 'blog' && _.contains(['title', 'description', 'email'], this.get('key'))) {
+         //    this.set('value', this.sanitize('value'));
+         // }
 
-        // All blog setting keys that need their values to be escaped.
-        if (this.get('type') === 'blog' && _.contains(['title', 'description', 'email'], this.get('key'))) {
-            this.set('value', this.sanitize('value'));
-        }
-
-        return GhostBookshelf.Model.prototype.saving.apply(this, arguments);
+        return ghostBookshelf.Model.prototype.saving.apply(this, arguments);
     }
 
 }, {
@@ -92,22 +63,27 @@ Settings = GhostBookshelf.Model.extend({
         if (!_.isObject(_key)) {
             _key = { key: _key };
         }
-        return GhostBookshelf.Model.read.call(this, _key);
+        return when(ghostBookshelf.Model.read.call(this, _key)).then(function (element) {
+            return element;
+        });
     },
 
-    edit: function (_data) {
-        var settings = this;
+    edit: function (_data, options) {
+
         if (!Array.isArray(_data)) {
             _data = [_data];
         }
+
         return when.map(_data, function (item) {
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
-            return settings.forge({ key: item.key }).fetch().then(function (setting) {
+            return Settings.forge({ key: item.key }).fetch(options).then(function (setting) {
+
                 if (setting) {
-                    return setting.set('value', item.value).save();
+                    return setting.save({value: item.value}, options);
                 }
-                return settings.forge({ key: item.key, value: item.value }).save();
+
+                return Settings.forge({ key: item.key, value: item.value }).save(null, options);
 
             }, errors.logAndThrowError);
         });
@@ -126,7 +102,7 @@ Settings = GhostBookshelf.Model.extend({
                 }
                 if (isMissingFromDB) {
                     defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save());
+                    insertOperations.push(Settings.forge(defaultSetting).save(null, {user: 1}));
                 }
             });
 

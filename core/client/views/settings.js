@@ -1,4 +1,4 @@
-/*global window, document, Ghost, $, _, Backbone, Countable */
+/*global document, Ghost, $, _, Countable, validator */
 (function () {
     "use strict";
 
@@ -38,6 +38,11 @@
         initialize: function (options) {
             this.render();
             this.menu = this.$('.settings-menu');
+            // Hides apps UI unless config.js says otherwise
+            // This will stay until apps UI is ready to ship
+            if ($(this.el).attr('data-apps') !== "true") {
+                this.menu.find('.apps').hide();
+            }
             this.showContent(options.pane);
         },
 
@@ -61,7 +66,7 @@
 
             Ghost.router.navigate('/settings/' + id + '/');
             Ghost.trigger('urlchange');
-            if (this.pane && id === this.pane.el.id) {
+            if (this.pane && id === this.pane.id) {
                 return;
             }
             _.result(this.pane, 'destroy');
@@ -110,14 +115,10 @@
         afterRender: function () {
             this.$el.attr('id', this.id);
             this.$el.addClass('active');
-
-            this.$('input').iCheck({
-                checkboxClass: 'icheckbox_ghost'
-            });
         },
         saveSuccess: function (model, response, options) {
+            /*jshint unused:false*/
             Ghost.notifications.clearEverything();
-            // TODO: better messaging here?
             Ghost.notifications.addItem({
                 type: 'success',
                 message: 'Saved',
@@ -125,6 +126,7 @@
             });
         },
         saveError: function (model, xhr) {
+            /*jshint unused:false*/
             Ghost.notifications.clearEverything();
             Ghost.notifications.addItem({
                 type: 'error',
@@ -142,8 +144,6 @@
         }
     });
 
-    // TODO: use some kind of data-binding for forms
-
     // ### General settings
     Settings.general = Settings.Pane.extend({
         id: "general",
@@ -159,31 +159,41 @@
                 title = this.$('#blog-title').val(),
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
-                postsPerPage = this.$('#postsPerPage').val();
+                postsPerPage = this.$('#postsPerPage').val(),
+                permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/',
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate
-                .check(title, {message: "Title is too long", el: $('#blog-title')})
-                .len(0, 150);
-            Ghost.Validate
-                .check(description, {message: "Description is too long", el: $('#blog-description')})
-                .len(0, 200);
-            Ghost.Validate
-                .check(email, {message: "Please supply a valid email address", el: $('#email-address')})
-                .isEmail().len(0, 254);
-            Ghost.Validate
-                .check(postsPerPage, {message: "Please use a number less than 1000", el: $('postsPerPage')})
-                .isInt().max(1000);
+            if (!validator.isLength(title, 0, 150)) {
+                validationErrors.push({message: "Title is too long", el: $('#blog-title')});
+            }
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (!validator.isLength(description, 0, 200)) {
+                validationErrors.push({message: "Description is too long", el: $('#blog-description')});
+            }
+
+            if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
+                validationErrors.push({message: "Please supply a valid email address", el: $('#email-address')});
+            }
+
+            if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
+                validationErrors.push({message: "Please use a number less than 1000", el: $('postsPerPage')});
+            }
+
+            if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
+                validationErrors.push({message: "Please use a number greater than 0", el: $('postsPerPage')});
+            }
+
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
                 this.model.save({
                     title: title,
                     description: description,
                     email: email,
                     postsPerPage: postsPerPage,
-                    activeTheme: this.$('#activeTheme').val()
+                    activeTheme: this.$('#activeTheme').val(),
+                    permalinks: permalinks
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError
@@ -201,27 +211,22 @@
             this.showUpload('cover', settings.cover);
         },
         showUpload: function (key, src) {
-            var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
-                func: function () { // The function called on acceptance
-                    var data = {};
-                    if (this.$('#uploadurl').val()) {
-                        data[key] = this.$('#uploadurl').val();
-                    } else {
-                        data[key] = this.$('.js-upload-target').attr('src');
-                    }
-
-                    self.model.save(data, {
-                        success: self.saveSuccess,
-                        error: self.saveError
-                    }).then(function () {
-                        self.render();
-                    });
-
-                    return true;
-                },
-                buttonClass: "button-save right",
-                text: "Save" // The accept button text
-            }});
+            var self = this,
+                upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
+                    func: function () { // The function called on acceptance
+                        var data = {};
+                        if (this.$('.js-upload-url').val()) {
+                            data[key] = this.$('.js-upload-url').val();
+                        } else {
+                            data[key] = this.$('.js-upload-target').attr('src');
+                        }
+                        self.model.set(data);
+                        self.saveSettings();
+                        return true;
+                    },
+                    buttonClass: "button-save right",
+                    text: "Save" // The accept button text
+                }});
 
             this.addSubview(new Ghost.Views.Modal({
                 model: upload
@@ -230,7 +235,23 @@
         templateName: 'settings/general',
 
         afterRender: function () {
+            var self = this;
+
+            this.$('#permalinks').prop('checked', this.model.get('permalinks') !== '/:slug/');
             this.$('.js-drop-zone').upload();
+
+            Countable.live(document.getElementById('blog-description'), function (counter) {
+                var descriptionContainer = self.$('.description-container .word-count');
+                if (counter.all > 180) {
+                    descriptionContainer.css({color: "#e25440"});
+                } else {
+                    descriptionContainer.css({color: "#9E9D95"});
+                }
+
+                descriptionContainer.text(200 - counter.all);
+
+            });
+
             Settings.Pane.prototype.afterRender.call(this);
         }
     });
@@ -266,17 +287,13 @@
             var self = this, upload = new Ghost.Models.uploadModal({'key': key, 'src': src, 'id': this.id, 'accept': {
                 func: function () { // The function called on acceptance
                     var data = {};
-                    if (this.$('#uploadurl').val()) {
-                        data[key] = this.$('#uploadurl').val();
+                    if (this.$('.js-upload-url').val()) {
+                        data[key] = this.$('.js-upload-url').val();
                     } else {
                         data[key] = this.$('.js-upload-target').attr('src');
                     }
-                    self.model.save(data, {
-                        success: self.saveSuccess,
-                        error: self.saveError
-                    }).then(function () {
-                        self.render();
-                    });
+                    self.model.set(data);
+                    self.saveUser(data);
                     return true;
                 },
                 buttonClass: "button-save right",
@@ -320,30 +337,33 @@
                 userEmail = this.$('#user-email').val(),
                 userLocation = this.$('#user-location').val(),
                 userWebsite = this.$('#user-website').val(),
-                userBio = this.$('#user-bio').val();
+                userBio = this.$('#user-bio').val(),
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate
-                .check(userName, {message: "Name is too long", el: $('#user-name')})
-                .len(0, 150);
-            Ghost.Validate
-                .check(userBio, {message: "Bio is too long", el: $('#user-bio')})
-                .len(0, 200);
-            Ghost.Validate
-                .check(userEmail, {message: "Please supply a valid email address", el: $('#user-email')})
-                .isEmail();
-            Ghost.Validate
-                .check(userLocation, {message: "Location is too long", el: $('#user-location')})
-                .len(0, 150);
-            if (userWebsite.length > 0) {
-                Ghost.Validate
-                    .check(userWebsite, {message: "Please use a valid url", el: $('#user-website')})
-                    .isUrl()
-                    .len(0, 2000);
+            if (!validator.isLength(userName, 0, 150)) {
+                validationErrors.push({message: "Name is too long", el: $('#user-name')});
             }
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (!validator.isLength(userBio, 0, 200)) {
+                validationErrors.push({message: "Bio is too long", el: $('#user-bio')});
+            }
+
+            if (!validator.isEmail(userEmail)) {
+                validationErrors.push({message: "Please supply a valid email address", el: $('#user-email')});
+            }
+
+            if (!validator.isLength(userLocation, 0, 150)) {
+                validationErrors.push({message: "Location is too long", el: $('#user-location')});
+            }
+
+            if (userWebsite.length) {
+                if (!validator.isURL(userWebsite) || !validator.isLength(userWebsite, 0, 2000)) {
+                    validationErrors.push({message: "Please use a valid url", el: $('#user-website')});
+                }
+            }
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
 
                 this.model.save({
@@ -366,19 +386,26 @@
             var self = this,
                 oldPassword = this.$('#user-password-old').val(),
                 newPassword = this.$('#user-password-new').val(),
-                ne2Password = this.$('#user-new-password-verification').val();
+                ne2Password = this.$('#user-new-password-verification').val(),
+                validationErrors = [];
 
-            Ghost.Validate._errors = [];
-            Ghost.Validate.check(newPassword, {message: 'Your new passwords do not match'}).equals(ne2Password);
-            Ghost.Validate.check(newPassword, {message: 'Your password is not long enough. It must be at least 8 characters long.'}).len(8);
+            if (!validator.equals(newPassword, ne2Password)) {
+                validationErrors.push("Your new passwords do not match");
+            }
 
-            if (Ghost.Validate._errors.length > 0) {
-                Ghost.Validate.handleErrors();
+            if (!validator.isLength(newPassword, 8)) {
+                validationErrors.push("Your password is not long enough. It must be at least 8 characters long.");
+            }
+
+            if (validationErrors.length) {
+                validator.handleErrors(validationErrors);
             } else {
-
                 $.ajax({
-                    url: '/ghost/changepw/',
+                    url: Ghost.paths.subdir + '/ghost/changepw/',
                     type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
+                    },
                     data: {
                         password: oldPassword,
                         newpassword: newPassword,
@@ -408,19 +435,87 @@
 
         afterRender: function () {
             var self = this;
+
             Countable.live(document.getElementById('user-bio'), function (counter) {
+                var bioContainer = self.$('.bio-container .word-count');
                 if (counter.all > 180) {
-                    self.$('.bio-container .word-count').css({color: "#e25440"});
+                    bioContainer.css({color: "#e25440"});
                 } else {
-                    self.$('.bio-container .word-count').css({color: "#9E9D95"});
+                    bioContainer.css({color: "#9E9D95"});
                 }
 
-                self.$('.bio-container .word-count').text(200 - counter.all);
+                bioContainer.text(200 - counter.all);
 
             });
 
             Settings.Pane.prototype.afterRender.call(this);
         }
+    });
+
+    // ### Apps page
+    Settings.apps = Settings.Pane.extend({
+        id: "apps",
+
+        events: {
+            'click .js-button-activate': 'activateApp',
+            'click .js-button-deactivate': 'deactivateApp'
+        },
+
+        beforeRender: function () {
+            this.availableApps = this.model.toJSON().availableApps;
+        },
+
+        activateApp: function (event) {
+            var button = $(event.currentTarget);
+
+            button.removeClass('button-add').addClass('button js-button-active').text('Working');
+
+            this.saveStates();
+        },
+
+        deactivateApp: function (event) {
+            var button = $(event.currentTarget);
+
+            button.removeClass('button-delete js-button-active').addClass('button').text('Working');
+
+            this.saveStates();
+        },
+
+        saveStates: function () {
+            var activeButtons = this.$el.find('.js-apps .js-button-active'),
+                toSave = [],
+                self = this;
+
+            _.each(activeButtons, function (app) {
+                toSave.push($(app).data('app'));
+            });
+
+            this.model.save({
+                activeApps: JSON.stringify(toSave)
+            }, {
+                success: this.saveSuccess,
+                error: this.saveError
+            }).then(function () { self.render(); });
+        },
+
+        saveSuccess: function () {
+            Ghost.notifications.addItem({
+                type: 'success',
+                message: 'Active applications updated.',
+                status: 'passive',
+                id: 'success-1100'
+            });
+        },
+
+        saveError: function (xhr) {
+            Ghost.notifications.addItem({
+                type: 'error',
+                message: Ghost.Views.Utils.getRequestErrorMessage(xhr),
+                status: 'passive'
+            });
+        },
+
+        templateName: 'settings/apps'
     });
 
 }());
