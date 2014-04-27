@@ -385,8 +385,9 @@ coreHelpers.body_class = function (options) {
         classes.push('page');
     }
 
-    return api.settings.read('activeTheme').then(function (activeTheme) {
-        var paths = config().paths.availableThemes[activeTheme.value],
+    return api.settings.read('activeTheme').then(function (response) {
+        var activeTheme = response.settings[0],
+            paths = config().paths.availableThemes[activeTheme.value],
             view;
 
         if (post) {
@@ -445,8 +446,8 @@ coreHelpers.ghost_head = function (options) {
 
     head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
 
-    head.push('<link rel="alternate" type="application/rss+xml" title="'
-        + _.escape(blog.title)  + '" href="' + config.urlFor('rss') + '">');
+    head.push('<link rel="alternate" type="application/rss+xml" title="' +
+        _.escape(blog.title)  + '" href="' + config.urlFor('rss') + '">');
 
     return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
         head.push('<link rel="canonical" href="' + url + '" />');
@@ -530,9 +531,9 @@ coreHelpers.e = function (key, defaultString, options) {
         api.settings.read('defaultLang'),
         api.settings.read('forceI18n')
     ]).then(function (values) {
-        if (values[0].value === 'en'
-                && _.isEmpty(options.hash)
-                && _.isEmpty(values[1].value)) {
+        if (values[0].settings.value === 'en' &&
+                _.isEmpty(options.hash) &&
+                _.isEmpty(values[1].settings.value)) {
             output = defaultString;
         } else {
             output = polyglot().t(key, options.hash);
@@ -651,18 +652,18 @@ coreHelpers.pagination = function (options) {
         errors.logAndThrowError('pagination data is not an object or is a function');
         return;
     }
-    if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages)
-            || _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
+    if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages) ||
+            _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
         errors.logAndThrowError('All values must be defined for page, pages, limit and total');
         return;
     }
-    if ((!_.isNull(this.pagination.next) && !_.isNumber(this.pagination.next))
-            || (!_.isNull(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
+    if ((!_.isNull(this.pagination.next) && !_.isNumber(this.pagination.next)) ||
+            (!_.isNull(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
         errors.logAndThrowError('Invalid value, Next/Prev must be a number');
         return;
     }
-    if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages)
-            || !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
+    if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages) ||
+            !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
         errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
         return;
     }

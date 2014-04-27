@@ -32,7 +32,7 @@ describe('XMLRPC', function () {
             ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
             testPost = testUtils.DataGenerator.Content.posts[2],
             settingsStub = sandbox.stub(settings, 'read', function () {
-                return when({value: '/:slug/'});
+                return when({ settings: [{value: '/:slug/'}] });
             });
 
         xmlrpc.ping(testPost).then(function () {

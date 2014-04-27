@@ -30,7 +30,7 @@ describe('Config', function () {
             settings = {'read': function read() {}};
 
             settingsStub = sandbox.stub(settings, 'read', function () {
-                return when({value: 'casper'});
+                return when({ settings: [{value: 'casper'}] });
             });
 
             theme.update(settings, 'http://my-ghost-blog.com')
@@ -265,7 +265,7 @@ describe('Config', function () {
         it('should output correct url for post', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:slug/'});
+                    return when({ settings: [{value: '/:slug/'}] });
                 }),
                 testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/short-and-sweet/';
@@ -302,7 +302,7 @@ describe('Config', function () {
         it('should output correct url for post with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:year/:month/:day/:slug/'});
+                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
                 testData = testUtils.DataGenerator.Content.posts[2],
                 today = new Date(),
@@ -342,7 +342,7 @@ describe('Config', function () {
         it('should output correct url for page with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:year/:month/:day/:slug/'});
+                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
                 testData = testUtils.DataGenerator.Content.posts[5],
                 postLink = '/static-page-test/';

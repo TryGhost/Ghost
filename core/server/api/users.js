@@ -114,19 +114,22 @@ users = {
 
     generateResetToken: function generateResetToken(email) {
         var expires = Date.now() + ONE_DAY;
-        return settings.read('dbHash').then(function (dbHash) {
+        return settings.read('dbHash').then(function (response) {
+            var dbHash = response.settings[0].value;
             return dataProvider.User.generateResetToken(email, expires, dbHash);
         });
     },
 
     validateToken: function validateToken(token) {
-        return settings.read('dbHash').then(function (dbHash) {
+        return settings.read('dbHash').then(function (response) {
+            var dbHash = response.settings[0].value;
             return dataProvider.User.validateToken(token, dbHash);
         });
     },
 
     resetPassword: function resetPassword(token, newPassword, ne2Password) {
-        return settings.read('dbHash').then(function (dbHash) {
+        return settings.read('dbHash').then(function (response) {
+            var dbHash = response.settings[0].value;
             return dataProvider.User.resetPassword(token, newPassword, ne2Password, dbHash);
         });
     },

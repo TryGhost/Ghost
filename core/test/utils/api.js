@@ -10,10 +10,8 @@ var _ = require('lodash'),
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',
             'updated_by', 'published_at', 'published_by', 'page', 'author', 'tags', 'fields'],
-        // TODO: remove databaseVersion, dbHash
-        settings: ['databaseVersion', 'dbHash', 'title', 'description', 'email', 'logo', 'cover', 'defaultLang',
-            "permalinks", 'postsPerPage', 'forceI18n', 'activeTheme', 'activeApps', 'installedApps',
-            'availableThemes', 'availableApps', 'nextUpdateCheck', 'displayUpdateNotification'],
+        settings: ['settings'],
+        setting: ['id','uuid','key','value','type','created_at','created_by','updated_at','updated_by'],
         tag: ['id', 'uuid', 'name', 'slug', 'description', 'parent',
             'meta_title', 'meta_description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
         user: ['id', 'uuid', 'name', 'slug', 'email', 'image', 'cover', 'bio', 'website',
@@ -44,6 +42,10 @@ function checkResponse (jsonResponse, objectType) {
 function checkResponseValue (jsonResponse, properties) {
     Object.keys(jsonResponse).length.should.eql(properties.length);
     for(var i=0; i<properties.length; i = i + 1) {
+        // For some reason, settings response objects do not have the 'hasOwnProperty' method
+        if (Object.prototype.hasOwnProperty.call(jsonResponse, properties[i])) {
+            continue;
+        }
         jsonResponse.should.have.property(properties[i]);
     }
 }

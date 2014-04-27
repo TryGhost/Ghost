@@ -15,7 +15,6 @@ function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/default-settings.json'),
         defaultSettingsFlattened = {};
 
-
     _.each(defaultSettingsInCategories, function (settings, categoryName) {
         _.each(settings, function (setting, settingName) {
             setting.type = categoryName;
@@ -46,7 +45,6 @@ Settings = ghostBookshelf.Model.extend({
         validation.validateSettings(defaultSettings, this);
     },
 
-
     saving: function () {
          // disabling sanitization until we can implement a better version
          // All blog setting keys that need their values to be escaped.
@@ -63,9 +61,7 @@ Settings = ghostBookshelf.Model.extend({
         if (!_.isObject(_key)) {
             _key = { key: _key };
         }
-        return when(ghostBookshelf.Model.read.call(this, _key)).then(function (element) {
-            return element;
-        });
+        return when(ghostBookshelf.Model.read.call(this, _key));
     },
 
     edit: function (_data, options) {
@@ -77,13 +73,16 @@ Settings = ghostBookshelf.Model.extend({
         return when.map(_data, function (item) {
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
+            if (!(_.isString(item.key) && item.key.length > 0)) {
+                return when.reject(new Error('Setting key cannot be empty.'));
+            }
             return Settings.forge({ key: item.key }).fetch(options).then(function (setting) {
 
                 if (setting) {
                     return setting.save({value: item.value}, options);
                 }
 
-                return Settings.forge({ key: item.key, value: item.value }).save(null, options);
+                return when.reject(new Error('Unable to find setting to update: ' + item.key));
 
             }, errors.logAndThrowError);
         });

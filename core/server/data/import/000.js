@@ -1,7 +1,13 @@
 var when   = require('when'),
     _      = require('lodash'),
     models = require('../../models'),
-    Importer000;
+    Importer000,
+    updatedSettingKeys;
+
+updatedSettingKeys = {
+    activePlugins: 'activeApps',
+    installedPlugins: 'installedApps'
+};
 
 
 Importer000 = function () {
@@ -121,6 +127,12 @@ function importSettings(ops, tableData, transaction) {
     tableData = _.filter(tableData, function (data) {
         return blackList.indexOf(data.type) === -1;
     });
+
+    // Clean up legacy plugin setting references
+    _.each(tableData, function (datum) {
+        datum.key = updatedSettingKeys[datum.key] || datum.key;
+    });
+
     ops.push(models.Settings.edit(tableData, {user: 1, transacting: transaction})
          // add pass-through error handling so that bluebird doesn't think we've dropped it
          .otherwise(function (error) { return when.reject(error); }));
