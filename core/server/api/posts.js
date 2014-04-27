@@ -3,13 +3,28 @@ var when                   = require('when'),
     dataProvider           = require('../models'),
     canThis                = require('../permissions').canThis,
     filteredUserAttributes = require('./users').filteredAttributes,
-    posts;
+
+    posts,
+    allowedIncludes        = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'];
 
 function checkPostData(postData) {
     if (_.isEmpty(postData) || _.isEmpty(postData.posts) || _.isEmpty(postData.posts[0])) {
         return when.reject({code: 400, message: 'No root key (\'posts\') provided.'});
     }
     return when.resolve(postData);
+}
+
+function prepareInclude(include) {
+    var index;
+
+    include = _.intersection(include.split(","), allowedIncludes);
+    index = include.indexOf('author');
+
+    if (index !== -1) {
+        include[index] = 'author_id';
+    }
+
+    return include;
 }
 
 // ## Posts
@@ -24,13 +39,20 @@ posts = {
         if (!this.user) {
             options.status = 'published';
         }
+
+        if (options.include) {
+            options.include = prepareInclude(options.include);
+        }
+
         // **returns:** a promise for a page of posts in a json object
         return dataProvider.Post.findPage(options).then(function (result) {
             var i = 0,
                 omitted = result;
 
             for (i = 0; i < omitted.posts.length; i = i + 1) {
-                omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
+                if (!_.isNumber(omitted.posts[i].author)) {
+                    omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
+                }
             }
             return omitted;
         });
@@ -39,6 +61,7 @@ posts = {
     // #### Read
     // **takes:** an identifier (id or slug?)
     read: function read(options) {
+        var include;
         options = options || {};
 
         // only published posts if no user is present
@@ -46,15 +69,23 @@ posts = {
             options.status = 'published';
         }
 
+        if (options.include) {
+            include = prepareInclude(options.include);
+            delete options.include;
+        }
+
         // **returns:** a promise for a single post in a json object
-        return dataProvider.Post.findOne(options).then(function (result) {
+        return dataProvider.Post.findOne(options, {include: include}).then(function (result) {
             var omitted;
 
             if (result) {
                 omitted = result.toJSON();
-                omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                if (!_.isNumber(omitted.author)) {
+                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                }
                 return { posts: [ omitted ]};
             }
+
             return when.reject({code: 404, message: 'Post not found'});
 
         });
@@ -64,21 +95,30 @@ posts = {
     // **takes:** a json object with all the properties which should be updated
     edit: function edit(postData) {
         // **returns:** a promise for the resulting post in a json object
-        var self = this;
+        var self = this,
+            include;
 
         return canThis(self.user).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user});
+
+                if (postData.include) {
+                    include = prepareInclude(postData.include);
+                }
+
+                return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user, include: include});
             }).then(function (result) {
                 if (result) {
                     var omitted = result.toJSON();
-                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                    if (!_.isNumber(omitted.author)) {
+                        omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                    }
                     // If previously was not published and now is, signal the change
                     if (result.updated('status') !== result.get('status')) {
                         omitted.statusChanged = true;
                     }
                     return { posts: [ omitted ]};
                 }
+
                 return when.reject({code: 404, message: 'Post not found'});
             });
         }, function () {
@@ -96,7 +136,9 @@ posts = {
                 return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user});
             }).then(function (result) {
                 var omitted = result.toJSON();
-                omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                if (!_.isNumber(omitted.author)) {
+                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
+                }
                 if (omitted.status === 'published') {
                     // When creating a new post that is published right now, signal the change
                     omitted.statusChanged = true;
@@ -134,7 +176,6 @@ posts = {
     },
 
     // #### Generate slug
-
     // **takes:** a string to generate the slug from
     generateSlug: function generateSlug(args) {
 

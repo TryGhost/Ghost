@@ -17,7 +17,7 @@ CasperTest.begin("Content screen is correct", 22, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForResource(/posts\/$/, function checkPostWasCreated() {
+    casper.waitForResource(/posts\/\?include=tags$/, function checkPostWasCreated() {
         test.assertExists('.notification-success', 'got success notification');
     });
 
@@ -97,7 +97,7 @@ CasperTest.begin('Content list shows correct post status', 8, function testStati
         test.assert(false, 'publish button did not change to published');
     });
 
-    casper.waitForResource(/posts\/$/, function checkPostWasCreated() {
+    casper.waitForResource(/posts\/\?include=tags$/, function checkPostWasCreated() {
         test.assertExists('.notification-success', 'got success notification');
     });
 
@@ -159,7 +159,7 @@ CasperTest.begin('Preview shows correct header for published post', 7, function 
         test.assert(false, 'publish button did not change to published');
     });
 
-    casper.waitForResource(/posts\/$/, function checkPostWasCreated() {
+    casper.waitForResource(/posts\/\?include=tags$/, function checkPostWasCreated() {
         test.assertExists('.notification-success', 'got success notification');
     });
 
@@ -196,7 +196,7 @@ CasperTest.begin('Delete post modal', 9, function testDeleteModal(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForResource(/posts\/$/, function checkPostWasCreated() {
+    casper.waitForResource(/posts\/\?include=tags$/, function checkPostWasCreated() {
         test.assertExists('.notification-success', 'got success notification');
     });
 

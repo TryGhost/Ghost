@@ -210,6 +210,33 @@ describe('Post API', function () {
                     jsonResponse.posts[0].page.should.eql(0);
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+                    jsonResponse.posts[0].author.should.be.a.Number;
+                    jsonResponse.posts[0].created_by.should.be.a.Number;
+                    jsonResponse.posts[0].tags[0].should.be.a.Number;
+                    done();
+                });
+        });
+
+        it('can retrieve a post with author, created_by, and tags', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/1/?include=author,tags,created_by'))
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.should.have.status(200);
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    res.should.be.json;
+                    var jsonResponse = res.body;
+                    jsonResponse.should.exist;
+                    jsonResponse.posts.should.exist;
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    jsonResponse.posts[0].page.should.eql(0);
+
+                    jsonResponse.posts[0].author.should.be.an.Object;
+                    testUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
+                    jsonResponse.posts[0].tags[0].should.be.an.Object;
+                    testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
                     done();
                 });
         });
@@ -358,7 +385,7 @@ describe('Post API', function () {
     // ## edit
     describe('Edit', function () {
         it('can edit a post', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/1/'))
+            request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -391,7 +418,7 @@ describe('Post API', function () {
         });
 
         it('can change a post to a static page', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/1/'))
+            request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -482,7 +509,7 @@ describe('Post API', function () {
         });
 
         it('published_at = null', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/1/'))
+            request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -703,7 +730,7 @@ describe('Post API', function () {
         });
 
         it('Can edit a post', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/2/'))
+            request.get(testUtils.API.getApiQuery('posts/2/?include=tags'))
                 .end(function (err, res) {
                     if (err) {
                         return done(err);

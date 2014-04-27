@@ -65,10 +65,10 @@ describe('Post Model', function () {
         }).then(null, done);
     });
 
-    it('can findAll, returning author, user and field data', function (done) {
+    it('can findAll, returning author and field data', function (done) {
         var firstPost;
 
-        PostModel.findAll({}).then(function (results) {
+        PostModel.findAll({include: ['author_id', 'fields']}).then(function (results) {
             should.exist(results);
             results.length.should.be.above(0);
             firstPost = results.models[0].toJSON();
@@ -83,10 +83,10 @@ describe('Post Model', function () {
         }, done);
     });
 
-    it('can findOne, returning author, user and field data', function (done) {
+    it('can findOne, returning author and field data', function (done) {
         var firstPost;
-
-        PostModel.findOne({}).then(function (result) {
+        // TODO: should take author :-/
+        PostModel.findOne({}, {include: ['author_id', 'fields']}).then(function (result) {
             should.exist(result);
             firstPost = result.toJSON();
 

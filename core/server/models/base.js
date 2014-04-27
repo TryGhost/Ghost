@@ -1,20 +1,19 @@
-var Bookshelf = require('bookshelf'),
-    when      = require('when'),
-    moment    = require('moment'),
-    _         = require('lodash'),
-    uuid      = require('node-uuid'),
-    config    = require('../config'),
-    unidecode = require('unidecode'),
-    sanitize  = require('validator').sanitize,
-    schema    = require('../data/schema'),
-    validation     = require('../data/validation'),
+var Bookshelf  = require('bookshelf'),
+    when       = require('when'),
+    moment     = require('moment'),
+    _          = require('lodash'),
+    uuid       = require('node-uuid'),
+    config     = require('../config'),
+    unidecode  = require('unidecode'),
+    sanitize   = require('validator').sanitize,
+    schema     = require('../data/schema'),
+    validation = require('../data/validation'),
 
     ghostBookshelf;
 
 // Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
 ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
 ghostBookshelf.client = config().database.client;
-
 
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
@@ -34,7 +33,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     initialize: function () {
-        var self = this;
+        var self = this,
+            options = arguments[1] || {};
+
+        // make options include available for toJSON()
+        if (options.include) {
+            this.include = _.clone(options.include);
+        }
+
         this.on('creating', this.creating, this);
         this.on('saving', function (model, attributes, options) {
             return when(self.saving(model, attributes, options)).then(function () {
@@ -98,15 +104,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     toJSON: function (options) {
         var attrs = _.extend({}, this.attributes),
-            relations = this.relations;
+            self = this;
 
         if (options && options.shallow) {
             return attrs;
         }
 
-        _.each(relations, function (relation, key) {
+        if (options && options.idOnly) {
+            return attrs.id;
+        }
+
+        _.each(this.relations, function (relation, key) {
             if (key.substring(0, 7) !== '_pivot_') {
-                attrs[key] = relation.toJSON ? relation.toJSON() : relation;
+                // if include is set, expand to full object
+                // toMany relationships are included with ids if not expanded
+                if (_.contains(self.include, key)) {
+                    attrs[key] = relation.toJSON();
+                } else if (relation.hasOwnProperty('length')) {
+                    attrs[key] = relation.toJSON({idOnly: true});
+                }
             }
         });
 
@@ -135,7 +151,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findAll:  function (options) {
         options = options || {};
-        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options);
+        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options).then(function (result) {
+            if (options.include) {
+                _.each(result.models, function (item) {
+                    item.include = options.include;
+                });
+            }
+            return result;
+        });
     },
 
     browse: function () {
@@ -149,7 +172,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findOne: function (args, options) {
         options = options || {};
-        return this.forge(args).fetch(options);
+        return this.forge(args, {include: options.include}).fetch(options);
     },
 
     read: function () {
