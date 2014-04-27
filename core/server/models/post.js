@@ -10,7 +10,6 @@ var _              = require('lodash'),
     Tag            = require('./tag').Tag,
     Tags           = require('./tag').Tags,
     ghostBookshelf = require('./base'),
-    validation     = require('../data/validation'),
     xmlrpc         = require('../xmlrpc'),
 
     Post,
@@ -29,22 +28,15 @@ Post = ghostBookshelf.Model.extend({
 
     initialize: function () {
         var self = this;
-        this.on('creating', this.creating, this);
+
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
         this.on('saved', function (model, attributes, options) {
             if (model.get('status') === 'published') {
                 xmlrpc.ping(model.attributes);
             }
             return self.updateTags(model, attributes, options);
         });
-        this.on('saving', function (model, attributes, options) {
-            return when(self.saving(model, attributes, options)).then(function () {
-                return self.validate(model, attributes, options);
-            });
-        });
-    },
-
-    validate: function () {
-        validation.validateSchema(this.tableName, this.toJSON());
     },
 
     saving: function (newPage, attr, options) {
@@ -57,13 +49,16 @@ Post = ghostBookshelf.Model.extend({
         // keep tags for 'saved' event and deduplicate upper/lowercase tags
         tagsToCheck = this.get('tags');
         this.myTags = [];
+
         _.each(tagsToCheck, function (item) {
-            for (i = 0; i < self.myTags.length; i = i + 1) {
-                if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                    return;
+            if (_.isObject(self.myTags)) {
+                for (i = 0; i < self.myTags.length; i = i + 1) {
+                    if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                        return;
+                    }
                 }
+                self.myTags.push(item);
             }
-            self.myTags.push(item);
         });
 
         ghostBookshelf.Model.prototype.saving.call(this, newPage, attr, options);
@@ -201,8 +196,20 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // Relations
-    author: function () {
+    author_id: function () {
         return this.belongsTo(User, 'author_id');
+    },
+
+    created_by: function () {
+        return this.belongsTo(User, 'created_by');
+    },
+
+    updated_by: function () {
+        return this.belongsTo(User, 'updated_by');
+    },
+
+    published_by: function () {
+        return this.belongsTo(User, 'published_by');
     },
 
     tags: function () {
@@ -228,8 +235,7 @@ Post = ghostBookshelf.Model.extend({
     // Extends base model findAll to eager-fetch author and user relationships.
     findAll:  function (options) {
         options = options || {};
-
-        options.withRelated = [ 'author', 'tags', 'fields' ];
+        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -246,7 +252,9 @@ Post = ghostBookshelf.Model.extend({
             delete args.status;
         }
 
-        options.withRelated = [ 'author', 'tags', 'fields' ];
+        // Add related objects
+        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
+
         return ghostBookshelf.Model.findOne.call(this, args, options);
     },
 
@@ -273,7 +281,7 @@ Post = ghostBookshelf.Model.extend({
     findPage: function (opts) {
         var postCollection = Posts.forge(),
             tagInstance = opts.tag !== undefined ? Tag.forge({slug: opts.tag}) : false,
-            permittedOptions = ['page', 'limit', 'status', 'staticPages'];
+            permittedOptions = ['page', 'limit', 'status', 'staticPages', 'include'];
 
         // sanitize opts so we are not automatically passing through any and all
         // query strings to Bookshelf / Knex. Although the API requires auth, we
@@ -311,8 +319,8 @@ Post = ghostBookshelf.Model.extend({
             postCollection.query('where', opts.where);
         }
 
-        // Fetch related models
-        opts.withRelated = [ 'author', 'tags', 'fields' ];
+        // Add related objects
+        opts.withRelated = _.union([ 'tags', 'fields' ], opts.include);
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -338,7 +346,6 @@ Post = ghostBookshelf.Model.extend({
                         .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
                         .query('where', 'posts_tags.tag_id', '=', tagInstance.id);
                 }
-
                 return postCollection
                     .query('limit', opts.limit)
                     .query('offset', opts.limit * (opts.page - 1))
@@ -383,6 +390,12 @@ Post = ghostBookshelf.Model.extend({
                 pagination['total'] = totalPosts;
                 pagination['next'] = null;
                 pagination['prev'] = null;
+
+                if (opts.include) {
+                    _.each(postCollection.models, function (item) {
+                        item.include = opts.include;
+                    });
+                }
 
                 data['posts'] = postCollection.toJSON();
                 data['meta'] = meta;
@@ -441,7 +454,6 @@ Post = ghostBookshelf.Model.extend({
     edit: function (editedPost, options) {
         var self = this;
         options = options || {};
-
         return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
             if (post) {
                 return self.findOne({status: 'all', id: post.id}, options)

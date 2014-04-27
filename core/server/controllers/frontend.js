@@ -28,7 +28,7 @@ function getPostPage(options) {
         if (!isNaN(postsPerPage) && postsPerPage > 0) {
             options.limit = postsPerPage;
         }
-
+        options.include = 'author,tags,fields';
         return api.posts.browse(options);
     }).then(function (page) {
 
@@ -162,6 +162,8 @@ frontendControllers = {
 
             // Sanitize params we're going to use to lookup the post.
             var postLookup = _.pick(permalink.params, 'slug', 'id');
+            // Add author, tag and fields
+            postLookup.include = 'author,tags,fields';
 
             // Query database to find post
             return api.posts.read(postLookup);
@@ -269,6 +271,8 @@ frontendControllers = {
             var options = {};
             if (pageParam) { options.page = pageParam; }
             if (tagParam) { options.tag = tagParam; }
+
+            options.include = 'author,tags,fields';
 
             return api.posts.browse(options).then(function (page) {
 
