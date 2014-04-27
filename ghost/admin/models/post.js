@@ -49,6 +49,7 @@
             if (method === 'create' || method === 'update') {
                 options.data = JSON.stringify({posts: [this.attributes]});
                 options.contentType = 'application/json';
+                options.url = model.url() + '?include=tags';
             }
 
             return Backbone.Model.prototype.sync.apply(this, arguments);
