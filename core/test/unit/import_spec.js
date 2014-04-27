@@ -303,7 +303,7 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Value in [settings.key] cannot be blank.');
+                error.should.eql('Error importing data: Setting key cannot be empty.');
 
                 when.all([
                     knex("users").select(),
@@ -423,7 +423,7 @@ describe("Import", function () {
                 done();
             }).otherwise(function (error) {
                 done(new Error(error));
-            })
+            });
         });
 
         it("doesn't import invalid post data from 002", function (done) {
@@ -486,7 +486,7 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Value in [settings.key] cannot be blank.');
+                error.should.eql('Error importing data: Setting key cannot be empty.');
 
                 when.all([
                     knex("users").select(),

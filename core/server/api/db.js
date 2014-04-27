@@ -44,7 +44,9 @@ db = {
                 return when.reject({code: 500, message: 'Please select a .json file to import.'});
             }
 
-            return api.settings.read({ key: 'databaseVersion' }).then(function (setting) {
+            return api.settings.read({ key: 'databaseVersion' }).then(function (response) {
+                var setting = response.settings[0];
+                
                 return when(setting.value);
             }, function () {
                 return when('002');

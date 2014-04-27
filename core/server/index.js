@@ -53,19 +53,21 @@ function doFirstRun() {
 }
 
 function initDbHashAndFirstRun() {
-    return when(api.settings.read('dbHash')).then(function (hash) {
-        // we already ran this, chill
-        // Holds the dbhash (mainly used for cookie secret)
-        dbHash = hash.value;
+    return when(api.settings.read('dbHash')).then(function (response) {
+        var hash = response.settings[0].value,
+            initHash;
+
+        dbHash = hash;
 
         if (dbHash === null) {
-            var initHash = uuid.v4();
-            return when(api.settings.edit.call({user: 1}, 'dbHash', initHash)).then(function (settings) {
-                dbHash = settings.dbHash;
+            initHash = uuid.v4();
+            return when(api.settings.edit.call({user: 1}, 'dbHash', initHash)).then(function (response) {
+                dbHash = response.settings[0].value;
                 return dbHash;
             }).then(doFirstRun);
         }
-        return dbHash.value;
+        
+        return dbHash;
     });
 }
 

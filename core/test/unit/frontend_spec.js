@@ -44,9 +44,11 @@ describe('Frontend Controller', function () {
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('postsPerPage').returns(when({
-                'key': 'postsPerPage',
-                'value': 6
+            apiSettingsStub.withArgs('postsPerPage').returns(when({ 
+                settings: [{
+                    'key': 'postsPerPage',
+                    'value': 6
+                }]
             }));
         });
 
@@ -199,13 +201,17 @@ describe('Frontend Controller', function () {
             apiSettingsStub = sandbox.stub(api.settings, 'read');
  
             apiSettingsStub.withArgs('activeTheme').returns(when({
-                'key': 'activeTheme',
-                'value': 'casper'
+                settings: [{
+                    'key': 'activeTheme',
+                    'value': 'casper'
+                }]
             }));
  
             apiSettingsStub.withArgs('postsPerPage').returns(when({
-                'key': 'postsPerPage',
-                'value': '10'
+                settings: [{
+                    'key': 'postsPerPage',
+                    'value': '10'
+                }]
             }));
  
             frontend.__set__('config',  sandbox.stub().returns({
@@ -265,8 +271,10 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('postsPerPage').returns(when({
-                'key': 'postsPerPage',
-                'value': 6
+                settings: [{
+                    'key': 'postsPerPage',
+                    'value': 6
+                }]
             }));
         });
 
@@ -415,8 +423,10 @@ describe('Frontend Controller', function () {
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
             apiSettingsStub.withArgs('activeTheme').returns(when({
-                'key': 'activeTheme',
-                'value': 'casper'
+                settings: [{
+                    'key': 'activeTheme',
+                    'value': 'casper'
+                }]
             }));
 
             frontend.__set__('config',  sandbox.stub().returns({
@@ -441,7 +451,9 @@ describe('Frontend Controller', function () {
             describe('custom page templates', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                        value: '/:slug/'
+                            settings: [{
+                            value: '/:slug/'
+                        }]
                     }));
                 });
 
@@ -463,7 +475,9 @@ describe('Frontend Controller', function () {
             describe('permalink set to slug', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                        value: '/:slug/'
+                        settings: [{
+                            value: '/:slug/'
+                        }]
                     }));
                 });
 
@@ -532,7 +546,9 @@ describe('Frontend Controller', function () {
             describe('permalink set to date', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
+                        settings: [{
                         value: '/:year/:month/:day/:slug/'
+                        }] 
                     }));
                 });
 
@@ -603,7 +619,9 @@ describe('Frontend Controller', function () {
             describe('permalink set to slug', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                        value: '/:slug'
+                        settings: [{
+                            value: '/:slug'
+                        }] 
                     }));
                 });
 
@@ -674,7 +692,9 @@ describe('Frontend Controller', function () {
             describe('permalink set to date', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                        value: '/:year/:month/:day/:slug'
+                        settings: [{
+                            value: '/:year/:month/:day/:slug'
+                        }] 
                     }));
                 });
 
@@ -762,7 +782,9 @@ describe('Frontend Controller', function () {
             describe('permalink set to custom format', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                        value: '/:year/:slug'
+                        settings: [{
+                            value: '/:year/:slug'
+                        }] 
                     }));
                 });
 
@@ -891,16 +913,22 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('title').returns(when({
-                'key': 'title',
-                'value': 'Test'
+                settings: [{
+                    'key': 'title',
+                    'value': 'Test'
+                }]
             }));
             apiSettingsStub.withArgs('description').returns(when({
-                'key': 'description',
-                'value': 'Some Text'
+                settings: [{
+                    'key': 'description',
+                    'value': 'Some Text'
+                }]
             }));
             apiSettingsStub.withArgs('permalinks').returns(when({
-                'key': 'permalinks',
-                'value': '/:slug/'
+                settings: [{
+                    'key': 'permalinks',
+                    'value': '/:slug/'
+                }]
             }));
         });
 

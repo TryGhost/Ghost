@@ -32,7 +32,9 @@ describe('Core Helpers', function () {
         helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings, 'read', function (arg) {
-            return when({value: 'casper'});
+            return when({
+                settings: [{value: 'casper'}]
+            });
         });
 
         config = helpers.__get__('config');
@@ -1186,7 +1188,9 @@ describe('Core Helpers', function () {
             apiStub = sandbox.stub(api.settings, 'read', function () {
                 var futureversion = packageInfo.version.split('.');
                 futureversion[futureversion.length - 1] = parseInt(futureversion[futureversion.length - 1], 10) + 1;
-                return when({value: futureversion.join('.')});
+                return when({
+                    settings: [{value: futureversion.join('.')}]
+                });
             });
 
             helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
@@ -1208,7 +1212,7 @@ describe('Core Helpers', function () {
         it('does NOT output a correctly formatted notification when db version equals package version', function (done) {
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({value: packageInfo.version});
+                return when({ settings: [{value: packageInfo.version}] });
             });
 
             helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
@@ -1223,7 +1227,7 @@ describe('Core Helpers', function () {
 
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({value: 'true'});
+                return when({ settings: [{value: 'true'}] });
             });
 
             helpers.update_notification.call({currentUser: {name: 'bob'}}).then(function (rendered) {
@@ -1238,7 +1242,7 @@ describe('Core Helpers', function () {
             apiStub = sandbox.stub(api.settings, 'read', function () {
                 var futureversion = packageInfo.version.split('.');
                 futureversion[futureversion.length-1] = parseInt(futureversion[futureversion.length-1], 10) + 1;
-                return when({value: futureversion.join('.')});
+                return when({ settings: [{value: futureversion.join('.')}] });
             });
 
             helpers.update_notification.call().then(function (rendered) {

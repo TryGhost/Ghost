@@ -21,8 +21,9 @@ var moment      = require('moment'),
     staticPostPermalink = new Route(null, '/:slug/:edit?');
 
 function getPostPage(options) {
-    return api.settings.read('postsPerPage').then(function (postPP) {
-        var postsPerPage = parseInt(postPP.value, 10);
+    return api.settings.read('postsPerPage').then(function (response) {
+        var postPP = response.settings[0],
+            postsPerPage = parseInt(postPP.value, 10);
 
         // No negative posts per page, must be number
         if (!isNaN(postsPerPage) && postsPerPage > 0) {
@@ -121,16 +122,17 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                api.settings.read('activeTheme').then(function (activeTheme) {
-                    var paths = config().paths.availableThemes[activeTheme.value],
+                api.settings.read('activeTheme').then(function (response) {
+                    var activeTheme = response.settings[0],
+                        paths = config().paths.availableThemes[activeTheme.value],
                         view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
 
                         // Format data for template
-                        response = _.extend(formatPageResponse(posts, page), {
+                        result = _.extend(formatPageResponse(posts, page), {
                             tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
                         });
 
-                    res.render(view, response);
+                    res.render(view, result);
                 });
             });
         }).otherwise(handleError(next));
@@ -141,7 +143,10 @@ frontendControllers = {
             editFormat,
             usingStaticPermalink = false;
 
-        api.settings.read('permalinks').then(function (permalink) {
+        api.settings.read('permalinks').then(function (response) {
+            var permalink = response.settings[0],
+                postLookup;
+
             editFormat = permalink.value[permalink.value.length - 1] === '/' ? ':edit?' : '/:edit?';
 
             // Convert saved permalink into an express Route object
@@ -167,7 +172,7 @@ frontendControllers = {
             params = permalink.params;
 
             // Sanitize params we're going to use to lookup the post.
-            var postLookup = _.pick(permalink.params, 'slug', 'id');
+            postLookup = _.pick(permalink.params, 'slug', 'id');
             // Add author, tag and fields
             postLookup.include = 'author,tags,fields';
 
@@ -194,8 +199,9 @@ frontendControllers = {
                 setReqCtx(req, post);
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
-                    api.settings.read('activeTheme').then(function (activeTheme) {
-                        var paths = config().paths.availableThemes[activeTheme.value],
+                    api.settings.read('activeTheme').then(function (response) {
+                        var activeTheme = response.settings[0],
+                            paths = config().paths.availableThemes[activeTheme.value],
                             view = template.getThemeViewForPost(paths, post);
 
                         res.render(view, {post: post});
@@ -285,11 +291,11 @@ frontendControllers = {
 
             return api.posts.browse(options).then(function (page) {
 
-                var title = result[0].value.value,
-                    description = result[1].value.value,
-                    permalinks = result[2].value,
+                var title = result[0].value.settings[0].value,
+                    description = result[1].value.settings[0].value,
+                    permalinks = result[2].value.settings[0],
                     siteUrl = config.urlFor('home', {secure: req.secure}, true),
-                    feedUrl =  config.urlFor('rss', {secure: req.secure}, true),
+                    feedUrl = config.urlFor('rss', {secure: req.secure}, true),
                     maxPage = page.meta.pagination.pages,
                     feedItems = [],
                     feed;
@@ -348,8 +354,8 @@ frontendControllers = {
                         });
                         item.description = content;
                         feed.item(item);
-                        deferred.resolve();
                         feedItems.push(deferred.promise);
+                        deferred.resolve();
                     });
                 });
 

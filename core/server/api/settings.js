@@ -4,34 +4,16 @@ var _            = require('lodash'),
     errors       = require('../errorHandling'),
     config       = require('../config'),
     settings,
-    settingsObject,
     settingsCollection,
     settingsFilter,
     updateSettingsCache,
     readSettingsResult,
     filterPaths,
+    settingsResult,
     // Holds cached settings
     settingsCache = {};
 
 // ### Helpers
-// Turn a settings collection into a single object/hashmap
-settingsObject = function (settings) {
-    if (_.isObject(settings)) {
-        return _.reduce(settings, function (res, item, key) {
-            if (_.isArray(item)) {
-                res[key] = item;
-            } else {
-                res[key] = item.value;
-            }
-            return res;
-        }, {});
-    }
-    return (settings.toJSON ? settings.toJSON() : settings).reduce(function (res, item) {
-        if (item.toJSON) { item = item.toJSON(); }
-        if (item.key) { res[item.key] = item.value; }
-        return res;
-    }, {});
-};
 // Turn an object into a collection
 settingsCollection = function (settings) {
     return _.map(settings, function (value, key) {
@@ -57,45 +39,53 @@ updateSettingsCache = function (settings) {
 
     if (!_.isEmpty(settings)) {
         _.map(settings, function (setting, key) {
-            settingsCache[key].value = setting.value;
+            settingsCache[key] = setting;
         });
-    } else {
-        return when(dataProvider.Settings.findAll()).then(function (result) {
-            return when(readSettingsResult(result)).then(function (s) {
-                settingsCache = s;
-            });
-        });
+
+        return when(settingsCache);
     }
+
+    return dataProvider.Settings.findAll()
+        .then(function (result) {
+            settingsCache = readSettingsResult(result.models);
+
+            return settingsCache;
+        });
 };
 
-readSettingsResult = function (result) {
-    var settings = {};
-    return when(_.map(result.models, function (member) {
-        if (!settings.hasOwnProperty(member.attributes.key)) {
-            var val = {};
-            val.value = member.attributes.value;
-            val.type = member.attributes.type;
-            settings[member.attributes.key] = val;
-        }
-    })).then(function () {
-        return when(config().paths.availableThemes).then(function (themes) {
-            var res = filterPaths(themes, settings.activeTheme.value);
-            settings.availableThemes = {
-                value: res,
-                type: 'theme'
-            };
-            return settings;
-        });
-    }).then(function () {
-        return when(config().paths.availableApps).then(function (apps) {
-            var res = filterPaths(apps, JSON.parse(settings.activeApps.value));
-            settings.availableApps = {
-                value: res,
-                type: 'app'
-            };
-            return settings;
-        });
-    });
+readSettingsResult = function (settingsModels) {
+    var settings = _.reduce(settingsModels, function (memo, member) {
+            if (!memo.hasOwnProperty(member.attributes.key)) {
+                memo[member.attributes.key] = member.attributes;
+            }
+
+            return memo;
+        }, {}),
+        themes = config().paths.availableThemes,
+        apps = config().paths.availableApps,
+        res;
+
+    if (settings.activeTheme) {
+        res = filterPaths(themes, settings.activeTheme.value);
+
+        settings.availableThemes = {
+            key: 'availableThemes',
+            value: res,
+            type: 'theme'
+        };
+    }
+
+    if (settings.activeApps) {
+        res = filterPaths(apps, JSON.parse(settings.activeApps.value));
+        
+        settings.availableApps = {
+            key: 'availableApps',
+            value: res,
+            type: 'app'
+        };
+    }
+
+    return settings;
 };
 
 
@@ -119,9 +109,9 @@ filterPaths = function (paths, active) {
 
     _.each(pathKeys, function (key) {
         //do not include hidden files or _messages
-        if (key.indexOf('.') !== 0
-                && key !== '_messages'
-                && key !== 'README.md'
+        if (key.indexOf('.') !== 0 &&
+                key !== '_messages' &&
+                key !== 'README.md'
                 ) {
             item = {
                 name: key
@@ -141,18 +131,31 @@ filterPaths = function (paths, active) {
     return res;
 };
 
+settingsResult = function (settings, type) {
+    var filteredSettings = _.values(settingsFilter(settings, type)),
+        result = {
+            settings: filteredSettings
+        };
+
+    if (type) {
+        result.meta = {
+            filters: {
+                type: type
+            }
+        };
+    }
+
+    return result;
+};
+
 settings = {
     // #### Browse
 
     // **takes:** options object
     browse: function browse(options) {
+        //TODO: omit where type==core
         // **returns:** a promise for a settings json object
-        if (settingsCache) {
-            return when(settingsCache).then(function (settings) {
-                //TODO: omit where type==core
-                return settingsObject(settingsFilter(settings, options.type));
-            }, errors.logAndThrowError);
-        }
+        return when(settingsResult(settingsCache, options.type));
     },
 
     // #### Read
@@ -163,17 +166,16 @@ settings = {
             options = { key: options };
         }
 
-        if (settingsCache) {
-            return when(settingsCache[options.key]).then(function (setting) {
-                if (!setting) {
-                    return when.reject({code: 404, message: 'Unable to find setting: ' + options.key});
-                }
-                var res = {};
-                res.key = options.key;
-                res.value = setting.value;
-                return res;
-            }, errors.logAndThrowError);
+        var setting = settingsCache[options.key],
+            result = {};
+
+        if (!setting) {
+            return when.reject({code: 404, message: 'Unable to find setting: ' + options.key});
         }
+        
+        result[options.key] = setting;
+
+        return when(settingsResult(result));
     },
 
     // #### Edit
@@ -193,23 +195,23 @@ settings = {
 
             key = settingsCollection(key);
             return dataProvider.Settings.edit(key, {user: self.user}).then(function (result) {
-                result.models = result;
-                return when(readSettingsResult(result)).then(function (settings) {
-                    updateSettingsCache(settings);
+                var readResult = readSettingsResult(result);
+
+                return updateSettingsCache(readResult).then(function () {
+                    return config.theme.update(settings, config().url);
                 }).then(function () {
-                    return config.theme.update(settings, config().url).then(function () {
-                        return settingsObject(settingsFilter(settingsCache, type));
-                    });
+                    return settingsResult(readResult, type);
                 });
             }).otherwise(function (error) {
                 return dataProvider.Settings.read(key.key).then(function (result) {
                     if (!result) {
                         return when.reject({code: 404, message: 'Unable to find setting: ' + key});
                     }
-                    return when.reject({message: error.message});
+                    return when.reject({message: error.message, stack: error.stack});
                 });
             });
         }
+
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
                 return when.reject({code: 404, message: 'Unable to find setting: ' + key});
@@ -219,11 +221,19 @@ settings = {
             }
             setting.set('value', value);
             return dataProvider.Settings.edit(setting, {user: self.user}).then(function (result) {
-                settingsCache[_.first(result).attributes.key].value = _.first(result).attributes.value;
-            }).then(function () {
+                var updatedSetting = _.first(result).attributes;
+                settingsCache[updatedSetting.key].value = updatedSetting.value;
+
+                return updatedSetting;
+            }).then(function (updatedSetting) {
                 return config.theme.update(settings, config().url).then(function () {
-                    return settingsObject(settingsCache);
+                    return updatedSetting;
                 });
+            }).then(function (updatedSetting) {
+                var result = {};
+                result[updatedSetting.key] = updatedSetting;
+
+                return settingsResult(result);
             }).otherwise(errors.logAndThrowError);
         });
     }
