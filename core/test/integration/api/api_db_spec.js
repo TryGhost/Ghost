@@ -44,7 +44,8 @@ describe('DB API', function () {
         }).then(function () {
             TagsAPI.browse().then(function (results) {
                 should.exist(results);
-                results.length.should.equal(0);
+                should.exist(results.tags);
+                results.tags.length.should.equal(0);
             });
         }).then(function () {
             PostAPI.browse().then(function (results) {
