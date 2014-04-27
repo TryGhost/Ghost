@@ -36,7 +36,7 @@
         blog: function () {
             var posts = new Ghost.Collections.Posts();
             NProgress.start();
-            posts.fetch({ data: { status: 'all', staticPages: 'all'} }).then(function () {
+            posts.fetch({ data: { status: 'all', staticPages: 'all', include: 'author'} }).then(function () {
                 Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
                 NProgress.done();
             });
@@ -63,7 +63,7 @@
             post.urlRoot = Ghost.paths.apiRoot + '/posts';
             if (id) {
                 post.id = id;
-                post.fetch({ data: {status: 'all'}}).then(function () {
+                post.fetch({ data: {status: 'all', include: 'tags'}}).then(function () {
                     Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
                 });
             } else {
