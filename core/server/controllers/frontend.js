@@ -30,14 +30,6 @@ function getPostPage(options) {
         }
         options.include = 'author,tags,fields';
         return api.posts.browse(options);
-    }).then(function (page) {
-
-        // A bit of a hack for situations with no content.
-        if (page.meta.pagination.pages === 0) {
-            page.meta.pagination.pages = 1;
-        }
-
-        return page;
     });
 }
 
@@ -121,7 +113,7 @@ frontendControllers = {
 
                         // Format data for template
                         response = _.extend(formatPageResponse(posts, page), {
-                            tag: page.aspect.tag
+                            tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
                         });
 
                     res.render(view, response);
@@ -286,8 +278,10 @@ frontendControllers = {
                     feed;
 
                 if (tagParam) {
-                    title = page.aspect.tag.name + ' - ' + title;
-                    feedUrl = feedUrl + 'tag/' + page.aspect.tag.slug + '/';
+                    if (page.meta.filters.tags) {
+                        title = page.meta.filters.tags[0].name + ' - ' + title;
+                        feedUrl = feedUrl + 'tag/' + page.meta.filters.tags[0].slug + '/';
+                    }
                 }
 
                 feed = new RSS({
@@ -298,13 +292,6 @@ frontendControllers = {
                     site_url: siteUrl,
                     ttl: '60'
                 });
-
-
-                // A bit of a hack for situations with no content.
-                if (maxPage === 0) {
-                    maxPage = 1;
-                    page.meta.pagination.pages = 1;
-                }
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {

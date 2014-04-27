@@ -380,13 +380,14 @@ Post = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalPosts = parseInt(resp[0].aggregate, 10),
+                    calcPages = Math.ceil(totalPosts / opts.limit),
                     pagination = {},
                     meta = {},
                     data = {};
 
                 pagination['page'] = parseInt(opts.page, 10);
                 pagination['limit'] = opts.limit;
-                pagination['pages'] = Math.ceil(totalPosts / opts.limit);
+                pagination['pages'] = calcPages === 0 ? 1 : calcPages;
                 pagination['total'] = totalPosts;
                 pagination['next'] = null;
                 pagination['prev'] = null;
@@ -413,9 +414,10 @@ Post = ghostBookshelf.Model.extend({
                 }
 
                 if (tagInstance) {
-                    data.aspect = {
-                        tag: tagInstance.toJSON()
-                    };
+                    meta['filters'] = {};
+                    if (!tagInstance.isNew()) {
+                        meta.filters['tags'] = [tagInstance.toJSON()];
+                    }
                 }
 
                 return data;

@@ -189,8 +189,10 @@ describe('Frontend Controller', function () {
                             page: 1,
                             pages: 1,
                         },
+                        filters: {
+                            tags: [mockTags[0]]
+                        }
                     },
-                    aspect: {tag: mockTags[0]}
                 });
             });
  
