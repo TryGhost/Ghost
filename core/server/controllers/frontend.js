@@ -109,14 +109,15 @@ frontendControllers = {
         }
 
         return getPostPage(options).then(function (page) {
-
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(tagUrl(options.tag, page.meta.pagination.pages));
             }
 
             setReqCtx(req, page.posts);
-            setReqCtx(req, page.aspect.tag);
+            if (page.meta.filters.tags) {
+                setReqCtx(req, page.meta.filters.tags[0]);
+            }
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
