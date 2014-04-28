@@ -42,7 +42,7 @@ function ghostLocals(req, res, next) {
             api.users.read.call({user: req.session.user}, {id: req.session.user}),
             api.notifications.browse()
         ]).then(function (values) {
-            var currentUser = values[0],
+            var currentUser = values[0].users[0],
                 notifications = values[1];
 
             _.extend(res.locals,  {
@@ -239,7 +239,7 @@ function robots() {
                     if (err) {
                         return next(err);
                     }
-                    
+
                     content = {
                         headers: {
                             'Content-Type': 'text/plain',

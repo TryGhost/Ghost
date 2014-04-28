@@ -4,9 +4,16 @@ var when               = require('when'),
     settings           = require('./settings'),
     canThis            = require('../permissions').canThis,
     ONE_DAY            = 86400000,
-    filteredAttributes = ['password', 'created_by', 'updated_by', 'last_login'],
+    filteredAttributes = ['password'],
     users;
 
+
+function checkUserData(userData) {
+    if (_.isEmpty(userData) || _.isEmpty(userData.users) || _.isEmpty(userData.users[0])) {
+        return when.reject({code: 400, message: 'No root key (\'users\') provided.'});
+    }
+    return when.resolve(userData);
+}
 // ## Users
 users = {
 
@@ -16,8 +23,8 @@ users = {
         // **returns:** a promise for a collection of users in a json object
         return canThis(this.user).browse.user().then(function () {
             return dataProvider.User.browse(options).then(function (result) {
-                var i = 0,
-                    omitted = {};
+                var omitted = {},
+                    i;
 
                 if (result) {
                     omitted = result.toJSON();
@@ -27,7 +34,7 @@ users = {
                     omitted[i] = _.omit(omitted[i], filteredAttributes);
                 }
 
-                return omitted;
+                return { users: omitted };
             });
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to browse users.'});
@@ -45,7 +52,7 @@ users = {
         return dataProvider.User.read(args).then(function (result) {
             if (result) {
                 var omitted = _.omit(result.toJSON(), filteredAttributes);
-                return omitted;
+                return { users: [omitted] };
             }
 
             return when.reject({code: 404, message: 'User not found'});
@@ -57,17 +64,18 @@ users = {
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
         var self = this;
-        userData.id = this.user;
-        return canThis(this.user).edit.user(userData.id).then(function () {
-            return dataProvider.User.edit(userData, {user: self.user}).then(function (result) {
+        return canThis(this.user).edit.user(userData.users[0].id).then(function () {
+            return checkUserData(userData).then(function (checkedUserData) {
+                return dataProvider.User.edit(checkedUserData.users[0], {user: self.user});
+            }).then(function (result) {
                 if (result) {
                     var omitted = _.omit(result.toJSON(), filteredAttributes);
-                    return omitted;
+                    return { users: [omitted]};
                 }
                 return when.reject({code: 404, message: 'User not found'});
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to edit this users.'});
+            return when.reject({code: 403, message: 'You do not have permission to edit this user.'});
         });
     },
 
@@ -77,12 +85,19 @@ users = {
         // **returns:** a promise for the resulting user in a json object
         var self = this;
         return canThis(this.user).add.user().then(function () {
-            // if the user is created by users.register(), use id: 1
-            // as the creator for now
-            if (self.user === 'internal') {
-                self.user = 1;
-            }
-            return dataProvider.User.add(userData, {user: self.user});
+            return checkUserData(userData).then(function (checkedUserData) {
+                // if the user is created by users.register(), use id: 1
+                // as the creator for now
+                if (self.user === 'internal') {
+                    self.user = 1;
+                }
+                return dataProvider.User.add(checkedUserData.users[0], {user: self.user});
+            }).then(function (result) {
+                if (result) {
+                    var omitted = _.omit(result.toJSON(), filteredAttributes);
+                    return { users: [omitted]};
+                }
+            });
         }, function () {
             return when.reject({code: 403, message: 'You do not have permission to add a users.'});
         });

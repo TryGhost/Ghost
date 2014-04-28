@@ -116,9 +116,8 @@ User = ghostBookshelf.Model.extend({
             return userData.roles().attach(1);
         }).then(function (addedUserRole) {
             /*jshint unused:false*/
-            // Return the added user as expected
-
-            return when.resolve(userData);
+            // find and return the added user
+            return self.findOne({id: userData.id}, options);
         });
 
         /**
@@ -148,7 +147,7 @@ User = ghostBookshelf.Model.extend({
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
-            return this.read({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
+            return this.read({id: userModelOrId}).then(function (foundUserModel) {
                 return self.permissable(foundUserModel, context);
             }, errors.logAndThrowError);
         }
