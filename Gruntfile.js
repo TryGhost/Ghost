@@ -63,7 +63,7 @@ var path           = require('path'),
                 },
                 ember: {
                     files: ['core/client/**/*.js'],
-                    tasks: ['transpile', 'concat_sourcemap']
+                    tasks: ['clean:tmp', 'transpile', 'concat_sourcemap']
                 },
                 concat: {
                     files: [
@@ -1041,7 +1041,7 @@ var path           = require('path'),
         grunt.registerTask('prod', 'Build JS & templates for production', ['handlebars', 'concat', 'uglify', 'copy:prod', 'master-warn']);
 
         // All tasks related to building the Ember client code
-        grunt.registerTask('emberBuild', 'Build Ember JS & templates for development', ['emberTemplates:dev', 'transpile', 'concat_sourcemap']);
+        grunt.registerTask('emberBuild', 'Build Ember JS & templates for development', ['clean:tmp', 'emberTemplates:dev', 'transpile', 'concat_sourcemap']);
 
         // When you just say 'grunt'
         grunt.registerTask('default', 'Build JS & templates for development', ['update_submodules', 'handlebars', 'concat', 'copy:dev', 'emberBuild']);
