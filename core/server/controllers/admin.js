@@ -254,13 +254,14 @@ adminControllers = {
     'doSignup': function (req, res) {
         var name = req.body.name,
             email = req.body.email,
-            password = req.body.password;
+            password = req.body.password,
+            users = [{
+                name: name,
+                email: email,
+                password: password
+            }];
 
-        api.users.register({
-            name: name,
-            email: email,
-            password: password
-        }).then(function (user) {
+        api.users.register({users: users}).then(function (user) {
             api.settings.edit.call({user: 1}, 'email', email).then(function () {
                 var message = {
                     to: email,
