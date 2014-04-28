@@ -101,8 +101,8 @@ function locationHeader(req, result) {
             post = result.posts[0];
             location = apiRoot + '/posts/' + post.id + '/?status=' + post.status;
         } else if (endpoint === 'notifications') {
-            notification = result;
-            location = apiRoot + '/notifications/' + notification.id;
+            notification = result.notifications;
+            location = apiRoot + '/notifications/' + notification[0].id;
         }
     }
 

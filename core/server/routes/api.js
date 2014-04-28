@@ -23,6 +23,7 @@ module.exports = function (server) {
     // #### Notifications
     server.del('/ghost/api/v0.1/notifications/:id', api.requestHandler(api.notifications.destroy));
     server.post('/ghost/api/v0.1/notifications/', api.requestHandler(api.notifications.add));
+    server.get('/ghost/api/v0.1/notifications/', api.requestHandler(api.notifications.browse));
     // #### Import/Export
     server.get('/ghost/api/v0.1/db/', api.requestHandler(api.db.exportContent));
     server.post('/ghost/api/v0.1/db/', middleware.busboy, api.requestHandler(api.db.importContent));

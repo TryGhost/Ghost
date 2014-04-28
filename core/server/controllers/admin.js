@@ -134,9 +134,7 @@ adminControllers = {
             }).otherwise(function (err) {
                 var notification = {
                     type: 'error',
-                    message: 'Your export file could not be generated. Error: ' + err.message,
-                    status: 'persistent',
-                    id: 'errorexport'
+                    message: 'Your export file could not be generated. Error: ' + err.message
                 };
 
                 errors.logError(err, 'admin.js', "Your export file could not be generated.");
@@ -179,8 +177,7 @@ adminControllers = {
         var notification = {
             type: 'success',
             message: 'You were successfully signed out',
-            status: 'passive',
-            id: 'successlogout'
+            status: 'passive'
         };
 
         return api.notifications.add(notification).then(function () {
@@ -333,8 +330,7 @@ adminControllers = {
             var notification = {
                 type: 'success',
                 message: 'Check your email for further instructions',
-                status: 'passive',
-                id: 'successresetpw'
+                status: 'passive'
             };
 
             return api.notifications.add(notification).then(function () {
@@ -368,9 +364,7 @@ adminControllers = {
             // Redirect to forgotten if invalid token
             var notification = {
                 type: 'error',
-                message: 'Invalid or expired token',
-                status: 'persistent',
-                id: 'errorinvalidtoken'
+                message: 'Invalid or expired token'
             };
 
             errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
@@ -392,8 +386,7 @@ adminControllers = {
             var notification = {
                 type: 'success',
                 message: 'Password changed successfully.',
-                status: 'passive',
-                id: 'successresetpw'
+                status: 'passive'
             };
 
             return api.notifications.add(notification).then(function () {
