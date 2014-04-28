@@ -56,6 +56,14 @@ function handleError(next) {
     };
 }
 
+// Add Request context parameter to the data object
+// to be passed down to the templates
+function setReqCtx(req, data) {
+    (Array.isArray(data) ? data : [data]).forEach(function (d) {
+        d.secure = req.secure;
+    });
+}
+
 frontendControllers = {
     'homepage': function (req, res, next) {
         // Parse the page number
@@ -75,6 +83,8 @@ frontendControllers = {
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(page.meta.pagination.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
             }
+
+            setReqCtx(req, page.posts);
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
@@ -112,6 +122,9 @@ frontendControllers = {
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(tagUrl(options.tag, page.meta.pagination.pages));
             }
+
+            setReqCtx(req, page.posts);
+            setReqCtx(req, page.aspect.tag);
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
@@ -184,6 +197,9 @@ frontendControllers = {
                     // Use throw 'no match' to show 404.
                     throw new Error('no match');
                 }
+
+                setReqCtx(req, post);
+
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read('activeTheme').then(function (activeTheme) {
                         var paths = config().paths.availableThemes[activeTheme.value],
@@ -279,8 +295,8 @@ frontendControllers = {
                 var title = result[0].value.value,
                     description = result[1].value.value,
                     permalinks = result[2].value,
-                    siteUrl = config.urlFor('home', null, true),
-                    feedUrl =  config.urlFor('rss', null, true),
+                    siteUrl = config.urlFor('home', {secure: req.secure}, true),
+                    feedUrl =  config.urlFor('rss', {secure: req.secure}, true),
                     maxPage = page.meta.pagination.pages,
                     feedItems = [],
                     feed;
@@ -314,6 +330,8 @@ frontendControllers = {
                         return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
                     }
                 }
+
+                setReqCtx(req, page.posts);
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
