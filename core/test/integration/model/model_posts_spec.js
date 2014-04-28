@@ -395,8 +395,8 @@ describe('Post Model', function () {
             paginationResult.meta.pagination.page.should.equal(1);
             paginationResult.meta.pagination.limit.should.equal(15);
             paginationResult.meta.pagination.pages.should.equal(1);
-            paginationResult.aspect.tag.name.should.equal('bacon');
-            paginationResult.aspect.tag.slug.should.equal('bacon');
+            paginationResult.meta.filters.tags[0].name.should.equal('bacon');
+            paginationResult.meta.filters.tags[0].slug.should.equal('bacon');
             paginationResult.posts.length.should.equal(2);
 
             return PostModel.findPage({page: 1, tag: 'kitchen-sink'});
@@ -404,8 +404,8 @@ describe('Post Model', function () {
             paginationResult.meta.pagination.page.should.equal(1);
             paginationResult.meta.pagination.limit.should.equal(15);
             paginationResult.meta.pagination.pages.should.equal(1);
-            paginationResult.aspect.tag.name.should.equal('kitchen sink');
-            paginationResult.aspect.tag.slug.should.equal('kitchen-sink');
+            paginationResult.meta.filters.tags[0].name.should.equal('kitchen sink');
+            paginationResult.meta.filters.tags[0].slug.should.equal('kitchen-sink');
             paginationResult.posts.length.should.equal(2);
 
             return PostModel.findPage({page: 1, tag: 'injection'});
@@ -413,8 +413,8 @@ describe('Post Model', function () {
             paginationResult.meta.pagination.page.should.equal(1);
             paginationResult.meta.pagination.limit.should.equal(15);
             paginationResult.meta.pagination.pages.should.equal(2);
-            paginationResult.aspect.tag.name.should.equal('injection');
-            paginationResult.aspect.tag.slug.should.equal('injection');
+            paginationResult.meta.filters.tags[0].name.should.equal('injection');
+            paginationResult.meta.filters.tags[0].slug.should.equal('injection');
             paginationResult.posts.length.should.equal(15);
 
             return PostModel.findPage({page: 2, tag: 'injection'});
@@ -422,8 +422,8 @@ describe('Post Model', function () {
             paginationResult.meta.pagination.page.should.equal(2);
             paginationResult.meta.pagination.limit.should.equal(15);
             paginationResult.meta.pagination.pages.should.equal(2);
-            paginationResult.aspect.tag.name.should.equal('injection');
-            paginationResult.aspect.tag.slug.should.equal('injection');
+            paginationResult.meta.filters.tags[0].name.should.equal('injection');
+            paginationResult.meta.filters.tags[0].slug.should.equal('injection');
             paginationResult.posts.length.should.equal(11);
 
             done();
