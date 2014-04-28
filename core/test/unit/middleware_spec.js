@@ -48,27 +48,6 @@ describe('Middleware', function () {
             }).catch(done);
         });
 
-        it('should only add one message to the notification array', function (done) {
-            var path = 'test/path/party';
-
-            req.path = '/ghost/' + path;
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return api.notifications.browse().then(function (notifications) {
-                    assert.equal(notifications.length, 1);
-                    return;
-                }).catch(done);
-            }).then(function () {
-                return middleware.auth(req, res, null);
-            }).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return api.notifications.browse().then(function (notifications) {
-                    assert.equal(notifications.length, 1);
-                    done();
-                }).catch(done);
-            });
-        });
-
         it('should call next if session user exists', function (done) {
             req.session.user = {};
 
@@ -168,8 +147,8 @@ describe('Middleware', function () {
         it('should clean all passive messages', function (done) {
             middleware.cleanNotifications(null, null, function () {
                 api.notifications.browse().then(function (notifications) {
-                    should(notifications.length).eql(1);
-                    var passiveMsgs = _.filter(notifications, function (notification) {
+                    should(notifications.notifications.length).eql(1);
+                    var passiveMsgs = _.filter(notifications.notifications, function (notification) {
                         return notification.status === 'passive';
                     });
                     assert.equal(passiveMsgs.length, 0);
