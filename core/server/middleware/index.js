@@ -70,19 +70,34 @@ function ghostLocals(req, res, next) {
     }
 }
 
+function initThemeData(secure) {
+    var themeConfig = config.theme();
+    if (secure && config().urlSSL) {
+        // For secure requests override .url property with the SSL version
+        themeConfig = _.clone(themeConfig);
+        themeConfig.url = config().urlSSL.replace(/\/$/, '');
+    }
+    return themeConfig;
+}
+
 // ### InitViews Middleware
 // Initialise Theme or Admin Views
 function initViews(req, res, next) {
     /*jslint unparam:true*/
 
     if (!res.isAdmin) {
-        hbs.updateTemplateOptions({ data: {blog: config.theme()} });
+        var themeData = initThemeData(req.secure);
+        hbs.updateTemplateOptions({ data: {blog: themeData} });
         expressServer.engine('hbs', expressServer.get('theme view engine'));
         expressServer.set('views', path.join(config().paths.themePath, expressServer.get('activeTheme')));
     } else {
         expressServer.engine('hbs', expressServer.get('admin view engine'));
         expressServer.set('views', config().paths.adminViews);
     }
+
+    // Pass 'secure' flag to the view engine
+    // so that templates can choose 'url' vs 'urlSSL'
+    res.locals.secure = req.secure;
 
     next();
 }
@@ -184,9 +199,20 @@ function isSSLrequired(isAdmin) {
 function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin)) {
         if (!req.secure) {
+            var forceAdminSSL = config().forceAdminSSL,
+                redirectUrl;
+
+            // Check if forceAdminSSL: { redirect: false } is set, which means
+            // we should just deny non-SSL access rather than redirect
+            if (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect) {
+                return res.send(403);
+            }
+
+            redirectUrl = url.parse(config().urlSSL || config().url);
             return res.redirect(301, url.format({
                 protocol: 'https:',
-                hostname: url.parse(config().url).hostname,
+                hostname: redirectUrl.hostname,
+                port: redirectUrl.port,
                 pathname: req.path,
                 query: req.query
             }));
