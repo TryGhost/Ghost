@@ -43,7 +43,7 @@ describe('Tag API', function () {
                             pattern_meta.should.exist;
                             csrfToken = res.text.match(pattern_meta)[1];
 
-                            setTimeout(function () {
+                            process.nextTick(function() {
                                 request.post('/ghost/signin/')
                                     .set('X-CSRF-Token', csrfToken)
                                     .send({email: user.email, password: user.password})
@@ -67,8 +67,7 @@ describe('Tag API', function () {
                                             });
                                     });
 
-                            }, 2000);
-
+                            });
                         });
                 }, done);
         }).otherwise(function (e) {
