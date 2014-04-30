@@ -29,6 +29,10 @@ App = ghostBookshelf.Model.extend({
 
     settings: function () {
         return this.belongsToMany('AppSetting', 'app_settings');
+    },
+
+    fields: function () {
+        return this.belongsToMany('AppField', 'app_fields');
     }
 }, {
     /**

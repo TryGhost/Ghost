@@ -7,6 +7,10 @@ AppField = ghostBookshelf.Model.extend({
 
     post: function () {
         return this.morphOne('Post', 'relatable');
+    },
+
+    app: function () {
+        return this.belongsTo('App');
     }
 });
 

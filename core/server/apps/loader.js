@@ -86,7 +86,7 @@ loader = {
             });
     },
 
-    // Activate a app and return it
+    // Activate an app and return it
     activateAppByName: function (name) {
         var perms = new AppPermissions(getAppAbsolutePath(name));
 
@@ -94,7 +94,7 @@ loader = {
             var appInfo = getAppByName(name, appPerms),
                 app = appInfo.app,
                 appProxy = appInfo.proxy;
-
+                
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
                 return Promise.reject(new Error("Error loading app named " + name + "; no activate() method defined."));
@@ -103,6 +103,26 @@ loader = {
             // Wrapping the activate() with a when because it's possible
             // to not return a promise from it.
             return Promise.resolve(app.activate(appProxy)).return(app);
+        });
+    },
+
+    // Deactivate an app and return it
+    deactivateAppByName: function (name) {
+        var perms = new AppPermissions(getAppAbsolutePath(name));
+
+        return perms.read().then(function (appPerms) {
+            var appInfo = getAppByName(name, appPerms),
+                app = appInfo.app,
+                appProxy = appInfo.proxy;
+
+            // Check for an activate() method on the app.
+            if (!_.isFunction(app.deactivate)) {
+                return Promise.reject(new Error("Error loading app named " + name + "; no deactivate() method defined."));
+            }
+
+            // Wrapping the deactivate() with a when because it's possible
+            // to not return a promise from it.
+            return Promise.resolve(app.deactivate(appProxy)).return(app);
         });
     }
 };
