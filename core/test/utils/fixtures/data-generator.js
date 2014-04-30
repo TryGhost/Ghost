@@ -128,12 +128,14 @@ DataGenerator.Content = {
         {
             key: 'count',
             value: '120',
-            type: 'number'
+            type: 'number',
+            active: true
         },
         {
             key: 'words',
             value: '512',
-            type: 'number'
+            type: 'number',
+            active: true
         }
     ],
 
@@ -245,6 +247,7 @@ DataGenerator.forKnex = (function () {
             uuid: uuid.v4(),
             created_by: 1,
             created_at: new Date(),
+            active: true,
             app_id: 1,
             relatable_id: 1,
             relatable_type: 'posts'

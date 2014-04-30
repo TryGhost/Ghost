@@ -6,9 +6,14 @@ var express     = require('express'),
 apiRoutes = function (middleware) {
     var router = express.Router();
 
+    // #### Apps
+    router.get('/ghost/api/v0.1/apps/', api.http(api.apps.browse));
+    router.get('/ghost/api/v0.1/apps/:id', api.http(api.apps.read));
+    router['delete']('/ghost/api/v0.1/apps/:id', api.http(api.apps.destroy));
+    router.put('/ghost/api/v0.1/apps/:id', api.http(api.apps.edit));
     // ## Posts
-    router.get('/ghost/api/v0.1/posts', api.http(api.posts.browse));
-    router.post('/ghost/api/v0.1/posts', api.http(api.posts.add));
+    router.get('/ghost/api/v0.1/posts/', api.http(api.posts.browse));
+    router.post('/ghost/api/v0.1/posts/', api.http(api.posts.add));
     router.get('/ghost/api/v0.1/posts/:id(\\d+)', api.http(api.posts.read));
     router.get('/ghost/api/v0.1/posts/:slug([a-z-]+)', api.http(api.posts.read));
     router.put('/ghost/api/v0.1/posts/:id', api.http(api.posts.edit));
@@ -38,7 +43,7 @@ apiRoutes = function (middleware) {
     router.post('/ghost/api/v0.1/db/', middleware.busboy, api.http(api.db.importContent));
     router['delete']('/ghost/api/v0.1/db/', api.http(api.db.deleteAllContent));
     // ## Mail
-    router.post('/ghost/api/v0.1/mail', api.http(api.mail.send));
+    router.post('/ghost/api/v0.1/mail/', api.http(api.mail.send));
     router.post('/ghost/api/v0.1/mail/test', api.http(api.mail.sendTest));
     // ## Slugs
     router.get('/ghost/api/v0.1/slugs/:type/:name', api.http(api.slugs.generate));
