@@ -5,6 +5,7 @@ function ghostPaths() {
 
     return {
         subdir: subdir,
+        adminRoot: subdir + '/ghost',
         apiRoot: subdir + '/ghost/api/v0.1'
     };
 }
@@ -14,5 +15,6 @@ var BaseModel = Ember.Object.extend({
 
 BaseModel.apiRoot = ghostPaths().apiRoot;
 BaseModel.subdir = ghostPaths().subdir;
+BaseModel.adminRoot = ghostPaths().adminRoot;
 
 export default BaseModel;
