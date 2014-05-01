@@ -69,10 +69,23 @@ adminControllers = {
         });
     },
     // Route: editor
-    // Path: /ghost/editor(/:id)?/
+    // Path: /ghost/editor(/:id)?(/:action)?/
     // Method: GET
     'editor': function (req, res) {
-        if (req.params.id !== undefined) {
+        if (req.params.id && req.params.action) {
+            if (req.params.action !== 'view') {
+                return errors.error404(req, res);
+            }
+
+            api.posts.read({ id: req.params.id }).then(function (result) {
+                return config.urlForPost(api.settings, result.posts[0]).then(function (url) {
+                    return res.redirect(url);
+                });
+            }, function () {
+                return errors.error404(req, res);
+            });
+
+        } else if (req.params.id !== undefined) {
             res.render('editor', {
                 bodyClass: 'editor',
                 adminNav: setSelected(adminNavbar, 'content')
