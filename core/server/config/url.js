@@ -103,7 +103,13 @@ function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure,
         knownObjects = ['post', 'tag', 'user'],
-        knownPaths = {'home': '/', 'rss': '/rss/'}; // this will become really big
+
+    // this will become really big
+    knownPaths = {
+        'home': '/',
+        'rss': '/rss/',
+        'api': '/ghost/api/v0.1'
+    };
 
     // Make data properly optional
     if (_.isBoolean(data)) {

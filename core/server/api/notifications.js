@@ -40,7 +40,8 @@ notifications = {
     // ```
     add: function add(notification) {
         // **returns:** a promise for all notifications as a json object
-        return when(notificationsStore.push(notification));
+        notificationsStore.push(notification);
+        return when(notification);
     }
 };
 
