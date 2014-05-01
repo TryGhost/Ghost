@@ -334,6 +334,7 @@ describe('Post API', function () {
 
                     res.should.be.json;
                     var draftPost = res.body;
+                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
