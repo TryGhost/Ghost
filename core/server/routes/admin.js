@@ -40,7 +40,8 @@ module.exports = function (server) {
     server.post('/ghost/reset/:token', admin.doReset);
     server.post('/ghost/changepw/', admin.doChangePassword);
 
-    server.get('/ghost/editor(/:id)/', admin.editor);
+    server.get('/ghost/editor/:id/:action', admin.editor);
+    server.get('/ghost/editor/:id/', admin.editor);
     server.get('/ghost/editor/', admin.editor);
     server.get('/ghost/content/', admin.content);
     server.get('/ghost/settings*', admin.settings);
