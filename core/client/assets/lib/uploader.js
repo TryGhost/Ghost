@@ -100,7 +100,7 @@
                         $dropzone.trigger("uploadfailure", [data.result]);
                         $dropzone.find('.js-upload-progress-bar').addClass('fail');
                         if (data.jqXHR.status === 413) {
-                            $dropzone.find('div.js-fail').text("The image you uploaded was too big.");
+                            $dropzone.find('div.js-fail').text("The image you uploaded was larger than the maximum file size your server allows.");
                         } else if (data.jqXHR.status === 415) {
                             $dropzone.find('div.js-fail').text("The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.");
                         } else {
