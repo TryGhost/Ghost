@@ -99,7 +99,7 @@ var middleware = {
     // Check if we're logged in, and if so, redirect people back to dashboard
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
-        if (req.session.user) {
+        if (req.session && req.session.user) {
             return res.redirect(config().paths.subdir + '/ghost/');
         }
 
@@ -170,7 +170,8 @@ var middleware = {
 
     // to allow unit testing
     forwardToExpressStatic: function (req, res, next) {
-        api.settings.read('activeTheme').then(function (activeTheme) {
+        api.settings.read('activeTheme').then(function (response) {
+            var activeTheme = response.settings[0];
             // For some reason send divides the max age number by 1000
             express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
         });

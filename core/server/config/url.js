@@ -142,7 +142,9 @@ function urlFor(context, data, absolute) {
 // - post - a json object representing a post
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
 function urlForPost(settings, post, absolute) {
-    return settings.read('permalinks').then(function (permalinks) {
+    return settings.read('permalinks').then(function (response) {
+        var permalinks = response.settings[0];
+        
         return urlFor('post', {post: post, permalinks: permalinks}, absolute);
     });
 }

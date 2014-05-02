@@ -125,7 +125,6 @@ errors = {
 
     renderErrorPage: function (code, err, req, res, next) {
         /*jshint unused:false*/
-
         var self = this;
 
         function parseStack(stack) {
@@ -192,7 +191,7 @@ errors = {
         }
 
         // Are we admin? If so, don't worry about the user template
-        if ((res.isAdmin && req.session.user) || userErrorTemplateExists === true) {
+        if ((res.isAdmin && req.session && req.session.user) || userErrorTemplateExists === true) {
             return renderErrorInt();
         }
 

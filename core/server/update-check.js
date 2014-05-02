@@ -53,7 +53,8 @@ function updateCheckData() {
     ops.push(api.settings.read('dbHash').otherwise(errors.rejectError));
     ops.push(api.settings.read('activeTheme').otherwise(errors.rejectError));
     ops.push(api.settings.read('activeApps')
-        .then(function (apps) {
+        .then(function (response) {
+            var apps = response.settings[0];
             try {
                 apps = JSON.parse(apps.value);
             } catch (e) {
@@ -73,8 +74,8 @@ function updateCheckData() {
     data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
 
     return when.settle(ops).then(function (descriptors) {
-        var hash             = descriptors[0].value,
-            theme            = descriptors[1].value,
+        var hash             = descriptors[0].value.settings[0],
+            theme            = descriptors[1].value.settings[0],
             apps             = descriptors[2].value,
             posts            = descriptors[3].value,
             users            = descriptors[4].value,
@@ -85,9 +86,9 @@ function updateCheckData() {
         data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');
         data.theme           = theme ? theme.value : '';
         data.apps            = apps || '';
-        data.post_count      = posts && posts.total ? posts.total : 0;
-        data.user_count      = users && users.length ? users.length : 0;
-        data.blog_created_at = users && users[0] && users[0].created_at ? moment(users[0].created_at).unix() : '';
+        data.post_count      = posts && posts.posts && posts.posts.total ? posts.total : 0;
+        data.user_count      = users && users.users && users.users.length ? users.length : 0;
+        data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
         data.npm_version     = _.isArray(npm) && npm[0] ? npm[0].toString().replace(/\n/, '') : '';
 
         return data;
@@ -170,7 +171,9 @@ function updateCheck() {
         // No update check
         deferred.resolve();
     } else {
-        api.settings.read('nextUpdateCheck').then(function (nextUpdateCheck) {
+        api.settings.read('nextUpdateCheck').then(function (result) {
+            var nextUpdateCheck = result.settings[0];
+
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
                 // It's not time to check yet
                 deferred.resolve();
@@ -188,7 +191,9 @@ function updateCheck() {
 }
 
 function showUpdateNotification() {
-    return api.settings.read('displayUpdateNotification').then(function (display) {
+    return api.settings.read('displayUpdateNotification').then(function (response) {
+        var display = response.settings[0];
+
         // Version 0.4 used boolean to indicate the need for an update. This special case is
         // translated to the version string.
         // TODO: remove in future version.
