@@ -13,6 +13,7 @@ var request    = require('supertest'),
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
     httpServer,
+    agent      = request.agent,
 
     ONE_HOUR_S = 60 * 60,
     ONE_YEAR_S = 365 * 24 * ONE_HOUR_S,
@@ -280,6 +281,91 @@ describe('Admin Routing', function () {
                 .expect('Cache-Control', cacheRules['private'])
                 .expect(302)
                 .end(doEnd(done));
+        });
+    });
+});
+
+describe('Authenticated Admin Routing', function () {
+    var user = testUtils.DataGenerator.forModel.users[0],
+        csrfToken = '';
+
+    before(function (done) {
+        var app = express();
+
+        ghost({app: app}).then(function (_httpServer) {
+            httpServer = _httpServer;
+            request = agent(app);
+
+            testUtils.clearData()
+                .then(function () {
+                    return testUtils.initData();
+                })
+                .then(function () {
+                    return testUtils.insertDefaultFixtures();
+                })
+                .then(function () {
+
+                    request.get('/ghost/signin/')
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
+                            pattern_meta.should.exist;
+                            csrfToken = res.text.match(pattern_meta)[1];
+
+                            process.nextTick(function() {
+                                request.post('/ghost/signin/')
+                                    .set('X-CSRF-Token', csrfToken)
+                                    .send({email: user.email, password: user.password})
+                                    .expect(200)
+                                    .end(function (err, res) {
+                                        if (err) {
+                                            return done(err);
+                                        }
+
+                                        request.saveCookies(res);
+                                        request.get('/ghost/')
+                                            .expect(200)
+                                            .end(function (err, res) {
+                                                if (err) {
+                                                    return done(err);
+                                                }
+
+                                                csrfToken = res.text.match(pattern_meta)[1];
+                                                done();
+                                            });
+                                    });
+
+                            });
+
+                        });
+                }, done);
+        }).otherwise(function (e) {
+            console.log('Ghost Error: ', e);
+            console.log(e.stack);
+        });
+    });
+
+    after(function () {
+        httpServer.close();
+    });
+
+    describe('Ghost Admin magic /view/ route', function () {
+
+        it('should redirect to the single post page on the frontend', function (done) {
+            request.get('/ghost/editor/1/view/')
+                .expect(302)
+                .expect('Location', '/welcome-to-ghost/')
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
         });
     });
 });
