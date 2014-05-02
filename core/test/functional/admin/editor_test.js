@@ -506,3 +506,28 @@ CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
         test.assertEquals(this.getElementAttribute('#usermenu li.usermenu-signout a', 'href'), '/ghost/signout/', 'Sign Out href is correct');
     });
 });
+
+// test the markdown help modal
+CasperTest.begin('Markdown help modal', 4, function suite(test) {
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    // open markdown help modal
+    casper.thenClick('a.markdown-help');
+
+    casper.waitUntilVisible('#modal-container', function onSuccess() {
+        test.assertSelectorHasText(
+            '.modal-content .modal-header',
+            'Markdown Help',
+            'delete modal has correct text');
+
+        test.assertExists('.modal-content .close');
+    });
+
+    casper.thenClick('.modal-content .close');
+
+    casper.waitWhileVisible('#modal-container', function onSuccess() {
+        test.assert(true, 'clicking close should remove the markdown help modal');
+    });
+});
