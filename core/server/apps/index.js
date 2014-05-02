@@ -9,7 +9,9 @@ var _           = require('lodash'),
 
 
 function getInstalledApps() {
-    return api.settings.read('installedApps').then(function (installed) {
+    return api.settings.read('installedApps').then(function (response) {
+        var installed = response.settings[0];
+
         installed.value = installed.value || '[]';
 
         try {
@@ -36,7 +38,9 @@ module.exports = {
 
         try {
             // We have to parse the value because it's a string
-            api.settings.read('activeApps').then(function (aApps) {
+            api.settings.read('activeApps').then(function (response) {
+                var aApps = response.settings[0];
+
                 appsToLoad = JSON.parse(aApps.value) || [];
             });
         } catch (e) {

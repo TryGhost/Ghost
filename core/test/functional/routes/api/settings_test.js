@@ -113,8 +113,10 @@ describe('Settings API', function () {
                 var jsonResponse = res.body;
 
                 jsonResponse.should.exist;
-                testUtils.API.checkResponseValue(jsonResponse, ['key', 'value']);
-                jsonResponse.key.should.eql('title');
+                jsonResponse.settings.should.exist;
+
+                testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id','uuid','key','value','type','created_at','created_by','updated_at','updated_by']);
+                jsonResponse.settings[0].key.should.eql('title');
                 done();
             });
     });
@@ -144,13 +146,17 @@ describe('Settings API', function () {
                 }
 
                 var jsonResponse = res.body,
-                    changedValue = 'Ghost changed';
+                    changedValue = 'Ghost changed',
+                    settingToChange = {
+                        title: changedValue
+                    };
+
                 jsonResponse.should.exist;
-                jsonResponse.title = changedValue;
+                jsonResponse.settings.should.exist;
 
                 request.put(testUtils.API.getApiQuery('settings/'))
                     .set('X-CSRF-Token', csrfToken)
-                    .send(jsonResponse)
+                    .send(settingToChange)
                     .expect(200)
                     .end(function (err, res) {
                         if (err) {
@@ -161,7 +167,7 @@ describe('Settings API', function () {
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         res.should.be.json;
                         putBody.should.exist;
-                        putBody.title.should.eql(changedValue);
+                        putBody.settings[0].value.should.eql(changedValue);
                         testUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });

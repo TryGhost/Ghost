@@ -108,8 +108,10 @@ GhostMailer.prototype.send = function (message) {
         return when.reject(new Error('Email Error: Incomplete message data.'));
     }
 
-    return api.settings.read('email').then(function (email) {
-        var to = message.to || email.value;
+    return api.settings.read('email').then(function (response) {
+
+        var email = response.settings[0],
+            to = message.to || email.value;
 
         message = _.extend(message, {
             from: self.fromAddress(),
