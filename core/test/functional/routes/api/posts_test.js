@@ -318,11 +318,12 @@ describe('Post API', function () {
     describe('Add', function () {
         it('can create a new draft, publish post, update post', function (done) {
             var newTitle = 'My Post',
-                changedTitle = 'My Post changed',
+                newTagName = 'My Tag',
                 publishedState = 'published',
-                newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post'}]};
+                newTag = {id: null, name: newTagName},
+                newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post', tags: [newTag]}]};
 
-            request.post(testUtils.API.getApiQuery('posts/'))
+            request.post(testUtils.API.getApiQuery('posts/?include=tags'))
                 .set('X-CSRF-Token', csrfToken)
                 .send(newPost)
                 .expect(200)
@@ -334,11 +335,17 @@ describe('Post API', function () {
                     res.should.be.json;
                     var draftPost = res.body;
                     draftPost.posts.should.exist;
+                    draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
                     draftPost.posts[0].status = publishedState;
                     testUtils.API.checkResponse(draftPost.posts[0], 'post');
 
-                    request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/'))
+                    draftPost.posts[0].tags.should.exist;
+                    draftPost.posts[0].tags.length.should.be.above(0);
+                    draftPost.posts[0].tags[0].name.should.eql(newTagName);
+                    testUtils.API.checkResponse(draftPost.posts[0].tags[0], 'tag');
+
+                    request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags'))
                         .set('X-CSRF-Token', csrfToken)
                         .send(draftPost)
                         .expect(200)
@@ -351,13 +358,20 @@ describe('Post API', function () {
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + publishedPost.posts[0].slug + '/');
                             res.should.be.json;
+
                             publishedPost.should.exist;
                             publishedPost.posts.should.exist;
+                            publishedPost.posts.length.should.be.above(0);
                             publishedPost.posts[0].title.should.eql(newTitle);
                             publishedPost.posts[0].status.should.eql(publishedState);
                             testUtils.API.checkResponse(publishedPost.posts[0], 'post');
 
-                            request.put(testUtils.API.getApiQuery('posts/' + publishedPost.posts[0].id + '/'))
+                            publishedPost.posts[0].tags.should.exist;
+                            publishedPost.posts[0].tags.length.should.be.above(0);
+                            publishedPost.posts[0].tags[0].name.should.eql(newTagName);
+                            testUtils.API.checkResponse(publishedPost.posts[0].tags[0], 'tag');
+
+                            request.put(testUtils.API.getApiQuery('posts/' + publishedPost.posts[0].id + '/?include=tags'))
                                 .set('X-CSRF-Token', csrfToken)
                                 .send(publishedPost)
                                 .expect(200)
@@ -369,10 +383,18 @@ describe('Post API', function () {
                                     var updatedPost = res.body;
                                     _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                                     res.should.be.json;
+
                                     updatedPost.should.exist;
                                     updatedPost.posts.should.exist;
+                                    updatedPost.posts.length.should.be.above(0);
                                     updatedPost.posts[0].title.should.eql(newTitle);
                                     testUtils.API.checkResponse(updatedPost.posts[0], 'post');
+
+                                    updatedPost.posts[0].tags.should.exist;
+                                    updatedPost.posts[0].tags.length.should.be.above(0);
+                                    updatedPost.posts[0].tags[0].name.should.eql(newTagName);
+                                    testUtils.API.checkResponse(updatedPost.posts[0].tags[0], 'tag');
+
                                     done();
                                 });
                         });

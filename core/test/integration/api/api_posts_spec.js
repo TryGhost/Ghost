@@ -30,10 +30,10 @@ describe('Post API', function () {
         }, done);
     });
 
-    it('browse', function (done) {
+    it('can browse', function (done) {
         PostAPI.browse().then(function (results) {
             should.exist(results);
-            testUtils.API.checkResponse(results, 'posts');            
+            testUtils.API.checkResponse(results, 'posts');
             should.exist(results.posts);
             results.posts.length.should.be.above(0);
             testUtils.API.checkResponse(results.posts[0], 'post');
@@ -41,7 +41,7 @@ describe('Post API', function () {
         }).then(null, done);
     });
 
-    it('read', function (done) {
+    it('can read', function (done) {
         var firstPost;
 
         PostAPI.browse().then(function (results) {
@@ -49,10 +49,19 @@ describe('Post API', function () {
             should.exist(results.posts);
             results.posts.length.should.be.above(0);
             firstPost = results.posts[0];
-            return PostAPI.read({slug: firstPost.slug});
+            return PostAPI.read({slug: firstPost.slug, include: 'tags'});
         }).then(function (found) {
+            var post;
+
             should.exist(found);
             testUtils.API.checkResponse(found.posts[0], 'post');
+
+            post = found.posts[0];
+
+            should.exist(post.tags);
+            post.tags.length.should.be.above(0);
+            testUtils.API.checkResponse(post.tags[0], 'tag');
+
             done();
         }).then(null, done);
     });
