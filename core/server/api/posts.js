@@ -129,11 +129,17 @@ posts = {
     // #### Add
     // **takes:** a json object representing a post,
     add: function add(postData) {
-        var self = this;
+        var self = this,
+            include;
+
         // **returns:** a promise for the resulting post in a json object
         return canThis(this.user).create.post().then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
-                return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user});
+                if (postData.include) {
+                    include = prepareInclude(postData.include);
+                }
+
+                return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user, include: include});
             }).then(function (result) {
                 var omitted = result.toJSON();
                 if (!_.isNumber(omitted.author)) {
