@@ -364,6 +364,19 @@ var path           = require('path'),
                 }
             },
 
+
+            docker: {
+               docs: {
+                    dest: 'docks',
+                    src: ['.'],
+                    options: {
+                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,config.js',
+                        extras: ['fileSearch']
+                    }
+
+                }
+            },
+
             // ### Config for grunt-contrib-clean
             // Clean up files as part of other tasks
             clean: {
@@ -929,7 +942,7 @@ var path           = require('path'),
 
         // ### Documentation
 
-        grunt.registerTask('docs', 'Generate Docs', ['groc']);
+        grunt.registerTask('docs', 'Generate Docs', ['docker', 'groc']);
 
 
         // ### Tools for building assets
