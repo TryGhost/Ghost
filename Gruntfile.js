@@ -1,21 +1,21 @@
-// # Gruntfile - Task automation for Ghost
-// Run various tasks when developing for and working with Ghost
-// Run `grunt --help` or visit https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit/ for usage instructions
-
+// # Task automation for Ghost
+//
+// Run various tasks when developing for and working with Ghost.
+//
+// **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
+//
+// **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
 var path           = require('path'),
-    when           = require('when'),
-    semver         = require('semver'),
     colors         = require('colors'),
     fs             = require('fs'),
     _              = require('lodash'),
-    spawn          = require('child_process').spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
     bootstrap      = require('./core/bootstrap'),
 
     // ## Build File Patterns
-    // a list of files and paterns to process and exclude when running builds & releases
-    // It is taken from the .npmignore file and all patterns are inverted as the .npmignore
+    // A list of files and patterns to include when creating a release zip.
+    // This is read from the `.npmignore` file and all patterns are inverted as the `.npmignore`
     // file defines what to ignore, whereas we want to define what to include.
     buildGlob = (function () {
         /*jslint stupid:true */
@@ -28,17 +28,19 @@ var path           = require('path'),
     }()),
 
     // ## Grunt configuration
-
+    //
     configureGrunt = function (grunt) {
 
-        // This is not useful but required for jshint
+        // *This is not useful but required for jshint*
         colors.setTheme({silly: 'rainbow'});
 
-        // load all grunt tasks
+        // #### Load all grunt tasks
+        //
+        // Find all of the task which start with `grunt-` and load them, rather than explicitly declaring them all
         require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 
         var cfg = {
-            // Common paths to be used by tasks
+            // #### Common paths used by tasks
             paths: {
                 adminAssets: './core/client/assets',
                 build: buildDirectory,
@@ -46,11 +48,14 @@ var path           = require('path'),
                 dist: distDirectory,
                 releaseDist: path.join(distDirectory, 'release')
             },
+            // Standard build type, for when we have nightlies again.
             buildType: 'Build',
+            // Load package.json so that we can create correctly versioned releases.
             pkg: grunt.file.readJSON('package.json'),
 
-            // ### Config for grunt-contrib-watch
-            // Watch files and livereload in the browser during development
+            // ### grunt-contrib-watch
+            // Watch files and livereload in the browser during development.
+            // See the [grunt dev](#live%20reload) task for how this is used.
             watch: {
                 handlebars: {
                     files: ['core/client/tpl/**/*.hbs'],
@@ -65,20 +70,15 @@ var path           = require('path'),
                 },
                 'ghost-ui': {
                     files: [
-                        // Ghost UI CSS
                         'bower_components/ghost-ui/dist/css/*.css'
                     ],
                     tasks: ['copy:dev']
                 },
                 livereload: {
                     files: [
-                        // Theme CSS
                         'content/themes/casper/css/*.css',
-                        // Theme JS
                         'content/themes/casper/js/*.js',
-                        // Client CSS
                         'core/client/assets/css/*.css',
-                        // Admin JS
                         'core/built/scripts/*.js'
                     ],
                     options: {
@@ -86,18 +86,17 @@ var path           = require('path'),
                     }
                 },
                 express: {
-                    // Restart any time client or server js files change
                     files:  ['core/server.js', 'core/server/**/*.js'],
                     tasks:  ['express:dev'],
                     options: {
-                        //Without this option specified express won't be reloaded
+                        // **Note:** Without this option specified express won't be reloaded
                         nospawn: true
                     }
                 }
             },
 
-            // ### Config for grunt-express-server
-            // Start our server in development
+            // ### grunt-express-server
+            // Start a Ghost expess server for use in development and testing
             express: {
                 options: {
                     script: 'index.js',
@@ -105,9 +104,7 @@ var path           = require('path'),
                 },
 
                 dev: {
-                    options: {
-                        //output: 'Express server listening on address:.*$'
-                    }
+                    options: {}
                 },
                 test: {
                     options: {
@@ -116,18 +113,16 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-jshint
-            // JSHint all the things!
+            // ### grunt-contrib-jshint
+            // Linting rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
+            // more information.
             jshint: {
+                // Linting rules for server side or shared javascript code
                 server: {
                     options: {
-                        // node environment
                         node: true,
-                        // browser environment
                         browser: false,
-                        // allow dangling underscores in var names
                         nomen: false,
-                        // don't require use strict pragma
                         strict: false,
                         sub: true,
                         eqeqeq: true,
@@ -154,27 +149,28 @@ var path           = require('path'),
                         src: [
                             '*.js',
                             'core/*.js',
-                            'core/server/**/*.js'
+                            'core/server/**/*.js',
+                            'core/shared/**/*.js',
+                            '!core/shared/vendor/**/*.js',
+                            '!core/shared/lib/**/*.js'
                         ]
                     }
                 },
+                // Linting rules for client side javascript code
                 client: {
                     options: {
-                        "predef": {
-                            "document": true,
-                            "window": true,
-                            "location": true,
-                            "setTimeout": true,
-                            "Ember": true,
-                            "Em": true,
-                            "DS": true,
-                            "$": true
+                        predef: {
+                            document: true,
+                            window: true,
+                            location: true,
+                            setTimeout: true,
+                            Ember: true,
+                            Em: true,
+                            DS: true,
+                            $: true
                         },
-                        // node environment
                         node: false,
-                        // browser environment
                         browser: true,
-                        // allow dangling underscores in var names
                         nomen: false,
                         bitwise: true,
                         curly: true,
@@ -199,54 +195,16 @@ var path           = require('path'),
                     files: {
                         src: [
                             'core/client/**/*.js',
-                            // Ignore files
                             '!core/client/assets/vendor/**/*.js',
                             '!core/client/tpl/**/*.js'
-                        ]
-                    }
-                },
-                shared: {
-                    options: {
-                        // node environment
-                        node: true,
-                        // browser environment
-                        browser: false,
-                        // don't require use strict pragma
-                        strict: false,
-                        // allow dangling underscores in var names
-                        nomen: false,
-                        bitwise: true,
-                        curly: true,
-                        eqeqeq: true,
-                        forin: true,
-                        immed: true,
-                        latedef: true,
-                        newcap: true,
-                        noarg: true,
-                        noempty: true,
-                        nonew: true,
-                        plusplus: true,
-                        regexp: true,
-                        undef: true,
-                        unused: true,
-                        trailing: true,
-                        indent: 4,
-                        onevar: true,
-                        white: true
-                    },
-                    files: {
-                        src: [
-                            'core/shared/**/*.js',
-                            // Ignore files
-                            '!core/shared/vendor/**/*.js',
-                            '!core/shared/lib/**/*.js'
                         ]
                     }
                 }
             },
 
-            // ### Config for grunt-mocha-cli
-            // Run mocha unit tests
+            // ### grunt-mocha-cli
+            // Configuration for the mocha test runner, used to run unit, integration and route tests as part of
+            // `grunt validate`. See [grunt validate](#validate) and its sub tasks for more information.
             mochacli: {
                 options: {
                     ui: 'bdd',
@@ -254,24 +212,18 @@ var path           = require('path'),
                     timeout: '15000'
                 },
 
+                // #### All Unit tests
                 unit: {
                     src: ['core/test/unit/**/*_spec.js']
                 },
 
-                model: {
-                    src: ['core/test/integration/**/model*_spec.js']
-                },
-
-                client: {
-                    src: ['core/test/unit/**/client*_spec.js']
-                },
-
+                // ##### Groups of unit tests
                 server: {
                     src: ['core/test/unit/**/server*_spec.js']
                 },
 
-                shared: {
-                    src: ['core/test/unit/**/shared*_spec.js']
+                showdown: {
+                    src: ['core/test/unit/**/showdown*_spec.js']
                 },
 
                 perm: {
@@ -289,6 +241,7 @@ var path           = require('path'),
                     src: ['core/test/unit/**/storage*_spec.js']
                 },
 
+                // #### All Integration tests
                 integration: {
                     src: [
                         'core/test/integration/**/model*_spec.js',
@@ -296,27 +249,43 @@ var path           = require('path'),
                     ]
                 },
 
+                // ##### Model integration tests
+                model: {
+                    src: ['core/test/integration/**/model*_spec.js']
+                },
+
+                // ##### API integration tests
+                api: {
+                    src: ['core/test/integration/**/api*_spec.js']
+                },
+
+                // #### All Route tests
                 routes: {
                     src: ['core/test/functional/routes/**/*_test.js']
                 }
             },
 
 
-            // ### config for grunt-shell
-            // command line tools
+            // ### grunt-shell
+            // Command line tools where it's easier to run a command directly than configure a grunt plugin
             shell: {
+                // #### Run bower install
+                // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
+                // information.
                 bower: {
                     command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower install'),
                     options: {
                         stdout: true
                     }
                 },
-                // generate coverage report
+                // #### Generate coverage report
+                // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
                     command: function () {
-                        // will work on windows only if mocha is globally installed
+                        // **Note:** will only work on windows if mocha is globally installed
                         var cmd = !!process.platform.match(/^win/) ? 'mocha' : './node_modules/mocha/bin/mocha';
-                        return cmd + ' --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js';
+                        return cmd +
+                            ' --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js';
                     },
                     execOptions: {
                         env: 'NODE_ENV=' + process.env.NODE_ENV
@@ -324,8 +293,8 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-handlebars
-            // Compile templates for admin client
+            // ### grunt-contrib-handlebars
+            // Compile handlebars templates into a JST file for the admin client
             handlebars: {
                 core: {
                     options: {
@@ -341,14 +310,17 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-groc
+            // ### grunt-groc
             // Generate documentation from code
             groc: {
                 docs: {
                     options: {
-                        'out': './docs/',
-                        'glob': [
+                        out: './docs/',
+                        glob: [
                             'README.md',
+                            'CONTRIBUTING.md',
+                            'SECURITY.md',
+                            'Gruntfile.js',
                             'config.example.js',
                             'index.js',
                             'core/*.js',
@@ -356,7 +328,7 @@ var path           = require('path'),
                             'core/shared/**/*.js',
                             'core/client/**/*.js'
                         ],
-                        'except': [
+                        except: [
                             '!core/**/vendor/**/*.js',
                             '!core/client/tpl/**/*.js'
                         ]
@@ -364,20 +336,21 @@ var path           = require('path'),
                 }
             },
 
-
+            // ### grunt-docker
+            // Generate documentation from code
             docker: {
-               docs: {
+                docs: {
                     dest: 'docks',
                     src: ['.'],
                     options: {
-                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,config.js',
+                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,config.js,coverage.html,.travis.yml',
                         extras: ['fileSearch']
                     }
 
                 }
             },
 
-            // ### Config for grunt-contrib-clean
+            // ### grunt-contrib-clean
             // Clean up files as part of other tasks
             clean: {
                 release: {
@@ -388,8 +361,8 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-copy
-            // Prepare files for builds / releases
+            // ### grunt-contrib-copy
+            // Copy files into their correct locations as part of building assets, or creating release zips
             copy: {
                 dev: {
                     files: [{
@@ -436,8 +409,8 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-compress
-            // Zip up builds / releases
+            // ### grunt-contrib-compress
+            // Zip up files for builds / releases
             compress: {
                 release: {
                     options: {
@@ -449,7 +422,7 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-concat
+            // ### grunt-contrib-concat
             // concatenate multiple JS files into a single file ready for use
             concat: {
                 dev: {
@@ -475,7 +448,7 @@ var path           = require('path'),
                             'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
 
-                            // ToDo: Remove or replace
+                            // TODO: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
                             'core/client/assets/vendor/to-title-case.js',
 
@@ -537,7 +510,7 @@ var path           = require('path'),
                             'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
 
-                            // ToDo: Remove or replace
+                            // TODO: Remove or replace
                             'core/client/assets/vendor/shortcuts.js',
                             'core/client/assets/vendor/to-title-case.js',
 
@@ -572,8 +545,8 @@ var path           = require('path'),
                 }
             },
 
-            // ### Config for grunt-contrib-uglify
-            // minify javascript file for production
+            // ### grunt-contrib-uglify
+            // Minify concatenated javascript files ready for production
             uglify: {
                 prod: {
                     files: {
@@ -584,28 +557,20 @@ var path           = require('path'),
             }
         };
 
+        // Load the configuration
         grunt.initConfig(cfg);
 
-        // ## Custom Tasks
-
-        grunt.registerTask('setTestEnv', 'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)', function () {
-            process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
-            cfg.express.test.options.node_env = process.env.NODE_ENV;
-        });
-
-        grunt.registerTask('loadConfig', function () {
-            var done = this.async();
-            bootstrap().then(function () {
-                done();
-            });
-        });
-
-        grunt.registerTask('spawn-casperjs', function () {
+        // ## Utilities
+        //
+        // ### Spawn Casper.js
+        // Custom test runner for our Casper.js functional tests
+        // This really ought to be refactored into a separate grunt task module
+        grunt.registerTask('spawnCasperJS', function () {
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
                 args = ['test']
-                           .concat(grunt.option('target') || ['admin/', 'frontend/'])
-                           .concat(['--includes=base.js', '--verbose', '--log-level=debug', '--port=2369']);
+                    .concat(grunt.option('target') || ['admin/', 'frontend/'])
+                    .concat(['--includes=base.js', '--verbose', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs
             _.each(options, function processOption(option) {
@@ -631,329 +596,263 @@ var path           = require('path'),
             });
         });
 
-        /* Generate Changelog
-         * - Pulls changelog from git, excluding merges.
-         * - Uses first line of commit message. Includes committer name.
-         */
-        grunt.registerTask('changelog', 'Generate changelog from Git', function () {
-            // TODO: Break the contents of this task out into a separate module,
-            // put on npm. (@cgiffard)
+        // # Custom Tasks
 
+        // Ghost has a number of useful tasks that we use every day in development. Tasks marked as *Utility* are used
+        // by grunt to perform current actions, but isn't useful to developers.
+        //
+        // Skip ahead to the section on:
+        //
+        // * [Building assets](#building%20assets):
+        //     `grunt init`, `grunt` & `grunt prod` or live reload with `grunt dev`
+        // * [Testing](#testing):
+        //     `grunt validate`, the `grunt test-*` sub-tasks or generate a coverage report with `grunt test-coverage`.
+
+        // ### Help
+        // Run `grunt help` on the commandline to get a print out of the available tasks and details of
+        // what each one does along with any available options. This is an alias for `grunt --help`
+        grunt.registerTask('help',
+            'Outputs help information if you type `grunt help` instead of `grunt --help`',
+            function () {
+                console.log('Type `grunt --help` to get the details of available grunt tasks, ' +
+                    'or alternatively visit https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit');
+            });
+
+        // ### Documentation
+        // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
+        grunt.registerTask('docs', 'Generate Docs', ['docker', 'groc']);
+
+
+        // ## Testing
+
+        // Ghost has an extensive set of test suites. The following section documents the various types of tests
+        // and how to run them.
+        //
+        // TLDR; run `grunt validate`
+
+        // #### Set Test Env *(Utility Task)*
+        // Set the NODE_ENV to 'testing' unless the environment is already set to TRAVIS.
+        // This ensures that the tests get run under the correct environment, using the correct database, and
+        // that they work as expected. Trying to run tests with no ENV set will throw an error to do with `client`.
+        grunt.registerTask('setTestEnv',
+            'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)',
+            function () {
+                process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
+                cfg.express.test.options.node_env = process.env.NODE_ENV;
+            });
+
+        // #### Load Config *(Utility Task)*
+        // Make sure that we have a `config.js` file when running tests
+        // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
+        // `config.example.js` which is copied and renamed to `config.js` by the bootstrap process
+        grunt.registerTask('loadConfig', function () {
             var done = this.async();
-
-            function git(args, callback, depth) {
-                depth = depth || 0;
-
-                if (!depth) {
-                    grunt.log.writeln('git ' + args.join(' '));
-                }
-
-                var buffer = [];
-                spawn('git', args, {
-                    // We can reasonably assume the gruntfile will be in the root of the repo.
-                    cwd : __dirname,
-
-                    stdio : ['ignore', 'pipe', process.stderr]
-
-                }).on('exit', function (code) {
-
-                    // Process exited correctly but we got no output.
-                    // Spawn again, but make sure we don't spiral out of control.
-                    // Hack to work around an apparent node bug.
-                    //
-                    // Frustratingly, it's impossible to distinguish this
-                    // bug from a genuine empty log.
-
-                    if (!buffer.length && code === 0 && depth < 20) {
-                        return setImmediate(function () {
-                            git(args, callback, depth ? depth + 1 : 1);
-                        });
-                    }
-
-                    if (code === 0) {
-                        return callback(buffer.join(''));
-                    }
-
-                    // We failed. Git returned a non-standard exit code.
-                    grunt.log.error('Git returned a non-zero exit code.');
-                    done(false);
-
-                // Push returned data into the buffer
-                }).stdout.on('data', buffer.push.bind(buffer));
-            }
-
-            // Crazy function for getting around inconsistencies in tagging
-            function sortTags(a, b) {
-                a = a.tag;
-                b = b.tag;
-
-                // NOTE: Accounting for different tagging method for
-                // 0.2.1 and up.
-
-                // If we didn't have this issue I'd just pass rcompare
-                // into sort directly. Could be something to think about
-                // in future.
-
-                if (semver.rcompare(a, '0.2.0') < 0 ||
-                        semver.rcompare(b, '0.2.0') < 0) {
-
-                    return semver.rcompare(a, b);
-                }
-
-                a = a.split('-');
-                b = b.split('-');
-
-                if (semver.rcompare(a[0], b[0]) !== 0) {
-                    return semver.rcompare(a[0], b[0]);
-                }
-
-                // Using this janky looking integerising-method
-                // because it's faster and doesn't result in NaN, which
-                // breaks sorting
-                /*jslint bitwise: true */
-                return (+b[1] | 0) - (+a[1] | 0);
-            }
-
-            // Gets tags in master branch, sorts them with semver,
-            function getTags(callback) {
-                git(['show-ref', '--tags'], function (results) {
-                    results = results
-                        .split(/\n+/)
-                        .filter(function (tag) {
-                            return tag.length && tag.match(/\/\d+\.\d+/);
-                        })
-                        .map(function (tag) {
-                            return {
-                                'tag': tag.split(/tags\//).pop().trim(),
-                                'ref': tag.split(/\s+/).shift().trim()
-                            };
-                        })
-                        .sort(sortTags);
-
-                    callback(results);
-                });
-            }
-
-            // Parses log to extract commit data.
-            function parseLog(data) {
-                var commits = [],
-                    commitRegex =
-                        new RegExp(
-                            '\\n*[|\\*\\s]*commit\\s+([a-f0-9]+)' +
-                                '\\n[|\\*\\s]*Author:\\s+([^<\\n]+)<([^>\\n]+)>' +
-                                '\\n[|\\*\\s]*Date:\\s+([^\\n]+)' +
-                                '\\n+[|\\*\\s]*[ ]{4}([^\\n]+)',
-                            'ig'
-                        );
-
-                // Using String.prototype.replace as a kind of poor-man's substitute
-                // for a streaming parser.
-                data.replace(
-                    commitRegex,
-                    function (wholeCommit, hash, author, email, date, message) {
-                        /*jshint unused:false*/
-
-                        // The author name and commit message may have trailing space.
-                        author = author.trim();
-                        message = message.trim();
-
-                        // Reformat date to make it parse-able by JS
-                        date =
-                            date.replace(
-                                /^(\w+)\s(\w+)\s(\d+)\s([\d\:]+)\s(\d+)\s([\+\-\d]+)$/,
-                                '$1, $2 $3 $5 $4 $6'
-                            );
-
-                        commits.push({
-                            'hash': hash,
-                            'author': author,
-                            'email': email,
-                            'date': date,
-                            'parsedDate': new Date(Date.parse(date)),
-                            'message': message
-                        });
-
-                        return null;
-                    }
-                );
-
-                return commits;
-            }
-
-            // Gets git log for specified range.
-            function getLog(to, from, callback) {
-                var range = from && to ? from + '..' + to : '',
-                    args = [ 'log', 'master', '--no-color', '--no-merges', '--graph' ];
-
-                if (range) {
-                    args.push(range);
-                }
-
-                git(args, function (data) {
-                    callback(parseLog(data));
-                });
-            }
-
-            // Run the job
-            getTags(function (tags) {
-                var logPath = path.join(__dirname, 'CHANGELOG.md'),
-                    log = fs.createWriteStream(logPath),
-                    commitCache = {};
-
-                function processTag(tag, callback) {
-                    var buffer = '',
-                        peek = tag[1];
-
-                    tag = tag[0];
-
-                    getLog(tag.tag, peek.tag, function (commits) {
-
-                        // Use the comparison with HEAD to remove commits which
-                        // haven't been included in a build/release yet.
-
-                        if (tag.tag === 'HEAD') {
-                            commits.forEach(function (commit) {
-                                commitCache[commit.hash] = true;
-                            });
-
-                            return callback('');
-                        }
-
-                        buffer += '## Release ' + tag.tag + '\n';
-
-                        commits = commits
-                            .filter(function (commit) {
-
-                                // Get rid of jenkins' release tagging commits
-                                // Remove commits we've already spat out
-                                return (
-                                    commit.author !== 'TryGhost-Jenkins' &&
-                                    !commitCache[commit.hash]
-                                );
-                            })
-                            .map(function (commit) {
-                                buffer += '\n* ' + commit.message + ' (_' + commit.author + '_)';
-                                commitCache[commit.hash] = true;
-                            });
-
-                        if (!commits.length) {
-                            buffer += '\nNo changes were made in this build.\n';
-                        }
-
-                        callback(buffer + '\n');
-                    });
-                }
-
-                // Get two weeks' worth of tags
-                tags.unshift({'tag': 'HEAD'});
-
-                tags =
-                    tags
-                        .slice(0, 14)
-                        .map(function (tag, index) {
-                        return [
-                            tag,
-                            tags[index + 1] || tags[index]
-                        ];
-                    });
-
-                log.write('# Ghost Changelog\n\n');
-                log.write('_Showing ' + tags.length + ' releases._\n');
-
-                when.reduce(tags,
-                    function (prev, tag, idx) {
-                        /*jshint unused:false*/
-                        return when.promise(function (resolve) {
-                            processTag(tag, function (releaseData) {
-                                resolve(prev + '\n' + releaseData);
-                            });
-                        });
-                    }, '')
-                    .then(function (reducedChangelog) {
-                        log.write(reducedChangelog);
-                        log.close();
-                        done(true);
-                    });
+            bootstrap().then(function () {
+                done();
             });
         });
 
-        grunt.registerTask('release',
-            'Release task - creates a final built zip\n' +
-            ' - Do our standard build steps (handlebars, etc)\n' +
-            ' - Generate changelog for the past 14 releases\n' +
-            ' - Copy files to release-folder/#/#{version} directory\n' +
-            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
-            ' - Zip files in release-folder to dist-folder/#{version} directory',
-            [
-                'shell:bower',
-                'handlebars',
-                'concat',
-                'uglify',
-                'clean:release',
-                'copy:release',
-                'compress:release'
-            ]);
+        // ### Validate
+        // **Main testing task**
+        //
+        // `grunt validate` will lint and test your local Ghost codebase.
+        //
+        // `grunt validate` is one of the most important and useful grunt tasks that we have available to use. It
+        // manages the setup and running of jshint as well as the 4 test suites. See the individual sub tasks below
+        // for details of each of the test suites.
+        //
+        // `grunt validate` is called by `npm test`.
+        grunt.registerTask('validate', 'Run tests and lint code',
+            ['shell:bower', 'concat:dev', 'jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
-        grunt.registerTask('dev',
-            'Dev Mode; watch files and restart server on changes',
-            [
-                'handlebars',
-                'concat',
-                'copy:dev',
-                'express:dev',
-                'watch'
-            ]);
+        // ### Unit Tests *(sub task)*
+        // `grunt test-unit` will run just the unit tests
+        //
+        // Provided you already have a `config.js` file, you can run individual sections from
+        // [mochacli](#grunt-mocha-cli) by running:
+        //
+        // `NODE_ENV=testing grunt mochacli:section`
+        //
+        // If you need to run an individual unit test file, you can do so, providing you have mocha installed globally by
+        // using a command in the form:
+        //
+        // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/unit/config_spec.js`
+        //
+        // Unit tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
+        // Unit tests do **not** touch the database.
+        // A coverage report can be generated for these tests using the `grunt test-coverage` task.
+        grunt.registerTask('test-unit', 'Run unit tests (mocha)',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:unit']);
 
-        // ### Warn git users not ot use master in production
+        // ### Integration tests *(sub task)*
+        // `grunt test-integration` will run just the integration tests
+        //
+        // Provided you already have a `config.js` file, you can run just the model integration tests by running:
+        //
+        // `NODE_ENV=testing grunt mochacli:model`
+        //
+        // Or just the api integration tests by running:
+        //
+        // `NODE_ENV=testing grunt mochacli:api`
+        //
+        // Integration tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
+        // Integration tests are different to the unit tests because they make requests to the database.
+        //
+        // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
+        // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases
+        // don't cause bugs. At present, pg often fails and is not officially supported.
+        //
+        // A coverage report can be generated for these tests using the `grunt test-coverage` task.
+        grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:integration']);
 
+        // ### Route tests *(sub task)*
+        // `grunt test-routes` will run just the route tests
+        //
+        // If you need to run an individual route test file, you can do so, providing you have a `config.js` file and
+        // mocha installed globally by using a command in the form:
+        //
+        // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/functional/routes/admin_test.js`
+        //
+        // Route tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // [should](https://github.com/visionmedia/should.js) and [supertest](https://github.com/visionmedia/supertest)
+        // to describe and create the tests.
+        //
+        // Supertest enables us to describe requests that we want to make, and also describe the response we expect to
+        // receive back. It works directly with express, so we don't have to run a server to run the tests.
+        //
+        // The purpose of the route tests is to ensure that all of the routes (pages, and API requests) in Ghost
+        // are working as expected, including checking the headers and status codes received. It is very easy and
+        // quick to test many permutations of routes / urls in the system.
+        grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
+
+        // ### Functional tests *(sub task)*
+        // `grunt test-functional` will run just the functional tests
+        //
+        // You can use the `--target` argument to run any individual test file, or the admin or frontend tests:
+        //
+        // `grunt test-functional --target=admin/editor_test.js` - run just the editor tests
+        //
+        // `grunt test-functional --target=admin/` - run all of the tests in the admin directory
+        //
+        // Functional tests are run with [phantom.js](http://phantomjs.org/) and defined using the testing api from
+        // [casper.js](http://docs.casperjs.org/en/latest/testing.html).
+        //
+        // An express server is started with the testing environment set, and then a headless phantom.js browser is
+        // used to make requests to that server. The Casper.js API then allows us to describe the elements and
+        // interactions we expect to appear on the page.
+        //
+        // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
+        // including buttons and other important interactions in the admin UI.
+        grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawnCasperJS', 'express:test:stop']
+        );
+
+        // ### Coverage
+        // `grunt test-coverage` will generate a report for the Unit and Integration Tests.
+        //
+        // This is not currently done as part of CI or any build, but is a tool we have available to keep an eye on how
+        // well the unit and integration tests are covering the code base.
+        // Ghost does not have a minimum coverage level - we're more interested in ensuring important and useful areas
+        // of the codebase are covered, than that the whole codebase is covered to a particular level.
+        //
+        // Key areas for coverage are: helpers and theme elements, apps / GDK, the api and model layers.
+        grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'shell:coverage']);
+
+
+        // ## Building assets
+        //
+        // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
+        // built release zips, you can get these from the [release page](https://github.com/TryGhost/Ghost/releases) on
+        // GitHub or from https://ghost.org/download. These zip files are created using the [grunt release](#release)
+        // task.
+        //
+        // If you want to work on Ghost core, or you want to use the source files from GitHub, then you have to build
+        // the Ghost assets in order to make them work.
+        //
+        // There are a number of grunt tasks available to help with this. Firstly after fetching an updated version of
+        // the Ghost codebase, after running `npm install`, you will need to run [grunt init](#init%20assets).
+        //
+        // For production blogs you will need to run [grunt prod](#production%20assets).
+        //
+        // For updating assets during development, the tasks [grunt](#default%20asset%20build) and
+        // [grunt dev](#live%20reload) are available.
+        //
+
+        // #### Master Warning *(Utility Task)*
+        // Warns git users not ot use the `master` branch in production.
+        // `master` is an unstable branch and shouldn't be used in production as you run the risk of ending up with a
+        // database in an unrecoverable state. Instead there is a branch called `stable` which is the equivalent of the
+        // release zip for git users.
         grunt.registerTask('master-warn',
             'Outputs a warning to runners of grunt prod, that master shouldn\'t be used for live blogs',
             function () {
-                console.log('>', 'Always two there are, no more, no less. A master and a'.red, 'stable'.red.bold + '.'.red);
+                console.log('>', 'Always two there are, no more, no less. A master and a'.red,
+                        'stable'.red.bold + '.'.red);
                 console.log('Use the', 'stable'.bold, 'branch for live blogs.', 'Never'.bold, 'master!');
             });
 
 
-        // ### Find out more about grunt task usage
+        // ### Init assets
+        // `grunt init` - will run an initial asset build for you
+        //
+        // Grunt init runs `bower install` as well as the standard asset build tasks which occur when you run just
+        // `grunt`. This fetches the latest client side dependencies, and moves them into their proper homes.
+        //
+        // This task is very important, and should always be run and when fetching down an updated code base just after
+        // running `npm install`.
+        //
+        // `bower` does have some quirks, such as not running as root. If you have problems please try running
+        // `grunt init --verbose` to see if there are any errors.
+        grunt.registerTask('init', 'Prepare the project for development',
+            ['shell:bower', 'default']);
 
-        grunt.registerTask('help',
-            'Outputs help information if you type `grunt help` instead of `grunt --help`',
-            function () {
-                console.log('Type `grunt --help` to get the details of available grunt tasks, or alternatively visit https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit');
-            });
+        // ### Production assets
+        // `grunt prod` - will build the minified assets used in production.
+        //
+        // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
+        grunt.registerTask('prod', 'Build JS & templates for production',
+            ['handlebars', 'concat', 'uglify', 'copy:prod', 'master-warn']);
 
-        // ### Running the test suites
+        // ### Default asset build
+        // `grunt` - default grunt task
+        //
+        // Compiles handlebars templates, concatenates javascript files for the admin UI into a handful of files instead
+        // of many files, and makes sure the bower dependencies are in the right place.
+        grunt.registerTask('default', 'Build JS & templates for development',
+            ['update_submodules', 'handlebars', 'concat', 'copy:dev']);
 
-        grunt.registerTask('test-unit', 'Run unit tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:unit']);
+        // ### Live reload
+        // `grunt dev` - build assets on the fly whilst developing
+        //
+        // If you want Ghost to live reload for you whilst you're developing, you can do this by running `grunt dev`.
+        // This works hand-in-hand with the [livereload](http://livereload.com/) chrome extension.
+        //
+        // `grunt dev` manages starting an express server and restarting the server whenever core files change (which
+        // require a server restart for the changes to take effect) and also manage reloading the browser whenever
+        // frontend code changes.
+        //
+        // Note that the current implementation of watch only works with casper, not other themes.
+        grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
+           ['handlebars', 'concat', 'copy:dev', 'express:dev', 'watch']);
 
-        grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:integration']);
-
-        grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)', ['clean:test', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawn-casperjs', 'express:test:stop']);
-
-        grunt.registerTask('test-routes', 'Run functional route tests (mocha)', ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
-
-        grunt.registerTask('validate', 'Run tests and lint code', ['shell:bower', 'concat:dev', 'jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
-
-
-        // ### Coverage report for Unit and Integration Tests
-
-        grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report', ['clean:test', 'setTestEnv', 'loadConfig', 'shell:coverage']);
-
-
-        // ### Documentation
-
-        grunt.registerTask('docs', 'Generate Docs', ['docker', 'groc']);
-
-
-        // ### Tools for building assets
-
-        grunt.registerTask('init', 'Prepare the project for development', ['shell:bower', 'default']);
-
-        // Before running in production mode
-        grunt.registerTask('prod', 'Build JS & templates for production', ['handlebars', 'concat', 'uglify', 'copy:prod', 'master-warn']);
-
-        // When you just say 'grunt'
-        grunt.registerTask('default', 'Build JS & templates for development', ['update_submodules', 'handlebars', 'concat', 'copy:dev']);
+        // ### Release
+        // Run `grunt release` to create a Ghost release zip file.
+        // Uses the files specified by `.npmignore` to know what should and should not be included.
+        // Runs the asset generation tasks for both development and production so that the release can be used in
+        // either environment, and packages all the files up into a zip.
+        grunt.registerTask('release',
+            'Release task - creates a final built zip\n' +
+            ' - Do our standard build steps (handlebars, etc)\n' +
+            ' - Copy files to release-folder/#/#{version} directory\n' +
+            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
+            ' - Zip files in release-folder to dist-folder/#{version} directory',
+            ['shell:bower', 'handlebars', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
     };
 
+// Export the configuration
 module.exports = configureGrunt;

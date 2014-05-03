@@ -6,3 +6,4 @@ var blanket = require("blanket")({
 
 requireDir("./unit");
 requireDir("./integration");
+requireDir("./functional/routes");
