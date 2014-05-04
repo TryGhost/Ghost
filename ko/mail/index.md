@@ -1,9 +1,9 @@
 ---
 lang: ko
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Ghost 이메일 설정 - Ghost Docs
+meta_description: 이메일 서버를 구성하고 Ghost 플랫폼이 이메일을 보낼 수 있도록 설정하는 방법을 설명합니다.
+heading: Ghost 이메일 설정
 chapter: mail
 ---
 

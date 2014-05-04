@@ -1,32 +1,31 @@
 ---
-lang: ko
+lang: example_translation
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 한국어 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
 prev_section: upgrading
 ---
 
-
 # 문제 해결 및 FAQ <a id="troubleshooting"></a>
 
 <dl>
-    <dt id="export-path">'/usr/local/bin'이 $PATH에 없는 경우</dt>
-    <dd>다음과 같이 추가할 수 있습니다:
+    <dt id="export-path">$PATH에 '/usr/local/bin'가 나타나지 않습니다</dt>
+    <dd>다음 과정을 따라하세요.
         <ul>
-            <li>터미널 윈도우에서 <code>cd ~</code>를 입력해, 홈 디렉터리로 이동합니다.</li>
-            <li><code>ls -al</code>를 입력해 숨김 파일을 포함한 모든 파일과 폴더를 표시합니다.</li>
-            <li><code class="path">.profile</code> 또는 <code class="path">.bash_profile</code>을 찾습니다. 해당 파일 없다면 <code>touch .bash_profile</code>을 입력해 파일을 생성합니다.</li>
-            <li>그 다음, <code>open -a Textedit .bash_profile</code>을 입력해 Textedit으로 파일을 엽니다.</li>
-            <li>파일 끝부분에 <code>export PATH=$PATH:/usr/local/bin/</code>을 추가한 다음 저장합니다.</li>
-            <li>새로운 터미널을 시작해야 이 설정이 적용될 것입니다. 따라서, 새로운 터미널 탭이나 윈도우를 연 다음 <code>echo $PATH</code>를 입력해 '/usr/local/bin/' 가 있는지 확인하면 됩니다.</li>
+            <li>터미널 창에 <code>cd ~</code>를 입력하셔서 홈 디렉토리로 이동하세요.</li>
+            <li><code>ls -al</code>를 입력하셔서 해당 디렉토리에 위치한 모든 파일(숨겨진 파일 포함)을 표시하세요.</li>
+            <li><code class="path">.profile</code> 또는 <code class="path">.bash_profile</code> 파일이 존재하는지 확인하세요. 만약 존재하지 않는다면 <code>touch .bash_profile</code>를 입력하셔서 새 파일을 만드세요.</li>
+            <li>다음으로 <code>open -a Textedit .bash_profile</code>를 입력하셔서 텍스트 편집기로 파일을 여세요.</li>
+            <li>파일의 끝에 <code>export PATH=$PATH:/usr/local/bin/</code>를 추가하시고 저장하세요.</li>
+            <li>변경된 설정을 로드하기 위해 새 터미널 탭 혹은 창을 여세요. <code>echo $PATH</code>를 입력하셔서 '/usr/local/bin/' 문자열이 출력값에 존재하는지 확인하세요.</li>
         </ul>
     </dd>
-    <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+    <dt id="sqlite3-errors">SQLite3가 설치되지 않습니다</dt>
     <dd>
         <p>SQLite3 패키지는 대부분의 아키텍처에 맞게 빌드된 바이너리가 있습니다. 인기가 많지 않은 리눅스 또는 유닉스를 사용한다면, SQLite3가 플랫폼에 맞는 적절한 바이너리를 찾지 못해 404 에러를 표시할 수 있습니다.</p>
         <p>이 문제는 SQLite3를 강제로 컴파일하도록 설정해 해결할 수 있습니다. 이렇게 하려면 python과 gcc가 필요합니다. <code>npm install sqlite3 --build-from-source</code>을 실행해 보기 바랍니다.</p>

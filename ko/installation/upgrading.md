@@ -1,10 +1,10 @@
 ---
-lang: ko
+lang: example_translation
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 한국어 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/upgrading/
 chapter: installation
 section: upgrading
@@ -34,36 +34,35 @@ Ghost는 기본으로 모든 사용자 데이터, 테마, 이미지 등을 <code
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
-* 데이터베이스의 모든 데이터를 백업하려면 Ghost에 로그인해 <code class="path">/ghost/debug/</code>로 갑니다. EXPORT 버튼을 눌러 모든 데이터를 담고 있는 JSON 파일을 다운로드하면 끝입니다.
-* 커스텀 테마와 이미지를 백업하려면 <code class="path">content/themes</code>와 <code class="path">content/images</code> 디렉터리 안에 있는 파일을 복사해야 합니다.
+*   데이터베이스에서 모든 데이터를 백업하기 위해서 여러분의 Ghost 블로그에 접속하시고 <code class="path">/ghost/debug/</code>으로 이동하세요. export 버튼을 누르시면 여러분의 모든 정보가 담긴 .json 파일을 다운로드할 수 있습니다.
+*   여러분의 Ghost 테마 및 이미지를 백업하기 위해서는 <code class="path">content/themes</code>와 <code class="path">content/images</code> 폴더에 위치한 파일들을 복사하셔야 합니다.
 
-<p class="note"><strong>노트:</strong> <code class="path">content/data</code>에서 데이터베이스를 복사할 수도 있지만, Ghost가 실행중일 때 복사하면 안됩니다. 먼저 Ghost를 중지한 다음 복사하기 바랍니다.</p>
-
-
-## 업그레이드 방법<a id="how-to"></a>
-
-로컬 머신에서 업그레이드 하는 방법
-
-<p class="warn"><strong>경고:</strong> 맥에서 기존 설치 폴더로 Ghost 전체를 복사&붙여넣기 하면 <strong>안 됩니다.</strong> Transmit 또는 기타 FTP 소프트웨어로 업로드하는 경우 <kbd>REPLACE</kbd>를 선택하지 말고, <strong>MERGE</strong>를 선택하기 바랍니다.</p>
+<p class="note"><strong>노트:</strong> 여러분은 <code class="path">content/data</code>에 위치한 데이터베이스의 사본을 만들어둘 수 있지만 <strong>반드시</strong> Ghost를 종료하신 후 과정을 진행하세요.</p>
 
 
-* [Ghost.org](http://ghost.org/download/)에서 Chost 최신 버전을 다운로드합니다.
-* 임시 디렉터리에 Zip 파일을 풉니다.
-* 최신 버전의 루트 폴더에 있는 모든 파일(index.js, package.json, Gruntfile.js, config.example.js, LICENSE.txt, README.md)을 복사합니다.
-* 그 다음 기존 <code class="path">core</code> 디렉터리를 새 `core` 디렉터리로 덮어씁니다.
-* Casper(디폴트 테마) 업데이트가 포함된 릴리즈의 경우 <code class="path">content/themes/casper</code> 디렉터리를 새 것으로 덮어씁니다.
-* `npm install --production`을 실행합니다.
-* 마지막으로 Ghost를 재시작해 변경 사항을 반영합니다.
+## 그래픽 사용자 인터페이스(GUI)에서 업그레이드
 
-## 커맨드 라인 명령만 사용하기 <a id="cli"></a>
+로컬 장치의 Ghost를 업그레이드하는 방법
 
-<p class="note"><strong>백업하세요!</strong> 업그레이드 전에는 항상 백업을 수행하기 바랍니다. 먼저 <a href="#backing-up">백업 방법</a>을 읽기 바랍니다!</p>
+<p class="warn"><strong>경고:</strong> 기존의 Ghost 폴더에 새 Ghost 폴더 전체를 복사 및 붙여넣기하여 덮어씌우지 <strong>마십시오</strong>. Transmit과 같은 다른 FTP 소프트웨어를 사용할 때 <kbd>대치</kbd>를 사용하시지 마시고 <strong>병합</strong>을 선택하십시오.</p>
 
-### 맥 <a id="cli-mac"></a>
+*   [Ghost.org](http://ghost.org/download/)으로부터 최신 버전의 Ghost를 다운로드하세요.
+*   임시 폴더에 Ghost를 압축 해제하세요.
+*   루트 디렉토리에 위치해 있는 모든 파일을 복사하세요. 이는 index.js, package.json, Gruntfile.js, config.example.js, 라이센스(license) 및 readme 파일을 포함합니다.
+*   다음으로, 기존의 <code class="path">core</code> 디렉토리를 완전히 삭제하시고 새 <code class="path">core</code> 디렉토리로 대체하세요.
+*   Casper(Ghost 기본 테마)의 업데이트를 포함하는 버전의 경우 오래된 <code class="path">content/themes/casper</code> 디렉토리를 삭제하시고 새 파일로 대체하세요.
+*   `npm install --production`을 실행하세요.
+*   마지막으로 Ghost를 재시작하시면 업그레이드가 완료됩니다.
 
-아래 스크린캐스트를 보면 Zip 파일이 <code class="path">~/Downloads</code>에 다운로드 되어있고 Ghost가 <code class="path">~/ghost</code>에 설치되어 있는 경우 Ghost를 업그레이드 하는 단계를 알 수 있습니다. <span class="note">**노트:** `~`는 맥과 리눅스에서 사용자 홈 디렉터리를 뜻함</span>
+## 커맨드 라인 인터페이스(CUI)에서 업그레이드
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
+<p class="note"><strong>백업하세요!</strong> 업그레이드 전 반드시 백업을 해 두셔야 합니다. 백업하시는 방법을 잘 모르신다면 <a href="#backing-up">백업 가이드</a>를 참조하세요.</p>
+
+### Mac의 CUI 환경에서 업그레이드 <a id="cli-mac"></a>
+
+아래의 동영상은 Ghost가 <code class="path">~/ghost</code>에 설치되어 있고 새 Ghost 파일이 <code class="path">~/Downloads</code>에 다운로드된 상황에서 Ghost를 업그레이드하는 방법을 설명합니다. <span class="note">**노트:** `~`는 Mac 및 Linux에서 사용자의 홈 디렉토리를 의미합니다</span>
+
+![Ghost 업그레이드](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
 
 스트린캐스트에서의 각 단계는 다음과 같습니다.
 

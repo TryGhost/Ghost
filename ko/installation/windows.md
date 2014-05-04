@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 한국어 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/windows/
 chapter: installation
 section: windows
