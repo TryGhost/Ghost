@@ -64,7 +64,7 @@ function updateCheckData() {
             return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
         }).otherwise(errors.rejectError));
     ops.push(api.posts.browse().otherwise(errors.rejectError));
-    ops.push(api.users.browse().otherwise(errors.rejectError));
+    ops.push(api.users.browse.call({user: 1}).otherwise(errors.rejectError));
     ops.push(nodefn.call(exec, 'npm -v').otherwise(errors.rejectError));
 
     data.ghost_version   = currentVersion;
@@ -86,8 +86,8 @@ function updateCheckData() {
         data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');
         data.theme           = theme ? theme.value : '';
         data.apps            = apps || '';
-        data.post_count      = posts && posts.posts && posts.posts.total ? posts.total : 0;
-        data.user_count      = users && users.users && users.users.length ? users.length : 0;
+        data.post_count      = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
+        data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
         data.npm_version     = _.isArray(npm) && npm[0] ? npm[0].toString().replace(/\n/, '') : '';
 
