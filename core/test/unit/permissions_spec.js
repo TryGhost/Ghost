@@ -21,7 +21,7 @@ describe('Permissions', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -31,7 +31,7 @@ describe('Permissions', function () {
             .then(testUtils.insertDefaultApp)
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
@@ -39,13 +39,13 @@ describe('Permissions', function () {
         testUtils.clearData()
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     after(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     var testPerms = [
@@ -109,7 +109,7 @@ describe('Permissions', function () {
                 actionsMap.should.equal(permissions.actionsMap);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
     });
 
     it('can add user to role', function (done) {
@@ -138,7 +138,7 @@ describe('Permissions', function () {
             updatedUser.related('roles').length.should.equal(existingUserRoles + 1);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can add user permissions', function (done) {
@@ -162,7 +162,7 @@ describe('Permissions', function () {
             updatedUser.related('permissions').length.should.equal(1);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can add role permissions', function (done) {
@@ -197,7 +197,7 @@ describe('Permissions', function () {
                 updatedRole.related('permissions').length.should.equal(1);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
     });
 
     it('does not allow edit post without permission', function (done) {
@@ -220,7 +220,7 @@ describe('Permissions', function () {
             })
             .then(function () {
                 errors.logError(new Error("Allowed edit post without permission"));
-            }, done);
+            }).catch(done);
     });
 
     it('allows edit post with permission', function (done) {
@@ -259,7 +259,7 @@ describe('Permissions', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('can use permissable function on Model to allow something', function (done) {
@@ -283,7 +283,7 @@ describe('Permissions', function () {
 
                 done();
             })
-            .otherwise(function () {
+            .catch(function () {
                 permissableStub.restore();
                 errors.logError(new Error("Did not allow testUser"));
 
@@ -311,7 +311,7 @@ describe('Permissions', function () {
 
                 done(new Error("Allowed testUser to edit post"));
             })
-            .otherwise(function () {
+            .catch(function () {
                 permissableStub.restore();
                 permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }).should.equal(true);
                 done();
@@ -325,7 +325,7 @@ describe('Permissions', function () {
             effectivePermissions.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can check an apps effective permissions', function (done) {
@@ -337,7 +337,7 @@ describe('Permissions', function () {
 
                 done();
             })
-            .otherwise(done);
+            .catch(done);
     });
 
     it('does not allow an app to edit a post without permission', function (done) {
@@ -370,7 +370,7 @@ describe('Permissions', function () {
                     .then(function () {
                         return results;
                     })
-                    .otherwise(function (err) {
+                    .catch(function (err) {
                         done(new Error("Did not allow user 1 to edit post 1"));
                     });
             })
@@ -385,10 +385,10 @@ describe('Permissions', function () {
                     .then(function () {
                         done(new Error("Allowed an edit of post 1"));
                     })
-                    .otherwise(function () {
+                    .catch(function () {
                         done();
                     });
-            }).otherwise(done);
+            }).catch(done);
     });
 
     it('allows an app to edit a post with permission', function (done) {
@@ -398,7 +398,7 @@ describe('Permissions', function () {
             .then(function () {
                 done();
             })
-            .otherwise(function () {
+            .catch(function () {
                 done(new Error("Allowed an edit of post 1"));
             });
     });
@@ -410,7 +410,7 @@ describe('Permissions', function () {
             .then(function () {
                 done(new Error("Should not allow editing post"));
             })
-            .otherwise(function () {
+            .catch(function () {
                 done();
             });
     });
@@ -423,7 +423,7 @@ describe('Permissions', function () {
             .then(function () {
                 done();
             })
-            .otherwise(function () {
+            .catch(function () {
                 done(new Error("Should allow editing post with 'internal'"));
             });
     });
@@ -436,7 +436,7 @@ describe('Permissions', function () {
             .then(function () {
                 done();
             })
-            .otherwise(function () {
+            .catch(function () {
                 done(new Error("Should allow editing post with { internal: true }"));
             });
     });

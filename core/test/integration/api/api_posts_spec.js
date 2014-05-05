@@ -11,7 +11,7 @@ describe('Post API', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -21,13 +21,13 @@ describe('Post API', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -38,7 +38,7 @@ describe('Post API', function () {
             results.posts.length.should.be.above(0);
             testUtils.API.checkResponse(results.posts[0], 'post');
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can read', function (done) {
@@ -63,6 +63,6 @@ describe('Post API', function () {
             testUtils.API.checkResponse(post.tags[0], 'tag');
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

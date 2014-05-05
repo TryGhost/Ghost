@@ -23,8 +23,8 @@ describe('Middleware', function () {
             };
 
             api.notifications.destroyAll().then(function () {
-                return done();
-            });
+                done();
+            }).catch(done);
         });
 
         it('should redirect to signin path', function (done) {
@@ -33,8 +33,8 @@ describe('Middleware', function () {
 
             middleware.auth(req, res, null).then(function () {
                 assert(res.redirect.calledWithMatch('/ghost/signin/'));
-                return done();
-            });
+                done();
+            }).catch(done);
 
         });
 
@@ -44,8 +44,8 @@ describe('Middleware', function () {
             req.path = '/ghost/' + path;
             middleware.auth(req, res, null).then(function () {
                 assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return done();
-            });
+                done();
+            }).catch(done);
         });
 
         it('should only add one message to the notification array', function (done) {
@@ -57,15 +57,15 @@ describe('Middleware', function () {
                 return api.notifications.browse().then(function (notifications) {
                     assert.equal(notifications.length, 1);
                     return;
-                });
+                }).catch(done);
             }).then(function () {
                 return middleware.auth(req, res, null);
             }).then(function () {
                 assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
                 return api.notifications.browse().then(function (notifications) {
                     assert.equal(notifications.length, 1);
-                    return done();
-                });
+                    done();
+                }).catch(done);
             });
         });
 
@@ -75,7 +75,7 @@ describe('Middleware', function () {
             middleware.auth(req, res, function (a) {
                 should.not.exist(a);
                 assert(res.redirect.calledOnce.should.be.false);
-                return done();
+                done();
             });
         });
     });
@@ -97,7 +97,7 @@ describe('Middleware', function () {
         it('should return a json 401 error response', function (done) {
             middleware.authAPI(req, res, null);
             assert(res.json.calledWith(401, { error: 'Please sign in' }));
-            return done();
+            done();
         });
 
         it('should call next if a user exists in session', function (done) {
@@ -106,7 +106,7 @@ describe('Middleware', function () {
             middleware.authAPI(req, res, function (a) {
                 should.not.exist(a);
                 assert(res.redirect.calledOnce.should.be.false);
-                return done();
+                done();
             });
         });
     });
@@ -129,14 +129,14 @@ describe('Middleware', function () {
 
             middleware.redirectToDashboard(req, res, null);
             assert(res.redirect.calledWithMatch('/ghost/'));
-            return done();
+            done();
         });
 
         it('should call next if no user in session', function (done) {
             middleware.redirectToDashboard(req, res, function (a) {
                 should.not.exist(a);
                 assert(res.redirect.calledOnce.should.be.false);
-                return done();
+                done();
             });
         });
     });
@@ -162,7 +162,7 @@ describe('Middleware', function () {
                 });
             }).then(function () {
                 done();
-            });
+            }).catch(done);
         });
 
         it('should clean all passive messages', function (done) {
@@ -173,8 +173,8 @@ describe('Middleware', function () {
                         return notification.status === 'passive';
                     });
                     assert.equal(passiveMsgs.length, 0);
-                    return done();
-                });
+                    done();
+                }).catch(done);
             });
         });
     });
@@ -193,7 +193,7 @@ describe('Middleware', function () {
                 should.not.exist(a);
                 res.set.calledOnce.should.be.true;
                 res.set.calledWith({'Cache-Control': 'public, max-age=0'});
-                return done();
+                done();
             });
         });
 
@@ -202,7 +202,7 @@ describe('Middleware', function () {
                 should.not.exist(a);
                 res.set.calledOnce.should.be.true;
                 res.set.calledWith({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
-                return done();
+                done();
             });
         });
 
@@ -210,7 +210,7 @@ describe('Middleware', function () {
             middleware.cacheControl()(null, res, function (a) {
                 should.not.exist(a);
                 res.set.called.should.be.false;
-                return done();
+                done();
             });
         });
     });
@@ -239,7 +239,7 @@ describe('Middleware', function () {
                 assert.equal(a, 1);
                 assert.equal(b, 2);
                 assert.equal(c, 3);
-                return done();
+                done();
             })(req, res, next);
         });
 
@@ -247,7 +247,7 @@ describe('Middleware', function () {
             middleware.whenEnabled('rando', cbFn)(null, null, function (a) {
                 should.not.exist(a);
                 cbFn.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
     });
@@ -269,7 +269,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
@@ -281,7 +281,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
@@ -293,7 +293,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
@@ -310,7 +310,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (reqArg, res, next) {
                 middleware.forwardToExpressStatic.calledOnce.should.be.true;
                 assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], req);
-                return done();
+                done();
             });
         });
     });

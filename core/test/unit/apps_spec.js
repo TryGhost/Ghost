@@ -148,7 +148,7 @@ describe('Apps', function () {
                     appProxy.filters.deregister('testFilter', 5, filterStub);
                     done();
                 })
-                .otherwise(done);
+                .catch(done);
         });
 
         it('does not allow filter registration without permission', function () {
@@ -201,7 +201,7 @@ describe('Apps', function () {
                     filterStub.called.should.equal(false);
                     done();
                 })
-                .otherwise(done);
+                .catch(done);
         });
 
         it('does not allow filter deregistration without permission', function () {
@@ -358,7 +358,7 @@ describe('Apps', function () {
             deps.install().then(function () {
                 deps.spawnCommand.calledWith('npm').should.equal(true);
                 done();
-            }).otherwise(done);
+            }).catch(done);
 
             _.delay(function () {
                 fakeEmitter.emit('exit');
@@ -373,7 +373,7 @@ describe('Apps', function () {
             deps.install().then(function () {
                 deps.spawnCommand.called.should.equal(false);
                 done();
-            }).otherwise(done);
+            }).catch(done);
 
             _.defer(function () {
                 fakeEmitter.emit('exit');
@@ -441,7 +441,7 @@ describe('Apps', function () {
                 readPerms.should.equal(AppPermissions.DefaultPermissions);
 
                 done();
-            }).otherwise(done);
+            }).catch(done);
         });
         it('uses default permissions if no ghost object in package.json', function (done) {
             var perms = new AppPermissions("test"),
@@ -458,7 +458,7 @@ describe('Apps', function () {
                 readPerms.should.equal(AppPermissions.DefaultPermissions);
 
                 done();
-            }).otherwise(done);
+            }).catch(done);
         });
         it('rejects when reading malformed package.json', function (done) {
             var perms = new AppPermissions("test");
@@ -470,7 +470,8 @@ describe('Apps', function () {
 
             perms.read().then(function (readPerms) {
                 done(new Error('should not resolve'));
-            }).otherwise(function () {
+            }).catch(function (err) {
+                err.message.should.equal('package.json file is malformed');
                 done();
             });
         });
@@ -500,7 +501,7 @@ describe('Apps', function () {
                 _.keys(readPerms).length.should.equal(3);
 
                 done();
-            }).otherwise(done);
+            }).catch(done);
         });
     });
 });

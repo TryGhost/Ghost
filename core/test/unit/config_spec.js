@@ -35,13 +35,13 @@ describe('Config', function () {
 
             theme.update(settings, 'http://my-ghost-blog.com')
                 .then(done)
-                .then(null, done);
+                .catch(done);
         });
 
         afterEach(function (done) {
             theme.update(settings, defaultConfig.url)
                 .then(done)
-                .then(null, done);
+                .catch(done);
 
             sandbox.restore();
         });
@@ -295,7 +295,7 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
 
         });
 
@@ -336,7 +336,7 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('should output correct url for page with date permalink', function (done) {
@@ -372,7 +372,7 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 });

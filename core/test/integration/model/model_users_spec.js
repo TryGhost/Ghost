@@ -17,7 +17,7 @@ describe('User Model', function run() {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
@@ -30,7 +30,7 @@ describe('User Model', function run() {
         beforeEach(function (done) {
             testUtils.initData().then(function () {
                 done();
-            }, done);
+            }).catch(done);
         });
 
         it('can add first', function (done) {
@@ -46,7 +46,7 @@ describe('User Model', function run() {
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
                 gravatarStub.restore();
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('does NOT lowercase email', function (done) {
@@ -61,7 +61,7 @@ describe('User Model', function run() {
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
                 gravatarStub.restore();
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can find gravatar', function (done) {
@@ -77,7 +77,7 @@ describe('User Model', function run() {
                 createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
                 gravatarStub.restore();
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can handle no gravatar', function (done) {
@@ -92,7 +92,7 @@ describe('User Model', function run() {
                 should.not.exist(createdUser.image);
                 gravatarStub.restore();
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can find by email and is case insensitive', function (done) {
@@ -125,7 +125,7 @@ describe('User Model', function run() {
                 });
             }).then(function () {
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -138,7 +138,7 @@ describe('User Model', function run() {
                 })
                 .then(function () {
                     done();
-                }, done);
+                }).catch(done);
         });
 
         it('sets last login time on successful login', function (done) {
@@ -147,7 +147,7 @@ describe('User Model', function run() {
             UserModel.check({email: userData.email, pw:userData.password}).then(function (activeUser) {
                 should.exist(activeUser.get('last_login'));
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can\'t add second', function (done) {
@@ -156,7 +156,7 @@ describe('User Model', function run() {
             return UserModel.add(userData, {user: 1}).then(done, function (failure) {
                 failure.message.should.eql('A user is already registered. Only one user for now!');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can browse', function (done) {
@@ -168,7 +168,7 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can read', function (done) {
@@ -192,7 +192,7 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
 
         });
 
@@ -217,7 +217,7 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can delete', function (done) {
@@ -253,7 +253,7 @@ describe('User Model', function run() {
                 hasDeletedId.should.equal(false);
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can generate reset token', function (done) {
@@ -271,7 +271,7 @@ describe('User Model', function run() {
                 token.length.should.be.above(0);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can validate a reset token', function (done) {
@@ -291,7 +291,7 @@ describe('User Model', function run() {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can reset a password with a valid token', function (done) {
@@ -321,7 +321,7 @@ describe('User Model', function run() {
                 resetPassword.should.not.equal(origPassword);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('doesn\'t allow expired timestamp tokens', function (done) {
@@ -341,7 +341,7 @@ describe('User Model', function run() {
                 return UserModel.validateToken(token, dbHash);
             }).then(function () {
                 throw new Error("Allowed expired token");
-            }, function (err) {
+            }).catch(function (err) {
 
                 should.exist(err);
 
@@ -376,7 +376,7 @@ describe('User Model', function run() {
 
             }).then(function () {
                 throw new Error("allowed invalid token");
-            }, function (err) {
+            }).catch(function (err) {
 
                 should.exist(err);
 

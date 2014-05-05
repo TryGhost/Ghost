@@ -15,19 +15,19 @@ describe("Permission Model", function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it("can browse permissions", function (done) {
@@ -45,7 +45,7 @@ describe("Permission Model", function () {
             should.exist(foundPermission);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can edit permissions", function (done) {
@@ -61,7 +61,7 @@ describe("Permission Model", function () {
             updatedPermission.get("name").should.equal("updated");
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can add permissions", function (done) {
@@ -77,7 +77,7 @@ describe("Permission Model", function () {
             createdPerm.attributes.name.should.equal(newPerm.name);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can delete permissions", function (done) {
@@ -95,6 +95,6 @@ describe("Permission Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

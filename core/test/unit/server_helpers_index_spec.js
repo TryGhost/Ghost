@@ -292,7 +292,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('home-template');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can render class string for context', function (done) {
@@ -318,7 +318,7 @@ describe('Core Helpers', function () {
                 rendered[4].string.should.equal('archive-template tag-template tag-foo');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can render class for static page', function (done) {
@@ -332,7 +332,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('home-template page');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can render class for static page with custom template', function (done) {
@@ -348,7 +348,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('post-template page page-template-about');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -362,7 +362,7 @@ describe('Core Helpers', function () {
                 should.exist(rendered);
                 rendered.string.should.equal('post');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can render featured class', function (done) {
@@ -373,7 +373,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('post featured');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can render page class', function (done) {
@@ -384,7 +384,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('post page');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -409,7 +409,7 @@ describe('Core Helpers', function () {
                     '<link rel="canonical" href="http://testurl.com/" />');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('returns meta tag string even if version is invalid', function (done) {
@@ -421,7 +421,7 @@ describe('Core Helpers', function () {
                     '<link rel="canonical" href="http://testurl.com/" />');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('returns correct rss url with subdirectory', function (done) {
@@ -433,7 +433,7 @@ describe('Core Helpers', function () {
                     '<link rel="canonical" href="http://testurl.com/blog/" />');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('returns canonical URL', function (done) {
@@ -445,7 +445,7 @@ describe('Core Helpers', function () {
                     '<link rel="canonical" href="http://testurl.com/about/" />');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -462,7 +462,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.match(/<script src=".*\/public\/jquery.js\?v=abc"><\/script>/);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('outputs correct jquery for production mode', function (done) {
@@ -474,7 +474,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.match(/<script src=".*\/public\/jquery.min.js\?v=abc"><\/script>/);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -872,7 +872,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('Ghost');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can return title of a post', function (done) {
@@ -882,7 +882,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('Post Title');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can return tag name', function (done) {
@@ -892,7 +892,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('foo - Ghost');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -908,7 +908,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('Just a blogging platform.');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can return empty description on post', function (done) {
@@ -918,7 +918,7 @@ describe('Core Helpers', function () {
                 rendered.string.should.equal('');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
     });
@@ -1206,7 +1206,7 @@ describe('Core Helpers', function () {
                 rendered.should.equal(classOutput);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('does NOT output a correctly formatted notification when db version equals package version', function (done) {
@@ -1219,7 +1219,7 @@ describe('Core Helpers', function () {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('does NOT output a notification if updateCheck is false', function (done) {
@@ -1234,7 +1234,7 @@ describe('Core Helpers', function () {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('does NOT output a notification if the user is not logged in', function (done) {
@@ -1249,7 +1249,7 @@ describe('Core Helpers', function () {
                 should.exist(rendered);
                 rendered.should.equal('');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 });

@@ -125,7 +125,7 @@ describe("Filters", function () {
             newArgs.filter3.should.equal(true);
 
             done();
-        });
+        }).catch(done);
     });
 
     it("executes filters with a context", function (done) {
@@ -147,7 +147,7 @@ describe("Filters", function () {
             newArgs.context1.should.equal(true);
             newArgs.context2.should.equal(true);
             done();
-        });
+        }).catch(done);
     });
 
 });

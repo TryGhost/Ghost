@@ -67,7 +67,7 @@ describe('Admin Routing', function () {
                 return testUtils.initData();
             }).then(function () {
                 done();
-            }, done);
+            }).catch(done);
         }).otherwise(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
@@ -126,8 +126,8 @@ describe('Admin Routing', function () {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
-                }, done)
-                .then(done);
+                }).then(done)
+                .catch(done);
         });
         
         after(function (done) {
@@ -162,8 +162,8 @@ describe('Admin Routing', function () {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
-                }, done)
-                .then(done);
+                }).then(done)
+                .catch(done);
         });
         
         after(function (done) {
@@ -342,7 +342,7 @@ describe('Authenticated Admin Routing', function () {
                             });
 
                         });
-                }, done);
+                }).catch(done);
         }).otherwise(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
