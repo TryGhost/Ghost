@@ -19,10 +19,10 @@ mail = {
         // **returns:** a promise from the mailer with the number of successfully sent emails
         return mailer.send(message)
             .then(function (data) {
-                return when.resolve({ code: 200, message: data.message });
+                return when.resolve({message: data.message });
             })
             .otherwise(function (error) {
-                return when.reject({ code: 500, message: error.message });
+                return when.reject({type: 'EmailError', message: error.message });
             });
     },
     

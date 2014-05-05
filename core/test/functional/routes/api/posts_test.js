@@ -273,7 +273,8 @@ describe('Post API', function () {
                     res.should.be.json;
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                    jsonResponse.errors.should.exist;
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                     done();
                 });
         });
@@ -290,7 +291,8 @@ describe('Post API', function () {
                     res.should.be.json;
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                    jsonResponse.errors.should.exist;
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                     done();
                 });
         });
@@ -307,7 +309,8 @@ describe('Post API', function () {
                     res.should.be.json;
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                    jsonResponse.errors.should.exist;
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                     done();
                 });
         });
@@ -597,7 +600,9 @@ describe('Post API', function () {
                             var putBody = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
-                            testUtils.API.checkResponseValue(putBody, ['error']);
+                            jsonResponse = res.body;
+                            jsonResponse.errors.should.exist;
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                             done();
                         });
                 });
@@ -637,7 +642,8 @@ describe('Post API', function () {
                     res.should.be.json;
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                    jsonResponse.errors.should.exist;
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                     done();
                 });
         });

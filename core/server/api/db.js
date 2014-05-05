@@ -21,10 +21,10 @@ db = {
         // Export data, otherwise send error 500
         return canThis(self.user).exportContent.db().then(function () {
             return dataExport().otherwise(function (error) {
-                return when.reject({errorCode: 500, message: error.message || error});
+                return when.reject({type: 'InternalServerError', message: error.message || error});
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to export data. (no rights)'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
         });
     },
     'importContent': function (options) {
@@ -41,7 +41,7 @@ db = {
                  * - If there is no path
                  * - If the name doesn't have json in it
                  */
-                return when.reject({code: 500, message: 'Please select a .json file to import.'});
+                return when.reject({type: 'InternalServerError', message: 'Please select a .json file to import.'});
             }
 
             return api.settings.read({ key: 'databaseVersion' }).then(function (response) {
@@ -92,13 +92,13 @@ db = {
             }).then(function () {
                 return when.resolve({message: 'Posts, tags and other data successfully imported'});
             }).otherwise(function importFailure(error) {
-                return when.reject({code: 500, message: error.message || error});
+                return when.reject({type: 'InternalServerError', message: error.message || error});
             }).finally(function () {
                 // Unlink the file after import
                 return nodefn.call(fs.unlink, options.importfile.path);
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to export data. (no rights)'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
         });
     },
     'deleteAllContent': function () {
@@ -109,10 +109,10 @@ db = {
                 .then(function () {
                     return when.resolve({message: 'Successfully deleted all content from your blog.'});
                 }, function (error) {
-                    return when.reject({code: 500, message: error.message || error});
+                    return when.reject({message: error.message || error});
                 });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to export data. (no rights)'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
         });
     }
 };
