@@ -311,43 +311,18 @@ var path           = require('path'),
                 }
             },
 
-            // ### grunt-groc
-            // Generate documentation from code
-            groc: {
-                docs: {
-                    options: {
-                        out: './docs/',
-                        glob: [
-                            'README.md',
-                            'CONTRIBUTING.md',
-                            'SECURITY.md',
-                            'Gruntfile.js',
-                            'config.example.js',
-                            'index.js',
-                            'core/*.js',
-                            'core/server/**/*.js',
-                            'core/shared/**/*.js',
-                            'core/client/**/*.js'
-                        ],
-                        except: [
-                            '!core/**/vendor/**/*.js',
-                            '!core/client/tpl/**/*.js'
-                        ]
-                    }
-                }
-            },
-
             // ### grunt-docker
             // Generate documentation from code
             docker: {
                 docs: {
-                    dest: 'docks',
+                    dest: 'docs',
                     src: ['.'],
                     options: {
-                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,config.js,coverage.html,.travis.yml',
+                        onlyUpdated: true,
+                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,' +
+                            'config.js,coverage.html,.travis.yml,*.min.css,screen.css',
                         extras: ['fileSearch']
                     }
-
                 }
             },
 
@@ -621,7 +596,7 @@ var path           = require('path'),
 
         // ### Documentation
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
-        grunt.registerTask('docs', 'Generate Docs', ['docker', 'groc']);
+        grunt.registerTask('docs', 'Generate Docs', ['docker']);
 
 
         // ## Testing
@@ -850,7 +825,7 @@ var path           = require('path'),
             'Release task - creates a final built zip\n' +
             ' - Do our standard build steps (handlebars, etc)\n' +
             ' - Copy files to release-folder/#/#{version} directory\n' +
-            ' - Clean out unnecessary files (travis, .git*, .af*, .groc*)\n' +
+            ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
             ['shell:bower', 'handlebars', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
     };
