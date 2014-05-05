@@ -96,7 +96,14 @@
             if (request.status !== 200) {
                 try {
                     // Try to parse out the error, or default to "Unknown"
-                    message =  request.responseJSON.error || "Unknown Error";
+                    if (request.responseJSON.errors && _.isArray(request.responseJSON.errors)) {
+                        message = '';
+                        _.each(request.responseJSON.errors, function (errorItem) {
+                            message += '<br/>' + errorItem.message;
+                        });
+                    } else {
+                        message =  request.responseJSON.error || "Unknown Error";
+                    }
                 } catch (e) {
                     msgDetail = request.status ? request.status + " - " + request.statusText : "Server was not available";
                     message = "The server returned an error (" + msgDetail + ").";
