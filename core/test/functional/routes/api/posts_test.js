@@ -70,12 +70,12 @@ describe('Post API', function () {
                             });
 
                         });
-                }, done);
-        }).otherwise(function (e) {
+                }).catch(done);
+        }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
         });
-    });    
+    });
 
     after(function () {
         httpServer.close();

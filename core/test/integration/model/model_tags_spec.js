@@ -15,20 +15,20 @@ describe('Tag Model', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
         testUtils.initData()
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     describe('a Post', function () {
@@ -53,7 +53,7 @@ describe('Tag Model', function () {
             }).then(function (postWithTag) {
                 postWithTag.related('tags').length.should.equal(1);
                 done();
-            }).then(null, done);
+            }).catch(done);
 
         });
 
@@ -85,7 +85,7 @@ describe('Tag Model', function () {
             }).then(function (postWithoutTag) {
                 postWithoutTag.related('tags').length.should.equal(0);
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         describe('setting tags from an array on update', function () {
@@ -135,8 +135,7 @@ describe('Tag Model', function () {
                     tagsFromDB.length.should.eql(seededTagNames.length + 1);
 
                     done();
-                }).then(null, done);
-
+                }).catch(done);
             });
 
             it('detaches tags that have been removed', function (done) {
@@ -156,7 +155,7 @@ describe('Tag Model', function () {
                     tagNames.sort().should.eql(['tag1', 'tag3']);
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('attaches tags that are new to the post, but already exist in the database', function (done) {
@@ -186,7 +185,7 @@ describe('Tag Model', function () {
                     Math.max.apply(Math, tagIds).should.eql(4);
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('creates and attaches a tag that is new to the Tags table', function (done) {
@@ -206,7 +205,7 @@ describe('Tag Model', function () {
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('creates and attaches multiple tags that are new to the Tags table', function (done) {
@@ -227,7 +226,7 @@ describe('Tag Model', function () {
                     tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('attaches one tag that exists in the Tags database and one tag that is new to the Tags database', function (done) {
@@ -262,7 +261,7 @@ describe('Tag Model', function () {
                     Math.max.apply(Math, tagIds).should.eql(4);
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('attaches one tag that exists in the Tags database and two tags that are new to the Tags database', function (done) {
@@ -298,7 +297,7 @@ describe('Tag Model', function () {
                     Math.max.apply(Math, tagIds).should.eql(5); 
 
                     done();
-                }).then(null, done);
+                }).catch(done);
             });
 
             it('can add a tag to a post on creation', function (done) {
@@ -309,7 +308,7 @@ describe('Tag Model', function () {
                 }).then(function (postWithTag) {
                     postWithTag.related('tags').length.should.equal(1);
                     done();
-                }).then(null, done);
+                }).catch(done);
 
             });
         });

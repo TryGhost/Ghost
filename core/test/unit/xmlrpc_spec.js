@@ -40,7 +40,7 @@ describe('XMLRPC', function () {
             ping2.isDone().should.be.true;
 
             done();
-        });
+        }).catch(done);
     });
 
 });

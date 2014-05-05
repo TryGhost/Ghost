@@ -39,7 +39,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
             return done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should send correct path to image when original file has spaces', function (done) {
@@ -47,7 +47,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/AN-IMAGE.jpg');
             return done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should send correct path to image when date is in Jan 2014', function (done) {
@@ -56,7 +56,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2014/Jan/IMAGE.jpg');
             return done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should create month and year directory', function (done) {
@@ -64,7 +64,7 @@ describe('Local File System Storage', function () {
             fs.mkdirs.calledOnce.should.be.true;
             fs.mkdirs.args[0][0].should.equal(path.resolve('./content/images/2013/Sep'));
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should copy temp file to new location', function (done) {
@@ -73,7 +73,7 @@ describe('Local File System Storage', function () {
             fs.copy.args[0][0].should.equal('tmp/123456.jpg');
             fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/Sep/IMAGE.jpg'));
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should not leave temporary file when uploading', function (done) {
@@ -81,7 +81,7 @@ describe('Local File System Storage', function () {
             fs.unlink.calledOnce.should.be.true;
             fs.unlink.args[0][0].should.equal('tmp/123456.jpg');
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can upload two different images with the same name without overwriting the first', function (done) {
@@ -98,7 +98,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE-1.jpg');
             return done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can upload five different images with the same name without overwriting the first', function (done) {
@@ -120,7 +120,7 @@ describe('Local File System Storage', function () {
         localfilesystem.save(image).then(function (url) {
             url.should.equal('/content/images/2013/Sep/IMAGE-4.jpg');
             return done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     describe('when a custom content path is used', function () {
@@ -141,7 +141,7 @@ describe('Local File System Storage', function () {
             localfilesystem.save(image).then(function (url) {
                 url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
                 return done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -171,7 +171,7 @@ describe('Local File System Storage', function () {
                     path.normalize(url).should.equal('/content/images/2013/Sep/IMAGE.jpg');
                 }
                 return done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 });

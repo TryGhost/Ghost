@@ -48,7 +48,7 @@ describe('Bootstrap', function () {
             config.server.port.should.equal(defaultConfig.server.port);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('uses the passed in config file location', function (done) {
@@ -60,7 +60,7 @@ describe('Bootstrap', function () {
             config.server.port.should.equal(defaultConfig.server.port);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('creates the config file if one does not exist', function (done) {
@@ -81,7 +81,7 @@ describe('Bootstrap', function () {
             existsStub.calledOnce.should.be.true;
             resolvedPromise.calledTwice.should.be.true;
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('accepts valid urls', function (done) {
@@ -116,73 +116,73 @@ describe('Bootstrap', function () {
             localConfig.url.should.equal('//testurl.com');
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('rejects invalid urls', function (done) {
         // replace the config file with invalid data
         overrideConfig({url: 'notvalid'});
 
-        bootstrap().otherwise(function (error) {
+        bootstrap().catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({url: 'something.com'});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             done();
         }).then(function () {
             should.fail('no error was thrown when it should have been');
             done();
-        }).then(done, null);
+        });
     });
 
     it('does not permit subdirectories named ghost', function (done) {
         // replace the config file with invalid data
         overrideConfig({url: 'http://testurl.com/ghost/'});
 
-        bootstrap().otherwise(function (error) {
+        bootstrap().catch(function (error) {
             error.should.include(rejectMessage);
 
              // Next test
             overrideConfig({url: 'http://testurl.com/ghost/blog/'});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({url: 'http://testurl.com/blog/ghost'});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             done();
         }).then(function () {
             should.fail('no error was thrown when it should have been');
             done();
-        }).then(done, null);
+        });
     });
 
     it('requires a database config', function (done) {
         // replace the config file with invalid data
         overrideConfig({database: null});
 
-        bootstrap().otherwise(function (error) {
+        bootstrap().catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({database: {}});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             done();
         }).then(function () {
             should.fail('no error was thrown when it should have been');
             done();
-        }).then(done, null);
+        });
     });
 
 
@@ -196,31 +196,31 @@ describe('Bootstrap', function () {
               // Next test
             overrideConfig({server: null});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({server: {host: null}});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({server: {port: null}});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             // Next test
             overrideConfig({server: {host: null, port: null}});
             return bootstrap();
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             error.should.include(rejectMessage);
 
             done();
         }).then(function () {
             should.fail('no error was thrown when it should have been');
             done();
-        }).then(done, null);
+        });
     });
 });

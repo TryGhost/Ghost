@@ -11,7 +11,7 @@ describe('Notifications API', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -21,13 +21,13 @@ describe('Notifications API', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -43,7 +43,7 @@ describe('Notifications API', function () {
                 results.length.should.be.above(0);
                 testUtils.API.checkResponse(results[0], 'notification');
                 done();
-            });
+            }).catch(done);
         });
     });
 });

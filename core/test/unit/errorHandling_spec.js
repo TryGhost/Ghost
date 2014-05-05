@@ -366,6 +366,6 @@ describe('Error handling', function () {
                 next = null;
             errors.updateActiveTheme('theme-with-error');
             errors.renderErrorPage(code, error, req, res, next);
-        })
+        });
     });
 });
