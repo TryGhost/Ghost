@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: ko
 layout: installation
 meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
 meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 한국어 가이드입니다.
@@ -44,7 +44,7 @@ Ghost는 기본으로 모든 사용자 데이터, 테마, 이미지 등을 <code
 
 로컬 장치의 Ghost를 업그레이드하는 방법
 
-<p class="warn"><strong>경고:</strong> 기존의 Ghost 폴더에 새 Ghost 폴더 전체를 복사 및 붙여넣기하여 덮어씌우지 <strong>마십시오</strong>. Transmit과 같은 다른 FTP 소프트웨어를 사용할 때 <kbd>대치</kbd>를 사용하시지 마시고 <strong>병합</strong>을 선택하십시오.</p>
+<p class="warn"><strong>경고:</strong> 기존의 Ghost 폴더에 새 Ghost 폴더 전체를 복사 및 붙여넣기하여 덮어씌우지 <strong>마십시오</strong>. Transmit과 같은 다른 FTP 소프트웨어를 사용할 때 <kbd>대치</kbd>를 선택하시지 마시고 <strong>병합</strong>을 선택하십시오.</p>
 
 *   [Ghost.org](http://ghost.org/download/)으로부터 최신 버전의 Ghost를 다운로드하세요.
 *   임시 폴더에 Ghost를 압축 해제하세요.
