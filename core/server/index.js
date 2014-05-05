@@ -46,9 +46,7 @@ function doFirstRun() {
 
     return api.notifications.add({
         type: 'info',
-        message: firstRunMessage.join(' '),
-        status: 'persistent',
-        id: 'ghost-first-run'
+        message: firstRunMessage.join(' ')
     });
 }
 

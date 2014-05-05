@@ -70,8 +70,7 @@ var middleware = {
                     msg = {
                         type: 'error',
                         message: 'Please Sign In',
-                        status: 'passive',
-                        id: 'failedauth'
+                        status: 'passive'
                     };
                     // let's only add the notification once
                     if (!_.contains(_.pluck(notifications, 'id'), 'failedauth')) {
@@ -110,10 +109,11 @@ var middleware = {
     // That being ghost.notifications, and let's remove the passives from there
     // plus the local messages, as they have already been added at this point
     // otherwise they'd appear one too many times
+    // ToDo: Remove once ember handles passive notifications.
     cleanNotifications: function (req, res, next) {
         /*jslint unparam:true*/
         api.notifications.browse().then(function (notifications) {
-            _.each(notifications, function (notification) {
+            _.each(notifications.notifications, function (notification) {
                 if (notification.status === 'passive') {
                     api.notifications.destroy(notification);
                 }
