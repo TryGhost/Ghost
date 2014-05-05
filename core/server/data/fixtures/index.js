@@ -71,9 +71,14 @@ var fixtures = {
 
     permissions003: [
         {
-            "name":             "Get slug",
-            "action_type":      "slug",
-            "object_type":      "post"
+            "name":             "Generate post slug",
+            "action_type":      "generate",
+            "object_type":      "slug"
+        },
+        {
+            "name":             "Generate tag slug",
+            "action_type":      "generate",
+            "object_type":      "slug"
         },
         {
             "name":             "Export database",
@@ -185,7 +190,7 @@ populateFixtures = function () {
         Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
             Permissions.forge().fetch().then(function (perms) {
                 var editor_perm = _.map(perms.toJSON(), function (perm) {
-                    if (perm.object_type === 'post' || perm.object_type === 'user') {
+                    if (perm.object_type === 'post' || perm.object_type === 'user' || perm.object_type === 'slug') {
                         return perm.id;
                     }
                     if (perm.object_type === 'setting' &&
@@ -198,12 +203,14 @@ populateFixtures = function () {
             });
         });
 
-        // author gets access to post.add, post.slug, settings.browse, settings.read, users.browse and users.read
+        // author gets access to post.add, slug.generate, settings.browse, settings.read, users.browse and users.read
         Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
             Permissions.forge().fetch().then(function (perms) {
                 var author_perm = _.map(perms.toJSON(), function (perm) {
-                    if (perm.object_type === 'post' &&
-                            (perm.action_type === 'add' || perm.action_type === 'slug')) {
+                    if (perm.object_type === 'post' && perm.action_type === 'add') {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'slug' && perm.action_type === 'generate') {
                         return perm.id;
                     }
                     if (perm.object_type === 'setting' &&
@@ -272,8 +279,10 @@ updateFixtures = function () {
         Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
             Permissions.forge().fetch().then(function (perms) {
                 var author_perm = _.map(perms.toJSON(), function (perm) {
-                    if (perm.object_type === 'post' &&
-                            (perm.action_type === 'add' || perm.action_type === 'slug')) {
+                    if (perm.object_type === 'post' && perm.action_type === 'add') {
+                        return perm.id;
+                    }
+                    if (perm.object_type === 'slug' && perm.action_type === 'generate') {
                         return perm.id;
                     }
                     if (perm.object_type === 'setting' &&

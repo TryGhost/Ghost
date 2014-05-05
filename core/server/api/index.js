@@ -13,13 +13,14 @@ var _             = require('lodash'),
     tags          = require('./tags'),
     themes        = require('./themes'),
     users         = require('./users'),
+    slugs         = require('./slugs'),
 
     http,
     formatHttpErrors,
     cacheInvalidationHeader,
     locationHeader,
     contentDispositionHeader,
-    init,
+    init;
 
 /**
  * ### Init
@@ -247,5 +248,6 @@ module.exports = {
     settings: settings,
     tags: tags,
     themes: themes,
-    users: users
+    users: users,
+    slugs: slugs
 };
