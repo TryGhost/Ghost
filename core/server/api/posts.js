@@ -9,7 +9,7 @@ var when                   = require('when'),
 
 function checkPostData(postData) {
     if (_.isEmpty(postData) || _.isEmpty(postData.posts) || _.isEmpty(postData.posts[0])) {
-        return when.reject({code: 400, message: 'No root key (\'posts\') provided.'});
+        return when.reject({type: 'BadRequest', message: 'No root key (\'posts\') provided.'});
     }
     return when.resolve(postData);
 }
@@ -86,7 +86,7 @@ posts = {
                 return { posts: [ omitted ]};
             }
 
-            return when.reject({code: 404, message: 'Post not found'});
+            return when.reject({type: 'NotFound', message: 'Post not found.'});
 
         });
     },
@@ -119,10 +119,10 @@ posts = {
                     return { posts: [ omitted ]};
                 }
 
-                return when.reject({code: 404, message: 'Post not found'});
+                return when.reject({type: 'NotFound', message: 'Post not found.'});
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to edit this post.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to edit this post.'});
         });
     },
 
@@ -152,7 +152,7 @@ posts = {
                 return { posts: [ omitted ]};
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to add posts.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to add posts.'});
         });
     },
 
@@ -177,7 +177,7 @@ posts = {
                 });
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to remove posts.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to remove posts.'});
         });
     },
 
@@ -190,10 +190,10 @@ posts = {
                 if (slug) {
                     return slug;
                 }
-                return when.reject({code: 500, message: 'Could not generate slug'});
+                return when.reject({type: 'InternalServerError', message: 'Could not generate slug'});
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission.'});
         });
     }
 

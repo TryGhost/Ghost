@@ -232,30 +232,25 @@ Importer000.prototype.basicImport = function (data) {
         // Write changes to DB, if successful commit, otherwise rollback
         // when.all() does not work as expected, when.settle() does.
         when.settle(ops).then(function (descriptors) {
-            var rej = false,
-                error = '';
+            var errors = [];
+
             descriptors.forEach(function (d) {
                 if (d.state === 'rejected') {
-                    error += _.isEmpty(error) ? '' : '</br>';
-                    if (!_.isEmpty(d.reason.clientError)) {
-                        error += d.reason.clientError;
-                    } else if (!_.isEmpty(d.reason.message)) {
-                        error += d.reason.message;
-                    }
-                    rej = true;
+                    errors = errors.concat(d.reason);
                 }
             });
-            if (!rej) {
+
+            if (errors.length === 0) {
                 t.commit();
             } else {
-                t.rollback(error);
+                t.rollback(errors);
             }
         });
     }).then(function () {
         //TODO: could return statistics of imported items
         return when.resolve();
     }, function (error) {
-        return when.reject("Error importing data: " + error);
+        return when.reject(error);
     });
 };
 

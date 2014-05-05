@@ -257,7 +257,9 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Value in [posts.title] exceeds maximum length of 150 characters.');
+
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
+                error[0].type.should.eql('ValidationError');
 
                 when.all([
                     knex("users").select(),
@@ -303,7 +305,9 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Setting key cannot be empty.');
+
+                error[0].message.should.eql('Setting key cannot be empty.');
+                error[0].type.should.eql('ValidationError');
 
                 when.all([
                     knex("users").select(),
@@ -440,7 +444,9 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Value in [posts.title] exceeds maximum length of 150 characters.');
+
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
+                error[0].type.should.eql('ValidationError');
 
                 when.all([
                     knex("users").select(),
@@ -486,7 +492,9 @@ describe("Import", function () {
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
-                error.should.eql('Error importing data: Setting key cannot be empty.');
+
+                error[0].message.should.eql('Setting key cannot be empty.');
+                error[0].type.should.eql('ValidationError');
 
                 when.all([
                     knex("users").select(),

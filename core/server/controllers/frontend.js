@@ -160,9 +160,8 @@ frontendControllers = {
             if (permalink.match(path) === false) {
                 // If there are still no matches then return.
                 if (staticPostPermalink.match(path) === false) {
-                    // Throw specific error
-                    // to break out of the promise chain.
-                    throw new Error('no match');
+                    // Reject promise chain with type 'NotFound'
+                    return when.reject({type: 'NotFound'});
                 }
 
                 permalink = staticPostPermalink;
@@ -192,8 +191,8 @@ frontendControllers = {
                 if (params.edit === 'edit') {
                     return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
                 } else if (params.edit !== undefined) {
-                    // Use throw 'no match' to show 404.
-                    throw new Error('no match');
+                    // reject with type: 'NotFound'
+                    return when.reject({type: 'NotFound'});
                 }
 
                 setReqCtx(req, post);
@@ -249,13 +248,13 @@ frontendControllers = {
                 return next();
             }
 
-            render();
+            return render();
 
         }).otherwise(function (err) {
             // If we've thrown an error message
-            // of 'no match' then we found
+            // of type: 'NotFound' then we found
             // no path match.
-            if (err.message === 'no match') {
+            if (err.type === 'NotFound') {
                 return next();
             }
 

@@ -61,7 +61,6 @@ describe('Settings API', function () {
                                                 if (err) {
                                                     return done(err);
                                                 }
-                                                // console.log('/ghost/', err, res);
                                                 csrfToken = res.text.match(pattern_meta)[1];
                                                 done();
                                             });
@@ -133,7 +132,8 @@ describe('Settings API', function () {
                 res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
-                testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                jsonResponse.errors.should.exist;
+                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                 done();
             });
     });
@@ -222,10 +222,11 @@ describe('Settings API', function () {
                             return done(err);
                         }
 
-                        var putBody = res.body;
+                        jsonResponse = res.body;
                         should.not.exist(res.headers['x-cache-invalidate']);
                         res.should.be.json;
-                        testUtils.API.checkResponseValue(putBody, ['error']);
+                        jsonResponse.errors.should.exist;
+                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                         done();
                     });
             });

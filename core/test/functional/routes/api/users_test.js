@@ -59,7 +59,6 @@ describe('User API', function () {
                                                 if (err) {
                                                     return done(err);
                                                 }
-                                                // console.log('/ghost/', err, res);
                                                 csrfToken = res.text.match(pattern_meta)[1];
                                                 done();
                                             });
@@ -131,8 +130,8 @@ describe('User API', function () {
                 res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
-
-                testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                jsonResponse.errors.should.exist;
+                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                 done();
             });
     });
