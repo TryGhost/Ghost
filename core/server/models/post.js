@@ -1,3 +1,4 @@
+// # Post Model
 var _              = require('lodash'),
     uuid           = require('node-uuid'),
     when           = require('when'),
@@ -225,11 +226,12 @@ Post = ghostBookshelf.Model.extend({
 
         attrs.author = attrs.author || attrs.author_id;
         delete attrs.author_id;
-        
+
         return attrs;
     }
 
 }, {
+
 
     // #### findAll
     // Extends base model findAll to eager-fetch author and user relationships.
@@ -239,24 +241,6 @@ Post = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
-    // #### findOne
-    // Extends base model findOne to eager-fetch author and user relationships.
-    findOne: function (args, options) {
-        options = options || {};
-
-        args = _.extend({
-            status: 'published'
-        }, args || {});
-
-        if (args.status === 'all') {
-            delete args.status;
-        }
-
-        // Add related objects
-        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
-
-        return ghostBookshelf.Model.findOne.call(this, args, options);
-    },
 
      // #### findPage
      // Find results by page - returns an object containing the
@@ -276,51 +260,51 @@ Post = ghostBookshelf.Model.extend({
      //     }
 
     /*
-     * @params {Object} opts
+     * @params {Object} options
      */
-    findPage: function (opts) {
+    findPage: function (options) {
+        options = options || {};
+
         var postCollection = Posts.forge(),
-            tagInstance = opts.tag !== undefined ? Tag.forge({slug: opts.tag}) : false,
+            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
             permittedOptions = ['page', 'limit', 'status', 'staticPages', 'include'];
 
-        // sanitize opts so we are not automatically passing through any and all
-        // query strings to Bookshelf / Knex. Although the API requires auth, we
-        // should prevent this until such time as we can design the API properly and safely.
-        opts = _.pick(opts, permittedOptions);
+        // sanitize options so we are not automatically passing through any and all query strings to Bookshelf / Knex.
+        options = _.pick(options, permittedOptions);
 
         // Set default settings for options
-        opts = _.extend({
+        options = _.extend({
             page: 1, // pagination page
             limit: 15,
             staticPages: false, // include static pages
             status: 'published',
             where: {}
-        }, opts);
+        }, options);
 
-        if (opts.staticPages !== 'all') {
+        if (options.staticPages !== 'all') {
             // convert string true/false to boolean
-            if (!_.isBoolean(opts.staticPages)) {
-                opts.staticPages = opts.staticPages === 'true' || opts.staticPages === '1' ? true : false;
+            if (!_.isBoolean(options.staticPages)) {
+                options.staticPages = options.staticPages === 'true' || options.staticPages === '1' ? true : false;
             }
-            opts.where.page = opts.staticPages;
+            options.where.page = options.staticPages;
         }
 
         // Unless `all` is passed as an option, filter on
         // the status provided.
-        if (opts.status !== 'all') {
+        if (options.status !== 'all') {
             // make sure that status is valid
-            opts.status = _.indexOf(['published', 'draft'], opts.status) !== -1 ? opts.status : 'published';
-            opts.where.status = opts.status;
+            options.status = _.indexOf(['published', 'draft'], options.status) !== -1 ? options.status : 'published';
+            options.where.status = options.status;
         }
 
         // If there are where conditionals specified, add those
         // to the query.
-        if (opts.where) {
-            postCollection.query('where', opts.where);
+        if (options.where) {
+            postCollection.query('where', options.where);
         }
 
         // Add related objects
-        opts.withRelated = _.union([ 'tags', 'fields' ], opts.include);
+        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -347,12 +331,12 @@ Post = ghostBookshelf.Model.extend({
                         .query('where', 'posts_tags.tag_id', '=', tagInstance.id);
                 }
                 return postCollection
-                    .query('limit', opts.limit)
-                    .query('offset', opts.limit * (opts.page - 1))
+                    .query('limit', options.limit)
+                    .query('offset', options.limit * (options.page - 1))
                     .query('orderBy', 'status', 'ASC')
                     .query('orderBy', 'published_at', 'DESC')
                     .query('orderBy', 'updated_at', 'DESC')
-                    .fetch(_.omit(opts, 'page', 'limit'));
+                    .fetch(_.omit(options, 'page', 'limit'));
             })
 
             // Fetch pagination information
@@ -365,8 +349,8 @@ Post = ghostBookshelf.Model.extend({
                 // the limits are for the pagination values.
                 qb = ghostBookshelf.knex(tableName);
 
-                if (opts.where) {
-                    qb.where(opts.where);
+                if (options.where) {
+                    qb.where(options.where);
                 }
 
                 if (tagInstance) {
@@ -380,21 +364,21 @@ Post = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalPosts = parseInt(resp[0].aggregate, 10),
-                    calcPages = Math.ceil(totalPosts / opts.limit),
+                    calcPages = Math.ceil(totalPosts / options.limit),
                     pagination = {},
                     meta = {},
                     data = {};
 
-                pagination['page'] = parseInt(opts.page, 10);
-                pagination['limit'] = opts.limit;
+                pagination['page'] = parseInt(options.page, 10);
+                pagination['limit'] = options.limit;
                 pagination['pages'] = calcPages === 0 ? 1 : calcPages;
                 pagination['total'] = totalPosts;
                 pagination['next'] = null;
                 pagination['prev'] = null;
 
-                if (opts.include) {
+                if (options.include) {
                     _.each(postCollection.models, function (item) {
-                        item.include = opts.include;
+                        item.include = options.include;
                     });
                 }
 
@@ -425,26 +409,25 @@ Post = ghostBookshelf.Model.extend({
             .catch(errors.logAndThrowError);
     },
 
-    permissable: function (postModelOrId, context) {
-        var self = this,
-            userId = context.user,
-            postModel = postModelOrId;
+    //    #### findOne
+    //    Extends base model read to eager-fetch author and user relationships.
+    findOne: function (args, options) {
+        options = options || {};
 
-        // If we passed in an id instead of a model, get the model
-        // then check the permissions
-        if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
-            return this.read({id: postModelOrId, status: 'all'}).then(function (foundPostModel) {
-                return self.permissable(foundPostModel, context);
-            }, errors.logAndThrowError);
+        args = _.extend({
+            status: 'published'
+        }, args || {});
+
+        if (args.status === 'all') {
+            delete args.status;
         }
 
-        // If this is the author of the post, allow it.
-        if (postModel && userId === postModel.get('author_id')) {
-            return when.resolve();
-        }
+        // Add related objects
+        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
 
-        return when.reject();
+        return ghostBookshelf.Model.findOne.call(this, args, options);
     },
+
     add: function (newPostData, options) {
         var self = this;
         options = options || {};
@@ -480,6 +463,27 @@ Post = ghostBookshelf.Model.extend({
 
             return post.destroy(options);
         });
+    },
+
+    permissable: function (postModelOrId, context) {
+        var self = this,
+            userId = context.user,
+            postModel = postModelOrId;
+
+        // If we passed in an id instead of a model, get the model
+        // then check the permissions
+        if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
+            return this.findOne({id: postModelOrId, status: 'all'}).then(function (foundPostModel) {
+                return self.permissable(foundPostModel, context);
+            }, errors.logAndThrowError);
+        }
+
+        // If this is the author of the post, allow it.
+        if (postModel && userId === postModel.get('author_id')) {
+            return when.resolve();
+        }
+
+        return when.reject();
     }
 });
 

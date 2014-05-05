@@ -39,8 +39,8 @@ describe('App Model', function () {
         }).catch(done);
     });
 
-    it('can browse', function (done) {
-        AppModel.browse().then(function (results) {
+    it('can findAll', function (done) {
+        AppModel.findAll().then(function (results) {
 
             should.exist(results);
 
@@ -50,8 +50,8 @@ describe('App Model', function () {
         }).catch(done);
     });
 
-    it('can read', function (done) {
-        AppModel.read({id: 1}).then(function (foundApp) {
+    it('can findOne', function (done) {
+        AppModel.findOne({id: 1}).then(function (foundApp) {
             should.exist(foundApp);
 
             done();
@@ -59,12 +59,12 @@ describe('App Model', function () {
     });
 
     it('can edit', function (done) {
-        AppModel.read({id: 1}).then(function (foundApp) {
+        AppModel.findOne({id: 1}).then(function (foundApp) {
             should.exist(foundApp);
 
             return foundApp.set({name: "New App"}).save();
         }).then(function () {
-            return AppModel.read({id: 1});
+            return AppModel.findOne({id: 1});
         }).then(function (updatedApp) {
             should.exist(updatedApp);
 
@@ -87,12 +87,12 @@ describe('App Model', function () {
     });
 
     it("can delete", function (done) {
-        AppModel.read({id: 1}).then(function (foundApp) {
+        AppModel.findOne({id: 1}).then(function (foundApp) {
             should.exist(foundApp);
 
-            return AppModel['delete'](1);
+            return AppModel.destroy(1);
         }).then(function () {
-            return AppModel.browse();
+            return AppModel.findAll();
         }).then(function (foundApp) {
             var hasRemovedId = foundApp.any(function (foundApp) {
                 return foundApp.id === 1;

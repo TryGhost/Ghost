@@ -35,8 +35,8 @@ describe('Post Model', function () {
         }).catch(done);
     });
 
-    it('can browse', function (done) {
-        PostModel.browse().then(function (results) {
+    it('can findAll', function (done) {
+        PostModel.findAll().then(function (results) {
             should.exist(results);
             results.length.should.be.above(1);
 
@@ -48,18 +48,19 @@ describe('Post Model', function () {
         }).catch(done);
     });
 
-    it('can read', function (done) {
+    it('can findOne', function (done) {
         var firstPost;
 
-        PostModel.browse().then(function (results) {
+        PostModel.findPage().then(function (results) {
             should.exist(results);
-            results.length.should.be.above(0);
-            firstPost = results.models[0];
+            should.exist(results.posts);
+            results.posts.length.should.be.above(0);
+            firstPost = results.posts[0];
 
-            return PostModel.read({slug: firstPost.attributes.slug});
+            return PostModel.findOne({slug: firstPost.slug});
         }).then(function (found) {
             should.exist(found);
-            found.attributes.title.should.equal(firstPost.attributes.title);
+            found.attributes.title.should.equal(firstPost.title);
 
             done();
         }).catch(done);
@@ -103,7 +104,7 @@ describe('Post Model', function () {
     it('can edit', function (done) {
         var firstPost;
 
-        PostModel.browse().then(function (results) {
+        PostModel.findAll().then(function (results) {
             should.exist(results);
             results.length.should.be.above(0);
             firstPost = results.models[0];
@@ -314,7 +315,7 @@ describe('Post Model', function () {
                 // Should not have a conflicted slug from the first
                 updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                return PostModel.read({
+                return PostModel.findOne({
                     id: updatedSecondPost.id,
                     status: 'all'
                 });
@@ -331,28 +332,21 @@ describe('Post Model', function () {
 
     it('can delete', function (done) {
         var firstPostId;
-        PostModel.browse().then(function (results) {
+        PostModel.findAll().then(function (results) {
             should.exist(results);
             results.length.should.be.above(0);
             firstPostId = results.models[0].id;
 
             return PostModel.destroy(firstPostId);
         }).then(function () {
-            return PostModel.browse();
+            return PostModel.findOne({id: firstPostId});
         }).then(function (newResults) {
-            var ids, hasDeletedId;
-
-            ids = _.pluck(newResults.models, 'id');
-            hasDeletedId = _.any(ids, function (id) {
-                return id === firstPostId;
-            });
-            hasDeletedId.should.equal(false);
-
+            should.equal(newResults, null);
             done();
         }).catch(done);
     });
 
-    it('can fetch a paginated set, with various options', function (done) {
+    it('can findPage, with various options', function (done) {
         testUtils.insertMorePosts().then(function () {
 
             return testUtils.insertMorePostsTags();

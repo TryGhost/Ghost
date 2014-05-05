@@ -30,7 +30,7 @@ function parseContext(context) {
             user: null,
             app: null
         };
-    
+
     if (context && (context === 'internal' || context.internal)) {
         parsed.internal = true;
     }
@@ -158,7 +158,7 @@ CanThisResult.prototype.beginCheck = function (context) {
         // Resolve null if no context.user to prevent db call
         userPermissionLoad = when.resolve(null);
     }
-    
+
 
     // Kick off loading of effective app permissions if necessary
     if (context.app) {
@@ -204,7 +204,7 @@ canThis = function (context) {
 
 init = refresh = function () {
     // Load all the permissions
-    return PermissionsProvider.browse().then(function (perms) {
+    return PermissionsProvider.findAll().then(function (perms) {
         var seenActions = {};
 
         exported.actionsMap = {};
