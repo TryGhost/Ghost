@@ -5,8 +5,8 @@ var testUtils = require('../../utils'),
     // Stuff we are testing
     permissions   = require('../../../server/permissions'),
     DataGenerator = require('../../utils/fixtures/data-generator'),
-    dbAPI         = require('../../../server/api/db');
-    TagsAPI       = require('../../../server/api/tags');
+    dbAPI         = require('../../../server/api/db'),
+    TagsAPI       = require('../../../server/api/tags'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('DB API', function () {
