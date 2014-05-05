@@ -31,7 +31,7 @@ describe('Unauthorized', function () {
                 return testUtils.initData();
             }).then(function () {
                 done();
-            }, done);
+            }).catch(done);
         });
 
     });

@@ -124,7 +124,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/page/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
@@ -141,7 +141,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/blog/page/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
 
         });
     });
@@ -189,12 +189,12 @@ describe('Frontend Controller', function () {
                     meta: {
                         pagination: {
                             page: 1,
-                            pages: 1,
+                            pages: 1
                         },
                         filters: {
                             tags: [mockTags[0]]
                         }
-                    },
+                    }
                 });
             });
  
@@ -350,7 +350,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/tag/pumpkin/page/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
@@ -367,7 +367,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/blog/tag/pumpkin/page/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
 
         });
     });
@@ -996,7 +996,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/rss/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
@@ -1009,7 +1009,7 @@ describe('Frontend Controller', function () {
                 res.redirect.calledWith('/blog/rss/3/').should.be.true;
                 res.render.called.should.be.false;
                 done();
-            });
+            }).catch(done);
 
         });
     });

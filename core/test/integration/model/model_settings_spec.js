@@ -14,25 +14,25 @@ describe('Settings Model', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     after(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     describe('API', function () {
@@ -45,7 +45,7 @@ describe('Settings Model', function () {
                 results.length.should.be.above(0);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can read', function (done) {
@@ -69,7 +69,7 @@ describe('Settings Model', function () {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can edit single', function (done) {
@@ -95,7 +95,7 @@ describe('Settings Model', function () {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can edit multiple', function (done) {
@@ -132,7 +132,7 @@ describe('Settings Model', function () {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can add', function (done) {
@@ -150,7 +150,7 @@ describe('Settings Model', function () {
                 createdSetting.attributes.type.should.equal("core");
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('can delete', function (done) {
@@ -186,7 +186,7 @@ describe('Settings Model', function () {
 
                 done();
 
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
@@ -213,7 +213,7 @@ describe('Settings Model', function () {
                 // but it's easier to fix the test if that ever changes than to mock out that behaviour
                 descriptionSetting.get('value').should.equal('Just a blogging platform.');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('doesn\'t overwrite any existing settings', function (done) {
@@ -224,7 +224,7 @@ describe('Settings Model', function () {
             }).then(function (descriptionSetting) {
                 descriptionSetting.get('value').should.equal('Adam\'s Blog');
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 
