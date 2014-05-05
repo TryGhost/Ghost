@@ -10,13 +10,13 @@ section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-## Ghost 배포하기 <a id="deploy"></a>
+## Ghost 배포 <a id="deploy"></a>
 
-Ghost를 배포하실 준비가 되었나요?
+Ghost를 배포하실 준비가 되셨나요?
 
 Ghost를 배포하는 방법에는 크게 2가지 방법이 있습니다. 첫째는 Ghost 설치 프로그램을 이용하는 방법이고, 둘째는 직접 수동으로 설치 및 설정하는 방법입니다.
 
-### 설치 프로그램을 이용하여 Ghost 배포하기
+### 설치 프로그램을 이용하여 Ghost 배포
 
 현재 이용하실 수 있는 Ghost 설치 프로그램은 다음과 같습니다.
 
@@ -24,13 +24,12 @@ Ghost를 배포하는 방법에는 크게 2가지 방법이 있습니다. 첫째
 *   [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html)
 *   [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application)
 
-### 수동으로 설치 및 설정하여 Ghost 배포하기
+### 수동으로 설치 및 설정하여 Ghost 배포
 
 [Node.js](http://nodejs.org)가 이미 설치되어 있거나 설치가 허용되는 호스팅 서비스를 사용하셔야 합니다.
     클라우드 서비스([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/))나 VPS 서비스([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/))와 같은 SSH (터미널) 액세스가 지원되고 Node.js를 설치할 수 있는 서비스라면 어떤 서비스이든 가능합니다. 이를 지원하는 서비스는 많으며 저렴하게 이용할 수 있습니다.
 
 cPanel을 이용하여 관리하는 호스팅 서비스는 대부분 PHP를 호스팅하기 위해 만들어졌기 때문에 지원되지 않습니다. Ruby를 지원하기 시작한 몇몇 서비스도 있는 것을 보면 Node.js도 곧 지원될지도 모릅니다.
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
 
 불가피하게도 **Nodejitsu**나 **Heroku**와 같은 많은 Node 전용 클라우드 호스팅 서비스는 현재 지원되지 않습니다. Ghost의 실행은 가능하지만, 파일의 저장이 지원되지 않아 모든 데이터베이스와 이미지 파일이 삭제되기 때문입니다. Heroku는 MySQL을 지원하기 때문에 이를 사용할 수 있지만 업로드된 이미지가 삭제되는 문제가 있습니다.
 

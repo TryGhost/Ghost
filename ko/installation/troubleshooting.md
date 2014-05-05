@@ -1,5 +1,5 @@
 ---
-lang: example_translation
+lang: ko
 layout: installation
 meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
 meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 한국어 가이드입니다.

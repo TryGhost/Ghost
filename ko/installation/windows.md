@@ -16,7 +16,7 @@ next_section: linux
 
 ### Node.js 설치
 
-*   [http://nodejs.org](http://nodejs.org)에서 Install(설치) 버튼을 누르시면 '.pkg' 파일이 다운로드됩니다.
+*   [http://nodejs.org](http://nodejs.org)에서 Install(설치) 버튼을 누르시면 '.msi' 파일이 다운로드됩니다.
 *   다운로드된 설치 프로그램을 실행하시면 node와 npm 모두를 설치할 수 있습니다.
 *   Node.js의 설치가 완료되었다는 창이 나타날 때까지 설치 과정을 진행하세요.
 

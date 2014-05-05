@@ -30,7 +30,7 @@ Ghost를 여러분의 컴퓨터에서 작동시키는 것은 간단합니다만 
 
 ### 시작하기
 
-Node.js 및 Ghost를 직접 수동으로 설치하는 것을 선호하시지 않는다면, [BitNami](http://bitnami.com/)의 사람들이 만든 [Ghost 설치 프로그램](http://bitnami.com/stack/ghost)을 이용해 보세요. 대부분의 주요 플랫폼에서 이용할 수 있습니다.
+Node.js 및 Ghost를 직접 수동으로 설치하는 것을 선호하시지 않는다면, [BitNami](http://bitnami.com/)가 만든 [Ghost 설치 프로그램](http://bitnami.com/stack/ghost)을 이용해 보세요. 대부분의 주요 플랫폼에서 이용할 수 있습니다.
 
 Ghost를 설치하시려는 플랫폼은 어디인가요?
 
@@ -43,7 +43,7 @@ Ghost를 설치하시려는 플랫폼은 어디인가요?
 Ghost의 설치를 완료하셨거나 호스팅 서비스를 이용하실 예정이셔서 이제 배포 단계만 남았나요? 아래 문서는 수동 설치부터 설치 프로그램 사용까지 다양한 방법으로 어떻게 Ghost를 배포할 수 있는지 설명합니다.
 
 <div class="text-center install-ghost">
-    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Ghost 배포하기</a>
+    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Ghost 배포</a>
 </div>
 
 Ghost는 아직 만들어진 지 얼마 되지 않은 새 블로깅 플랫폼이며, 저희 팀은 여러 기능들을 추가하여 여러분이 더욱 편리하게 Ghost를 사용하실 수 있도록 노력하고 있습니다. Ghost를 최신 버전으로 업그레이드하고싶으신 분은 [업그레이드 가이드](/installation/upgrading/)를 참조해 주세요.
