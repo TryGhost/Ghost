@@ -170,7 +170,7 @@ settings = {
             result = {};
 
         if (!setting) {
-            return when.reject({code: 404, message: 'Unable to find setting: ' + options.key});
+            return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + options.key});
         }
         
         result[options.key] = setting;
@@ -205,16 +205,16 @@ settings = {
             }).otherwise(function (error) {
                 return dataProvider.Settings.read(key.key).then(function (result) {
                     if (!result) {
-                        return when.reject({code: 404, message: 'Unable to find setting: ' + key});
+                        return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
                     }
-                    return when.reject({message: error.message, stack: error.stack});
+                    return when.reject({type: 'InternalServerError', message: error.message});
                 });
             });
         }
 
         return dataProvider.Settings.read(key).then(function (setting) {
             if (!setting) {
-                return when.reject({code: 404, message: 'Unable to find setting: ' + key});
+                return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
             }
             if (!_.isString(value)) {
                 value = JSON.stringify(value);

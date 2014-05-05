@@ -37,7 +37,7 @@ users = {
                 return { users: omitted };
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to browse users.'});
+            return when.reject({type: 'NotFound', message: 'You do not have permission to browse users.'});
         });
     },
 
@@ -55,7 +55,7 @@ users = {
                 return { users: [omitted] };
             }
 
-            return when.reject({code: 404, message: 'User not found'});
+            return when.reject({type: 'NotFound', message: 'User not found.'});
         });
     },
 
@@ -72,10 +72,10 @@ users = {
                     var omitted = _.omit(result.toJSON(), filteredAttributes);
                     return { users: [omitted]};
                 }
-                return when.reject({code: 404, message: 'User not found'});
+                return when.reject({type: 'NotFound', message: 'User not found.'});
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to edit this user.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to edit this users.'});
         });
     },
 
@@ -99,7 +99,7 @@ users = {
                 }
             });
         }, function () {
-            return when.reject({code: 403, message: 'You do not have permission to add a users.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to add a users.'});
         });
     },
 

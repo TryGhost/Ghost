@@ -50,7 +50,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        validation.validateSchema(this.tableName, this.toJSON());
+        return validation.validateSchema(this.tableName, this.toJSON());
     },
 
     creating: function (newObj, attr, options) {
