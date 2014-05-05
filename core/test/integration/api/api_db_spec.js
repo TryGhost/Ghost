@@ -38,9 +38,9 @@ describe('DB API', function () {
     it('delete all content', function (done) {
         permissions.init().then(function () {
             return dbAPI.deleteAllContent.call({user: 1});
-        }).then(function (result){
+        }).then(function (result) {
             should.exist(result.message);
-            result.message.should.equal('Successfully deleted all content from your blog.')
+            result.message.should.equal('Successfully deleted all content from your blog.');
         }).then(function () {
             TagsAPI.browse().then(function (results) {
                 should.exist(results);
@@ -54,7 +54,7 @@ describe('DB API', function () {
                 done();
             });
         }).catch(function (error) {
-            done(new Error(JSON.stringify(error)));
+            done('error', error);
         });
     });
 

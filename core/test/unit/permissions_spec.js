@@ -115,7 +115,7 @@ describe('Permissions', function () {
     it('can add user to role', function (done) {
         var existingUserRoles;
 
-        UserProvider.read({id: 1}, { withRelated: ['roles'] }).then(function (foundUser) {
+        UserProvider.findOne({id: 1}, { withRelated: ['roles'] }).then(function (foundUser) {
             var testRole = new Models.Role({
                 name: 'testrole1',
                 description: 'testrole1 description'
@@ -131,7 +131,7 @@ describe('Permissions', function () {
                 return foundUser.roles().attach(testRole);
             });
         }).then(function () {
-            return UserProvider.read({id: 1}, { withRelated: ['roles'] });
+            return UserProvider.findOne({id: 1}, { withRelated: ['roles'] });
         }).then(function (updatedUser) {
             should.exist(updatedUser);
 
@@ -142,7 +142,7 @@ describe('Permissions', function () {
     });
 
     it('can add user permissions', function (done) {
-        Models.User.read({id: 1}, { withRelated: ['permissions']}).then(function (testUser) {
+        UserProvider.findOne({id: 1}, { withRelated: ['permissions']}).then(function (testUser) {
             var testPermission = new Models.Permission({
                 name: "test edit posts",
                 action_type: 'edit',
@@ -155,7 +155,7 @@ describe('Permissions', function () {
                 return testUser.permissions().attach(testPermission);
             });
         }).then(function () {
-            return Models.User.read({id: 1}, { withRelated: ['permissions']});
+            return UserProvider.findOne({id: 1}, { withRelated: ['permissions']});
         }).then(function (updatedUser) {
             should.exist(updatedUser);
 
@@ -189,7 +189,7 @@ describe('Permissions', function () {
                 });
             })
             .then(function () {
-                return Models.Role.read({id: testRole.id}, { withRelated: ['permissions']});
+                return Models.Role.findOne({id: testRole.id}, { withRelated: ['permissions']});
             })
             .then(function (updatedRole) {
                 should.exist(updatedRole);
@@ -208,7 +208,7 @@ describe('Permissions', function () {
         createTestPermissions()
             .then(permissions.init)
             .then(function () {
-                return Models.User.read({id: 1});
+                return UserProvider.findOne({id: 1});
             })
             .then(function (foundUser) {
                 var canThisResult = permissions.canThis(foundUser);
@@ -231,7 +231,7 @@ describe('Permissions', function () {
         createTestPermissions()
             .then(permissions.init)
             .then(function () {
-                return Models.User.read({id: 1});
+                return UserProvider.findOne({id: 1});
             })
             .then(function (foundUser) {
                 var newPerm = new Models.Permission({
@@ -245,7 +245,7 @@ describe('Permissions', function () {
                 });
             })
             .then(function () {
-                return Models.User.read({id: 1}, { withRelated: ['permissions']});
+                return UserProvider.findOne({id: 1}, { withRelated: ['permissions']});
             })
             .then(function (updatedUser) {
 
@@ -270,7 +270,7 @@ describe('Permissions', function () {
 
         testUtils.insertAuthorUser()
             .then(function () {
-                return UserProvider.browse();
+                return UserProvider.findAll();
             })
             .then(function (foundUser) {
                 testUser = foundUser.models[1];
@@ -299,7 +299,7 @@ describe('Permissions', function () {
 
         testUtils.insertAuthorUser()
             .then(function () {
-                return UserProvider.browse();
+                return UserProvider.findAll();
             })
             .then(function (foundUser) {
                 testUser = foundUser.models[1];
@@ -345,7 +345,7 @@ describe('Permissions', function () {
         PostProvider.edit({id: 1, 'author_id': 2})
             .then(function (updatedPost) {
                 // Add user permissions
-                return Models.User.read({id: 1})
+                return UserProvider.findOne({id: 1})
                     .then(function (foundUser) {
                         var newPerm = new Models.Permission({
                             name: "app test edit post",

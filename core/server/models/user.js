@@ -147,7 +147,7 @@ User = ghostBookshelf.Model.extend({
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
-            return this.read({id: userModelOrId}).then(function (foundUserModel) {
+            return this.findOne({id: userModelOrId}).then(function (foundUserModel) {
                 return self.permissable(foundUserModel, context);
             }, errors.logAndThrowError);
         }
