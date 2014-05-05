@@ -41,8 +41,10 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        validation.validateSchema(this.tableName, this.toJSON());
-        validation.validateSettings(defaultSettings, this);
+        var self = this;
+        return when(validation.validateSchema(self.tableName, self.toJSON())).then(function () {
+            return validation.validateSettings(defaultSettings, self);
+        });
     },
 
     saving: function () {
@@ -74,7 +76,7 @@ Settings = ghostBookshelf.Model.extend({
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return when.reject(new Error('Setting key cannot be empty.'));
+                return when.reject({type: 'ValidationError', message: 'Setting key cannot be empty.'});
             }
             return Settings.forge({ key: item.key }).fetch(options).then(function (setting) {
 
@@ -82,7 +84,7 @@ Settings = ghostBookshelf.Model.extend({
                     return setting.save({value: item.value}, options);
                 }
 
-                return when.reject(new Error('Unable to find setting to update: ' + item.key));
+                return when.reject({type: 'NotFound', message: 'Unable to find setting to update: ' + item.key});
 
             }, errors.logAndThrowError);
         });

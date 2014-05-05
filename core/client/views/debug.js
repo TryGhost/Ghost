@@ -53,7 +53,7 @@
                 error: function (response) {
                     $('#startupload').text('Import');
                     var responseJSON = response.responseJSON,
-                        message = responseJSON && responseJSON.error ? responseJSON.error : 'unknown';
+                        message = responseJSON && responseJSON.errors[0].message ? responseJSON.errors[0].message : 'unknown';
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: ['A problem was encountered while importing new content to your blog. Error: ', message].join(''),
@@ -123,7 +123,7 @@
                                         },
                                         error: function onError(response) {
                                             var responseText = JSON.parse(response.responseText),
-                                                message = responseText && responseText.error ? responseText.error : 'unknown';
+                                                message = responseText && responseText.errors[0].message ? responseText.errors[0].message : 'unknown';
                                             Ghost.notifications.addItem({
                                                 type: 'error',
                                                 message: ['A problem was encountered while deleting content from your blog. Error: ', message].join(''),
@@ -175,7 +175,7 @@
                 },
                 error: function onError(response) {
                     var responseText = JSON.parse(response.responseText),
-                        message = responseText && responseText.error ? responseText.error : 'unknown';
+                        message = responseText && responseText.errors[0].message ? responseText.errors[0].message : 'unknown';
                     Ghost.notifications.addItem({
                         type: 'error',
                         message: ['A problem was encountered while sending the test email: ', message].join(''),

@@ -12,7 +12,34 @@ var _             = require('lodash'),
     tags          = require('./tags'),
     mail          = require('./mail'),
     requestHandler,
-    init;
+    init,
+
+    errorTypes = {
+        BadRequest: {
+            code: 400
+        },
+        Unauthorized: {
+            code: 401
+        },
+        NoPermission: {
+            code: 403
+        },
+        NotFound: {
+            code: 404
+        },
+        RequestEntityTooLarge: {
+            code: 413
+        },
+        ValidationError: {
+            code: 422
+        },
+        EmailError: {
+            code: 500
+        },
+        InternalServerError: {
+            code: 500
+        }
+    };
 
 // ## Request Handlers
 
@@ -112,9 +139,25 @@ requestHandler = function (apiMethod) {
                 });
             });
         }, function (error) {
-            var errorCode = error.code || 500,
-                errorMsg = {error: _.isString(error) ? error : (_.isObject(error) ? error.message : 'Unknown API Error')};
-            res.json(errorCode, errorMsg);
+            var errorCode,
+                errors = [];
+
+            if (!_.isArray(error)) {
+                error = [].concat(error);
+            }
+
+            _.each(error, function (erroritem) {
+                var errorContent = {};
+                
+                //TODO: add logic to set the correct status code
+                errorCode = errorTypes[erroritem.type].code || 500;
+                
+                errorContent['message'] = _.isString(erroritem) ? erroritem : (_.isObject(erroritem) ? erroritem.message : 'Unknown API Error');
+                errorContent['type'] = erroritem.type || 'InternalServerError';
+                errors.push(errorContent);
+            });
+
+            res.json(errorCode, {errors: errors});
         });
     };
 };
