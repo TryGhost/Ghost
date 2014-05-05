@@ -15,19 +15,19 @@ describe("Role Model", function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it("can browse roles", function (done) {
@@ -37,7 +37,7 @@ describe("Role Model", function () {
             foundRoles.models.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can read roles", function (done) {
@@ -45,7 +45,7 @@ describe("Role Model", function () {
             should.exist(foundRole);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can edit roles", function (done) {
@@ -61,7 +61,7 @@ describe("Role Model", function () {
             updatedRole.get("name").should.equal("updated");
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can add roles", function (done) {
@@ -77,7 +77,7 @@ describe("Role Model", function () {
             createdRole.attributes.description.should.equal(newRole.description);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can delete roles", function (done) {
@@ -95,6 +95,6 @@ describe("Role Model", function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

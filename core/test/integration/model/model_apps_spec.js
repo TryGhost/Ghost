@@ -14,7 +14,7 @@ describe('App Model', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -24,19 +24,19 @@ describe('App Model', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     after(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -47,7 +47,7 @@ describe('App Model', function () {
             results.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can read', function (done) {
@@ -55,7 +55,7 @@ describe('App Model', function () {
             should.exist(foundApp);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can edit', function (done) {
@@ -71,7 +71,7 @@ describe('App Model', function () {
             updatedApp.get("name").should.equal("New App");
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can add", function (done) {
@@ -83,7 +83,7 @@ describe('App Model', function () {
             createdApp.attributes.name.should.equal(newApp.name);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it("can delete", function (done) {
@@ -101,6 +101,6 @@ describe('App Model', function () {
             hasRemovedId.should.equal(false);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

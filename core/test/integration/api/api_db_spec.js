@@ -14,7 +14,7 @@ describe('DB API', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -26,13 +26,13 @@ describe('DB API', function () {
             return testUtils.insertAuthorUser();
         }).then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('delete all content', function (done) {
@@ -53,7 +53,7 @@ describe('DB API', function () {
                 results.posts.length.should.equal(0);
                 done();
             });
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
         });
     });
@@ -73,7 +73,7 @@ describe('DB API', function () {
             return dbAPI.deleteAllContent();
         }).then(function (){
             done(new Error("Delete all content is not denied without authentication."));
-        }, function (error) {
+        }).catch(function (error) {
             error.type.should.eql('NoPermission');
             done();
         });
@@ -94,7 +94,7 @@ describe('DB API', function () {
             return dbAPI.exportContent();
         }).then(function (){
             done(new Error("Export content is not denied without authentication."));
-        }, function (error) {
+        }).catch(function (error) {
             error.type.should.eql('NoPermission');
             done();
         });
@@ -115,7 +115,7 @@ describe('DB API', function () {
             return dbAPI.importContent();
         }).then(function (result){
             done(new Error("Import content is not denied without authentication."));
-        }, function (error) {
+        }).catch(function (error) {
             error.type.should.eql('NoPermission');
             done();
         });

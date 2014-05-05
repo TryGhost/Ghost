@@ -20,21 +20,21 @@ describe("Exporter", function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
         sandbox = sinon.sandbox.create();
         testUtils.initData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         sandbox.restore();
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it("exports data", function (done) {
@@ -63,6 +63,6 @@ describe("Exporter", function () {
 
             migrationStub.restore();
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

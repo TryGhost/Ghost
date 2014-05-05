@@ -52,8 +52,8 @@ describe('Frontend Routing', function () {
                 return testUtils.initData();
             }).then(function () {
                 done();
-            }, done);
-        }).otherwise(function (e) {
+            }).catch(done);
+        }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
         });
@@ -157,8 +157,7 @@ describe('Frontend Routing', function () {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
-                }, done)
-                .then(done);
+                }).then(done).catch(done);
         });
         
         after(function (done) {
@@ -232,7 +231,7 @@ describe('Frontend Routing', function () {
                 return testUtils.insertMorePosts(11);
             }).then(function () {
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('should redirect without slash', function (done) {
@@ -419,7 +418,7 @@ describe('Frontend Routing', function () {
                 .expect('Cache-Control', cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
-        })
+        });
 
         // at the moment there is no image fixture to test
         // it('should retrieve image assets', function (done) {
@@ -441,11 +440,11 @@ describe('Frontend Routing', function () {
                 return testUtils.insertPosts();
             }).then(function () {
                 return testUtils.insertMorePosts(22);
-            }).then(function() {
+            }).then(function () {
                 return testUtils.insertMorePostsTags(22);
             }).then(function () {
                 done();
-            }).then(null, done);
+            }).catch(done);
 
         });
 

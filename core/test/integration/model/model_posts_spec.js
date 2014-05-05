@@ -16,7 +16,7 @@ describe('Post Model', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -26,13 +26,13 @@ describe('Post Model', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -45,7 +45,7 @@ describe('Post Model', function () {
             //results.models[0].attributes.published_at.should.be.above(results.models[1].attributes.published_at);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can read', function (done) {
@@ -62,7 +62,7 @@ describe('Post Model', function () {
             found.attributes.title.should.equal(firstPost.attributes.title);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can findAll, returning author and field data', function (done) {
@@ -80,7 +80,7 @@ describe('Post Model', function () {
             firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can findOne, returning author and field data', function (done) {
@@ -97,7 +97,7 @@ describe('Post Model', function () {
             firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
 
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can edit', function (done) {
@@ -114,7 +114,7 @@ describe('Post Model', function () {
             edited.attributes.title.should.equal('new title');
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can add, defaults are all correct', function (done) {
@@ -163,7 +163,7 @@ describe('Post Model', function () {
             publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
             done();
-        }).then(null, done);
+        }).catch(done);
 
     });
 
@@ -182,7 +182,7 @@ describe('Post Model', function () {
 
             done();
 
-        }).otherwise(done);
+        }).catch(done);
     });
 
     it('can trim title', function (done) {
@@ -204,7 +204,7 @@ describe('Post Model', function () {
             updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
 
             done();
-        }).otherwise(done);
+        }).catch(done);
     });
 
     it('can generate a non conflicting slug', function (done) {
@@ -240,7 +240,7 @@ describe('Post Model', function () {
             });
 
             done();
-        }).otherwise(done);
+        }).catch(done);
     });
 
     it('can generate slugs without duplicate hyphens', function (done) {
@@ -254,7 +254,7 @@ describe('Post Model', function () {
             createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can generate a safe slug when a reserved keyword is used', function(done) {
@@ -278,7 +278,7 @@ describe('Post Model', function () {
         PostModel.add(newPost, {user: 1}).then(function (createdPost) {
             createdPost.get('slug').should.equal('bhute-dhddkii-bhrvnnaaraa-aahet');
             done();
-        });
+        }).catch(done);
     });
 
     it('detects duplicate slugs before saving', function (done) {
@@ -326,7 +326,7 @@ describe('Post Model', function () {
                 foundPost.get('slug').should.not.equal(firstPost.slug);
 
                 done();
-            }).otherwise(done);
+            }).catch(done);
     });
 
     it('can delete', function (done) {
@@ -349,7 +349,7 @@ describe('Post Model', function () {
             hasDeletedId.should.equal(false);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can fetch a paginated set, with various options', function (done) {
@@ -427,7 +427,7 @@ describe('Post Model', function () {
             paginationResult.posts.length.should.equal(11);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     // disabling sanitization until we can implement a better version

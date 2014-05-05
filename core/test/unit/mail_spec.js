@@ -83,7 +83,7 @@ describe("Mail", function () {
             mailer.transport.transportType.should.eql('SMTP');
             mailer.transport.sendMail.should.be.a.function;
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should setup sendmail transport on initialization', function (done) {
@@ -93,7 +93,7 @@ describe("Mail", function () {
             mailer.transport.transportType.should.eql('SENDMAIL');
             mailer.transport.sendMail.should.be.a.function;
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should fallback to sendmail if no config set', function (done) {
@@ -103,7 +103,7 @@ describe("Mail", function () {
             mailer.transport.transportType.should.eql('SENDMAIL');
             mailer.transport.options.path.should.eql(fakeSendmail);
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should fallback to sendmail if config is empty', function (done) {
@@ -113,7 +113,7 @@ describe("Mail", function () {
             mailer.transport.transportType.should.eql('SENDMAIL');
             mailer.transport.options.path.should.eql(fakeSendmail);
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should disable transport if config is empty & sendmail not found', function (done) {
@@ -123,7 +123,7 @@ describe("Mail", function () {
         mailer.init().then(function () {
             should.not.exist(mailer.transport);
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should disable transport if config is empty & platform is win32', function (done) {
@@ -136,7 +136,7 @@ describe("Mail", function () {
         mailer.init().then(function () {
             should.not.exist(mailer.transport);
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('should fail to send messages when no transport is set', function (done) {
@@ -146,7 +146,7 @@ describe("Mail", function () {
             mailer.send().then(function () {
                 should.fail();
                 done();
-            }, function (err) {
+            }).catch(function (err) {
                 err.should.be.an.instanceOf(Error);
                 done();
             });
@@ -165,7 +165,7 @@ describe("Mail", function () {
                 d.reason.should.be.an.instanceOf(Error);
             });
             done();
-        });
+        }).catch(done);
     });
 
     it('should use from address as configured in config.js', function (done) {

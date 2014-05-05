@@ -14,7 +14,7 @@ describe('App Setting Model', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -24,19 +24,19 @@ describe('App Setting Model', function () {
             })
             .then(function () {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     after(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -47,7 +47,7 @@ describe('App Setting Model', function () {
             results.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can read', function (done) {
@@ -55,7 +55,7 @@ describe('App Setting Model', function () {
             should.exist(foundAppSetting);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can edit', function (done) {
@@ -71,6 +71,6 @@ describe('App Setting Model', function () {
             updatedAppSetting.get("value").should.equal("350");
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });
