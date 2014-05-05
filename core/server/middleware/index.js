@@ -43,7 +43,7 @@ function ghostLocals(req, res, next) {
             api.notifications.browse()
         ]).then(function (values) {
             var currentUser = values[0].users[0],
-                notifications = values[1];
+                notifications = values[1].notifications;
 
             _.extend(res.locals,  {
                 currentUser: {
@@ -56,9 +56,10 @@ function ghostLocals(req, res, next) {
             next();
         }).otherwise(function () {
             // Only show passive notifications
+            // ToDo: Remove once ember handles passive notifications.
             api.notifications.browse().then(function (notifications) {
                 _.extend(res.locals, {
-                    messages: _.reject(notifications, function (notification) {
+                    messages: _.reject(notifications.notifications, function (notification) {
                         return notification.status !== 'passive';
                     })
                 });
@@ -341,6 +342,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(subdir + '/api/', middleware.cacheControl('private'));
     expressServer.use(subdir + '/ghost/', middleware.cacheControl('private'));
 
+
     // enable authentication; has to be done before CSRF handling
     expressServer.use(middleware.authenticate);
 
@@ -349,8 +351,11 @@ module.exports = function (server, dbHash) {
 
     // local data
     expressServer.use(ghostLocals);
+
     // So on every request we actually clean out redundant passive notifications from the server side
+    // ToDo: Remove when ember handles passive notifications.
     expressServer.use(middleware.cleanNotifications);
+
      // Initialise the views
     expressServer.use(initViews);
 

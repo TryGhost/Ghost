@@ -62,9 +62,7 @@ GhostMailer.prototype.usingSendmail = function () {
             "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
             "It is recommended that you explicitly configure an e-mail service,",
             "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
-        ].join(' '),
-        status: 'persistent',
-        id: 'ghost-mail-fallback'
+        ].join(' ')
     });
 };
 
@@ -74,9 +72,7 @@ GhostMailer.prototype.emailDisabled = function () {
         message: [
             "Ghost is currently unable to send e-mail.",
             "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
-        ].join(' '),
-        status: 'persistent',
-        id: 'ghost-mail-disabled'
+        ].join(' ')
     });
     this.transport = null;
 };
