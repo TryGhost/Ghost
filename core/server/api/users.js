@@ -22,7 +22,7 @@ users = {
     browse: function browse(options) {
         // **returns:** a promise for a collection of users in a json object
         return canThis(this.user).browse.user().then(function () {
-            return dataProvider.User.browse(options).then(function (result) {
+            return dataProvider.User.findAll(options).then(function (result) {
                 var omitted = {},
                     i;
 
@@ -49,7 +49,7 @@ users = {
             args = {id: this.user};
         }
 
-        return dataProvider.User.read(args).then(function (result) {
+        return dataProvider.User.findOne(args).then(function (result) {
             if (result) {
                 var omitted = _.omit(result.toJSON(), filteredAttributes);
                 return { users: [omitted] };
@@ -150,7 +150,7 @@ users = {
     },
 
     doesUserExist: function doesUserExist() {
-        return dataProvider.User.browse().then(function (users) {
+        return dataProvider.User.findAll().then(function (users) {
             if (users.length === 0) {
                 return false;
             }

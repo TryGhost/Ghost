@@ -1,12 +1,11 @@
 /*globals describe, it, before, beforeEach, afterEach */
 var testUtils = require('../../utils'),
     should = require('should'),
-    errors = require('../../../server/errorHandling'),
 
     // Stuff we are testing
     Models = require('../../../server/models');
 
-describe("Role Model", function () {
+describe('Role Model', function () {
 
     var RoleModel = Models.Role;
 
@@ -30,8 +29,8 @@ describe("Role Model", function () {
         }).catch(done);
     });
 
-    it("can browse roles", function (done) {
-        RoleModel.browse().then(function (foundRoles) {
+    it('can findAll', function (done) {
+        RoleModel.findAll().then(function (foundRoles) {
             should.exist(foundRoles);
 
             foundRoles.models.length.should.be.above(0);
@@ -40,34 +39,34 @@ describe("Role Model", function () {
         }).catch(done);
     });
 
-    it("can read roles", function (done) {
-        RoleModel.read({id: 1}).then(function (foundRole) {
+    it('can findOne', function (done) {
+        RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
 
             done();
         }).catch(done);
     });
 
-    it("can edit roles", function (done) {
-        RoleModel.read({id: 1}).then(function (foundRole) {
+    it('can edit', function (done) {
+        RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
 
-            return foundRole.set({name: "updated"}).save();
+            return foundRole.set({name: 'updated'}).save();
         }).then(function () {
-            return RoleModel.read({id: 1});
+            return RoleModel.findOne({id: 1});
         }).then(function (updatedRole) {
             should.exist(updatedRole);
 
-            updatedRole.get("name").should.equal("updated");
+            updatedRole.get('name').should.equal('updated');
 
             done();
         }).catch(done);
     });
 
-    it("can add roles", function (done) {
+    it('can add', function (done) {
         var newRole = {
-            name: "test1",
-            description: "test1 description"
+            name: 'test1',
+            description: 'test1 description'
         };
 
         RoleModel.add(newRole, {user: 1}).then(function (createdRole) {
@@ -80,13 +79,13 @@ describe("Role Model", function () {
         }).catch(done);
     });
 
-    it("can delete roles", function (done) {
-        RoleModel.read({id: 1}).then(function (foundRole) {
+    it('can delete', function (done) {
+        RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
 
-            return RoleModel['delete'](1);
-        }).then(function () {
-            return RoleModel.browse();
+            return RoleModel.destroy(1);
+        }).then(function (destResp) {
+            return RoleModel.findAll();
         }).then(function (foundRoles) {
             var hasRemovedId = foundRoles.any(function (role) {
                 return role.id === 1;

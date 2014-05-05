@@ -159,9 +159,9 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can browse', function (done) {
+        it('can findAll', function (done) {
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
                 should.exist(results);
 
                 results.length.should.be.above(0);
@@ -171,10 +171,10 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can read', function (done) {
+        it('can findOne', function (done) {
             var firstUser;
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -182,7 +182,7 @@ describe('User Model', function run() {
 
                 firstUser = results.models[0];
 
-                return UserModel.read({email: firstUser.attributes.email});
+                return UserModel.findOne({email: firstUser.attributes.email});
 
             }).then(function (found) {
 
@@ -199,7 +199,7 @@ describe('User Model', function run() {
         it('can edit', function (done) {
             var firstUser;
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -223,7 +223,7 @@ describe('User Model', function run() {
         it('can delete', function (done) {
             var firstUserId;
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -235,7 +235,7 @@ describe('User Model', function run() {
 
             }).then(function () {
 
-                return UserModel.browse();
+                return UserModel.findAll();
 
             }).then(function (newResults) {
                 var ids, hasDeletedId;
@@ -261,7 +261,7 @@ describe('User Model', function run() {
             var expires = Date.now() + 60000,
                 dbHash = uuid.v4();
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
 
@@ -279,7 +279,7 @@ describe('User Model', function run() {
             var expires = Date.now() + 60000,
                 dbHash = uuid.v4();
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
 
@@ -300,7 +300,7 @@ describe('User Model', function run() {
                 expires = Date.now() + 60000,
                 dbHash = uuid.v4();
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 var firstUser = results.models[0],
                     origPassword = firstUser.attributes.password;
@@ -330,7 +330,7 @@ describe('User Model', function run() {
                 expires = Date.now() - 60000,
                 dbHash = uuid.v4();
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 // Store email for later
                 email = results.models[0].attributes.email;
@@ -356,7 +356,7 @@ describe('User Model', function run() {
             var expires = Date.now() - 60000,
                 dbHash = uuid.v4();
 
-            UserModel.browse().then(function (results) {
+            UserModel.findAll().then(function (results) {
 
                 return UserModel.generateResetToken(results.models[0].attributes.email, expires, dbHash);
 

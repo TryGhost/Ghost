@@ -77,7 +77,7 @@ readSettingsResult = function (settingsModels) {
 
     if (settings.activeApps) {
         res = filterPaths(apps, JSON.parse(settings.activeApps.value));
-        
+
         settings.availableApps = {
             key: 'availableApps',
             value: res,
@@ -172,7 +172,7 @@ settings = {
         if (!setting) {
             return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + options.key});
         }
-        
+
         result[options.key] = setting;
 
         return when(settingsResult(result));
@@ -203,7 +203,7 @@ settings = {
                     return settingsResult(readResult, type);
                 });
             }).otherwise(function (error) {
-                return dataProvider.Settings.read(key.key).then(function (result) {
+                return dataProvider.Settings.findOne(key.key).then(function (result) {
                     if (!result) {
                         return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
                     }
@@ -212,7 +212,7 @@ settings = {
             });
         }
 
-        return dataProvider.Settings.read(key).then(function (setting) {
+        return dataProvider.Settings.findOne(key).then(function (setting) {
             if (!setting) {
                 return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
             }

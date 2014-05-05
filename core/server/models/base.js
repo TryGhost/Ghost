@@ -1,3 +1,10 @@
+// # Base Model
+// This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
+// several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.
+//
+// The models are internal to Ghost, only the API and some internal functions such as migration and import/export
+// accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
+// allowed to access data via the API.
 var Bookshelf  = require('bookshelf'),
     when       = require('when'),
     moment     = require('moment'),
@@ -11,17 +18,19 @@ var Bookshelf  = require('bookshelf'),
 
     ghostBookshelf;
 
-// Initializes a new Bookshelf instance, for reference elsewhere in Ghost.
+// ### ghostBookshelf
+// Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
 ghostBookshelf = Bookshelf.ghost = Bookshelf.initialize(config().database);
 ghostBookshelf.client = config().database.client;
 
+// ### ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
 ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasTimestamps: true,
 
-    // get permitted attributs from schema.js
+    // Get permitted attributes from server/data/schema.js, which is where the DB schema is defined
     permittedAttributes: function () {
         return _.keys(schema.tables[this.tableName]);
     },
@@ -145,9 +154,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
 }, {
 
+     // ## Model Data Functions
+
     /**
-     * Naive find all
+     * ### Find All
+     * Naive find all fetches all the data for a particular model
      * @param {Object} options (optional)
+     * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
     findAll:  function (options) {
         options = options || {};
@@ -161,50 +174,44 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         });
     },
 
-    browse: function () {
-        return this.findAll.apply(this, arguments);
-    },
-
     /**
-     * Naive find one where args match
-     * @param {Object} args
+     * ### Find One
+     * Naive find one where data determines what to match on
+     * @param {Object} data
      * @param {Object} options (optional)
+     * @return {Promise(ghostBookshelf.Model)} Single Model
      */
-    findOne: function (args, options) {
+    findOne: function (data, options) {
         options = options || {};
-        return this.forge(args, {include: options.include}).fetch(options);
-    },
-
-    read: function () {
-        return this.findOne.apply(this, arguments);
+        return this.forge(data, {include: options.include}).fetch(options);
     },
 
     /**
+     * ### Edit
      * Naive edit
-     * @param {Object} editedObj
+     * @param {Object} data
      * @param {Object} options (optional)
+     * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
-    edit: function (editedObj, options) {
+    edit: function (data, options) {
         options = options || {};
-        return this.forge({id: editedObj.id}).fetch(options).then(function (foundObj) {
-            if (foundObj) {
-                return foundObj.save(editedObj, options);
+        return this.forge({id: data.id}).fetch(options).then(function (object) {
+            if (object) {
+                return object.save(data, options);
             }
         });
     },
 
-    update: function () {
-        return this.edit.apply(this, arguments);
-    },
-
     /**
-     * Naive create
-     * @param {Object} newObj
+     * ### Add
+     * Naive add
+     * @param {Object} data
      * @param {Object} options (optional)
+     * @return {Promise(ghostBookshelf.Model)} Newly Added Model
      */
-    add: function (newObj, options) {
+    add: function (data, options) {
         options = options || {};
-        var instance = this.forge(newObj);
+        var instance = this.forge(data);
         // We allow you to disable timestamps
         // when importing posts so that
         // the new posts `updated_at` value
@@ -216,27 +223,27 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return instance.save(null, options);
     },
 
-    create: function () {
-        return this.add.apply(this, arguments);
+    /**
+     * ### Destroy
+     * Naive destroy
+     * @param {Object} data
+     * @param {Object} options (optional)
+     * @return {Promise(ghostBookshelf.Model)} Empty Model
+     */
+    destroy: function (data, options) {
+        options = options || {};
+        return this.forge({id: data}).destroy(options);
     },
 
     /**
-     * Naive destroy
-     * @param {Object} _identifier
-     * @param {Object} options (optional)
-     */
-    destroy: function (_identifier, options) {
-        options = options || {};
-        return this.forge({id: _identifier}).destroy(options);
-    },
-
-    'delete': function () {
-        return this.destroy.apply(this, arguments);
-    },
-
-    // #### generateSlug
-    // Create a string act as the permalink for an object.
-    generateSlug: function (Model, base, readOptions) {
+    * ### Generate Slug
+     * Create a string to act as the permalink for an object.
+     * @param {ghostBookshelf.Model} Model Model type to generate a slug for
+     * @param {String} base The string for which to generate a slug, usually a title or name
+     * @param {Object} options Options to pass to findOne
+     * @return {Promise(String)} Resolves to a unique slug string
+    */
+    generateSlug: function (Model, base, options) {
         var slug,
             slugTryCount = 1,
             baseName = Model.prototype.tableName.replace(/s$/, ''),
@@ -246,10 +253,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         checkIfSlugExists = function (slugToFind) {
             var args = {slug: slugToFind};
             //status is needed for posts
-            if (readOptions && readOptions.status) {
-                args.status = readOptions.status;
+            if (options && options.status) {
+                args.status = options.status;
             }
-            return Model.findOne(args, readOptions).then(function (found) {
+            return Model.findOne(args, options).then(function (found) {
                 var trimSpace;
 
                 if (!found) {
@@ -304,4 +311,5 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
 });
 
+// Export ghostBookshelf for use elsewhere
 module.exports = ghostBookshelf;
