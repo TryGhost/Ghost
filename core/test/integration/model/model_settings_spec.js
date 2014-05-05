@@ -37,8 +37,8 @@ describe('Settings Model', function () {
 
     describe('API', function () {
 
-        it('can browse', function (done) {
-            SettingsModel.browse().then(function (results) {
+        it('can findAll', function (done) {
+            SettingsModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -48,10 +48,10 @@ describe('Settings Model', function () {
             }).catch(done);
         });
 
-        it('can read', function (done) {
+        it('can findOne', function (done) {
             var firstSetting;
 
-            SettingsModel.browse().then(function (results) {
+            SettingsModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -59,7 +59,7 @@ describe('Settings Model', function () {
 
                 firstSetting = results.models[0];
 
-                return SettingsModel.read(firstSetting.attributes.key);
+                return SettingsModel.findOne(firstSetting.attributes.key);
 
             }).then(function (found) {
 
@@ -74,7 +74,7 @@ describe('Settings Model', function () {
 
         it('can edit single', function (done) {
 
-            SettingsModel.browse().then(function (results) {
+            SettingsModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -103,7 +103,7 @@ describe('Settings Model', function () {
                 model2,
                 editedModel;
 
-            SettingsModel.browse().then(function (results) {
+            SettingsModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -156,7 +156,7 @@ describe('Settings Model', function () {
         it('can delete', function (done) {
             var settingId;
 
-            SettingsModel.browse().then(function (results) {
+            SettingsModel.findAll().then(function (results) {
 
                 should.exist(results);
 
@@ -170,13 +170,13 @@ describe('Settings Model', function () {
 
             }).then(function () {
 
-                return SettingsModel.browse();
+                return SettingsModel.findAll();
 
             }).then(function (newResults) {
 
                 var ids, hasDeletedId;
 
-                ids = _.pluck(newResults.models, "id");
+                ids = _.pluck(newResults.models, 'id');
 
                 hasDeletedId = _.any(ids, function (id) {
                     return id === settingId;
@@ -207,7 +207,7 @@ describe('Settings Model', function () {
             }).then(function (allSettings) {
                 allSettings.length.should.be.above(0);
 
-                return SettingsModel.read('description');
+                return SettingsModel.findOne('description');
             }).then(function (descriptionSetting) {
                 // Testing against the actual value in default-settings.json feels icky,
                 // but it's easier to fix the test if that ever changes than to mock out that behaviour
@@ -220,7 +220,7 @@ describe('Settings Model', function () {
             SettingsModel.add({key: 'description', value: 'Adam\'s Blog'}, {user: 1}).then(function () {
                 return SettingsModel.populateDefaults();
             }).then(function () {
-                return SettingsModel.read('description');
+                return SettingsModel.findOne('description');
             }).then(function (descriptionSetting) {
                 descriptionSetting.get('value').should.equal('Adam\'s Blog');
                 done();

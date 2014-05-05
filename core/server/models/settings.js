@@ -58,12 +58,12 @@ Settings = ghostBookshelf.Model.extend({
     }
 
 }, {
-    read: function (_key) {
+    findOne: function (_key) {
         // Allow for just passing the key instead of attributes
         if (!_.isObject(_key)) {
             _key = { key: _key };
         }
-        return when(ghostBookshelf.Model.read.call(this, _key));
+        return when(ghostBookshelf.Model.findOne.call(this, _key));
     },
 
     edit: function (_data, options) {

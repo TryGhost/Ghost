@@ -6,7 +6,7 @@ var testUtils = require('../../utils'),
     // Stuff we are testing
     Models = require('../../../server/models');
 
-describe("Permission Model", function () {
+describe('Permission Model', function () {
 
     var PermissionModel = Models.Permission;
 
@@ -30,8 +30,8 @@ describe("Permission Model", function () {
         }).catch(done);
     });
 
-    it("can browse permissions", function (done) {
-        PermissionModel.browse().then(function (foundPermissions) {
+    it('can findAll', function (done) {
+        PermissionModel.findAll().then(function (foundPermissions) {
             should.exist(foundPermissions);
 
             foundPermissions.models.length.should.be.above(0);
@@ -40,21 +40,21 @@ describe("Permission Model", function () {
         }).then(null, done);
     });
 
-    it("can read permissions", function (done) {
-        PermissionModel.read({id: 1}).then(function (foundPermission) {
+    it('can findOne', function (done) {
+        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
 
             done();
         }).catch(done);
     });
 
-    it("can edit permissions", function (done) {
-        PermissionModel.read({id: 1}).then(function (foundPermission) {
+    it('can edit', function (done) {
+        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
 
             return foundPermission.set({name: "updated"}).save();
         }).then(function () {
-            return PermissionModel.read({id: 1});
+            return PermissionModel.findOne({id: 1});
         }).then(function (updatedPermission) {
             should.exist(updatedPermission);
 
@@ -64,9 +64,9 @@ describe("Permission Model", function () {
         }).catch(done);
     });
 
-    it("can add permissions", function (done) {
+    it('can add', function (done) {
         var newPerm = {
-            name: "testperm1",
+            name: 'testperm1',
             object_type: 'test',
             action_type: 'test'
         };
@@ -80,13 +80,13 @@ describe("Permission Model", function () {
         }).catch(done);
     });
 
-    it("can delete permissions", function (done) {
-        PermissionModel.read({id: 1}).then(function (foundPermission) {
+    it('can delete', function (done) {
+        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
 
-            return PermissionModel['delete'](1);
+            return PermissionModel.destroy(1);
         }).then(function () {
-            return PermissionModel.browse();
+            return PermissionModel.findAll();
         }).then(function (foundPermissions) {
             var hasRemovedId = foundPermissions.any(function (permission) {
                 return permission.id === 1;
