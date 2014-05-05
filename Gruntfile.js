@@ -710,7 +710,7 @@ var path           = require('path'),
         //
         // `grunt validate` is called by `npm test`.
         grunt.registerTask('validate', 'Run tests and lint code',
-            ['shell:bower', 'concat:dev', 'jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
+            ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
         // ### Unit Tests *(sub task)*
         // `grunt test-unit` will run just the unit tests
