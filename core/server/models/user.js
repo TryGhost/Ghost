@@ -65,7 +65,7 @@ User = ghostBookshelf.Model.extend({
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         // remove password hash for security reasons
         delete attrs.password;
-        
+
         return attrs;
     },
 
@@ -82,6 +82,28 @@ User = ghostBookshelf.Model.extend({
     }
 
 }, {
+    /**
+    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+    * @param {String} methodName The name of the method to check valid options for.
+    * @return {Array} Keys allowed in the `options` hash of the model's method.
+    */
+    permittedOptions: function (methodName) {
+        var options = ghostBookshelf.Model.permittedOptions(),
+
+            // whitelists for the `options` hash argument on methods, by method name.
+            // these are the only options that can be passed to Bookshelf / Knex.
+            validOptions = {
+                findOne: ['withRelated'],
+                add: ['user'],
+                edit: ['user']
+            };
+
+        if (validOptions[methodName]) {
+            options = options.concat(validOptions[methodName]);
+        }
+
+        return options;
+    },
 
     /**
      * Naive user add
@@ -93,7 +115,10 @@ User = ghostBookshelf.Model.extend({
 
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
-            userData = _.extend({}, _user);
+            userData = this.filterData(_user);
+
+        options = this.filterOptions(options, 'add');
+
         /**
          * This only allows one user to be added to the database, otherwise fails.
          * @param {object} user
@@ -314,7 +339,7 @@ User = ghostBookshelf.Model.extend({
             var diff = 0,
                 i;
 
-            // check if the token lenght is correct
+            // check if the token length is correct
             if (token.length !== generatedToken.length) {
                 diff = 1;
             }
