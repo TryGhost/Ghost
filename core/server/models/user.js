@@ -61,6 +61,14 @@ User = ghostBookshelf.Model.extend({
         }
     },
 
+    toJSON: function (options) {
+        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        // remove password hash for security reasons
+        delete attrs.password;
+        
+        return attrs;
+    },
+
     posts: function () {
         return this.hasMany(Posts, 'created_by');
     },
