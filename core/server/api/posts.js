@@ -2,7 +2,6 @@ var when                   = require('when'),
     _                      = require('lodash'),
     dataProvider           = require('../models'),
     canThis                = require('../permissions').canThis,
-    filteredUserAttributes = require('./users').filteredAttributes,
 
     posts,
     allowedIncludes        = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'];
@@ -45,17 +44,7 @@ posts = {
         }
 
         // **returns:** a promise for a page of posts in a json object
-        return dataProvider.Post.findPage(options).then(function (result) {
-            var i = 0,
-                omitted = result;
-
-            for (i = 0; i < omitted.posts.length; i = i + 1) {
-                if (!_.isNumber(omitted.posts[i].author)) {
-                    omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
-                }
-            }
-            return omitted;
-        });
+        return dataProvider.Post.findPage(options);
     },
 
     // #### Read
@@ -76,14 +65,8 @@ posts = {
 
         // **returns:** a promise for a single post in a json object
         return dataProvider.Post.findOne(options, {include: include}).then(function (result) {
-            var omitted;
-
             if (result) {
-                omitted = result.toJSON();
-                if (!_.isNumber(omitted.author)) {
-                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                }
-                return { posts: [ omitted ]};
+                return { posts: [ result.toJSON() ]};
             }
 
             return when.reject({type: 'NotFound', message: 'Post not found.'});
@@ -108,15 +91,13 @@ posts = {
                 return dataProvider.Post.edit(checkedPostData.posts[0], {user: self.user, include: include});
             }).then(function (result) {
                 if (result) {
-                    var omitted = result.toJSON();
-                    if (!_.isNumber(omitted.author)) {
-                        omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                    }
+                    var post = result.toJSON();
+
                     // If previously was not published and now is, signal the change
                     if (result.updated('status') !== result.get('status')) {
-                        omitted.statusChanged = true;
+                        post.statusChanged = true;
                     }
-                    return { posts: [ omitted ]};
+                    return { posts: [ post ]};
                 }
 
                 return when.reject({type: 'NotFound', message: 'Post not found.'});
@@ -141,15 +122,13 @@ posts = {
 
                 return dataProvider.Post.add(checkedPostData.posts[0], {user: self.user, include: include});
             }).then(function (result) {
-                var omitted = result.toJSON();
-                if (!_.isNumber(omitted.author)) {
-                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                }
-                if (omitted.status === 'published') {
+                var post = result.toJSON();
+
+                if (post.status === 'published') {
                     // When creating a new post that is published right now, signal the change
-                    omitted.statusChanged = true;
+                    post.statusChanged = true;
                 }
-                return { posts: [ omitted ]};
+                return { posts: [ post ]};
             });
         }, function () {
             return when.reject({type: 'NoPermission', message: 'You do not have permission to add posts.'});
