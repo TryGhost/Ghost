@@ -4,7 +4,6 @@ var when               = require('when'),
     settings           = require('./settings'),
     canThis            = require('../permissions').canThis,
     ONE_DAY            = 86400000,
-    filteredAttributes = ['password'],
     users;
 
 
@@ -23,21 +22,10 @@ users = {
         // **returns:** a promise for a collection of users in a json object
         return canThis(this.user).browse.user().then(function () {
             return dataProvider.User.findAll(options).then(function (result) {
-                var omitted = {},
-                    i;
-
-                if (result) {
-                    omitted = result.toJSON();
-                }
-
-                for (i = 0; i < omitted.length; i = i + 1) {
-                    omitted[i] = _.omit(omitted[i], filteredAttributes);
-                }
-
-                return { users: omitted };
+                return { users: result.toJSON() };
             });
         }, function () {
-            return when.reject({type: 'NotFound', message: 'You do not have permission to browse users.'});
+            return when.reject({type: 'NoPermission', message: 'You do not have permission to browse users.'});
         });
     },
 
@@ -51,8 +39,7 @@ users = {
 
         return dataProvider.User.findOne(args).then(function (result) {
             if (result) {
-                var omitted = _.omit(result.toJSON(), filteredAttributes);
-                return { users: [omitted] };
+                return { users: [result.toJSON()] };
             }
 
             return when.reject({type: 'NotFound', message: 'User not found.'});
@@ -69,8 +56,7 @@ users = {
                 return dataProvider.User.edit(checkedUserData.users[0], {user: self.user});
             }).then(function (result) {
                 if (result) {
-                    var omitted = _.omit(result.toJSON(), filteredAttributes);
-                    return { users: [omitted]};
+                    return { users: [result.toJSON()]};
                 }
                 return when.reject({type: 'NotFound', message: 'User not found.'});
             });
@@ -94,8 +80,7 @@ users = {
                 return dataProvider.User.add(checkedUserData.users[0], {user: self.user});
             }).then(function (result) {
                 if (result) {
-                    var omitted = _.omit(result.toJSON(), filteredAttributes);
-                    return { users: [omitted]};
+                    return { users: [result.toJSON()]};
                 }
             });
         }, function () {
@@ -160,4 +145,3 @@ users = {
 };
 
 module.exports = users;
-module.exports.filteredAttributes = filteredAttributes;
