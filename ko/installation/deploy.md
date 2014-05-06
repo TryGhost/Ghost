@@ -1,9 +1,9 @@
 ---
 layout: installation
-meta_title: 서버에 Ghost 설치하기 - Ghost 한국어 가이드
-meta_description: 블로깅 플래폼 Ghost를 여러분의 로컬 및 원격에서 설정하는 방법입니다.
-heading: Ghost 설치 시작하기
-subheading: 여러분의 새로운 블로그를 설정하기 위한 첫 번째 단계입니다.
+meta_title: 서버에 Ghost 설치하기 - Ghost 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/deploy/
 chapter: installation
 section: deploy
