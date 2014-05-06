@@ -2,6 +2,7 @@
 var crypto      = require('crypto'),
     express     = require('express'),
     hbs         = require('express-hbs'),
+    compress    = require('compression'),
     fs          = require('fs'),
     uuid        = require('node-uuid'),
     Polyglot    = require('node-polyglot'),
@@ -64,7 +65,7 @@ function initDbHashAndFirstRun() {
                 return dbHash;
             }).then(doFirstRun);
         }
-        
+
         return dbHash;
     });
 }
@@ -215,6 +216,11 @@ function init(server) {
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
+
+        // enabled gzip compression by default
+        if (config().server.compress !== false) {
+            server.use(compress());
+        }
 
         // ## View engine
         // set the view engine

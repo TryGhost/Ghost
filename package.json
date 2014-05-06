@@ -35,6 +35,7 @@
         "bookshelf": "0.6.8",
         "busboy": "0.0.12",
         "colors": "0.6.2",
+        "compression": "^1.0.2",
         "connect-slashes": "1.2.0",
         "downsize": "0.0.5",
         "express": "3.4.6",
