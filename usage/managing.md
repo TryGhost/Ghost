@@ -36,7 +36,7 @@ To change the "Slug" or "Publish date" of a post once published;
 
 1.  Click the 'Settings' icon.
 2.  Proceed to update the information as required (this will be saved automatically when you naviagte away).
-<img style="max-width:100%;" src="hhttps://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" /> 
+<img style="max-width:100%;" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" /> 
 
 ### Delete a Post
 
