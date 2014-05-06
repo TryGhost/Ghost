@@ -1,44 +1,45 @@
 ---
 lang: pl
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Konfiguracja maila w platformie Ghost - Dokumentacja Ghost
+meta_description: Wszystko co potrzebujesz wiedzieć na temat konfiguracji emaili i wysyłki wiadomości z platformy Ghost.
+heading: Konfiguracja maila
 chapter: mail
 ---
 
 
-## Mail Configuration <a id="email-config"></a>
+## Konfiguracja emaila <a id="email-config"></a>
 
-The following documentation details how to configure email in Ghost. Ghost uses [Nodemailer](https://github.com/andris9/Nodemailer), their documentation contains even more examples. 
+Niniejsza dokumentacja opisuje proces konfiguracji emaila w Ghoście. Ghost wykorzystuje [Nodemailer'a](https://github.com/andris9/Nodemailer) - jego dokumentacja zawiera jeszcze więcej przykładów.
 
-### Wait what?
+### Zaraz zaraz, że co?
 
-If you're familiar with PHP land, then you're probably very used to having email just magically work on your hosting platform. Node is a bit different, it's shiny and new and still a little rough around the edges in places.
+Jeżeli miałeś styczność ze środowiskiem PHP, prawdopodobnie zdążyłeś przywyknąć do faktu, że email w Twoim serwisie hostingowym po prostu działa. Node jest nieco innym, stosunkowo nowym rozwiązaniem i wciąż wymaga dopracowania.
 
-But don't fear, setting up your email is a one-time thing and we're here to walk you through it.
+Ale nie obawiaj się. Proces konfiguracji emaila jest czynnością jednorazową i pokażemy Ci krok po kroku, jak to zrobić.
 
-### But why?
 
-At the moment, the only thing Ghost uses email for is sending you an email with a new password if you forget yours. It's not much, but don't underestimate how useful that feature is if you ever happen to need it.
+### Ale dlaczego?
 
-In the future, Ghost will also support setting up email-based subscriptions to your blogs. Emailing new users account details, and other little helpful features that depend on the ability to send mail.
+W tym momencie jedyną rzeczą, do której Ghost wykorzystuje emaile jest wysyłka wiadomości zawierającej nowe hasło w przypadku zapomnienia starego. To niewiele, ale nie zapominaj, jak cenna może okazać się ta funkcja w przypadku, gdy będziesz jej potrzebował.
 
-## Ok, so how do I do it? <a id="how-to"></a>
+W przyszłości Ghost będzie również udostępniał możliwość subskrybowania Twoich blogów, wysyłanie nowym użytkownikom informacji o ich kontach i wiele innych przydatnych drobiazgów, które opierają się na wysyłaniu emaili.
 
-The first thing you're going to need is an account with an email sending service. We highly recommend Mailgun. They have a nice free starter account which allows you to send more email than all but the most prolific email-subscription based blogs could manage. You could also use Gmail or Amazon SES.
+## No dobrze, więc jak to zrobić? <a id="how-to"></a>
 
-Once you've decided on what email service to use, you need to add your settings to Ghost's config file. Wherever you have installed Ghost, you should find a <code class="path">config.js</code> file in the route directory along with <code class="path">index.js</code>. If you don't have a <code class="path">config.js</code> file yet, then copy <code class="path">config.example.js</code> and rename it.
+Pierwszą rzeczą, której będziesz potrzebował, jest konto w serwisie umożliwiającym wysyłanie maili. Szczególnie polecamy serwis Mailgun. Ich darmowe konto w zupełności wystarcza do tego, aby wysłać więcej wiadomości, niż potrzebuje większość blogów z subskrypcją email. Możesz także użyć Gmaila lub serwisu Amazon SES.
+
+Gdy już wybierzesz serwis do wysyłania maili, powinieneś wprowadzić swoje ustawienia do pliku konfiguracyjnego Ghosta. W lokalizacji, w której zainstalowałeś Ghosta, powinieneś znaleźć w katalogu głównym pliki <code class="path">config.js</code> oraz <code class="path">index.js</code>. Jeżeli nie masz jeszcze pliku <code class="path">config.js</code>, skopiuj <code class="path">config.example.js</code> i zmień mu nazwę.
 
 ### Mailgun <a id="mailgun"></a>
 
-Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. You'll need to have an email address on hand, and it will ask you to either provide a domain name, or think up a subdomain. You can change this later, so for now why not register a subdomain similar to the name of the blog you're setting up.
+Przejdź na stronę [mailgun.com](http://www.mailgun.com/) i załóż konto. Potrzebny będzie adres email, oprócz tego serwis poprosi Cię o podanie domeny lub adresu subdomeny. Możesz to później zmienić, więc najlepszym wyjściem będzie wybór nazwy subdomeny zbliżonej do nazwy bloga, którego zamierzasz uruchomić.
 
-Verify your email address with Mailgun, and then you'll have access to their lovely control panel. You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your domain on the right hand side… see the little screencast below to help you find your details.
+Po zweryfikowaniu adresu email w serwisie Mailgun otrzymasz dostęp do jego eleganckiego panelu administracyjnego. Kliknij adres swojej domeny, aby uzyskać nazwę użytkownika i hasło, które Mailgun stworzył dla Ciebie (to nie są te same dane, które podałeś w trakcie zakładania konta). Poniższy obrazek ilustruje, jak to zrobić.
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />   
-  
-Right, now you've got everything you need, it's time to open up your config file. Open your <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+
+Teraz, gdy masz już wszystko, co jest Ci potrzebne, czas uzupełnić plik konfiguracyjny. Otwórz plik <code class="path">config.js</code> w swoim ulubionym edytorze. Przejdź do sekcji dotyczącej środowiska, dla którego chcesz uruchomić emaila i zmień ustawienia w następujący sposób:
 
 ```
 mail: {
@@ -53,7 +54,7 @@ transport: 'SMTP',
 }
 ```
 
-Put your 'Login' from mailgun between the quote marks next to 'user' and your 'Password' from mailgun inside the quotes next to 'pass'. If I was configuring mailgun for the 'tryghosttest' account, it would look like this:
+Wklej swoją nazwę użytkownika ('Login') z Mailguna w cudzysłów obok słowa 'user', zaś hasło ('Password') wklej w cudzysłów obok słowa 'pass'. Przykładowa konfiguracja dla konta Mailguna o nazwie 'tryghosttest' wyglądałaby tak:
 
 ```
 mail: {
@@ -68,15 +69,15 @@ mail: {
 }
 ```
 
-Keep an eye out for all of the colons, quotes and curly brackets. Misplace one of those and you'll find you get weird errors.
+Uważaj na wszystkie średniki, cudzysłowy i nawiasy klamrowe. Ich usunięcie lub umieszczenie w błędnym miejscu może powodować dziwne błędy.
 
-You can reuse your settings for both your development and production environment if you have both.
+Możesz użyć tych samych ustawień dla środowiska testowego i produkcyjnego, jeżeli masz oba z wymienionych.
 
 ### Amazon SES <a id="ses"></a>
 
-You can sign up for an Amazon Simple Email Service account over at <http://aws.amazon.com/ses/>. Once you finish signing up, you'll be given an access key and a secret.
+Zarejestruj konto Amazon Simple Email Service na stronie <http://aws.amazon.com/ses/>. Gdy skończysz, otrzymasz kod dostępu (access key) i tajny klucz (secret).
 
-Open Ghost's <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and add your Amazon credentials to your mail settings as shown below:
+Otwórz plik <code class="path">config.js</code> w swoim ulubionym edytorze. Przejdź do sekcji dotyczącej środowiska, dla którego chcesz skonfigurować email i dodaj dane dostepowe z Amazona analogicznie do przykładu poniżej:
 
 ```
 mail: {
@@ -90,28 +91,28 @@ mail: {
 
 ### Gmail <a id="gmail"></a>
 
-It is possible to use Gmail to send email from Ghost. If you are going to do this, we recommend that you [create a new account](https://accounts.google.com/SignUp) for the purpose, rather than using any existing personal email account details.
+Da się użyć Gmaila do wysyłki maili z Ghosta. Jeżeli zamierzasz to zrobić, radzimy w tym celu [założyć nowe konto](https://accounts.google.com/SignUp) zamiast używać swój dotychczasowy adres.
 
-Once you've created your new account, you can configure the settings in Ghost's <code class="path">config.js</code> file. Open the file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+Po założeniu nowego konta możesz podać jego ustawienia w pliku konfiguracyjnym Ghosta - <code class="path">config.js</code>. Otwórz ten plik w swoim ulubionym edytorze. Przejdź do sekcji dotyczącej środowiska, dla którego chcesz skonfigurować email i zmień swoje ustawienia w sposób analogiczny do poniższego
 
 ```
 mail: {
     transport: 'SMTP',
     options: {
         auth: {
-            user: 'youremail@gmail.com',
-            pass: 'yourpassword'
+            user: 'twojadres@gmail.com',
+            pass: 'twojehaslo'
         }
     }
 }
 ```
 
-### From Address <a id="from"></a>
+### Adres "Od" <a id="from"></a>
 
-By default the 'from' address for mail sent from Ghost will be set to the email address on the general settings page. If you want to override this to something different, you can also configure it in the <code class="path">config.js</code> file.
+Domyślnie adres nadawcy ("Od") w mailach wysyłanych przez Ghosta będzie taki sam, jak adres e-mail podany w ustawieniach ogólnych. Jeżeli chcesz go nadpisać innym adresem, możesz to zrobić w pliku <code class="path">config.js</code>.
 
 ```
 mail: {
-    fromaddress: 'myemail@address.com',
+    fromaddress: 'mojadres@email.com',
 }
 ```
