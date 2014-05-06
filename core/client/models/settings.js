@@ -1,4 +1,4 @@
-/*global Ghost, _ */
+/*global Backbone, Ghost, _ */
 (function () {
     'use strict';
     //id:0 is used to issue PUT requests
@@ -14,6 +14,19 @@
             }, {});
 
             return result;
+        },
+
+        sync: function (method, model, options) {
+            var settings = _.map(this.attributes, function (value, key) {
+                return { key: key, value: value };
+            });
+            //wrap settings in {settings: [{...}]}
+            if (method === 'update') {
+                options.data = JSON.stringify({settings: settings});
+                options.contentType = 'application/json';
+            }
+
+            return Backbone.Model.prototype.sync.apply(this, arguments);
         }
     });
 
