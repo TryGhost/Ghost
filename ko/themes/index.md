@@ -10,32 +10,31 @@ chapter: themes
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## 테마 바꾸기 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+고스트 테마 폴더는 <code class="path">content/themes/</code>에 위치해 있습니다.
+ 
+만약 기본 테마인 '캐스퍼' 테마 대신 다른 테마를 사용하고 싶다면 [마켓플레이스 갤러리](http://marketplace.ghost.org/)에서 더 많은 커스텀 테마를 찾아 보실 수 있습니다. 맘에 드는 테마 패키지를 다운로드 히신 후 압축을 푼 폴더를 <code class="path">content/themes</code>로 옮기세요.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+만약 직접 테마를 제작하고 싶다면 고스트 테마 폴더에 있는 기본 테마인 '캐스퍼' 폴더를 복사해서 새로운 이름으로 변경하고 그안에 있는 템플릿을 원하는데로 수정하면 됩니다.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+새로 추가한 테마로 바꾸려면:
 
-To switch to your newly added theme:
+1.  고스트를 재시작 하세요. 현재 테마를 <code class="path">content/themes</code> 폴더에 새로 추가한 후 고스트를 재시작하지 않으면 변경사항이 적용되지 않습니다.
+2.  고스트 설정 화면에서 로그인한 후 <code class="path">/ghost/settings/general/</code>로 가세요.
+3.  'Theme' 옵션에서 원하시는 테마의 이름을 선택하세요.
+4.  'Save'를 클릭하세요.
+5.  블로그로 가서 새로운 테마를 확인하세요.
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+##  Handlebars란? <a id="what-is-handlebars"></a>
 
+[Handlebars](http://handlebarsjs.com/)는 고스트가 사용하는 템플릿 언어 입니다.
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
-
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
-
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
-
+> Handlebars는 시맨틱 템플릿을 효과적으로 구축하는데 필요한 것을 제공합니다.
+ 
 If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
 
-## About Ghost themes <a id="about"></a>
+## 고스트 테마에 대해 <a id="about"></a>
 
 Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
 
