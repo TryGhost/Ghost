@@ -1,13 +1,15 @@
-<section class="markdown-help-container">
-    <table class="modal-markdown-help-table">
-        <thead>
+{{#modal-dialog action="closeModal" showClose=true style="wide" animation="fade"
+    title="Markdown Help"}}
+    <section class="markdown-help-container">
+        <table class="modal-markdown-help-table">
+            <thead>
             <tr>
                 <th>Result</th>
                 <th>Markdown</th>
                 <th>Shortcut</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             <tr>
                 <td><strong>Bold</strong></td>
                 <td>**text**</td>
@@ -63,7 +65,8 @@
                 <td>`code`</td>
                 <td>Cmd + K / Ctrl + Shift + K</td>
             </tr>
-        </tbody>
-    </table>
-    For further Markdown syntax reference: <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown Documentation</a>
-</section>
+            </tbody>
+        </table>
+        For further Markdown syntax reference: <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank">Markdown Documentation</a>
+    </section>
+{{/modal-dialog}}

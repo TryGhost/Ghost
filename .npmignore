@@ -1,6 +1,7 @@
 !**
 .build
 .dist
+.tmp
 docs/**
 _site/**
 content/images/**

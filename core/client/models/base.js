@@ -1,35 +1,35 @@
-/*global Ghost, _, Backbone, NProgress */
 
-(function () {
-    "use strict";
-    NProgress.configure({ showSpinner: false });
+function ghostPaths() {
+    var path = window.location.pathname,
+        subdir = path.substr(0, path.search('/ghost/'));
 
-    // Adds in a call to start a loading bar
-    // This is sets up a success function which completes the loading bar
-    function wrapSync(method, model, options) {
-        if (options !== undefined && _.isObject(options)) {
-            NProgress.start();
+    return {
+        subdir: subdir,
+        adminRoot: subdir + '/ghost',
+        apiRoot: subdir + '/ghost/api/v0.1'
+    };
+}
 
-            /*jshint validthis:true */
-            var self = this,
-                oldSuccess = options.success;
-            /*jshint validthis:false */
+var BaseModel = Ember.Object.extend({
 
-            options.success = function () {
-                NProgress.done();
-                return oldSuccess.apply(self, arguments);
-            };
-        }
+    fetch: function () {
+        return ic.ajax.request(this.url, {
+            type: 'GET'
+        });
+    },
 
-        /*jshint validthis:true */
-        return Backbone.sync.call(this, method, model, options);
+    save: function () {
+        return ic.ajax.request(this.url, {
+            type: 'PUT',
+            dataType: 'json',
+            // @TODO: This is passing _oldWillDestory and _willDestroy and should not.
+            data: JSON.stringify(this.getProperties(Ember.keys(this)))
+        });
     }
+});
 
-    Ghost.ProgressModel = Backbone.Model.extend({
-        sync: wrapSync
-    });
+BaseModel.apiRoot = ghostPaths().apiRoot;
+BaseModel.subdir = ghostPaths().subdir;
+BaseModel.adminRoot = ghostPaths().adminRoot;
 
-    Ghost.ProgressCollection = Backbone.Collection.extend({
-        sync: wrapSync
-    });
-}());
+export default BaseModel;

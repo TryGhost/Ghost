@@ -28,7 +28,7 @@ var path           = require('path'),
     }()),
 
     // ## Grunt configuration
-    //
+
     configureGrunt = function (grunt) {
 
         // *This is not useful but required for jshint*
@@ -42,7 +42,8 @@ var path           = require('path'),
         var cfg = {
             // #### Common paths used by tasks
             paths: {
-                adminAssets: './core/client/assets',
+                // adminAssets: './core/client/', ?? who knows...
+                adminOldAssets: './core/clientold/assets',
                 build: buildDirectory,
                 releaseBuild: path.join(buildDirectory, 'release'),
                 dist: distDirectory,
@@ -58,13 +59,21 @@ var path           = require('path'),
             // See the [grunt dev](#live%20reload) task for how this is used.
             watch: {
                 handlebars: {
-                    files: ['core/client/tpl/**/*.hbs'],
+                    files: ['core/clientold/tpl/**/*.hbs'],
                     tasks: ['handlebars']
+                },
+                'handlebars-ember': {
+                    files: ['core/client/**/*.hbs'],
+                    tasks: ['emberTemplates:dev']
+                },
+                ember: {
+                    files: ['core/client/**/*.js'],
+                    tasks: ['clean:tmp', 'transpile', 'concat_sourcemap']
                 },
                 concat: {
                     files: [
-                        'core/client/*.js',
-                        'core/client/**/*.js'
+                        'core/clientold/*.js',
+                        'core/clientold/**/*.js'
                     ],
                     tasks: ['concat']
                 },
@@ -167,7 +176,9 @@ var path           = require('path'),
                             Ember: true,
                             Em: true,
                             DS: true,
-                            $: true
+                            $: true,
+                            validator: true,
+                            ic: true
                         },
                         node: false,
                         browser: true,
@@ -295,18 +306,64 @@ var path           = require('path'),
             },
 
             // ### grunt-contrib-handlebars
-            // Compile handlebars templates into a JST file for the admin client
+            // Compile handlebars templates into a JST file for the admin client (old)
             handlebars: {
                 core: {
                     options: {
                         namespace: 'JST',
                         processName: function (filename) {
-                            filename = filename.replace('core/client/tpl/', '');
+                            filename = filename.replace('core/clientold/tpl/', '');
                             return filename.replace('.hbs', '');
                         }
                     },
                     files: {
-                        'core/client/tpl/hbs-tpl.js': 'core/client/tpl/**/*.hbs'
+                        'core/clientold/tpl/hbs-tpl.js': 'core/clientold/tpl/**/*.hbs'
+                    }
+                }
+            },
+
+            // ### grunt-ember-templates
+            // Compiles handlebar templates for ember
+            emberTemplates: {
+                dev: {
+                    options: {
+                        templateBasePath: /core\/client\//,
+                        templateFileExtensions: /\.hbs/,
+                        templateRegistration: function (name, template) {
+                            return grunt.config.process("define('ghost/") + name + "', ['exports'], function(__exports__){ __exports__['default'] = " + template + "; });";
+                        }
+                    },
+                    files: {
+                        "core/built/scripts/templates-ember.js": "core/client/templates/**/*.hbs"
+                    }
+                }
+            },
+
+            // ### grunt-es6-module-transpiler
+            // Compiles Ember es6 modules
+            transpile: {
+                client: {
+                    type: 'amd',
+                    moduleName: function (path) {
+                        return 'ghost/' + path;
+                    },
+                    files: [{
+                        expand: true,
+                        cwd: 'core/client/',
+                        src: ['**/*.js'],
+                        dest: '.tmp/ember-transpiled/'
+                    }]
+                }
+            },
+
+            // ### grunt-es6-module-transpiler
+            // Compiles Ember es6 modules
+            concat_sourcemap: {
+                client: {
+                    src: ['.tmp/ember-transpiled/**/*.js'],
+                    dest: 'core/built/scripts/ghost-dev-ember.js',
+                    options: {
+                        sourcesContent: true
                     }
                 }
             },
@@ -329,11 +386,17 @@ var path           = require('path'),
             // ### grunt-contrib-clean
             // Clean up files as part of other tasks
             clean: {
+                built: {
+                    src: ['core/built/**']
+                },
                 release: {
                     src: ['<%= paths.releaseBuild %>/**']
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
+                },
+                tmp: {
+                    src: ['.tmp/**']
                 }
             },
 
@@ -351,6 +414,11 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/clientold/assets/',
+                        expand: true
                     }]
                 },
                 prod: {
@@ -364,6 +432,11 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/clientold/assets/',
+                        expand: true
                     }]
                 },
                 release: {
@@ -376,6 +449,11 @@ var path           = require('path'),
                         cwd: 'bower_components/ghost-ui/dist/',
                         src: ['**'],
                         dest: 'core/client/assets/',
+                        expand: true
+                    }, {
+                        cwd: 'bower_components/ghost-ui/dist/',
+                        src: ['**'],
+                        dest: 'core/clientold/assets/',
                         expand: true
                     }, {
                         expand: true,
@@ -406,8 +484,8 @@ var path           = require('path'),
                         'core/built/scripts/vendor.js': [
                             'bower_components/jquery/dist/jquery.js',
                             'bower_components/jquery-ui/ui/jquery-ui.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
+                            'core/clientold/assets/lib/jquery-utils.js',
+                            'core/clientold/assets/lib/uploader.js',
 
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
@@ -425,8 +503,8 @@ var path           = require('path'),
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // TODO: Remove or replace
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/to-title-case.js',
+                            'core/clientold/assets/vendor/shortcuts.js',
+                            'core/clientold/assets/vendor/to-title-case.js',
 
                             'bower_components/Countable/Countable.js',
                             'bower_components/fastclick/lib/fastclick.js',
@@ -434,32 +512,54 @@ var path           = require('path'),
                         ],
 
                         'core/built/scripts/helpers.js': [
-                            'core/client/init.js',
+                            'core/clientold/init.js',
 
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js',
-                            'core/client/assets/lib/editor/index.js',
-                            'core/client/assets/lib/editor/markerManager.js',
-                            'core/client/assets/lib/editor/uploadManager.js',
-                            'core/client/assets/lib/editor/markdownEditor.js',
-                            'core/client/assets/lib/editor/htmlPreview.js',
-                            'core/client/assets/lib/editor/scrollHandler.js',
-                            'core/client/assets/lib/editor/mobileCodeMirror.js'
+                            'core/clientold/mobile-interactions.js',
+                            'core/clientold/toggle.js',
+                            'core/clientold/markdown-actions.js',
+                            'core/clientold/helpers/index.js',
+                            'core/clientold/assets/lib/editor/index.js',
+                            'core/clientold/assets/lib/editor/markerManager.js',
+                            'core/clientold/assets/lib/editor/uploadManager.js',
+                            'core/clientold/assets/lib/editor/markdownEditor.js',
+                            'core/clientold/assets/lib/editor/htmlPreview.js',
+                            'core/clientold/assets/lib/editor/scrollHandler.js',
+                            'core/clientold/assets/lib/editor/mobileCodeMirror.js'
                         ],
 
                         'core/built/scripts/templates.js': [
-                            'core/client/tpl/hbs-tpl.js'
+                            'core/clientold/tpl/hbs-tpl.js'
                         ],
 
                         'core/built/scripts/models.js': [
-                            'core/client/models/**/*.js'
+                            'core/clientold/models/**/*.js'
                         ],
 
                         'core/built/scripts/views.js': [
-                            'core/client/views/**/*.js',
-                            'core/client/router.js'
+                            'core/clientold/views/**/*.js',
+                            'core/clientold/router.js'
+                        ]
+                    }
+                },
+                'dev-ember': {
+                    files: {
+                        'core/built/scripts/vendor-ember.js': [
+                            'core/client/assets/vendor/loader.js',
+                            'bower_components/jquery/dist/jquery.js',
+                            'bower_components/handlebars/handlebars.js',
+                            'bower_components/ember/ember.js',
+                            'bower_components/ember-resolver/dist/ember-resolver.js',
+                            'bower_components/ic-ajax/dist/globals/main.js',
+                            'bower_components/validator-js/validator.js',
+                            'bower_components/codemirror/lib/codemirror.js',
+                            'bower_components/codemirror/addon/mode/overlay.js',
+                            'bower_components/codemirror/mode/markdown/markdown.js',
+                            'bower_components/codemirror/mode/gfm/gfm.js',
+                            'bower_components/showdown/src/showdown.js',
+                            'bower_components/moment/moment.js',
+
+                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                            'core/shared/lib/showdown/extensions/ghostgfm.js',
                         ]
                     }
                 },
@@ -468,8 +568,8 @@ var path           = require('path'),
                         'core/built/scripts/ghost.js': [
                             'bower_components/jquery/dist/jquery.js',
                             'bower_components/jquery-ui/ui/jquery-ui.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
+                            'core/clientold/assets/lib/jquery-utils.js',
+                            'core/clientold/assets/lib/uploader.js',
 
                             'bower_components/lodash/dist/lodash.underscore.js',
                             'bower_components/backbone/backbone.js',
@@ -487,35 +587,35 @@ var path           = require('path'),
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
 
                             // TODO: Remove or replace
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/to-title-case.js',
+                            'core/clientold/assets/vendor/shortcuts.js',
+                            'core/clientold/assets/vendor/to-title-case.js',
 
                             'bower_components/Countable/Countable.js',
                             'bower_components/fastclick/lib/fastclick.js',
                             'bower_components/nprogress/nprogress.js',
 
-                            'core/client/init.js',
+                            'core/clientold/init.js',
 
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js',
+                            'core/clientold/mobile-interactions.js',
+                            'core/clientold/toggle.js',
+                            'core/clientold/markdown-actions.js',
+                            'core/clientold/helpers/index.js',
 
-                            'core/client/assets/lib/editor/index.js',
-                            'core/client/assets/lib/editor/markerManager.js',
-                            'core/client/assets/lib/editor/uploadManager.js',
-                            'core/client/assets/lib/editor/markdownEditor.js',
-                            'core/client/assets/lib/editor/htmlPreview.js',
-                            'core/client/assets/lib/editor/scrollHandler.js',
-                            'core/client/assets/lib/editor/mobileCodeMirror.js',
+                            'core/clientold/assets/lib/editor/index.js',
+                            'core/clientold/assets/lib/editor/markerManager.js',
+                            'core/clientold/assets/lib/editor/uploadManager.js',
+                            'core/clientold/assets/lib/editor/markdownEditor.js',
+                            'core/clientold/assets/lib/editor/htmlPreview.js',
+                            'core/clientold/assets/lib/editor/scrollHandler.js',
+                            'core/clientold/assets/lib/editor/mobileCodeMirror.js',
 
-                            'core/client/tpl/hbs-tpl.js',
+                            'core/clientold/tpl/hbs-tpl.js',
 
-                            'core/client/models/**/*.js',
+                            'core/clientold/models/**/*.js',
 
-                            'core/client/views/**/*.js',
+                            'core/clientold/views/**/*.js',
 
-                            'core/client/router.js'
+                            'core/clientold/router.js'
                         ]
                     }
                 }
@@ -772,6 +872,11 @@ var path           = require('path'),
                 console.log('Use the', 'stable'.bold, 'branch for live blogs.', 'Never'.bold, 'master!');
             });
 
+        // ### Ember Build *(Utility Task)*
+        // All tasks related to building the Ember client code including transpiling ES6 modules and building templates
+        grunt.registerTask('emberBuild', 'Build Ember JS & templates for development',
+            ['clean:tmp', 'emberTemplates:dev', 'transpile', 'concat_sourcemap']);
+
 
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
@@ -800,7 +905,7 @@ var path           = require('path'),
         // Compiles handlebars templates, concatenates javascript files for the admin UI into a handful of files instead
         // of many files, and makes sure the bower dependencies are in the right place.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['update_submodules', 'handlebars', 'concat', 'copy:dev']);
+            ['update_submodules', 'handlebars', 'concat', 'copy:dev', 'emberBuild']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -814,7 +919,7 @@ var path           = require('path'),
         //
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['handlebars', 'concat', 'copy:dev', 'express:dev', 'watch']);
+           ['handlebars', 'concat', 'copy:dev', 'emberBuild', 'express:dev', 'watch']);
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.

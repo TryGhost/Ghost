@@ -1,0 +1,21 @@
+<header class="floatingheader">
+    <button class="button-back" href="#">Back</button>
+    {{!-- @TODO: add back title updates depending on featured state --}}
+    <a {{bind-attr class="featured:featured:unfeatured"}} href="#" title="Feature this post">
+        <span class="hidden">Star</span>
+    </a>
+    <small>
+        {{!-- @TODO: the if published doesn't seem to work, needs to be fixed --}}
+        <span class="status">{{#if published}}Published{{else}}Written{{/if}}</span>
+        <span class="normal">by</span>
+        <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
+    </small>
+    <section class="post-controls">
+        {{#link-to "editor" this class="post-edit" title="Edit Post"}}
+            <span class="hidden">Edit Post</span>
+        {{/link-to}}
+        <a class="post-settings" title="Post Settings" {{action 'editSettings'}}><span class="hidden">Post Settings</span></a>
+        <!-- @TODO use Ghost Popover (#2565) --->
+        {{view "post-settings-menu-view"}}
+    </section>
+</header>

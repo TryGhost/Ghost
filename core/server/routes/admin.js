@@ -6,6 +6,10 @@ var admin       = require('../controllers/admin'),
     ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S;
 
 module.exports = function (server) {
+    // Have ember route look for hits first
+    // to prevent conflicts with pre-existing routes
+    server.get('/ghost/ember/*', admin.index);
+
     var subdir = config().paths.subdir;
     // ### Admin routes
     server.get('/logout/', function redirect(req, res) {
@@ -60,5 +64,5 @@ module.exports = function (server) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
-    server.get('/ghost/', admin.index);
+    server.get('/ghost/', admin.indexold);
 };
