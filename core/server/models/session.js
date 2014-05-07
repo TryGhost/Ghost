@@ -23,7 +23,7 @@ Session = ghostBookshelf.Model.extend({
 
 }, {
     destroyAll:  function (options) {
-        options = options || {};
+        options = this.filterOptions(options, 'destroyAll');
         return ghostBookshelf.Collection.forge([], {model: this}).fetch()
             .then(function (collection) {
                 collection.invokeThen('destroy', options);

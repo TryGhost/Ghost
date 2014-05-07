@@ -58,6 +58,28 @@ Settings = ghostBookshelf.Model.extend({
     }
 
 }, {
+    /**
+    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+    * @param {String} methodName The name of the method to check valid options for.
+    * @return {Array} Keys allowed in the `options` hash of the model's method.
+    */
+    permittedOptions: function (methodName) {
+        var options = ghostBookshelf.Model.permittedOptions(),
+
+            // whitelists for the `options` hash argument on methods, by method name.
+            // these are the only options that can be passed to Bookshelf / Knex.
+            validOptions = {
+                add: ['user'],
+                edit: ['user']
+            };
+
+        if (validOptions[methodName]) {
+            options = options.concat(validOptions[methodName]);
+        }
+
+        return options;
+    },
+
     findOne: function (_key) {
         // Allow for just passing the key instead of attributes
         if (!_.isObject(_key)) {
@@ -67,6 +89,8 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     edit: function (_data, options) {
+        var self = this;
+        options = this.filterOptions(options, 'edit');
 
         if (!Array.isArray(_data)) {
             _data = [_data];
@@ -78,6 +102,9 @@ Settings = ghostBookshelf.Model.extend({
             if (!(_.isString(item.key) && item.key.length > 0)) {
                 return when.reject({type: 'ValidationError', message: 'Setting key cannot be empty.'});
             }
+
+            item = self.filterData(item);
+
             return Settings.forge({ key: item.key }).fetch(options).then(function (setting) {
 
                 if (setting) {

@@ -232,6 +232,47 @@ Post = ghostBookshelf.Model.extend({
 
 }, {
 
+    /**
+    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+    * @param {String} methodName The name of the method to check valid options for.
+    * @return {Array} Keys allowed in the `options` hash of the model's method.
+    */
+    permittedOptions: function (methodName) {
+        var options = ghostBookshelf.Model.permittedOptions(),
+
+            // whitelists for the `options` hash argument on methods, by method name.
+            // these are the only options that can be passed to Bookshelf / Knex.
+            validOptions = {
+                findAll: ['withRelated'],
+                findOne: ['user', 'importing', 'withRelated'],
+                findPage: ['page', 'limit', 'status', 'staticPages'],
+                add: ['user', 'importing'],
+                edit: ['user']
+            };
+
+        if (validOptions[methodName]) {
+            options = options.concat(validOptions[methodName]);
+        }
+
+        return options;
+    },
+
+    /**
+     * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * @param {Object} data Has keys representing the model's attributes/fields in the database.
+     * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
+     */
+    filterData: function (data) {
+        var permittedAttributes = this.prototype.permittedAttributes(),
+            filteredData;
+
+        // manually add 'tags' attribute since it's not in the schema
+        permittedAttributes.push('tags');
+
+        filteredData = _.pick(data, permittedAttributes);
+
+        return filteredData;
+    },
 
     // #### findAll
     // Extends base model findAll to eager-fetch author and user relationships.
@@ -266,11 +307,9 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         var postCollection = Posts.forge(),
-            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
-            permittedOptions = ['page', 'limit', 'status', 'staticPages', 'include'];
+            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false;
 
-        // sanitize options so we are not automatically passing through any and all query strings to Bookshelf / Knex.
-        options = _.pick(options, permittedOptions);
+        options = this.filterOptions(options, 'findPage');
 
         // Set default settings for options
         options = _.extend({
@@ -451,7 +490,7 @@ Post = ghostBookshelf.Model.extend({
         });
     },
     destroy: function (_identifier, options) {
-        options = options || {};
+        options = this.filterOptions(options, 'destroy');
 
         return this.forge({id: _identifier}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
             var tagIds = _.pluck(post.related('tags').toJSON(), 'id');
