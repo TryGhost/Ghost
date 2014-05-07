@@ -385,7 +385,7 @@ coreHelpers.body_class = function (options) {
         classes.push('page');
     }
 
-    return api.settings.read('activeTheme').then(function (response) {
+    return api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
         var activeTheme = response.settings[0],
             paths = config().paths.availableThemes[activeTheme.value],
             view;
@@ -528,8 +528,8 @@ coreHelpers.meta_description = function (options) {
 coreHelpers.e = function (key, defaultString, options) {
     var output;
     when.all([
-        api.settings.read('defaultLang'),
-        api.settings.read('forceI18n')
+        api.settings.read.call({ internal: true }, 'defaultLang'),
+        api.settings.read.call({ internal: true }, 'forceI18n')
     ]).then(function (values) {
         if (values[0].settings.value === 'en' &&
                 _.isEmpty(options.hash) &&

@@ -219,7 +219,7 @@ describe('Settings API', function () {
                 request.put(testUtils.API.getApiQuery('settings/'))
                     .set('X-CSRF-Token', csrfToken)
                     .send(jsonResponse)
-                    .expect(400)
+                    .expect(404)
                     .end(function (err, res) {
                         if (err) {
                             return done(err);

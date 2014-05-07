@@ -150,7 +150,7 @@ function manageAdminAndTheme(req, res, next) {
         expressServer.enable(expressServer.get('activeTheme'));
         expressServer.disable('admin');
     }
-    api.settings.read('activeTheme').then(function (response) {
+    api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
         var activeTheme = response.settings[0];
         
         // Check if the theme changed
