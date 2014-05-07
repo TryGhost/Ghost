@@ -20,7 +20,7 @@ users = {
     // **takes:** options object
     browse: function browse(options) {
         // **returns:** a promise for a collection of users in a json object
-        return canThis(this.user).browse.user().then(function () {
+        return canThis(this).browse.user().then(function () {
             return dataProvider.User.findAll(options).then(function (result) {
                 return { users: result.toJSON() };
             });
@@ -51,7 +51,7 @@ users = {
     edit: function edit(userData) {
         // **returns:** a promise for the resulting user in a json object
         var self = this;
-        return canThis(this.user).edit.user(userData.users[0].id).then(function () {
+        return canThis(this).edit.user(userData.users[0].id).then(function () {
             return checkUserData(userData).then(function (checkedUserData) {
                 return dataProvider.User.edit(checkedUserData.users[0], {user: self.user});
             }).then(function (result) {
@@ -70,11 +70,11 @@ users = {
     add: function add(userData) {
         // **returns:** a promise for the resulting user in a json object
         var self = this;
-        return canThis(this.user).add.user().then(function () {
+        return canThis(this).add.user().then(function () {
             return checkUserData(userData).then(function (checkedUserData) {
                 // if the user is created by users.register(), use id: 1
                 // as the creator for now
-                if (self.user === 'internal') {
+                if (self.internal) {
                     self.user = 1;
                 }
                 return dataProvider.User.add(checkedUserData.users[0], {user: self.user});
@@ -93,7 +93,7 @@ users = {
     register: function register(userData) {
         // TODO: if we want to prevent users from being created with the signup form
         // this is the right place to do it
-        return users.add.call({user: 'internal'}, userData);
+        return users.add.call({internal: true}, userData);
     },
 
     // #### Check
