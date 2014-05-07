@@ -20,7 +20,9 @@ db = {
 
         // Export data, otherwise send error 500
         return canThis(self.user).exportContent.db().then(function () {
-            return dataExport().otherwise(function (error) {
+            return dataExport().then(function (exportedData) {
+                return when.resolve({ db: [exportedData] });
+            }).otherwise(function (error) {
                 return when.reject({type: 'InternalServerError', message: error.message || error});
             });
         }, function () {
@@ -46,7 +48,7 @@ db = {
 
             return api.settings.read.call({ internal: true }, { key: 'databaseVersion' }).then(function (response) {
                 var setting = response.settings[0];
-                
+
                 return when(setting.value);
             }, function () {
                 return when('002');
@@ -90,7 +92,7 @@ db = {
             }).then(function importSuccess() {
                 return api.settings.updateSettingsCache();
             }).then(function () {
-                return when.resolve({message: 'Posts, tags and other data successfully imported'});
+                return when.resolve({ db: [] });
             }).otherwise(function importFailure(error) {
                 return when.reject({type: 'InternalServerError', message: error.message || error});
             }).finally(function () {
@@ -107,7 +109,7 @@ db = {
         return canThis(self.user).deleteAllContent.db().then(function () {
             return when(dataProvider.deleteAllContent())
                 .then(function () {
-                    return when.resolve({message: 'Successfully deleted all content from your blog.'});
+                    return when.resolve({ db: [] });
                 }, function (error) {
                     return when.reject({message: error.message || error});
                 });
