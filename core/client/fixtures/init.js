@@ -1,5 +1,6 @@
 import postFixtures from 'ghost/fixtures/posts';
 import userFixtures from 'ghost/fixtures/users';
+import settingsFixtures from 'ghost/fixtures/settings';
 
 var response = function (responseBody, status) {
     status = status || 200;
@@ -30,6 +31,10 @@ var posts = function (status) {
     }, status);
 };
 
+var settings = function (status) {
+    return response(settingsFixtures, status);
+};
+
 var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/posts', posts(status));
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/1', post(1, status));
@@ -45,6 +50,7 @@ var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/reset/', response({
         msg: 'Password changed successfully'
     }));
+    ic.ajax.defineFixture('/ghost/api/v0.1/settings/?type=blog,theme,app', settings(status));
 };
 
 export default defineFixtures;
