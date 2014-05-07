@@ -67,6 +67,17 @@ describe('Settings API', function () {
     });
 
     it('can edit', function (done) {
+        return SettingsAPI.edit({ settings: [{ key: 'title', value: 'UpdatedGhost'}]}).then(function (response) {
+            should.exist(response);
+            testUtils.API.checkResponse(response, 'settings');
+            response.settings.length.should.equal(1);
+            testUtils.API.checkResponse(response.settings[0], 'setting');
+
+            done();
+        }).catch(done);
+    })
+
+    it('can edit, by key/value', function (done) {
         return SettingsAPI.edit('title', 'UpdatedGhost').then(function (response) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'settings');

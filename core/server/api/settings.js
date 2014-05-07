@@ -1,10 +1,8 @@
 var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
-    errors       = require('../errorHandling'),
     config       = require('../config'),
     settings,
-    settingsCollection,
     settingsFilter,
     updateSettingsCache,
     readSettingsResult,
@@ -14,12 +12,6 @@ var _            = require('lodash'),
     settingsCache = {};
 
 // ### Helpers
-// Turn an object into a collection
-settingsCollection = function (settings) {
-    return _.map(settings, function (value, key) {
-        return { key: key, value: value };
-    });
-};
 
 // Filters an object based on a given filter object
 settingsFilter = function (settings, filter) {
@@ -185,56 +177,33 @@ settings = {
         var self = this,
             type;
 
-        // Check for passing a collection of settings first
-        if (_.isObject(key)) {
-            //clean data
-            type = key.type;
-            delete key.type;
-            delete key.availableThemes;
-            delete key.availableApps;
-
-            key = settingsCollection(key);
-            return dataProvider.Settings.edit(key, {user: self.user}).then(function (result) {
-                var readResult = readSettingsResult(result);
-
-                return updateSettingsCache(readResult).then(function () {
-                    return config.theme.update(settings, config().url);
-                }).then(function () {
-                    return settingsResult(readResult, type);
-                });
-            }).otherwise(function (error) {
-                return dataProvider.Settings.findOne(key.key).then(function (result) {
-                    if (!result) {
-                        return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
-                    }
-                    return when.reject({type: 'InternalServerError', message: error.message});
-                });
-            });
+        // Allow shorthand syntax
+        if (_.isString(key)) {
+            key = { settings: [{ key: key, value: value }]};
         }
 
-        return dataProvider.Settings.findOne(key).then(function (setting) {
-            if (!setting) {
-                return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + key + '.'});
-            }
-            if (!_.isString(value)) {
-                value = JSON.stringify(value);
-            }
-            setting.set('value', value);
-            return dataProvider.Settings.edit(setting, {user: self.user}).then(function (result) {
-                var updatedSetting = _.first(result).attributes;
-                settingsCache[updatedSetting.key].value = updatedSetting.value;
+        //clean data
+        type = _.find(key.settings, function (setting) { return setting.key === 'type'; });
+        if (_.isObject(type)) {
+            type = type.value;
+        }
 
-                return updatedSetting;
-            }).then(function (updatedSetting) {
-                return config.theme.update(settings, config().url).then(function () {
-                    return updatedSetting;
-                });
-            }).then(function (updatedSetting) {
-                var result = {};
-                result[updatedSetting.key] = updatedSetting;
+        key = _.reject(key.settings, function (setting) {
+            return setting.key === 'type' || setting.key === 'availableThemes' || setting.key === 'availableApps';
+        });
 
-                return settingsResult(result);
-            }).otherwise(errors.logAndThrowError);
+        return dataProvider.Settings.edit(key, {user: self.user}).then(function (result) {
+            var readResult = readSettingsResult(result);
+
+            return updateSettingsCache(readResult).then(function () {
+                return config.theme.update(settings, config().url);
+            }).then(function () {
+                return settingsResult(readResult, type);
+            });
+        }).otherwise(function (error) {
+            // In case something goes wrong it is most likely because of an invalid key
+            // or because of a badly formatted request.
+            return when.reject({type: 'BadRequest', message: error.message});
         });
     }
 };
