@@ -21,7 +21,7 @@ var moment      = require('moment'),
     staticPostPermalink = new Route(null, '/:slug/:edit?');
 
 function getPostPage(options) {
-    return api.settings.read('postsPerPage').then(function (response) {
+    return api.settings.read.call({ internal: true }, 'postsPerPage').then(function (response) {
         var postPP = response.settings[0],
             postsPerPage = parseInt(postPP.value, 10);
 
@@ -122,7 +122,7 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                api.settings.read('activeTheme').then(function (response) {
+                api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
                     var activeTheme = response.settings[0],
                         paths = config().paths.availableThemes[activeTheme.value],
                         view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
@@ -143,7 +143,7 @@ frontendControllers = {
             editFormat,
             usingStaticPermalink = false;
 
-        api.settings.read('permalinks').then(function (response) {
+        api.settings.read.call({ internal: true }, 'permalinks').then(function (response) {
             var permalink = response.settings[0],
                 postLookup;
 
@@ -198,7 +198,7 @@ frontendControllers = {
                 setReqCtx(req, post);
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
-                    api.settings.read('activeTheme').then(function (response) {
+                    api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
                         var activeTheme = response.settings[0],
                             paths = config().paths.availableThemes[activeTheme.value],
                             view = template.getThemeViewForPost(paths, post);
@@ -277,9 +277,9 @@ frontendControllers = {
         }
 
         return when.settle([
-            api.settings.read('title'),
-            api.settings.read('description'),
-            api.settings.read('permalinks')
+            api.settings.read.call({ internal: true }, 'title'),
+            api.settings.read.call({ internal: true }, 'description'),
+            api.settings.read.call({ internal: true }, 'permalinks')
         ]).then(function (result) {
 
             var options = {};

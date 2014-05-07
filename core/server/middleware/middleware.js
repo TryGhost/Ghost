@@ -170,7 +170,7 @@ var middleware = {
 
     // to allow unit testing
     forwardToExpressStatic: function (req, res, next) {
-        api.settings.read('activeTheme').then(function (response) {
+        api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
             var activeTheme = response.settings[0];
             // For some reason send divides the max age number by 1000
             express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);

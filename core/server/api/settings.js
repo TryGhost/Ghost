@@ -2,6 +2,7 @@ var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
     config       = require('../config'),
+    canThis      = require('../permissions').canThis,
     settings,
     settingsFilter,
     updateSettingsCache,
@@ -145,9 +146,19 @@ settings = {
 
     // **takes:** options object
     browse: function browse(options) {
-        //TODO: omit where type==core
+        var self = this;
+
         // **returns:** a promise for a settings json object
-        return when(settingsResult(settingsCache, options.type));
+        return canThis(this).browse.setting().then(function () {
+            var result = settingsResult(settingsCache, options.type);
+
+            // Omit core settings unless internal request
+            if (!self.internal) {
+                result.settings = _.filter(result.settings, function (setting) { return setting.type !== 'core'; });
+            }
+
+            return result;
+        });
     },
 
     // #### Read
@@ -158,16 +169,24 @@ settings = {
             options = { key: options };
         }
 
-        var setting = settingsCache[options.key],
-            result = {};
+        var self = this;
 
-        if (!setting) {
-            return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + options.key});
-        }
+        return canThis(this).read.setting(options.key).then(function () {
+            var setting = settingsCache[options.key],
+                result = {};
 
-        result[options.key] = setting;
+            if (!setting) {
+                return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + options.key});
+            }
 
-        return when(settingsResult(result));
+            if (!self.internal && setting.type === 'core') {
+                return when.reject({type: 'NoPermission', message: 'Attempted to access core setting on external request' });
+            }
+
+            result[options.key] = setting;
+
+            return settingsResult(result);
+        });
     },
 
     // #### Edit
@@ -175,7 +194,24 @@ settings = {
      // **takes:** either a json object representing a collection of settings, or a key and value pair
     edit: function edit(key, value) {
         var self = this,
-            type;
+            type,
+            canEditAllSettings = function (settingsInfo) {
+                var checks = _.map(settingsInfo, function (settingInfo) {
+                    var setting = settingsCache[settingInfo.key];
+
+                    if (!setting) {
+                        return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + settingInfo.key});
+                    }
+
+                    if (!self.internal && setting.type === 'core') {
+                        return when.reject({type: 'NoPermission', message: 'Attempted to access core setting on external request' });
+                    }
+
+                    return canThis(self).edit.setting(settingInfo.key);
+                });
+
+                return when.all(checks);
+            };
 
         // Allow shorthand syntax
         if (_.isString(key)) {
@@ -192,7 +228,9 @@ settings = {
             return setting.key === 'type' || setting.key === 'availableThemes' || setting.key === 'availableApps';
         });
 
-        return dataProvider.Settings.edit(key, {user: self.user}).then(function (result) {
+        return canEditAllSettings(key).then(function () {
+            return dataProvider.Settings.edit(key, {user: self.user});
+        }).then(function (result) {
             var readResult = readSettingsResult(result);
 
             return updateSettingsCache(readResult).then(function () {
@@ -200,10 +238,17 @@ settings = {
             }).then(function () {
                 return settingsResult(readResult, type);
             });
-        }).otherwise(function (error) {
+        }).catch(function (error) {
             // In case something goes wrong it is most likely because of an invalid key
             // or because of a badly formatted request.
-            return when.reject({type: 'BadRequest', message: error.message});
+
+            // Check for actual javascript error, not api error
+            if (error instanceof Error) {
+                return when.reject({type: 'BadRequest', message: error.message});
+            }
+
+            // Pass along API error
+            return when.reject(error);
         });
     }
 };

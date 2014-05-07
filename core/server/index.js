@@ -52,7 +52,7 @@ function doFirstRun() {
 }
 
 function initDbHashAndFirstRun() {
-    return when(api.settings.read('dbHash')).then(function (response) {
+    return api.settings.read.call({ internal: true }, 'dbHash').then(function (response) {
         var hash = response.settings[0].value,
             initHash;
 
@@ -60,7 +60,7 @@ function initDbHashAndFirstRun() {
 
         if (dbHash === null) {
             initHash = uuid.v4();
-            return when(api.settings.edit.call({user: 1}, 'dbHash', initHash)).then(function (response) {
+            return api.settings.edit.call({ internal: true }, 'dbHash', initHash).then(function (response) {
                 dbHash = response.settings[0].value;
                 return dbHash;
             }).then(doFirstRun);
@@ -194,6 +194,10 @@ function init(server) {
         // Initialize the settings cache
         return api.init();
     }).then(function () {
+        // Initialize the permissions actions and objects
+        // NOTE: Must be done before the config.theme.update and initDbHashAndFirstRun calls
+        return permissions.init();
+    }).then(function () {
         // We must pass the api.settings object
         // into this method due to circular dependencies.
         return config.theme.update(api.settings, config().url);
@@ -201,8 +205,6 @@ function init(server) {
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-            // Initialize the permissions actions and objects
-            permissions.init(),
             // Initialize mail
             mailer.init(),
             // Initialize apps
