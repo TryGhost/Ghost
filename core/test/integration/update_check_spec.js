@@ -49,7 +49,7 @@ describe('Update Check', function () {
         var updateCheckData = updateCheck.__get__('updateCheckData');
 
         updateCheckData().then(function (data) {
-            data.should.exist;
+            should.exist(data);
             data.ghost_version.should.equal(packageInfo.version);
             data.node_version.should.equal(process.versions.node);
             data.env.should.equal(process.env.NODE_ENV);
@@ -65,6 +65,6 @@ describe('Update Check', function () {
             data.npm_version.should.not.be.empty;
 
             done();
-        }).otherwise(done);
+        }).catch(done);
     });
 });

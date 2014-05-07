@@ -44,7 +44,7 @@ db = {
                 return when.reject({type: 'InternalServerError', message: 'Please select a .json file to import.'});
             }
 
-            return api.settings.read({ key: 'databaseVersion' }).then(function (response) {
+            return api.settings.read.call({ internal: true }, { key: 'databaseVersion' }).then(function (response) {
                 var setting = response.settings[0];
                 
                 return when(setting.value);

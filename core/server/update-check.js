@@ -50,9 +50,9 @@ function updateCheckData() {
         ops = [],
         mailConfig = config().mail;
 
-    ops.push(api.settings.read('dbHash').otherwise(errors.rejectError));
-    ops.push(api.settings.read('activeTheme').otherwise(errors.rejectError));
-    ops.push(api.settings.read('activeApps')
+    ops.push(api.settings.read.call({ internal: true }, 'dbHash').otherwise(errors.rejectError));
+    ops.push(api.settings.read.call({ internal: true }, 'activeTheme').otherwise(errors.rejectError));
+    ops.push(api.settings.read.call({ internal: true }, 'activeApps')
         .then(function (response) {
             var apps = response.settings[0];
             try {
@@ -171,7 +171,7 @@ function updateCheck() {
         // No update check
         deferred.resolve();
     } else {
-        api.settings.read('nextUpdateCheck').then(function (result) {
+        api.settings.read.call({ internal: true }, 'nextUpdateCheck').then(function (result) {
             var nextUpdateCheck = result.settings[0];
 
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
@@ -191,7 +191,7 @@ function updateCheck() {
 }
 
 function showUpdateNotification() {
-    return api.settings.read('displayUpdateNotification').then(function (response) {
+    return api.settings.read.call({ internal: true }, 'displayUpdateNotification').then(function (response) {
         var display = response.settings[0];
 
         // Version 0.4 used boolean to indicate the need for an update. This special case is
