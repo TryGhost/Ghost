@@ -9,20 +9,22 @@
             {{activating-list-item route="settings" title="Settings" classNames="content"}}
 
             <li id="usermenu" class="usermenu subnav">
-                <a href="#" class="dropdown">
+                <a href="" {{action 'toggleMenu'}} class="dropdown">
                     {{!-- @TODO: show avatar of logged in user --}}
                     <img class="avatar" src="/shared/img/user-image.png" alt="Avatar" />
                     {{!-- @TODO: show logged in user name or email --}}
                     <span class="name">Fake Ghost</span>
                 </a>
                 {{!-- @TODO: add functionality to allow for dropdown to work --}}
-                <ul class="overlay">
-                    <li class="usermenu-profile"><a href="#">Your Profile</a></li>
-                    <li class="divider"></li>
-                    <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
-                    <li class="divider"></li>
-                    <li class="usermenu-signout"><a href="#">Sign Out</a></li>
-                </ul>
+                {{#ghost-popover open=showMenu}}
+                    <ul class="overlay">
+                        <li class="usermenu-profile"><a href="#">Your Profile</a></li>
+                        <li class="divider"></li>
+                        <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
+                        <li class="divider"></li>
+                        <li class="usermenu-signout"><a href="#">Sign Out</a></li>
+                    </ul>
+                {{/ghost-popover}}
             </li>
         </ul>
     </nav>
