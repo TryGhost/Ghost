@@ -157,32 +157,29 @@ coreHelpers.url = function (options) {
 //
 // *Usage example:*
 // `{{asset "css/screen.css"}}`
-// `{{asset "css/screen.css" ghost="true"}}`
+//
 // Returns the path to the specified asset. The ghost
 // flag outputs the asset path for the Ghost admin
-coreHelpers.asset = function (context, options) {
-    var output = '',
-        isAdmin = options && options.hash && options.hash.ghost;
+// It does assume an asset folder, but does not require it
+coreHelpers.asset = function (context) {
+    var output = context[0] !== '/' ? '/' : "",
+        subDir = config.paths().path,
+        asset_url,
+        asset_folder_url;
 
-    output += config().paths.subdir + '/';
-
-    if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
-        if (isAdmin) {
-            output += 'ghost/';
-        } else {
-            output += 'assets/';
-        }
+    if (subDir !== '/') {
+        output += subDir + '/';
     }
 
-    // Get rid of any leading slash on the context
-    context = context.replace(/^\//, '');
-    output += context;
+    asset_url = assets.url(output + context);
+    asset_folder_url = assets.url(output + 'assets/' + context);
 
-    if (!context.match(/^favicon\.ico$/)) {
-        output = assetTemplate({
-            source: output,
-            version: coreHelpers.assetHash
-        });
+    if (asset_url) {
+        output = asset_url;
+    } else if (asset_folder_url && !asset_url) {
+        output = asset_folder_url;
+    } else {
+        output = context;
     }
 
     return new hbs.handlebars.SafeString(output);
