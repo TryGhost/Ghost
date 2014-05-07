@@ -1,0 +1,74 @@
+/*
+  Cosmetic changes to ghost styles, that help during development.
+  The contents should be solved properly or moved into ghost-ui package.
+*/
+
+#entry-markdown,
+.entry-preview,
+.CodeMirror.cm-s-default {
+    height: 500px !important;
+}
+
+.editor input {
+    -webkit-transition: none;
+    -moz-transition: none;
+    transition: none;
+}
+
+/*
+  By default nav menu should be displayed as it's visibility is controllerd
+  by GhostPopover
+*/
+.navbar .subnav ul {
+    display: block;
+}
+
+/*
+  Styles for GhostPopoverComponent
+ */
+
+.ghost-popover {
+    display: none;
+}
+
+.ghost-popover.open {
+    display: block;
+}
+.fade-in {
+    animation: fadein 0.5s;
+    -moz-animation: fadein 0.5s; /* Firefox */
+    -webkit-animation: fadein 0.5s; /* Safari and Chrome */
+    -o-animation: fadein 0.5s; /* Opera */
+}
+@keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+@-moz-keyframes fadein { /* Firefox */
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+@-webkit-keyframes fadein { /* Safari and Chrome */
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+@-o-keyframes fadein { /* Opera */
+    from {
+        opacity:0;
+    }
+    to {
+        opacity: 1;
+    }
+}

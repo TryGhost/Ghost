@@ -1,0 +1,14 @@
+<section class="login-box js-login-box fade-in">
+    <form id="login" class="login-form" method="post" novalidate="novalidate">
+        <div class="email-wrap">
+            {{input class="email" type="email" placeholder="Email Address" name="email" autofocus="autofocus" autocapitalize="off" autocorrect="off" value=email}}
+        </div>
+        <div class="password-wrap">
+            {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+        </div>
+        <button class="button-save" type="submit" {{action "login"}}>Log in</button>
+        <section class="meta">
+            {{#link-to 'forgotten' class="forgotten-password"}}Forgotten password?{{/link-to}}
+        </section>
+    </form>
+</section>
