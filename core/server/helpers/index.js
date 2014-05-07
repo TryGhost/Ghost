@@ -158,17 +158,21 @@ coreHelpers.url = function (options) {
 // *Usage example:*
 // `{{asset "css/screen.css"}}`
 // `{{asset "css/screen.css" ghost="true"}}`
+// `{{asset "css/screen.css" ember="true"}}`
 // Returns the path to the specified asset. The ghost
 // flag outputs the asset path for the Ghost admin
 coreHelpers.asset = function (context, options) {
     var output = '',
-        isAdmin = options && options.hash && options.hash.ghost;
+        isAdmin = options && options.hash && options.hash.ghost,
+        isEmberAdmin = options && options.hash && options.hash.ember;
 
     output += config().paths.subdir + '/';
 
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
             output += 'ghost/';
+        } else if (isEmberAdmin) {
+            output += 'ghost/ember/';
         } else {
             output += 'assets/';
         }

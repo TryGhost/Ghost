@@ -295,7 +295,8 @@ module.exports = function (server, dbHash) {
     expressServer.use(manageAdminAndTheme);
 
     // Admin only config
-    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
+    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/clientold/assets'), {maxAge: ONE_YEAR_MS})));
+    expressServer.use(subdir + '/ghost/ember', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,

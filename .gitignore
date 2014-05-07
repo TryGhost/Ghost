@@ -30,9 +30,15 @@ projectFilesBackup
 
 .build
 .dist
+.tmp
 
-/core/client/tpl/hbs-tpl.js
+
+/core/clientold/tpl/hbs-tpl.js
+/core/clientold/assets/css
+/core/clientold/assets/fonts
+/core/clientold/assets/vendor
 /core/client/assets/css
+!/core/client/assets/css/ember-hacks.css
 /core/client/assets/fonts
 /core/server/data/export/exported*
 /docs

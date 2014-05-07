@@ -1,0 +1,9 @@
+{{#upload-modal action="closeModal" close=true type="action" style="wide"
+   animation="fade"}}
+
+  <section class="js-drop-zone">
+      <img class="js-upload-target" {{bind-attr src=src}} alt="logo">
+      <input data-url="upload" class="js-fileupload main" type="file" name="uploadimage" {{#if options.acceptEncoding}}accept="{{options.acceptEncoding}}"{{/if}}>
+  </section>
+
+{{/upload-modal}}

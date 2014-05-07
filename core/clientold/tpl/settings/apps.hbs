@@ -1,0 +1,15 @@
+<header>
+    <button class="button-back">Back</button>
+    <h2 class="title">Apps</h2>
+</header>
+
+<section class="content">
+    <ul class="js-apps">
+        {{#each availableApps}}
+        <li>
+            {{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}} - package.json missing :({{/if}}
+            <button data-app="{{name}}" class="{{#if active}}button-delete js-button-deactivate js-button-active">Deactivate{{else}}button-add js-button-activate">Activate{{/if}}</button>
+        </li>
+        {{/each}}
+    </ul>
+</section>

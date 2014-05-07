@@ -1,78 +1,30 @@
-/*global Ghost, Backbone, NProgress */
-(function () {
-    "use strict";
+/*global Ember */
 
-    Ghost.Router = Backbone.Router.extend({
+// ensure we don't share routes between all Router instances
+var Router = Ember.Router.extend();
 
-        routes: {
-            ''                 : 'blog',
-            'content/'         : 'blog',
-            'settings(/:pane)/' : 'settings',
-            'editor(/:id)/'     : 'editor',
-            'debug/'           : 'debug',
-            'register/'        : 'register',
-            'signup/'          : 'signup',
-            'signin/'          : 'login',
-            'forgotten/'       : 'forgotten',
-            'reset/:token/'     : 'reset'
-        },
+Router.reopen({
+    location: 'history', // use HTML5 History API instead of hash-tag based URLs
+    rootURL: '/ghost/ember/' // admin interface lives under sub-directory /ghost
+});
 
-        signup: function () {
-            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-signup-box' });
-        },
-
-        login: function () {
-            Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-box' });
-        },
-
-        forgotten: function () {
-            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-forgotten-box' });
-        },
-
-        reset: function (token) {
-            Ghost.currentView = new Ghost.Views.ResetPassword({ el: '.js-reset-box', token: token });
-        },
-
-        blog: function () {
-            var posts = new Ghost.Collections.Posts();
-            NProgress.start();
-            posts.fetch({ data: { status: 'all', staticPages: 'all', include: 'author'} }).then(function () {
-                Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
-                NProgress.done();
-            });
-        },
-
-        settings: function (pane) {
-            if (!pane) {
-                // Redirect to settings/general if no pane supplied
-                this.navigate('/settings/general/', {
-                    trigger: true,
-                    replace: true
-                });
-                return;
-            }
-
-            // only update the currentView if we don't already have a Settings view
-            if (!Ghost.currentView || !(Ghost.currentView instanceof Ghost.Views.Settings)) {
-                Ghost.currentView = new Ghost.Views.Settings({ el: '#main', pane: pane });
-            }
-        },
-
-        editor: function (id) {
-            var post = new Ghost.Models.Post();
-            post.urlRoot = Ghost.paths.apiRoot + '/posts';
-            if (id) {
-                post.id = id;
-                post.fetch({ data: {status: 'all', include: 'tags'}}).then(function () {
-                    Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
-                });
-            } else {
-                Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
-            }
-        },
-
-        debug: function () {
-            Ghost.currentView = new Ghost.Views.Debug({ el: "#main" });
-        }
+Router.map(function () {
+    this.route('signin');
+    this.route('signup');
+    this.route('forgotten');
+    this.route('reset', { path: '/reset/:token' });
+    this.resource('posts', { path: '/' }, function () {
+        this.route('post', { path: ':post_id' });
     });
-}());
+    this.resource('editor', { path: '/editor/:post_id' });
+    this.route('new', { path: '/editor' });
+    this.resource('settings', function () {
+        this.route('general');
+        this.route('user');
+        this.route('debug');
+        this.route('apps');
+    });
+    this.route('debug');
+});
+
+export default Router;

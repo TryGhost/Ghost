@@ -43,10 +43,14 @@ function setSelected(list, name) {
 }
 
 adminControllers = {
+    'index': function (req, res) {
+        /*jslint unparam:true*/
+        res.render('default-ember');
+    },
     // Route: index
     // Path: /ghost/
     // Method: GET
-    'index': function (req, res) {
+    'indexold': function (req, res) {
         /*jslint unparam:true*/
         function renderIndex() {
             res.render('content', {

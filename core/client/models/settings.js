@@ -1,33 +1,76 @@
-/*global Backbone, Ghost, _ */
-(function () {
-    'use strict';
-    //id:0 is used to issue PUT requests
-    Ghost.Models.Settings = Ghost.ProgressModel.extend({
-        url: Ghost.paths.apiRoot + '/settings/?type=blog,theme,app',
-        id: '0',
+var validator = window.validator;
 
-        parse: function (response) {
-            var result = _.reduce(response.settings, function (settings, setting) {
-                settings[setting.key] = setting.value;
+import BaseModel from 'ghost/models/base';
 
-                return settings;
-            }, {});
+var SettingsModel = BaseModel.extend({
+    url: BaseModel.apiRoot + '/settings/?type=blog,theme,app',
 
-            return result;
-        },
+    title: null,
+    description: null,
+    email: null,
+    logo: null,
+    cover: null,
+    defaultLang: null,
+    postsPerPage: null,
+    forceI18n: null,
+    permalinks: null,
+    activeTheme: null,
+    activeApps: null,
+    installedApps: null,
+    availableThemes: null,
+    availableApps: null,
 
-        sync: function (method, model, options) {
-            var settings = _.map(this.attributes, function (value, key) {
-                return { key: key, value: value };
-            });
-            //wrap settings in {settings: [{...}]}
-            if (method === 'update') {
-                options.data = JSON.stringify({settings: settings});
-                options.contentType = 'application/json';
-            }
+    validate: function () {
+        var validationErrors = [],
+            postsPerPage;
 
-            return Backbone.Model.prototype.sync.apply(this, arguments);
+        if (!validator.isLength(this.get('title'), 0, 150)) {
+            validationErrors.push({message: "Title is too long", el: 'title'});
         }
-    });
 
-}());
+        if (!validator.isLength(this.get('description'), 0, 200)) {
+            validationErrors.push({message: "Description is too long", el: 'description'});
+        }
+
+        if (!validator.isEmail(this.get('email')) || !validator.isLength(this.get('email'), 0, 254)) {
+            validationErrors.push({message: "Please supply a valid email address", el: 'email'});
+        }
+
+        postsPerPage = this.get('postsPerPage');
+        if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
+            validationErrors.push({message: "Please use a number less than 1000", el: 'postsPerPage'});
+        }
+
+        if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
+            validationErrors.push({message: "Please use a number greater than 0", el: 'postsPerPage'});
+        }
+
+        return validationErrors;
+    },
+    exportPath: BaseModel.adminRoot + '/export/',
+    importFrom: function (file) {
+        var formData = new FormData();
+        formData.append('importfile', file);
+        return ic.ajax.request(BaseModel.apiRoot + '/db/', {
+            headers: {
+                'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+            },
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    },
+    sendTestEmail: function () {
+        return ic.ajax.request(BaseModel.apiRoot + '/mail/test/', {
+            type: 'POST',
+            headers: {
+                'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+            }
+        });
+    }
+});
+
+export default SettingsModel;
