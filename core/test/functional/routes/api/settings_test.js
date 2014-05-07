@@ -148,7 +148,9 @@ describe('Settings API', function () {
                 var jsonResponse = res.body,
                     changedValue = 'Ghost changed',
                     settingToChange = {
-                        title: changedValue
+                        settings: [
+                            { key: 'title', value: changedValue }
+                        ]
                     };
 
                 jsonResponse.should.exist;
@@ -175,7 +177,7 @@ describe('Settings API', function () {
     });
 
     it('can\'t edit settings with invalid CSRF token', function (done) {
-        request.get(testUtils.API.getApiQuery('settings'))
+        request.get(testUtils.API.getApiQuery('settings/'))
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -202,7 +204,7 @@ describe('Settings API', function () {
 
 
     it('can\'t edit non existent setting', function (done) {
-        request.get(testUtils.API.getApiQuery('settings'))
+        request.get(testUtils.API.getApiQuery('settings/'))
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -211,12 +213,13 @@ describe('Settings API', function () {
                 var jsonResponse = res.body,
                     newValue = 'new value';
                 jsonResponse.should.exist;
-                jsonResponse.testvalue = newValue;
+                should.exist(jsonResponse.settings);
+                jsonResponse.settings.push({ key: 'testvalue', value: newValue });
 
                 request.put(testUtils.API.getApiQuery('settings/'))
                     .set('X-CSRF-Token', csrfToken)
                     .send(jsonResponse)
-                    .expect(404)
+                    .expect(400)
                     .end(function (err, res) {
                         if (err) {
                             return done(err);
