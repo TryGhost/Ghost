@@ -157,13 +157,48 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      // ## Model Data Functions
 
     /**
+     * Returns an array of keys permitted in every method's `options` hash.
+     * Can be overridden and added to by a model's `permittedOptions` method.
+     * @return {Array} Keys allowed in the `options` hash of every model's method.
+     */
+    permittedOptions: function () {
+        // terms to whitelist for all methods.
+        return ['include', 'transacting'];
+    },
+
+    /**
+     * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+     * @param {Object} data Has keys representing the model's attributes/fields in the database.
+     * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
+     */
+    filterData: function (data) {
+        var permittedAttributes = this.prototype.permittedAttributes(),
+            filteredData = _.pick(data, permittedAttributes);
+
+        return filteredData;
+    },
+
+    /**
+     * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
+     * @param {Object} options Represents options to filter in order to be passed to the Bookshelf query.
+     * @param {String} methodName The name of the method to check valid options for.
+     * @return {Object} The filtered results of `options`.
+    */
+    filterOptions: function (options, methodName) {
+        var permittedOptions = this.permittedOptions(methodName),
+            filteredOptions = _.pick(options, permittedOptions);
+
+        return filteredOptions;
+    },
+
+    /**
      * ### Find All
      * Naive find all fetches all the data for a particular model
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
     findAll:  function (options) {
-        options = options || {};
+        options = this.filterOptions(options, 'findAll');
         return ghostBookshelf.Collection.forge([], {model: this}).fetch(options).then(function (result) {
             if (options.include) {
                 _.each(result.models, function (item) {
@@ -182,7 +217,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Single Model
      */
     findOne: function (data, options) {
-        options = options || {};
+        data = this.filterData(data);
+        options = this.filterOptions(options, 'findOne');
         return this.forge(data, {include: options.include}).fetch(options);
     },
 
@@ -194,7 +230,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
     edit: function (data, options) {
-        options = options || {};
+        data = this.filterData(data);
+        options = this.filterOptions(options, 'edit');
         return this.forge({id: data.id}).fetch(options).then(function (object) {
             if (object) {
                 return object.save(data, options);
@@ -210,7 +247,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Newly Added Model
      */
     add: function (data, options) {
-        options = options || {};
+        data = this.filterData(data);
+        options = this.filterOptions(options, 'add');
         var instance = this.forge(data);
         // We allow you to disable timestamps
         // when importing posts so that
@@ -231,7 +269,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Empty Model
      */
     destroy: function (data, options) {
-        options = options || {};
+        options = this.filterOptions(options, 'destroy');
         return this.forge({id: data}).destroy(options);
     },
 
