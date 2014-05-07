@@ -17,11 +17,12 @@ function theme() {
 // there would be a race condition where the ./models/base
 // tries to access the config() object before it is created.
 function update(settings, configUrl) {
+    // TODO: Pass the context into this method instead of hard coding internal: true?
     return when.all([
-        settings.read('title'),
-        settings.read('description'),
-        settings.read('logo'),
-        settings.read('cover')
+        settings.read.call({ internal: true }, 'title'),
+        settings.read.call({ internal: true }, 'description'),
+        settings.read.call({ internal: true }, 'logo'),
+        settings.read.call({ internal: true }, 'cover')
     ]).then(function (globals) {
         // normalise the URL by removing any trailing slash
         themeConfig.url = configUrl.replace(/\/$/, '');
