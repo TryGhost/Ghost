@@ -9,7 +9,7 @@ var _           = require('lodash'),
 
 
 function getInstalledApps() {
-    return api.settings.read.call({ internal: true }, 'installedApps').then(function (response) {
+    return api.settings.read({context: {internal: true}, key: 'installedApps'}).then(function (response) {
         var installed = response.settings[0];
 
         installed.value = installed.value || '[]';
@@ -28,7 +28,7 @@ function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
         var updatedAppsInstalled = _.uniq(installedApps.concat(currentInstalledApps));
 
-        return api.settings.edit.call({internal: true}, 'installedApps', updatedAppsInstalled);
+        return api.settings.edit({context: {internal: true}, key: 'installedApps'}, updatedAppsInstalled);
     });
 }
 
@@ -38,7 +38,7 @@ module.exports = {
 
         try {
             // We have to parse the value because it's a string
-            api.settings.read.call({ internal: true }, 'activeApps').then(function (response) {
+            api.settings.read({context: {internal: true}, key: 'activeApps'}).then(function (response) {
                 var aApps = response.settings[0];
 
                 appsToLoad = JSON.parse(aApps.value) || [];

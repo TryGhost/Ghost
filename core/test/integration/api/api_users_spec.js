@@ -2,6 +2,8 @@
 var testUtils = require('../../utils'),
     should    = require('should'),
 
+    permissions   = require('../../../server/permissions'),
+
     // Stuff we are testing
     UsersAPI      = require('../../../server/api/users');
 
@@ -22,10 +24,11 @@ describe('Users API', function () {
     describe('No User', function () {
         beforeEach(function (done) {
             testUtils.initData().then(function () {
+                return permissions.init();
+            }).then(function () {
                 done();
             }).catch(done);
         });
-
 
         it('can add with internal user', function (done) {
             UsersAPI.register({ users: [{
@@ -53,12 +56,14 @@ describe('Users API', function () {
             }).then(function () {
                 return testUtils.insertAuthorUser();
             }).then(function () {
+                return permissions.init();
+            }).then(function () {
                 done();
             }).catch(done);
         });
 
         it('admin can browse', function (done) {
-            UsersAPI.browse.call({user: 1}).then(function (results) {
+            UsersAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 should.exist(results.users);
@@ -71,7 +76,7 @@ describe('Users API', function () {
         });
 
         it('editor can browse', function (done) {
-            UsersAPI.browse.call({user: 2}).then(function (results) {
+            UsersAPI.browse({context: {user: 2}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 should.exist(results.users);
@@ -84,7 +89,7 @@ describe('Users API', function () {
         });
 
         it('author can browse', function (done) {
-            UsersAPI.browse.call({user: 3}).then(function (results) {
+            UsersAPI.browse({context: {user: 3}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 should.exist(results.users);
@@ -105,7 +110,7 @@ describe('Users API', function () {
         });
 
         it('admin can read', function (done) {
-            UsersAPI.read.call({user: 1}, {id: 1}).then(function (results) {
+            UsersAPI.read({id: 1, context: {user: 1}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 results.users[0].id.should.eql(1);
@@ -115,7 +120,7 @@ describe('Users API', function () {
         });
 
         it('editor can read', function (done) {
-            UsersAPI.read.call({user: 2}, {id: 1}).then(function (results) {
+            UsersAPI.read({id: 1, context: {user: 2}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 results.users[0].id.should.eql(1);
@@ -125,7 +130,7 @@ describe('Users API', function () {
         });
 
         it('author can read', function (done) {
-            UsersAPI.read.call({user: 3}, {id: 1}).then(function (results) {
+            UsersAPI.read({id: 1, context: {user: 3}}).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'users');
                 results.users[0].id.should.eql(1);
@@ -145,7 +150,7 @@ describe('Users API', function () {
         });
 
         it('admin can edit', function (done) {
-            UsersAPI.edit.call({user: 1}, {users: [{id: 1, name: 'Joe Blogger'}]}).then(function (response) {
+            UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 1}}).then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 response.users.should.have.length(1);
@@ -157,7 +162,7 @@ describe('Users API', function () {
         });
 
         it('editor can edit', function (done) {
-            UsersAPI.edit.call({user: 2}, {users: [{id: 1, name: 'Joe Blogger'}]}).then(function (response) {
+            UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 2}}).then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 response.users.should.have.length(1);
@@ -170,13 +175,13 @@ describe('Users API', function () {
 
         it('author can edit only self', function (done) {
             // Test author cannot edit admin user
-            UsersAPI.edit.call({user: 3}, {users: [{id: 1, name: 'Joe Blogger'}]}).then(function () {
+            UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 3}}).then(function () {
                 done(new Error('Author should not be able to edit account which is not their own'));
             }).catch(function (error) {
-                error.code.should.eql(403);
+                error.type.should.eql('NoPermissionError');
             }).finally(function () {
                 // Next test that author CAN edit self
-                return UsersAPI.edit.call({user: 3}, {users: [{id: 3, name: 'Timothy Bogendath'}]})
+                return UsersAPI.edit({users: [{name: 'Timothy Bogendath'}]}, {id: 3, context: {user: 3}})
                     .then(function (response) {
                         should.exist(response);
                         testUtils.API.checkResponse(response, 'users');

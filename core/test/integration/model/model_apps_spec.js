@@ -86,19 +86,20 @@ describe('App Model', function () {
         }).catch(done);
     });
 
-    it("can delete", function (done) {
-        AppModel.findOne({id: 1}).then(function (foundApp) {
+    it("can destroy", function (done) {
+        var firstApp = {id: 1};
+
+        AppModel.findOne(firstApp).then(function (foundApp) {
             should.exist(foundApp);
+            foundApp.attributes.id.should.equal(firstApp.id);
 
-            return AppModel.destroy(1);
-        }).then(function () {
-            return AppModel.findAll();
-        }).then(function (foundApp) {
-            var hasRemovedId = foundApp.any(function (foundApp) {
-                return foundApp.id === 1;
-            });
+            return AppModel.destroy(firstApp);
+        }).then(function (response) {
+            response.toJSON().should.be.empty;
 
-            hasRemovedId.should.equal(false);
+            return AppModel.findOne(firstApp);
+        }).then(function (newResults) {
+            should.equal(newResults, null);
 
             done();
         }).catch(done);

@@ -112,7 +112,7 @@ function importUsers(ops, tableData, transaction) {
     // don't override the users credentials
     tableData = stripProperties(['id', 'email', 'password'], tableData);
     tableData[0].id = 1;
-    ops.push(models.User.edit(tableData[0], {user: 1, transacting: transaction})
+    ops.push(models.User.edit(tableData[0], {id: 1, user: 1, transacting: transaction})
         // add pass-through error handling so that bluebird doesn't think we've dropped it
         .otherwise(function (error) { return when.reject(error); }));
 }
@@ -157,9 +157,9 @@ function importApps(ops, tableData, transaction) {
 //     var appsData = tableData.apps,
 //         appSettingsData = tableData.app_settings,
 //         appName;
-// 
+//
 //     appSettingsData = stripProperties(['id'], appSettingsData);
-// 
+//
 //     _.each(appSettingsData, function (appSetting) {
 //         // Find app to attach settings to
 //         appName = _.find(appsData, function (app) {

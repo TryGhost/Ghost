@@ -39,7 +39,7 @@ function ghostLocals(req, res, next) {
     if (res.isAdmin) {
         res.locals.csrfToken = req.csrfToken();
         when.all([
-            api.users.read.call({user: req.session.user}, {id: req.session.user}),
+            api.users.read({id: req.session.user}, {context: {user: req.session.user}}),
             api.notifications.browse()
         ]).then(function (values) {
             var currentUser = values[0].users[0],
@@ -150,9 +150,9 @@ function manageAdminAndTheme(req, res, next) {
         expressServer.enable(expressServer.get('activeTheme'));
         expressServer.disable('admin');
     }
-    api.settings.read.call({ internal: true }, 'activeTheme').then(function (response) {
+    api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
         var activeTheme = response.settings[0];
-        
+
         // Check if the theme changed
         if (activeTheme.value !== expressServer.get('activeTheme')) {
             // Change theme

@@ -39,7 +39,13 @@ var generateProxyFunctions = function (name, permissions) {
 
             return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
                 memo[methodName] = function () {
-                    return apiMethod.apply(_.clone(appContext), _.toArray(arguments));
+                    var args = _.toArray(arguments),
+                        options = args[args.length - 1];
+
+                    if (_.isObject(options)) {
+                        options.context = _.clone(appContext);
+                    }
+                    return apiMethod.apply({}, args);
                 };
 
                 return memo;
@@ -57,10 +63,18 @@ var generateProxyFunctions = function (name, permissions) {
             registerAsync: checkRegisterPermissions('helpers', helpers.registerAsyncThemeHelper.bind(helpers))
         },
         api: {
-            posts: passThruAppContextToApi('posts', _.pick(api.posts, 'browse', 'read', 'edit', 'add', 'destroy')),
-            tags: passThruAppContextToApi('tags', _.pick(api.tags, 'browse')),
-            notifications: passThruAppContextToApi('notifications', _.pick(api.notifications, 'browse', 'add', 'destroy')),
-            settings: passThruAppContextToApi('settings', _.pick(api.settings, 'browse', 'read', 'edit'))
+            posts: passThruAppContextToApi('posts',
+                _.pick(api.posts, 'browse', 'read', 'edit', 'add', 'destroy')
+            ),
+            tags: passThruAppContextToApi('tags',
+                _.pick(api.tags, 'browse')
+            ),
+            notifications: passThruAppContextToApi('notifications',
+                _.pick(api.notifications, 'browse', 'add', 'destroy')
+            ),
+            settings: passThruAppContextToApi('settings',
+                _.pick(api.settings, 'browse', 'read', 'edit')
+            )
         }
     };
 

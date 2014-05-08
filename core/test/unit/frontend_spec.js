@@ -44,7 +44,7 @@ describe('Frontend Controller', function () {
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('postsPerPage').returns(when({ 
+            apiSettingsStub.withArgs('postsPerPage').returns(when({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': 6
@@ -181,7 +181,7 @@ describe('Frontend Controller', function () {
                     done(new Error(msg));
                 };
             };
- 
+
         beforeEach(function () {
             sandbox.stub(api.posts, 'browse', function (args) {
                 return when({
@@ -197,23 +197,23 @@ describe('Frontend Controller', function () {
                     }
                 });
             });
- 
+
             apiSettingsStub = sandbox.stub(api.settings, 'read');
- 
-            apiSettingsStub.withArgs('activeTheme').returns(when({
+
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(when({
                 settings: [{
                     'key': 'activeTheme',
                     'value': 'casper'
                 }]
             }));
- 
+
             apiSettingsStub.withArgs('postsPerPage').returns(when({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': '10'
                 }]
             }));
- 
+
             frontend.__set__('config',  sandbox.stub().returns({
                 'paths': {
                     'subdir': '',
@@ -229,15 +229,18 @@ describe('Frontend Controller', function () {
                 }
             }));
         });
-        
+
         describe('custom tag template', function () {
- 
+
             beforeEach(function () {
                 apiSettingsStub.withArgs('permalinks').returns(when({
-                    value: '/tag/:slug/'
+                    settings: [{
+                        key: 'permalinks',
+                        value: '/tag/:slug/'
+                    }]
                 }));
             });
- 
+
             it('it will render custom tag template if it exists', function (done) {
                 var req = {
                         path: '/tag/' + mockTags[0].slug,
@@ -250,7 +253,7 @@ describe('Frontend Controller', function () {
                             done();
                         }
                     };
- 
+
                 frontend.tag(req, res, failTest(done));
             });
         });
@@ -422,7 +425,7 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs('activeTheme').returns(when({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(when({
                 settings: [{
                     'key': 'activeTheme',
                     'value': 'casper'
@@ -451,7 +454,7 @@ describe('Frontend Controller', function () {
             describe('custom page templates', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
-                            settings: [{
+                        settings: [{
                             value: '/:slug/'
                         }]
                     }));
@@ -547,8 +550,8 @@ describe('Frontend Controller', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
                         settings: [{
-                        value: '/:year/:month/:day/:slug/'
-                        }] 
+                            value: '/:year/:month/:day/:slug/'
+                        }]
                     }));
                 });
 
@@ -621,7 +624,7 @@ describe('Frontend Controller', function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
                         settings: [{
                             value: '/:slug'
-                        }] 
+                        }]
                     }));
                 });
 
@@ -694,7 +697,7 @@ describe('Frontend Controller', function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
                         settings: [{
                             value: '/:year/:month/:day/:slug'
-                        }] 
+                        }]
                     }));
                 });
 
@@ -784,7 +787,7 @@ describe('Frontend Controller', function () {
                     apiSettingsStub.withArgs('permalinks').returns(when({
                         settings: [{
                             value: '/:year/:slug'
-                        }] 
+                        }]
                     }));
                 });
 

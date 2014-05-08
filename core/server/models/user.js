@@ -106,16 +106,20 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
+     * ## Add
      * Naive user add
-     * @param {object} _user
-     *
      * Hashes the password provided before saving to the database.
+     *
+     * @param {object} data
+     * @param {object} options
+     * @extends ghostBookshelf.Model.add to manage all aspects of user signup
+     * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
-    add: function (_user, options) {
+    add: function (data, options) {
 
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
-            userData = this.filterData(_user);
+            userData = this.filterData(data);
 
         options = this.filterOptions(options, 'add');
 
@@ -133,7 +137,7 @@ User = ghostBookshelf.Model.extend({
             }
         }).then(function () {
             // Generate a new password hash
-            return generatePasswordHash(_user.password);
+            return generatePasswordHash(data.password);
         }).then(function (hash) {
             // Assign the hashed password
             userData.password = hash;
@@ -143,6 +147,7 @@ User = ghostBookshelf.Model.extend({
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
         }).then(function (addedUser) {
+
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
             // Add this user to the admin role (assumes admin = role_id: 1)

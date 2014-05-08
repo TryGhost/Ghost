@@ -57,7 +57,7 @@ Tag = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
+    }
 });
 
 Tags = ghostBookshelf.Collection.extend({

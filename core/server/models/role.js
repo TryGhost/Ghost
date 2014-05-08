@@ -37,7 +37,7 @@ Role = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
+    }
 });
 
 Roles = ghostBookshelf.Collection.extend({
