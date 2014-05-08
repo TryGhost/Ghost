@@ -153,39 +153,23 @@ describe('Settings Model', function () {
             }).catch(done);
         });
 
-        it('can delete', function (done) {
-            var settingId;
+        it('can destroy', function (done) {
+            // dont't use id 1, since it will delete databaseversion
+            var settingToDestroy = {id: 2};
 
-            SettingsModel.findAll().then(function (results) {
-
+            SettingsModel.findOne(settingToDestroy).then(function (results) {
                 should.exist(results);
+                results.attributes.id.should.equal(settingToDestroy.id);
 
-                results.length.should.be.above(0);
+                return SettingsModel.destroy(settingToDestroy);
+            }).then(function (response) {
+                response.toJSON().should.be.empty;
 
-                // dont't use results.models[0], since it will delete databaseversion
-                // which is used for testUtils.reset()
-                settingId = results.models[1].id;
-
-                return SettingsModel.destroy(settingId);
-
-            }).then(function () {
-
-                return SettingsModel.findAll();
-
+                return SettingsModel.findOne(settingToDestroy);
             }).then(function (newResults) {
-
-                var ids, hasDeletedId;
-
-                ids = _.pluck(newResults.models, 'id');
-
-                hasDeletedId = _.any(ids, function (id) {
-                    return id === settingId;
-                });
-
-                hasDeletedId.should.equal(false);
+                should.equal(newResults, null);
 
                 done();
-
             }).catch(done);
         });
     });

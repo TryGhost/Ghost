@@ -37,7 +37,7 @@ describe('DB API', function () {
 
     it('delete all content', function (done) {
         permissions.init().then(function () {
-            return dbAPI.deleteAllContent.call({user: 1});
+            return dbAPI.deleteAllContent({context: {user: 1}});
         }).then(function (result) {
             should.exist(result.db);
             result.db.should.be.instanceof(Array);
@@ -61,12 +61,12 @@ describe('DB API', function () {
 
     it('delete all content is denied', function (done) {
         permissions.init().then(function () {
-            return dbAPI.deleteAllContent.call({user: 2});
+            return dbAPI.deleteAllContent({context: {user: 2}});
         }).then(function (){
             done(new Error("Delete all content is not denied for editor."));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
-            return dbAPI.deleteAllContent.call({user: 3});
+            return dbAPI.deleteAllContent({context: {user: 3}});
         }).then(function (){
             done(new Error("Delete all content is not denied for author."));
         }, function (error) {
@@ -82,12 +82,12 @@ describe('DB API', function () {
 
     it('export content is denied', function (done) {
         permissions.init().then(function () {
-            return dbAPI.exportContent.call({user: 2});
+            return dbAPI.exportContent({context: {user: 2}});
         }).then(function (){
             done(new Error("Export content is not denied for editor."));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
-            return dbAPI.exportContent.call({user: 3});
+            return dbAPI.exportContent({context: {user: 3}});
         }).then(function (){
             done(new Error("Export content is not denied for author."));
         }, function (error) {
@@ -103,12 +103,12 @@ describe('DB API', function () {
 
     it('import content is denied', function (done) {
         permissions.init().then(function () {
-            return dbAPI.importContent.call({user: 2});
+            return dbAPI.importContent({context: {user: 2}});
         }).then(function (result){
             done(new Error("Import content is not denied for editor."));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
-            return dbAPI.importContent.call({user: 3});
+            return dbAPI.importContent({context: {user: 3}});
         }).then(function (result){
             done(new Error("Import content is not denied for author."));
         }, function (error) {

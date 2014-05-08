@@ -17,7 +17,14 @@ describe('Settings API', function () {
             internal: true
         },
         callApiWithContext = function (context, method) {
-            return SettingsAPI[method].apply(context, _.toArray(arguments).slice(2));
+            var args = _.toArray(arguments),
+                options = args[args.length - 1];
+
+            if (_.isObject(options)) {
+                options.context = _.clone(context);
+            }
+
+            return SettingsAPI[method].apply({}, args.slice(2));
         },
         getErrorDetails = function (done) {
             return function (err) {
@@ -58,7 +65,7 @@ describe('Settings API', function () {
     });
 
     it('can browse', function (done) {
-        return callApiWithContext(defaultContext, 'browse', 'blog').then(function (results) {
+        return callApiWithContext(defaultContext, 'browse', {}).then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'settings');
             results.settings.length.should.be.above(0);
@@ -71,8 +78,23 @@ describe('Settings API', function () {
         }).catch(getErrorDetails(done));
     });
 
-    it('returns core settings for internal requests when browsing', function (done){
-        return callApiWithContext(internalContext, 'browse', 'blog').then(function (results) {
+
+    it('can browse by type', function (done) {
+        return callApiWithContext(defaultContext, 'browse', {type: 'blog'}).then(function (results) {
+            should.exist(results);
+            testUtils.API.checkResponse(results, 'settings');
+            results.settings.length.should.be.above(0);
+            testUtils.API.checkResponse(results.settings[0], 'setting');
+
+            // Check for a core setting
+            should.not.exist(_.find(results.settings, function (setting) { return setting.type === 'core'; }));
+
+            done();
+        }).catch(getErrorDetails(done));
+    });
+
+    it('returns core settings for internal requests when browsing', function (done) {
+        return callApiWithContext(internalContext, 'browse', {}).then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'settings');
             results.settings.length.should.be.above(0);
@@ -82,11 +104,11 @@ describe('Settings API', function () {
             should.exist(_.find(results.settings, function (setting) { return setting.type === 'core'; }));
 
             done();
-        }).catch(getErrorDetails(done)); 
+        }).catch(getErrorDetails(done));
     });
 
-    it('can read by string', function (done) {
-        return callApiWithContext(defaultContext, 'read', 'title').then(function (response) {
+    it('can read blog settings by string', function (done) {
+        return SettingsAPI.read('title').then(function (response) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'settings');
             response.settings.length.should.equal(1);
@@ -97,19 +119,17 @@ describe('Settings API', function () {
     });
 
     it('cannot read core settings if not an internal request', function (done) {
-        return callApiWithContext(defaultContext, 'read', 'databaseVersion').then(function (response) {
+        return callApiWithContext(defaultContext, 'read',  {key: 'databaseVersion'}).then(function (response) {
             done(new Error('Allowed to read databaseVersion with external request'));
-        }).catch(function (err) {
-            should.exist(err);
-
-            err.message.should.equal('Attempted to access core setting on external request');
-
+        }).catch(function (error) {
+            should.exist(error);
+            error.type.should.eql('NoPermissionError');
             done();
         });
     });
 
     it('can read core settings if an internal request', function (done) {
-        return callApiWithContext(internalContext, 'read', 'databaseVersion').then(function (response) {
+        return callApiWithContext(internalContext, 'read', {key: 'databaseVersion'}).then(function (response) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'settings');
             response.settings.length.should.equal(1);
@@ -131,37 +151,40 @@ describe('Settings API', function () {
     });
 
     it('can edit', function (done) {
-        return callApiWithContext(defaultContext, 'edit', { settings: [{ key: 'title', value: 'UpdatedGhost'}]}).then(function (response) {
-            should.exist(response);
-            testUtils.API.checkResponse(response, 'settings');
-            response.settings.length.should.equal(1);
-            testUtils.API.checkResponse(response.settings[0], 'setting');
+        return callApiWithContext(defaultContext, 'edit', {settings: [{ key: 'title', value: 'UpdatedGhost'}]}, {})
+            .then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'settings');
+                response.settings.length.should.equal(1);
+                testUtils.API.checkResponse(response.settings[0], 'setting');
 
-            done();
-        }).catch(done);
-    });
-
-    it('can edit, by key/value', function (done) {
-        return callApiWithContext(defaultContext, 'edit', 'title', 'UpdatedGhost').then(function (response) {
-            should.exist(response);
-            testUtils.API.checkResponse(response, 'settings');
-            response.settings.length.should.equal(1);
-            testUtils.API.checkResponse(response.settings[0], 'setting');
-
-            done();
-        }).catch(getErrorDetails(done));
+                done();
+            }).catch(done);
     });
 
     it('cannot edit a core setting if not an internal request', function (done) {
-        return callApiWithContext(defaultContext, 'edit', 'databaseVersion', '999').then(function (response) {
-            done(new Error('Allowed to edit a core setting as external request'));
-        }).catch(function (err) {
-            should.exist(err);
+        return callApiWithContext(defaultContext, 'edit', {settings: [{ key: 'databaseVersion', value: '999'}]}, {})
+            .then(function () {
+                done(new Error('Allowed to edit a core setting as external request'));
+            }).catch(function (err) {
+                should.exist(err);
 
-            err.message.should.equal('Attempted to access core setting on external request');
+                err.type.should.eql('NoPermissionError');
 
-            done();
-        });
+                done();
+            });
+    });
+
+    it('can edit a core setting with an internal request', function (done) {
+        return callApiWithContext(internalContext, 'edit', {settings: [{ key: 'databaseVersion', value: '999'}]}, {})
+            .then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'settings');
+                response.settings.length.should.equal(1);
+                testUtils.API.checkResponse(response.settings[0], 'setting');
+
+                done();
+            }).catch(done);
     });
 
     it('ensures values are stringified before saving to database', function (done) {

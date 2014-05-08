@@ -8,7 +8,7 @@ var _             = require('lodash'),
 
     // Stuff we are testing
     permissions   = require('../../../server/permissions'),
-    settings      = require('../../../server/api/settings'),
+    SettingsAPI      = require('../../../server/api/settings'),
     ThemeAPI      = rewire('../../../server/api/themes');
 
 describe('Themes API', function () {
@@ -26,12 +26,15 @@ describe('Themes API', function () {
         testUtils.initData().then(function () {
             return testUtils.insertDefaultFixtures();
         }).then(function () {
+            return SettingsAPI.updateSettingsCache();
+        }).then(function () {
+
             return permissions.init();
         }).then(function () {
             sandbox = sinon.sandbox.create();
 
             // Override settings.read for activeTheme
-            settingsReadStub = sandbox.stub(settings, 'read', function () {
+            settingsReadStub = sandbox.stub(SettingsAPI, 'read', function () {
                 return when({ settings: [{value: 'casper'}] });
             });
 
@@ -67,14 +70,14 @@ describe('Themes API', function () {
         _.extend(configStub, config);
         ThemeAPI.__set__('config', configStub);
 
-        ThemeAPI.browse.call({user: 1}).then(function (result) {
+        ThemeAPI.browse({context: {user: 1}}).then(function (result) {
             should.exist(result);
             result.themes.length.should.be.above(0);
             testUtils.API.checkResponse(result.themes[0], 'theme');
             done();
-        }, function (error) {
+        }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
-        })
+        });
     });
 
     it('can edit', function (done) {
@@ -84,15 +87,15 @@ describe('Themes API', function () {
         _.extend(configStub, config);
         ThemeAPI.__set__('config', configStub);
 
-        ThemeAPI.edit.call({user: 1}, {themes: [{uuid: 'rasper', active: true }]}).then(function (result) {
+        ThemeAPI.edit({themes: [{uuid: 'rasper', active: true }]}, {context: {user: 1}}).then(function (result) {
             should.exist(result);
             should.exist(result.themes);
             result.themes.length.should.be.above(0);
             testUtils.API.checkResponse(result.themes[0], 'theme');
             result.themes[0].uuid.should.equal('rasper');
             done();
-        }, function (error) {
+        }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
-        })
+        });
     })
 });

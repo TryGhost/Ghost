@@ -80,19 +80,19 @@ describe('Permission Model', function () {
         }).catch(done);
     });
 
-    it('can delete', function (done) {
-        PermissionModel.findOne({id: 1}).then(function (foundPermission) {
+    it('can destroy', function (done) {
+        var firstPermission = {id: 1};
+
+        PermissionModel.findOne(firstPermission).then(function (foundPermission) {
             should.exist(foundPermission);
+            foundPermission.attributes.id.should.equal(firstPermission.id);
 
-            return PermissionModel.destroy(1);
-        }).then(function () {
-            return PermissionModel.findAll();
-        }).then(function (foundPermissions) {
-            var hasRemovedId = foundPermissions.any(function (permission) {
-                return permission.id === 1;
-            });
-
-            hasRemovedId.should.equal(false);
+            return PermissionModel.destroy(firstPermission);
+        }).then(function (response) {
+            response.toJSON().should.be.empty;
+            return PermissionModel.findOne(firstPermission);
+        }).then(function (newResults) {
+            should.equal(newResults, null);
 
             done();
         }).catch(done);

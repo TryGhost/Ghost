@@ -144,7 +144,7 @@ describe('User Model', function run() {
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            UserModel.check({email: userData.email, pw:userData.password}).then(function (activeUser) {
+            UserModel.check({email: userData.email, pw: userData.password}).then(function (activeUser) {
                 should.exist(activeUser.get('last_login'));
                 done();
             }).catch(done);
@@ -175,19 +175,13 @@ describe('User Model', function run() {
             var firstUser;
 
             UserModel.findAll().then(function (results) {
-
                 should.exist(results);
-
                 results.length.should.be.above(0);
-
                 firstUser = results.models[0];
 
                 return UserModel.findOne({email: firstUser.attributes.email});
-
             }).then(function (found) {
-
                 should.exist(found);
-
                 found.attributes.name.should.equal(firstUser.attributes.name);
 
                 done();
@@ -197,22 +191,18 @@ describe('User Model', function run() {
         });
 
         it('can edit', function (done) {
-            var firstUser;
+            var firstUser = 1;
 
-            UserModel.findAll().then(function (results) {
-
+            UserModel.findOne({id: firstUser}).then(function (results) {
+                var user;
                 should.exist(results);
+                user = results.toJSON();
+                user.id.should.equal(firstUser);
+                should.equal(user.website, null);
 
-                results.length.should.be.above(0);
-
-                firstUser = results.models[0];
-
-                return UserModel.edit({id: firstUser.id, website: "some.newurl.com"});
-
+                return UserModel.edit({website: 'some.newurl.com'}, {id: firstUser});
             }).then(function (edited) {
-
                 should.exist(edited);
-
                 edited.attributes.website.should.equal('some.newurl.com');
 
                 done();
@@ -220,41 +210,43 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can delete', function (done) {
-            var firstUserId;
+        it('can destroy', function (done) {
+            var firstUser = {id: 1};
 
-            UserModel.findAll().then(function (results) {
+            // Test that we have the user we expect
+            UserModel.findOne(firstUser).then(function (results) {
 
+                var user;
                 should.exist(results);
+                user = results.toJSON();
+                user.id.should.equal(firstUser.id);
 
-                results.length.should.be.above(0);
+                // Destroy the user
+                return UserModel.destroy(firstUser);
+            }).then(function (response) {
+                response.toJSON().should.be.empty;
 
-                firstUserId = results.models[0].id;
-
-                return UserModel.destroy(firstUserId);
-
-            }).then(function () {
-
-                return UserModel.findAll();
-
+                // Double check we can't find the user again
+                return UserModel.findOne(firstUser);
             }).then(function (newResults) {
-                var ids, hasDeletedId;
+                should.equal(newResults, null);
 
-                if (newResults.length < 1) {
-                    // Bug out if we only had one user and deleted it.
-                    return done();
-                }
-
-                ids = _.pluck(newResults.models, "id");
-                hasDeletedId = _.any(ids, function (id) {
-                    return id === firstUserId;
-                });
-
-                hasDeletedId.should.equal(false);
                 done();
-
             }).catch(done);
         });
+    });
+
+    describe('Password Reset', function () {
+
+       beforeEach(function (done) {
+           testUtils.initData()
+               .then(function () {
+                   return when(testUtils.insertDefaultUser());
+               })
+               .then(function () {
+                   done();
+               }).catch(done);
+       });
 
         it('can generate reset token', function (done) {
             // Expires in one minute

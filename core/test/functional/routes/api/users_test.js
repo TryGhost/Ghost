@@ -42,7 +42,7 @@ describe('User API', function () {
                             pattern_meta.should.exist;
                             csrfToken = res.text.match(pattern_meta)[1];
 
-                            process.nextTick(function() {
+                            process.nextTick(function () {
                                 request.post('/ghost/signin/')
                                     .set('X-CSRF-Token', csrfToken)
                                     .send({email: user.email, password: user.password})
@@ -144,13 +144,16 @@ describe('User API', function () {
                 }
 
                 var jsonResponse = res.body,
-                    changedValue = 'joe-bloggs.ghost.org';
+                    changedValue = 'joe-bloggs.ghost.org',
+                    dataToSend;
                 jsonResponse.users[0].should.exist;
-                jsonResponse.users[0].website = changedValue;
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                dataToSend = { users: [{website: changedValue}]};
 
                 request.put(testUtils.API.getApiQuery('users/me/'))
                     .set('X-CSRF-Token', csrfToken)
-                    .send(jsonResponse)
+                    .send(dataToSend)
                     .expect(200)
                     .end(function (err, res) {
                         if (err) {
@@ -162,7 +165,7 @@ describe('User API', function () {
                         res.should.be.json;
                         putBody.users[0].should.exist;
                         putBody.users[0].website.should.eql(changedValue);
-
+                        putBody.users[0].email.should.eql(jsonResponse.users[0].email);
                         testUtils.API.checkResponse(putBody.users[0], 'user');
                         done();
                     });
@@ -195,6 +198,4 @@ describe('User API', function () {
 
             });
     });
-
-
 });

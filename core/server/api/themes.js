@@ -10,11 +10,12 @@ var when               = require('when'),
 // ## Themes
 themes = {
 
-    browse: function browse() {
-        // **returns:** a promise for a collection of themes in a json object
-        return canThis(this).browse.theme().then(function () {
+    browse: function browse(options) {
+        options = options || {};
+
+        return canThis(options.context).browse.theme().then(function () {
             return when.all([
-                settings.read.call({ internal: true }, 'activeTheme'),
+                settings.read({key: 'activeTheme', context: {internal: true}}),
                 config().paths.availableThemes
             ]).then(function (result) {
                 var activeTheme = result[0].settings[0].value,
@@ -49,19 +50,18 @@ themes = {
         });
     },
 
-    edit: function edit(themeData) {
-        var self = this,
-            themeName;
+    edit: function edit(object, options) {
+        var themeName;
 
         // Check whether the request is properly formatted.
-        if (!_.isArray(themeData.themes)) {
+        if (!_.isArray(object.themes)) {
             return when.reject({type: 'BadRequest', message: 'Invalid request.'});
         }
 
-        themeName = themeData.themes[0].uuid;
+        themeName = object.themes[0].uuid;
 
-        return canThis(this).edit.theme().then(function () {
-            return themes.browse.call(self).then(function (availableThemes) {
+        return canThis(options.context).edit.theme().then(function () {
+            return themes.browse(options).then(function (availableThemes) {
                 var theme;
 
                 // Check if the theme exists
@@ -73,8 +73,10 @@ themes = {
                     return when.reject(new errors.BadRequestError('Theme does not exist.'));
                 }
 
-                // Activate the theme 
-                return settings.edit.call({ internal: true }, 'activeTheme', themeName).then(function () {
+                // Activate the theme
+                return settings.edit(
+                    {settings: [{ key: 'activeTheme', value: themeName }]}, {context: {internal: true }}
+                ).then(function () {
                     theme.active = true;
                     return { themes: [theme]};
                 });

@@ -61,7 +61,7 @@ describe('Post API', function () {
                                                 if (err) {
                                                     return done(err);
                                                 }
-                                                
+
                                                 csrfToken = res.text.match(pattern_meta)[1];
                                                 done();
                                             });
@@ -124,7 +124,7 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
-                
+
         });
 
         // Test bits of the API we don't use in the app yet to ensure the API behaves properly
@@ -193,7 +193,7 @@ describe('Post API', function () {
 
     // ## Read
     describe('Read', function () {
-        it('can retrieve a post', function (done) {
+        it('can retrieve a post by id', function (done) {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .end(function (err, res) {
                     if (err) {
@@ -207,6 +207,32 @@ describe('Post API', function () {
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    jsonResponse.posts[0].id.should.equal(1);
+                    jsonResponse.posts[0].page.should.eql(0);
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+                    _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+                    jsonResponse.posts[0].author.should.be.a.Number;
+                    jsonResponse.posts[0].created_by.should.be.a.Number;
+                    jsonResponse.posts[0].tags[0].should.be.a.Number;
+                    done();
+                });
+        });
+
+        it('can retrieve a post by slug', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/welcome-to-ghost/'))
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.should.have.status(200);
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    res.should.be.json;
+                    var jsonResponse = res.body;
+                    jsonResponse.should.exist;
+                    jsonResponse.posts.should.exist;
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    jsonResponse.posts[0].slug.should.equal('welcome-to-ghost');
                     jsonResponse.posts[0].page.should.eql(0);
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
@@ -477,7 +503,6 @@ describe('Post API', function () {
                 });
         });
 
-
         it('can change a static page to a post', function (done) {
             request.get(testUtils.API.getApiQuery('posts/7/'))
                 .end(function (err, res) {
@@ -501,11 +526,11 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
+
                             _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].page.should.eql(changedValue);
-
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
                         });
@@ -605,10 +630,6 @@ describe('Post API', function () {
                 });
         });
 
-    });
-
-    // ## delete
-    describe('Delete', function () {
         it('can\'t edit non existent post', function (done) {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .end(function (err, res) {
@@ -630,7 +651,6 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            var putBody = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             res.should.be.json;
                             jsonResponse = res.body;
@@ -641,6 +661,10 @@ describe('Post API', function () {
                 });
         });
 
+    });
+
+    // ## delete
+    describe('Delete', function () {
         it('can delete a post', function (done) {
             var deletePostId = 1;
             request.del(testUtils.API.getApiQuery('posts/' + deletePostId + '/'))
@@ -829,9 +853,5 @@ describe('Post API', function () {
                         });
                 });
         });
-
-
     });
-
-
 });
