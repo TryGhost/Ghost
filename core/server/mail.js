@@ -94,8 +94,10 @@ GhostMailer.prototype.fromAddress = function () {
 };
 
 // Sends an e-mail message enforcing `to` (blog owner) and `from` fields
-GhostMailer.prototype.send = function (message) {
-    var self = this;
+// GhostMailer.prototype.send = function (message) {
+GhostMailer.prototype.send = function (payload) {
+    var self = this,
+        message = payload;
 
     if (!this.transport) {
         return when.reject(new Error('Email Error: No e-mail transport configured.'));

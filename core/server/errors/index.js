@@ -12,6 +12,7 @@ var _                          = require('lodash'),
     RequestEntityTooLargeError = require('./requesttoolargeerror'),
     UnauthorizedError          = require('./unauthorizederror'),
     ValidationError            = require('./validationerror'),
+    EmailError                 = require('./emailerror'),
     errors,
 
     // Paths for views
@@ -257,3 +258,4 @@ module.exports.NoPermissionError          = NoPermissionError;
 module.exports.UnauthorizedError          = UnauthorizedError;
 module.exports.ValidationError            = ValidationError;
 module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;
+module.exports.EmailError                 = EmailError;
