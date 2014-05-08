@@ -77,6 +77,12 @@ casper.waitForOpaque = function (classname, then, timeout) {
     }, then, timeout);
 };
 
+casper.failOnTimeout = function (test, message) {
+    return function onTimeout() {
+        test.fail(message);
+    };
+};
+
 // ## Debugging
 // output all errors to the console
 casper.on('remote.message', function (msg) {
@@ -96,14 +102,14 @@ casper.captureScreenshot = function (filename, debugOnly) {
     // If we are in debug mode, OR debugOnly is false
     if (DEBUG || debugOnly === false) {
         filename = filename || "casper_test_fail.png";
-        casper.then(function () {
-            casper.capture(new Date().getTime() + '_' + filename);
-        });
+//        casper.then(function () {
+//            casper.capture(new Date().getTime() + '_' + filename);
+//        });
     }
 };
 
 // on failure, grab a screenshot
-casper.test.on("fail", function captureFailure() {
+casper.test.on("fail", function captureFailure(test) {
     casper.captureScreenshot(casper.test.filename || "casper_test_fail.png", false);
 });
 
