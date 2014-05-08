@@ -18,7 +18,7 @@ function hasActionsMap() {
 
     return _.any(exported.actionsMap, function (val, key) {
         /*jslint unparam:true*/
-        return Object.hasOwnProperty(key);
+        return Object.hasOwnProperty.call(exported.actionsMap, key);
     });
 }
 

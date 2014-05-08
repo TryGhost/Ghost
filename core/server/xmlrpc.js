@@ -20,6 +20,14 @@ function ping(post) {
         return;
     }
 
+    // Don't ping for the welcome to ghost post.
+    // This also handles the case where during ghost's first run
+    // models.init() inserts this post but permissions.init() hasn't
+    // (can't) run yet.
+    if (post.slug === 'welcome-to-ghost') {
+        return;
+    }
+
     // Need to require here because of circular dependency
     return config.urlForPost(require('./api').settings, post, true).then(function (url) {
 
