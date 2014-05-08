@@ -109,6 +109,22 @@ function locationHeader(req, result) {
     return when(location);
 }
 
+// create a header that invokes the 'Save As' dialog
+// in the browser when exporting the database to file.
+// The 'filename' parameter is governed by [RFC6266](http://tools.ietf.org/html/rfc6266#section-4.3).
+//
+// for encoding whitespace and non-ISO-8859-1 characters, you MUST
+// use the "filename*=" attribute, NOT "filename=". Ideally, both.
+// see: http://tools.ietf.org/html/rfc598
+// examples: http://tools.ietf.org/html/rfc6266#section-5
+//
+// we'll use ISO-8859-1 characters here to keep it simple.
+function dbExportSaveAsHeader() {
+    // replace ':' with '_' for OS that don't support it
+    var now = (new Date()).toJSON().replace(/:/g, '_');
+    return 'Attachment; filename="ghost-' + now + '.json"';
+}
+
 // ### requestHandler
 // decorator for api functions which are called via an HTTP request
 // takes the API method and wraps it so that it gets data from the request and returns a sensible JSON response
@@ -128,13 +144,20 @@ requestHandler = function (apiMethod) {
                 }
             })
             .then(function () {
+                if (apiMethod === db.exportContent) {
+                    res.set({
+                        "Content-Disposition": dbExportSaveAsHeader()
+                    });
+                }
+            })
+            .then(function () {
                 return locationHeader(req, result).then(function (header) {
                     if (header) {
                         res.set({
                             'Location': header
                         });
                     }
-                    
+
                     res.json(result || {});
                 });
             });
@@ -148,10 +171,10 @@ requestHandler = function (apiMethod) {
 
             _.each(error, function (erroritem) {
                 var errorContent = {};
-                
+
                 //TODO: add logic to set the correct status code
                 errorCode = errorTypes[erroritem.type].code || 500;
-                
+
                 errorContent['message'] = _.isString(erroritem) ? erroritem : (_.isObject(erroritem) ? erroritem.message : 'Unknown API Error');
                 errorContent['type'] = erroritem.type || 'InternalServerError';
                 errors.push(errorContent);
