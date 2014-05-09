@@ -63,6 +63,11 @@ db = {
                 // Parse the json data
                 try {
                     importData = JSON.parse(fileContents);
+
+                    // if importData follows JSON-API format `{ db: [exportedData] }`
+                    if (_.keys(importData).length === 1 && Array.isArray(importData.db)) {
+                        importData = importData.db[0];
+                    }
                 } catch (e) {
                     errors.logError(e, "API DB import content", "check that the import file is valid JSON.");
                     return when.reject(new Error("Failed to parse the import JSON file"));
