@@ -1,6 +1,8 @@
 var AuthenticatedRoute = Ember.Route.extend({
     beforeModel: function () {
-        if (!this.get('user.isSignedIn')) {
+        var user = this.container.lookup('user:current');
+
+        if (!user || !user.get('isSignedIn')) {
             this.notifications.showError('Please sign in');
 
             this.transitionTo('signin');
@@ -9,7 +11,7 @@ var AuthenticatedRoute = Ember.Route.extend({
 
     actions: {
         error: function (error) {
-            if (error.jqXHR.status === 401) {
+            if (error.jqXHR && error.jqXHR.status === 401) {
                 this.transitionTo('signin');
             }
         }

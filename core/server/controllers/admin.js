@@ -43,8 +43,14 @@ function setSelected(list, name) {
 adminControllers = {
     'index': function (req, res) {
         /*jslint unparam:true*/
+        var userData;
+
+        if (req.session && req.session.userData) {
+            userData = JSON.stringify(req.session.userData);
+        }
+
         res.render('default-ember', {
-            user: JSON.stringify(req.session.userData)
+            user: userData
         });
     },
     // Route: index
