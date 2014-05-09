@@ -12,34 +12,7 @@ var _             = require('lodash'),
     tags          = require('./tags'),
     mail          = require('./mail'),
     requestHandler,
-    init,
-
-    errorTypes = {
-        BadRequest: {
-            code: 400
-        },
-        Unauthorized: {
-            code: 401
-        },
-        NoPermission: {
-            code: 403
-        },
-        NotFound: {
-            code: 404
-        },
-        RequestEntityTooLarge: {
-            code: 413
-        },
-        ValidationError: {
-            code: 422
-        },
-        EmailError: {
-            code: 500
-        },
-        InternalServerError: {
-            code: 500
-        }
-    };
+    init;
 
 // ## Request Handlers
 
@@ -169,14 +142,14 @@ requestHandler = function (apiMethod) {
                 error = [].concat(error);
             }
 
-            _.each(error, function (erroritem) {
+            _.each(error, function (errorItem) {
                 var errorContent = {};
 
                 //TODO: add logic to set the correct status code
-                errorCode = errorTypes[erroritem.type].code || 500;
-
-                errorContent['message'] = _.isString(erroritem) ? erroritem : (_.isObject(erroritem) ? erroritem.message : 'Unknown API Error');
-                errorContent['type'] = erroritem.type || 'InternalServerError';
+                errorCode = errorItem.code || 500;
+                
+                errorContent['message'] = _.isString(errorItem) ? errorItem : (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
+                errorContent['type'] = errorItem.type || 'InternalServerError';
                 errors.push(errorContent);
             });
 

@@ -3,6 +3,7 @@ var _            = require('lodash'),
     when         = require('when'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
+    errors       = require('../errors'),
     settings,
     settingsFilter,
     updateSettingsCache,
@@ -176,11 +177,11 @@ settings = {
                 result = {};
 
             if (!setting) {
-                return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + options.key});
+                return when.reject(new errors.NotFoundError('Unable to find setting: ' + options.key));
             }
 
             if (!self.internal && setting.type === 'core') {
-                return when.reject({type: 'NoPermission', message: 'Attempted to access core setting on external request' });
+                return when.reject(new errors.NoPermissionError('Attempted to access core setting on external request'));
             }
 
             result[options.key] = setting;
@@ -200,11 +201,11 @@ settings = {
                     var setting = settingsCache[settingInfo.key];
 
                     if (!setting) {
-                        return when.reject({type: 'NotFound', message: 'Unable to find setting: ' + settingInfo.key});
+                        return when.reject(new errors.NotFoundError('Unable to find setting: ' + settingInfo.key));
                     }
 
                     if (!self.internal && setting.type === 'core') {
-                        return when.reject({type: 'NoPermission', message: 'Attempted to access core setting on external request' });
+                        return when.reject(new errors.NoPermissionError('Attempted to access core setting on external request'));
                     }
 
                     return canThis(self).edit.setting(settingInfo.key);
@@ -239,14 +240,6 @@ settings = {
                 return settingsResult(readResult, type);
             });
         }).catch(function (error) {
-            // In case something goes wrong it is most likely because of an invalid key
-            // or because of a badly formatted request.
-
-            // Check for actual javascript error, not api error
-            if (error instanceof Error) {
-                return when.reject({type: 'BadRequest', message: error.message});
-            }
-
             // Pass along API error
             return when.reject(error);
         });

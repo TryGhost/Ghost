@@ -4,7 +4,7 @@ var testUtils = require('../utils'),
     sinon = require('sinon'),
     when = require('when'),
     _ = require("lodash"),
-    errors = require('../../server/errorHandling'),
+    errors = require('../../server/errors'),
 
     // Stuff we are testing
     permissions = require('../../server/permissions'),

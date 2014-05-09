@@ -15,6 +15,7 @@ var moment      = require('moment'),
     config      = require('../config'),
     filters     = require('../../server/filters'),
     template    = require('../helpers/template'),
+    errors      = require('../errors'),
 
     frontendControllers,
     // Cache static post permalink regex
@@ -161,7 +162,7 @@ frontendControllers = {
                 // If there are still no matches then return.
                 if (staticPostPermalink.match(path) === false) {
                     // Reject promise chain with type 'NotFound'
-                    return when.reject({type: 'NotFound'});
+                    return when.reject(new errors.NotFoundError());
                 }
 
                 permalink = staticPostPermalink;
@@ -192,7 +193,7 @@ frontendControllers = {
                     return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
                 } else if (params.edit !== undefined) {
                     // reject with type: 'NotFound'
-                    return when.reject({type: 'NotFound'});
+                    return when.reject(new errors.NotFoundError());
                 }
 
                 setReqCtx(req, post);
@@ -254,7 +255,7 @@ frontendControllers = {
             // If we've thrown an error message
             // of type: 'NotFound' then we found
             // no path match.
-            if (err.type === 'NotFound') {
+            if (err.type === 'NotFoundError') {
                 return next();
             }
 

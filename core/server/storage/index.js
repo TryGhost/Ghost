@@ -1,4 +1,4 @@
-var errors = require('../errorHandling'),
+var errors = require('../errors'),
     storage;
 
 function get_storage() {
