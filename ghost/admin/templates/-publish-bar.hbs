@@ -2,7 +2,11 @@
     <nav>
         <section id="entry-tags" href="#" class="left">
             <label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
-            <div class="tags"></div>
+            <div class="tags">
+            {{#each tags}}
+                <span class="tag">{{name}}</span>
+            {{/each}}
+            </div>
             <input type="hidden" class="tags-holder" id="tags-holder">
             <input class="tag-input" id="tags" type="text" data-input-behaviour="tag" />
             <ul class="suggestions overlay"></ul>
