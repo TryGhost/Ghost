@@ -1,21 +1,13 @@
 import Notifications from 'ghost/utils/notifications';
 
-var registerNotifications = {
-    name: 'registerNotifications',
-
-    initialize: function (container, application) {
-        application.register('notifications:main', Notifications);
-    }
-};
-
-var injectNotifications = {
+export default {
     name: 'injectNotifications',
 
     initialize: function (container, application) {
+        application.register('notifications:main', Notifications);
+
         application.inject('controller', 'notifications', 'notifications:main');
         application.inject('component', 'notifications', 'notifications:main');
         application.inject('route', 'notifications', 'notifications:main');
     }
 };
-
-export {registerNotifications, injectNotifications};

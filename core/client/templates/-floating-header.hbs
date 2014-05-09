@@ -1,7 +1,7 @@
 <header class="floatingheader">
     <button class="button-back" href="#">Back</button>
     {{!-- @TODO: add back title updates depending on featured state --}}
-    <a {{bind-attr class="featured:featured:unfeatured"}} href="#" title="Feature this post">
+    <a {{bind-attr class="featured:featured:unfeatured"}} href="#" title="Feature this post" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
     </a>
     <small>
