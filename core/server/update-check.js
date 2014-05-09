@@ -30,7 +30,7 @@ var crypto   = require('crypto'),
 
     api      = require('./api'),
     config   = require('./config'),
-    errors   = require('./errorHandling'),
+    errors   = require('./errors'),
     packageInfo = require('../../package.json'),
 
     allowedCheckEnvironments = ['development', 'production'],

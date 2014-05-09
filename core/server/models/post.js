@@ -2,7 +2,7 @@
 var _              = require('lodash'),
     uuid           = require('node-uuid'),
     when           = require('when'),
-    errors         = require('../errorHandling'),
+    errors         = require('../errors'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),

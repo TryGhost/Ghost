@@ -1,5 +1,6 @@
-var when     = require("when"),
-    config   = require('../config'),
+var when       = require("when"),
+    config     = require('../config'),
+    errors      = require('../errors'),
     mail;
     
     
@@ -22,7 +23,7 @@ mail = {
                 return when.resolve({message: data.message });
             })
             .otherwise(function (error) {
-                return when.reject({type: 'EmailError', message: error.message });
+                return when.reject(new errors.EmailError(error.message));
             });
     },
     

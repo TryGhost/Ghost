@@ -2,7 +2,7 @@ var Settings,
     ghostBookshelf = require('./base'),
     uuid           = require('node-uuid'),
     _              = require('lodash'),
-    errors         = require('../errorHandling'),
+    errors         = require('../errors'),
     when           = require('when'),
     validation     = require('../data/validation'),
 
@@ -100,7 +100,7 @@ Settings = ghostBookshelf.Model.extend({
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return when.reject({type: 'ValidationError', message: 'Setting key cannot be empty.'});
+                return when.reject(new errors.ValidationError('Setting key cannot be empty.'));
             }
 
             item = self.filterData(item);
@@ -111,7 +111,7 @@ Settings = ghostBookshelf.Model.extend({
                     return setting.save({value: item.value}, options);
                 }
 
-                return when.reject({type: 'NotFound', message: 'Unable to find setting to update: ' + item.key});
+                return when.reject(new errors.NotFoundError('Unable to find setting to update: ' + item.key));
 
             }, errors.logAndThrowError);
         });

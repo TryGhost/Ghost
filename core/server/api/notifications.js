@@ -1,5 +1,7 @@
 var when               = require('when'),
     _                  = require('lodash'),
+    errors             = require('../errors'),
+
     // Holds the persistent notifications
     notificationsStore = [],
     // Holds the last used id 
@@ -22,11 +24,11 @@ notifications = {
         });
 
         if (notification && !notification.dismissable) {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to dismiss this notification.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to dismiss this notification.'));
         }
 
         if (!notification) {
-            return when.reject({type: 'NoPermission', message: 'Notification does not exist.'});
+            return when.reject(new errors.NotFoundError('Notification does not exist.'));
         }
 
         notificationsStore = _.reject(notificationsStore, function (element) {

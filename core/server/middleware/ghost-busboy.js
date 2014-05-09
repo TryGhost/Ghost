@@ -2,7 +2,8 @@ var BusBoy  = require('busboy'),
     fs      = require('fs-extra'),
     path    = require('path'),
     os      = require('os'),
-    crypto  = require('crypto');
+    crypto  = require('crypto'),
+    errors  = require('../errors');
 
 // ### ghostBusboy
 // Process multipart file streams
@@ -55,7 +56,7 @@ function ghostBusBoy(req, res, next) {
 
         busboy.on('limit', function () {
             hasError = true;
-            res.send(413, {type: 'RequestEntityTooLarge', message: 'File size limit breached.'});
+            res.send(413, new errors.RequestEntityTooLargeError('File size limit breached.'));
         });
 
         busboy.on('error', function (error) {

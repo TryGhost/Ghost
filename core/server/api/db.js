@@ -6,7 +6,7 @@ var dataExport       = require('../data/export'),
     nodefn           = require('when/node/function'),
     _                = require('lodash'),
     validation       = require('../data/validation'),
-    errors           = require('../../server/errorHandling'),
+    errors           = require('../../server/errors'),
     canThis          = require('../permissions').canThis,
     api              = {},
     db;
@@ -23,10 +23,10 @@ db = {
             return dataExport().then(function (exportedData) {
                 return when.resolve({ db: [exportedData] });
             }).otherwise(function (error) {
-                return when.reject({type: 'InternalServerError', message: error.message || error});
+                return when.reject(new errors.InternalServerError(error.message || error));
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     },
     'importContent': function (options) {
@@ -43,7 +43,7 @@ db = {
                  * - If there is no path
                  * - If the name doesn't have json in it
                  */
-                return when.reject({type: 'InternalServerError', message: 'Please select a .json file to import.'});
+                return when.reject(new errors.InternalServerError('Please select a .json file to import.'));
             }
 
             return api.settings.read.call({ internal: true }, { key: 'databaseVersion' }).then(function (response) {
@@ -65,11 +65,11 @@ db = {
                     importData = JSON.parse(fileContents);
                 } catch (e) {
                     errors.logError(e, "API DB import content", "check that the import file is valid JSON.");
-                    return when.reject(new Error("Failed to parse the import JSON file"));
+                    return when.reject(new errors.BadRequest("Failed to parse the import JSON file"));
                 }
 
                 if (!importData.meta || !importData.meta.version) {
-                    return when.reject(new Error("Import data does not specify version"));
+                    return when.reject(new errors.ValidationError("Import data does not specify version", 'meta.version'));
                 }
 
                 _.each(_.keys(importData.data), function (tableName) {
@@ -94,13 +94,13 @@ db = {
             }).then(function () {
                 return when.resolve({ db: [] });
             }).otherwise(function importFailure(error) {
-                return when.reject({type: 'InternalServerError', message: error.message || error});
+                return when.reject(new errors.InternalServerError(error.message || error));
             }).finally(function () {
                 // Unlink the file after import
                 return nodefn.call(fs.unlink, options.importfile.path);
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     },
     'deleteAllContent': function () {
@@ -111,10 +111,10 @@ db = {
                 .then(function () {
                     return when.resolve({ db: [] });
                 }, function (error) {
-                    return when.reject({message: error.message || error});
+                    return when.reject(new errors.InternalServerError(error.message || error));
                 });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to export data. (no rights)'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     }
 };

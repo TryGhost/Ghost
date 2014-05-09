@@ -1,7 +1,7 @@
 /*globals describe, it, before, beforeEach, afterEach */
 var testUtils = require('../../utils'),
     should = require('should'),
-    errors = require('../../../server/errorHandling'),
+    errors = require('../../../server/errors'),
 
     // Stuff we are testing
     Models = require('../../../server/models');

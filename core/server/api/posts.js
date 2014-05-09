@@ -2,13 +2,14 @@ var when                   = require('when'),
     _                      = require('lodash'),
     dataProvider           = require('../models'),
     canThis                = require('../permissions').canThis,
+    errors                 = require('../errors'),
 
-    posts,
-    allowedIncludes        = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'];
+    allowedIncludes        = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'],
+    posts;
 
 function checkPostData(postData) {
     if (_.isEmpty(postData) || _.isEmpty(postData.posts) || _.isEmpty(postData.posts[0])) {
-        return when.reject({type: 'BadRequest', message: 'No root key (\'posts\') provided.'});
+        return when.reject(new errors.BadRequestError('No root key (\'posts\') provided.'));
     }
     return when.resolve(postData);
 }
@@ -69,7 +70,7 @@ posts = {
                 return { posts: [ result.toJSON() ]};
             }
 
-            return when.reject({type: 'NotFound', message: 'Post not found.'});
+            return when.reject(new errors.NotFoundError('Post not found.'));
 
         });
     },
@@ -100,10 +101,10 @@ posts = {
                     return { posts: [ post ]};
                 }
 
-                return when.reject({type: 'NotFound', message: 'Post not found.'});
+                return when.reject(new errors.NotFoundError('Post not found.'));
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to edit this post.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to edit this post.'));
         });
     },
 
@@ -131,7 +132,7 @@ posts = {
                 return { posts: [ post ]};
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to add posts.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
         });
     },
 
@@ -156,7 +157,7 @@ posts = {
                 });
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to remove posts.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
         });
     },
 
@@ -169,10 +170,10 @@ posts = {
                 if (slug) {
                     return slug;
                 }
-                return when.reject({type: 'InternalServerError', message: 'Could not generate slug'});
+                return when.reject(new errors.InternalServerError('Could not generate slug'));
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission.'));
         });
     }
 
