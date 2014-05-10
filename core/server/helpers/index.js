@@ -7,7 +7,7 @@ var downsize        = require('downsize'),
 
     api             = require('../api'),
     config          = require('../config'),
-    errors          = require('../errorHandling'),
+    errors          = require('../errors'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,

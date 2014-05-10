@@ -4,7 +4,7 @@ var config        = require('../config'),
     when          = require('when'),
     api           = require('../api'),
     mailer        = require('../mail'),
-    errors        = require('../errorHandling'),
+    errors        = require('../errors'),
     storage       = require('../storage'),
     updateCheck   = require('../update-check'),
 

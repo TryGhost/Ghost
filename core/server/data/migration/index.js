@@ -1,6 +1,6 @@
 var _               = require('lodash'),
     when            = require('when'),
-    errors          = require('../../errorHandling'),
+    errors          = require('../../errors'),
     client          = require('../../models/base').client,
     knex            = require('../../models/base').knex,
     sequence        = require('when/sequence'),

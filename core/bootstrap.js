@@ -7,7 +7,7 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
-    errors  = require('./server/errorHandling'),
+    errors  = require('./server/errors'),
     config  = require('./server/config'),
 
     appRoot = config().paths.appRoot,

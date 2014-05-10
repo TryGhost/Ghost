@@ -5,7 +5,7 @@ var testUtils = require('../utils'),
     when      = require('when'),
     assert    = require('assert'),
     _         = require("lodash"),
-    errors    = require('../../server/errorHandling'),
+    errors    = require('../../server/errors'),
 
     // Stuff we are testing
     knex        = require("../../server/models/base").knex,

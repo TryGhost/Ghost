@@ -1,6 +1,6 @@
 var _              = require('lodash'),
     when           = require('when'),
-    errors         = require('../errorHandling'),
+    errors         = require('../errors'),
     nodefn         = require('when/node/function'),
     bcrypt         = require('bcryptjs'),
     Posts          = require('./post').Posts,
