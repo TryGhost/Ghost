@@ -21,20 +21,22 @@
   </head>
   <body class="{{bodyClass}}">
     <main role="main" id="main">
-      <section class="error-content error-404 js-error-container">
-        <section class="error-details">
-          <figure class="error-image">
-            <img
-              class="error-ghost"
-              src="{{asset "img/404-ghost@2x.png" ghost="true"}}"
-              srcset="{{asset "img/404-ghost.png" ghost="true"}} 1x, {{asset "img/404-ghost@2x.png" ghost="true"}} 2x"/>
-          </figure>
-          <section class="error-message">
-            <h1 class="error-code">{{code}}</h1>
-            <h2 class="error-description">{{message}}</h2>
+      <a href="{{@blog.url}}">
+        <section class="error-content error-404 js-error-container">
+          <section class="error-details">
+            <figure class="error-image">
+              <img
+                class="error-ghost"
+                src="{{asset "img/404-ghost@2x.png" ghost="true"}}"
+                srcset="{{asset "img/404-ghost.png" ghost="true"}} 1x, {{asset "img/404-ghost@2x.png" ghost="true"}} 2x"/>
+            </figure>
+            <section class="error-message">
+              <h1 class="error-code">{{code}}</h1>
+              <h2 class="error-description">{{message}}</h2>
+            </section>
           </section>
         </section>
-      </section>
+      </a>
       {{#if stack}}
         <section class="error-stack">
           <h3>Stack Trace</h3>
