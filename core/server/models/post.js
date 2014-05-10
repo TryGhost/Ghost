@@ -101,8 +101,15 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
     },
 
+   /**
+     * ### updateTags
+     * Update tags that are attached to a post.  Create any tags that don't already exist.
+     * @param {Object} newPost
+     * @param {Object} attr 
+     * @param {Object} options
+     * @return {Promise(ghostBookshelf.Models.Post)} Updated Post model
+     */
     updateTags: function (newPost, attr, options) {
-        /*jshint unused:false*/
         var self = this;
         options = options || {};
 
@@ -110,89 +117,51 @@ Post = ghostBookshelf.Model.extend({
             return;
         }
 
-        return Post.forge({id: newPost.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (thisPostWithTags) {
+        return Post.forge({id: newPost.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (post) {
+            var tagOps = [];
 
-            var existingTags = thisPostWithTags.related('tags').toJSON(),
-                tagOperations = [],
-                tagsToDetach = [],
-                tagsToAttach = [],
-                createdTagsToAttach = [];
+            // remove all existing tags from the post
+            // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+            // (https://github.com/tgriesser/bookshelf/issues/294)
+            tagOps.push(post.tags().detach(null, _.omit(options, 'query')));
 
-            // First find any tags which have been removed
-            _.each(existingTags, function (existingTag) {
-                if (!_.some(self.myTags, function (newTag) { return newTag.name === existingTag.name; })) {
-                    tagsToDetach.push(existingTag.id);
-                }
-            });
-
-            if (tagsToDetach.length > 0) {
-                // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
-                // (https://github.com/tgriesser/bookshelf/issues/294)
-                tagOperations.push(newPost.tags().detach(tagsToDetach, _.omit(options, 'query')));
+            if (_.isEmpty(self.myTags)) {
+                return when.all(tagOps);
             }
 
-            // Next check if new tags are all exactly the same as what is set on the model
-            _.each(self.myTags, function (newTag) {
-                if (!_.some(existingTags, function (existingTag) { return newTag.name === existingTag.name; })) {
-                    // newTag isn't on this post yet
-                    tagsToAttach.push(newTag);
-                }
-            });
+            return Tags.forge().query('whereIn', 'name', _.pluck(self.myTags, 'name')).fetch(options).then(function (existingTags) {
+                var doNotExist = [],
+                    createAndAttachOperation;
 
-            if (!_.isEmpty(tagsToAttach)) {
-                return Tags.forge().query('whereIn', 'name', _.pluck(tagsToAttach, 'name')).fetch(options).then(function (matchingTags) {
-                    _.each(matchingTags.toJSON(), function (matchingTag) {
+                existingTags = existingTags.toJSON();
+
+                doNotExist = _.reject(self.myTags, function (tag) {
+                    return _.any(existingTags, function (existingTag) {
+                        return existingTag.name === tag.name;
+                    });
+                });
+
+                // Create tags that don't exist and attach to post
+                _.each(doNotExist, function (tag) {
+                    createAndAttachOperation = Tag.add({name: tag.name}, options).then(function (createdTag) {
+                        createdTag = createdTag.toJSON();
                         // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
                         // (https://github.com/tgriesser/bookshelf/issues/294)
-                        tagOperations.push(newPost.tags().attach(matchingTag.id, _.omit(options, 'query')));
-                        tagsToAttach = _.reject(tagsToAttach, function (tagToAttach) {
-                            return tagToAttach.name === matchingTag.name;
-                        });
-
+                        return post.tags().attach(createdTag.id, createdTag.name, _.omit(options, 'query'));
                     });
 
-                    // Return if no tags to add
-                    if (tagsToAttach.length === 0) {
-                        return;
-                    }
-
-                    // Set method to insert, so each tag gets inserted with the appropriate options
-                    var opt = options.method;
-                    options.method = 'insert';
-
-                    // Create each tag that doesn't yet exist
-                    _.each(tagsToAttach, function (tagToCreateAndAttach) {
-                        var createAndAttachOperation = Tag.add({name: tagToCreateAndAttach.name}, options).then(function (createdTag) {
-                            createdTagsToAttach.push(createdTag);
-
-                            // If the tags are all inserted, process them
-                            if (tagsToAttach.length === createdTagsToAttach.length) {
-
-                                // Set method back to whatever it was, for tag attachment
-                                options.method = opt;
-
-                                // Attach each newly created tag
-                                _.each(createdTagsToAttach, function (tagToAttach) {
-                                    // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
-                                    // (https://github.com/tgriesser/bookshelf/issues/294)
-                                    newPost.tags().attach(tagToAttach.id, tagToAttach.name, _.omit(options, 'query'));
-                                });
-
-                            }
-
-                        });
-
-                        tagOperations.push(createAndAttachOperation);
-
-                    });
-
-                    // Return when all tags attached
-                    return when.all(tagOperations);
-
+                    tagOps.push(createAndAttachOperation);
                 });
-            }
 
-            return when.all(tagOperations);
+                // attach the tags that already existed
+                _.each(existingTags, function (tag) {
+                    // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+                    // (https://github.com/tgriesser/bookshelf/issues/294)
+                    tagOps.push(post.tags().attach(tag.id, _.omit(options, 'query')));
+                });
+
+                return when.all(tagOps);
+            });
         });
     },
 
