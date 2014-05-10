@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     Models = require('../models'),
-    errors = require('../errorHandling'),
+    errors = require('../errors'),
     User   = Models.User,
     App    = Models.App;
 

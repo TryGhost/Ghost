@@ -1,7 +1,7 @@
 
 var _           = require('lodash'),
     when        = require('when'),
-    errors      = require('../errorHandling'),
+    errors      = require('../errors'),
     api         = require('../api'),
     loader      = require('./loader'),
     // Holds the available apps

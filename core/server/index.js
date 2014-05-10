@@ -12,7 +12,7 @@ var crypto      = require('crypto'),
 
     api         = require('./api'),
     config      = require('./config'),
-    errors      = require('./errorHandling'),
+    errors      = require('./errors'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
     middleware  = require('./middleware'),

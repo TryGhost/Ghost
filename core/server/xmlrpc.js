@@ -1,6 +1,6 @@
 var _               = require('lodash'),
     config          = require('./config'),
-    errors          = require('./errorHandling'),
+    errors          = require('./errors'),
     http            = require('http'),
     xml             = require('xml'),
     pingList;

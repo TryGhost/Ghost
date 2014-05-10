@@ -3,13 +3,14 @@ var when               = require('when'),
     dataProvider       = require('../models'),
     settings           = require('./settings'),
     canThis            = require('../permissions').canThis,
+    errors             = require('../errors'),
     ONE_DAY            = 86400000,
     users;
 
 
 function checkUserData(userData) {
     if (_.isEmpty(userData) || _.isEmpty(userData.users) || _.isEmpty(userData.users[0])) {
-        return when.reject({code: 400, message: 'No root key (\'users\') provided.'});
+        return when.reject(new errors.BadRequestError('No root key (\'users\') provided.'));
     }
     return when.resolve(userData);
 }
@@ -25,7 +26,7 @@ users = {
                 return { users: result.toJSON() };
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to browse users.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to browse users.'));
         });
     },
 
@@ -42,7 +43,7 @@ users = {
                 return { users: [result.toJSON()] };
             }
 
-            return when.reject({type: 'NotFound', message: 'User not found.'});
+            return when.reject(new errors.NotFoundError('User not found.'));
         });
     },
 
@@ -58,10 +59,10 @@ users = {
                 if (result) {
                     return { users: [result.toJSON()]};
                 }
-                return when.reject({type: 'NotFound', message: 'User not found.'});
+                return when.reject(new errors.NotFoundError('User not found.'));
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to edit this users.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to edit this users.'));
         });
     },
 
@@ -84,7 +85,7 @@ users = {
                 }
             });
         }, function () {
-            return when.reject({type: 'NoPermission', message: 'You do not have permission to add a users.'});
+            return when.reject(new errors.NoPermissionError('You do not have permission to add a users.'));
         });
     },
 

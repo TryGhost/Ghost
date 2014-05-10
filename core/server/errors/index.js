@@ -1,10 +1,17 @@
 /*jslint regexp: true */
-var _           = require('lodash'),
-    colors      = require('colors'),
-    config      = require('./config'),
-    path        = require('path'),
-    when        = require('when'),
-    hbs         = require('express-hbs'),
+var _                          = require('lodash'),
+    colors                     = require('colors'),
+    config                     = require('../config'),
+    path                       = require('path'),
+    when                       = require('when'),
+    hbs                        = require('express-hbs'),
+    NotFoundError              = require('./notfounderror'),
+    BadRequestError            = require('./badrequesterror'),
+    InternalServerError        = require('./internalservererror'),
+    NoPermissionError          = require('./nopermissionerror'),
+    RequestEntityTooLargeError = require('./requesttoolargeerror'),
+    UnauthorizedError          = require('./unauthorizederror'),
+    ValidationError            = require('./validationerror'),
     errors,
 
     // Paths for views
@@ -242,4 +249,11 @@ _.each([
     errors[funcName] = errors[funcName].bind(errors);
 });
 
-module.exports = errors;
+module.exports                            = errors;
+module.exports.NotFoundError              = NotFoundError;
+module.exports.BadRequestError            = BadRequestError;
+module.exports.InternalServerError        = InternalServerError;
+module.exports.NoPermissionError          = NoPermissionError;
+module.exports.UnauthorizedError          = UnauthorizedError;
+module.exports.ValidationError            = ValidationError;
+module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;

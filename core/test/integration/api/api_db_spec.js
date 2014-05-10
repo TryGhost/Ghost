@@ -55,7 +55,7 @@ describe('DB API', function () {
                 done();
             });
         }).catch(function (error) {
-            done('error', error);
+            done(error);
         });
     });
 
@@ -65,17 +65,17 @@ describe('DB API', function () {
         }).then(function (){
             done(new Error("Delete all content is not denied for editor."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent.call({user: 3});
         }).then(function (){
             done(new Error("Delete all content is not denied for author."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent();
         }).then(function (){
             done(new Error("Delete all content is not denied without authentication."));
         }).catch(function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             done();
         });
     });
@@ -86,17 +86,17 @@ describe('DB API', function () {
         }).then(function (){
             done(new Error("Export content is not denied for editor."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent.call({user: 3});
         }).then(function (){
             done(new Error("Export content is not denied for author."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent();
         }).then(function (){
             done(new Error("Export content is not denied without authentication."));
         }).catch(function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             done();
         });
     });
@@ -107,17 +107,17 @@ describe('DB API', function () {
         }).then(function (result){
             done(new Error("Import content is not denied for editor."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.importContent.call({user: 3});
         }).then(function (result){
             done(new Error("Import content is not denied for author."));
         }, function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             return dbAPI.importContent();
         }).then(function (result){
             done(new Error("Import content is not denied without authentication."));
         }).catch(function (error) {
-            error.type.should.eql('NoPermission');
+            error.type.should.eql('NoPermissionError');
             done();
         });
     });

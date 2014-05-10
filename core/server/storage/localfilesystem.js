@@ -7,7 +7,7 @@ var _       = require('lodash'),
     nodefn  = require('when/node/function'),
     path    = require('path'),
     when    = require('when'),
-    errors  = require('../errorHandling'),
+    errors  = require('../errors'),
     config  = require('../config'),
     baseStore   = require('./base'),
 

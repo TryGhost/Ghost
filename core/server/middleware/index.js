@@ -5,7 +5,7 @@
 var api         = require('../api'),
     BSStore     = require('../bookshelf-session'),
     config      = require('../config'),
-    errors      = require('../errorHandling'),
+    errors      = require('../errors'),
     express     = require('express'),
     fs          = require('fs'),
     hbs         = require('express-hbs'),
