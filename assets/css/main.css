@@ -1,0 +1,354 @@
+/* ==========================================================================
+   General
+   ========================================================================== */
+
+body {
+    padding-top: 60px;
+    font-family: 'Open Sans', Lato, sans-serif;
+    font-size: 16px;
+    line-height: 1.6em;
+    background: #edece4;
+}
+
+code, tt {
+    background: #F1F0EA;
+    border: 1px solid #DDDBCC;
+    border-radius: 2px 2px 2px 2px;
+    font-family: Inconsolata,monospace;
+    color: #3C4043;
+    font-size: 1em;
+    padding: 1px 3px;
+}
+
+code.path {
+    background: #FFFFD8;
+    border-color: #F2F2CB;
+}
+
+a {
+    color: #5ba4e5;
+    -webkit-transition: all 0.25s ease;
+}
+
+a:hover {
+    color: #5ba4e5;
+}
+
+h1:before, h2:before {
+    display:block;
+    content:"";
+    height:70px;
+    margin:-70px 0 0;
+}
+
+.row {
+    position: relative;
+}
+
+
+/* ==========================================================================
+   Navigation - filling in styles that are not in Ghost's version of
+   bootstrap.css (even though it is v3.0.0) but are in Twitter's version of
+   Bootstrap v3.0.0. This is to get .navbar-right working in the expected
+   manner to enable cross-linking between language versions.
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .navbar-right .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-collapse {
+    width: auto;
+    border-top: 0;
+    box-shadow: none;
+  }
+  .navbar-collapse.collapse {
+    display: block !important;
+    height: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  .navbar-collapse.in {
+    overflow-y: auto;
+  }
+  .navbar-collapse .navbar-nav.navbar-left:first-child {
+    margin-left: -15px;
+  }
+  .navbar-collapse .navbar-nav.navbar-right:last-child {
+    margin-right: -15px;
+  }
+  .navbar-collapse .navbar-text:last-child {
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-left {
+    float: left !important;
+  }
+  .navbar-right {
+    float: right !important;
+  }
+}
+
+/* This can be removed once bootstrap.css is up to date */
+.navbar-nav .caret, .navbar-nav a:hover .caret {
+    border-top-color: inherit;
+    border-bottom-color: inherit;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+.navbar {
+    background: #fff;
+    box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+}
+
+.navbar-brand {
+    padding: 20px 15px;
+}
+
+.navbar-nav > li > a {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .navbar-brand, .navbar-nav > li > a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+.bs-sidenav li a {
+    color: #aaa;
+    position: relative;
+    overflow: visible;
+    padding: 10px 20px;
+    border-top: rgba(0,0,0,0.05) 1px solid;
+}
+
+.bs-sidenav li a:hover,
+.bs-sidenav li a:focus {
+    color: #5ba4e5;
+    background: transparent;
+}
+
+.bs-sidenav li.active a {
+    color:#000;
+    background: #fff;
+}
+
+/* ==========================================================================
+   Global Headers
+   ========================================================================== */
+
+.bs-masthead {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 100px 15px;
+    text-align: center;
+}
+
+.bs-masthead h1 {
+    font-size: 100px;
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+.bs-masthead p {
+    margin-left: 15%;
+    margin-right: 15%;
+    font-size: 30px;
+    font-weight: 300;
+}
+
+.bs-header {
+    padding: 50px 20px 60px 20px;
+    font-size: 1.6em;
+    font-weight: 300;
+    color: #5a5a5a;
+    text-align: center;
+}
+
+.bs-header h1 {
+    font-size: 2.4em;
+}
+
+@media (max-width: 400px) {
+    .bs-header { padding: 20px 15px 20px; }
+    .bs-header h1 { font-size: 2rem; }
+}
+
+/* ==========================================================================
+   Main Content Area
+   ========================================================================== */
+
+#content {
+    padding: 1px 3em 2em 3em;
+    background: #fff;
+}
+
+@media (max-width: 400px) {
+    #content { padding: 1px 15px 15px; }
+}
+
+#content li {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#content img {
+    max-width: 100%;
+}
+
+#content h1, #content h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #F1F0EA;
+}
+
+.note {
+    background: #D7E6ED;
+    border-radius: 3px;
+}
+
+p.note, div.note {
+    padding: 10px;
+}
+
+span.note {
+    padding: 2px;
+}
+
+.warn {
+    background: #edd4d3;
+    border-radius: 3px;
+}
+
+p.warn, div.warn {
+    padding: 10px;
+}
+
+span.warn {
+    padding: 2px;
+}
+
+#sidebar {
+    float: right;
+    padding: 30px 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #fbfbf9;
+    box-shadow: #edece4 1px 0 0 0 inset
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+    border-radius: 3px;
+    border: none;
+    text-transform: uppercase;
+    font-weight: 300;
+}
+
+.btn-primary {
+    background: #5ba4e5;
+}
+
+.btn-success {
+    background: #9fbb58;
+}
+
+.btn-success:hover {
+    background: #8ba644
+}
+
+.install-ghost .btn {
+    margin: 1em .5em 2em;
+}
+
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+.section-nav {
+    padding-top: 2em;
+}
+
+/* ==========================================================================
+   Home Page
+   ========================================================================== */
+
+#social {
+    padding: 15px 0;
+    text-align: center;
+    background-color: #fff;
+}
+
+#social ul {
+    margin-left: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+#social li {
+    display: inline-block;
+    padding: 5px 8px;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+#global-footer {
+    padding: 40px 20px;
+    color: #a6a6a6;
+    font-size: 0.8em;
+    text-align: center;
+    background: #18191b;
+    border-bottom:#0a0a0a 5px solid;
+}
+
+#global-footer p {
+    margin:0;
+}
+
+#global-footer a {
+    color: #e2edf2;
+}
+
+#global-footer .caret {
+    border-top-color: #e2edf2;
+}
+
+#global-footer .dropdown {
+    display: inline-block;
+}
+
+#global-footer .dropdown ul a {
+    color: inherit;
+}
+
+#global-footer .dropdown li:hover a {
+    color: #fff;
+}
+
+#global-footer hr {
+    width: 40%;
+    margin: 1em auto;
+    border-top:0;
+    border-color: #4d5356;
+}

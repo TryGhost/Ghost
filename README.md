@@ -16,7 +16,7 @@ Want to report a bug, request a feature, or help us build or translate Ghost? Ch
 
 There are **two** main ways to get started with Ghost, take care to use the method which best suits your needs.
 
-**Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download) are pre-built packages designed for getting started quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
+**Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download) are pre-built packages designed for getting started quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself.
 
 ### Getting Started Guide for Bloggers
 
@@ -25,7 +25,7 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our forum](http://ghost.org/forum/).
 
 1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.***
-1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
+1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download).
    **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers).**
 1. Create a new directory where you would like to run the code, and unzip the package to that location.
 1. Fire up a terminal (or node command prompt in Windows) and change directory to the root of the Ghost application (where config.example.js and index.js are)
@@ -85,11 +85,34 @@ Constructed with the following guidelines:
 * A new *minor* release indicates a normal change that maintains backwards compatibility.
 * A new *patch* release indicates a bugfix or small change which does not affect compatibility.
 * A new *build* release indicates this is a pre-release of the version.
+=======
+#The Ghost Guide
+
+We've put together a short guide to help you get started with Ghost. This guide will take you through installing Ghost for the first time, getting everything set up, customising your blog, as well as getting started with basic theme and plugin development. The Ghost Guide is available to read online by anyone at [docs.ghost.org](http://docs.ghost.org).
+
+## Running Locally
+
+If you would like to download these docs and run them locally/offline for your own use and modification, please follow these instructions to get started:
+
+1. Clone the [Ghost repository](https://github.com/TryGhost/Ghost) and check out the `/gh-pages/` branch
+2. Go to this directory - `cd ~/User/path/to/Ghost`
+3. Install [Jekyll](http://jekyllrb.com) - `$ gem install jekyll`
+4. Build the docs - `$ jekyll build`
+5. Start the server - `$ jekyll serve`
+6. View the docs on [http://localhost:4478](http://localhost:4478)
+
+## Contributions
+
+Please submit Pull Requests if you would like to contribute to this documentation for Ghost - referencing any relevant or open issues in the bug tracker.
+
+All code should conform, strictly, to the Ghost project [Code Standards](https://github.com/TryGhost/Ghost/wiki/Code-standards).
+
+All HTML and CSS should conform to the [Code Guide](http://github.com/mdo/code-guide), maintained by [Mark Otto](http://github.com/mdo).
 
 
 ## Copyright & License
 
-Copyright (C) 2013 The Ghost Foundation - Released under the MIT License.
+Copyright (C) 2014 The Ghost Foundation - Released under the MIT Lincense.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

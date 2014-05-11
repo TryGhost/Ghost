@@ -1,0 +1,44 @@
+---
+lang: de
+layout: default
+meta_title: Erste Schritte mit Ghost
+---
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=596756540369391";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+<div class="bs-masthead">
+  <div class="container">
+    <h1>Das Ghost-Handbuch</h1>
+    <p class="lead">Alles, was Du wissen musst, um mit Ghost ein Blog aufzusetzen.</p>
+    <p>
+      <a href="{{ site.url }}/{{page.lang}}/installation/" class="btn btn-success btn-large">Klicke hier f&uuml;r die ersten Schritte</a>
+    </p>
+  </div>
+</div>
+
+<div id="social">
+  <div class="container">
+    <ul>
+      <li>
+        <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=tryghost&repo=ghost&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="100px" height="20px"></iframe>
+      </li>
+      <li>
+        <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=tryghost&repo=ghost&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="102px" height="20px"></iframe>
+      </li>
+      <li class="follow-btn">
+        <a href="https://twitter.com/tryghost" class="twitter-follow-button" data-link-color="#0069D6" data-show-count="true">Folge @TryGhost</a>
+      </li>
+      <li class="tweet-btn">
+        <div class="fb-like" data-href="http://www.facebook.com/TryGhostApp" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false"></div>
+      </li>
+    </ul>
+  </div>
+</div>
