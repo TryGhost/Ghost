@@ -49,6 +49,6 @@ next_section: managing
 1.  텍스트 상자에 기존 비밀번호와 새 비밀번호를 입력하세요.
 2.  **Change Password**를 클릭하세요.
 <p class="note">
-    <strong>노트:</strong> 비밀번호를 바꾸기 위해서 반드시 "Change Password" 버튼을 눌러야 합니다. "Save" 버튼은 비밀번호를 변경하지 않습니다.
+    <strong>노트:</strong> 비밀번호를 변경하기 위해서 반드시 "Change Password" 버튼을 눌러야 합니다. "Save" 버튼은 비밀번호를 변경하지 않습니다.
 </p>
 

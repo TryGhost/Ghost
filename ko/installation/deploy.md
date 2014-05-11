@@ -10,6 +10,7 @@ section: deploy
 prev_section: linux
 next_section: upgrading
 ---
+
 ## Ghost 배포 <a id="deploy"></a>
 
 Ghost를 배포하실 준비가 되셨나요?
@@ -44,7 +45,7 @@ cPanel을 이용하여 관리하는 호스팅 서비스는 대부분 PHP를 호�
 
 ## 영구적으로 Ghost 실행
 
-이전에 소개한 Ghost를 실행하는 방법은 `npm start`를 사용하는 방법이었습니다. 이 방법은 로컬 환경에서 개발 및 테스트를 할 때에는 좋은 방법이지만 프로덕션 환경에서는 좋은 방법이 아닙니다. 터미널 창을 닫거나 SSH로부터 로그아웃하면 Ghost가 종료되어 버리기 때문입니다. Ghost의 종료를 막기 위해서는 Ghost를 서비스로서 실행하셔야 합니다. 이 방법에는 두 가지 방법이 있습니다.
+이전에 소개한 Ghost를 실행하는 방법은 `npm start`를 사용하는 방법이었습니다. 이 방법은 로컬 환경에서 개발 및 테스트를 할 때에는 좋은 방법이지만 프로덕션 환경에서는 좋은 방법이 아닙니다. 터미널 창을 닫거나 SSH로부터 로그아웃하면 Ghost가 종료되어 버리기 때문입니다. Ghost의 종료를 막기 위해서는 Ghost를 서비스로서 실행하셔야 합니다. Ghost를 서비스로 실행하는 방법에는 두 가지 방법이 있습니다.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 

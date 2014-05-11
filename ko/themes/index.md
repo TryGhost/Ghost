@@ -1,38 +1,37 @@
 ---
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Ghost 테마 제작 방법 - Ghost 가이드
+meta_description: Ghost에서 사용되는 테마를 제작하는 방법에 대해 설명합니다.
+heading: Ghost 테마 제작 방법
+subheading: 여러분의 Ghost 테마를 만들어 보세요.
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## 테마 변경 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost 테마는 <code class="path">content/themes/</code>에 위치합니다.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+기본 Casper 테마 외에 다른 테마를 사용하고 싶다면 공식 [마켓플레이스 갤러리](http://marketplace.ghost.org/)를 확인해 보세요. 괜찮아 보이는 테마를 하나 다운로드하고 압축 해제하여 Casper와 나란하도록 <code class="path">content/themes</code>에 놓으시면 됩니다.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+직접 테마를 만들고 싶다면 Casper 디렉토리를 복사 붙여넣기하신 후 원하시는 모습으로 편집하시는 것이 좋습니다.
 
-To switch to your newly added theme:
+블로그의 테마를 여러분의 것으로 변경하고 싶으시다면 아래 과정을 따라하세요.
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Ghost를 재시작하세요. 현재 Ghost는 실행 중 <code class="path">content/themes</code>에 새 폴더가 추가되었는지 인식하지 못하기 때문에 다시 시작해 주셔야 합니다.
+2.  Ghost 관리자 화면에 접속하신 후 <code class="path">/ghost/settings/general/</code>로 이동하세요.
+3.  테마 드롭다운 목록에서 여러분이 만든 테마를 선택하세요.
+4.  '저장' 버튼을 누르세요.
+5.  블로그 테마가 변경되었는지 확인하세요.
 
-<p class="note">**Note:** If you're on the Ghost Hosted Service, rather than a self-install, to switch theme you'll need to go to your <a href="https://ghost.org/blogs/">blog management</a> page and click on "edit" beside the name of your blog.</p>
+<p class="note">**노트:** 저희 Ghost 호스팅 서비스를 이용하시고 계시다면, 여러분은 위 방법이 아니라 <a href="https://ghost.org/blogs/">블로그 관리 화면</a>에 접속하신 후 블로그 이름 옆에 위치한 "편집" 버튼을 눌러 테마를 변경하셔야 합니다.</p>
 
+##  Handlebars란 무엇인가요? <a id="what-is-handlebars"></a>
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+[Handlebars]는 Ghost가 사용하는 템플릿 언어입니다.
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
-
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars는 여러분이 시맨틱 템플릿을 힘들이지 않고 효과적으로 제작할 수 있도록 합니다.
 
 If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
 

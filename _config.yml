@@ -46,7 +46,7 @@ translations:
     back:         '上一章'
     next:         '下一章'
   ko:
-    site_title:   'Ghost 한국어 가이드'
+    site_title:   'Ghost 가이드'
     installation: '설치'
     usage:        '사용법'
     email:        '이메일 설정'
