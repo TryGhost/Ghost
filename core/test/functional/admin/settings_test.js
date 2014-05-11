@@ -159,7 +159,7 @@ CasperTest.begin('Ensure image upload modals display correctly', 6, function sui
         this.click('#general .js-modal-logo');
     }, casper.failOnTimeout(test, 'waitForOpaque #general timed out'));
 
-    casper.waitForSelector('#modal-container .modal-content .js-drop-zone', assertImageUploaderModalThenClose,
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
         casper.failOnTimeout(test, 'No upload logo modal container appeared'));
 
     // Test Blog Cover Upload Button
@@ -167,7 +167,7 @@ CasperTest.begin('Ensure image upload modals display correctly', 6, function sui
         this.click('#general .js-modal-cover');
     });
 
-    casper.waitForSelector('#modal-container .modal-content .js-drop-zone', assertImageUploaderModalThenClose,
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
         casper.failOnTimeout(test, 'No upload cover modal container appeared'));
 });
 
