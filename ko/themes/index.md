@@ -1,39 +1,41 @@
 ---
-lang: ko
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Ghost 테마 제작 방법 - Ghost 가이드
+meta_description: Ghost에서 사용되는 테마를 제작하는 방법에 대해 설명합니다.
+heading: Ghost 테마 제작 방법
+subheading: 여러분의 Ghost 테마를 만들어 보세요.
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## 테마 변경 <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost 테마는 <code class="path">content/themes/</code>에 위치합니다.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+기본 Casper 테마 외에 다른 테마를 사용하고 싶다면 공식 [마켓플레이스 갤러리](http://marketplace.ghost.org/)를 확인해 보세요. 괜찮아 보이는 테마를 하나 다운로드하고 압축 해제하여 Casper와 나란하도록 <code class="path">content/themes</code>에 놓으시면 됩니다.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+직접 테마를 만들고 싶다면 Casper 디렉토리를 복사 붙여넣기하신 후 원하시는 모습으로 편집하시는 것이 좋습니다.
 
-To switch to your newly added theme:
+블로그의 테마를 여러분의 것으로 변경하고 싶으시다면 아래 과정을 따라하세요.
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Ghost를 재시작하세요. 현재 Ghost는 실행 중 <code class="path">content/themes</code>에 새 폴더가 추가되었는지 인식하지 못하기 때문에 다시 시작해 주셔야 합니다.
+2.  Ghost 관리자 화면에 접속하신 후 <code class="path">/ghost/settings/general/</code>로 이동하세요.
+3.  테마 드롭다운 목록에서 여러분이 만든 테마를 선택하세요.
+4.  '저장' 버튼을 누르세요.
+5.  블로그 테마가 변경되었는지 확인하세요.
 
+<p class="note">**노트:** 저희 Ghost 호스팅 서비스를 이용하시고 계시다면, 여러분은 위 방법이 아니라 <a href="https://ghost.org/blogs/">블로그 관리 화면</a>에 접속하신 후 블로그 이름 옆에 위치한 "편집" 버튼을 눌러 테마를 변경하셔야 합니다.</p>
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Handlebars란 무엇인가요? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars]는 Ghost가 사용하는 템플릿 언어입니다.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars는 여러분이 시맨틱 템플릿을 힘들이지 않고 효과적으로 제작할 수 있도록 합니다.
 
 If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+
+Ghost also makes use of an additional library called `express-hbs` which adds some [additional features](https://github.com/barc/express-hbs#syntax) to handlebars which Ghost makes heavy use of, such as [layouts](#default-layout) and [partials](#partials).
 
 ## About Ghost themes <a id="about"></a>
 
@@ -58,13 +60,22 @@ The recommended file structure is:
 ├── default.hbs
 ├── index.hbs [required]
 └── post.hbs [required]
+└── package.json [will be required from 0.6]
 ```
 
-For the time being there is no requirement that default.hbs or any of the folders exist. <code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present. <code class="path">partials</code> is a special directory. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">assets</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
 
-### default.hbs
+<code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
 
-This is the base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+*Note:* While edits to existing files are generated on the fly, you will need to restart Ghost each time you add or remove a file from the theme directory for it to be recognised and used.
+
+### Partials <a id="partials"></a>
+
+You can also optionally add a <code class="path">partials</code> directory to your theme. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. To output the <code class="path">list-post.hbs</code> example you would use `{{> list-post}}`. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+
+### default.hbs <a id="default-layout"></a>
+
+This is the default layout, or base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
 
 The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
 
@@ -81,6 +92,38 @@ In Casper (the current default theme), the homepage has a large header which use
 This is the template for a single post, which also extends <code class="path">default.hbs</code>.
 
 In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+
+### page.hbs
+
+You can optionally provide a page template for static pages. If your theme doesn't have a <code class="path">page.hbs</code> template, Ghost will use the standard <code class="path">post.hbs</code> template for pages.
+
+Pages have exactly the same data available as a post, they simply don't appear in the list of posts.
+
+If you want to have a custom template for a specific page you can do so by creating a template with the name <code class="path">page-{{slug}}.hbs</code>. For example if you have a page called 'About' that lives at <code class="path">/about/</code> then you can add a template called <code class="path">page-about.hbs</code> and this template will be used to render only the about page.
+
+### tag.hbs
+
+You can optionally provide a tag template for the tag listing pages. If your theme doesn't have a <code class="path">tag.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for tag pages.
+
+Tag pages have access to both a tag object, a list of posts and pagination properties.
+
+### error.hbs
+
+You can optionally provide an error template for any 404 or 500 errors. If your theme doesn't provide an <code class="path">error.hbs</code> Ghost will use its default.
+
+To see how to access the data about an error, take a look at Ghost's default error template which is located in <code class="path">/core/server/views/user-error.hbs</code>
+
+### package.json
+
+Package.json is a format borrowed from [npm](https://www.npmjs.org/doc/json.html). Ghost currently looks for a `name` and `version` field.
+We highly recommend adding an `author` and `description` field. The fields that Ghost requires will change as Ghost evolves, but for now the following is enough to make Ghost happy:
+
+```
+{
+  "name": "mytheme",
+  "version": "0.1.0"
+}
+```
 
 ### Post styling & previewing
 
@@ -164,9 +207,7 @@ When inside the context of a single post, the following tag data is available
 
 *   `{{tag.name}}` – the name of the tag
 
-You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
-
-This can also be done by using a block expression:
+You can use `{{tags}}` to output a customisable list of tags, this can also be done by using a block expression:
 
 ```
 <ul>
@@ -175,6 +216,8 @@ This can also be done by using a block expression:
     {{/foreach}}
 </ul>
 ```
+
+See the section on the [`{{tags}}`](#tags-helper) helper for details of the options.
 
 ### Global Settings
 
@@ -193,6 +236,8 @@ Ghost has a number of built in helpers which give you the tools you need to buil
 
 **Output Helpers** look much the same as the expressions used for outputting data e.g. `{{content}}`. They perform useful operations on the data before outputting it, and often provide you with options for how to format the data. Some output helpers use templates to format the data with HTML a bit like partials. Some output helpers are also block helpers, providing a variation of their functionality.
 
+----
+
 ### <code>foreach</code> <a id="foreach-helper"></a>
 
 *   Helper type: block
@@ -202,7 +247,7 @@ Ghost has a number of built in helpers which give you the tools you need to buil
 
 `foreach` extends this and adds the additional private properties of `@first`, `@last`, `@even`, `@odd`, `@rowStart` and `@rowEnd` to both arrays and objects. This can be used to produce more complex layouts for post lists and other content. For examples see below:
 
-#### `@first` & `@last`
+#### `@first` &amp; `@last`
 
 The following example checks through an array or object e.g `posts` and tests for the first entry.
 
@@ -230,7 +275,7 @@ We can also nest `if` statements to check multiple properties. In this example w
 {{/foreach}}
 ```
 
-#### `@even` & `@odd`
+#### `@even` &amp; `@odd`
 
 The following example adds a class of even or odd, which could be used for zebra striping content:
 
@@ -240,7 +285,7 @@ The following example adds a class of even or odd, which could be used for zebra
 {{/foreach}}
 ```
 
-#### `@rowStart` & `@rowEnd`
+#### `@rowStart` &amp; `@rowEnd`
 
 The following example shows you how to pass in a column argument so that you can set properties for the first and last element in a row. This allows for outputting content in a grid layout.
 
@@ -249,6 +294,51 @@ The following example shows you how to pass in a column argument so that you can
     <li class="{{#if @rowStart}}first{{/if}}{{#if @rowEnd}}last{{/if}}">{{title}}</li>
 {{/foreach}}
 ```
+
+----
+
+### <code>has</code> <a id="has-helper"></a>
+
+*   Helper type: block
+*   Options: `tag` (comma separated list)
+
+`{{has}}` intends to allow theme developers to ask questions about the current context and provide more flexibility for creating different post layouts in Ghost.
+
+Currently, the `{{has}}` helper only allows you to determine whether a tag is present on a post:
+
+```
+{{#post}}
+    {{#has tag="photo"}}
+        ...do something if this post has a tag of photo...
+    {{else}}
+        ...do something if this posts doesn't have a tag of photo...
+    {{/has}}
+{{/post}}
+```
+
+You can also supply a comma-separated list of tags, which is the equivalent of an 'or' query, asking if a post has any one of the given tags:
+
+```
+{{#has tag="photo, video, audio"}}
+    ...do something if this post has a tag of photo or video or audio...
+{{else}}
+    ...do something with other posts...
+{{/has}}
+```
+
+If you're interested in negating the query, i.e. determining if a post does **not** have a particular tag, this is also possible.
+Handlebars has a feature which is available with all block helpers that allows you to do the inverse of the helper by using `^` instead of `#` to start the helper:
+
+```
+{{^has tag="photo"}}
+    ...do something if this post does **not** have a tag of photo...
+{{else}}
+    ...do something if this posts does have a tag of photo...
+{{/has}}
+```
+
+
+----
 
 ### <code>content</code> <a id="content-helper"></a>
 
@@ -261,6 +351,8 @@ You can limit the amount of HTML content to output by passing one of the options
 
 `{{content words="100"}}` will output just 100 words of HTML with correctly matched tags.
 
+----
+
 ### <code>excerpt</code> <a id="excerpt-helper"></a>
 
 *   Helper type: output
@@ -271,6 +363,50 @@ You can limit the amount of HTML content to output by passing one of the options
 You can limit the amount of text to output by passing one of the options:
 
 `{{excerpt characters="140"}}` will output 140 characters of text.
+
+----
+
+### <code>tags</code> <a id="tags-helper"></a>
+
+*   Helper type: output
+*   Options: `separator` (string, default ", "), `suffix` (string), `prefix` (string)
+
+`{{tags}}` is a formatting helper for outputting a linked list of tags for a particular post. It defaults to a comma-separated list:
+
+```
+// outputs something like 'my-tag, my-other-tag, more-tagging' where each tag is linked to its own tag page
+{{tags}}
+```
+
+ but you can customise the separator between tags:
+
+```
+// outputs something like 'my-tag | my-other-tag | more tagging'
+{{tags separator=" | "}}
+```
+
+as well as passing an optional prefix or suffix.
+
+```
+// outputs something like 'Tagged in: my-tag | my-other-tag | more tagging'
+{{tags separator=" | " prefix="Tagged in:"}}
+```
+
+You can use HTML in the separator, prefix and suffix arguments:
+
+```
+// outputs something like 'my-tag • my-other-tag • more tagging'
+{{tags separator=" &bullet; "}}
+```
+
+If you don't want your list of tags to be automatically linked to their tag pages, you can turn this off:
+
+```
+// outputs tags without an <a> wrapped around them
+{{tags autolink="false"}}
+```
+
+----
 
 ### <code>date</code> <a id="date-helper"></a>
 
@@ -299,14 +435,80 @@ If you call `{{date}}` outside the context of a post without telling it which da
 
 `date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
 
+----
+
+### <code>encode</code> <a id="encode-helper"></a>
+
+*   Helper type: output
+*   Options: none
+
+`{{encode}}` is a simple output helper which will encode a given string so that it can be used in a URL.
+
+The most obvious example of where this is useful is shown in Casper's <code class="path">post.hbs</code>, for outputting a twitter share link:
+
+```
+<a class="icon-twitter" href="http://twitter.com/share?text={{encode title}}&url={{url absolute="true"}}"
+    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+    <span class="hidden">Twitter</span>
+</a>
+```
+
+Without using the `{{encode}}` helper on the post's title, the spaces and other punctuation in the title would not be handled correctly.
+
+----
+
 ### <code>url</code> <a id="url-helper"></a>
 
 *   Helper type: output
 *   Options: `absolute`
 
-`{{url}}` outputs the relative url for a post when inside the post context. Outside of the post context it will output nothing
+`{{url}}` outputs the relative url for a post when inside the post context.
 
 You can force the url helper to output an absolute url by using the absolute option, E.g. `{{url absolute="true"}}`
+
+----
+
+### <code>asset</code> <a id="asset-helper"></a>
+
+* Helper type: output
+* Options: none
+
+The `{{asset}}` helper exists to take the pain out of asset management. Firstly, it ensures that the relative path to an asset is always correct, regardless of how Ghost is installed. So if Ghost is installed in a subdirectory, the paths to the files are still correct, without having to use absolute URLs.
+
+Secondly, it allows assets to be cached. All assets are served with a `?v=#######` query string which currently changes when Ghost is restarted and ensures that assets can be cache busted when necessary.
+
+Thirdly, it provides stability for theme developers so that as Ghost's asset handling and management evolves and matures, theme developers should not need to make further adjustments to their themes as long as they are using the asset helper.
+
+Finally, it imposes a little bit of structure on themes by requiring an <code class="path">assets</code> folder, meaning that Ghost knows where the assets are, and theme installing, switching live reloading will be easier in future.
+
+#### Usage
+
+To use the `{{asset}}` helper to output the path for an asset, simply provide it with the path for the asset you want to load, relative to the <code class="path">assets</code> folder.
+
+```
+// will output something like: <link rel="stylesheet" type="text/css" href="/path/to/blog/assets/css/style.css?v=1234567" />
+<link rel="stylesheet" type="text/css" href="{{asset "css/style.css"}}" />
+```
+
+```
+// will output something like: <script type="text/javascript" src="/path/to/blog/assets/js/index.js?v=1234567"></script>
+<script type="text/javascript" src="{{asset "js/index.js"}}"></script>
+```
+
+#### Favicons
+
+Favicons are a slight exception to the rule on how to use the asset helper, because the browser always requests one regardless of whether it is defined in the theme, and Ghost aims to serve this request as fast as possible.
+
+By default `{{asset "favicon.ico"}}` works exactly the same as the browser's default request, serving Ghost's default favicon from the shared folder.
+This means it doesn't have to look up what theme the blog is using or where that theme lives before serving the request.
+
+If you would like to use a custom favicon, you can do so by putting a <code class="path">favicon.ico</code> in your theme's <code class="path">assets</code> folder and using the asset helper with a leading slash:
+
+`{{asset "/favicon.ico"}}`
+
+This trailing slash tells Ghost not to serve the default favicon, but to serve it from the themes <code class="path">assets</code> folder.
+
+----
 
 ###  <code>pagination</code> <a href="pagination-helper"></a>
 
@@ -317,12 +519,42 @@ You can force the url helper to output an absolute url by using the absolute opt
 
 You can override the HTML output by the pagination helper by placing a file called <code class="path">pagination.hbs</code> inside of <code class="path">content/themes/your-theme/partials</code>.
 
+----
+
+###  <code>log</code> <a href="log-helper"></a>
+*   Helper type: output
+*   Options: none
+
+`{{log}}` is a helper which is part of Handlebars, but until Ghost 0.4.2 this hasn't done anything useful.
+
+When running Ghost in development mode, you can now use the `{{log}}` helper to output debug messages to the server console. In particular you can get handlebars to output the details of objects or the current context
+
+For example, to output  the full 'context' that handlebars currently has access to:
+
+`{{log this}}`
+
+Or to just log each post in the loop:
+
+```
+{{#foreach posts}}
+   {{log post}}
+{{/foreach}}
+```
+
+----
+
+
+
+
+
 ### <code>body_class</code> <a id="bodyclass-helper"></a>
 
 *   Helper type: output
 *   Options: none
 
 `{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+
+----
 
 ### <code>post_class</code> <a id="postclass-helper"></a>
 
@@ -331,12 +563,16 @@ You can override the HTML output by the pagination helper by placing a file call
 
 `{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
 
+----
+
 ### <code>ghost_head</code> <a id="ghosthead-helper"></a>
 
 *   Helper type: output
 *   Options: none
 
 `{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
+
+----
 
 ### <code>ghost_foot</code> <a id="ghostfoot-helper"></a>
 
@@ -345,6 +581,8 @@ You can override the HTML output by the pagination helper by placing a file call
 
 `{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
 
+----
+
 ### <code>meta_title</code> <a id="metatitle-helper"></a>
 
 *   Helper type: output
@@ -352,12 +590,15 @@ You can override the HTML output by the pagination helper by placing a file call
 
 `{{meta_title}}` – outputs the post title on posts, or otherwise the blog title. Used for outputting title tags in the `</head>` block. E.g. `<title>{{meta_title}}</title>`. Will be hookable.
 
+----
+
 ### <code>meta_description</code> <a id="metatitledescription-helper"></a>
 
 *   Helper type: output
 *   Options: none
 
 `{{meta_description}}` - outputs nothing (yet) on posts, outputs the blog description on all other pages. Used for outputing the description meta tag. E.g. `<meta name="description" content="{{meta_description}}" />`. Will be hookable.
+
 
 ## Troubleshooting Themes <a id="troubleshooting"></a>
 
