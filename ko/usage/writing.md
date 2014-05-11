@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Ghost 사용 방법 - Ghost 가이드
+meta_description: Ghost 사용 방법을 설명합니다. Ghost는 설치했는데, 어떻게 사용해야 할지 모르시겠나요? 여기를 참조해보세요.
+heading: Ghost 사용 방법
+subheading: Ghost를 자신에 맞게 설정하고 이용하는 방법에 대해 소개합니다.
 chapter: usage
 section: writing
 permalink: /ko/usage/writing/
@@ -12,55 +12,55 @@ prev_section: managing
 next_section: faq
 ---
 
-##  Writing posts <a id="writing"></a>
+##  글 작성 <a id="writing"></a>
 
-Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.
+Ghost 블로그의 글은 Markdown을 이용하여 작성됩니다. Markdown은 문서의 형식을 갖추기 위해 특수문자를 이용하는 간단한 구문입니다. Markdown은 글 작성 흐름을 방해하지 않도록 설계되었기 때문에, 여러분은 이를 사용함으로써 글의 외형보다는 내용에 더욱 집중할 수 있습니다.
 
-###  Markdown Guide <a id="markdown"></a>
+###  Markdown 가이드 <a id="markdown"></a>
 
-[Markdown](http://daringfireball.net/projects/markdown/) is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.
+[Markdown](http://daringfireball.net/projects/markdown/)은 가독성을 유지하면서도 글 작성의 효율을 높이도록 설계된 마크업 언어입니다.
 
-Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.
+Ghost는 Markdown의 모든 기본 구문을 지원하며, 이에 몇 가지 독자적인 구문을 더했습니다. 아래에서 사용하실 수 있는 구문 목록을 확인하실 수 있습니다.
 
-####  Headers
+####  제목
 
-Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.
+텍스트 앞에 '#'를 추가하는 것으로 대제목이나 소제목을 만들 수 있습니다. 앞에 붙는 '#'의 숫자가 많아질수록 점점 글자가 작아지고 강조 정도가 약해집니다. 총 6개의 단계가 있습니다.
 
-*   H1 : `# Header 1`
-*   H2 : `## Header 2`
-*   H3 : `### Header 3`
-*   H4 : `#### Header 4`
-*   H5 : `##### Header 5`
-*   H6 : `###### Header 6`
+*   H1 : `# 제목 1`
+*   H2 : `## 제목 2`
+*   H3 : `### 제목 3`
+*   H4 : `#### 제목 4`
+*   H5 : `##### 제목 5`
+*   H6 : `###### 제목 6`
 
-####  Text Styling
+####  텍스트 꾸미기
 
-*   Links : `[Title](URL)`
-*   Bold : `**Bold**`
-*   Italic : `*Italic*`
-*   Paragraphs : Line space inbetween paragraphs
-*   Lists : `* An asterix on every new list item`
-*   Quotes : `> Quote`
-*   Code : `` `code` ``
-*   HR : `==========`
+*   링크: `[링크 텍스트](URL)`
+*   굵게: `**굵게**`
+*   기울임: `*기울임*`
+*   문단: 문단 사이의 빈 줄로 구분합니다.
+*   목록: `* 각 목록 항목 앞에 별표(*) 추가`
+*   인용: `> 인용문`
+*   코드: `` `코드` ``
+*   가로줄: `==========`
 
-####  Images
+####  이미지
 
-To insert an image into your post, you need to first enter `![]()` into the Markdown editor panel.
-This should create an image upload box in your preview panel.
+글에 이미지를 추가하기 위해서는 우선 글 작성 화면에서 `![]()`를 입력하세요.
+미리보기 패널에 이미지 업로드 상자가 나타날 것입니다.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png)
 
-You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup.
-If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+이제 .png, .gif, .jpg 형식의 이미지를 상자에 드래그 앤 드롭하여 이미지를 업로드할 수 있습니다. 또는 상자를 클릭하셔서 이미지 업로드 팝업을 통해 이미지를 업로드하실 수도 있습니다.
+이미지 URL을 통해 사진을 추가하시고 싶으시다면 상자 왼쪽 아래에 위치한 링크 아이콘을 클릭하세요. 이미지 URL 입력 텍스트 상자가 나타날 것입니다.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png)
 
-To title your image, all you need to do is place your title text inbetween the square brackets, e.g; `![This is a title]()`. 
+이미지에 제목을 추가하려면 대괄호 사이에 텍스트를 입력하세요. (e.g. `![제목 텍스트]()`)
 
-##### Removing Images
+##### 이미지 제거
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
-To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
+이미지를 제거하시려면 이미지 오른쪽 위에 위치한 휴지통 모양의 제거 아이콘을 클릭하세요. 해당 위치에 다시 이미지를 삽입할 수 있도록 빈 이미지 업로드 상자가 나타날 것입니다.
 

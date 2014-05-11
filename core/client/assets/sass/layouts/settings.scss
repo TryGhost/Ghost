@@ -1,0 +1,314 @@
+/*
+ * These styles control elements specific to the settings screen
+ * used for configuring your Ghost install.
+ *
+ * Table of Contents:
+ *
+ * General
+ * Sidebar
+ * Content
+ *
+ */
+
+
+/* =============================================================================
+   Settings
+   ============================================================================= */
+
+.settings {
+    // The main white bg for the page
+    .wrapper {
+        background: #fff;
+        box-shadow: $shadow;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin:0;
+        padding:0;
+
+        @include breakpoint($tablet) {
+            overflow-x: hidden;
+        }
+    }
+
+    .title {
+        text-transform: uppercase;
+        font-weight: normal;
+        font-size: 1.6em;
+        line-height: 0.8em;
+        margin:0 0 18px 0;
+        padding:0;
+        border: none;
+    }
+
+
+/* =============================================================================
+   Sidebar
+   ============================================================================= */
+
+    //The whole left column sidebar, duh.
+    .settings-sidebar {
+        width:20%;
+        position:absolute;
+        top:0;
+        left:0;
+        bottom:0;
+        z-index: 700;
+        background: #fff;
+        box-shadow: $lightbrown 1px 0 0;
+        @include breakpoint($tablet) {
+            width:100%;
+            box-shadow: none;
+        }
+
+        > header {
+            position: relative;
+            z-index: 400;
+            height: 17px;
+            padding: 30px 15px 30px 40px;
+            margin-bottom: 0;
+            border-bottom: none;
+            box-shadow: #edece4 0 -1px 0 inset, #edece4 1px 0 0;
+            //Transparent gradient to make bg fade out as it goes out the top.
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
+            background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+
+            @include breakpoint($netbook) {
+                padding-left: 15px;
+            };
+        }
+    }//.settings-sidebar
+
+    //Main settings-menu styles, apply to every item
+    .settings-menu {
+        position:absolute;
+        top: 0;
+        left:0;
+        bottom:0;
+        right:-1px;
+        overflow: auto;
+        @include breakpoint($tablet) { right:0; };
+
+        // Create placeholder the same height as the floating header
+        // to push content down by the same amount
+        &:before {
+            display: block;
+            content: "";
+            height: 77px; //30px + 17px title + 30px
+        }
+
+        ul {
+            border-top:none;
+            @include breakpoint($tablet) { border-bottom: #edece4 1px solid; }
+        }
+
+        li {
+            margin-right:1px;
+            border-top: #fff 1px solid;
+            @include breakpoint($tablet) {
+                margin-right:0;
+                border-top: #edece4 1px solid;
+            }
+
+            a {
+                padding:15px 15px 15px 40px;
+                border-bottom:none;
+                @include breakpoint($netbook) { padding-left: 15px; }
+                @include breakpoint($tablet) {
+                    @include icon-after($i-chevron) {float:right;margin-top:5px;};
+                }
+            }
+
+            &:first-child { border-top: none; }
+            &:first-child.active { border-top:none; }
+
+            &.active {
+                @include breakpoint($biggerthan-tablet) {
+                    // only apply active styles on larger devices
+
+                    margin-right:0;
+                    position:relative;
+                    z-index: 300;
+                    border-top: #edece4 1px solid;
+                    box-shadow:
+                        #fff 1px 0 0,
+                        #edece4 0 1px 0;
+                    @include transition;
+
+                    a {
+                        color: $darkgrey;
+                        font-weight: bold;
+                        background: #fff;
+
+                    }
+
+                }
+            }//.active
+
+        }//li
+
+        // Give all icons some space
+        li a:before {
+            margin-right: 20px;
+            @include breakpoint($netbook) {
+                margin-right: 15px;
+            }
+        }
+
+        // Add the icons for specific menu items
+        .general a { @include icon($i-settings) }
+        .publishing a { @include icon($i-content) }
+        .services a { @include icon($i-services) }
+        .users a { @include icon($i-users) }
+        .appearance a { @include icon($i-appearance) }
+        .plugins a { @include icon($i-plugins) }
+
+    }//.settings-menu
+
+
+/* =============================================================================
+   Content
+   ============================================================================= */
+
+    // The main content panel on the right
+    .settings-content {
+        padding:0;
+        position:absolute;
+        top:0;
+        right:0;
+        left:20%;
+        bottom:0;
+        background: #fff;
+
+        @include breakpoint($tablet) {
+            display: none;
+            width: 100%;
+            left: 100%;
+            right: -100%;
+            margin-left: 15px;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        display: none;
+        &.active {display:block;}
+
+        > header {
+            position: relative;
+            z-index: 200;
+            height: 17px;
+            padding: 30px 220px 29px 40px;
+            border-bottom:$lightbrown 1px solid;
+            margin-bottom:40px;
+            text-transform: none;
+            font-weight: normal;
+            line-height: inherit;
+            color: inherit;
+            //Transparent gradient to make bg fade out as it goes out the top.
+            background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
+            background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+            background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
+
+            @include breakpoint($netbook) { padding-left:15px; }
+            @include breakpoint($tablet) { padding-left:115px; }
+            @include breakpoint($letterbox) {
+                height: auto;
+                padding: 5px;
+                position: absolute;
+                top:0;
+                right:0;
+                border:none;
+                background: transparent;
+
+                .title { display:none; }
+            }
+            @include breakpoint(650px) {
+                padding-left:15px;
+
+                .button-back {
+                    position: fixed;
+                    top: 5px;
+                    left: 14px;
+                    min-height: 0;
+                    height: 30px;
+
+                    &:before {
+                        left: -9px;
+                        border-width: 15px 9px 15px 0;
+                    }
+                }
+            }
+
+        }//header
+
+        .page-actions {
+            position:absolute;
+            top:20px;
+            right:40px;
+            z-index: 700;
+            font-size: 1em;
+
+            @include breakpoint($netbook) { right:15px; }
+            @include breakpoint(650px) {
+                position: fixed;
+                top: 5px;
+                right: 4px;
+
+                button {
+                    min-height: 0;
+                    height: 30px;
+                    padding: 0.5em 1.37em;
+                }
+            }
+
+            .button-add {
+                position:relative;
+                padding-left:50px;
+                @include icon($i-add, 1.4em, rgba(255,255,255,0.6)) {
+                    position: absolute;
+                    top:0;
+                    padding:9px 8px 0 0;
+                    left:9px;
+                    bottom:0;
+                    width: 20px;
+                    border-right: darken($green, 8%) 1px solid;
+                };
+            }
+        }
+
+        .content {
+            position: absolute;
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+            padding:40px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+
+            // Create placeholder the same height as the floating header
+            // to push content down by the same amount
+            &:before {
+                display: block;
+                content: "";
+                height: 77px; //30px + 17px title + 30px
+                @include breakpoint($letterbox) { display: none; }
+            }
+
+            &.no-padding {
+                padding: 0;
+            }
+
+            @include breakpoint($netbook) { padding-left:15px; }
+            @include breakpoint(550px) { padding: 0 15px 40px; }
+        }
+
+    }//.settings-content
+
+}//.settings

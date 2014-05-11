@@ -1,0 +1,75 @@
+@function breakpoint-parse-query($query) {
+  // Parse features out of an individual query
+  $feature-holder: ();
+  $query-holder: ();
+  $length: length($query);
+
+  @if $length == 2 {
+    // If we've got a string/number, number/string, check to see if it's a valid string/number pair or two singles
+    @if (type-of(nth($query, 1)) == 'string' and type-of(nth($query, 2)) == 'number') or (type-of(nth($query, 1)) == 'number' and type-of(nth($query, 2)) == 'string') {
+
+      $number: '';
+      $value: '';
+
+      @if type-of(nth($query, 1)) == 'string' {
+        $number: nth($query, 2);
+        $value: nth($query, 1);
+      }
+      @else {
+        $number: nth($query, 1);
+        $value: nth($query, 2);
+      }
+
+      // If the string value can be a single value, check to see if the number passed in is a valid input for said single value. Fortunately, all current single-value options only accept unitless numbers, so this check is easy.
+      @if breakpoint-single-string($value) {
+        @if unitless($number) {
+          $feature-holder: append($value, $number, space);
+          $query-holder: append($query-holder, $feature-holder, comma);
+          @return $query-holder;
+        }
+      }
+      // If the string is a media type, split the query
+      @if breakpoint-is-media($value) {
+        $query-holder: append($query-holder, nth($query, 1));
+        $query-holder: append($query-holder, nth($query, 2));
+        @return $query-holder;
+      }
+      // If it's not a single feature, we're just going to assume it's a proper string/value pair, and roll with it.
+      @else {
+        $feature-holder: append($value, $number, space);
+        $query-holder: append($query-holder, $feature-holder, comma);
+        @return $query-holder;
+      }
+
+    }
+    // If they're both numbers, we assume it's a double and roll with that
+    @else if (type-of(nth($query, 1)) == 'number' and type-of(nth($query, 2)) == 'number') {
+      $feature-holder: append(nth($query, 1), nth($query, 2), space);
+      $query-holder: append($query-holder, $feature-holder, comma);
+      @return $query-holder;
+    }
+    // If they're both strings and neither are singles, we roll with that.
+    @else if (type-of(nth($query, 1)) == 'string' and type-of(nth($query, 2)) == 'string') {
+      @if not breakpoint-single-string(nth($query, 1)) and not breakpoint-single-string(nth($query, 2)) {
+        $feature-holder: append(nth($query, 1), nth($query, 2), space);
+        $query-holder: append($query-holder, $feature-holder, comma);
+        @return $query-holder;
+      }
+    }
+  }
+  @else if $length == 3 {
+    // If we've got three items and none is a list, we check to see
+    @if type-of(nth($query, 1)) != 'list' and type-of(nth($query, 2)) != 'list' and type-of(nth($query, 3)) != 'list' {
+      // If none of the items are single string values and none of the values are media values, we're good.
+      @if (not breakpoint-single-string(nth($query, 1)) and not breakpoint-single-string(nth($query, 2)) and not breakpoint-single-string(nth($query, 3))) and  ((not breakpoint-is-media(nth($query, 1)) and not breakpoint-is-media(nth($query, 2)) and not breakpoint-is-media(nth($query, 3)))) {
+        $feature-holder: append(nth($query, 1), nth($query, 2), space);
+        $feature-holder: append($feature-holder, nth($query, 3), space);
+        $query-holder: append($query-holder, $feature-holder, comma);
+        @return $query-holder;
+      }
+    }
+  }
+
+  // If it's a single item, or if it's not a special case double or tripple, we can simply return the query.
+  @return $query;
+}

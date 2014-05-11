@@ -1,0 +1,260 @@
+/* =============================================================================
+   Users List
+   ============================================================================= */
+
+.settings {
+
+    .user-group-header {
+        margin-bottom: 0px;
+        padding-bottom: 20px;
+        border: 0 none;
+        border-bottom: 1px solid darken($lightbrown, 10%);
+
+        h3 {
+            display: inline-block;
+            margin: 0;
+            color: $midbrown;
+            font-weight: normal;
+            font-size: 1.1em;
+            line-height: 1em;
+        }
+
+    }
+
+    .user-search {
+        display: inline-block;
+        float: right;
+
+        label { margin: 0}
+
+        &:hover .user-search-input, .user-search-input:focus {
+            width: 260px;
+            padding: 0 10px;
+        }
+
+        .user-search-input {
+            @include box-sizing(border-box);
+            width: 0px;
+            padding: 0;
+            border: none;
+            border-bottom: lighten($lightbrown, 2%) 1px solid;
+            @include transition(width 0.2s ease-in-out);
+            box-shadow: none;
+        }
+
+        .search-icon {
+            @include icon($i-search, 1em, $midbrown);
+        }
+    }
+
+    .users {
+        padding: 0px;
+        margin-top: 0px;
+        list-style: none;
+    }
+
+    .user {
+        @include box-sizing(border-box);
+        display: block;
+        width: 100%;
+        padding: 20px;
+        border: 0 none;
+        border-top: 1px solid $lightgrey;
+
+        &:first-child {
+            border: none;
+        }
+
+        .user-image {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin-right: 17px;
+            vertical-align: middle;
+            background-color: $lightbrown;
+            border-radius: 20px;
+
+            &.invite {
+                @include box-sizing(border-box);
+                padding-top: 8px;
+                text-align: center;
+                @include icon($i-mail, 1em, $brown);
+            }
+
+            img {
+                width: 40px;
+                height: 40px;
+                border-radius: 20px;
+            }
+        }
+
+        .user-meta {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .user-name {
+            margin: 0;
+            margin-top: 0.4em;
+            font-weight: 400;
+            font-size: 1.2em;
+            line-height: 1em;
+        }
+
+        .user-last-seen {
+            line-height: 1em;
+        }
+
+    }
+
+    .user-role {
+        padding: 2px 8px;
+        float: right;
+        font-size: 0.8em;
+        color: #fff;
+        text-transform: uppercase;
+
+        &.admin {
+            background-color: #DE523A;
+        }
+        &.editor {
+            background-color: #4A8CBD;
+        }
+    }
+
+/* =============================================================================
+   User Profile
+   ============================================================================= */
+
+    .user-profile-header {
+        position: relative;
+
+        // Gradient overlay
+        &:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 110px;
+            @include linear-gradient( rgba(0,0,0,0), rgba(0,0,0,0.3) );
+        }
+    }
+
+    .cover-image {
+        display: block;
+        line-height: 0;
+        width: 100%;
+        height: auto;
+    }
+
+    .edit-cover-image {
+        position: absolute;
+        right: 40px;
+        bottom: 38px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 0;
+        color: rgba(255,255,255,0.8);
+        z-index: 2;
+        border-radius: $rounded;
+        @include transition(
+            color 0.3s ease,
+            background 0.3s ease
+        );
+        @include breakpoint($netbook) { right: 15px;}
+
+        &:hover {
+            color: #fff;
+            background: rgba(0,0,0,0.5);
+        }
+    }
+
+    .user-profile {
+        position: relative;
+        top: -100px;
+        z-index: 1;
+
+        fieldset {
+            padding: 0 40px;
+        }
+    }
+
+    fieldset.user-details-top {
+        margin-bottom: 0;
+        padding: 10px 0 0 0;
+
+        p {
+            color: #fff;
+        }
+    }
+
+    .user-image {
+        @include box-sizing(border-box);
+        display: block;
+        position: relative;
+        width: 120px;
+        height: 120px;
+        float: left;
+        margin-left: 40px;
+        margin-right: 20px;
+        text-align: center;
+        border-radius: 100%;
+        overflow: hidden;
+        border: 5px solid #fff;
+        background: #fff;
+        z-index: 2;
+
+        .img {
+            display: block;
+            width: 110px;
+            height: 110px;
+            background-image: url(/shared/img/user-image.png);
+            background-size: cover;
+            background-position: center center;
+            border-radius: 100%;
+        }
+
+        &:hover {
+            .edit-user-image {
+                opacity: 1;
+            }
+        }
+    }
+
+    .edit-user-image {
+        @include position(absolute, 0px 0px 0px 0px);
+        border-radius: 100%;
+        background: rgba(0,0,0,0.5);
+        opacity: 0;
+        color: #fff;
+        line-height: 105px;
+        text-transform: uppercase;
+        text-decoration: none;
+        @include transition(opacity 0.3s ease);
+    }
+
+    #user-name {
+        border-color: #fff;
+    }
+
+    .user-details-bottom {
+        padding: 0 40px;
+        margin: -30px 0 0 0;
+    }
+
+    .bio-container {
+        max-width: 370px;
+    }
+
+    .bio-desc {
+        display: inline-block;
+    }
+
+    .word-count {
+        margin-right: 30px;
+        float: right;
+        font-weight: bold;
+        color: darken($brown, 5%);
+    }
+
+} //.settings

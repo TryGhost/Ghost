@@ -141,7 +141,7 @@ Each of these properties can be output using the standard handlebars expression,
 
 When inside the context of a single post, the following author data is available:
 
-*   `{{author.name}}` – the name of the author 
+*   `{{author.name}}` – the name of the author
 *   `{{author.email}}` – the author's email address
 *   `{{author.bio}}` – the author's bio
 *   `{{author.website}}` – the author's website
@@ -162,7 +162,7 @@ This can also be done by using a block expression:
 
 When inside the context of a single post, the following tag data is available
 
-*   `{{tag.name}}` – the name of the tag 
+*   `{{tag.name}}` – the name of the tag
 
 You can use `{{tags}}` to output a comma separated list of tags, or if you prefer, specify your own separator `{{tags separator=""}}`
 
@@ -170,9 +170,9 @@ This can also be done by using a block expression:
 
 ```
 <ul>
-    {{#tags}}
+    {{#foreach tags}}
         <li>{{name}}</li>
-    {{/tags}}
+    {{/foreach}}
 </ul>
 ```
 
@@ -280,7 +280,7 @@ You can limit the amount of text to output by passing one of the options:
 `{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
 
 ```
-// outputs something like 'July 11, 2013'
+// outputs something like 'July 11, 2014'
 {{date published_at format="MMMM DD, YYYY"}}
 ```
 

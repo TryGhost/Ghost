@@ -1,10 +1,10 @@
 ---
 lang: de
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Wie man Ghost benutzt - Ghost-Dokumentation
+meta_description: Eine ausführliche Anleitung zum Benutzen der Ghost Blogging-Platform. Du hast Ghost, weißt aber nicht wie du loslegst? Beginne hier!
+heading: Ghost benutzen
+subheading: Dich zurechtfinden und alles so einstellen, wie du es willst
 chapter: usage
 section: configuration
 permalink: /de/usage/configuration/
@@ -12,38 +12,109 @@ prev_section: usage
 next_section: settings
 ---
 
+## Ghost Konfigurieren <a id="configuration"></a>
 
-## Configuring Ghost <a id="configuration"></a>
+Nachdem du Ghost zum ersten Mal ausgeführt hast, findest du eine Datei mit dem Namen `config.js` in deinem root-Verzeichnis von Ghost, zusammen mit der `index.js`. Diese Datei erlaubt dir stufenweise die Konfiguration für Dinge wie deine URL, Datenbank und E-Maileinstellungen.
 
-After you run Ghost for the first time, you'll find a file called `config.js` in the root directory of Ghost, along with the `index.js`. This file allows you to set environment level configuration for things like your URL, database, and mail settings.
+Wenn du Ghost noch nicht ausgeführt hast, wirst du diese Datei noch nicht haben. Du kannst sie erstellen, indem du die `config.example.js`-Datei kopierst - das tut Ghost auch, wenn es startet. 
 
-If you haven't yet run Ghost for the first time, you won't have this file yet. You can create one by copying the `config.example.js` file - that's what Ghost does when it starts. 
+Um deine Ghost-URL, E-Mail- oder Datenbankeinstellungen zu konfigurieren, öffne die `config.js` in deinem Lieblingseditor und beginne mit dem Bearbeiten der Einstellungen für dein gewünschtes Environment. Wenn Environments noch nichts ist, worüber du schon gestolpert bist, lies dir die [Dokumentation](#environments) unten durch.
 
-To configure your Ghost URL, mail or database settings, open `config.js` in your favourite editor, and start changing the settings for your desired environment. If environments aren't something you've come across yet, read the documentation below.
+## Konfigurationsoptionen
 
-## About Environments <a id="environments"></a>
+Ghost hat eine eine Vielzahl an Konfigurationsoptionen, die du hinzufügen kannst, um zu ändern, wie Ghost arbeitet.
 
-Node.js, and therefore Ghost, has the concept of environments built in. Environments allow you to create different configurations for different modes in which you might want to run Ghost. By default Ghost has two built-in modes: **development** and **production**.
+### E-Mail
 
-There are a few, very subtle differences between the two modes or environments. Essentially **development** is geared towards developing and particularly debugging Ghost. Meanwhile "production" is intended to be used when you're running Ghost publicly. The differences include things like what logging & error messaging is output, and also how much static assets are concatenated and minified. In **production**, you'll get just one JavaScript file containing all the code for the admin, in **development** you'll get several.
+Wahrscheinlich das wichtigste Stück der Konfiguration sind die E-Maileinstellungen, damit Ghost dich dein Passwort zurücksetzten lassen kann, wenn du es vergisst. Lies die [E-Mail Dokumentation]({% if page.lang %}/{{ page.lang }}{% endif %}/mail) für mehr Informationen.
 
-As Ghost progresses, these differences will grow and become more apparent, and therefore it will become more and more important that any public blog runs in the **production** environment. This perhaps begs the question, why **development** mode by default, if most people are going to want to run it in **production** mode? Ghost has **development** as the default because this is the environment that is best for debugging problems, which you're most likely to need when getting set up for the first time.
+### Datenbank
 
-##  Using Environments <a id="using-env"></a>
+Standardmäßig kommt Ghost so konfiguriert, dass es eine SQLite-Datenbank benutzt, welche von deiner Seite aus keine Einstellungen benötigt.
 
-In order to set Ghost to run under a different environment, you need to use an environment variable. For example if you normally start Ghost with `node index.js` you would use:
+Wenn du jedoch lieber eine MySQL-Datenbank benutzen möchtest, kannst du das tun, indem du die Datenbankkonfiguration änderst. Du musst zuerst eine Datenbank und Nutzer erstellen, dann kannst du die existierende sqlite3-Konfiguration zu etwas so etwas ändern:
+
+```
+database: {
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'Dein_Datenbank_Nutzer',
+    password : 'Dein_Datenbank_Passwort',
+    database : 'ghost_db',
+    charset  : 'utf8'
+  }
+}
+```
+
+Du kannst auch die Anzahl der gleichzeitigen Verbindungen über die `pool`-Einstellung limitieren, solltest du das wollen.
+
+```
+database: {
+  client: ...,
+  connection: { ... },
+  pool: {
+    min: 2,
+    max: 20
+  }
+}
+```
+
+### Server
+
+Der Serverhost und Serverport sind die IP-Adresse und Portnummer, die Ghost für Anfragen abhört.
+
+Es ist auch möglich, Ghost so zu konfigurieren, dass es stattdessen ein UNIX Socket abhört, indem man die Serverkonfiguration zu etwas wie dem hier ändert:
+
+```
+server: {
+    socket: 'Pfad/zum/Socket.sock'
+}
+```
+
+### Update-Check
+
+Ghost 0.4 führte einen automatischen Update-Check-Service ein, der dich wissen lässt, wenn eine neue Version von Ghost verfügbar ist (woo!). Ghost.org sammelt grundlegende anonyme Benutzerstatistiken von Update-Check-Anfragen. Schau dir für mehr Informationen die [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js)-Datei im Ghost-Core an.
+
+Es ist möglich, die Update-Checks und anonyme Datensammlung durch folgende Option zu deaktivieren:
+
+`updateCheck: false`
+
+Bitte stelle sicher, dass du E-Mails von Ghost oder den [Ghost Blog](http://blog.ghost.org) abonnierst, sodass du trotzdem über neue Versionen informiert bleibst.
+
+### Datenspeicherung
+
+Einige Plattformen, zum Beispiel Heroku, haben ein permanentes Dateisystem. Dadurch gehen hochgeladene Bilder sehr wahrscheinlich irgendwann verloren.
+Es ist möglich, Ghosts Datenspeicherungsfeatures auszustellen:
+
+`fileStorage: false`
+
+Wenn Datenspeicherung ausgeschaltet ist, wird dich Ghosts Image-Upload-Tool dazu auffordern, standardmäßig eine URL anzugeben, was zur Folge hat, dass Dateien nicht verloren gehen.
+
+
+## Über Environments <a id="environments"></a>
+
+Node.js und damit Ghost, haben Konzepte für Environments eingebaut. Environments erlauben es dir, verschiedene Konfigurationen für verschiedene Modi zu erstellen in welchen du Ghost laufen lassen willst. Standardmäßig hat Ghost zwei mitgelieferte Modi: **development** und **production**.
+
+Es gibt ein paar, sehr subtile Unterschiede zwischen den beiden Modi oder Environments. Im wesentlichen ist **development** für das Entwickeln und Debuggen von Ghost ausgerichtet. Währenddessen ist **production** dafür gedacht, wenn du Ghost öffentlich laufen lässt. Die Unterschiede beinhalten Dinge wie beispielsweise welche Logging- und Errornachrichten ausgegeben werden und auch wie viele statische Anhänge verkettet oder minimiert werden. In **production** wirst du nur eine JavaScript-Datei bekommen, die allen Code für den Admin enthält, während du in **development** mehrere erhältst.
+
+Während sich Ghost weiterentwickelt, werden diese Unterschiede zunehmen und ersichtlicher sein und damit auch immer wichtiger, dass jeder öffentliche Blog im **production**-Environment läuft. Das wirft vielleicht die Frage auf, warum der **development**-Modus der Standard ist, wenn doch die meisten Leute es im **production**-Modus laufen lassen wollen werden? Ghost hat **development** als Standard, weil sich dieses Environment am besten zum Debuggen von Problemen eignet, was du höchst wahrscheinlich brauchen wirst, wenn du Ghost zum ersten Mal ausführst.
+
+##  Environments benutzen <a id="using-env"></a>
+
+Um Ghost in verschiedenen Environments laufen zu lassen, musst du eine Environmentvariable verwenden. Wenn du zum Beispiel Ghost normal mit `node index.js` startest, würdest du dies benutzen:
 
 `NODE_ENV=production node index.js`
 
-Or if you normally use forever:
+Oder, wenn du normalerweise Forever benutzt:
 
 `NODE_ENV=production forever start index.js`
 
-Or if you're used to using `npm start` you could use the slightly easier to remember:
+Oder, wenn du du daran gewöhnt bist `npm start` zu benutzen, könntest du das etwas einfacher zu merkende benutzen:
 
 `npm start --production`
 
-### Why use `npm install --production`?
+### Warum `npm install --production` benutzen?
 
-We have been asked a few times why, if Ghost starts in development mode by default, does the installation documentation say to run `npm install --production`? This is a good question! If you don't include `--production` when installing Ghost, nothing bad will happen, but it will install a tonne of extra packages which are only useful for people who want to develop Ghost core itself. This also requires that you have one particular package, `grunt-cli` installed globally, which has to be done with `npm install -g grunt-cli`, it's an extra step and it's not needed if you just want to run Ghost as a blog.
+Wir wurden öfter gefragt, warum, wenn Ghost standardmäßig im development-Modus startet, die Installationsdokumentation sagt, `npm install --production` auszuführen? Das ist eine gute Frage! Wenn du `--production` beim Installieren von Ghost weglässt, wird nichts schlimmes passieren, aber es werden Tonnen extra Pakete installiert, die nur nützlich für Leute sind, die etwas für den Ghost-Core entwickeln wollen. Dazu benötigt man ebenfalls ein spezielles Paket, `grunt-cli`, global installiert, welches nichts mit `npm install -g grunt-cli` zu tun hat, es ist ein extra Schritt, der nicht benötigt wird, wenn du Ghost nur als Blog benutzen möchtest.
 

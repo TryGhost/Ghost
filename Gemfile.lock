@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bourbon (3.1.8)
+      sass (>= 3.2.0)
+      thor
+    sass (3.2.12)
+    thor (0.18.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bourbon
+  sass

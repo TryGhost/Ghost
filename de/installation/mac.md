@@ -24,7 +24,7 @@ Um Node.js auf deinem Mac zu installieren, wirst du ein Terminal brauchen. Um di
 * Klicke dich durch das Installationsprogramm, gib dein Passwort ein und wähle 'Software installieren'
 * Sobald die Installation abgeschlossen ist, öffne dein Terminal und stelle mit dem Befehl `echo $PATH` sicher, dass sich '/usr/local/bin/' in deiner Umgebungsvariable befindet.
 
-<p class="note"><strong>Anmerkung:</strong> Falls '/usr/local/bin' nicht in der $PATH-Variable enthalten ist, zeigen dir die <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">Problembehebungs-Tips</a>, wie du ihn hinzufügst</p>
+<p class="note"><strong>Anmerkung:</strong> Falls '/usr/local/bin' nicht in der $PATH-Variable enthalten ist, zeigen dir die <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">Problembehebungs-Tipps</a>, wie du ihn hinzufügst</p>
 
 Falls du nicht mehr weiter weißt, kannst du dir den [ganzen Prozess hier anschauen](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Ghost auf einem Mac installieren").
 
