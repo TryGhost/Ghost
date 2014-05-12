@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 chapter: installation
 next_section: mac
 ---
@@ -41,11 +41,11 @@ Ghost를 설치할 운영체제를 선택하세요.
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
 </div>
 
-이미 Ghost를 자신의 서버나 호스팅 계정에 배포하기로 결심했나요? 훌륭합니다! 다음 문서에서 수작업 설치부터 원클릭 인스톨러까지 다양한 Ghost 배포 옵션을 설명합니다.
+Ghost의 설치를 완료하셨거나 호스팅 서비스를 이용하실 예정이어 이제 배포 단계만 남았나요? 아래 문서는 수동 설치부터 설치 프로그램 사용까지 다양한 방법으로 어떻게 Ghost를 배포할 수 있는지 설명합니다.
 
 <div class="text-center install-ghost">
-    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Ghost 실행하기</a>
+    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Ghost 배포</a>
 </div>
 
-Ghost는 완전 새로운 것이고 개발팀도 아주 열심히 일하고 있습니다. Ghost를 최신 버전으로 업그레이드 해야 할 경우는 [업그레이드 문서](/installation/upgrading/)를 참고하시기 바랍니다.
-제대로 진행되지 않으면 [문제해결 가이드]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/)를 확인하고, 그래도 해결되지 않는 경우에는 [Ghost 포럼](http://ghost.org/forum)을 참고하기 바랍니다. Ghost 스태프와 커뮤니티가 여러분의 문제를 해결할 수 있도록 도와줄 것입니다.
+Ghost는 아직 만들어진 지 얼마 되지 않은 새 블로깅 플랫폼이며, 저희 팀은 여러 기능들을 추가하여 여러분이 더욱 편리하게 Ghost를 사용하실 수 있도록 노력하고 있습니다. Ghost를 최신 버전으로 업그레이드하고싶으신 분은 [업그레이드 가이드](/installation/upgrading/)를 참조해 주세요.
+    설치 및 이용 중 갑자기 문제가 발생했나요? 이 경우에는 [문제 해결 가이드]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/)를 확인하시거나 Ghost 개발진이 여러분을 도와 주는 [Ghost 포럼](http://ghost.org/forum)을 이용해 보세요.

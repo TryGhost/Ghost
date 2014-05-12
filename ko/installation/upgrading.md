@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/upgrading/
 chapter: installation
 section: upgrading
@@ -63,7 +63,7 @@ Ghost는 기본으로 모든 사용자 데이터, 테마, 이미지 등을 <code
 
 아래 스크린캐스트를 보면 Zip 파일이 <code class="path">~/Downloads</code>에 다운로드 되어있고 Ghost가 <code class="path">~/ghost</code>에 설치되어 있는 경우 Ghost를 업그레이드 하는 단계를 알 수 있습니다. <span class="note">**노트:** `~`는 맥과 리눅스에서 사용자 홈 디렉터리를 뜻함</span>
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
+![Ghost 업그레이드](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
 
 스트린캐스트에서의 각 단계는 다음과 같습니다.
 

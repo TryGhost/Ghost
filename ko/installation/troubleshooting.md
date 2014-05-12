@@ -1,10 +1,10 @@
 ---
 lang: ko
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 서버에 Ghost 설치하기 - Ghost 가이드
+meta_description: Ghost 플랫폼을 이용하여 블로그를 만들기 위한 가이드입니다.
+heading: Ghost 설치 및 실행
+subheading: Ghost로 새 블로그를 만들기 위해 진행해야 할 것들
 permalink: /ko/installation/troubleshooting/
 chapter: installation
 section: troubleshooting
@@ -26,7 +26,7 @@ prev_section: upgrading
             <li>새로운 터미널을 시작해야 이 설정이 적용될 것입니다. 따라서, 새로운 터미널 탭이나 윈도우를 연 다음 <code>echo $PATH</code>를 입력해 '/usr/local/bin/' 가 있는지 확인하면 됩니다.</li>
         </ul>
     </dd>
-    <dt id="sqlite3-errors">SQLite3 doesn't install</dt>
+    <dt id="sqlite3-errors">SQLite3가 설치되지 않습니다</dt>
     <dd>
         <p>SQLite3 패키지는 대부분의 아키텍처에 맞게 빌드된 바이너리가 있습니다. 인기가 많지 않은 리눅스 또는 유닉스를 사용한다면, SQLite3가 플랫폼에 맞는 적절한 바이너리를 찾지 못해 404 에러를 표시할 수 있습니다.</p>
         <p>이 문제는 SQLite3를 강제로 컴파일하도록 설정해 해결할 수 있습니다. 이렇게 하려면 python과 gcc가 필요합니다. <code>npm install sqlite3 --build-from-source</code>을 실행해 보기 바랍니다.</p>
