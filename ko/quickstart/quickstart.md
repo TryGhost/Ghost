@@ -1,16 +1,15 @@
 ---
 lang: ko
 layout: quickstart
-meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+meta_title: Ghost 빠른 시작
+heading: Ghost 빠른 시작
+subheading: Ghost를 빠르게 설치하고 실행하는 방법
 chapter: quickstart
 section: quickstart
 ---
 
 # 개요 <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
 Ghost 실행 퀵스타트 가이드는 이미 [Node](http://nodejs.org) 또는 루비 온 레일즈 같은 것에 익숙한 분을 위한 것입니다. 이런 것들을 잘 모른다면 좀더 차근차근한 설명이 들어있는 [설치 가이드](/installation.html)를 읽기 바랍니다.
 
 
