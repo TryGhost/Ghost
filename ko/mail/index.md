@@ -1,52 +1,48 @@
 ---
 lang: ko
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Ghost 이메일 설정 - Ghost 가이드
+meta_description: 이메일 서버를 구성하고 Ghost 플랫폼이 이메일을 보낼 수 있도록 설정하는 방법을 설명합니다.
+heading: Ghost 이메일 설정
 chapter: mail
 ---
 
 
-## 메일 설정 <a id="email-config"></a>
-다음은 Ghost에서 메일을 설정하는 방법을 설명합니다.
-Ghost는 [Nodemailer](https://github.com/andris9/Nodemailer)를 사용하는데, Nodemailer 문서에는 더 많은 예제가 있습니다. 
+## 이메일 설정 <a id="email-config"></a>
 
-### 잠깐, 뭐라고요?
+아래에서는 Ghost가 이메일을 보낼 수 있도록 설정하는 방법을 설명합니다. Ghost는 [Nodemailer](https://github.com/andris9/Nodemailer)를 사용하며, Nodemailer의 문서는 더 많은 예제를 포함하므로 참고해 보시기 바랍니다.
 
-PHP에서는 아마 메일이 호스트 플랫폼에서 알아서 잘 됐을 겁니다. Node는 조금 다릅니다. Node는 새롭고 반짝반짝 빛나지만 일부 가장자리는 거친 부분이 있습니다.
+### 이메일 설정을 해야 하는 이유가 무엇인가요?
 
-그렇지만 겁내지는 마세요. 메일을 설정하는 것은 한 번만 하면 되고 여기서 자세히 설명할 테니까요.
+PHP를 이용한 개발에 익숙하신 분들은 이메일 설정이 필요한 이유를 잘 모르실 수 있습니다. Node.js는 PHP와 조금 다르며, 만들어진 지 얼마 되지 않았기 때문에 조금 설정이 필요합니다.
 
+이 설정은 한 번만 설정해 주면 끝나는 일이니 걱정하지 마세요. 아래에서 자세히 설명해 드리겠습니다.
 
-### 그렇지만 왜?
+### 이메일 설정은 반드시 필요한가요?
 
-Ghost가 이메일을 사용하는 경우는 여러분이 패스워드를 잊어버려 새 패스워드를 이메일로 보낼 때 뿐입니다. 이런 경우는 많지 않겠지만, 이 기능을 과소평가 하지는 말기 바랍니다. 이게 정말 필요할 때도 있을테니까요.
+현재로서 Ghost가 이메일을 보내는 경우는 여러분이 비밀번호를 잊었을 때 새 비밀번호를 요청하는 경우뿐입니다. 별로 대단한 경우는 아니지만 필요할 때 작동하지 않으면 곤란합니다.
 
-Ghost는 추후 블로그에 대한 이메일 기반 구독도 지원할 예정입니다. 
-또한 Ghost는 추후 이메일 기반 블로그 구독 설정을 지원할 예정입니다. 이메일을 보낼 수 있어야 새로운 사용자에게 계정 정보를 이메일로 보내는 등의 기능을 사용할 수 있습니다.
+미래에, Ghost는 이메일 구독이나 새 사용자들에게 이메일로 계정 정보를 전송하는 것과 같은 기능을 지원하게 될 것입니다. 이러한 기능을 위해서는 이메일 설정이 반드시 필요합니다.
 
+## 어떻게 이메일을 설정할 수 있나요? <a id="how-to"></a>
 
-## 자, 이제 어떻게 하죠? <a id="how-to"></a>
+우선 이메일 전송 서비스의 계정이 필요합니다. 이 때 Mailgun을 사용하시는 것을 강력히 추천합니다. Mailgun 무료 계정은 대부분의 블로그에게 충분한 이메일 전송량을 제공합니다. 물론 Gmail이나 Amazon SES를 사용할 수도 있습니다.
 
-먼저 메일 서비스 계정이 필요합니다. 우리는 Mailgun을 추천합니다. Mailgun은 대부분의 이메일 구독 기반 블로그가 관리할 수 있는 것보다도 많은 메일을 보낼 수 있는 무료 시작 계정을 제공합니다. 물론 Gmail이나 아마존 SES를 사용할 수도 있습니다.
-
-어떤 메일 서비스를 사용할지 결정했다면, Ghost 설정 파일을 편집할 차례입니다. Ghost를 설치했을때는 언제나 루트 디렉터리에서 <code class="path">config.js</code>와 <code class="path">index.js</code> 파일을 찾아야 합니다. 아직 <code class="path">config.js</code> 파일이 없다면 <code class="path">config.example.js</code>를 복사한 다음 이름을 바꾸면 됩니다.
+어떤 이메일 서비스를 사용할지 결정하셨다면 Ghost 설정 파일에 이메일 설정을 추가하셔야 합니다. Ghost가 설치된 디렉토리를 보시면 루트 디렉토리에서 <code class="path">config.js</code> 파일과 <code class="path">index.js</code>를 발견하실 수 있을 것입니다. <code class="path">config.js</code>를 찾을 수 없다면 <code class="path">config.example.js</code> 파일을 복사하시고 이름을 바꾸세요.
 
 ### Mailgun <a id="mailgun"></a>
 
-[mailgun.com](http://www.mailgun.com/)에 가서 계정을 만듭니다. 이메일 주소가 필요하고 도메인 이름이나 서브도메인을 제공해야 합니다. 이 설정은 나중에 바꿀 수 있으므로, 설정하고 있는 블로그 이름과 비슷하게 서브도메인을 등록하지 못할 이유가 없습니다.
+[mailgun.com](http://www.mailgun.com/)으로 이동하시고 계정을 만드세요. 이메일 주소와 도메인 이름, 또는 서브 도메인 이름을 제공해야 합니다. 여러분은 설정을 나중에 변경할 수 있으므로 블로그의 이름과 유사한 서브 도메인을 적당히 등록해도 됩니다.
 
-Mailgun으로 이메일 주소를 검증한 다음, 제어판에 접근할 수 있습니다. (가입할 때 입력한 이메일 주소 말고) Mailgun이 생성한 새로운 이메일 서비스 사용자 이름과 암호를 지정해야 합니다.
-오른쪽에 있는 도메인을 클릭해서... 아래 스크린캐스트를 보면 자세한 내용을 이해하는 데 도움이 될 것입니다.
+Mailgun에서 여러분의 이메일 주소가 유효한지 확인이 끝나면 제어판에 접근할 수 있습니다. 이제 오른쪽에 위치한 여러분의 도메인 이름을 클릭함으로써 Mailgun이 생성한 이메일 서비스 계정 이름과 비밀번호를 확인하셔야 합니다. 이 때의 계정 이름과 비밀번호는 여러분이 가입 시 입력한 것과 다른 것이므로 주의하세요. 아래의 동영상을 확인하셔서 자세한 방법을 확인하실 수 있습니다.
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />   
-  
-이제 필요한 것을 모두 준비했으니, 설정 파일을 열 차례입니다. 에디터로 <code class="path">config.js</code> 파일을 열어 메일 설정 부분을 찾은 다음, 다음과 같이 메일 설정을 변경합니다.
+<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
+
+이제 모든 Mailgun에서의 설정이 끝나고 Ghost에서의 설정만 남았습니다. <code class="path">config.js</code> 파일을 여시고 development 및 production 환경의 이메일 설정을 다음과 같이 수정하세요.
 
 ```
 mail: {
-transport: 'SMTP',
+    transport: 'SMTP',
     options: {
         service: 'Mailgun',
         auth: {
@@ -57,7 +53,7 @@ transport: 'SMTP',
 }
 ```
 
-Mailgun에서 'Login' 항목의 값을 복사해 'user' 항목 뒤에 있는 따옴표 안에 붙여넣고 Mailgun의 'Password' 항목 값을 복사해 'pass' 항목 뒤에 있는 따옴표 안에 붙여 넣습니다. 아마 다음과 같은 형식이 될 것입니다.
+그리고 Mailgun의 'Login' 항목의 값을 'user'에, 'Password' 항목의 값을 'pass'에 복사하세요. 예를 들어 위 동영상에 나온 'tryghosttest' 계정의 설정은 다음과 같습니다.
 
 ```
 mail: {
