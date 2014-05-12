@@ -1,9 +1,9 @@
 ---
 lang: ko
 layout: quickstart
-meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+meta_title: Ghost 빠른 시작
+heading: Ghost 빠른 시작
+subheading: Ghost를 빠르게 설치하고 실행하는 방법
 chapter: quickstart
 section: quickstart
 ---
