@@ -1,0 +1,10 @@
+{{#if messages}}
+    {{#each messages}}
+        <div class="js-bb-notification">
+            <section class="notification{{#if type}}-{{type}}{{/if}} notification-{{status}} js-notification">
+              {{{message}}}
+              <a class="close" href="#" data-id="{{id}}"><span class="hidden">Close</span></a>
+            </section>
+        </div>
+    {{/each}}
+{{/if}}

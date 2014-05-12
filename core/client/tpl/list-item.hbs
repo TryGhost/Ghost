@@ -1,0 +1,18 @@
+<a class="permalink{{#if featured}} featured{{/if}}{{#if page}} page{{/if}}" href="#" title="Edit this post">
+    <h3 class="entry-title">{{{title}}}</h3>
+    <section class="entry-meta">
+        <span class="status">
+        {{#if published}}
+            {{#if page}}
+                    <span class="page">Page</span>
+            {{else}}
+                <time datetime="{{date published_at format="YYYY-MM-DD hh:mm"}}" class="date published">
+                    Published {{date published_at timeago="True"}}
+                </time>
+            {{/if}}
+        {{else}}
+            <span class="draft">Draft</span>
+        {{/if}}
+        </span>
+    </section>
+</a>

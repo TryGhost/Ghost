@@ -1,0 +1,4 @@
+<section class="js-drop-zone">
+    <img class="js-upload-target" src="{{options.src}}"{{#unless options.src}} style="display: none"{{/unless}} alt="logo">
+    <input data-url="upload" class="js-fileupload main" type="file" name="uploadimage" {{#if options.acceptEncoding}}accept="{{options.acceptEncoding}}"{{/if}}>
+</section>

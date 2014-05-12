@@ -1,0 +1,24 @@
+<header id="global-header" class="navbar">
+    <a class="ghost-logo" href="{{url absolute="true"}}" data-off-canvas="left" title="{{url absolute="true"}}"><span class="hidden">Ghost </span></a>{{! TODO: Change this to actual Ghost homepage }}
+    <nav id="global-nav" role="navigation">
+        <ul id="main-menu" >
+            {{#each adminNav}}
+                <li class="{{navClass}}{{#if selected}} active{{/if}}"><a href="{{url}}/ghost{{path}}">{{name}}</a></li>
+            {{/each}}
+
+            <li id="usermenu" class="subnav">
+                <a href="#" data-toggle="ul" class="dropdown">
+                    <img class="avatar" src="{{#if currentUser.image}}{{currentUser.image}}{{else}}{{asset "shared/img/user-image.png"}}{{/if}}" alt="Avatar" />
+                    <span class="name">{{#if currentUser.name}}{{currentUser.name}}{{else}}{{currentUser.email}}{{/if}}</span>
+                </a>
+                <ul class="overlay">
+                    <li class="usermenu-profile"><a href="{{url}}/ghost/settings/user/">Your Profile</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-signout"><a href="{{url}}/ghost/signout/">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>

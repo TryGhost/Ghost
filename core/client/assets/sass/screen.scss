@@ -1,0 +1,56 @@
+/*
+ * Welcome to Ghost - all styles for the Ghost platform are located within
+ * this set of Sass files. Use this file like a table of contents.
+ */
+
+/* ==========================================================================
+   Modules - These styles are re-used in many areas, and are grouped by type.
+   ========================================================================== */
+
+    @import "modules/mixins";
+    /* Sass variables like colours, font sizes, basic styles. */
+
+    @import "modules/normalize";
+    /* Browser cross compatibility normalisation*/
+
+    @import "modules/icons";
+    /* All the styles controlling icons. */
+
+    @import "modules/animations";
+    /* Keyframe animations. */
+
+    @import "modules/global";
+    /* Global elements for the UI, like the header and footer. */
+
+    @import "modules/forms";
+    /* All the styles controlling forms and form fields. */
+
+
+
+/* ==========================================================================
+   Layouts - Styles for specific admin screen layouts, grouped by screen.
+   ========================================================================== */
+
+    @import "layouts/manage";
+    /* The manage posts screen. */
+
+    @import "layouts/editor";
+    /* The write/edit post screen. */
+
+    @import "layouts/auth";
+    /* The login screen. */
+
+    @import "layouts/errors";
+    /* The error screens. */
+
+  /* ==========================================================================
+   Settings Layouts - Styles for the individual settings panes, grouped by pane.
+   ========================================================================== */
+    @import "layouts/settings";
+    /* The settings screen. */
+
+        @import "layouts/users";
+        /* The users pane. */
+
+        @import "layouts/plugins";
+        /* The plugins pane. */
