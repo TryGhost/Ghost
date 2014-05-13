@@ -214,6 +214,10 @@ settings = {
                 return when.all(checks);
             };
 
+        if (!_.isString(value)) {
+            value = JSON.stringify(value);
+        }
+
         // Allow shorthand syntax
         if (_.isString(key)) {
             key = { settings: [{ key: key, value: value }]};
