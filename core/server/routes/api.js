@@ -20,6 +20,9 @@ module.exports = function (server) {
     server.put('/ghost/api/v0.1/users/:id/', api.requestHandler(api.users.edit));
     // #### Tags
     server.get('/ghost/api/v0.1/tags/', api.requestHandler(api.tags.browse));
+    // #### Themes
+    server.get('/ghost/api/v0.1/themes/', api.requestHandler(api.themes.browse));
+    server.put('/ghost/api/v0.1/themes/:name', api.requestHandler(api.themes.edit));
     // #### Notifications
     server.del('/ghost/api/v0.1/notifications/:id', api.requestHandler(api.notifications.destroy));
     server.post('/ghost/api/v0.1/notifications/', api.requestHandler(api.notifications.add));
