@@ -3,11 +3,9 @@ var config        = require('../config'),
     path          = require('path'),
     when          = require('when'),
     api           = require('../api'),
-    mailer        = require('../mail'),
     errors        = require('../errors'),
     storage       = require('../storage'),
     updateCheck   = require('../update-check'),
-
     adminNavbar,
     adminControllers,
     loginSecurity = [];
@@ -265,19 +263,26 @@ adminControllers = {
         api.users.register({users: users}).then(function (user) {
             api.settings.edit.call({user: 1}, 'email', email).then(function () {
                 var message = {
-                    to: email,
-                    subject: 'Your New Ghost Blog',
-                    html: '<p><strong>Hello!</strong></p>' +
-                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
-                          '<p>You can log in to your admin account with the following details:</p>' +
-                          '<p> Email Address: ' + email + '<br>' +
-                          'Password: The password you chose when you signed up</p>' +
-                          '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
-                          '<p>xoxo</p>' +
-                          '<p>Team Ghost<br>' +
-                          '<a href="https://ghost.org">https://ghost.org</a></p>'
-                };
-                mailer.send(message).otherwise(function (error) {
+                        to: email,
+                        subject: 'Your New Ghost Blog',
+                        html: '<p><strong>Hello!</strong></p>' +
+                              '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
+                              '<p>You can log in to your admin account with the following details:</p>' +
+                              '<p> Email Address: ' + email + '<br>' +
+                              'Password: The password you chose when you signed up</p>' +
+                              '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
+                              '<p>xoxo</p>' +
+                              '<p>Team Ghost<br>' +
+                              '<a href="https://ghost.org">https://ghost.org</a></p>'
+                    },
+                    payload = {
+                        mail: [{
+                            message: message,
+                            options: {}
+                        }]
+                    };
+
+                api.mail.send(payload).otherwise(function (error) {
                     errors.logError(
                         error.message,
                         "Unable to send welcome email, your blog will continue to function.",
@@ -320,17 +325,24 @@ adminControllers = {
                 siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
                 resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
                 resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
-                message = {
-                    to: email,
-                    subject: 'Reset Password',
-                    html: '<p><strong>Hello!</strong></p>' +
-                          '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
-                          '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
-                          '<p>Ghost</p>'
+                payload = {
+                    mail: [{
+                        message: {
+                            to: email,
+                            subject: 'Reset Password',
+                            html: '<p><strong>Hello!</strong></p>' +
+                                     '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
+                                     '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
+                                     '<p>Ghost</p>'
+                        },
+                        options: {}
+                    }]
                 };
 
-            return mailer.send(message);
+            return api.mail.send(payload);
         }).then(function success() {
+            // TODO: note that this function takes a response as an
+            // argument but jshint complains of it not being used
             var notification = {
                 type: 'success',
                 message: 'Check your email for further instructions',
