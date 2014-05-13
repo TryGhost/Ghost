@@ -1,36 +1,35 @@
 var when       = require("when"),
     config     = require('../config'),
-    errors      = require('../errors'),
+    errors     = require('../errors'),
     mail;
-    
-    
+
 // ## Mail
 mail = {
 
     // #### Send
     // **takes:** a json object representing an email.
     send: function (postData) {
-        var mailer = require('../mail'),
-            message = {
-                to: postData.to,
-                subject: postData.subject,
-                html: postData.html
-            };
-        
+        var mailer = require('../mail');
+
         // **returns:** a promise from the mailer with the number of successfully sent emails
-        return mailer.send(message)
+        return mailer.send(postData.mail[0].message)
             .then(function (data) {
-                return when.resolve({message: data.message });
+                delete postData.mail[0].options;
+                postData.mail[0].status = {
+                    message: data.message
+                };
+                return postData;
             })
             .otherwise(function (error) {
                 return when.reject(new errors.EmailError(error.message));
             });
     },
-    
     // #### SendTest
     // **takes:** nothing
     sendTest: function () {
         // **returns:** a promise
+
+
         return mail.send({
             subject: 'Test Ghost Email',
             html: '<p><strong>Hello there!</strong></p>' +
