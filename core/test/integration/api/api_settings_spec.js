@@ -163,4 +163,16 @@ describe('Settings API', function () {
             done();
         });
     });
+
+    it('ensures values are stringified before saving to database', function (done) {
+        return callApiWithContext(defaultContext, 'edit', 'title', []).then(function (response) {
+            should.exist(response);
+            testUtils.API.checkResponse(response, 'settings');
+            response.settings.length.should.equal(1);
+            testUtils.API.checkResponse(response.settings[0], 'setting');
+            response.settings[0].value.should.equal('[]');
+
+            done();
+        }).catch(done);
+    });
 });
