@@ -1,6 +1,7 @@
 
 var GhostPopover = Ember.Component.extend({
-    classNames: 'ghost-popover',
+    tagName: 'ul',
+    classNames: 'ghost-popover overlay',
     classNameBindings: ['open'],
     open: false
 });
