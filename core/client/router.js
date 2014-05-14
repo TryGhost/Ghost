@@ -21,7 +21,6 @@ Router.map(function () {
     this.resource('settings', function () {
         this.route('general');
         this.route('user');
-        this.route('debug');
         this.route('apps');
     });
     this.route('debug');
