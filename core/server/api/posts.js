@@ -82,7 +82,7 @@ posts = {
         var self = this,
             include;
 
-        return canThis(self.user).edit.post(postData.id).then(function () {
+        return canThis(this).edit.post(postData.id).then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
 
                 if (postData.include) {
@@ -115,7 +115,7 @@ posts = {
             include;
 
         // **returns:** a promise for the resulting post in a json object
-        return canThis(this.user).create.post().then(function () {
+        return canThis(this).create.post().then(function () {
             return checkPostData(postData).then(function (checkedPostData) {
                 if (postData.include) {
                     include = prepareInclude(postData.include);
@@ -141,7 +141,7 @@ posts = {
     destroy: function destroy(args) {
         var self = this;
         // **returns:** a promise for a json response with the id of the deleted post
-        return canThis(this.user).remove.post(args.id).then(function () {
+        return canThis(this).remove.post(args.id).then(function () {
             // TODO: Would it be good to get rid of .call()?
             return posts.read.call({user: self.user}, {id : args.id, status: 'all'}).then(function (result) {
                 return dataProvider.Post.destroy(args.id).then(function () {
@@ -165,7 +165,7 @@ posts = {
     // **takes:** a string to generate the slug from
     generateSlug: function generateSlug(args) {
 
-        return canThis(this.user).slug.post().then(function () {
+        return canThis(this).slug.post().then(function () {
             return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
                 if (slug) {
                     return slug;
