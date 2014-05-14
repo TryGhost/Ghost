@@ -133,6 +133,10 @@ frontendControllers = {
                             tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
                         });
 
+                    // If the resulting tag is '' then 404.
+                    if (!result.tag) {
+                        return next();
+                    }
                     res.render(view, result);
                 });
             });
