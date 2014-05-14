@@ -1,6 +1,6 @@
-{{#unless isLoggedOut}}
+{{#if isSignedIn}}
     {{partial "navbar"}}
-{{/unless}}
+{{/if}}
 
 <main role="main" id="main">
     {{ghost-notifications}}

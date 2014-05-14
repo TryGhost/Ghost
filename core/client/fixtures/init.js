@@ -43,7 +43,6 @@ var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/4', post(4, status));
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/slug/test%20title/', response('generated-slug', status));
 
-    ic.ajax.defineFixture('/ghost/api/v0.1/signin', user(status));
     ic.ajax.defineFixture('/ghost/api/v0.1/users/me/', user(status));
     ic.ajax.defineFixture('/ghost/changepw/', response({
         msg: 'Password changed successfully'

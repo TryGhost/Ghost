@@ -1,6 +1,12 @@
 import BaseModel from 'ghost/models/base';
 
 var UserModel = BaseModel.extend({
+    id: null,
+    name: null,
+    image: null,
+
+    isSignedIn: Ember.computed.bool('id'),
+
     url: BaseModel.apiRoot + '/users/me/',
     forgottenUrl: BaseModel.apiRoot + '/forgotten/',
     resetUrl: BaseModel.apiRoot + '/reset/',

@@ -14,12 +14,23 @@ var SigninRoute = Ember.Route.extend(styleBody, {
 
             if (!isEmpty(data.email) && !isEmpty(data.password)) {
 
-                ajax('/ghost/api/v0.1/signin', data).then(
+                ajax({
+                    url: '/ghost/signin/',
+                    type: 'POST',
+                    headers: {
+                        "X-CSRF-Token": this.get('csrf')
+                    },
+                    data: data
+                }).then(
                     function (response) {
-                        self.set('user', response);
+                        self.send('signedIn', response.userData);
+
+                        self.notifications.clear();
+
                         self.transitionTo('posts');
-                    }, function () {
-                        window.alert('Error'); // Todo Show notification
+                    }, function (resp) {
+                        // This path is ridiculous, should be a helper in notifications; e.g. notifications.showAPIError
+                        self.notifications.showAPIError(resp, 'There was a problem logging in, please try again.');
                     }
                 );
             } else {
