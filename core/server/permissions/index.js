@@ -120,16 +120,14 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                     hasAppPermission = _.any(appPermissions, checkPermission);
                 }
 
+                // Offer a chance for the TargetModel to override the results
+                if (TargetModel && _.isFunction(TargetModel.permissable)) {
+                    return TargetModel.permissable(modelId, context, loadedPermissions, hasUserPermission, hasAppPermission);
+                }
+
                 if (hasUserPermission && hasAppPermission) {
                     return when.resolve();
                 }
-                return when.reject();
-            }).otherwise(function () {
-                // Check for special permissions on the model directly
-                if (TargetModel && _.isFunction(TargetModel.permissable)) {
-                    return TargetModel.permissable(modelId, context);
-                }
-
                 return when.reject();
             });
         };

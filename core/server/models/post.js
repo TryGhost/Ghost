@@ -473,21 +473,31 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-    permissable: function (postModelOrId, context) {
+    permissable: function (postModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
-            userId = context.user,
-            postModel = postModelOrId;
+            postModel = postModelOrId,
+            origArgs;
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
+            // Grab the original args without the first one
+            origArgs = _.toArray(arguments).slice(1);
+            // Get the actual post model
             return this.findOne({id: postModelOrId, status: 'all'}).then(function (foundPostModel) {
-                return self.permissable(foundPostModel, context);
+                // Build up the original args but substitute with actual model
+                var newArgs = [foundPostModel].concat(origArgs);
+
+                return self.permissable.apply(self, newArgs);
             }, errors.logAndThrowError);
         }
 
-        // If this is the author of the post, allow it.
-        if (postModel && userId === postModel.get('author_id')) {
+        if (postModel) {
+            // If this is the author of the post, allow it.
+            hasUserPermission = hasUserPermission || context.user === postModel.get('author_id');
+        }
+
+        if (hasUserPermission && hasAppPermission) {
             return when.resolve();
         }
 
