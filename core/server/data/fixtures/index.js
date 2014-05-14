@@ -124,6 +124,16 @@ var fixtures = {
             "name":             "Edit settings",
             "action_type":      "edit",
             "object_type":      "setting"
+        },
+        {
+            "name":             "Browse themes",
+            "action_type":      "browse",
+            "object_type":      "theme"
+        },
+        {
+            "name":             "Edit themes",
+            "action_type":      "edit",
+            "object_type":      "theme"
         }
     ]
 };
