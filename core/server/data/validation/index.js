@@ -48,7 +48,7 @@ validateSchema = function (tableName, model) {
 
             //check validations objects
             if (schema[tableName][columnKey].hasOwnProperty('validations')) {
-                validationErrors.concat(validate(model[columnKey], columnKey, schema[tableName][columnKey].validations));
+                validationErrors = validationErrors.concat(validate(model[columnKey], columnKey, schema[tableName][columnKey].validations));
             }
 
             //check type
@@ -71,10 +71,15 @@ validateSchema = function (tableName, model) {
 // form default-settings.json
 validateSettings = function (defaultSettings, model) {
     var values = model.toJSON(),
+        validationErrors = [],
         matchingDefault = defaultSettings[values.key];
 
     if (matchingDefault && matchingDefault.validations) {
-        return validate(values.value, values.key, matchingDefault.validations);
+        validationErrors = validationErrors.concat(validate(values.value, values.key, matchingDefault.validations));
+    }
+
+    if (validationErrors.length !== 0) {
+        return when.reject(validationErrors);
     }
 };
 
@@ -117,9 +122,7 @@ validate = function (value, key, validations) {
         validationOptions.shift();
     }, this);
 
-    if (validationErrors.length !== 0) {
-        return when.reject(validationErrors);
-    }
+    return validationErrors;
 };
 
 module.exports = {

@@ -488,10 +488,10 @@ describe('Post API', function () {
                     var jsonResponse = res.body,
                         changedValue = false;
                     jsonResponse.should.exist;
-                    jsonResponse.posts[0].page.should.eql(1);
+                    jsonResponse.posts[0].page.should.eql(true);
                     jsonResponse.posts[0].page = changedValue;
 
-                    request.put(testUtils.API.getApiQuery('posts/1/'))
+                    request.put(testUtils.API.getApiQuery('posts/7/'))
                         .set('X-CSRF-Token', csrfToken)
                         .send(jsonResponse)
                         .expect(200)
@@ -507,6 +507,39 @@ describe('Post API', function () {
                             putBody.posts[0].page.should.eql(changedValue);
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
+                            done();
+                        });
+                });
+        });
+
+        it('can\'t edit post with invalid page field', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/7/'))
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body,
+                        changedValue = 'invalid';
+                    jsonResponse.should.exist;
+                    jsonResponse.posts[0].page.should.eql(false);
+                    jsonResponse.posts[0].page = changedValue;
+
+                    request.put(testUtils.API.getApiQuery('posts/7/'))
+                        .set('X-CSRF-Token', csrfToken)
+                        .send(jsonResponse)
+                        .expect(422)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            var putBody = res.body;
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            res.should.be.json;
+                            jsonResponse = res.body;
+                            jsonResponse.errors.should.exist;
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
                             done();
                         });
                 });
