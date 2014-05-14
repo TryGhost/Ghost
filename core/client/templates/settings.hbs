@@ -5,9 +5,9 @@
         </header>
         <nav class="settings-menu">
             <ul>
-                <li class="general">{{#link-to 'settings.general'}}General{{/link-to}}</li>
-                <li class="users">{{#link-to 'settings.user'}}User{{/link-to}}</li>
-                <li class="apps">{{#link-to 'settings.apps'}}Apps{{/link-to}}</li>
+                {{#link-to 'settings.general' tagName="li" class="general"}}<a href="#">General</a>{{/link-to}}
+                {{#link-to 'settings.user' tagName="li" class="users"}}<a href="#">User</a>{{/link-to}}
+                {{#link-to 'settings.apps' tagName="li" class="apps"}}<a href="#">Apps</a>{{/link-to}}
             </ul>
         </nav>
     </aside>
