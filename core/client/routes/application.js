@@ -1,5 +1,17 @@
 var ApplicationRoute = Ember.Route.extend({
     actions: {
+        loggedIn: function (user) {
+            this.container.lookup('user:current').setProperties(user);
+        },
+
+        loggedOut: function () {
+            this.container.lookup('user:current').setProperties({
+                id: null,
+                name: null,
+                image: null
+            });
+        },
+
         openModal: function (modalName, model) {
             modalName = 'modals/' + modalName;
             // We don't always require a modal to have a controller

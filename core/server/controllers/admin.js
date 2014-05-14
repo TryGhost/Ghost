@@ -43,7 +43,9 @@ function setSelected(list, name) {
 adminControllers = {
     'index': function (req, res) {
         /*jslint unparam:true*/
-        res.render('default-ember');
+        res.render('default-ember', {
+            user: JSON.stringify(req.session.userData)
+        });
     },
     // Route: index
     // Path: /ghost/
@@ -217,6 +219,8 @@ adminControllers = {
                 req.session.regenerate(function (err) {
                     if (!err) {
                         req.session.user = user.id;
+                        req.session.userData = _.omit(user.attributes, 'password');
+
                         var redirect = config().paths.subdir + '/ghost/';
                         if (req.body.redirect) {
                             redirect += decodeURIComponent(req.body.redirect);
@@ -226,7 +230,7 @@ adminControllers = {
                         loginSecurity = _.reject(loginSecurity, function (ipTime) {
                             return ipTime.ip === remoteAddress;
                         });
-                        res.json(200, {redirect: redirect});
+                        res.json(200, {redirect: redirect, userData: req.session.userData});
                     }
                 });
             }, function (error) {
@@ -294,8 +298,13 @@ adminControllers = {
                     if (!err) {
                         if (req.session.user === undefined) {
                             req.session.user = user.id;
+                            req.session.userData = _.omit(user.attributes, 'password');
                         }
-                        res.json(200, {redirect: config().paths.subdir + '/ghost/'});
+
+                        res.json(200, {
+                            redirect: config().paths.subdir + '/ghost/',
+                            userData: req.session.userData
+                        });
                     }
                 });
             });

@@ -1,5 +1,5 @@
 var ApplicationController = Ember.Controller.extend({
-    isLoggedOut: Ember.computed.match('currentPath', /(signin|signup|forgotten|reset)/),
+    isLoggedIn: Ember.computed.bool('user.isLoggedIn'),
     actions: {
         toggleMenu: function () {
             this.toggleProperty('showMenu');
