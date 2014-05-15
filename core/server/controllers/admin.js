@@ -260,7 +260,9 @@ adminControllers = {
                 password: password
             }];
 
-        api.users.register({users: users}).then(function (user) {
+        api.users.register({users: users}).then(function (apiResp) {
+            var user = apiResp.users[0];
+
             api.settings.edit.call({user: 1}, 'email', email).then(function () {
                 var message = {
                         to: email,
