@@ -1,27 +1,26 @@
-var when               = require('when'),
-    _                  = require('lodash'),
-    dataProvider       = require('../models'),
-    settings           = require('./settings'),
-    canThis            = require('../permissions').canThis,
-    errors             = require('../errors'),
-    ONE_DAY            = 86400000,
+var when            = require('when'),
+    _               = require('lodash'),
+    dataProvider    = require('../models'),
+    settings        = require('./settings'),
+    canThis         = require('../permissions').canThis,
+    errors          = require('../errors'),
+    utils           = require('./utils'),
+
+    docName         = 'users',
+    ONE_DAY         = 86400000,
     users;
 
-
-function checkUserData(userData) {
-    if (_.isEmpty(userData) || _.isEmpty(userData.users) || _.isEmpty(userData.users[0])) {
-        return when.reject(new errors.BadRequestError('No root key (\'users\') provided.'));
-    }
-    return when.resolve(userData);
-}
-// ## Users
 users = {
 
-    // #### Browse
-    // **takes:** options object
+    /**
+     * ## Browse
+     * Fetch all users
+     * @param {object} options (optional)
+     * @returns {Promise(Users)} Users Collection
+     */
     browse: function browse(options) {
-        // **returns:** a promise for a collection of users in a json object
-        return canThis(this).browse.user().then(function () {
+        options = options || {};
+        return canThis(options.context).browse.user().then(function () {
             return dataProvider.User.findAll(options).then(function (result) {
                 return { users: result.toJSON() };
             });
@@ -30,15 +29,17 @@ users = {
         });
     },
 
-    // #### Read
-    // **takes:** an identifier (id or slug?)
-    read: function read(args) {
-        // **returns:** a promise for a single user in a json object
-        if (args.id === 'me') {
-            args = {id: this.user};
+    read: function read(options) {
+        var attrs = ['id'],
+            data = _.pick(options, attrs);
+
+        options = _.omit(options, attrs);
+
+        if (data.id === 'me' && options.context && options.context.user) {
+            data.id = options.context.user;
         }
 
-        return dataProvider.User.findOne(args).then(function (result) {
+        return dataProvider.User.findOne(data, options).then(function (result) {
             if (result) {
                 return { users: [result.toJSON()] };
             }
@@ -47,14 +48,15 @@ users = {
         });
     },
 
-    // #### Edit
-    // **takes:** a json object representing a user
-    edit: function edit(userData) {
-        // **returns:** a promise for the resulting user in a json object
-        var self = this;
-        return canThis(this).edit.user(userData.users[0].id).then(function () {
-            return checkUserData(userData).then(function (checkedUserData) {
-                return dataProvider.User.edit(checkedUserData.users[0], {user: self.user});
+    edit: function edit(object, options) {
+        if (options.id === 'me' && options.context && options.context.user) {
+            options.id = options.context.user;
+        }
+
+        return canThis(options.context).edit.user(options.id).then(function () {
+            return utils.checkObject(object, docName).then(function (checkedUserData) {
+
+                return dataProvider.User.edit(checkedUserData.users[0], options);
             }).then(function (result) {
                 if (result) {
                     return { users: [result.toJSON()]};
@@ -66,19 +68,17 @@ users = {
         });
     },
 
-    // #### Add
-    // **takes:** a json object representing a user
-    add: function add(userData) {
-        // **returns:** a promise for the resulting user in a json object
-        var self = this;
-        return canThis(this).add.user().then(function () {
-            return checkUserData(userData).then(function (checkedUserData) {
-                // if the user is created by users.register(), use id: 1
-                // as the creator for now
-                if (self.internal) {
-                    self.user = 1;
+    add: function add(object, options) {
+        options = options || {};
+
+        return canThis(options.context).add.user().then(function () {
+            return utils.checkObject(object, docName).then(function (checkedUserData) {
+                // if the user is created by users.register(), use id: 1 as the creator for now
+                if (options.context.internal) {
+                    options.context.user = 1;
                 }
-                return dataProvider.User.add(checkedUserData.users[0], {user: self.user});
+
+                return dataProvider.User.add(checkedUserData.users[0], options);
             }).then(function (result) {
                 if (result) {
                     return { users: [result.toJSON()]};
@@ -89,47 +89,37 @@ users = {
         });
     },
 
-    // #### Register
-    // **takes:** a json object representing a user
-    register: function register(userData) {
-        // TODO: if we want to prevent users from being created with the signup form
-        // this is the right place to do it
-        return users.add.call({internal: true}, userData);
+    register: function register(object) {
+        // TODO: if we want to prevent users from being created with the signup form this is the right place to do it
+        return users.add(object, {context: {internal: true}});
     },
 
-    // #### Check
-    // Checks a password matches the given email address
 
-    // **takes:** a json object representing a user
-    check: function check(userData) {
-        // **returns:** on success, returns a promise for the resulting user in a json object
-        return dataProvider.User.check(userData);
+    check: function check(object) {
+        return dataProvider.User.check(object);
     },
 
-    // #### Change Password
-    // **takes:** a json object representing a user
-    changePassword: function changePassword(userData) {
-        // **returns:** on success, returns a promise for the resulting user in a json object
-        return dataProvider.User.changePassword(userData);
+    changePassword: function changePassword(object) {
+        return dataProvider.User.changePassword(object);
     },
 
     generateResetToken: function generateResetToken(email) {
         var expires = Date.now() + ONE_DAY;
-        return settings.read.call({ internal: true }, 'dbHash').then(function (response) {
+        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
             var dbHash = response.settings[0].value;
             return dataProvider.User.generateResetToken(email, expires, dbHash);
         });
     },
 
     validateToken: function validateToken(token) {
-        return settings.read.call({ internal: true }, 'dbHash').then(function (response) {
+        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
             var dbHash = response.settings[0].value;
             return dataProvider.User.validateToken(token, dbHash);
         });
     },
 
     resetPassword: function resetPassword(token, newPassword, ne2Password) {
-        return settings.read.call({ internal: true }, 'dbHash').then(function (response) {
+        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
             var dbHash = response.settings[0].value;
             return dataProvider.User.resetPassword(token, newPassword, ne2Password, dbHash);
         });

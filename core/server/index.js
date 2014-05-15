@@ -52,7 +52,7 @@ function doFirstRun() {
 }
 
 function initDbHashAndFirstRun() {
-    return api.settings.read.call({ internal: true }, 'dbHash').then(function (response) {
+    return api.settings.read({key: 'dbHash', context: {internal: true}}).then(function (response) {
         var hash = response.settings[0].value,
             initHash;
 
@@ -60,10 +60,11 @@ function initDbHashAndFirstRun() {
 
         if (dbHash === null) {
             initHash = uuid.v4();
-            return api.settings.edit.call({ internal: true }, 'dbHash', initHash).then(function (response) {
-                dbHash = response.settings[0].value;
-                return dbHash;
-            }).then(doFirstRun);
+            return api.settings.edit({settings: [{key: 'dbHash', value: initHash}]}, {context: {internal: true}})
+                .then(function (response) {
+                    dbHash = response.settings[0].value;
+                    return dbHash;
+                }).then(doFirstRun);
         }
 
         return dbHash;

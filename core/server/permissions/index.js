@@ -35,16 +35,11 @@ function parseContext(context) {
         parsed.internal = true;
     }
 
-    // @TODO: Refactor canThis() references to pass { user: id } explicitly instead of primitives.
-    if (context && context.id) {
-        // Handle passing of just user.id string
-        parsed.user = context.id;
-    } else if (_.isNumber(context)) {
-        // Handle passing of just user id number
-        parsed.user = context;
-    } else if (_.isObject(context)) {
-        // Otherwise, use the new hotness { user: id, app: id } format
+    if (context && context.user) {
         parsed.user = context.user;
+    }
+
+    if (context && context.app) {
         parsed.app = context.app;
     }
 

@@ -2,9 +2,11 @@ var frontend    = require('../controllers/frontend'),
     config      = require('../config'),
 
     ONE_HOUR_S  = 60 * 60,
-    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S;
+    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
 
-module.exports = function (server) {
+    frontendRoutes;
+
+frontendRoutes = function (server) {
     var subdir = config().paths.subdir;
 
     // ### Frontend routes
@@ -24,6 +26,6 @@ module.exports = function (server) {
     server.get('/page/:page/', frontend.homepage);
     server.get('/', frontend.homepage);
     server.get('*', frontend.single);
-
-
 };
+
+module.exports = frontendRoutes;

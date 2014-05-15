@@ -129,7 +129,7 @@ adminControllers = {
         },
         // frontend route for downloading a file
         exportContent: function (req, res) {
-            api.db.exportContent.call({user: req.session.user}).then(function (exportData) {
+            api.db.exportContent({context: {user: req.session.user}}).then(function (exportData) {
                 // send a file to the client
                 res.set('Content-Disposition', 'attachment; filename="GhostData.json"');
                 res.json(exportData);
@@ -260,10 +260,9 @@ adminControllers = {
                 password: password
             }];
 
-        api.users.register({users: users}).then(function (apiResp) {
-            var user = apiResp.users[0];
-
-            api.settings.edit.call({user: 1}, 'email', email).then(function () {
+        api.users.register({users: users}).then(function (response) {
+            var user = response.users[0];
+            api.settings.edit({settings: [{key: 'email', value: email}]}, {context: {user: 1}}).then(function () {
                 var message = {
                         to: email,
                         subject: 'Your New Ghost Blog',
