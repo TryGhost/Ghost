@@ -264,7 +264,9 @@ adminControllers = {
                 password: password
             }];
 
-        api.users.register({users: users}).then(function (user) {
+        api.users.register({users: users}).then(function (apiResp) {
+            var user = apiResp.users[0];
+
             api.settings.edit.call({user: 1}, 'email', email).then(function () {
                 var message = {
                         to: email,
@@ -298,7 +300,7 @@ adminControllers = {
                     if (!err) {
                         if (req.session.user === undefined) {
                             req.session.user = user.id;
-                            req.session.userData = _.omit(user.attributes, 'password');
+                            req.session.userData = _.omit(user, 'password');
                         }
 
                         res.json(200, {

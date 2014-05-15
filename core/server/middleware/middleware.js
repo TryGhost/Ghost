@@ -78,6 +78,11 @@ var middleware = {
                     }
                     redirect = '?r=' + encodeURIComponent(reqPath);
                 }
+
+                if (subPath.indexOf('/ember') > -1) {
+                    return res.redirect(config().paths.subdir + '/ghost/ember/signin');
+                }
+
                 return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
             });
         }
