@@ -25,6 +25,8 @@ Router.map(function () {
         this.route('apps');
     });
     this.route('debug');
+    //Redirect legacy content to posts
+    this.route('content');
 });
 
 export default Router;
