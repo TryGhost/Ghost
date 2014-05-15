@@ -1,14 +1,4 @@
-
-function ghostPaths() {
-    var path = window.location.pathname,
-        subdir = path.substr(0, path.search('/ghost/'));
-
-    return {
-        subdir: subdir,
-        adminRoot: subdir + '/ghost',
-        apiRoot: subdir + '/ghost/api/v0.1'
-    };
-}
+import ghostPaths from 'ghost/utils/ghost-paths';
 
 var BaseModel = Ember.Object.extend({
 

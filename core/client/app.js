@@ -2,6 +2,7 @@ import Resolver from 'ember/resolver';
 import initFixtures from 'ghost/fixtures/init';
 import {currentUser, injectCurrentUser} from 'ghost/initializers/current-user';
 import {registerNotifications, injectNotifications} from 'ghost/initializers/notifications';
+import injectGhostPaths from 'ghost/initializers/ghost-paths';
 import 'ghost/utils/link-view';
 import 'ghost/utils/text-field';
 
@@ -22,6 +23,7 @@ initFixtures();
 
 App.initializer(currentUser);
 App.initializer(injectCurrentUser);
+App.initializer(injectGhostPaths);
 App.initializer(registerNotifications);
 App.initializer(injectNotifications);
 
