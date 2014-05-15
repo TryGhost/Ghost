@@ -1,26 +1,14 @@
 import User from 'ghost/models/user';
-import userFixtures from 'ghost/fixtures/users';
 
-var currentUser = {
+export default {
     name: 'currentUser',
 
-    initialize: function (container) {
-        container.register('user:current', User);
+    initialize: function (container, application) {
+        var user = User.create(application.get('user') || {});
+
+        container.register('user:current', user, { instantiate: false });
+
+        container.injection('route', 'user', 'user:current');
+        container.injection('controller', 'user', 'user:current');
     }
 };
-
-var injectCurrentUser = {
-    name: 'injectCurrentUser',
-
-    initialize: function (container) {
-        if (container.lookup('user:current')) {
-            // @TODO: remove userFixture
-            container.lookup('user:current').setProperties(userFixtures.findBy('id', 1));
-
-            container.injection('route', 'user', 'user:current');
-            container.injection('controller', 'user', 'user:current');
-        }
-    }
-};
-
-export {currentUser, injectCurrentUser};

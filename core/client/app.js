@@ -1,6 +1,7 @@
 import Resolver from 'ember/resolver';
 import initFixtures from 'ghost/fixtures/init';
-import {currentUser, injectCurrentUser} from 'ghost/initializers/current-user';
+import injectCurrentUser from 'ghost/initializers/current-user';
+import injectCsrf from 'ghost/initializers/csrf';
 import {registerNotifications, injectNotifications} from 'ghost/initializers/notifications';
 import 'ghost/utils/link-view';
 import 'ghost/utils/text-field';
@@ -20,8 +21,8 @@ var App = Ember.Application.extend({
 
 initFixtures();
 
-App.initializer(currentUser);
 App.initializer(injectCurrentUser);
+App.initializer(injectCsrf);
 App.initializer(registerNotifications);
 App.initializer(injectNotifications);
 

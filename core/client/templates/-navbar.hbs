@@ -1,6 +1,6 @@
 <header id="global-header" class="navbar">
     <a class="ghost-logo" href="/" data-off-canvas="left" title="/">
-        <span class="hidden">Ghost </span>
+        <span class="hidden">Ghost</span>
     </a>
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
@@ -9,11 +9,13 @@
             {{activating-list-item route="settings" title="Settings" classNames="settings"}}
 
             <li id="usermenu" class="usermenu subnav">
-                <a href="" {{action 'toggleMenu'}} class="dropdown">
-                    {{!-- @TODO: show avatar of logged in user --}}
+                <a href="javascript:void(0);" {{action 'toggleMenu'}} class="dropdown">
+                    {{#if user.image}}
+                    <img class="avatar" {{bind-attr src="user.image"}} alt="Avatar" />
+                    {{else}}
                     <img class="avatar" src="/shared/img/user-image.png" alt="Avatar" />
-                    {{!-- @TODO: show logged in user name or email --}}
-                    <span class="name">Fake Ghost</span>
+                    {{/if}}
+                    <span class="name">{{user.name}}</span>
                 </a>
                 {{!-- @TODO: add functionality to allow for dropdown to work --}}
                 {{#ghost-popover open=showMenu}}
