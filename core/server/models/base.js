@@ -6,7 +6,6 @@
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
 var bookshelf  = require('bookshelf'),
-    knex       = require('knex'),
     when       = require('when'),
     moment     = require('moment'),
     _          = require('lodash'),
@@ -21,8 +20,7 @@ var bookshelf  = require('bookshelf'),
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
-ghostBookshelf = bookshelf(knex(config().database));
-ghostBookshelf.client = config().database.client;
+ghostBookshelf = bookshelf(config().database.knex);
 
 // ### ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
