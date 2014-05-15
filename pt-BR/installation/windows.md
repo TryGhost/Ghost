@@ -24,8 +24,7 @@ Se você ficar perdido, você pode assistir todo o [processo aqui](https://s3-eu
 
 ### Download & Extraia Ghost
 
-*   Entre com sua conta no [http://ghost.org](http://ghost.org), e clique no botão azul 'Download Ghost Source Code'.
-*   Na página de arquivos, pressione o botão para baiar o último arquivo .zip.
+*   Na [página de arquivos](https://ghost.org/download/), pressione o botão para baiar o último arquivo .zip.
 *   Clique na seta próxima ao arquivo mais recente e escolha 'Mostrar na Pasta'.
 *   Quando essa pasta abrir, clique com o botão direito no arquivo .zip baixado e escolha 'Extrair tudo.'.
 

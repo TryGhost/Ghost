@@ -22,8 +22,7 @@ next_section: deploy
 
 ### Install and Run Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
 *   In a terminal window, change directory to the root of the extracted Ghost folder
 *   In the terminal type `npm install --production` <span class="note">note the two dashes</span>
 *   When npm is finished installing, type `npm start` to start Ghost in development mode

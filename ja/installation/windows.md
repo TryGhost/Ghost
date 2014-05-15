@@ -24,8 +24,7 @@ next_section: linux
 
 ### Ghostのダウンロード手順
 
-*   [http://ghost.org](http://ghost.org)にログイン(もしくは登録)し、「Download Ghost Source Code」と書かれた青いボタンをクリックします。
-*   ダウンロードボタンをクリックすると、最新版のzipファイルがダウンロードされます。
+*   [ダウンロードボタン](https://ghost.org/download/)をクリックすると、最新版のzipファイルがダウンロードされます。
 *   ダウンロードされたzipファイルを含むフォルダーを表示します。
 *   zipファイルを右クリックし、「すべて展開」を選択します。
 

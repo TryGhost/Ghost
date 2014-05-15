@@ -24,8 +24,7 @@ Se hai problemi in questa fase, guarda tutto [questo video](https://s3-eu-west-1
 
 ### Scarica ed estrai Ghost
 
-*   Registrati su [http://ghost.org](http://ghost.org), e quindi clicca sul pulsante blu 'Download Ghost Source Code' (Scarica codice sorgente di Ghost).
-*   Nella pagina dei download, premi sul pulsante per scaricare l'ultimo file zip.
+*   Nella [pagina dei download](https://ghost.org/download/), premi sul pulsante per scaricare l'ultimo file zip.
 *   Clicca sulla freccia 'next' (avanti) per scaricare il file più recente, e scegli 'mostra nella cartella'.
 *   Quando si apre la cartella, clicca con il pulsante destro del mouse sul file zip scaricato e scegli 'Estrai tutto'.
 

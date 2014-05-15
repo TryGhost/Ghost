@@ -16,11 +16,11 @@ section: quickstart
 
 Ghost 需要 node `0.10.*` （最新的稳定版）的支持。
 
-如果你尚未安装 Node，那么请前往 <http://nodejs.org> 下载最新版本的 Node.js 安装包。安装包会将 Node 及其非常优秀的包管理器 npm 安装到你的电脑上。 
+如果你尚未安装 Node，那么请前往 <http://nodejs.org> 下载最新版本的 Node.js 安装包。安装包会将 Node 及其非常优秀的包管理器 npm 安装到你的电脑上。
 
 对于使用 Linux 系统的用户，你可能更愿意使用自带的[包管理器来安装 Node](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)，而不是通过 .tar.gz 压缩包来安装。
 
-接下来，从 [Ghost.org](http://ghost.org) 下载最新的 Ghost。将压缩包解压到你希望运行 Ghost 的目录下 - 任何地方都行！
+接下来，从 [Ghost.org/download/](https://ghost.org/download/) 下载最新的 Ghost。将压缩包解压到你希望运行 Ghost 的目录下 - 任何地方都行！
 
 打开终端（mac/linux）或者命令提示符（windows）程序，然后定位到刚才解压的 Ghost 目录（package.json 文件所在的地方）
 

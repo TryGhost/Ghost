@@ -30,8 +30,7 @@ Falls du nicht mehr weiter weißt, kannst du dir den [ganzen Prozess hier anscha
 
 ### Ghost installieren und ausführen
 
-* Logge dich auf [http://ghost.org](http://ghost.org) ein und klicke auf dem blauen 'Download Ghost Source Code' button.
-* Klicke auf der Download-Seite auf den Button zum herunterladen der neuesten Zip-Datei.
+* Klicke auf [der Download-Seite](https://ghost.org/download) auf den Button zum herunterladen der neuesten Zip-Datei.
 * Klicke auf den Pfeil neben der heruntergeladenen Datei und wähle 'In Finder anzeigen'.
 * Kicke im Finder doppelt auf die heruntergeladene Zip-Datei und extrahiere sie
 * Ziehe den extrahierten 'ghost-#.#.#'-Ordner in die Titelleiste deines offenen Terminal-Fensters, das wird ein Tab in dem richtigen Verzeichnis öffnen

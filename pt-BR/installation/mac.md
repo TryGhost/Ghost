@@ -29,8 +29,7 @@ Se você ficar perdido, você pode assistir [o processo aqui](https://s3-eu-west
 
 ### Instalando e Rodando o Ghost
 
-*   Autentique-se em [http://ghost.org](http://ghost.org), e depois clique no botão 'Download Ghost Source Code'.
-*   Na página de Downloads, clique para fazer o download do arquivo zip mais recente.
+*   Na [página de Downloads](https://ghost.org/download/), clique para fazer o download do arquivo zip mais recente.
 *   Clique na seta proxima ao arquivo que foi feito download e clique em 'exibir no finder'.
 *   No finder, clique duas vezes no arquivo zip para extrai-lo.
 *   Depois, pegue a pasta extraída 'ghost-#.#.#' e arraste para a barra de abas do seu terminal. Isso fará com que seja criada uma nova aba na pasta do Ghost.

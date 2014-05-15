@@ -19,7 +19,7 @@ If you haven't already got it, head over to <http://nodejs.org> and download the
 
 For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
 
-Download the latest version of Ghost from [Ghost.org](http://ghost.org). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+Download the latest version of Ghost from [Ghost.org/download/](https://ghost.org/download/). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
 
 Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
 

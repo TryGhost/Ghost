@@ -29,8 +29,7 @@ If you get stuck you can watch the whole [process in action here](https://s3-eu-
 
 ### Install and Run Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
+*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file.
 *   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
 *   In finder, double-click on the downloaded zip file to extract it.
 *   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.

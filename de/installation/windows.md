@@ -24,8 +24,7 @@ Falls du nicht mehr weiter weißt, kannst du dir den [ganzen Prozess hier anscha
 
 ### Ghost herunterladen und extrahieren
 
-* Logge dich auf [http://ghost.org](http://ghost.org) ein und klicke auf dem blauen 'Download Ghost Source Code' button.
-* Klicke auf der Download-Seite auf den Button zum herunterladen der neuesten Zip-Datei.
+* Klicke auf [der Download-Seite](https://ghost.org/download) auf den Button zum herunterladen der neuesten Zip-Datei.
 * Klicke auf den Pfeil neben der heruntergeladenen Datei und wähle 'im Ordner anzeigen'.
 * Sobald sich der Ordner öffnet, klicke rechts auf die heruntergeladene Zip-Datei und wähle 'Alle extrahieren'.
 
