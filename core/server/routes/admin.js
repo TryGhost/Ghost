@@ -3,9 +3,11 @@ var admin       = require('../controllers/admin'),
     middleware  = require('../middleware').middleware,
 
     ONE_HOUR_S  = 60 * 60,
-    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S;
+    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
 
-module.exports = function (server) {
+    adminRoutes;
+
+adminRoutes = function (server) {
     // Have ember route look for hits first
     // to prevent conflicts with pre-existing routes
     server.get('/ghost/ember/*', admin.index);
@@ -66,3 +68,5 @@ module.exports = function (server) {
     });
     server.get('/ghost/', admin.indexold);
 };
+
+module.exports = adminRoutes;

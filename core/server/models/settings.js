@@ -80,23 +80,23 @@ Settings = ghostBookshelf.Model.extend({
         return options;
     },
 
-    findOne: function (_key) {
+    findOne: function (options) {
         // Allow for just passing the key instead of attributes
-        if (!_.isObject(_key)) {
-            _key = { key: _key };
+        if (!_.isObject(options)) {
+            options = { key: options };
         }
-        return when(ghostBookshelf.Model.findOne.call(this, _key));
+        return when(ghostBookshelf.Model.findOne.call(this, options));
     },
 
-    edit: function (_data, options) {
+    edit: function (data, options) {
         var self = this;
         options = this.filterOptions(options, 'edit');
 
-        if (!Array.isArray(_data)) {
-            _data = [_data];
+        if (!Array.isArray(data)) {
+            data = [data];
         }
 
-        return when.map(_data, function (item) {
+        return when.map(data, function (item) {
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {

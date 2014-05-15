@@ -63,18 +63,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     creating: function (newObj, attr, options) {
+        var user = options.context && options.context.user ? options.context.user : 1;
         if (!this.get('created_by')) {
-            this.set('created_by', options.user);
+            this.set('created_by', user);
         }
     },
 
     saving: function (newObj, attr, options) {
+        var user = options.context && options.context.user ? options.context.user : 1;
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
         this._updatedAttributes = newObj.previousAttributes();
 
-        this.set('updated_by', options.user);
+        this.set('updated_by', user);
     },
 
     // Base prototype properties will go here
@@ -153,8 +155,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     }
 
 }, {
-
-     // ## Model Data Functions
+    // ## Data Utility Functions
 
     /**
      * Returns an array of keys permitted in every method's `options` hash.
@@ -191,6 +192,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return filteredOptions;
     },
 
+     // ## Model Data Functions
+
     /**
      * ### Find All
      * Naive find all fetches all the data for a particular model
@@ -219,6 +222,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findOne: function (data, options) {
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
+        // We pass include to forge so that toJSON has access
         return this.forge(data, {include: options.include}).fetch(options);
     },
 
@@ -230,9 +234,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
     edit: function (data, options) {
+        var id = options.id;
         data = this.filterData(data);
         options = this.filterOptions(options, 'edit');
-        return this.forge({id: data.id}).fetch(options).then(function (object) {
+
+        return this.forge({id: id}).fetch(options).then(function (object) {
             if (object) {
                 return object.save(data, options);
             }
@@ -250,11 +256,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         data = this.filterData(data);
         options = this.filterOptions(options, 'add');
         var instance = this.forge(data);
-        // We allow you to disable timestamps
-        // when importing posts so that
-        // the new posts `updated_at` value
-        // is the same as the import json blob.
-        // More details refer to https://github.com/TryGhost/Ghost/issues/1696
+        // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
+        // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696
         if (options.importing) {
             instance.hasTimestamps = false;
         }
@@ -264,13 +267,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Destroy
      * Naive destroy
-     * @param {Object} data
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Empty Model
      */
-    destroy: function (data, options) {
+    destroy: function (options) {
+        var id = options.id;
         options = this.filterOptions(options, 'destroy');
-        return this.forge({id: data}).destroy(options);
+        return this.forge({id: id}).destroy(options);
     },
 
     /**

@@ -79,19 +79,19 @@ describe('Role Model', function () {
         }).catch(done);
     });
 
-    it('can delete', function (done) {
-        RoleModel.findOne({id: 1}).then(function (foundRole) {
+    it('can destroy', function (done) {
+        var firstRole = {id: 1};
+
+        RoleModel.findOne(firstRole).then(function (foundRole) {
             should.exist(foundRole);
+            foundRole.attributes.id.should.equal(firstRole.id);
 
-            return RoleModel.destroy(1);
-        }).then(function (destResp) {
-            return RoleModel.findAll();
-        }).then(function (foundRoles) {
-            var hasRemovedId = foundRoles.any(function (role) {
-                return role.id === 1;
-            });
-
-            hasRemovedId.should.equal(false);
+            return RoleModel.destroy(firstRole);
+        }).then(function (response) {
+            response.toJSON().should.be.empty;
+            return  RoleModel.findOne(firstRole);
+        }).then(function (newResults) {
+            should.equal(newResults, null);
 
             done();
         }).catch(done);

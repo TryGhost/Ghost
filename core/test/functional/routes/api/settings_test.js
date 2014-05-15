@@ -214,7 +214,7 @@ describe('Settings API', function () {
                     newValue = 'new value';
                 jsonResponse.should.exist;
                 should.exist(jsonResponse.settings);
-                jsonResponse.settings.push({ key: 'testvalue', value: newValue });
+                jsonResponse.settings = [{ key: 'testvalue', value: newValue }];
 
                 request.put(testUtils.API.getApiQuery('settings/'))
                     .set('X-CSRF-Token', csrfToken)

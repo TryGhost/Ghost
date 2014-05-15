@@ -15,11 +15,11 @@ api.notifications    = require('./notifications');
 api.settings         = require('./settings');
 
 db = {
-    'exportContent': function () {
-        var self = this;
+    'exportContent': function (options) {
+        options = options || {};
 
         // Export data, otherwise send error 500
-        return canThis(self.user).exportContent.db().then(function () {
+        return canThis(options.context).exportContent.db().then(function () {
             return dataExport().then(function (exportedData) {
                 return when.resolve({ db: [exportedData] });
             }).otherwise(function (error) {
@@ -30,10 +30,10 @@ db = {
         });
     },
     'importContent': function (options) {
-        var databaseVersion,
-            self = this;
+        options = options || {};
+        var databaseVersion;
 
-        return canThis(self.user).importContent.db().then(function () {
+        return canThis(options.context).importContent.db().then(function () {
             if (!options.importfile || !options.importfile.path || options.importfile.name.indexOf('json') === -1) {
                 /**
                  * Notify of an error if it occurs
@@ -46,7 +46,7 @@ db = {
                 return when.reject(new errors.InternalServerError('Please select a .json file to import.'));
             }
 
-            return api.settings.read.call({ internal: true }, { key: 'databaseVersion' }).then(function (response) {
+            return api.settings.read({key: 'databaseVersion', context: { internal: true }}).then(function (response) {
                 var setting = response.settings[0];
 
                 return when(setting.value);
@@ -108,10 +108,10 @@ db = {
             return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     },
-    'deleteAllContent': function () {
-        var self = this;
+    'deleteAllContent': function (options) {
+        options = options || {};
 
-        return canThis(self.user).deleteAllContent.db().then(function () {
+        return canThis(options.context).deleteAllContent.db().then(function () {
             return when(dataProvider.deleteAllContent())
                 .then(function () {
                     return when.resolve({ db: [] });

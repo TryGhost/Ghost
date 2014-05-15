@@ -44,7 +44,8 @@ Post = ghostBookshelf.Model.extend({
         /*jshint unused:false*/
         var self = this,
             tagsToCheck,
-            i;
+            i,
+            user = options.context && options.context.user ? options.context.user : 1;
 
         options = options || {};
         // keep tags for 'saved' event and deduplicate upper/lowercase tags
@@ -75,7 +76,7 @@ Post = ghostBookshelf.Model.extend({
                 this.set('published_at', new Date());
             }
             // This will need to go elsewhere in the API layer.
-            this.set('published_by', options.user);
+            this.set('published_by', user);
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
@@ -93,9 +94,11 @@ Post = ghostBookshelf.Model.extend({
         /*jshint unused:false*/
         options = options || {};
 
+        var user = options.context && options.context.user ? options.context.user : 1;
+
         // set any dynamic default properties
         if (!this.get('author_id')) {
-            this.set('author_id', options.user);
+            this.set('author_id', user);
         }
 
         ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
@@ -105,7 +108,7 @@ Post = ghostBookshelf.Model.extend({
      * ### updateTags
      * Update tags that are attached to a post.  Create any tags that don't already exist.
      * @param {Object} newPost
-     * @param {Object} attr 
+     * @param {Object} attr
      * @param {Object} options
      * @return {Promise(ghostBookshelf.Models.Post)} Updated Post model
      */
@@ -243,8 +246,14 @@ Post = ghostBookshelf.Model.extend({
         return filteredData;
     },
 
-    // #### findAll
-    // Extends base model findAll to eager-fetch author and user relationships.
+    // ## Model Data Functions
+
+    /**
+     * ### Find All
+     *
+     * @param options
+     * @returns {*}
+     */
     findAll:  function (options) {
         options = options || {};
         options.withRelated = _.union([ 'tags', 'fields' ], options.include);
@@ -252,24 +261,24 @@ Post = ghostBookshelf.Model.extend({
     },
 
 
-     // #### findPage
-     // Find results by page - returns an object containing the
-     // information about the request (page, limit), along with the
-     // info needed for pagination (pages, total).
-
-     // **response:**
-
-     //     {
-     //         posts: [
-     //         {...}, {...}, {...}
-     //     ],
-     //     page: __,
-     //     limit: __,
-     //     pages: __,
-     //     total: __
-     //     }
-
-    /*
+    /**
+     * #### findPage
+     * Find results by page - returns an object containing the
+     * information about the request (page, limit), along with the
+     * info needed for pagination (pages, total).
+     *
+     * **response:**
+     *
+     *     {
+     *         posts: [
+     *         {...}, {...}, {...}
+     *     ],
+     *     page: __,
+     *     limit: __,
+     *     pages: __,
+     *     total: __
+     *     }
+     *
      * @params {Object} options
      */
     findPage: function (options) {
@@ -377,22 +386,23 @@ Post = ghostBookshelf.Model.extend({
                     meta = {},
                     data = {};
 
-                pagination['page'] = parseInt(options.page, 10);
-                pagination['limit'] = options.limit;
-                pagination['pages'] = calcPages === 0 ? 1 : calcPages;
-                pagination['total'] = totalPosts;
-                pagination['next'] = null;
-                pagination['prev'] = null;
+                pagination.page = parseInt(options.page, 10);
+                pagination.limit = options.limit;
+                pagination.pages = calcPages === 0 ? 1 : calcPages;
+                pagination.total = totalPosts;
+                pagination.next = null;
+                pagination.prev = null;
 
+                // Pass include to each model so that toJSON works correctly
                 if (options.include) {
                     _.each(postCollection.models, function (item) {
                         item.include = options.include;
                     });
                 }
 
-                data['posts'] = postCollection.toJSON();
-                data['meta'] = meta;
-                meta['pagination'] = pagination;
+                data.posts = postCollection.toJSON();
+                data.meta = meta;
+                meta.pagination = pagination;
 
                 if (pagination.pages > 1) {
                     if (pagination.page === 1) {
@@ -406,9 +416,9 @@ Post = ghostBookshelf.Model.extend({
                 }
 
                 if (tagInstance) {
-                    meta['filters'] = {};
+                    meta.filters = {};
                     if (!tagInstance.isNew()) {
-                        meta.filters['tags'] = [tagInstance.toJSON()];
+                        meta.filters.tags = [tagInstance.toJSON()];
                     }
                 }
 
@@ -417,59 +427,76 @@ Post = ghostBookshelf.Model.extend({
             .catch(errors.logAndThrowError);
     },
 
-    //    #### findOne
-    //    Extends base model read to eager-fetch author and user relationships.
-    findOne: function (args, options) {
+    /**
+     * ### Find One
+     * @extends ghostBookshelf.Model.findOne to handle post status
+     * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
+     */
+    findOne: function (data, options) {
         options = options || {};
 
-        args = _.extend({
+        data = _.extend({
             status: 'published'
-        }, args || {});
+        }, data || {});
 
-        if (args.status === 'all') {
-            delete args.status;
+        if (data.status === 'all') {
+            delete data.status;
         }
 
         // Add related objects
         options.withRelated = _.union([ 'tags', 'fields' ], options.include);
 
-        return ghostBookshelf.Model.findOne.call(this, args, options);
+        return ghostBookshelf.Model.findOne.call(this, data, options);
     },
 
-    add: function (newPostData, options) {
+    /**
+     * ### Edit
+     * @extends ghostBookshelf.Model.edit to handle returning the full object and manage _updatedAttributes
+     * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
+     */
+    edit: function (data, options) {
         var self = this;
         options = options || {};
 
-        return ghostBookshelf.Model.add.call(this, newPostData, options).then(function (post) {
-            return self.findOne({status: 'all', id: post.id}, options);
-        });
-    },
-    edit: function (editedPost, options) {
-        var self = this;
-        options = options || {};
-        return ghostBookshelf.Model.edit.call(this, editedPost, options).then(function (post) {
-            if (post) {
-                return self.findOne({status: 'all', id: post.id}, options)
-                    .then(function (found) {
+        return ghostBookshelf.Model.edit.call(this, data, options).then(function (post) {
+            return self.findOne({status: 'all', id: options.id}, options)
+                .then(function (found) {
+                    if (found) {
                         // Pass along the updated attributes for checking status changes
                         found._updatedAttributes = post._updatedAttributes;
                         return found;
-                    });
-            }
+                    }
+                });
         });
     },
-    destroy: function (_identifier, options) {
+
+    /**
+     * ### Add
+     * @extends ghostBookshelf.Model.add to handle returning the full object
+     * **See:** [ghostBookshelf.Model.add](base.js.html#add)
+     */
+    add: function (data, options) {
+        var self = this;
+        options = options || {};
+
+        return ghostBookshelf.Model.add.call(this, data, options).then(function (post) {
+            return self.findOne({status: 'all', id: post.id}, options);
+        });
+    },
+
+    /**
+     * ### Destroy
+     * @extends ghostBookshelf.Model.destroy to clean up tag relations
+     * **See:** [ghostBookshelf.Model.destroy](base.js.html#destroy)
+     */
+    destroy: function (options) {
+        var id = options.id;
         options = this.filterOptions(options, 'destroy');
 
-        return this.forge({id: _identifier}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
-            var tagIds = _.pluck(post.related('tags').toJSON(), 'id');
-            if (tagIds) {
-                return post.tags().detach(tagIds).then(function destroyPost() {
-                    return post.destroy(options);
-                });
-            }
-
-            return post.destroy(options);
+        return this.forge({id: id}).fetch({withRelated: ['tags']}).then(function destroyTagsAndPost(post) {
+            return post.related('tags').detach().then(function () {
+                return post.destroy(options);
+            });
         });
     },
 
