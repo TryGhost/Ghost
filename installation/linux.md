@@ -24,8 +24,7 @@ next_section: deploy
 
 **If you are using Linux on your desktop follow these steps:**
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
 
 
 **If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
@@ -58,7 +57,7 @@ next_section: deploy
     ```
     <span class="note">note the two dashes</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode: 
+*   When npm is finished installing, type the following to start Ghost in development mode:
 
     ```
     $ npm start

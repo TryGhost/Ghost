@@ -30,8 +30,7 @@ Se hai problemi e non sai come andare avanti puoi guardare [l'intero processo in
 
 ### Installa e Lancia Ghost
 
-*   Loggati sul sito [http://ghost.org](http://ghost.org) e clicca il pulsante blu 'Download Ghost Source Code'.
-*   Nella pagina download, premi il pulsante per scaricare il file zip più recente.
+*   Nella [pagina download](https://ghost.org/download/), premi il pulsante per scaricare il file zip più recente.
 *   Clicca sulla freccia a fianco del file appena scaricato, e seleziona 'mostra nel finder'.
 *   Nel finder, fai doppio-click sullo zip scaricato per estrarlo.
 *   Dopodich&egrave;, prendi la cartella 'ghost-#.#.#' appena estratta e trascinala nella barra delle tab del terminale, in modo che venga aperta una nuova tab del terminale nella posizione corretta.

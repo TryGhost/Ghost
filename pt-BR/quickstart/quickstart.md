@@ -18,9 +18,9 @@ Ghost requer o node `0.10.*` (a última versão estável).
 
 Se você ainda não tem, entre no site <http://nodejs.org> e baixe a última versão do Node.js. O instalador irá preparar tanto o Node, quanto seu excelente gerenciador de pacotes, o npm.
 
-Para usuário do Linux, For users on Linux, ao invés de instalar o arquivo .tar.gz, você pode preferir [instalar utilizando o gerenciador de pacotes](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+Para usuário do Linux, ao invés de instalar o arquivo .tar.gz, você pode preferir [instalar utilizando o gerenciador de pacotes](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
 
-Baixe a última versão do Ghost no [Ghost.org](http://ghost.org). Extraia o arquivo para a pasta que vcoê quer rodar o Ghost - qualquer lugar serve!
+Baixe a última versão do Ghost no [Ghost.org/download/](https://ghost.org/download/). Extraia o arquivo para a pasta que vcoê quer rodar o Ghost - qualquer lugar serve!
 
 Abra seu terminal (mac/linux) ou o promt de comando (windows) e navegue até o diretório raiz que você extraiu o arquivo do Ghost (aonde vive o arquivo package.json).
 

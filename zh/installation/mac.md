@@ -20,7 +20,7 @@ next_section: windows
 ### 安装 Node
 
 *   访问 [http://nodejs.org](http://nodejs.org) 点击 install，将会下载一个 '.pkg' 文件
-*   点击下载的文件打开安装程序，将会同时安装 node 和 npm 
+*   点击下载的文件打开安装程序，将会同时安装 node 和 npm
 *   点击安装程序，最后输入你的密码，并点击 “安装软件”
 *   一旦安装成功，在终端窗口中输入 `echo $PATH` 检查 '/usr/local/bin/' 路径已经存在于环境变量中
 
@@ -30,9 +30,8 @@ next_section: windows
 
 ### 安装并运行 Ghost
 
-*   登录到 [http://ghost.org](http://ghost.org)，然后点击蓝色的 'Download Ghost Source Code' 按钮
-*   在下载页，点击下载最新的 zip 压缩文件
-*   点击最新下载的文件的下拉箭头，选择 '在文件夹中显示' 
+*   在[下载页](https://ghost.org/download/)，点击下载最新的 zip 压缩文件
+*   点击最新下载的文件的下拉箭头，选择 '在文件夹中显示'
 *   双击下载的 zip 文件解压它
 *   然后，将解压的 'ghost-#.#.#' 文件拖放到打开的终端窗口的标签页上，此时会在该路径下打开一个新的终端标签页
 *   在新的终端标签页输入 `npm install --production` <span class="note">注意是两个 `-`</span>

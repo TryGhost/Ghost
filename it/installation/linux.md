@@ -24,8 +24,7 @@ next_section: deploy
 
 **Se stai usando Linux sul tuo desktop, segui le seguenti istruzioni:**
 
-*  Registrati su [http://ghost.org](http://ghost.org), e clicca sul pulsante blu 'Download Ghost Source Code'.
-*  Nella pagina dei download, premi il pulsante per scaricare l'ultimo file zip ed estrailo nella cartella da cui vuoi eseguire Ghost.
+*  Nella [pagina dei download](https://ghost.org/download/), premi il pulsante per scaricare l'ultimo file zip ed estrailo nella cartella da cui vuoi eseguire Ghost.
 
 
 **Se hai accesso a Linux soltanto come ospite o tramite ssh, e quindi hai a disposizione soltanto il terminale, allora segui queste istruzioni:**

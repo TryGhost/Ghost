@@ -23,8 +23,7 @@ If you get stuck you can watch the whole [process in action here](https://s3-eu-
 
 ### Download & Extract Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
+*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file.
 *   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
 *   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
 

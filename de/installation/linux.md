@@ -23,8 +23,7 @@ next_section: deploy
 
 **Wenn du Linux als Desktop verwendest gehe wie folgt vor:**
 
-* Logge dich auf [http://ghost.org](http://ghost.org) ein und klicke auf dem blauen 'Download Ghost Source Code' button.
-* Klicke auf der Download-Seite auf den Button zum herunterladen der neuesten Zip-Datei und extrahiere sie an den Ort, von dem du Ghost starten willst
+* Klicke auf [der Download-Seite](https://ghost.org/download) auf den Button zum herunterladen der neuesten Zip-Datei und extrahiere sie an den Ort, von dem du Ghost starten willst
 
 **Wenn du Linux als Gast-Betriebssystem verwendest oder über SHH und nur einen Terminal hast, dann:**
 

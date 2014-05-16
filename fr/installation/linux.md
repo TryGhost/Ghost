@@ -22,8 +22,7 @@ next_section: deploy
 
 ### Installer et lancer Ghost
 
-*   Rendez-vous sur [http://ghost.org](http://ghost.org), et cliquez sur le bouton bleu 'Download Ghost Source Code'
-*   Sur la page de téléchargements, cliquez sur le bouton pour télécharger le dernier fichier zip et décompresez le à l'endroit où vous souhaitez que Ghost tourne
+*   Sur [la page de téléchargements](https://ghost.org/download/), cliquez sur le bouton pour télécharger le dernier fichier zip et décompresez le à l'endroit où vous souhaitez que Ghost tourne
 *   Dans une fenêtre de terminal, changez le répertoire vers la racine du dossier Ghost juste extrait
 *   Dans le terminal, tapez `npm install --production` <span class="note">notez les deux tirets</span>
 *   Quand NPM a fini d'installer, tapez `npm start` pour démarrer Ghost en mode développement
