@@ -4,9 +4,7 @@
 var _                   = require('lodash'),
     when                = require('when'),
     Models              = require('../models'),
-    objectTypeModelMap  = require('./objectTypeModelMap'),
     effectivePerms      = require('./effective'),
-    PermissionsProvider = Models.Permission,
     init,
     refresh,
     canThis,
@@ -52,6 +50,9 @@ CanThisResult = function () {
 };
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type, context, permissionLoad) {
+    // @TODO: remove this lazy require
+    var objectTypeModelMap  = require('./objectTypeModelMap');
+
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(obj_types, function (obj_type_handlers, obj_type) {
         // Grab the TargetModel through the objectTypeModelMap
@@ -201,7 +202,7 @@ canThis = function (context) {
 
 init = refresh = function () {
     // Load all the permissions
-    return PermissionsProvider.findAll().then(function (perms) {
+    return Models.Permission.findAll().then(function (perms) {
         var seenActions = {};
 
         exported.actionsMap = {};

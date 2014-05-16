@@ -8,7 +8,7 @@ var testUtils = require('../utils'),
     _         = require('lodash'),
 
     // Stuff we are testing
-    knex        = require('../../server/models/base').knex,
+    config      = require('../../server/config'),
     migration   = require('../../server/data/migration'),
     versioning  = require('../../server/data/versioning'),
     exporter    = require('../../server/data/export'),
@@ -23,7 +23,8 @@ describe('Import', function () {
     should.exist(exporter);
     should.exist(importer);
 
-    var sandbox;
+    var sandbox,
+        knex = config().database.knex;
 
     beforeEach(function (done) {
         sandbox = sinon.sandbox.create();

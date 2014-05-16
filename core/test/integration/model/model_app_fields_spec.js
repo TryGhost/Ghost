@@ -4,8 +4,7 @@ var testUtils = require('../../utils'),
     _ = require("lodash"),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    knex = require('../../../server/models/base').knex;
+    Models = require('../../../server/models');
 
 describe('App Fields Model', function () {
 
