@@ -1,7 +1,7 @@
 var _          = require('lodash'),
     when       = require('when'),
     versioning = require('../versioning'),
-    knex       = require('../../models/base').knex,
+    config     = require('../../config'),
     utils      = require('../utils'),
 
     excludedTables = ['sessions'],
@@ -13,7 +13,7 @@ exporter = function () {
             tables = results[1],
             selectOps = _.map(tables, function (name) {
                 if (excludedTables.indexOf(name) < 0) {
-                    return knex(name).select();
+                    return config().database.knex(name).select();
                 }
             });
 
