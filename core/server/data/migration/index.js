@@ -7,7 +7,7 @@ var _               = require('lodash'),
     sequence        = require('when/sequence'),
 
     versioning      = require('../versioning'),
-    Settings        = require('../../models/settings').Settings,
+    models          = require('../../models'),
     fixtures        = require('../fixtures'),
     schema          = require('../schema').tables,
     dataExport      = require('../export'),
@@ -141,7 +141,7 @@ migrateUpFreshDb = function () {
         // Load the fixtures
         return fixtures.populateFixtures().then(function () {
             // Initialise the default settings
-            return Settings.populateDefaults();
+            return models.Settings.populateDefaults();
         });
     });
 };
