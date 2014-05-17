@@ -4,7 +4,7 @@
 var Router = Ember.Router.extend();
 
 Router.reopen({
-    location: 'history', // use HTML5 History API instead of hash-tag based URLs
+    location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
     rootURL: '/ghost/ember/' // admin interface lives under sub-directory /ghost
 });
 
