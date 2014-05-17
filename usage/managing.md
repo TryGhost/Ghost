@@ -35,8 +35,19 @@ This will set the save state to 'Publish Now' and the button will turn Red, once
 To change the "Slug" or "Publish date" of a post once published;
 
 1.  Click the 'Settings' icon.
-2.  Proceed to update the information as required (this will be saved automatically when you naviagte away).
-<img style="max-width:100%;" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" /> 
+2.  Proceed to update the information as required (this will be saved automatically when you navigate away).
+<img style="max-width:100%;" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/updateSlug.gif" />
+
+### Tag a Post
+
+While editing or creating a new Post:
+1.  Click the Tag icon in the bottom left
+2.  Type out a tag for your post
+3.  Hit the enter key.
+
+You may enter multiple tag words or phrases, separated by the enter key.
+
+<img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/tag-management.gif" />
 
 ### Delete a Post
 
@@ -44,4 +55,4 @@ To change the "Slug" or "Publish date" of a post once published;
 2.  Click "Delete".
 3.  Accept the Modal
 <img width="100%" src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/deletePost.gif" />
- 
+
