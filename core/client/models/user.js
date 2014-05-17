@@ -32,7 +32,7 @@ var UserModel = BaseModel.extend({
         }
 
         if (this.get('website').length) {
-            if (!validator.isURL(this.get('website')) ||
+            if (!validator.isURL(this.get('website'), { protocols: ['http', 'https'], require_protocol: true }) ||
                 !validator.isLength(this.get('website'), 0, 2000)) {
                 validationErrors.push({message: "Please use a valid url"});
             }
