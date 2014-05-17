@@ -20,7 +20,7 @@
   by GhostPopover
 */
 .navbar .subnav ul {
-    display: block;
+    display: none;
 }
 
 /*
@@ -34,6 +34,11 @@
 .ghost-popover.open {
     display: block;
 }
+
+.navbar .subnav .open {
+    display: block;
+}
+
 .fade-in {
     animation: fadein 0.5s;
     -moz-animation: fadein 0.5s; /* Firefox */
