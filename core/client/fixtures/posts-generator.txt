@@ -1,0 +1,131 @@
+Fixtures for the Ghost blogging platform, intended to be generated with http://www.json-generator.com/
+
+{
+    posts: [
+        '{{repeat(30)}}',
+        {
+            id: '{{index()}}',
+            uuid: '{{guid()}}',
+            status: '{{random("published ", "draft")}}',
+            title: '{{lorem( integer(1, 10), "words")}}',
+            slug: function(tag, index){
+                return this.title.replace(/ /g, '-');
+            },
+            markdown: '{{lorem( integer(1, 10), "paragraphs")}}',
+            html: function(tag, index){
+                return "<p>" + this.markdown + "</p>";
+            },
+            image: null,
+            featured: '{{integer(0, 1)}}',
+            page: '{{integer(0, 10)}}',
+            language: "en_US",
+            meta_title: null,
+            meta_description: null,
+            author: {
+                id: '{{integer(0, 10)}}',
+                uuid: '{{guid()}}',
+                name: '{{firstName()}} {{surname()}}',
+                slug:  function(tag, index){
+                    return this.name.replace(/ /g, '-').toLocaleLowerCase();
+                },
+                email: '{{email()}}',
+                image: undefined,
+                cover: undefined,
+                bio: '{{lorem(5, 50, "words")}}',
+                website: "",
+                location: '{{lorem( integer(1, 3), "words")}}',
+                accessibility: undefined,
+                status: "active",
+                language: "en_US",
+                meta_title: undefined,
+                meta_description: undefined,
+                created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}'
+            },
+            created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+            created_by: {
+                id: '{{integer(0, 10)}}',
+                uuid: '{{guid()}}',
+                name: '{{firstName()}} {{surname()}}',
+                slug:  function(tag, index){
+                    return this.name.replace(/ /g, '-').toLocaleLowerCase();
+                },
+                email: '{{email()}}',
+                image: undefined,
+                cover: undefined,
+                bio: '{{lorem(5, 50, "words")}}',
+                website: "",
+                location: '{{lorem( integer(1, 3), "words")}}',
+                accessibility: undefined,
+                status: "active",
+                language: "en_US",
+                meta_title: undefined,
+                meta_description: undefined,
+                created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}'
+            },
+            updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+            updated_by: {
+                id: '{{integer(0, 10)}}',
+                uuid: '{{guid()}}',
+                name: '{{firstName()}} {{surname()}}',
+                slug:  function(tag, index){
+                    return this.name.replace(/ /g, '-').toLocaleLowerCase();
+                },
+                email: '{{email()}}',
+                image: undefined,
+                cover: undefined,
+                bio: '{{lorem(5, 50, "words")}}',
+                website: "",
+                location: '{{lorem( integer(1, 3), "words")}}',
+                accessibility: undefined,
+                status: "active",
+                language: "en_US",
+                meta_title: undefined,
+                meta_description: undefined,
+                created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}'
+            },
+            published_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+            published_by: {
+                id: '{{integer(0, 10)}}',
+                uuid: '{{guid()}}',
+                name: '{{firstName()}} {{surname()}}',
+                slug:  function(tag, index){
+                    return this.name.replace(/ /g, '-').toLocaleLowerCase();
+                },
+                email: '{{email()}}',
+                image: undefined,
+                cover: undefined,
+                bio: '{{lorem(5, 50, "words")}}',
+                website: "",
+                location: '{{lorem( integer(1, 3), "words")}}',
+                accessibility: undefined,
+                status: "active",
+                language: "en_US",
+                meta_title: undefined,
+                meta_description: undefined,
+                created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}'
+            },
+            tags: [
+                '{{repeat(0, 10)}}',
+                {
+                    id: '{{integer(0, 100)}}',
+                    uuid: '{{guid()}}',
+                    name: '{{lorem( integer(1, 3), "words")}}',
+                    slug: function(tag, index){
+                        return this.name.replace(/ /g, '-').toLocaleLowerCase();
+                    },
+                    description: null,
+                    parent_id: null,
+                    meta_title: null,
+                    meta_description: null,
+                    created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                    created_by: '{{integer(0, 10)}}',
+                    updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
+                    updated_by: '{{integer(0, 10)}}'
+                }
+            ]
+        }]
+}
