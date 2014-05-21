@@ -1,6 +1,6 @@
 # Dependencies
 markdown:           rdiscount
-pygments:           true
+highlighter:        pygments
 
 # Permalinks
 permalink:          pretty
@@ -9,7 +9,7 @@ permalink:          pretty
 source:             ./docs
 destination:        ./_gh_pages
 host:               0.0.0.0
-port:               9001
+port:               9008
 baseurl:            /
 url:                http://localhost:9001
 encoding:           UTF-8

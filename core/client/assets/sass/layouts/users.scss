@@ -1,6 +1,16 @@
-//
-// Users
-// --------------------------------------------------
+/*
+ * Users screen styles
+ *
+ * Table of Contents
+ *
+ * Users
+ * User Profile
+ */
+
+
+/* ==========================================================================
+   Users
+   ========================================================================== */
 
 .settings {
 
@@ -33,7 +43,6 @@
         }
 
         .user-search-input {
-            @include box-sizing(border-box);
             width: 0px;
             padding: 0;
             border: none;
@@ -54,7 +63,6 @@
     }
 
     .user {
-        @include box-sizing(border-box);
         display: block;
         width: 100%;
         padding: 20px;
@@ -75,7 +83,6 @@
             border-radius: 20px;
 
             &.invite {
-                @include box-sizing(border-box);
                 padding-top: 8px;
                 text-align: center;
                 @include icon($i-mail, 1em, $brown);
@@ -162,7 +169,9 @@
             color 0.3s ease,
             background 0.3s ease
         );
-        @include breakpoint($netbook) { right: 15px;}
+        @media (max-width: 1000px) {
+            right: 15px;
+        }
 
         &:hover {
             color: #fff;
@@ -190,7 +199,6 @@
     }
 
     .user-image {
-        @include box-sizing(border-box);
         display: block;
         position: relative;
         width: 120px;
@@ -242,4 +250,4 @@
         margin: -30px 0 0 0;
     }
 
-} //.settings
+} // .settings

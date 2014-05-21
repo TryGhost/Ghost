@@ -1,0 +1,60 @@
+/*
+ * Global styles for Ghost which are used throughout the admin interface
+ * Utility classes defined here to keep other libraries (Normalize) from
+ * being modified, preventing upgrade later.
+ *
+ * Table of Contents
+ *
+ * Box Sizing
+ * Text Selection
+ * Colour Classes
+ */
+
+/* ==========================================================================
+   Box Sizing
+   ---
+   Apple `border-box` globally
+   ========================================================================== */
+
+*,
+*:before,
+*:after {
+    @include box-sizing(border-box);
+}
+
+
+/* ==========================================================================
+   Text Selection
+   ---
+   These colours do not differ much from browser defaults, but
+   this makes it consistent & predicable.
+   ========================================================================== */
+
+::-moz-selection {
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
+}
+
+::selection {
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
+}
+
+
+/* ==========================================================================
+   Color Classes
+   ---
+   Pragmatically generate classes for background & text colour, based on
+   `$list-colours` in `variables.scss`
+   ========================================================================== */
+
+@each $colour in $list-colours {
+    .#{nth($colour, 1)}-bg {
+        background: nth($colour, 2);
+    }
+    .#{nth($colour, 1)} {
+        color: nth($colour, 2);
+    }
+}

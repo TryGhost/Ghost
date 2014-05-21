@@ -1,34 +1,65 @@
-//
-// Ground Zero - This is where shit begins.
-// --------------------------------------------------
+/*
+ * Ground Zero - This is where it begins.
+ * Every Sass file is imported here
+ *
+ * Table of Contents
+ *
+ * Variables & Mixin Libraries
+ * Libraries
+ * Modules
+ * Layouts
+ */
 
-// Modules - These styles are re-used in many areas, grouped by type.
 
-@import "normalize";
-@import "modules/variables";
-@import "modules/mixins";
-@import "modules/icons";
+/* ==========================================================================
+   Variables & Mixins
+   ========================================================================== */
+
+@import "_bourbon"; // via Bower http://bourbon.io/
+@import "helpers/variables";
+@import "helpers/mixins";
+
+
+/* ==========================================================================
+   Libraries
+   ========================================================================== */
+
+@import "normalize"; // via Bower
+
+
+/* ==========================================================================
+   Modules
+   ========================================================================== */
+
+@import "modules/base";
+@import "modules/layout";
+@import "modules/utility";
 @import "modules/animations";
-@import "modules/global";
-@import "modules/code";
-@import "modules/forms";
+@import "modules/icons";
 @import "modules/buttons";
+@import "modules/typography";
 @import "modules/tables";
-@import "modules/navs";
-@import "modules/navbar";
+@import "modules/forms";
+@import "modules/floatingheaders";
+@import "modules/modals";
 @import "modules/dropdowns";
 @import "modules/notifications";
-@import "modules/modals";
+@import "modules/objectlist";
+@import "modules/rolelables";
 @import "modules/uploader";
+@import "modules/navbar";
+@import "modules/navs";
+@import "modules/nprogress";
 
-// Layouts - Styles for specific admin screen layouts, grouped by screen.
 
+/* ==========================================================================
+   Layouts
+   ========================================================================== */
+
+@import "layouts/auth";
 @import "layouts/content";
 @import "layouts/editor";
-@import "layouts/auth";
 @import "layouts/errors";
-
-// Settings Layouts - Styles for the settings panes, grouped by pane.
-
 @import "layouts/settings";
+@import "layouts/setup";
 @import "layouts/users";

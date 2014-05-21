@@ -1,11 +1,25 @@
-//
-// The Editor
-// --------------------------------------------------
+/*
+ * Editor screen styles
+ *
+ * Table of Contents
+ *
+ * Editor
+ * Post Preview Content
+ * Full Screen Mode
+ * Publish Bar
+ * Markdown Help Modal
+ * CodeMirror
+ */
+
+
+/* ==========================================================================
+   Editor
+   ========================================================================== */
 
 .editor {
 
     .notifications {
-        @include breakpoint($biggerthan-mobile) {
+        @media (min-width: 401px) {
             bottom: 40px;
         }
     }
@@ -13,12 +27,12 @@
     // The main post title
     .entry-title {
         @extend .box;
-        height: 53px;
+        height: 57px;
         padding: 2px 15px;
         margin-bottom: 5px;
         position: relative;
 
-        @include breakpoint($mobile) {
+        @media (max-width: 400px) {
             box-shadow: none;
         }
 
@@ -49,7 +63,6 @@
 
     // The visual styles for both panels
     .entry-markdown, .entry-preview {
-        @include box-sizing(border-box);
         width: 50%;
         padding: 15px;
         position: absolute;
@@ -58,12 +71,12 @@
         background: #fff;
         box-shadow: $shadow;
 
-        @include breakpoint($mobile) {
+        @media (max-width: 400px) {
             box-shadow: none;
         }
 
         // Convert all content areas to small boxes
-        @include breakpoint($netbook) {
+        @media (max-width: 1000px) {
             top: 109px;
             left: 0;
             right: 0;
@@ -81,7 +94,7 @@
 
             // Turn headers into tabs which act as links
             // both headers set to grey/inactive colour
-            @include breakpoint($netbook) {
+            @media (max-width: 1000px) {
                 cursor: pointer;
                 width: 50%;
                 border-right: $lightbrown 2px solid;
@@ -135,7 +148,7 @@
 
         // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
         &.active header {
-            @include breakpoint($netbook) {
+            @media (max-width: 1000px) {
                 cursor: auto;
                 color: $brown;
                 background: #fff;
@@ -147,7 +160,7 @@
         }
 
         // Hide markdown icon + wordcount when we hit mobile
-        @include breakpoint($mobile) {
+        @media (max-width: 400px) {
             .markdown-help,
             .entry-word-count {
                 display: none;
@@ -204,12 +217,12 @@
 
         .CodeMirror-lines {
             padding: 65px 0 40px 0; /* Vertical padding around content */
-            @include breakpoint($netbook) {padding-top: 25px;}
-            @include breakpoint($mobile) {padding: 15px 0;}
+            @media (max-width: 1000px) {padding-top: 25px;}
+            @media (max-width: 400px) {padding: 15px 0;}
         }
         .CodeMirror pre {
             padding: 0 40px; /* Horizontal padding of content */
-            @include breakpoint($mobile) {padding: 0 15px;}
+            @media (max-width: 400px) {padding: 0 15px;}
         }
 
         .cm-header {
@@ -242,7 +255,7 @@
     .entry-preview {
         // Align the tab of entry-preview on the right
         .floatingheader {
-            @include breakpoint($netbook) {
+            @media (max-width: 1000px) {
                 right: 0;
                 left: auto;
                 border-right: none;
@@ -264,8 +277,12 @@
             cursor: default;
 
             // Tweak padding for smaller screens
-            @include breakpoint($netbook) {padding-top: 20px;}
-            @include breakpoint($mobile) {padding: 15px;}
+            @media (max-width: 1000px) {
+                padding-top: 20px;
+            }
+            @media (max-width: 400px) {
+                padding: 15px;
+            }
         }
     }
 
@@ -273,24 +290,26 @@
     .scrolling {
 
         .floatingheader {
-            @include breakpoint($netbook) {
+            @media (max-width: 1000px) {
                 box-shadow: none;
             }
 
             &::before,
             &::after {
-                @include breakpoint($netbook) {display: none;}
+                @media (max-width: 1000px) {
+                    display: none;
+                }
             }
         }
         .CodeMirror-scroll,
         .entry-preview-content {
-            @include breakpoint($netbook) {
+            @media (max-width: 1000px) {
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
         }
     }
 
-}//.editor
+} // .editor
 
 
 /* =============================================================================
@@ -310,7 +329,7 @@
     }
     p {
         margin: 1.2em 0 1.6em;
-        &:first-child {
+        &:first-of-type {
             margin-top: 0;
         }
     }
@@ -362,16 +381,26 @@
 
 body.zen {
     background: lighten($lightbrown, 3%);
-    .usermenu {display: none;}
-    #global-header, #publish-bar {
+    .usermenu {
+        display: none;
+    }
+    #global-header,
+    #publish-bar {
         opacity: 0;
         height: 0;
         overflow: hidden;
         @include transition(all 0.5s ease-out);
     }
 
-    main {top: 15px;@include transition(all 0.5s ease-out);}
-    .entry-markdown, .entry-preview {bottom: 0;@include transition(all 0.5s ease-out);}
+    main {
+        top: 15px;
+        @include transition(all 0.5s ease-out);
+    }
+    .entry-markdown,
+    .entry-preview {
+        bottom: 0;
+        @include transition(all 0.5s ease-out);
+    }
 
 }
 
@@ -381,7 +410,6 @@ body.zen {
    ============================================================================= */
 
 #publish-bar {
-    @include box-sizing(border-box);
     height: 40px;
     padding: 0;
     color: $midgrey;
@@ -394,7 +422,9 @@ body.zen {
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
     @include transform(translateZ(0));
 
-    @include breakpoint($netbook) {font-weight: normal;}
+    @media (max-width: 1000px) {
+        font-weight: normal;
+    }
 
     .post-settings {
         &:hover,
@@ -418,7 +448,9 @@ body.zen {
         border-top: rgba(255,255,255,0.4) 1px solid;
     }
 
-    .button-link { border-top: none; }
+    .button-link {
+        border-top: none;
+    }
 
     .options {
         width: 30px;
@@ -441,7 +473,7 @@ body.zen {
             bottom: 140%;
             right: -3%;
 
-            a{
+            a {
                 font-size: 14px;
             }
         }
@@ -461,7 +493,8 @@ body.zen {
         width: 281px;
     }
 
-    .tag-label, .tag-label.touch {
+    .tag-label,
+    .tag-label.touch {
         color: #fff;
     }
 
@@ -498,7 +531,7 @@ body.zen {
         z-index: 9999;
         pointer-events: none;
 
-        @include breakpoint($mobile) {
+        @media (max-width: 400px) {
             right: 161px;
         }
     }
@@ -510,7 +543,7 @@ body.zen {
         width: auto;
         max-width: 80%;
         max-width: calc(100% - 320px);
-        height: 26px;
+        height: 22px;
         padding-left: 5px;
         padding-bottom: 20px;
         overflow-x: auto;
@@ -519,8 +552,7 @@ body.zen {
         white-space: nowrap;
         @include transition(width 0.2s linear);
 
-        @include breakpoint($mobile) {
-            @include box-sizing(border-box);
+        @media (max-width: 400px) {
             display: block;
             width: 115px;
             max-width: inherit;
@@ -567,15 +599,13 @@ body.zen {
             @include transition;
         }
         display: inline;
-        margin-right: 5px;
+        margin-right: 2px;
         padding: 0 5px;
         color: $lightgrey;
         white-space: nowrap;
         background: lighten($grey, 15%);
         border-radius: $rounded;
-        box-shadow:
-            rgba(255,255,255,0.2) 0 1px 0 inset,
-            #000 0 1px 3px;
+        box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
 
         @include user-select(none);
 
@@ -597,9 +627,7 @@ body.zen {
 
   li.selected{
     background: $blue;
-    box-shadow:
-        rgba(255,255,255,0.2) 0 1px 0 inset,
-        rgba(0,0,0,0.5) 0 1px 5px;
+    box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, rgba(0,0,0,0.5) 0 1px 5px;
   }
 
   li a {
@@ -615,7 +643,6 @@ body.zen {
 }
 
 #entry-controls {
-    @include box-sizing(border-box);
     display: inline-block;
     position: relative;
     padding: 0;

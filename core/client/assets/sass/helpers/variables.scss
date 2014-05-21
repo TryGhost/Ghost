@@ -1,0 +1,66 @@
+/*
+ * Variables used in Ghost-UI
+ *
+ * Table of Contents
+ *
+ * Misc Default Values
+ * Pixel Densities
+ * Colours
+ * Typography
+ */
+
+
+/* ==========================================================================
+   Misc Default Values
+   ========================================================================== */
+
+$rounded: 2px;
+$shadow: rgba(0,0,0,0.05) 0 1px 5px;
+$default-transition-duration: 0.3s;
+
+
+/* ==========================================================================
+   Pixel Densities
+   ========================================================================== */
+
+$at2x: 2 device-pixel-ratio;
+
+
+/* ==========================================================================
+   Colours
+   ========================================================================== */
+
+$darkgrey: #242628;
+$grey: #35393b;
+$midgrey: #7d878a;
+$lightgrey: #e2edf2;
+$brown: #aaa9a2;
+$midbrown: #c0bfb6;
+$lightbrown: #edece4;
+$blue: #5BA4E5;
+$red: #e25440;
+$orange: #F2A925;
+$green: #9FBB58;
+
+$list-colours: 
+    ('darkgrey' $darkgrey)
+    ('grey' $grey)
+    ('midgrey' $midgrey)
+    ('lightgrey' $lightgrey)
+    ('brown' $brown)
+    ('midbrown' $midbrown)
+    ('lightbrown' $lightbrown)
+    ('blue' $blue)
+    ('red' $red)
+    ('orange' $orange)
+    ('green' $green);
+
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+$font-family: 'Open Sans', sans-serif;
+$font-family-sans: $font-family;
+$font-family-serif: serif;
+$font-family-mono: Inconsolata, monospace;

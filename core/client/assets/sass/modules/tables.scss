@@ -1,11 +1,21 @@
-//
-// Tables
-// --------------------------------------------------
+/*
+ * Table classes
+ *
+ * Table of Contents
+ *
+ * Base Styles
+ * Styles Tables
+ * Raw Tables
+ */
 
-table {
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+%table {
     @include baseline;
-    @include box-sizing(border-box);
-    width:100%;
+    width: 100%;
     max-width: 100%;
     background-color: transparent;
 
@@ -15,10 +25,27 @@ table {
         line-height: 20px;
         text-align: left;
         vertical-align: middle;
+    }
+
+}
+
+
+/* ==========================================================================
+   Styles Tables
+   ========================================================================== */
+
+.table {
+
+    @extend %table;    
+
+    th,
+    td {  
         border-top: 1px solid $lightbrown;
     }
 
-    th { color: $brown; }
+    th {
+        color: $brown;
+    }
 
     caption + thead tr:first-child th,
     caption + thead tr:first-child td,
@@ -29,9 +56,13 @@ table {
         border-top: 0;
     }
 
-    tbody + tbody { border-top: 2px solid $lightbrown; }
+    tbody + tbody {
+        border-top: 2px solid $lightbrown;
+    }
 
-    table table { background-color: #fff; }
+    table table {
+        background-color: #fff;
+    }
 
     tbody > tr:nth-child(odd) > td,
     tbody > tr:nth-child(odd) > th {
@@ -44,4 +75,13 @@ table {
             background: transparent;
         }
     }
+}
+
+
+/* ==========================================================================
+   Raw Tables
+   ========================================================================== */
+
+table {
+    @extend %table;
 }
