@@ -1,6 +1,18 @@
-//
-// Auth - Login / Signup / Reset Password
-// --------------------------------------------------
+/*
+ * Auth layout for login, signup & reset password
+ *
+ * Table of Contents
+ *
+ * Globals
+ * Login
+ * Signup and Reset
+ * Forgotten Password
+ */
+
+
+/* ==========================================================================
+   Globals
+   ========================================================================== */
 
 .ghost-login,
 .ghost-signup,
@@ -9,7 +21,7 @@
     color: $midgrey;
     background: $darkgrey;
 
-    @include breakpoint($mobile) {
+    @media (max-width: 400px) {
         background: $darkgrey;
     }
 
@@ -19,9 +31,9 @@
 
     input:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
-    } 
+    }
 
-}//.ghost-login
+}
 
 .login-box,
 .signup-box,
@@ -33,7 +45,7 @@
     padding: 0;
     display: table;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         max-width: 264px;
         text-align: center;
     }
@@ -41,33 +53,36 @@
 
 
 /* =============================================================================
-   1. Login
+   Login
    ============================================================================= */
 
 .login-form {
-    @include box-sizing(border-box);
     max-width: 530px;
     color: lighten($midgrey, 15%);
     display: table-cell;
     vertical-align: middle;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         max-width: 264px;
     }
 
     div { // Yes. Really.
-        position:relative;
-        margin:0 0 5px 0;
+        // TODO: This ^ can be improved 1000%
+        position: relative;
+        margin: 0 0 5px 0;
         background: lighten($darkgrey, 10%);
         float: left;
 
-        @include breakpoint(630px) { margin-bottom: 1em; }
+        @media (max-width: 630px) {
+            margin-bottom: 1em;
+        }
     }
 
+    // TODO: make more specific
     input {
-        display:inline-block;
-        clear:both;
-        margin:0;
+        display: inline-block;
+        clear: both;
+        margin: 0;
         padding: 8px 0 8px 8px;
         width: 216px;
         position: relative;
@@ -79,31 +94,31 @@
         box-shadow: none;
         @include transition(background ease 0.25s);
 
-        @include breakpoint(630px) {
+        @media (max-width: 630px) {
             width:264px;
             @include transition(none);
         }
-        
+
         &:focus {
             border: none;
-            background: lighten($darkgrey, 15%); 
+            background: lighten($darkgrey, 15%);
         }
 
     }
 
     .email-wrap {
-        position:relative;
+        position: relative;
         @include icon($i-mail, 12px) {
-            position:absolute;
-            bottom:11px;
-            left:8px;
-            z-index:100;
+            position: absolute;
+            bottom: 11px;
+            left: 8px;
+            z-index: 100;
         }
         margin-right: 3px;
         border-radius: 2px 0 0 2px;
 
-        @include breakpoint(630px) {
-            margin-right:0;
+        @media (max-width: 630px) {
+            margin-right: 0;
             border-radius: 2px;
         }
 
@@ -116,14 +131,14 @@
     .password-wrap {
         position:relative;
         @include icon($i-lock, 10px) {
-            position:absolute;
-            bottom:12px;
-            left:11px;
-            z-index:100;
+            position: absolute;
+            bottom: 12px;
+            left: 11px;
+            z-index: 100;
         }
         border-radius: 0 2px 2px 0;
 
-        @include breakpoint(630px) {
+        @media (max-width: 630px) {
             border-radius: 2px;
         }
 
@@ -143,15 +158,15 @@
         min-width: 80px;
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
 
-        @include breakpoint(630px) {
-            margin:0;
+        @media (max-width: 630px) {
+            margin: 0;
             width: 100%;
             margin-bottom: 1em;
         }
     }
 
     .meta {
-        clear:both;
+        clear: both;
         color: $midgrey;
     }
 
@@ -159,40 +174,41 @@
         color: darken($midgrey, 10%);
         font-size: 0.9em;
 
-        &:hover { 
+        &:hover {
             color: lighten($midgrey, 5%);
             text-decoration: none;
         }
     }
 
-}
+} // .login-form
 
 
 /* =============================================================================
-   2. Signup and Reset
+   Signup and Reset
    ============================================================================= */
 
-.signup-form, .reset-form {
-    @include box-sizing(border-box);
+.signup-form,
+.reset-form {
     max-width: 280px;
     color: lighten($midgrey, 15%);
     display: table-cell;
     vertical-align: middle;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         width: 264px;
     }
 
     div { // Yes. Really.
-        position:relative;
-        margin:0 0 1em 0;
+        // TODO: Same here as above
+        position: relative;
+        margin: 0 0 1em 0;
         background: lighten($darkgrey, 10%);
         float: left;
         display: table;
     }
 
     input {
-        margin:0;
+        margin: 0;
         width: 280px;
         padding: 8px 10px;
         position: relative;
@@ -202,22 +218,24 @@
         font-weight: 200;
         background: transparent;
         box-shadow: none;
-        @include transition(background ease 0.25s);
 
-        @include breakpoint(630px) {
-            @include transition(none);
+        @media (min-width: 631px) {
+            @include transition(background ease 0.25s);
+        }
+
+        @media (max-width: 630px) {
             width: 264px;
         }
 
-        &:focus { 
+        &:focus {
             border: none;
-            background: lighten($darkgrey, 15%); 
+            background: lighten($darkgrey, 15%);
         }
 
     }
 
     .name-wrap {
-        position:relative;
+        position: relative;
         border-radius: 2px;
 
         .name {
@@ -226,7 +244,7 @@
     }
 
     .email-wrap {
-        position:relative;
+        position: relative;
         border-radius: 2px;
 
         .email {
@@ -235,7 +253,7 @@
     }
 
     .password-wrap {
-        position:relative;
+        position: relative;
         border-radius: 2px;
 
         .password {
@@ -244,7 +262,6 @@
     }
 
     button {
-        @include box-sizing(border-box);
         width: 100%;
         height: 36px;
         margin: 0 0 1em 0;
@@ -254,29 +271,29 @@
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
     }
 
-}
+} // .signup-form, .reset-form
 
 
 /* =============================================================================
-   3. Forgotten
+   Forgotten Password
    ============================================================================= */
 
 .forgotten-form {
-    @include box-sizing(border-box);
     max-width: 280px;
     color: lighten($midgrey, 15%);
     display: table-cell;
     vertical-align: middle;
 
     div { // Yes. Really.
-        position:relative;
-        margin:0 0 1em 0;
+        // TODO: Again, can make this better.
+        position: relative;
+        margin: 0 0 1em 0;
         background: lighten($darkgrey, 10%);
         float: left;
     }
 
     input {
-        margin:0;
+        margin: 0;
         padding: 8px 10px;
         position: relative;
         border: none;
@@ -286,10 +303,10 @@
         background: transparent;
         box-shadow: none;
         @include transition(background ease 0.25s);
-        
+
         &:focus {
             border: none;
-            background: lighten($darkgrey, 15%); 
+            background: lighten($darkgrey, 15%);
         }
 
     }
@@ -305,7 +322,6 @@
     }
 
     button {
-        @include box-sizing(border-box);
         width: 100%;
         height: 36px;
         margin: 0 0 1em 0;
@@ -315,4 +331,4 @@
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
     }
 
-}
+} // .forgotten-form

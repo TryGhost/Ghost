@@ -1,9 +1,19 @@
-//
-// Notifications
-// --------------------------------------------------
+/*
+ * Button classes, including
+ *
+ * Table of Contents
+ *
+ * Buttons
+ * Split Buttons
+ */
+
+
+ /* ==========================================================================
+   Notifications
+   ========================================================================== */
 
 .notifications {
-    @include breakpoint($biggerthan-mobile) {
+    @media (min-width: 401px) {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -11,7 +21,7 @@
         width: 300px;
     }
 
-    @include breakpoint($mobile) {
+    @media (max-width: 400px) {
         position: fixed;
         top: 0;
         left: 0;
@@ -29,7 +39,6 @@
         position: absolute;
         top: 0;
         left: 0;
-        @include box-sizing(border-box);
         height: 100%;
         width: 44px;
         padding: 14px 15px;
@@ -37,7 +46,6 @@
         color: rgba(255,255,255,0.8);
         background: rgba(0,0,0,0.1);
     };
-    @include box-sizing(border-box);
     width: 100%;
     min-height: 40px;
     padding: 10px 43px 10px 57px;
@@ -48,19 +56,23 @@
     box-shadow: $shadow;
     @include transform(translateZ(0));
 
-    @include breakpoint($mobile) {margin-bottom: 1px;}
+    @media (max-width: 400px) {
+        margin-bottom: 1px;
+    }
 
     .close {
         @include icon-after($i-close) {
-            padding:6px;
-            position:absolute;
-            top:8px;
-            right:9px;
+            padding: 6px;
+            position: absolute;
+            top: 8px;
+            right: 9px;
         };
         display: inline-block;
         color: rgba(255,255,255,0.6);
         cursor: pointer;
-        &:hover { color: #fff; }
+        &:hover {
+            color: #fff;
+        }
 
     }
 

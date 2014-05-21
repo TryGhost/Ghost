@@ -1,6 +1,21 @@
-//
-// Forms
-// --------------------------------------------------
+/*
+ * Form styling, for inputs, selects, checkboxes, labels etc etc.
+ *
+ * Table of Contents
+ *
+ * Labels
+ * Form Wrapper
+ * Form Group
+ * Fieldsets
+ * Legends
+ * Input, textarea & select
+ * Checkboxes
+ */
+
+
+/* ==========================================================================
+   Labels
+   ========================================================================== */
 
 .label {
    display: inline-block;
@@ -12,7 +27,7 @@
    color: $brown;
    text-align: right;
 
-   @include breakpoint(550px) {
+   @media (max-width: 550px) {
        display: block;
        position: relative;
        top: auto;
@@ -22,6 +37,11 @@
        text-align: left;
    }
 }
+
+
+/* ==========================================================================
+   Form Wrapper
+   ========================================================================== */
 
 form {
 
@@ -36,13 +56,38 @@ form {
         margin: 0;
     }
 
-}//form
+} // form
+
+
+/* ==========================================================================
+   Form Group
+   ========================================================================== */
+
+.form-group {
+    position: relative;
+    margin: 1.5em 0;
+    padding-left: 140px;
+
+    @media (max-width: 550px) {
+        padding-left: 0;
+    }
+} // .form-group
+
+
+/* ==========================================================================
+   Fieldsets
+   ========================================================================== */
 
 fieldset {
     border: none;
     margin: 0 0 3em 0;
     padding: 0;
-}
+} // fieldset
+
+
+/* ==========================================================================
+   Legends
+   ========================================================================== */
 
 legend {
     display: block;
@@ -52,10 +97,16 @@ legend {
     font-size: 1.2em;
     line-height: 2.0em;
     color: $brown;
-}
+} // legend
 
-input, textarea, select {
-    @include box-sizing(border-box);
+
+/* ==========================================================================
+   Input, textarea & select
+   ========================================================================== */
+
+input,
+textarea,
+select {
     width: 280px;
     padding: 5px 7px;
     margin: 0;
@@ -65,9 +116,9 @@ input, textarea, select {
     background: #fff;
     border: darken($lightbrown, 5%) 1px solid;
     border-radius: $rounded;
-    @include transition(all 0.15s ease-in-out);
+    @include transition(border-color 0.15s ease-in-out);
 
-    @include breakpoint(550px) {
+    @media (max-width: 550px) {
         width: 100%;
     }
 }
@@ -80,7 +131,9 @@ textarea {
     min-height: 6.5em;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
     margin-bottom: 5px;
 }
 
@@ -105,12 +158,11 @@ textarea:focus {
 }
 
 select {
-    @include box-sizing(border-box);
     width: 270px;
     height: 30px;
     line-height: 30px;
 
-    @include breakpoint(550px) {
+    @media (max-width: 550px) {
         width: 100%;
     }
 }
@@ -121,13 +173,6 @@ select {
     }
 }
 
-.form-group {
-    position: relative;
-    margin: 1.5em 0;
-    padding-left: 140px;
-
-    @include breakpoint(550px) { padding-left: 0; }
-}
 
 /* =============================================================================
    Checkboxes
@@ -140,7 +185,6 @@ input[type="checkbox"] {
 
 // Turn the label element into a fake checkbox
 .checkbox {
-    @include box-sizing(border-box);
     position: relative;
     top: auto;
     margin-top: 0.5em;
@@ -152,14 +196,14 @@ input[type="checkbox"] {
     background: lighten($lightbrown, 5%);
     border: darken($lightbrown, 5%) 1px solid;
     @include transition(all 0.2s ease);
-    
+
     // Create a checkmark, hidden by default
     &:after {
         opacity: 0;
         content: "";
         position: absolute;
-        width: 7px;
-        height: 3px;
+        width: 10px;
+        height: 6px;
         top: 5px;
         left: 4px;
         border: 3px solid #fff;
@@ -171,5 +215,10 @@ input[type="checkbox"] {
 }
 
 // If the checkbox is checked, show the the :after element
-input[type=checkbox]:checked + .checkbox { background: $green; border: lighten($green, 10%); }
-input[type=checkbox]:checked + .checkbox:after { opacity: 1; }
+input[type=checkbox]:checked + .checkbox {
+    background: $green;
+    border: lighten($green, 10%);
+}
+input[type=checkbox]:checked + .checkbox:after {
+    opacity: 1;
+}

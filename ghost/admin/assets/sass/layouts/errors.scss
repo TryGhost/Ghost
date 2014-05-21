@@ -1,6 +1,15 @@
-//
-// Error Pages
-// --------------------------------------------------
+/*
+ * Error page styles
+ *
+ * Table of Contents
+ *
+ * Error pages
+ */
+
+
+/* ==========================================================================
+   Error pages
+   ========================================================================== */
 
 .error-content {
     max-width: 530px;
@@ -9,7 +18,7 @@
     display: table;
     height: 100%;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         max-width: 264px;
         text-align: center;
     }
@@ -26,7 +35,7 @@
     width: 96px;
     height: 150px;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         width: 72px;
         height: 112px;
     }
@@ -51,7 +60,7 @@
     line-height: 0.9em;
     color: #979797;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         font-size: 5.8em;
     }
 }
@@ -64,7 +73,7 @@
     color: #979797;
     border: none;
 
-    @include breakpoint(630px) {
+    @media (max-width: 630px) {
         font-size: 1.4em;
     }
 }
@@ -84,7 +93,7 @@
 
 .error-stack-list li {
     display: block;
-    
+
     &::before {
         color: #BBB;
         content: "\21AA";

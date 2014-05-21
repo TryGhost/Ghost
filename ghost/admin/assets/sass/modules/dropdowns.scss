@@ -1,6 +1,17 @@
-//
-// Dropdowns
-// --------------------------------------------------
+/*
+ * Dropdown classes, including default styles and section-specific styles
+ *
+ * Table of Contents
+ *
+ * Dropdowns
+ * Menu
+ * Post Settings
+ */
+
+
+ /* ==========================================================================
+   Dropdowns
+   ========================================================================== */
 
 .dropdown {
     @include icon-after($i-chevron-down, 8px) {
@@ -15,14 +26,19 @@
 }
 
 
-// This is the base menu extend used for styles on interaction menus
-// Default: Pop menu, chiclet bottom center.
+ /* ==========================================================================
+   Menu
+   ---
+   This is the base menu extend used for styles on interaction menus
+   Default: Pop menu, chiclet bottom center.
+   ========================================================================== */
+
 .menu {
     display: inline-block;
-    position:absolute;
+    position: absolute;
     z-index: 960;
     padding:6px 0;
-    border:none;
+    border: none;
     list-style: none;
     color: $lightgrey;
     background: $darkgrey;
@@ -32,27 +48,28 @@
     // The triangle chiclet that points to where the menu came from
     // By default, this is bottom center.
     &:before {
-        content:"";
-        position:absolute;
-        bottom:-10px;
-        left:50%;
-        margin-left:-10px;
-        border-width:10px 10px 0 10px;
-        border-style:solid;
-        border-color:$darkgrey transparent;
-        display:block;
-        width:0;
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        margin-left: -10px;
+        border-width: 10px 10px 0 10px;
+        border-style: solid;
+        border-color: $darkgrey transparent;
+        display: block;
+        width: 0;
     }
 
-    li {overflow:hidden;} // Stop :hover shadow from overflowing
+    // Stop :hover shadow from overflowing
+    li {
+        overflow: hidden;
+    }
 
     a, p {
-        @include box-sizing(border-box);
         display: block;
         position: relative;
-        padding:10px 25px 10px 35px;
+        padding: 10px 25px 10px 35px;
         border: none;
-        @include box-sizing(border-box);
         color: $lightgrey !important; // It's dirty, but it's needed.
         text-transform: none;
         text-decoration: none;
@@ -117,19 +134,20 @@
     @extend .menu-right;
 }
 
+
 /* ==========================================================================
    Post Settings
    ========================================================================== */
 
 .post-settings {
     @include icon($i-settings, 14px);
-    @include box-sizing(border-box);
     display: inline-block;
     padding: 0 10px;
     color: $midgrey;
     @include transition;
     position: relative;
     top: 1px;
+    cursor: pointer;
 
     &:hover,
     &.active {
@@ -169,7 +187,9 @@
         width: 200px;
         margin: 0;
 
-        @include breakpoint(550px) { width: 200px; }
+        @media (max-width: 550px) {
+            width: 200px;
+        }
 
         &[type="text"] {
             border: none;
@@ -200,10 +220,11 @@
     .delete {
         display: block;
         padding: 10px 15px;
-        @include icon($i-trash) { 
-            position: relative; 
-            top: -1px; 
-            margin-right: 10px 
+        cursor: pointer;
+        @include icon($i-trash) {
+            position: relative;
+            top: -1px;
+            margin-right: 10px
         };
 
         &:hover { background: $red; }
