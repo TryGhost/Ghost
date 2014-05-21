@@ -1,12 +1,17 @@
+/* global console */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 
 var equal = Ember.computed.equal;
 
 var PostController = Ember.ObjectController.extend({
+    //## Editor state properties
+    isEditingSettings: false,
+    isViewingSaveTypes: false,
 
+    //## Computed post properties
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),
-    isEditingSettings: false,
+    willPublish: Ember.computed.oneWay('isPublished'),
     isStaticPage: function (key, val) {
         if (arguments.length > 1) {
             this.set('model.page', val ? 1 : 0);
@@ -51,11 +56,31 @@ var PostController = Ember.ObjectController.extend({
     publishedAtChanged: function () {
         this.set('publishedAt', formatDate(this.get('model.published_at')));
     }.observes('model.published_at'),
-        
+
     actions: {
+        save: function () {
+            var status = this.get('willPublish') ? 'published' : 'draft',
+                self = this;
+            this.set('model.status', status);
+            this.get('model').save().then(function () {
+                self.notifications.showSuccess('Post status saved as <strong>' + this.get('model.status') + '</strong>.');
+            }, this.notifications.showErrors);
+        },
+        viewSaveTypes: function () {
+            this.toggleProperty('isViewingSaveTypes');
+        },
+        setSaveType: function (newType) {
+            if (newType === 'publish') {
+                this.set('willPublish', true);
+            } else if (newType === 'draft') {
+                this.set('willPublish', false);
+            } else {
+                console.warn('Received invalid save type; ignoring.');
+            }
+        },
         editSettings: function () {
-            this.toggleProperty('isEditingSettings');
-            if (this.get('isEditingSettings')) {
+            var isEditing = this.toggleProperty('isEditingSettings');
+            if (isEditing) {
                 //Stop editing if the user clicks outside the settings view
                 Ember.run.next(this, function () {
                     var self = this;
@@ -71,9 +96,9 @@ var PostController = Ember.ObjectController.extend({
                 slug = this.get('model.slug'),
                 placeholder = this.get('slugPlaceholder'),
                 self = this;
-            
+
             newSlug = (!newSlug && placeholder) ? placeholder : newSlug;
-            
+
             // Ignore unchanged slugs
             if (slug === newSlug) {
                 return;
@@ -93,7 +118,7 @@ var PostController = Ember.ObjectController.extend({
             if (!this.get('isOnServer')) {
                 return;
             }
-            
+
             this.get('model').save('slug').then(function () {
                 self.notifications.showSuccess('Permalink successfully changed to <strong>' + this.get('model.slug') + '</strong>.');
             }, this.notifications.showErrors);
@@ -165,7 +190,7 @@ var PostController = Ember.ObjectController.extend({
             if (!this.get('isOnServer')) {
                 return;
             }
-            
+
             this.get('model').save('published_at').then(function () {
                 this.notifications.showSuccess('Publish date successfully changed to <strong>' + this.get('publishedAt') + '</strong>.');
             }, this.notifications.showErrors);
