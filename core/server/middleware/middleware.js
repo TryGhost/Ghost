@@ -10,7 +10,8 @@ var _           = require('lodash'),
     api         = require('../api'),
 
     expressServer,
-    ONE_HOUR_MS = 60 * 60 * 1000;
+    ONE_HOUR_MS = 60 * 60 * 1000,
+    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS;
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
@@ -172,8 +173,8 @@ var middleware = {
     forwardToExpressStatic: function (req, res, next) {
         api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
             var activeTheme = response.settings[0];
-            // For some reason send divides the max age number by 1000
-            express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_HOUR_MS})(req, res, next);
+
+            express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_YEAR_MS})(req, res, next);
         });
     },
 
