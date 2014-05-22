@@ -134,7 +134,7 @@ coreHelpers.pageUrl = function (context, block) {
 //
 // *Usage example:*
 // `{{url}}`
-// `{{url absolute}}`
+// `{{url absolute=true}}`
 //
 // Returns the URL for the current object context
 // i.e. If inside a post context will return post permalink
