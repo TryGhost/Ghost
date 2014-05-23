@@ -91,7 +91,7 @@ Linuxはブート時に/etc/init.d内にある起動スクリプトを参照し�
 *   /etc/init.d/ghostというファイルを作成します:
 
     ```
-    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+    $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 

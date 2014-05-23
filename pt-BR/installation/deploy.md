@@ -93,7 +93,7 @@ Sistemas Linux utilizam scripts init para rodar um processo quando o sistema ini
 *   Criar o arquivo /etc/init.d/ghost com o seguinte comando:
 
     ```
-    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+    $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 

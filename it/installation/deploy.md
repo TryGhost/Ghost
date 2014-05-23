@@ -93,7 +93,7 @@ I sistemi Linux usano scripts di init per avviare al boot del sistema. Questi sc
 *   Crea il file /etc/init.d/ghost:
 
     ```
-    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+    $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 

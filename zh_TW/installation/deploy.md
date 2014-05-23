@@ -92,7 +92,7 @@ Linux 系統在啟動的時候會運行初始化腳本。這些腳本通常存�
 *   使用以下命令創建 /etc/init.d/ghost 文件：
 
     ```
-    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+    $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 

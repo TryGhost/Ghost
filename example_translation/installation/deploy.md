@@ -90,7 +90,7 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
 *   Create the file /etc/init.d/ghost with the following command:
 
     ```
-    $ sudo curl https://raw.github.com/TryGhost/Ghost-Config/master/init.d/ghost \
+    $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
