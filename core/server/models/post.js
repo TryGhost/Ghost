@@ -53,14 +53,13 @@ Post = ghostBookshelf.Model.extend({
         this.myTags = [];
 
         _.each(tagsToCheck, function (item) {
-            if (_.isObject(self.myTags)) {
-                for (i = 0; i < self.myTags.length; i = i + 1) {
-                    if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                        return;
-                    }
+            for (i = 0; i < self.myTags.length; i = i + 1) {
+                if (self.myTags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    return;
                 }
-                self.myTags.push(item);
             }
+
+            self.myTags.push(item);
         });
 
         ghostBookshelf.Model.prototype.saving.call(this, newPage, attr, options);

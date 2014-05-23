@@ -233,7 +233,7 @@ CasperTest.begin("Tag editor", 6, function suite(test) {
     });
 });
 
-CasperTest.begin("Post settings menu", 18, function suite(test) {
+CasperTest.begin("Post settings menu", 28, function suite(test) {
     casper.thenOpen(url + "ghost/editor/", function testTitleAndUrl() {
         test.assertTitle("Ghost Admin", "Ghost admin has no title");
     });
@@ -267,6 +267,16 @@ CasperTest.begin("Post settings menu", 18, function suite(test) {
         casper.thenClick(".js-publish-button");
     });
 
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success');
+
     casper.thenClick("#publish-bar a.post-settings");
 
     casper.waitUntilVisible("#publish-bar .post-settings-menu", function onSuccess() {
@@ -277,7 +287,60 @@ CasperTest.begin("Post settings menu", 18, function suite(test) {
         test.assert(true, "delete post button should be visible for saved drafts");
     });
 
+    // Test change permalink
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': 'new-url-editor'
+        }, false);
+
+        this.click('#publish-bar a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Permalink successfully changed to new-url-editor.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success', function () {
+        test.assert(true, 'notification cleared.');
+        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    });
+
+    // Test change pub date
+    casper.thenClick('#publish-bar a.post-settings');
+
+    casper.waitUntilVisible('#publish-bar .post-settings-menu #pub-date', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#pub-date': '10 May 14 @ 00:17'
+        }, false);
+
+        this.click('#publish-bar a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Publish date successfully changed to 10 May 14 @ 00:17.');
+        casper.thenClick('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success');
+
     // Test Static Page conversion
+    casper.thenClick("#publish-bar a.post-settings");
+
+    casper.waitUntilVisible("#publish-bar .post-settings-menu", function onSuccess() {
+        test.assert(true, "post settings menu should be visible after clicking post-settings icon");
+    });
+
     casper.thenClick(".post-settings-menu #static-page");
 
     var staticPageConversionText = "Successfully converted to static page.";

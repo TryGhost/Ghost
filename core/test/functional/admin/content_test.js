@@ -313,6 +313,408 @@ CasperTest.begin("Posts can be marked as featured", 12, function suite(test) {
     });
 });
 
+CasperTest.begin("Posts with tags can be marked as featured", 12, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+
+        casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
+        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + "ghost/content/", function testTitleAndUrl() {
+        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+    });
+
+    // Mark as featured
+    casper.waitForSelector('.content-preview .unfeatured', function () {
+        this.click('.content-preview .unfeatured');
+    }, function onTimeOut() {
+        test.assert(false, 'The first post can\'t be marked as featured');
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Post successfully marked as featured.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    casper.waitForSelector('.content-list-content li:first-child .featured', function () {
+        test.assertExists('.content-preview .featured');
+        test.assert(true, 'got a featured star');
+        this.click('.notification-success .close');
+    }, function onTimeout() {
+        test.assert(false, 'No featured star appeared in the left pane');
+    });
+
+    // Mark as not featured
+    casper.waitWhileSelector('.notification-success', function waitForNoSuccess() {
+        this.click('.content-preview .featured');
+    }, function onTimeout() {
+        test.assert(false, 'Success notification wont go away:(');
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Post successfully marked as not featured.');
+        test.assertDoesntExist('.content-preview .featured');
+        test.assertDoesntExist('.content-list-content li:first-child .featured');
+    }, function onTimeout() {
+        test.assert(false, 'Success notification wont go away:(');
+    });
+});
+
+CasperTest.begin('Post url can be changed', 9, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change permalink
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': 'new-url'
+        }, false);
+
+        this.click('a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Permalink successfully changed to new-url.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success', function () {
+        test.assert(true, 'notification cleared.');
+        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    });
+});
+
+CasperTest.begin('Post url can be changed on Posts with tags', 9, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+
+        casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
+        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change permalink
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': 'new-url-with-tags'
+        }, false);
+
+        this.click('a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Permalink successfully changed to new-url-with-tags.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success', function () {
+        test.assert(true, 'notification cleared.');
+        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    });
+});
+
+CasperTest.begin('Post published date can be changed', 9, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change published date
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#pub-date': '22 May 14 @ 23:39'
+        }, false);
+
+        this.click('a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Publish date successfully changed to 22 May 14 @ 23:39.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success', function () {
+        test.assert(true, 'notification cleared.');
+        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    });
+});
+
+CasperTest.begin('Post published date can be changed on Posts with tags', 9, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+
+        casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
+        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change published date
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#pub-date': '21 May 14 @ 23:39'
+        }, false);
+
+        this.click('a.post-settings')
+    });
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Publish date successfully changed to 21 May 14 @ 23:39.');
+        casper.click('.notification-success a.close');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification');
+    });
+
+    casper.waitWhileSelector('.notification-success', function () {
+        test.assert(true, 'notification cleared.');
+        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    });
+});
+
+CasperTest.begin('Post can be changed to static page', 8, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change to static page
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    casper.thenClick('.post-settings-menu #static-page');
+
+    var staticPageConversionText = "Successfully converted to static page.";
+    casper.waitForText(staticPageConversionText, function onSuccess() {
+        test.assertSelectorHasText(
+            '.notification-success', staticPageConversionText, 'correct static page conversion notification appears');
+    });
+
+    casper.thenClick('.post-settings-menu #static-page');
+
+    var postConversionText = 'Successfully converted to post.';
+    casper.waitForText(postConversionText, function onSuccess() {
+        test.assertSelectorHasText(
+            '.notification-success', postConversionText, 'correct post conversion notification appears');
+    });
+});
+
+CasperTest.begin('Post with tags can be changed to static page', 8, function suite(test) {
+    // Create a sample post
+    casper.thenOpen(url + 'ghost/editor/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+
+        casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
+        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function waitForSuccess() {
+        test.assert(true, 'got success notification');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+    }, function onTimeout() {
+        test.assert(false, 'No success notification :(');
+    });
+
+    // Begin test
+    casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+    });
+
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    // Test change to static page
+    casper.thenClick('a.post-settings');
+
+    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
+        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    });
+
+    casper.thenClick('.post-settings-menu #static-page');
+
+    var staticPageConversionText = "Successfully converted to static page.";
+    casper.waitForText(staticPageConversionText, function onSuccess() {
+        test.assertSelectorHasText(
+            '.notification-success', staticPageConversionText, 'correct static page conversion notification appears');
+    });
+
+    casper.thenClick('.post-settings-menu #static-page');
+
+    var postConversionText = 'Successfully converted to post.';
+    casper.waitForText(postConversionText, function onSuccess() {
+        test.assertSelectorHasText(
+            '.notification-success', postConversionText, 'correct post conversion notification appears');
+    });
+});
+
 CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
     casper.thenOpen(url + 'ghost/content/', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
