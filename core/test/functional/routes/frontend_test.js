@@ -401,7 +401,7 @@ describe('Frontend Routing', function () {
 
         it('should retrieve theme assets', function (done) {
             request.get('/assets/css/screen.css')
-                .expect('Cache-Control', cacheRules.hour)
+                .expect('Cache-Control', cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
         });
