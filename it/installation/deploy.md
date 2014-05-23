@@ -187,4 +187,50 @@ Diamo per scontato che Ghost sia già in esecuzione come servizio in background 
     ```
     $ sudo service nginx restart
     ```
+    
+## Configurare Ghost con SSL <a id="ssl"></a>
 
+Dopo di configurare il tuo dominio, è buona idea assicurare l’interfaccia di amministrazione o forse pure tutto il resto del tuo blog utilizzando HTTPS. Si consiglia la protezione dell’interfaccia di amministrazione con HTTPS perchè il username e password sono tramessi in testo normale se non si attiva la crittografia.
+
+L'esempio seguente mostra come configurare SSL. Partiamo dal presupposto che segui questa guida dall'inizio e quindi stai utilizzando nginx come server proxy. Configurazione con un altro server proxy sarebbe molto simile.
+
+Prima bisogna ottenere un certificato SSL da un fornitore di certificati affidabile. Il tuo fornitore vi darà istruzioni per generare la tua chiave privata e CRS (certificate signing request). Dopo di avere ricevuto il certificato, copia il file CRT dal tuo fornitore di certificato e il KEY file generato durante la trasmissione del CSR al server.
+
+- `mkdir /etc/nginx/ssl`
+- `cp server.crt /etc/nginx/ssl/server.crt`
+- `cp server.key /etc/nginx/ssl/server.key`
+
+Dopo queste due file sono a posto, è necessario aggiornare la configurazione di nginx.
+
+*   Apri il file di configurazione di nginx con un editor di testo (per esempio `sudo nano /etc/nginx/sites-available/ghost.conf`)
+*   Aggiungi le impostazioni indicate con qui giù con `+` al tuo file di configurazioneÑ
+
+    ```
+     server {
+         listen 80;
+    +    listen 443 ssl;
+         server_name example.com;
+    +    ssl_certificate        /etc/nginx/ssl/server.crt;
+    +    ssl_certificate_key    /etc/nginx/ssl/server.key;
+         ...
+         location / {
+    +       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    +       proxy_set_header Host $http_host;
+    +       proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://127.0.0.1:2368;
+            ...
+         }
+     }
+    ```
+
+    *   Riavvia nginx
+
+    ```
+    $ sudo service nginx restart
+    ```
+
+Dopo questi passi, dovrebbe essere possibile aprire la pagina di amministrazione del tuo blog attraverso un collegamento sicuro con HTTPS. Se vuoi che tutto il tuo traffico utilizzi SSL, è possibile modificare il protocollo di impostazioni url nel file config.js a https (per esempio, 'url' https://my-ghost-blog.com '`). Questo forzerà l'uso di SSL per frontend e admin. Qualsiasi richiesta tramite HTTP verrà reindirizzata a HTTPS. Se includi l'immagini nel tuo post che vengono da un dominio HTTP farà apparire un avvertimento 'insecure content'. Script e font da domini HTTP non funzioneranno.
+
+Nella maggior parte dei casi vorrete forzare SSL per l'interfaccia di amministrazione e frontend per servire via HTTP e HTTPS. L'opzione `forceAdminSSL: true` è stata introdotta per forzare SSL nella pagina di amministrazione.
+
+Se avete bisogno di ulteriori informazione sulla configurazione di SSL per il tuo server proxy, la documentazione ufficiale [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) e [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) sono un posto perfetto per iniziare.
