@@ -6,6 +6,8 @@ var testUtils      = require('../utils'),
     _              = require('lodash'),
     path           = require('path'),
     rewire         = require('rewire'),
+    moment         = require('moment'),
+    Polyglot       = require('node-polyglot'),
     api            = require('../../server/api'),
     hbs            = require('express-hbs'),
     packageInfo    = require('../../../package'),
@@ -683,8 +685,19 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.pagination);
         });
 
+        it('should throw if pagination data is incorrect', function () {
+            var runHelper = function (data) {
+                return function () {
+                    helpers.pagination.call(data);
+                }
+            };
+
+            runHelper('not an object').should.throwError('pagination data is not an object or is a function');
+            runHelper(function () {}).should.throwError('pagination data is not an object or is a function');
+        });
+
         it('can render single page with no pagination necessary', function () {
-            var rendered = helpers.pagination.call({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1}});
+            var rendered = helpers.pagination.call({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1}, tag: {slug: 'slug'}});
             should.exist(rendered);
             // strip out carriage returns and compare.
             rendered.string.should.match(paginationRegex);
@@ -1030,6 +1043,270 @@ describe('Core Helpers', function () {
 
     });
 
+    describe('date helper', function () {
+
+        it('is loaded', function () {
+            should.exist(handlebars.helpers.date);
+        });
+
+        // TODO: When timezone support is added these tests should be updated
+        //       to test the output of the helper against static strings instead
+        //       of calling moment().  Without timezone support the output of this
+        //       helper may differ depending on what timezone the tests are run in.
+        
+        it('creates properly formatted date strings', function () {
+            var testDates = [
+                '2013-12-31T11:28:58.593Z',
+                '2014-01-01T01:28:58.593Z',
+                '2014-02-20T01:28:58.593Z',
+                '2014-03-01T01:28:58.593Z'
+            ],
+            format = 'MMM Do, YYYY',
+            context = {
+                hash: {
+                    format: format
+                }
+            };
+
+            testDates.forEach(function (d) {
+                var rendered = helpers.date.call({ published_at: d }, context);
+
+                should.exist(rendered);
+                rendered.should.equal(moment(d).format(format));
+            });
+        });
+
+        it('creates properly formatted time ago date strings', function () {
+            var testDates = [
+                '2013-12-31T23:58:58.593Z',
+                '2014-01-01T00:28:58.593Z',
+                '2014-11-20T01:28:58.593Z',
+                '2014-03-01T01:28:58.593Z'
+            ],
+            context = {
+                hash: {
+                    timeago: true
+                }
+            };
+
+            testDates.forEach(function (d) {
+                var rendered = helpers.date.call({ published_at: d }, context);
+
+                should.exist(rendered);
+                rendered.should.equal(moment(d).fromNow());
+            });
+        });
+    });
+
+    describe('e helper', function () {
+
+        it('is loaded', function () {
+            should.exist(handlebars.helpers.e);
+        });
+
+        it('should return the correct default string', function (done) {
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({ settings: ['en_US'] });
+            });
+
+            helpers.e('testKey', 'default', { hash: {} }).then(function (result) {
+                result.should.equal('default');
+                done();
+            }).catch(done);
+        });
+
+        it('should return the correct string', function (done) {
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({ settings: ['fr'] });
+            });
+
+            var polyglot = new Polyglot();
+
+            polyglot.extend({ testKey: 'test value' });
+
+            helpers.__set__('polyglot', polyglot);
+
+            helpers.e('testKey', 'default', { hash: {} }).then(function (result) {
+                result.should.equal('test value');
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('foreach helper', function () {
+
+        // passed into the foreach helper.  takes the input string along with the metadata about
+        // the current row and builds a csv output string that can be used to check the results.
+        function fn(input, data) {
+            data = data.data;
+
+            // if there was no private data passed into the helper, no metadata
+            // was created, so just return the input
+            if (!data) {
+                return input + '\n';
+            }
+
+            return input + ',' + data.first + ',' + data.rowEnd + ',' + data.rowStart + ',' +
+                data.last + ',' + data.even + ',' + data.odd + '\n';
+        }
+
+        function inverse(input) {
+            return input;
+        }
+
+        it('is loaded', function () {
+            should.exist(handlebars.helpers.foreach);
+        });
+
+        it('should return the correct result when no private data is supplied', function () {
+            var options = {},
+                context = [],
+                _this = {},
+                rendered;
+
+            options.fn = fn;
+            options.inverse = inverse;
+            options.hash = {
+                columns: 0
+            };
+
+            // test with context as an array
+
+            context = 'hello world this is ghost'.split(' ');
+
+            rendered = helpers.foreach.call(_this, context, options);
+            rendered.should.equal('hello\n\world\nthis\nis\nghost\n');
+
+            // test with context as an object
+
+            context = {
+                one: 'hello',
+                two: 'world',
+                three: 'this',
+                four: 'is',
+                five: 'ghost'
+            };
+
+            rendered = helpers.foreach.call(_this, context, options);
+            rendered.should.equal('hello\n\world\nthis\nis\nghost\n');
+        });
+
+        it('should return the correct result when private data is supplied', function () {
+            var options = {},
+                context = [],
+                _this = {},
+                rendered,
+                result;
+
+            options.fn = fn;
+            options.inverse = inverse;
+
+            options.hash = {
+                columns: 0
+            };
+
+            options.data = {};
+
+            context = 'hello world this is ghost'.split(' ');
+
+            rendered = helpers.foreach.call(_this, context, options);
+
+            result = rendered.split('\n');
+            result[0].should.equal('hello,true,false,false,false,false,true');
+            result[1].should.equal('world,false,false,false,false,true,false');
+            result[2].should.equal('this,false,false,false,false,false,true');
+            result[3].should.equal('is,false,false,false,false,true,false');
+            result[4].should.equal('ghost,false,false,false,true,false,true');
+        });
+
+        it('should return the correct result when private data is supplied and there are multiple columns', function () {
+            var options = {},
+                context = [],
+                _this = {},
+                rendered,
+                result;
+
+            options.fn = fn;
+            options.inverse = inverse;
+
+            options.hash = {
+                columns: 2
+            };
+
+            options.data = {};
+
+            // test with context as an array
+
+            context = 'hello world this is ghost'.split(' ');
+
+            rendered = helpers.foreach.call(_this, context, options);
+
+            result = rendered.split('\n');
+            result[0].should.equal('hello,true,false,true,false,false,true');
+            result[1].should.equal('world,false,true,false,false,true,false');
+            result[2].should.equal('this,false,false,true,false,false,true');
+            result[3].should.equal('is,false,true,false,false,true,false');
+            result[4].should.equal('ghost,false,false,true,true,false,true');
+
+            // test with context as an object
+
+            context = {
+                one: 'hello',
+                two: 'world',
+                three: 'this',
+                four: 'is',
+                five: 'ghost'
+            };
+
+            rendered = helpers.foreach.call(_this, context, options);
+
+            result = rendered.split('\n');
+            result[0].should.equal('hello,true,false,true,false,false,true');
+            result[1].should.equal('world,false,true,false,false,true,false');
+            result[2].should.equal('this,false,false,true,false,false,true');
+            result[3].should.equal('is,false,true,false,false,true,false');
+            result[4].should.equal('ghost,false,false,true,true,false,true');
+        });
+
+        it('should return the correct inverse result if no context is provided', function () {
+            var options = {},
+                context = [],
+                _this = 'the inverse data',
+                rendered;
+
+            options.fn = function () {};
+            options.inverse = inverse;
+            options.hash = {
+                columns: 0
+            };
+            options.data = {};
+
+            rendered = helpers.foreach.call(_this, context, options);
+            rendered.should.equal(_this);
+        });
+    });
+
+    describe('helperMissing', function () {
+
+        it('should not throw an error', function () {
+            var helperMissing = helpers.__get__('coreHelpers.helperMissing');
+
+            should.exist(helperMissing);
+
+            function runHelper() {
+                var args = arguments;
+                return function () {
+                    helperMissing.apply(null, args);
+                }
+            }
+
+            runHelper('test helper').should.not.throwError();
+            runHelper('test helper', 'second argument').should.not.throwError();
+        });
+    });
+
     // ## Admin only helpers
     describe("ghostScriptTags  helper", function () {
         var rendered,
@@ -1250,6 +1527,72 @@ describe('Core Helpers', function () {
                 rendered.should.equal('');
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('file storage helper', function () {
+
+        it('is loaded', function () {
+            should.exist(helpers.file_storage);
+        });
+
+        it('should return the string true when config() has no fileStorage property', function () {
+            var fileStorage = helpers.file_storage();
+
+            should.exist(fileStorage);
+            fileStorage.should.equal('true');
+        });
+
+        it('should return the config().fileStorage value when it exists', function () {
+            var setting = 'file storage value',
+                cfg = helpers.__get__('config'),
+                fileStorage;
+
+            configStub = sandbox.stub().returns({
+                fileStorage: setting
+            });
+
+            _.extend(cfg, configStub);
+            
+            helpers.__set__('config', cfg);
+
+            fileStorage = helpers.file_storage();
+
+            should.exist(fileStorage);
+            fileStorage.should.equal(setting);
+        });
+    });
+
+    describe('apps helper', function () {
+
+        it('is loaded', function () {
+            should.exist(helpers.apps);
+        });
+
+        it('should return the string false when config() has no apps property', function () {
+            var apps = helpers.apps();
+
+            should.exist(apps);
+            apps.should.equal('false');
+        });
+
+        it('should return the config().apps value when it exists', function () {
+            var setting = 'app value',
+                cfg = helpers.__get__('config'),
+                apps;
+
+            configStub = sandbox.stub().returns({
+                apps: setting
+            });
+
+            _.extend(cfg, configStub);
+            
+            helpers.__set__('config', cfg);
+
+            apps = helpers.apps();
+
+            should.exist(apps);
+            apps.should.equal(setting);
         });
     });
 });

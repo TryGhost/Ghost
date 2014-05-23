@@ -531,17 +531,18 @@ coreHelpers.meta_description = function (options) {
  */
 coreHelpers.e = function (key, defaultString, options) {
     var output;
-    when.all([
+    return when.all([
         api.settings.read('defaultLang'),
         api.settings.read('forceI18n')
     ]).then(function (values) {
-        if (values[0].settings.value === 'en' &&
+        if (values[0].settings[0] === 'en_US' &&
                 _.isEmpty(options.hash) &&
-                _.isEmpty(values[1].settings.value)) {
+                values[1].settings[0] !== 'true') {
             output = defaultString;
         } else {
-            output = polyglot().t(key, options.hash);
+            output = polyglot.t(key, options.hash);
         }
+
         return output;
     });
 };
@@ -613,6 +614,7 @@ coreHelpers.foreach = function (context, options) {
     if (i === 0) {
         ret = inverse(this);
     }
+
     return ret;
 };
 
@@ -653,24 +655,24 @@ coreHelpers.has = function (options) {
 coreHelpers.pagination = function (options) {
     /*jshint unused:false*/
     if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
-        errors.logAndThrowError('pagination data is not an object or is a function');
-        return;
+        return errors.logAndThrowError('pagination data is not an object or is a function');
     }
+
     if (_.isUndefined(this.pagination.page) || _.isUndefined(this.pagination.pages) ||
             _.isUndefined(this.pagination.total) || _.isUndefined(this.pagination.limit)) {
-        errors.logAndThrowError('All values must be defined for page, pages, limit and total');
-        return;
+        return errors.logAndThrowError('All values must be defined for page, pages, limit and total');
     }
+
     if ((!_.isNull(this.pagination.next) && !_.isNumber(this.pagination.next)) ||
             (!_.isNull(this.pagination.prev) && !_.isNumber(this.pagination.prev))) {
-        errors.logAndThrowError('Invalid value, Next/Prev must be a number');
-        return;
+        return errors.logAndThrowError('Invalid value, Next/Prev must be a number');
     }
+
     if (!_.isNumber(this.pagination.page) || !_.isNumber(this.pagination.pages) ||
             !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
-        errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
-        return;
+        return errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
     }
+
     var context = _.merge({}, this.pagination);
 
     if (this.tag !== undefined) {
