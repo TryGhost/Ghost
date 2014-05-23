@@ -1,7 +1,7 @@
 ---
 lang: es
 layout: installation
-meta_title: Cómo instalar Ghost en su servidor - Documentación de Ghost
+meta_title: Instalación de Ghost en tu servidor - Documentación de Ghost
 meta_description: Todo lo que necesitas saber para poner en marcha la plataforma de blogging Ghost para acceso local o remoto. 
 heading: Instalación de Ghost &amp; Primeros Pasos
 subheading: Los primeros pasos para la instalación inicial de tu nuevo blog.
