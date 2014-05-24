@@ -1,44 +1,44 @@
 ---
 lang: id_ID
 layout: mail
-meta_title: Ghost Mail Configuration - Ghost Docs
-meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
-heading: Setting up Email
+meta_title: Konfigurasi Surat pada Ghost - Ghost Docs
+meta_description: Bagaimana mengonfigurasi server surat elektronik (email) Anda dan mengirim email dengan platform blogging Ghost. Semua yang perlu Anda ketahui.
+heading: Mengatur Email
 chapter: mail
 ---
 
 
-## Mail Configuration <a id="email-config"></a>
+## Konfigurasi Surat Elektronik (Email) <a id="email-config"></a>
 
-The following documentation details how to configure email in Ghost. Ghost uses [Nodemailer](https://github.com/andris9/Nodemailer), their documentation contains even more examples. 
+Dokumentasi berikut merinci bagaimana mengkonfigurasi email pada Ghost. Ghost menggunakan [Nodemailer](https://github.com/andris9/Nodemailer), dokumentasi mereka bahkan berisi lebih banyak contoh. 
 
-### Wait what?
+### Tunggu dulu, Apa?
 
-If you're familiar with PHP land, then you're probably very used to having email just magically work on your hosting platform. Node is a bit different, it's shiny and new and still a little rough around the edges in places.
+Jika Anda sudah familiar dengan PHP, kemungkinan Anda sudah terbiasa dengan kenyataan bahwa email secara ajaib telah berfungsi di platform hosting Anda. Dalam hal ini, Node sedikit berbeda. Meskipun sangat berkilau, Node masih terbilang baru dan masih banyak yang harus disempurnakan.
 
-But don't fear, setting up your email is a one-time thing and we're here to walk you through it.
+Namun, jangan takut, mengatur email Anda agar siap berfungsi merupakan sebuah hal mudah dan kami di sini untuk menuntun Anda melakukannya.
 
-### But why?
+### Tapi Mengapa?
 
-At the moment, the only thing Ghost uses email for is sending you an email with a new password if you forget yours. It's not much, but don't underestimate how useful that feature is if you ever happen to need it.
+Saat ini, Ghost hanya menggunakan email untuk kepentingan mengirimi Anda kata sandi baru jika Anda lupa. Tidak banyak memang, tapi jangan pernah meremehkan bagaimana bergunanya fitur tersebut ketika Anda benar-benar membutuhkannya.
 
-In the future, Ghost will also support setting up email-based subscriptions to your blogs. Emailing new users account details, and other little helpful features that depend on the ability to send mail.
+Di masa yang akan datang, Ghost juga akan mendukung pengaturan berlangganan artikel blog Anda yang berbasis email. Mengirimkan email terkait akun para pengguna baru dan fitur-fitur berguna lainnya yang terkait dengan kemampuan untuk kirim-mengirim email akan juga disediakan.
 
-## Ok, so how do I do it? <a id="how-to"></a>
+## Ok, jadi bagaimana Saya melakukannya? <a id="how-to"></a>
 
-The first thing you're going to need is an account with an email sending service. We highly recommend Mailgun. They have a nice free starter account which allows you to send more email than all but the most prolific email-subscription based blogs could manage. You could also use Gmail or Amazon SES.
+Hal pertama yang akan Anda butuhkan adalah sebuah akun dengan layanan pengiriman email. Kami sangat menyarankan untuk menggunakan Mailgun. Mereka mempunyai free akun pemula yang tidak hanya memungkinkan Anda untuk mengirim lebih banyak email dari yang lainnya tetapi juga dapat mengatur blog email berbasis langganan paling produktif. Anda juga dapat menggunakan Gmail atau Amazon SES.
 
-Once you've decided on what email service to use, you need to add your settings to Ghost's config file. Wherever you have installed Ghost, you should find a <code class="path">config.js</code> file in the route directory along with <code class="path">index.js</code>. If you don't have a <code class="path">config.js</code> file yet, then copy <code class="path">config.example.js</code> and rename it.
+Setelah Anda memutuskan layanan email mana yang baik untuk digunakan, Anda juga harus menambahkan pengaturan pada berkas konfigurasi Ghost. Dimanapun Anda menginstal Ghost, Anda dapat menemukan sebuah berkas <code class="path">config.js</code> di dalam direktori root Ghost Anda berdampingan dengan berkas <code class="path">index.js</code>. Jika Anda belum memiliki berkas <code class="path">config.js</code>, salinlah berkas <code class="path">config.example.js</code> dan ubah nama berkasnya.
 
 ### Mailgun <a id="mailgun"></a>
 
-Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. You'll need to have an email address on hand, and it will ask you to either provide a domain name, or think up a subdomain. You can change this later, so for now why not register a subdomain similar to the name of the blog you're setting up.
+Kunjungilah [mailgun.com](http://www.mailgun.com/) dan buatlah akun baru di sana. Anda akan membutuhkan sebuah alamat email selain Mailgun, dan Mailgun akan meminta Anda untuk menyediakan nama domain atau subdomain. Anda dapat mengubahnya lain waktu jika Anda tidak puas. Untuk sementara, registrasikanlah sebuah subdomain yang bernama sama dengan nama blog Anda.
 
-Verify your email address with Mailgun, and then you'll have access to their lovely control panel. You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your domain on the right hand side… see the little screencast below to help you find your details.
+Untuk mengakses panel kontrol Mailgun, Anda harus terlebih dahulu memverifikasi alamat email Anda. Anda akan menemukan username dan kata sandi layanan email yang telah mereka buat untuk Anda (bukan akun yang Anda buat ketika mendaftar), dengan mengklik domain Anda pada bagian kanan... lihatlah *screencast* berikut untuk membantu Anda menemukan rinciannya.
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />   
   
-Right, now you've got everything you need, it's time to open up your config file. Open your <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+Baiklah, Anda telah memiliki semua yang diperlukan, sekarang saatnya untuk membuka berkas konfigurasi Anda. Buka berkas <code class="path">config.js</code> pada aplikasi editor yang Anda sukai. Arahkan kepada lingkungan pengaturan email yang Anda inginkan, lalu ubahlah pengaturan email Anda sehingga terlihat seperti ini:
 
 ```
 mail: {
@@ -53,7 +53,7 @@ transport: 'SMTP',
 }
 ```
 
-Put your 'Login' from mailgun between the quote marks next to 'user' and your 'Password' from mailgun inside the quotes next to 'pass'. If I was configuring mailgun for the 'tryghosttest' account, it would look like this:
+Letakkan 'Login' yang Anda dapatkan dari mailgun di antara tanda petik sebelah 'user' dan 'Password' Anda dari mailgun di dalam tanda petik sebelah 'pass'. Sebagai contoh, jika Saya mengkonfigurasi mailgun untuk akun 'tryghosttest', hasilnya akan terlihat seperti ini:
 
 ```
 mail: {
@@ -68,15 +68,15 @@ mail: {
 }
 ```
 
-Keep an eye out for all of the colons, quotes and curly brackets. Misplace one of those and you'll find you get weird errors.
+Perhatikan semua titik dua, tanda petik, dan kurung kurawal. Salah meletakkan salah satu dari mereka, maka Anda akan mendapati galat yang aneh.
 
-You can reuse your settings for both your development and production environment if you have both.
+Anda dapat menggunakan ulang pengaturan Anda untuk lingkungan pengembangan dan produksi jika Anda menjalankan Ghost pada mode keduanya.
 
 ### Amazon SES <a id="ses"></a>
 
-You can sign up for an Amazon Simple Email Service account over at <http://aws.amazon.com/ses/>. Once you finish signing up, you'll be given an access key and a secret.
+Anda dapat mendaftarkan sebuah akun ke Amazon Simple Email Service di <http://aws.amazon.com/ses/>. Setelah Anda selesai mendaftar, Anda akan mendapatkan kunci akses dan kunci rahasia (AWSAccessKeyID dan AWSSecretKey).
 
-Open Ghost's <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and add your Amazon credentials to your mail settings as shown below:
+Bukalah berkas <code class="path">config.js</code> dari Ghost pada pengubah teks kesayangan Anda. Arahkan pada lingkungan yang Anda inginkan untuk mengatur email Anda, kemudian tambahkan kunci akses dan kunci rahasia dari Amazon ke pengaturan email Anda seperti di bawah ini:
 
 ```
 mail: {
@@ -90,28 +90,28 @@ mail: {
 
 ### Gmail <a id="gmail"></a>
 
-It is possible to use Gmail to send email from Ghost. If you are going to do this, we recommend that you [create a new account](https://accounts.google.com/SignUp) for the purpose, rather than using any existing personal email account details.
+Ghost memungkinkan penggunaan Gmail untuk mengirim email. Jika Anda ingin melakukannya, kami menyarankan Anda untuk [membuat akun baru](https://accounts.google.com/SignUp) untuk tujuan tersebut daripada menggunakan akun email pribadi yang sudah Anda miliki.
 
-Once you've created your new account, you can configure the settings in Ghost's <code class="path">config.js</code> file. Open the file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
+Setelah Anda membuat akun baru, Anda dapat mengkonfigurasi pengaturannya pada berkas <code class="path">config.js</code>. Buka berkas tersebut pada pengubah teks pilihan Anda. Loncatlah ke baris kode dari lingkungan email yang ingin Anda atur, kemudian lakukan perubahan seperti berikut:
 
 ```
 mail: {
     transport: 'SMTP',
     options: {
         auth: {
-            user: 'youremail@gmail.com',
-            pass: 'yourpassword'
+            user: 'emailanda@gmail.com',
+            pass: 'katasandi'
         }
     }
 }
 ```
 
-### From Address <a id="from"></a>
+### Dari Alamat <a id="from"></a>
 
-By default the 'from' address for mail sent from Ghost will be set to the email address on the general settings page. If you want to override this to something different, you can also configure it in the <code class="path">config.js</code> file.
+Secara baku, perujuk 'dari' alamat email yang dikirim Ghost akan diatur ke alamat email yang terdapat pada halaman pengaturan umum. Apabila Anda ingin mengubahnya menjadi alamat email yang berbeda, Anda dapat mengkonfigurasinya di dalam berkas <code class="path">config.js</code>.
 
 ```
 mail: {
-    fromaddress: 'myemail@address.com',
+    fromaddress: 'emailsaya@alamat.com',
 }
 ```
