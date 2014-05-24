@@ -12,6 +12,7 @@ var _                          = require('lodash'),
     RequestEntityTooLargeError = require('./requesttoolargeerror'),
     UnauthorizedError          = require('./unauthorizederror'),
     ValidationError            = require('./validationerror'),
+    UnsupportedMediaTypeError  = require('./unsupportedmediaerror'),
     EmailError                 = require('./emailerror'),
     errors,
 
@@ -258,4 +259,5 @@ module.exports.NoPermissionError          = NoPermissionError;
 module.exports.UnauthorizedError          = UnauthorizedError;
 module.exports.ValidationError            = ValidationError;
 module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;
+module.exports.UnsupportedMediaTypeError  = UnsupportedMediaTypeError;
 module.exports.EmailError                 = EmailError;

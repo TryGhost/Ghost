@@ -43,7 +43,7 @@ db = {
                  * - If there is no path
                  * - If the name doesn't have json in it
                  */
-                return when.reject(new errors.InternalServerError('Please select a .json file to import.'));
+                return when.reject(new errors.UnsupportedMediaTypeError('Please select a .json file to import.'));
             }
 
             return api.settings.read({key: 'databaseVersion', context: { internal: true }}).then(function (response) {
