@@ -1,10 +1,9 @@
----
 lang: id_ID
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+meta_title: Bagaimana Cara Menggunakan Ghost - Ghost Docs
+meta_description: Sebuah petunjuk mendalam untuk menggunakan platform blogging Ghost. Anda sudah memiliki Ghost tetapi belum yakin bagaimana cara menggunakannya? Mulailah dari sini!
+heading: Menggunakan Ghost
+subheading: Temukan caranya dan bersiap atur caranya semau Anda
 chapter: usage
 section: settings
 permalink: /id_ID/usage/settings/
@@ -12,43 +11,43 @@ prev_section: configuration
 next_section: managing
 ---
 
-##  Ghost Settings <a id="settings"></a>
+##  Pengaturan Ghost <a id="settings"></a>
 
-Go to <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
+Pergi ke <code class="path">&lt;URL Anda&gt;/ghost/settings/</code>.
 
-After you are finished adjusting the settings the "Save" button *must* be pressed, this will save your changes.
+Setelah Anda selesai menyesuaikan pengaturan, *jangan* lupa menekan tombol "Save" untuk menyimpan perubahan yang Anda lakukan.
 
-You can check your changes by visiting the Blog URL.
+Anda dapat melihat perubahannya dengan mengunjungi URL blog Anda.
 
-### Blog Settings (<code class="path">/general/</code>)
+### Pengaturan Blog (<code class="path">/general/</code>)
 
-These are the Blog specific settings.
+Berikut adalah cara pengaturan Blog secara spesifik.
 
-*   **Blog Title**: Changes your Blog's title. Theme reference `@blog.title`.
-*   **Blog Description**: Changes your Blog's description. Theme reference `@blog.description`.
-*   **Blog Logo**: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference `@blog.logo`.
-*   **Blog Cover**: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference `@blog.cover`.
-*   **Email Address**: This is the email admin notifications are sent too. It *must* be a valid email.
-*   **Posts per page**: This is how many posts are displayed per page. This should be a numeric value.
-*   **Theme**: This will list all the themes in your <code class="path">content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
+*   **Blog Title**: Ubah judul Blog Anda. Rujukan tema `@blog.title`.
+*   **Blog Description**: Ubah deskripsi Blog Anda. Rujukan tema `@blog.description`.
+*   **Blog Logo**: Unggah sebuah logo untuk blog Anda, dapat berupa ekstensi '.png', '.jpg' maupun '.gif'. Rujukan Tema `@blog.logo`.
+*   **Blog Cover**: Unggah gambar penutup blog Anda, ekstensi dapat berupa '.png', '.jpg' ataupun '.gif'. Rujukan tema  `@blog.cover`.
+*   **Email Address**: Email ini merupakan alamat email yang digunakan admin untuk dikirimi pesan notifikasi. *Harus* alamat email yang valid.
+*   **Posts per page**: Bagian ini mengatur seberapa banyak artikel yang akan ditampilkan di setiap halaman. Isikan nilai numerik.
+*   **Theme**: Bagian ini akan mendaftar semua tema di dalam direktori <code class="path">content/themes</code> Anda. Dengan memilih salah satu pilihan dari dropdown akan mengubah tampilan blog Anda.
 
-### User Settings (<code class="path">/user/</code>)
+### Pengaturan Pengguna (<code class="path">/user/</code>)
 
-These are the settings that control your user / author profile.
+Berikut merupakan pengaturan yang mengontrol profil dari pengguna / penulis Anda.
 
-*   **Your Name**: This is your name that will be used to credit you when you publish a post. Theme reference (post) `author.name`.
-*   **Cover Image**: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.cover`.
-*   **Display Picture**: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.image`.
-*   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
-*   **Location**: This should be your current location. Theme reference (post) `author.location`.
-*   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Your Name**: Nama Anda yang akan digunakan sebagai kredit ketika Anda mempublikasikan sebuah artikel. Rujukan tema (post) `author.name`.
+*   **Cover Image**: Gambar latar belakang profil Anda diunggah di sini, baik itu berekstensi '.png', '.jpg' ataupun '.gif'. Rujukan tema (post) `author.cover`.
+*   **Display Picture**: Bagian ini merupakan tempat untuk mengunggah foto pribadi sebagi foto display, dapat berupa '.png', '.jpg' atau format '.gif'. Rujukan tema (post) `author.image`.
+*   **Email Address**: Alamat email ini akan tersedia sebagai alamat email publik Anda dan juga sebagai alamat Anda menerima notifikasi. Rujukan tema (post) `author.email`.
+*   **Location**: Lokasi di mana Anda berada saat ini. Rujukan tema (post) `author.location`.
+*   **Website**: Bagian URL website pribadi Anda atau bahkan salah satu URL jejaring sosial Anda. Rujukan tema (post) `author.website`.
+*   **Bio**: Biografi Anda yang dapat Anda isi hingga 200 karakter yang mendeskripsikan siapa Anda. Rujukan tema (post) `author.bio`.
 
-#### Changing your password
+#### Mengubah Kata Sandi
 
-1.  Fill out the input boxes with the appropriate password (current / new password).
-2.  Now click **Change Password**.
+1.  Isikan kotak input dengan kata sandi yang sesuai (kata sandi saat ini / yang terbaru).
+2.  Selanjutnya klik **Change Password**.
 <p class="note">
-    <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
+    <strong>Catatan:</strong> Agar kata sandi Anda sukses diubah Anda harus mengklik tombol "Change Password", tombol "Save" tidak akan mengubah kata sandi Anda secara otomatis.
 </p>
 
