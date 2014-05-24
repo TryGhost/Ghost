@@ -6,7 +6,7 @@
             </section>
             {{#link-to "new" class="button button-add" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
         </header>
-        <section class="content-list-content">
+        {{#view 'content-list-content-view' tagName="section"}}
             <ol class="posts-list">
                 {{#each itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
                     {{!-- @TODO: Restore functionality where 'featured' and 'page' classes are added for proper posts --}}
@@ -30,7 +30,7 @@
                     {{/link-to}}
                 {{/each}}
             </ol>
-        </section>
+        {{/view}}
     </section>
     <section class="content-preview js-content-preview">
         {{outlet}}
