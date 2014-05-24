@@ -208,6 +208,9 @@ http = function (apiMethod) {
                     }).then(function addLocationHeader(header) {
                         if (header) {
                             res.set({'Location': header});
+                            // The location header indicates that a new object was created.
+                            // In this case the status code should be 201 Created
+                            res.status(201);
                         }
 
                         // Add Content-Disposition Header
