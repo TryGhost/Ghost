@@ -86,7 +86,7 @@ describe('Notifications API', function () {
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('X-CSRF-Token', csrfToken)
                 .send(newNotification)
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -119,7 +119,7 @@ describe('Notifications API', function () {
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('X-CSRF-Token', csrfToken)
                 .send(newNotification)
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);

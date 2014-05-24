@@ -355,7 +355,7 @@ describe('Post API', function () {
             request.post(testUtils.API.getApiQuery('posts/?include=tags'))
                 .set('X-CSRF-Token', csrfToken)
                 .send(newPost)
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -713,7 +713,7 @@ describe('Post API', function () {
             request.post(testUtils.API.getApiQuery('posts/'))
                 .set('X-CSRF-Token', csrfToken)
                 .send(newPost)
-                .expect(200)
+                .expect(201)
                 .end(function (err ,res) {
                     if (err) {
                         return done(err);
