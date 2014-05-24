@@ -1,14 +1,14 @@
 <section class="signup-box js-signup-box fade-in">
     <form id="signup" class="signup-form" method="post" novalidate="novalidate">
         <div class="name-wrap">
-            <input class="name" type="text" placeholder="Full Name" name="name" autofocus autocorrect="off" />
+            {{input class="name" type="text" placeholder="Full Name" name="name" autofocus="autofocus" autocorrect="off" value=name }}
         </div>
         <div class="email-wrap">
-            <input class="email" type="email" placeholder="Email Address" name="email" autocapitalize="off" autocorrect="off" />
+            {{input class="email" type="email" placeholder="Email Address" name="email" autocapitalize="off" autocorrect="off" value=email }}
         </div>
         <div class="password-wrap">
-            <input class="password" type="password" placeholder="Password" name="password" />
+            {{input class="password" type="password" placeholder="Password" name="password" value=password }}
         </div>
-        <button class="button-save" type="submit">Sign Up</button>
+        <button class="button-save" type="submit" {{action "signup"}}>Sign Up</button>
     </form>
 </section>
