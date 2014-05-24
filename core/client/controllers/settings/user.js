@@ -1,10 +1,14 @@
 /*global alert */
-
 var SettingsUserController = Ember.Controller.extend({
+    coverDefault: '/shared/img/user-cover.png',
     cover: function () {
         // @TODO: add {{asset}} subdir path
-        return this.user.getWithDefault('cover', '/shared/img/user-cover.png');
-    }.property('user.cover'),
+        var cover = this.user.get('cover');
+        if (typeof cover !== 'string') {
+            cover = this.get('coverDefault');
+        }
+        return cover;
+    }.property('user.cover', 'coverDefault'),
 
     coverTitle: function () {
         return this.get('user.name') + '\'s Cover Image';
