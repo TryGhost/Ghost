@@ -32,7 +32,7 @@ prev_section: upgrading
         <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno Python & gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
         <p>In caso di errore probabilmente ti mancano dipendenze di Python o di gcc, su Linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
         <p>Per ulteriori informazioni sulla compilazione consulta: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
-        <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instruzioni qui</a> per inoltrare i binari al progetto node-sqlite, in questo modo in futuro altri utenti non incorreranno nello stesso problema.</p>
+        <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instruzioni qui</a> per inoltrare i binari al progetto node-sqlite, affinché i futuri utenti non incorreranno nello stesso problema.</p>
     </dd>
     <dt id="image-uploads">Non riesco a fare l'upload delle immagini</dt>
     <dd>
