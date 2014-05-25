@@ -296,6 +296,9 @@ setupMiddleware = function (server) {
     // enable authentication
     expressServer.use(middleware.authenticate);
 
+    // enable CSP reporting
+    expressServer.use(middleware.addCSPReportHeader);
+
     // local data
     expressServer.use(ghostLocals);
 
