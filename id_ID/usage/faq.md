@@ -1,24 +1,22 @@
 ---
 lang: id_ID
 layout: usage
-meta_title: How to Use Ghost - Ghost Docs
-meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
-chapter: usage
+meta_title: Bagaimana Cara Menggunakan Ghost - Ghost Docs
+meta_description: Sebuah petunjuk mendalam untuk menggunakan platform blogging Ghost. Anda sudah memiliki Ghost tetapi belum yakin bagaimana cara menggunakannya? Mulailah dari sini!
+heading: Menggunakan Ghost
+subheading: Temukan caranya dan atur caranya semau Anda
 section: faq
 permalink: /id_ID/usage/faq/
 prev_section: writing
 ---
 
 
-## FAQ <a id="faq"></a>
+## Pertanyaan yang Sering Ditanyakan (FAQ) <a id="faq"></a>
 
-### (When) Will Ghost support feature X?
+### (Kapankah) Ghost akan mendukung fitur X?
 
-Please see the [Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing and [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) on the [Github wiki](https://github.com/TryGhost/Ghost/wiki).
+Silahkan rujuk ke daftar [Fitur-fitur yang Direncanakan](https://github.com/TryGhost/Ghost/wiki/Planned-Features) dan [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) pada [wiki Github](https://github.com/TryGhost/Ghost/wiki).
 
-### How do I insert images into a post?
+### Bagaimana agar saya dapat menyisipkan gambar ke dalam artikel?
 
-Please see the [Markdown Guide](/usage/writing/#markdown) for a full explanation of how image uploads work in the Ghost editor.
-
+Silahkan lihat [Petunjuk Markdown](/usage/writing/#markdown) untuk penjelasan lebih lengkapnya tentang bagaimana pengunggahan gambar bekerja pada editor Ghost.

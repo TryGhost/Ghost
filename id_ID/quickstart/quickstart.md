@@ -1,30 +1,30 @@
 ---
 lang: id_ID
 layout: quickstart
-meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+meta_title: Memulai Cepat Ghost
+heading: Memulai Cepat Ghost
+subheading: Dirikan dan jalankan Ghost.
 chapter: quickstart
 section: quickstart
 ---
 
 # Overview <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+Petunjuk memulai cepat menjalankan Ghost berikut ditujukan bagi Anda yang sudah familiar dengan [Node](http://nodejs.org), atau bahasa perograman serupa seperti ruby on rails. Jika hal tersebut terdengar asing bagi Anda, kami sarankan untuk menggali lebih dalam di [Petunjuk Instalasi](/installation.html).
 
-## Get Ghost running locally <a id="ghost-local"></a>
+## Menjalankan Ghost secara lokal <a id="ghost-local"></a>
 
-Ghost requires node `0.10.*` (the latest stable version).
+Ghost membutuhkan node versi `0.10.*` (versi stabil dan termutakhir).
 
-If you haven't already got it, head over to <http://nodejs.org> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.
+Jika Anda belum memilikinya, kunjungilah <http://nodejs.org> dan unduhlah versi terakhir dari Node.js. Installer akan menginstal baik Node and package managernya yang unggul, yakni npm.
 
-For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+Bagi Anda para pengguna Linux, daripada menginstalnya melalui arsip .tar.gz, mungkin Anda ingin [menginstallnya dari package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
 
-Download the latest version of Ghost from [Ghost.org](http://ghost.org). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+Selanjutnya, unduh versi termutakhir Ghost dari [Ghost.org](http://ghost.org). Kemudian ekstrak berkas unduhannya ke direktori mana saja yang Anda inginkan untuk menjalankan Ghost - dimanapun bisa!
 
-Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
+Buka dan jalankan aplikasi terminal Anda (Mac/Linux) atau command prompt (Windows) dan navigasikan ke direktori root dari direktori Ghost yang telah Anda ekstrak (di mana package.json berada).
 
-To install Ghost, run `npm install --production`
+Untuk menginstal Ghost, jalankan `npm install --production`
 
 <!--<h2 id="customise">Customise & Configure Ghost</h2>
 
