@@ -15,7 +15,7 @@ Semoga saat ini Anda telah berhasil menginstal dan menjalankan Ghost, dan siap m
 
 ### Menjalankan Perdana
 
-Jika Anda menjalankan Ghost untuk pertamakalinya, maka Anda perlu membuat akun admin user. Bukalah blog baru Anda pada peramban favorit Anda, lalu ubah URL ke <code class="path">&lt;URL Anda&gt;/ghost/signup/</code>. Anda akan melihat laman persis seperti ini:
+Jika Anda menjalankan Ghost untuk pertama kalinya, maka Anda perlu membuat akun admin user. Bukalah blog baru Anda pada peramban favorit Anda, lalu ubah URL ke <code class="path">&lt;URL Anda&gt;/ghost/signup/</code>. Anda akan melihat laman persis seperti ini:
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
 

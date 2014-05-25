@@ -1,55 +1,55 @@
 ---
 lang: id_ID
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
-meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
-subheading: Get started creating your own themes for Ghost
+meta_title: Bagaimana Cara Membuat Tema Ghost - Ghost Docs
+meta_description: Sebuah petunjuk mendalam pembuatan tema untuk platform blogging Ghost. Semua hal yang Anda butuhkan untuk membangun sebuah Tema untuk Ghost.
+heading: Tema Ghost
+subheading: Memulai membuat sendir tema untuk Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## Berganti Tema <a id="switching-theme"></a>
 
-Ghost themes live in <code class="path">content/themes/</code>
+Tema Ghost terletak di direktori <code class="path">content/themes/</code>
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Jika Anda ingin menggunakan tema yang berbeda dari Casper sebagai tema baku, cobalah kunjungi [galeri marketplace](http://marketplace.ghost.org/). Unduhlah paket tema yang sesuai pilihan Anda, kemudian ekstrak dan tempatkanlah di dalam direktori <code class="path">content/themes</code> berdampingan dengan Casper.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+Jika Anda ingin berkreasi dengan membuat tema baru, kami sarankan untuk menyalin dan mengubah nama direktori casper & mengubah templatnya agar terlihat dan berfungsi seperti yang Anda inginkan.
 
-To switch to your newly added theme:
+Untuk beralih menggunakan tema yang baru saja Anda tambahkan, lakukan hal berikut:
 
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
+1.  Mulai ulang Ghost. Pada saat ini, Ghost tidak akan sadar bahwa Anda telah menambahkan sebuah direktori baru di dalam <code class="path">content/themes</code>. Karenanya Ghost perlu dimulai ulang.
+2.  Masuklah ke halaman admin Ghost, lalu navigasikan ke <code class="path">/ghost/settings/general/</code>
+3.  Pilihlah nama Tema di dalam pilihan dropdown 'Tema'
+4.  Klik 'Save'
+5.  Kunjungilah dan muat ulang halaman utama blog Anda untuk melihat tampilan dengan tema baru.
 
-<p class="note">**Note:** If you're on the Ghost Hosted Service, rather than a self-install, to switch theme you'll need to go to your <a href="https://ghost.org/blogs/">blog management</a> page and click on "edit" beside the name of your blog.</p>
+<p class="note">**Catatan:** Jika Anda menggunakan Layanan Hosting milik Ghost, untuk mengganti tema yang Anda sukai, Anda dapat pergi ke halaman<a href="https://ghost.org/blogs/">pengelolaan blog</a> lalu klik "edit" di samping nama blog Anda.</p>
 
 
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  Apa itu Handlebars? <a id="what-is-handlebars"></a>
 
-[Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
+[Handlebars](http://handlebarsjs.com/) adalah bahasa pembuat templat yang digunakan oleh Ghost.
 
-> Handlebars provides the power necessary to let you build semantic templates effectively with no frustration.
+> Handlebars menyediakan kemampuan yang dibutuhkan untuk membangun templat semantik secara efektif dan tanpa frustasi.
 
-If you're looking to get started writing your own theme, you'll probably want to get yourself familiar with handlebars syntax first. Have a read of the [handlebars documentation](http://handlebarsjs.com/expressions.html), or checkout this [tutorial from Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – you can skip the first section on installation and usage (we’ve done that bit for you) and get stuck in with ‘Basic Expressions’.
+Apabila Anda ingin segera memulai menulis tema Anda sendiri, mungkin terlebih dahulu Anda ingin menjadikan diri Anda lebih familiar dengan sintaksis dari handlebars. Oleh karena itu, bacalah [dokumentasi handlebars](http://handlebarsjs.com/expressions.html), atau lihatlah [tutorial dari Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – Anda dapat melewatkan bagian instalasi dan penggunaan (karena kami telah menyelesaikan sebagiannya untuk Anda), jadi langsung saja dalami ‘Basic Expressions’.
 
-Ghost also makes use of an additional library called `express-hbs` which adds some [additional features](https://github.com/barc/express-hbs#syntax) to handlebars which Ghost makes heavy use of, such as [layouts](#default-layout) and [partials](#partials).
+Selain itu, Ghost juga menggunakan pustaka tambahan yang disebut `express-hbs`. Pustaka ini bertujuan untuk menambahkan [fitur tambahan](https://github.com/barc/express-hbs#syntax) pada bagian handlebars yang sangat sering digunakan Ghost, seperti [layouts](#default-layout) dan [partials](#partials).
 
-## About Ghost themes <a id="about"></a>
+## Tema Ghost <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Pertemaan pada Ghost ditujukan untuk semudah mungkin dibangun dan dikelola. Mereka mengikuti prinsip yang kuat untuk memisahkan antara template (HTML) dan logika (JavaScript). Bisa dikatakan bahwa Handlebars (hampir) tidak berlogika dan menekankan prinsip pemisahan ini dengan menyediakan mekanisme bantu sehingga logika untuk menampilkan konten tetap terpisah dan mandiri. Hal ini tentu saja berakibat pada mudahnya kolaborasi antara perancang dan pengembang ketika membangun sebuah tema.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+Karena templat Handlebars bersifat hierarkis (sebuah templat dapat menurunkan templat lainnya) dan mendukung templat parsial, Ghost menggunakan fitur tersebut untuk mengurangi duplikasi kode dan menjaga masing-masing templat untuk tetap fokus melakukan sebuah fungsi, dan melakukannya dengan baik. Sebuah tema yang terstruktur dengan baik akan memudahkan pengelolaan dan dengan menjaga agar komponen-komponen didalamnya tetap terpisah satu sama lain, akan memudahkan kita untuk menggunakannya ulang di antara tema.
 
-We really hope you'll enjoy our approach to theming.
+Kami sangat berharap bahwa Anda juga menikmati pendekatan mengenai pembuatan tema ini.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## Struktur Pemberkasan pada Sebuah Tema Ghost <a id="file-structure"></a>
 
-The recommended file structure is:
+Struktur berkas yang kami sarankan adalah:
 
 ```
 .
@@ -64,47 +64,47 @@ The recommended file structure is:
 └── post.hbs [required]
 ```
 
-For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">asset</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
+Untuk saat ini tidak ada persyaratan bahwa <code class="path">default.hbs</code> atau direktori lainnya harus tersedia. Walupun demikian, kami sarankan agar Anda menyimpan semua aset yang dibutuhkan di dalam direktori <code class="path">asset</code>, dan mendayagunakan [`{{asset}}` bantuan](#asset-helper) untuk menyediakan berkas css, js, gambar, font dan berkas aset lainnya.
 
-<code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
+<code class="path">index.hbs</code> dan <code class="path">post.hbs</code> adalah dua berkas yang sangat dibutuhkan – Ghost tidak akan berfungsi dengan baik jika tidak terdapat dua templat ini.
 
 ### Partials <a id="partials"></a>
 
-You can also optionally add a <code class="path">partials</code> directory to your theme. This should include any part templates you want to use across your blog, for example <code class="path">list-post.hbs</code> might include your template for outputting a single post in a list, which might then be used on the homepage, and in future archive & tag pages. <code class="path">partials</code> is also where you can put templates to override the built-in templates used by certain helpers like pagination. Including a <code class="path">pagination.hbs</code> file inside <code class="path">partials</code> will let you specify your own HTML for pagination.
+Anda juga dapat menambahkan direktori <code class="path">partials</code> ke dalam tema yang Anda buat jika dinginkan. Direktori tersebut harus menyertakan bagian-bagian templat yang ingin Anda gunakan dalam blog Anda, sebagai contoh templat <code class="path">list-post.hbs</code> dapat Anda tambahkan untuk menampilkan sebuah artikel tunggal dalam sebuah daftar yang kemudian dapat digunakan pada halaman utama dan dalam halaman arsip & tag. <code class="path">partials</code> juga dapat digunakan untuk menyimpan templat untuk mengesampingkan templat bawaan yang digunakan oleh beberapa pembantu seperti *pagination*. Dengan menyertakan sebuah berkas templat <code class="path">pagination.hbs</code> di dalam <code class="path">partials</code> ini akan memudahkan Anda mengkhususkan HTML Anda untuk keperluan *pagination.
 
 ### default.hbs <a id="default-layout"></a>
 
-This is the default layout, or base template which contains all the boring bits of HTML that have to appear on every page – the `<html>`, `<head>` and `<body>` tags along with the `{{ghost_head}}` and `{{ghost_foot}}` helpers, as well as any HTML which makes up a repeated header and footer for the blog.
+Berkas ini merupakan templat tata letak baku atau templat dasar di mana semua bit HTML yang harus tampil di setiap halaman, berada – berisi tag `<html>`, `<head>` dan `<body>` bersama dengan pembantu `{{ghost_head}}` dan `{{ghost_foot}}`, juga HTML yang membuat header dan footer berulang pada blog.
 
-The default template contains the handlebars expression `{{{body}}}` to denote where the content from templates which extend the default template goes.
+Templat standar berisikan ekspresi handlebars `{{{body}}}` untuk menotasikan konten dari templat baku di mana akan ditampilkan.
 
-Page templates then have `{{!< default}}` as the very first line to specify that they extend the default template, and that their content should be placed into the place in default.hbs where `{{{body}}}` is defined.
+Kemudian halaman templat ini memiliki `{{!< default}}` pada baris paling pertamanya yang berfungsi untuk mencirikan bahwa mereka merupakan turunan dari templat baku. Lalu kontennya harus ditempatkan di berkas default.hbs di mana `{{{body}}}` didefinisikan.
 
 ### index.hbs
 
-This is the template for the homepage, and extends <code class="path">default.hbs</code>. The homepage gets passed a list of posts which should be displayed, and <code class="path">index.hbs</code> defines how each posts should be displayed.
+Berkas ini merupakan templat untuk halaman utama dan merupakan turunan dari <code class="path">default.hbs</code>. Halaman utama memuat sebuah daftar artikel yang harus ditampilkan dan <code class="path">index.hbs</code> mendefinisikan bagaimana setiap artikel tersebut harus ditampilkan.
 
-In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
+Dalam Casper (tema standar saat ini), halaman utama mempunyai sebuah header besar yang menggunakan pengaturan global `@blog` global untuk mencetak logo dari blog, judul dan deskripsi. Header tersebut diikuti oleh eksperi pembantu `{{#foreach}}` untuk menampilkan sebuah daftar dari artikel-artikel terakhir.
 
 ### post.hbs
 
-This is the template for a single post, which also extends <code class="path">default.hbs</code>.
+Berkas ini adalah templat untuk artikel tunggal yang juga merupakan turunan dari <code class="path">default.hbs</code>.
 
-In Casper (the current default theme), the single post template has it's own header, also using `@blog` global settings and then uses the `{{#post}}` data accessor to output all of the post details.
+Dalam tema baku Casper, templat untuk artikel tunggal memiliki header tersendiri dan juga menggunakan pengaturan `@blog` global. Lalu dia juga menggunakan ekspresi pengakses data `{{#post}}` untuk mencetak semua rincian artikel.
 
 ### page.hbs
 
-You can optionally provide a page template for static pages. If your theme doesn't have a <code class="path">page.hbs</code> template, Ghost will use the standard <code class="path">post.hbs</code> template for pages.
+Anda dapat menyediakan sebuah templat statis untuk halaman statis jika dinginkan. Apabila tema yang Anda buat tidak memiliki templat <code class="path">page.hbs</code>, Ghost akan menggunakan templat standar <code class="path">post.hbs</code> untuk halaman.
 
-Pages have exactly the same data available as a post, they simply don't appear in the list of posts.
+Halaman mempunyai tipe data yang sama dengan artikel, hanya saja halaman tidak ditampilkan pada daftar artikel.
 
 ### error.hbs
 
-You can optionally provide an error template for any 404 or 500 errors. If your theme doesn't provide an <code class="path">error.hbs</code> Ghost will use its default.
+Secara opsional, Anda juga dapat menyediakan templat galat untuk galat 404 atau 500. Jika tema buatan Anda tidak menyediakan <code class="path">error.hbs</code>, maka Ghost akan menggunakan templat standar.
 
-To see how to access the data about an error, take a look at Ghost's default error template which is located in <code class="path">/core/server/views/user-error.hbs</code>
+Untuk melihat bagaimana mengkases data tentang sebuah galat, lihatlah templat galat standar dari Ghost yang terletak di <code class="path">/core/server/views/user-error.hbs</code>
 
-### Post styling & previewing
+### Mempercantik Artikel & Pratampil
 
 When building themes for Ghost please consider the scope of your classes, and in particular your IDs, to try to avoid clashes between your main styling and your post styling. You never know when a class name or in particular an ID (because of the auto-generation of IDs for headings) will get used inside a post. Therefore it's best to always scope things to a particular part of the page. E.g. #my-id could match things you don't expect whereas #themename-my-id would be safer.
 
