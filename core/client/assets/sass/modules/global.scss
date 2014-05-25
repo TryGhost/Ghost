@@ -61,6 +61,11 @@
 .clearfix:after { clear: both; }
 .clearfix { *zoom: 1; }
 
+.vertical {
+    display: table-cell;
+    vertical-align: middle;
+}
+
 
 /* ==========================================================================
    Global Styles
