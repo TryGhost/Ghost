@@ -2,7 +2,7 @@
 lang: es
 layout: installation
 meta_title: Instalación de Ghost en tu servidor - Documentación de Ghost
-meta_description: Todo lo que necesitas saber para poner en marcha la plataforma de blogging Ghost para acceso local o remoto. 
+meta_description: Todo lo que necesitas saber para poner en marcha la plataforma de blog Ghost para acceso local o remoto. 
 heading: Instalación de Ghost &amp; Primeros Pasos
 subheading: Los primeros pasos para la instalación inicial de tu nuevo blog.
 permalink: /es/installation/deploy/
@@ -15,7 +15,7 @@ next_section: upgrading
 
 Así que estas listo para publicar usando Ghost? Excelente!
 
-La primera decisión que debes tomar es si prefieres instalar y establecer Ghost manualmente por ti mismo o si prefieres usar un instalador.
+La primera decisión que debes tomar es si prefieres instalar y ejecutar Ghost manualmente por ti mismo o si prefieres usar un instalador.
 
 ### Instaladores
 
@@ -27,25 +27,27 @@ En este momento hay algunas opciones para instaladores que son simples:
 
 ### Instalación Manual
 
-Necesitaras un plan de *hosting* que ya tenga o te permita instalar [Node.js](http://nodejs.org).
-    Esto significa algo la nube como ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) o cualquier otro plan que tenga acceso a SSH (terminal) y te permita instalar Node.js. Hay muchos y en gran parte son bastante económicos.
+Necesitarás un plan de *hosting* que ya tenga o te permita instalar [Node.js](http://nodejs.org).
+    Esto significa algo en la nube como ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) o cualquier otro plan que tenga acceso a SSH (terminal) y te permita instalar Node.js. Hay muchos y en gran parte son bastante económicos. 
 
 Lo que no funciona en este momento es el hosting compartido estilo cPanel, ya que generalmente se dedican al hosting de PHP. Sin embargo, algunos ofrecen Ruby, así que es posible que puedan ofrecer Node.js en el futuro, ya que son similares.
 
-<p>Desafortunadamente, muchas de las soluciones en la nube que son específicamente para Node como **Nodejitsu** y **Heroku**, **NO SON** compatibles con Ghost. Funcionarán al principio pero después borrarán tus archivos, por lo tanto tus imágenes y base de datos desaparecerán. Heroku es compatible con MySQL así que podrías usalo, pero aún vas a perder todas tus imágenes.
+**Nota**: esto esta cambiando cada día, y varios proveedores de hosting compartidos ahora pueden usar Ghost, así que es bueno consultar con tu proveedor de hosting.
 
-Los siguientes link contienen instrucciones sobre la configuración con:
+<p>Desafortunadamente, muchas de las soluciones en la nube que son específicamente para Node como **Nodejitsu** y **Heroku**, **NO SON** compatibles con Ghost. Funcionarán al principio pero después borrarán tus archivos, por lo tanto tus imágenes y base de datos desaparecerán. Heroku es compatible con MySQL así que podrías usarlo, pero aún vas a perder todas tus imágenes.
+
+Los siguientes links contienen instrucciones sobre la configuración con:
 
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - de [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - por [Corbett Barr](http://ghosted.co)
 *   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - por [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - por [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + Linux service) - por [Gilbert Pellegrom](http://ghost.pellegrom.me/)
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - por [Gregg Housh](http://0v.org/)
-*   ...visita el [forum de installción](https://en.ghost.org/forum/installation) para más guías...
+*   ...visita el [forum de instalación](https://en.ghost.org/forum/installation) para más guías...
 
-## Usar Ghost ininterrumpidamente
+## Usar Ghost Continuamente
 
-El método descrito anteriormente para iniciar Ghost es `npm start`. Es bueno para desarrollar y poner a prueba localmente, pero iniciar Ghost con la línea de comandos  resulta en el la interrupción de Ghost cada vez que cierras el terminal o terminas la sesión de SSH. Para evitar la interrupción de Ghost, debes ejecutar Ghost como un servicio. Hay dos maneras de lograr esto.
+El método descrito anteriormente para iniciar Ghost es `npm start`. Es bueno para desarrollar y poner a prueba localmente, pero iniciando Ghost con la línea de comandos  resulta en el la interrupción de Ghost cada vez que cierras el terminal o terminas la sesión de SSH. Para evitar la interrupción de Ghost, debes ejecutar Ghost como un servicio. Hay dos maneras de lograr esto.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
@@ -58,7 +60,7 @@ Puedes usar `forever` para ejecutar Ghost en segundo plano. `forever` también s
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
-Distribuciones populares de Linux&mdash;como Fedora, Debian, and Ubuntu&mdash;mantienen un paquete para Supervisor: un sistema gestor de procesos que te permite ejecutar Ghost al iniciar sin tener que usar script de init. A diferencia de el script de init, Supervisor es portátil entre distribuciones y versiones de Linux.
+Distribuciones populares de Linux&mdash;como Fedora, Debian, y Ubuntu&mdash;mantienen un paquete para Supervisor: un sistema gestor de procesos que te permite ejecutar Ghost al iniciar sin tener que usar script de init. A diferencia de el script de init, Supervisor es portátil entre distribuciones y versiones de Linux.
 
 *   [Instala Supervisor](http://supervisord.org/installing.html) según los requisitos de tu distribución de Linux. Típicamente, los comandos son:
     *   Debian/Ubuntu: `apt-get install supervisor`
@@ -86,7 +88,7 @@ Puedes ver la [documentación de Supervisor](http://supervisord.org) para obtene
 
 ### Init Script <a id="init-script"></a>
 
-Los sistemas Linux usan init scripts para iniciar el boot del sistema. Estos scripts están en /etc/init.d. Para mantener Ghost ininterrumpidamente aún después de reiniciar el sistema, puedes usar un init script. El siguiente ejemplo funciona en Ubuntu y fue probado en **Ubuntu 12.04**.
+Los sistemas Linux usan init scripts para iniciar el boot del sistema. Estos scripts están en /etc/init.d. Para mantener Ghost continuamente aún después de reiniciar el sistema, puedes usar un init script. El siguiente ejemplo funciona en Ubuntu y fue probado en **Ubuntu 12.04**.
 
 *   Crea el archivo /etc/init.d/ghost con el siguiente comando:
 
@@ -133,7 +135,7 @@ Los sistemas Linux usan init scripts para iniciar el boot del sistema. Estos scr
     $ sudo update-rc.d ghost enable
     ```
 
-*   Asegúrate que tu usuario pueda hacer cambios a archivos, como config.js en el directorio Ghost por ejemplo, te tienes que asignar al grupo de Ghost:
+*   Nos aseguramos que tu usuario pueda hacer cambios a archivos, como config.js en el directorio Ghost por ejemplo, asignándote al grupo de Ghost:
     ```
     $ sudo adduser USERNAME ghost
     ```
@@ -143,7 +145,7 @@ Los sistemas Linux usan init scripts para iniciar el boot del sistema. Estos scr
 
 ## Configurando Ghost con un nombre de dominio <a id="nginx-domain"></a>
 
-Si ya tienes Ghost en ejecución ininterrumpida, puedes también configurar un servidor web como un proxy para servir tu blog con tu propio dominio.
+Si ya tienes Ghost en ejecución continua, puedes también configurar un servidor web como un proxy para servir tu blog con tu propio dominio.
 En este ejemplo vamos a suponer que usas **Ubuntu 12.04** y usas **nginx** como servidor web.
 También suponemos que Ghost es ejecutado a segundo plano con una de las formas anteriores.
 
@@ -199,7 +201,7 @@ Primero tienes que obtener un certificado SSL de un proveedor de confianza. Tu p
 - `cp server.crt /etc/nginx/ssl/server.crt`
 - `cp server.key /etc/nginx/ssl/server.key`
 
-Después que estos dos archivos esten en su lugar, debes actualizar tu configuración nginx.
+Después que estos dos archivos estén en su lugar, debes actualizar tu configuración nginx.
 
 *   Abre el archivo de configuración nginx con un editor de texto (por ejemplo `sudo nano /etc/nginx/sites-available/ghost.conf`)
 *   Añade los ajustes indicados a continuación con `+` a tu archivo de configuración:
