@@ -150,6 +150,7 @@ $i-weather-partial: \e03a;
 $i-weather-snow:    \e03b;
 $i-weather-cloudy:  \e03c;
 $i-lightning:       \e03d;
+$i-code:            \e03e;
 
 
 /* Usage
@@ -161,7 +162,7 @@ write our Sass something like this:
     display: block;
     width: 200px;
     height: 40px;
-    @include icon($i-camera, 16px, #fff) {vertical-align:-10%;};
+    @include icon($i-camera, 16px, #fff) {vertical-align: -10%;};
 }
 
 This would then output full CSS something like this:
