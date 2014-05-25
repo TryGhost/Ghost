@@ -1,12 +1,13 @@
 Fixtures for the Ghost blogging platform, intended to be generated with http://www.json-generator.com/
+The generator's index() starts a 0, remove first 'post' to match expected data format.
 
 {
     posts: [
-        '{{repeat(30)}}',
+        '{{repeat(31)}}',
         {
             id: '{{index()}}',
             uuid: '{{guid()}}',
-            status: '{{random("published ", "draft")}}',
+            status: '{{random("published", "draft")}}',
             title: '{{lorem( integer(1, 10), "words")}}',
             slug: function(tag, index){
                 return this.title.replace(/ /g, '-');
@@ -17,12 +18,12 @@ Fixtures for the Ghost blogging platform, intended to be generated with http://w
             },
             image: null,
             featured: '{{integer(0, 1)}}',
-            page: '{{integer(0, 10)}}',
+            page: '{{integer(0, 1)}}',
             language: "en_US",
             meta_title: null,
             meta_description: null,
             author: {
-                id: '{{integer(0, 10)}}',
+                id: '{{integer(1, 10)}}',
                 uuid: '{{guid()}}',
                 name: '{{firstName()}} {{surname()}}',
                 slug:  function(tag, index){
@@ -44,7 +45,7 @@ Fixtures for the Ghost blogging platform, intended to be generated with http://w
             },
             created_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
             created_by: {
-                id: '{{integer(0, 10)}}',
+                id: '{{integer(1, 10)}}',
                 uuid: '{{guid()}}',
                 name: '{{firstName()}} {{surname()}}',
                 slug:  function(tag, index){
@@ -66,7 +67,7 @@ Fixtures for the Ghost blogging platform, intended to be generated with http://w
             },
             updated_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
             updated_by: {
-                id: '{{integer(0, 10)}}',
+                id: '{{integer(1, 10)}}',
                 uuid: '{{guid()}}',
                 name: '{{firstName()}} {{surname()}}',
                 slug:  function(tag, index){
@@ -88,7 +89,7 @@ Fixtures for the Ghost blogging platform, intended to be generated with http://w
             },
             published_at: '{{date(new Date(2012, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss.ff Z")}}',
             published_by: {
-                id: '{{integer(0, 10)}}',
+                id: '{{integer(1, 10)}}',
                 uuid: '{{guid()}}',
                 name: '{{firstName()}} {{surname()}}',
                 slug:  function(tag, index){
@@ -111,7 +112,7 @@ Fixtures for the Ghost blogging platform, intended to be generated with http://w
             tags: [
                 '{{repeat(0, 10)}}',
                 {
-                    id: '{{integer(0, 100)}}',
+                    id: '{{integer(1, 100)}}',
                     uuid: '{{guid()}}',
                     name: '{{lorem( integer(1, 3), "words")}}',
                     slug: function(tag, index){
