@@ -62,15 +62,16 @@ Come fare l'aggiornamento sulla tua macchina locale.
 
 Lo screencast qua sotto mostra come aggiornare Ghost ponendo che il file zip sia stato scaricato nella cartella <code class="path">~/Downloads</code> e che Ghost sia installato in <code class="path">~/ghost</code>. <span class="note">**Nota:** `~` indica la cartella home su mac e linux</span>
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/upgrade-ghost.gif)
+![Upgrading Ghost](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
 
 I passi nello screencast sono:
 
 *   <code class="path">cd ~/Downloads</code> - spostati nella cartella Downloads dove è stata scaricata l'ultima versione di Ghost
-*   `unzip ghost-0.3.1.zip -d ghost-0.3.3` - estrai ghost nella cartella <code class="path">ghost-0.3.3</code>
-*   <code class="path">cd ghost-0.3.3</code> - spostati nella cartella <code class="path">ghost-0.3.3</code>
+*   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - estrai ghost nella cartella <code class="path">ghost-0.4.0</code>
+*   <code class="path">cd ghost-0.4.0</code> - spostati nella cartella <code class="path">ghost-0.4.0</code>
 *   `ls` - mostra tutti i file e le cartelle nella posizione corrente
-*   `cp *.md *.js *.txt *.json ~/ghost` - copia tutti i file .md .js .txt e .json da <code class="path">~/ghost</code>
+*   `cp *.md *.js *.txt *.json LICENSE ~/ghost` - copia tutti i file .md .js .txt e .json da <code class="path">~/ghost</code>
+*   `rm -rf ~/ghost/core` - Cancella la cartella <code class="path">core</code> vecchia dalla tua installazione
 *   `cp -R core ~/ghost` - copia la cartella <code class="path">core</code> e tutto il suo contenuto all'interno di <code class="path">~/ghost</code>
 *   `cp -R content/themes/casper ~/ghost/content/themes` - copia la cartella <code class="path">casper</code> e tutto il suo contenuto all'interno di <code class="path">~/ghost/content/themes</code>
 *   `cd ~/ghost` - spostati nella cartella <code class="path">~/ghost</code>
@@ -82,22 +83,25 @@ I passi nello screencast sono:
 *   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
 *   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quello corretto, se necessario)
 *   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
+*   Cancella la cartella `core` vecchia dalla tua installazione
 *   Esegui `npm install --production` per installare le nuove dipendenze
 *   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto
 
-**Inoltre**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) fornisce ulteriori istruzioni su come installare Ghost su un server Linux.
+**Inoltre**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) fornisce ulteriori istruzioni su come aggiornare Ghost su un server Linux.
 
 ### Come aggiornare una Droplet su DigitalOcean <a id="digitalocean"></a>
 
 <p class="note"><strong>Fai un Backup!</strong> Prima di aggiornare è sempre bene effettuare un backup. Prima leggi <a href="#backing-up">come eseguire un backup</a>!</p>
 
 *   Prima di tutto devi trovare l'URL dalla quale scaricare l'ultima release di Ghost. Dovrebbe essere simile a `http://ghost.org/zip/ghost-latest.zip`
-*   Nella console della tua droplet esegui `cd /var/www/` per spostarti dove c'è la tua installazione di Ghost
+*   Una volta che hai l'URL per la versione più recente, nella console della tua Droplet esegui `cd /var/www/` per spostarti dove c'è la tua codebase di Ghost
 *   Scarica lo zip con `wget http://ghost.org/zip/ghost-latest.zip` (sostituisci l'URL con quello corretto, se necessario)
+*   Cancella la cartella `core` vecchia, `rm -rf ghost/core`
 *   Scompatta l'archivio con `unzip -uo ghost-0.3.*.zip -d path-to-your-ghost-install`
 *   Assicurati che tutti i file abbiano i permessi corretti con `chown -R ghost:ghost ghost/*`
+*   Spostati nella cartella <code class="path">~/ghost</code> con `cd ~/ghost`
 *   Esegui `npm install` per installare nuove dipendenze
-*   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto con `service ghost restart`
+*   Infine, fai ripartire Ghost in modo che le modifiche abbiano effetto con `service ghost restart` (questo può richiedere un po' di tempo)
 
 ## Come aggiornare Node.js all'ultima versione <a id="upgrading-node"></a>
 

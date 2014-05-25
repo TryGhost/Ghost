@@ -35,6 +35,8 @@ Per utilizzare il nuovo tema:
 
 Se hai intenzione di realizzare un tuo tema, è bene che prima cominci a familiarizzare con la sintassi di Handlebars. Leggi la [documentazione di handlebars](http://handlebarsjs.com/expressions.html), o dai un'occhiata a questo [tutorial di Treehouse](http://blog.teamtreehouse.com/getting-started-with-handlebars-js) – puoi saltare la prima parte relativa all'installazione (ci abbiamo pensato noi) e cominciare da ‘Basic Expressions’.
 
+Ghost fa anche uso di una libreria aggiuntiva chiamata `express-hbs` che aggiunge alcune [funzionalità aggiuntive](https://github.com/barc/express-hbs#syntax) a Handlebars che Ghost usa molto, come [layouts](#default-layout) e [partials](#partials).
+
 ## Temi per Ghost <a id="about"></a>
 
 I temi per Ghost sono strutturati per essere semplici da sviluppare e mantenere. Viene posta particolare attenzione sulla separazione fra templates (HTML) e ogni altra business logic (JavaScript). Handlebars è (praticamente) logicless e favorisce questa separazione, tramite l'utilizzo di *helpers*, in modo che la logica legata a quale contenuti mostrare (business logic) rimanga separata e auto sufficiente. Questa separazione porta benefici nella collaborazione fra designers e developers quando si sviluppano temi.
