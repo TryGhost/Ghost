@@ -61,9 +61,18 @@
 .clearfix:after { clear: both; }
 .clearfix { *zoom: 1; }
 
+// to vertically center elements whose parent element is display: table
 .vertical {
     display: table-cell;
     vertical-align: middle;
+}
+
+// for <p> tags under <h> tags which should cuddle like lovers
+.hgroup {
+    margin-bottom: 1.6em;
+
+    h1, h2, h3,
+    h4, h5, h6, p { margin: 0; }
 }
 
 
