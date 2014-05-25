@@ -1,0 +1,120 @@
+//
+// Setup Ghost for The First Time
+// --------------------------------------------------
+
+.ghost-setup {
+    color: $midgrey;
+    background: $darkgrey;
+    @include breakpoint(550px) { background: darken($darkgrey, 5%); }
+
+    main {
+        top: 15px;
+        @include breakpoint(550px) { top: 0; }
+    }
+
+    input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
+    }
+
+    h1 {
+        margin: 0;
+        font-weight: 200;
+        font-size: 26px;
+        color: $lightgrey;
+
+        @include breakpoint(550px) {
+            font-size: 20px;
+        }
+    }
+
+    h2 {
+        margin: 10px 0 0 0;
+        padding: 0;
+        border: none;
+        font-weight: 200;
+        font-size: 16px;
+        color: $midgrey;
+
+        @include breakpoint(550px) {
+            font-size: 14px;
+        }
+    }
+}
+
+.setup-box {
+    display: table;
+    max-width: 500px;
+    height: 90%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.setup-form {
+    @include box-sizing(border-box);
+    max-width: 530px;
+    padding: 40px;
+    color: lighten($midgrey, 15%);
+    background: darken($darkgrey, 5%);
+
+    @include breakpoint(400px) {
+        padding: 15px;
+    }
+
+    header {
+        margin-bottom: 45px;
+        @include breakpoint(550px) { margin-bottom: 35px; }
+    }
+
+    footer {
+        margin: 40px 0 5px 0;
+        @include breakpoint(550px) { margin-top: 35px; }
+    }
+
+    label {
+        width: 90px;
+        color: $lightgrey;
+        font-weight: 300;
+
+        @include breakpoint(550px) {
+            width: 100%;
+        }
+    }
+
+    .form-group {
+        padding-left: 110px;
+
+        @include breakpoint(550px) {
+            padding-left: 0;
+        }
+    }
+
+    input {
+        width: 300px;
+        padding: 7px;
+        border: none;
+        color: #fff;
+        background: lighten($darkgrey, 10%);
+        @include transition(background ease 0.25s);
+
+        @include breakpoint(550px) {
+            width: 100%;
+        }
+
+        &:focus {
+            border:none;
+            background: lighten($darkgrey, 15%);
+        }
+    }
+
+    p {
+        font-size: 12px;
+        line-height: 1.4em;
+        color: $midgrey;
+    }
+
+    .button-add {
+        width: 100%;
+        padding: 0.9em 1.8em;
+        font-size: 13px;
+    }
+}
