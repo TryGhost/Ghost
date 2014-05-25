@@ -1,0 +1,136 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title>Ghost Admin</title>
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
+
+    <meta http-equiv="cleartype" content="on" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Ghost" />
+
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon-precomposed" href="/ghost/img/touch-icon-iphone.png?v=f0332a6f54" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/ghost/img/touch-icon-ipad.png?v=f0332a6f54" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/ghost/img/small.png?v=f0332a6f54" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/ghost/img/medium.png?v=f0332a6f54" />
+
+    <meta name="application-name" content="Ghost" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-square70x70logo" content="/ghost/img/small.png?v=f0332a6f54" />
+    <meta name="msapplication-square150x150logo" content="/ghost/img/medium.png?v=f0332a6f54" />
+    <meta name="msapplication-square310x310logo" content="/ghost/img/large.png?v=f0332a6f54" />
+
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
+    <link rel="stylesheet" href="/Users/John/Sites/Ghost-UI/dist/css/ghost-ui.css" />
+</head>
+<body class="settings" data-ember-extension="1">
+    
+        <header id="global-header" class="navbar">
+    <a class="ghost-logo" href="/" data-off-canvas="left" title="/">
+        <span class="hidden">Ghost </span>
+    </a>
+    <nav id="global-nav" role="navigation">
+        <ul id="main-menu">
+            
+                <li class="content"><a href="/ghost/">Content</a></li>
+            
+                <li class="editor"><a href="/ghost/editor/">New Post</a></li>
+            
+                <li class="settings active"><a href="/ghost/settings/">Settings</a></li>
+            
+
+            <li id="usermenu" class="usermenu subnav">
+                <a href="#" data-toggle="ul" class="dropdown">
+                    <img class="avatar" src="//www.gravatar.com/avatar/75e958a6674a7d68fe0d575fb235116c?d=404" alt="Avatar">
+                    <span class="name">John O'Nolan</span>
+                </a>
+                <ul class="overlay" style="display: none;">
+                    <li class="usermenu-profile"><a href="/ghost/settings/user/">Your Profile</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-help"><a href="http://ghost.org/forum/">Help / Support</a></li>
+                    <li class="divider"></li>
+                    <li class="usermenu-signout"><a href="/ghost/signout/">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+    
+
+    <main role="main" id="main">
+        
+
+        <aside id="notifications" class="notifications" style="display: block; height: auto;">
+            
+    
+        
+    
+
+
+        </aside>
+
+        
+<div class="wrapper">
+    <aside class="settings-sidebar" role="complementary" data-apps="false"><header>
+    <h1 class="title">Settings</h1>
+</header>
+<nav class="settings-menu">
+    <ul>
+        <li class="code active"><a href="#code">Code Injection</a></li>
+    </ul>
+</nav></aside>
+
+    <section class="settings-content active" data-filestorage="true" id="code" style=""><header>
+    <button class="button-back">Back</button>
+    <h2 class="title">Code Injection</h2>
+    <section class="page-actions">
+        <button class="button-save">Save</button>
+    </section>
+</header>
+
+<section class="content">
+
+<!--this is it-->
+
+<p>Ghost allows you to inject code to the top and bottom of your template files without editing them. This allows for quick modifications to insert useful things like tracking codes and meta data</p>
+
+<section class="header-injection">
+    <header class="hgroup">
+        <h3>Blog Header</h3>
+        <p>Code here will be injected to the <code>{{ghost_head}}</code> helper at the top of each page of your blog</p>
+    </header>
+    <textarea id="header-injection"></textarea>
+</section>
+
+<section class="footer-injection">
+    <header class="hgroup">
+        <h3>Blog Footer</h3>
+        <p>Code here will be injected to the <code>{{ghost_foot}}</code> helper at the bottom of each page of your blog</p>
+    </header>
+    <textarea id="footer-injection"></textarea>
+</section>
+
+<!--this is no longer it-->
+
+</section>
+</section>
+</div>
+    </main>
+
+    <div id="modal-container"></div>
+    <div class="modal-background fade"></div>
+
+    <script src="/ghost/scripts/vendor.js?v=4e698dfc50"></script><script src="/ghost/scripts/helpers.js?v=4e698dfc50"></script><script src="/ghost/scripts/templates.js?v=4e698dfc50"></script><script src="/ghost/scripts/models.js?v=4e698dfc50"></script><script src="/ghost/scripts/views.js?v=4e698dfc50"></script>
+
+
+<script type="text/javascript" src="chrome-extension://bmdblncegkenkacieihfhpjfppoconhi/in-page-script.js"></script></body>
+</html>
