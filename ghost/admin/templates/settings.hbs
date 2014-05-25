@@ -5,9 +5,17 @@
         </header>
         <nav class="settings-menu">
             <ul>
-                <li class="general">{{#link-to 'settings.general'}}General{{/link-to}}</li>
-                <li class="users">{{#link-to 'settings.user'}}User{{/link-to}}</li>
-                <li class="apps">{{#link-to 'settings.apps'}}Apps{{/link-to}}</li>
+                {{#view "item-view" tagName="li" class="general"}}
+                    {{#link-to "settings.general"}}General{{/link-to}}
+                {{/view}}
+                
+                {{#view "item-view" tagName="li" class="users"}}
+                    {{#link-to "settings.user"}}User{{/link-to}}
+                {{/view}}
+                
+                {{#view "item-view" tagName="li" class="apps"}}
+                    {{#link-to "settings.apps"}}Apps{{/link-to}}
+                {{/view}}
             </ul>
         </nav>
     </aside>
