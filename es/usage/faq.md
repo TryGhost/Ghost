@@ -6,7 +6,7 @@ meta_description: Una guía detallada sobre el uso de la plataforma de blog Ghos
 heading: Usando Ghost
 subheading: Encontrando y configurando funciones a tu manera
 chapter: usage
-section: configuration
+section: faq
 permalink: /es/usage/faq/
 prev_section: writing
 ---
