@@ -539,47 +539,65 @@ describe('Core Helpers', function () {
     });
 
     describe('url Helper', function () {
+
+        beforeEach(function () {
+            apiStub.restore();
+            apiStub = sandbox.stub(api.settings, 'read', function () {
+                return when({ settings: [{ value: '/:slug/' }] });
+            });
+        });
+
         it('has loaded url helper', function () {
             should.exist(handlebars.helpers.url);
         });
 
-        it('should return the slug with a prefix slash if the context is a post', function () {
+        it('should return the slug with a prefix slash if the context is a post', function (done) {
             helpers.url.call({html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('/slug/');
-            });
+                done();
+            }).catch(done);
         });
 
-        it('should output an absolute URL if the option is present', function () {
+        it('should output an absolute URL if the option is present', function (done) {
+            configUpdate({ url: 'http://testurl.com/' });
+
             helpers.url.call(
                 {html: 'content', markdown: "ff", title: "title", slug: "slug", created_at: new Date(0)},
                 {hash: { absolute: 'true'}}
             ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('http://testurl.com/slug/');
-            });
+                done();
+            }).catch(done);
         });
 
-        it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
+        it('should return the slug with a prefixed /tag/ if the context is a tag', function (done) {
             helpers.url.call({name: 'the tag', slug: "the-tag", description: null, parent_id: null}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('/tag/the-tag/');
-            });
+                done();
+            }).catch(done);
         });
 
-        it('should return empty string if not a post or tag', function () {
-            helpers.url.call({markdown: "ff", title: "title", slug: "slug"}).then(function (rendered) {
-                rendered.should.equal('');
-            });
-            helpers.url.call({html: 'content', title: "title", slug: "slug"}).then(function (rendered) {
-                rendered.should.equal('');
-            });
-            helpers.url.call({html: 'content', markdown: "ff", slug: "slug"}).then(function (rendered) {
-                rendered.should.equal('');
-            });
-            helpers.url.call({html: 'content', markdown: "ff", title: "title"}).then(function (rendered) {
-                rendered.should.equal('');
-            });
+        it('should return / if not a post or tag', function (done) {
+            helpers.url.call({markdown: 'ff', title: 'title', slug: 'slug'}).then(function (rendered) {
+                rendered.should.equal('/');
+            }).then(function () {
+                return helpers.url.call({html: 'content', title: 'title', slug: 'slug'}).then(function (rendered) {
+                    rendered.should.equal('/');
+                });
+            }).then(function () {
+                return helpers.url.call({html: 'content', markdown: 'ff', slug: 'slug'}).then(function (rendered) {
+                    rendered.should.equal('/');
+                });
+            }).then(function () {
+                helpers.url.call({html: 'content', markdown: 'ff', title: 'title'}).then(function (rendered) {
+                    rendered.should.equal('/');
+
+                    done();
+                });
+            }).catch(done);
         });
     });
     
