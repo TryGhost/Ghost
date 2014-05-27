@@ -168,26 +168,6 @@ posts = {
         }, function () {
             return when.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
         });
-    },
-
-    /**
-     * ## Generate Slug
-     * Create a unique slug for a given post title
-     * @param {{title (required), transacting}} options
-     * @returns {Promise(String)} Unique string
-     */
-    generateSlug: function generateSlug(options) {
-        return canThis(options.context).slug.post().then(function () {
-            return dataProvider.Base.Model.generateSlug(dataProvider.Post, options.title, {status: 'all'})
-                .then(function (slug) {
-                    if (slug) {
-                        return slug;
-                    }
-                    return when.reject(new errors.InternalServerError('Could not generate slug'));
-                });
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission.'));
-        });
     }
 
 };
