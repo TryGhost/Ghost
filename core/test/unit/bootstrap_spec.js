@@ -20,9 +20,8 @@ describe('Bootstrap', function () {
             bootstrap.__set__("readConfigFile",  sandbox.stub().returns(
                 _.extend({}, defaultConfig, newConfig)
             ));
-        };
-
-
+        },
+        expectedError = new Error('expected bootstrap() to throw error but none thrown');
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
@@ -84,7 +83,7 @@ describe('Bootstrap', function () {
         }).catch(done);
     });
 
-    it('accepts valid urls', function (done) {
+    it('accepts urls with a valid scheme', function (done) {
         // replace the config file with invalid data
         overrideConfig({url: 'http://testurl.com'});
 
@@ -109,118 +108,220 @@ describe('Bootstrap', function () {
         }).then(function (localConfig) {
             localConfig.url.should.equal('http://testurl.com/ghostly/');
 
-            // Next test
-            overrideConfig({url: '//testurl.com'});
-            return bootstrap();
-        }).then(function (localConfig) {
-            localConfig.url.should.equal('//testurl.com');
+            done();
+        }).catch(done);
+    });
+
+    it('rejects a fqdn without a scheme', function (done) {
+
+        overrideConfig({ url: 'example.com' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
 
             done();
         }).catch(done);
     });
 
-    it('rejects invalid urls', function (done) {
-        // replace the config file with invalid data
-        overrideConfig({url: 'notvalid'});
+    it('rejects a hostname without a scheme', function (done) {
 
-        bootstrap().catch(function (error) {
-            error.should.include(rejectMessage);
+        overrideConfig({ url: 'example' });
 
-            // Next test
-            overrideConfig({url: 'something.com'});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
 
             done();
-        }).then(function () {
-            should.fail('no error was thrown when it should have been');
-            done();
-        });
+        }).catch(done);
     });
 
-    it('does not permit subdirectories named ghost', function (done) {
-        // replace the config file with invalid data
-        overrideConfig({url: 'http://testurl.com/ghost/'});
+    it('rejects a hostname with a scheme', function (done) {
 
-        bootstrap().catch(function (error) {
-            error.should.include(rejectMessage);
+        overrideConfig({ url: 'https://example' });
 
-             // Next test
-            overrideConfig({url: 'http://testurl.com/ghost/blog/'});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
-
-            // Next test
-            overrideConfig({url: 'http://testurl.com/blog/ghost'});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
 
             done();
-        }).then(function () {
-            should.fail('no error was thrown when it should have been');
-            done();
-        });
+        }).catch(done);
     });
 
-    it('requires a database config', function (done) {
+    it('rejects a url with an unsupported scheme', function (done) {
+
+        overrideConfig({ url: 'ftp://example.com' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+     it('rejects a url with a protocol relative scheme', function (done) {
+
+        overrideConfig({ url: '//example.com' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('does not permit the word ghost as a url path', function (done) {
+        overrideConfig({ url: 'http://example.com/ghost/' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('does not permit the word ghost to be a component in a url path', function (done) {
+        overrideConfig({ url: 'http://example.com/blog/ghost/' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('does not permit the word ghost to be a component in a url path', function (done) {
+        overrideConfig({ url: 'http://example.com/ghost/blog/' });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('does not permit database config to be falsy', function (done) {
         // replace the config file with invalid data
-        overrideConfig({database: null});
+        overrideConfig({ database: false });
 
-        bootstrap().catch(function (error) {
-            error.should.include(rejectMessage);
-
-            // Next test
-            overrideConfig({database: {}});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
 
             done();
-        }).then(function () {
-            should.fail('no error was thrown when it should have been');
+        }).catch(done);
+    });
+
+    it('does not permit database config to be empty', function (done) {
+        // replace the config file with invalid data
+        overrideConfig({ database: {} });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
             done();
-        });
+        }).catch(done);
     });
 
 
-    it('requires a socket or a host and port', function (done) {
-        // replace the config file with invalid data
-        overrideConfig({server: {socket: 'test'}});
+    it('requires server to be present', function (done) {
+        overrideConfig({ server: false });
 
         bootstrap().then(function (localConfig) {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('allows server to use a socket', function (done) {
+        overrideConfig({ server: { socket: 'test' } });
+
+        bootstrap().then(function (localConfig) {
+            should.exist(localConfig);
             localConfig.server.socket.should.equal('test');
 
-              // Next test
-            overrideConfig({server: null});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+            done();
+        }).catch(done);
+    });
 
-            // Next test
-            overrideConfig({server: {host: null}});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+    it('allows server to have a host and a port', function (done) {
+        overrideConfig({ server: { host: '127.0.0.1', port: '2368' } });
 
-            // Next test
-            overrideConfig({server: {port: null}});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
-
-            // Next test
-            overrideConfig({server: {host: null, port: null}});
-            return bootstrap();
-        }).catch(function (error) {
-            error.should.include(rejectMessage);
+        bootstrap().then(function (localConfig) {
+            should.exist(localConfig);
+            localConfig.server.host.should.equal('127.0.0.1');
+            localConfig.server.port.should.equal('2368');
 
             done();
-        }).then(function () {
-            should.fail('no error was thrown when it should have been');
+        }).catch(done);
+    });
+
+    it('rejects server if there is a host but no port', function (done) {
+        overrideConfig({ server: { host: '127.0.0.1' } });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
             done();
-        });
+        }).catch(done);
+    });
+
+    it('rejects server if there is a port but no host', function (done) {
+        overrideConfig({ server: { port: '2368' } });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
+    });
+
+    it('rejects server if configuration is empty', function (done) {
+        overrideConfig({ server: {} });
+
+        bootstrap().then(function () {
+            done(expectedError);
+        }).catch(function (err) {
+            should.exist(err);
+            err.should.contain(rejectMessage);
+
+            done();
+        }).catch(done);
     });
 });

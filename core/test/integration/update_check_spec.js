@@ -18,7 +18,7 @@ describe('Update Check', function () {
             return testUtils.clearData();
         }).then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     after(function () {
@@ -36,13 +36,13 @@ describe('Update Check', function () {
             return permissions.init();
         }).then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should report the correct data', function (done) {
