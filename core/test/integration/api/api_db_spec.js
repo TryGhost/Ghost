@@ -54,9 +54,7 @@ describe('DB API', function () {
                 results.posts.length.should.equal(0);
                 done();
             });
-        }).catch(function (error) {
-            done(error);
-        });
+        }).catch(done);
     });
 
     it('delete all content is denied', function (done) {
@@ -77,7 +75,7 @@ describe('DB API', function () {
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
-        });
+        }).catch(done);
     });
 
     it('export content is denied', function (done) {
@@ -98,7 +96,7 @@ describe('DB API', function () {
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
-        });
+        }).catch(done);
     });
 
     it('import content is denied', function (done) {
@@ -119,6 +117,6 @@ describe('DB API', function () {
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
-        });
+        }).catch(done);
     });
 });

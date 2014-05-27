@@ -221,7 +221,7 @@ describe('Permissions', function () {
                     return canThisResult.edit.page(fakePage);
                 })
                 .then(function () {
-                    errors.logError(new Error("Allowed edit post without permission"));
+                    done(new Error('was able to edit post without permission'));
                 }).catch(done);
         });
 
@@ -287,9 +287,8 @@ describe('Permissions', function () {
                 })
                 .catch(function () {
                     permissableStub.restore();
-                    errors.logError(new Error("Did not allow testUser"));
 
-                    done();
+                    done(new Error('did not allow testUser'));
                 });
         });
 
@@ -386,10 +385,7 @@ describe('Permissions', function () {
                         .post(updatedPost.id)
                         .then(function () {
                             done(new Error("Allowed an edit of post 1"));
-                        })
-                        .catch(function () {
-                            done();
-                        });
+                        }).catch(done);
                 }).catch(done);
         });
 
@@ -412,9 +408,7 @@ describe('Permissions', function () {
                 .then(function () {
                     done(new Error("Should not allow editing post"));
                 })
-                .catch(function () {
-                    done();
-                });
+                .catch(done);
         });
 
         it('allows \'internal\' to be passed for internal requests', function (done) {

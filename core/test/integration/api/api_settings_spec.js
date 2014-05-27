@@ -125,7 +125,7 @@ describe('Settings API', function () {
             should.exist(error);
             error.type.should.eql('NoPermissionError');
             done();
-        });
+        }).catch(done);
     });
 
     it('can read core settings if an internal request', function (done) {
@@ -172,7 +172,7 @@ describe('Settings API', function () {
                 err.type.should.eql('NoPermissionError');
 
                 done();
-            });
+            }).catch(done);
     });
 
     it('can edit a core setting with an internal request', function (done) {
