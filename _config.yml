@@ -23,6 +23,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: 'Español'
+      key: 'es'
 
 port:         4478
 
@@ -127,6 +129,17 @@ translations:
     help:         'Ajuda'
     upgrading:    'Atualizando' 
     troubleshooting: 'Resolução de Problemas'
+  es:
+    site_title:   'Guía de Ghost'
+    installation: 'Instalación'
+    usage:        'Uso'
+    email:        'Correo Electrónico'
+    themes:       'Temas'
+    translations: 'Traducciones'
+    help:         'Ayuda'
+    deploy:       'Implementación'
+    upgrading:    'Actualización' 
+    troubleshooting: 'Solución de Problemas'
 
 # If running locally, simply comment out the line below to make all urls relative
 
