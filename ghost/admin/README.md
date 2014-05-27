@@ -40,13 +40,13 @@ ghost-ui/
 │   ├── ghost-ui.js
 │   └── ghost-ui.min.js
 └── fonts/
-    ├── tbc.eot
-    ├── tbc.svg
-    ├── tbc.ttf
-    └── tbc.woff
+    ├── icons.eot
+    ├── icons.svg
+    ├── icons.ttf
+    └── icons.woff
 ```
 
-We provide compiled CSS and JS (`ghost-ui.*`), as well as compiled and minified CSS and JS (`ghost-ui.min.*`). Fonts from <tbc> are also included.
+We provide compiled CSS and JS (`ghost-ui.*`), as well as compiled and minified CSS and JS (`ghost-ui.min.*`). Our icon-font is also included.
 
 
 ## Bugs and Feature Requests
