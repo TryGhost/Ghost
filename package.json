@@ -79,7 +79,7 @@
         "grunt-express-server": "~0.4.11",
         "grunt-mocha-cli": "~1.4.0",
         "grunt-shell": "~0.6.1",
-        "grunt-update-submodules": "~0.2.1",
+        "grunt-update-submodules": "~0.4.0",
         "matchdep": "~0.3.0",
         "mocha": "~1.15.1",
         "nock": "0.27.2",
