@@ -11,7 +11,7 @@ section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-## Descargar Ghost <a id="deploy"></a>
+## Implementar Ghost <a id="deploy"></a>
 
 Así que estas listo para publicar usando Ghost? Excelente!
 
