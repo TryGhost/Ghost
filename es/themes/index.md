@@ -46,9 +46,9 @@ Las plantillas Handlebars son jerárquicas (una plantilla puede extender otra pl
 
 Realmente esperamos que disfrutes de nuestro principio sobre el desarrollo de temas.
 
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## La Estructura de Archivos de un Tema Ghost <a id="file-structure"></a>
 
-The recommended file structure is:
+La estructura de archivos recomendada es la siguiente:
 
 ```
 .
@@ -64,11 +64,11 @@ The recommended file structure is:
 └── package.json [will be required from 0.6]
 ```
 
-For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">assets</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
+Por ahora, no se requiere <code class="path">default.hbs</code> o cualquier otra carpeta. Recomendamos que mantengas tus elementos dentro de la una carpeta <code class="path">assets</code> usando el [asistente `{{asset}}`](#asset-helper) para entregar css, js, image, font y otros archivos de elementos.
 
-<code class="path">index.hbs</code> and <code class="path">post.hbs</code> are required – Ghost will not work if these two templates are not present.
+Las plantillas <code class="path">index.hbs</code> y <code class="path">post.hbs</code> son requeridas – Ghost no va a funcionar sin estas dos plantillas presentes.
 
-*Note:* While edits to existing files are generated on the fly, you will need to restart Ghost each time you add or remove a file from the theme directory for it to be recognised and used.
+*Nota:* Aunque las modificaciones a los archivos son generadas inmediatamente, es necesario reiniciar Ghost cada vez que añades o eliminas un archivo la carpeta de temas para poder verlos y usarlos.
 
 ### Partials <a id="partials"></a>
 
