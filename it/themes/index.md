@@ -62,7 +62,13 @@ La struttura raccomandata è la seguente:
 └── post.hbs [required]
 ```
 
-Non è richiesto che default.hbs sia presente, nè che esista alcuna delle cartelle suggerite. <code class="path">index.hbs</code> e <code class="path">post.hbs</code> sono gli unici file richiesti – Ghost non funzionerà senza questi due templates. <code class="path">partials</code> è una cartella speciale. Dovrebbe contenere tutti i templates che hai intenzione di riutilizzare nel tuo tema, per esempio <code class="path">list-post.hbs</code> che potrebbe essere il template di un singolo post in un listing, che quindi riutilizzerai per la homepage, e in futuro per le pagine archivio e tags. <code class="path">partials</code> è anche la cartella che puoi utilizzare per sovrascrivere i templates di default usati da alcuni helpers, come la paginazione. Il file <code class="path">pagination.hbs</code> all'interno di <code class="path">partials</code>ti permetterebbe di personalizzare l'HTML relativo alla paginazione, ad esempio.
+Non è richiesto che `default.hbs sia presente, nè che esista alcuna delle cartelle suggerite. Si consiglia di mantenere i vostri elementi all'interno della cartella <code class="path">assets</code> facendu uso dell'[assistente `{{asset}}`] (# asset-helper) per fornire css, js, immagini, font file e altri elementi. 
+
+I template<code class="path">index.hbs</code> e <code class="path">post.hbs</code> sono gli unici file richiesti – Ghost non funzionerà senza questi due templates. 
+
+### Partials <a id="partials"></a>
+
+<code class="path">partials</code> è una cartella speciale. Dovrebbe contenere tutti i templates che hai intenzione di riutilizzare nel tuo tema, per esempio <code class="path">list-post.hbs</code> che potrebbe essere il template di un singolo post in un listing, che quindi riutilizzerai per la homepage, e in futuro per le pagine archivio e tags. <code class="path">partials</code> è anche la cartella che puoi utilizzare per sovrascrivere i templates di default usati da alcuni helpers, come la paginazione. Il file <code class="path">pagination.hbs</code> all'interno di <code class="path">partials</code>ti permetterebbe di personalizzare l'HTML relativo alla paginazione, ad esempio.
 
 ### default.hbs
 
