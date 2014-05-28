@@ -1,9 +1,9 @@
 /*global console */
 
-import ModalDialog from 'ghost/components/modal-dialog';
+import ModalDialog from 'ghost/components/gh-modal-dialog';
 
 var UploadModal = ModalDialog.extend({
-    layoutName: 'components/modal-dialog',
+    layoutName: 'components/gh-modal-dialog',
 
     didInsertElement: function () {
         this._super();
