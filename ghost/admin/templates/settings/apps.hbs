@@ -4,12 +4,24 @@
 </header>
 
 <section class="content fade-in">
-    <ul class="js-apps">
-        {{#each availableApps}}
-        <li>
-            {{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}} - package.json missing :({{/if}}
-            <button data-app="{{name}}" class="{{#if active}}button-delete js-button-deactivate js-button-active">Deactivate{{else}}button-add js-button-activate">Activate{{/if}}</button>
-        </li>
+    <table class="js-apps">
+        <thead>
+            <th>App name</th>
+            <th>Status</th>
+        </thead>
+        <tbody>
+        {{#each itemController="settings/app"}}
+        <tr>
+            <td>
+                {{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}} - package.json missing :({{/if}}
+            </td>
+            <td>
+                <button {{action toggleApp this}} {{bind-attr class=":js-button-active activeClass:button-delete inactiveClass:button-add activeClass:js-button-deactivate"}}>
+                    {{buttonText}}
+                </button>
+            </td>
+        </tr>
         {{/each}}
-    </ul>
+        </tbody>
+    </table>
 </section>
