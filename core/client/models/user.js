@@ -1,24 +1,28 @@
-import BaseModel from 'ghost/models/base';
-
-var UserModel = BaseModel.extend({
-    id: null,
-    name: null,
-    image: null,
+var User = DS.Model.extend({
+    uuid: DS.attr('string'),
+    name: DS.attr('string'),
+    slug: DS.attr('string'),
+    password: DS.attr('string'),
+    email: DS.attr('string'),
+    image: DS.attr('string'),
+    cover: DS.attr('string'),
+    bio: DS.attr('string'),
+    website: DS.attr('string'),
+    location: DS.attr('string'),
+    accessibility: DS.attr('string'),
+    status: DS.attr('string'),
+    language: DS.attr('string'),
+    meta_title: DS.attr('string'),
+    meta_description: DS.attr('string'),
+    last_login: DS.attr('date'),
+    created_at: DS.attr('date'),
+    created_by: DS.attr('number'),
+    updated_at: DS.attr('date'),
+    updated_by: DS.attr('number'),
 
     isSignedIn: Ember.computed.bool('id'),
 
-    url: BaseModel.apiRoot + '/users/me/',
-    forgottenUrl: BaseModel.apiRoot + '/forgotten/',
-    resetUrl: BaseModel.apiRoot + '/reset/',
-
-    save: function () {
-        return ic.ajax.request(this.url, {
-            type: 'POST',
-            data: this.getProperties(Ember.keys(this))
-        });
-    },
-
-    validate: function () {
+    validationErrors: function () {
         var validationErrors = [];
 
         if (!validator.isLength(this.get('name'), 0, 150)) {
@@ -44,25 +48,20 @@ var UserModel = BaseModel.extend({
             }
         }
 
-        if (validationErrors.length > 0) {
-            this.set('isValid', false);
-        } else {
-            this.set('isValid', true);
-        }
+        return validationErrors;
+    }.property('name', 'bio', 'email', 'location', 'website'),
 
-        this.set('errors', validationErrors);
-
-        return this;
-    },
+    isValid: Ember.computed.empty('validationErrors.[]'),
 
     saveNewPassword: function (password) {
-        return ic.ajax.request(BaseModel.subdir + '/ghost/changepw/', {
+        var url = this.get('ghostPaths').adminUrl('changepw');
+        return ic.ajax.request(url, {
             type: 'POST',
             data: password
         });
     },
 
-    validatePassword: function (password) {
+    passwordValidationErrors: function (password) {
         var validationErrors = [];
 
         if (!validator.equals(password.newPassword, password.ne2Password)) {
@@ -73,24 +72,17 @@ var UserModel = BaseModel.extend({
             validationErrors.push("Your password is not long enough. It must be at least 8 characters long.");
         }
 
-        if (validationErrors.length > 0) {
-            this.set('passwordIsValid', false);
-        } else {
-            this.set('passwordIsValid', true);
-        }
-
-        this.set('passwordErrors', validationErrors);
-
-        return this;
+        return validationErrors;
     },
 
     fetchForgottenPasswordFor: function (email) {
-        var self = this;
+        var forgottenUrl = this.get('ghostPaths').apiUrl('forgotten');
+
         return new Ember.RSVP.Promise(function (resolve, reject) {
             if (!validator.isEmail(email)) {
                 reject(new Error('Please enter a correct email address.'));
             } else {
-                resolve(ic.ajax.request(self.forgottenUrl, {
+                resolve(ic.ajax.request(forgottenUrl, {
                     type: 'POST',
                     headers: {
                         // @TODO Find a more proper way to do this.
@@ -105,12 +97,14 @@ var UserModel = BaseModel.extend({
     },
 
     resetPassword: function (passwords, token) {
-        var self = this;
+        var self = this,
+            resetUrl = this.get('ghostPaths').apiUrl('reset');
+
         return new Ember.RSVP.Promise(function (resolve, reject) {
             if (!self.validatePassword(passwords).get('passwordIsValid')) {
                 reject(new Error('Errors found! ' + JSON.stringify(self.get('passwordErrors'))));
             } else {
-                resolve(ic.ajax.request(self.resetUrl, {
+                resolve(ic.ajax.request(resetUrl, {
                     type: 'POST',
                     headers: {
                         // @TODO: find a more proper way to do this.
@@ -127,4 +121,4 @@ var UserModel = BaseModel.extend({
     }
 });
 
-export default UserModel;
+export default User;

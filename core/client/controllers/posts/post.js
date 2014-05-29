@@ -13,49 +13,26 @@ var PostController = Ember.ObjectController.extend({
     isDraft: equal('status', 'draft'),
     willPublish: Ember.computed.oneWay('isPublished'),
     isStaticPage: function (key, val) {
+        var self = this;
+
         if (arguments.length > 1) {
-            this.set('model.page', val ? 1 : 0);
-            this.get('model').save('page').then(function () {
-                this.notifications.showSuccess('Succesfully converted ' + (val ? 'to static page' : 'to post'));
+            this.set('page', val ? 1 : 0);
+
+            return this.get('model').save().then(function () {
+                self.notifications.showSuccess('Succesfully converted to ' + (val ? 'static page' : 'post'));
+
+                return !!self.get('page');
             }, this.notifications.showErrors);
         }
-        return !!this.get('model.page');
-    }.property('model.page'),
 
-    isOnServer: function () {
-        return this.get('model.id') !== undefined;
-    }.property('model.id'),
+        return !!this.get('page');
+    }.property('page'),
 
-    newSlugBinding: Ember.Binding.oneWay('model.slug'),
-    slugPlaceholder: null,
-    // Requests a new slug when the title was changed
-    updateSlugPlaceholder: function () {
-        var model,
-            self = this,
-            title = this.get('title');
+    newSlugBinding: Ember.computed.oneWay('slug'),
 
-        // If there's a title present we want to
-        // validate it against existing slugs in the db
-        // and then update the placeholder value.
-        if (title) {
-            model = self.get('model');
-            model.generateSlug().then(function (slug) {
-                self.set('slugPlaceholder', slug);
-            }, function () {
-                self.notifications.showWarn('Unable to generate a slug for "' + title + '"');
-            });
-        } else {
-            // If there's no title set placeholder to blank
-            // and don't make an ajax request to server
-            // for a proper slug (as there won't be any).
-            self.set('slugPlaceholder', '');
-        }
-    }.observes('model.title'),
-
-    publishedAt: null,
-    publishedAtChanged: function () {
-        this.set('publishedAt', formatDate(this.get('model.published_at')));
-    }.observes('model.published_at'),
+    slugPlaceholder: function () {
+        return this.get('model').generateSlug();
+    }.property('title'),
 
     actions: {
         save: function () {
@@ -78,6 +55,11 @@ var PostController = Ember.ObjectController.extend({
                 console.warn('Received invalid save type; ignoring.');
             }
         },
+        toggleFeatured: function () {
+            this.set('featured', !this.get('featured'));
+
+            this.get('model').save();
+        },
         editSettings: function () {
             var isEditing = this.toggleProperty('isEditingSettings');
             if (isEditing) {
@@ -91,9 +73,10 @@ var PostController = Ember.ObjectController.extend({
                 });
             }
         },
+
         updateSlug: function () {
             var newSlug = this.get('newSlug'),
-                slug = this.get('model.slug'),
+                slug = this.get('slug'),
                 placeholder = this.get('slugPlaceholder'),
                 self = this;
 
@@ -110,17 +93,17 @@ var PostController = Ember.ObjectController.extend({
             }
 
             //Validation complete
-            this.set('model.slug', newSlug);
+            this.set('slug', newSlug);
 
             // If the model doesn't currently
             // exist on the server
             // then just update the model's value
-            if (!this.get('isOnServer')) {
+            if (!this.get('isNew')) {
                 return;
             }
-
-            this.get('model').save('slug').then(function () {
-                self.notifications.showSuccess('Permalink successfully changed to <strong>' + this.get('model.slug') + '</strong>.');
+            
+            this.get('model').save().then(function () {
+                self.notifications.showSuccess('Permalink successfully changed to <strong>' + this.get('slug') + '</strong>.');
             }, this.notifications.showErrors);
         },
 
@@ -182,16 +165,16 @@ var PostController = Ember.ObjectController.extend({
             }
 
             //Validation complete
-            this.set('model.published_at', newPubDateMoment.toDate());
+            this.set('published_at', newPubDateMoment.toDate());
 
             // If the model doesn't currently
             // exist on the server
             // then just update the model's value
-            if (!this.get('isOnServer')) {
+            if (!this.get('isNew')) {
                 return;
             }
 
-            this.get('model').save('published_at').then(function () {
+            this.get('model').save().then(function () {
                 this.notifications.showSuccess('Publish date successfully changed to <strong>' + this.get('publishedAt') + '</strong>.');
             }, this.notifications.showErrors);
         }
