@@ -1,12 +1,10 @@
 import Resolver from 'ember/resolver';
 import initFixtures from 'ghost/fixtures/init';
-import injectCurrentUser from 'ghost/initializers/current-user';
-import injectCsrf from 'ghost/initializers/csrf';
-import {registerNotifications, injectNotifications} from 'ghost/initializers/notifications';
-import registerTrailingLocationHistory from 'ghost/initializers/trailing-history';
-import injectGhostPaths from 'ghost/initializers/ghost-paths';
+import loadInitializers from 'ember/load-initializers';
 import 'ghost/utils/link-view';
 import 'ghost/utils/text-field';
+
+Ember.MODEL_FACTORY_INJECTIONS = true;
 
 var App = Ember.Application.extend({
     /**
@@ -23,11 +21,6 @@ var App = Ember.Application.extend({
 
 initFixtures();
 
-App.initializer(injectCurrentUser);
-App.initializer(injectCsrf);
-App.initializer(injectGhostPaths);
-App.initializer(registerNotifications);
-App.initializer(injectNotifications);
-App.initializer(registerTrailingLocationHistory);
+loadInitializers(App, 'ghost');
 
 export default App;
