@@ -22,7 +22,13 @@ var Post = DS.Model.extend({
 
     generateSlug: function () {
         var title = this.get('title'),
-            url = this.get('ghostPaths').apiUrl('posts', 'slug', encodeURIComponent(title));
+            url;
+
+        if (!title) {
+            return;
+        }
+
+        url = this.get('ghostPaths').apiUrl('slugs', 'post', encodeURIComponent(title));
 
         return ic.ajax.request(url, {
                 type: 'GET'

@@ -41,7 +41,7 @@ var defineFixtures = function (status) {
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/2', post(2, status));
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/3', post(3, status));
     ic.ajax.defineFixture('/ghost/api/v0.1/posts/4', post(4, status));
-    ic.ajax.defineFixture('/ghost/api/v0.1/posts/slug/test%20title/', response('generated-slug', status));
+    ic.ajax.defineFixture('/ghost/api/v0.1/slugs/post/test%20title/', response('generated-slug', status));
 
     ic.ajax.defineFixture('/ghost/api/v0.1/users/me/', user(status));
     ic.ajax.defineFixture('/ghost/changepw/', response({
