@@ -900,7 +900,7 @@ describe('Core Helpers', function () {
         it('can return blog title', function (done) {
             helpers.meta_title.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('Ghost');
+                String(rendered).should.equal('Ghost');
 
                 done();
             }).catch(done);
@@ -910,7 +910,17 @@ describe('Core Helpers', function () {
             var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('Post Title');
+                String(rendered).should.equal('Post Title');
+
+                done();
+            }).then(null, done);
+        });
+	
+	it('can return escaped title of a post', function (done) {
+            var post = {relativeUrl: '/nice-escaped-post', post: {title: 'Post Title "</>'}};
+            helpers.meta_title.call(post).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Post Title "</>');
 
                 done();
             }).catch(done);
@@ -920,7 +930,7 @@ describe('Core Helpers', function () {
             var post = {relativeUrl: '/tag/foo', tag: {name: 'foo'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('foo - Ghost');
+                String(rendered).should.equal('foo - Ghost');
 
                 done();
             }).catch(done);
@@ -936,17 +946,17 @@ describe('Core Helpers', function () {
         it('can return blog description', function (done) {
             helpers.meta_description.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('Just a blogging platform.');
+                String(rendered).should.equal('Just a blogging platform.');
 
                 done();
             }).catch(done);
         });
-
+	
         it('can return empty description on post', function (done) {
             var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('');
+                String(rendered).should.equal('');
 
                 done();
             }).catch(done);

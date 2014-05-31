@@ -497,7 +497,7 @@ coreHelpers.meta_title = function (options) {
 
     return filters.doFilter('meta_title', title).then(function (title) {
         title = title || "";
-        return new hbs.handlebars.SafeString(title.trim());
+        return title.trim();
     });
 };
 
@@ -517,7 +517,7 @@ coreHelpers.meta_description = function (options) {
 
     return filters.doFilter('meta_description', description).then(function (description) {
         description = description || "";
-        return new hbs.handlebars.SafeString(description.trim());
+        return description.trim();
     });
 };
 
