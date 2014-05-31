@@ -16,16 +16,21 @@
 }
 
 /*
-  By default nav menu should be displayed as it's visibility is controllerd
-  by GhostPopover
-*/
-.navbar .subnav ul {
-    display: block;
-}
-
-/*
   Styles for GhostPopoverComponent
- */
+
+  hack the user menu and for the post-save button popup,
+  until ghost-ui gets a rehaul
+*/
+.navbar .subnav ul.ghost-popover,
+#publish-bar .splitbutton-save .editor-options.ghost-popover,
+#publish-bar .splitbutton-delete .editor-options.ghost-popover{
+   display:  none;
+}
+#publish-bar .splitbutton-save .editor-options.ghost-popover.open,
+#publish-bar .splitbutton-delete .editor-options.ghost-popover.open,
+.navbar .subnav ul.ghost-popover.open {
+   display:  block;
+}
 
 .ghost-popover {
     display: none;
@@ -34,11 +39,14 @@
 .ghost-popover.open {
     display: block;
 }
+
+
+/* Fade in animation */
 .fade-in {
-    animation: fadein 0.5s;
+    -o-animation: fadein 0.5s; /* Opera */
     -moz-animation: fadein 0.5s; /* Firefox */
     -webkit-animation: fadein 0.5s; /* Safari and Chrome */
-    -o-animation: fadein 0.5s; /* Opera */
+    animation: fadein 0.5s;
 }
 @keyframes fadein {
     from {
@@ -46,6 +54,14 @@
     }
     to {
         opacity:1;
+    }
+}
+@-o-keyframes fadein { /* Opera */
+    from {
+        opacity:0;
+    }
+    to {
+        opacity: 1;
     }
 }
 @-moz-keyframes fadein { /* Firefox */
@@ -62,13 +78,5 @@
     }
     to {
         opacity:1;
-    }
-}
-@-o-keyframes fadein { /* Opera */
-    from {
-        opacity:0;
-    }
-    to {
-        opacity: 1;
     }
 }
