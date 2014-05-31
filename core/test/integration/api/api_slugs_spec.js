@@ -60,7 +60,7 @@ describe('Slug API', function () {
         }, function (error) {
             error.type.should.eql('BadRequestError');
             done();
-        });
+        }).catch(done);
     });
 
 });

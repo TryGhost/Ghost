@@ -73,10 +73,9 @@ describe('Middleware', function () {
             };
         });
 
-        it('should return a json 401 error response', function (done) {
+        it('should return a json 401 error response', function () {
             middleware.authAPI(req, res, null);
             assert(res.json.calledWith(401, { error: 'Please sign in' }));
-            done();
         });
 
         it('should call next if a user exists in session', function (done) {
@@ -103,12 +102,11 @@ describe('Middleware', function () {
             };
         });
 
-        it('should redirect to dashboard', function (done) {
+        it('should redirect to dashboard', function () {
             req.session.user = {};
 
             middleware.redirectToDashboard(req, res, null);
             assert(res.redirect.calledWithMatch('/ghost/'));
-            done();
         });
 
         it('should call next if no user in session', function (done) {

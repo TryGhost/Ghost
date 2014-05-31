@@ -149,7 +149,7 @@ describe("Mail", function () {
             }).catch(function (err) {
                 err.should.be.an.instanceOf(Error);
                 done();
-            });
+            }).catch(done);
         });
     });
 
@@ -168,13 +168,12 @@ describe("Mail", function () {
         }).catch(done);
     });
 
-    it('should use from address as configured in config.js', function (done) {
+    it('should use from address as configured in config.js', function () {
         overrideConfig({mail:{fromaddress: 'static@example.com'}});
         mailer.fromAddress().should.equal('static@example.com');
-        done();
     });
 
-    it('should fall back to ghost@[blog.url] as from address', function (done) {
+    it('should fall back to ghost@[blog.url] as from address', function () {
         // Standard domain
         overrideConfig({url: 'http://default.com', mail:{fromaddress: null}});
         mailer.fromAddress().should.equal('ghost@default.com');
@@ -186,7 +185,5 @@ describe("Mail", function () {
         // Strip Port
         overrideConfig({url: 'http://default.com:2368/', mail:{}});
         mailer.fromAddress().should.equal('ghost@default.com');
-
-        done();
     });
 });

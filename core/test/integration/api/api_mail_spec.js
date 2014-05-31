@@ -45,6 +45,6 @@ describe('Mail API', function () {
         }).catch(function (error) {
             error.type.should.eql('EmailError');
             done();
-        });
+        }).catch(done);
     });
 });

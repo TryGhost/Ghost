@@ -7,6 +7,7 @@
 var fs      = require('fs'),
     url     = require('url'),
     when    = require('when'),
+    validator = require('validator'),
     errors  = require('./server/errors'),
     config  = require('./server/config'),
 
@@ -73,11 +74,12 @@ function validateConfigEnvironment() {
     }
 
     // Check that our url is valid
-    parsedUrl = url.parse(config.url || 'invalid', false, true);
-    if (!parsedUrl.host) {
+    if (!validator.isURL(config.url, { protocols: ['http', 'https'], require_protocol: true })) {
         errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
         return when.reject(rejectMessage);
     }
+
+    parsedUrl = url.parse(config.url || 'invalid', false, true);
 
     if (/\/ghost(\/|$)/.test(parsedUrl.pathname)) {
         errors.logError(new Error('Your site url in config.js cannot contain a subdirectory called ghost.'), config.url, 'Please rename the subdirectory before restarting');

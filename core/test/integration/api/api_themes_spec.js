@@ -19,7 +19,7 @@ describe('Themes API', function () {
     before(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     beforeEach(function (done) {
@@ -53,14 +53,14 @@ describe('Themes API', function () {
             });
 
             done();
-        }, done);
+        }).catch(done);
     });
 
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             sandbox.restore();
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('can browse', function (done) {
@@ -77,7 +77,7 @@ describe('Themes API', function () {
             done();
         }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
-        });
+        }).catch(done);
     });
 
     it('can edit', function (done) {
@@ -96,6 +96,6 @@ describe('Themes API', function () {
             done();
         }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
-        });
+        }).catch(done);
     })
 });
