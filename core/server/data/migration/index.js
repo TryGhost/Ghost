@@ -1,76 +1,26 @@
 var _               = require('lodash'),
     when            = require('when'),
+    path            = require('path'),
+    fs              = require('fs'),
+    nodefn          = require('when/node/function'),
     errors          = require('../../errors'),
     client          = require('../../models/base').client,
     knex            = require('../../models/base').knex,
     sequence        = require('when/sequence'),
 
-    defaultSettings = require('../default-settings'),
+    versioning      = require('../versioning'),
     Settings        = require('../../models/settings').Settings,
     fixtures        = require('../fixtures'),
     schema          = require('../schema').tables,
+    dataExport      = require('../export'),
 
-    initialVersion  = '000',
     schemaTables    = _.keys(schema),
-    defaultDatabaseVersion,
 
     init,
     reset,
     migrateUp,
     migrateUpFreshDb,
     getTables;
-
-// Default Database Version
-// The migration version number according to the hardcoded default settings
-// This is the version the database should be at or migrated to
-function getDefaultDatabaseVersion() {
-    if (!defaultDatabaseVersion) {
-        // This be the current version according to the software
-        defaultDatabaseVersion = _.find(defaultSettings.core, function (setting) {
-            return setting.key === 'databaseVersion';
-        }).defaultValue;
-    }
-
-    return defaultDatabaseVersion;
-}
-
-// Database Current Version
-// The migration version number according to the database
-// This is what the database is currently at and may need to be updated
-function getDatabaseVersion() {
-    return knex.schema.hasTable('settings').then(function (exists) {
-        // Check for the current version from the settings table
-        if (exists) {
-            // Temporary code to deal with old databases with currentVersion settings
-            return knex('settings')
-                .where('key', 'databaseVersion')
-                .orWhere('key', 'currentVersion')
-                .select('value')
-                .then(function (versions) {
-                    var databaseVersion = _.reduce(versions, function (memo, version) {
-                        if (isNaN(version.value)) {
-                            errors.throwError('Database version is not recognised');
-                        }
-                        return parseInt(version.value, 10) > parseInt(memo, 10) ? version.value : memo;
-                    }, initialVersion);
-
-                    if (!databaseVersion || databaseVersion.length === 0) {
-                        // we didn't get a response we understood, assume initialVersion
-                        databaseVersion = initialVersion;
-                    }
-
-                    return databaseVersion;
-                });
-        }
-        throw new Error('Settings table does not exist');
-    });
-}
-
-function setDatabaseVersion() {
-    return knex('settings')
-        .where('key', 'databaseVersion')
-        .update({ 'value': defaultDatabaseVersion });
-}
 
 function createTable(table) {
     return knex.schema.createTable(table, function (t) {
@@ -168,8 +118,8 @@ init = function () {
     // 2. The database exists but is out of date
     // 3. The database exists but the currentVersion setting does not or cannot be understood
     // 4. The database has not yet been created
-    return getDatabaseVersion().then(function (databaseVersion) {
-        var defaultVersion = getDefaultDatabaseVersion();
+    return versioning.getDatabaseVersion().then(function (databaseVersion) {
+        var defaultVersion = versioning.getDefaultDatabaseVersion();
         if (databaseVersion === defaultVersion) {
             // 1. The database exists and is up-to-date
             return when.resolve();
@@ -179,7 +129,7 @@ init = function () {
             // Migrate to latest version
             return self.migrateUp().then(function () {
                 // Finally update the databases current version
-                return setDatabaseVersion();
+                return versioning.setDatabaseVersion();
             });
         }
         if (databaseVersion > defaultVersion) {
@@ -249,9 +199,20 @@ function checkMySQLPostTable() {
     });
 }
 
+function backupDatabase() {
+    return dataExport().then(function (exportedData) {
+        // Save the exported data to the file system for download
+        var fileName = path.resolve(__dirname + '/../exported-' + (new Date().getTime()) + '.json');
+
+        return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData));
+    });
+}
+
 // Migrate from a specific version to the latest
 migrateUp = function () {
-    return getTables().then(function (oldTables) {
+    return backupDatabase().then(function () {
+        return getTables();
+    }).then(function (oldTables) {
         // if tables exist and client is mysqls check if posts table is okay
         if (!_.isEmpty(oldTables) && client === 'mysql') {
             return checkMySQLPostTable().then(function () {
@@ -293,7 +254,6 @@ getTables = function () {
 };
 
 module.exports = {
-    getDatabaseVersion: getDatabaseVersion,
     init: init,
     reset: reset,
     migrateUp: migrateUp,
