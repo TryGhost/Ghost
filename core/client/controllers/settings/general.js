@@ -34,7 +34,7 @@ var SettingsGeneralController = Ember.ObjectController.extend({
                 });
 
                 // Let the applicationRoute handle validation errors
-                this.send('handleValidationErrors', errs);
+                this.send('handleErrors', errs);
             } else {
                 model.save().then(function () {
                     // @TODO: Notification of success

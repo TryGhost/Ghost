@@ -45,9 +45,10 @@ var ApplicationRoute = Ember.Route.extend({
         },
 
         handleErrors: function (errors) {
+            var self = this;
             this.notifications.clear();
             errors.forEach(function (errorObj) {
-                this.notifications.showError(errorObj.message || errorObj);
+                self.notifications.showError(errorObj.message || errorObj);
 
                 if (errorObj.hasOwnProperty('el')) {
                     errorObj.el.addClass('input-error');
