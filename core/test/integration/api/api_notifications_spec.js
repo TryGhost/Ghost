@@ -42,7 +42,7 @@ describe('Notifications API', function () {
                 results.notifications.length.should.be.above(0);
                 testUtils.API.checkResponse(results.notifications[0], 'notification');
                 done();
-            });
+            }).catch(done);
         });
     });
 
@@ -64,7 +64,7 @@ describe('Notifications API', function () {
             notification.location.should.equal('bottom');
 
             done();
-        });
+        }).catch(done);
     });
 
     it('can add, adds id and status', function (done) {
@@ -87,7 +87,7 @@ describe('Notifications API', function () {
             notification.status.should.equal('persistent')
             
             done();
-        });
+        }).catch(done);
     });
 
     it('can destroy', function (done) {
