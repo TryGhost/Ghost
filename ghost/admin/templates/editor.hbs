@@ -1,27 +1,26 @@
 <section class="entry-container">
-    <header>
-        <section class="box entry-title">
-            {{input type="text" id="entry-title" placeholder="Your Post Title" value=title tabindex="1"}}
-        </section>
-    </header>
-
-    <section class="entry-markdown active">
-        <header class="floatingheader">
-            <small>Markdown</small>
-            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
-        </header>
-        <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-codemirror value=markdown scrollPosition=view.scrollPosition}}
-        </section>
+<header>
+    <section class="box entry-title">
+        {{input type="text" id="entry-title" placeholder="Your Post Title" value=title tabindex="1"}}
     </section>
+</header>
 
-    <section class="entry-preview">
-        <header class="floatingheader">
-            <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words markdown}} words</span></small>
-        </header>
-        <section class="entry-preview-content">
-            {{gh-markdown markdown=markdown scrollPosition=view.scrollPosition}}
-        </section>
+<section class="entry-markdown active">
+    <header class="floatingheader">
+        <small>Markdown</small>
+        <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
+    </header>
+    <section id="entry-markdown-content" class="entry-markdown-content">
+        {{gh-codemirror value=markdown scrollPosition=view.scrollPosition}}
+    </section>
+</section>
+
+<section class="entry-preview">
+    <header class="floatingheader">
+        <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words markdown}} words</span></small>
+    </header>
+    <section class="entry-preview-content">
+        {{gh-markdown markdown=markdown scrollPosition=view.scrollPosition}}
     </section>
 </section>
 

@@ -1,16 +1,14 @@
 /* global console */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 
-var equal = Ember.computed.equal;
-
 var PostController = Ember.ObjectController.extend({
     //## Editor state properties
     isEditingSettings: false,
     isViewingSaveTypes: false,
 
     //## Computed post properties
-    isPublished: equal('status', 'published'),
-    isDraft: equal('status', 'draft'),
+    isPublished: Ember.computed.equal('status', 'published'),
+    isDraft: Ember.computed.equal('status', 'draft'),
     willPublish: Ember.computed.oneWay('isPublished'),
     isStaticPage: function (key, val) {
         var self = this;
@@ -19,7 +17,7 @@ var PostController = Ember.ObjectController.extend({
             this.set('page', val ? 1 : 0);
 
             return this.get('model').save().then(function () {
-                self.notifications.showSuccess('Succesfully converted to ' + (val ? 'static page' : 'post'));
+                self.notifications.showSuccess('Successfully converted to ' + (val ? 'static page' : 'post'));
 
                 return !!self.get('page');
             }, this.notifications.showErrors);
@@ -38,9 +36,12 @@ var PostController = Ember.ObjectController.extend({
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
                 self = this;
+                       
             this.set('model.status', status);
             this.get('model').save().then(function () {
-                self.notifications.showSuccess('Post status saved as <strong>' + this.get('model.status') + '</strong>.');
+                console.log('saved');
+                self.notifications.showSuccess('Post status saved as <strong>' +
+                    self.get('model.status') + '</strong>.');
             }, this.notifications.showErrors);
         },
         viewSaveTypes: function () {
@@ -101,14 +102,16 @@ var PostController = Ember.ObjectController.extend({
             if (!this.get('isNew')) {
                 return;
             }
-            
+
             this.get('model').save().then(function () {
-                self.notifications.showSuccess('Permalink successfully changed to <strong>' + this.get('slug') + '</strong>.');
+                self.notifications.showSuccess('Permalink successfully changed to <strong>' +
+                    self.get('slug') + '</strong>.');
             }, this.notifications.showErrors);
         },
 
         updatePublishedAt: function (userInput) {
-            var errMessage = '',
+            var self = this,
+                errMessage = '',
                 newPubDate = formatDate(parseDateString(userInput)),
                 pubDate = this.get('publishedAt'),
                 newPubDateMoment,
@@ -124,7 +127,7 @@ var PostController = Ember.ObjectController.extend({
             // Check for missing time stamp on new data
             // If no time specified, add a 12:00
             if (newPubDate && !newPubDate.slice(-5).match(/\d+:\d\d/)) {
-                newPubDate += " 12:00";
+                newPubDate += ' 12:00';
             }
 
             newPubDateMoment = parseDateString(newPubDate);
@@ -134,7 +137,7 @@ var PostController = Ember.ObjectController.extend({
                 // Check for missing time stamp on current model
                 // If no time specified, add a 12:00
                 if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
-                    pubDate += " 12:00";
+                    pubDate += ' 12:00';
                 }
 
                 pubDateMoment = parseDateString(pubDate);
@@ -146,8 +149,9 @@ var PostController = Ember.ObjectController.extend({
             }
 
             // Validate new Published date
-            if (!newPubDateMoment.isValid() || newPubDate.substr(0, 12) === "Invalid date") {
-                errMessage = 'Published Date must be a valid date with format: DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
+            if (!newPubDateMoment.isValid() || newPubDate.substr(0, 12) === 'Invalid date') {
+                errMessage = 'Published Date must be a valid date with format: ' +
+                    'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
             }
 
             if (newPubDateMoment.diff(new Date(), 'h') > 0) {
@@ -175,7 +179,8 @@ var PostController = Ember.ObjectController.extend({
             }
 
             this.get('model').save().then(function () {
-                this.notifications.showSuccess('Publish date successfully changed to <strong>' + this.get('publishedAt') + '</strong>.');
+                this.notifications.showSuccess('Publish date successfully changed to <strong>' +
+                    self.get('publishedAt') + '</strong>.');
             }, this.notifications.showErrors);
         }
     }
