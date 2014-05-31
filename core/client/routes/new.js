@@ -11,7 +11,7 @@ var NewRoute = AuthenticatedRoute.extend(styleBody, {
 
     model: function () {
         return this.store.createRecord('post', {
-            title: 'New Post'
+            title: ''
         });
     }
 });
