@@ -632,6 +632,16 @@ var path           = require('path'),
                         'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
                     }
                 }
+            },
+
+            // ### grunt-update-submodules
+            // Grunt task to update git submodules
+            "update_submodules": {
+                default: {
+                    options: {
+                        params: false // blanks command-line parameters
+                    }
+                }
             }
         };
 
@@ -892,7 +902,7 @@ var path           = require('path'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['shell:bower', 'default']);
+            ['shell:bower', 'update_submodules', 'default']);
 
         // ### Production assets
         // `grunt prod` - will build the minified assets used in production.
@@ -907,7 +917,7 @@ var path           = require('path'),
         // Compiles handlebars templates, concatenates javascript files for the admin UI into a handful of files instead
         // of many files, and makes sure the bower dependencies are in the right place.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['update_submodules', 'handlebars', 'concat', 'copy:dev', 'emberBuild']);
+            ['handlebars', 'concat', 'copy:dev', 'emberBuild']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -934,7 +944,7 @@ var path           = require('path'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['shell:bower', 'handlebars', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
+            ['shell:bower', 'update_submodules', 'handlebars', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration
