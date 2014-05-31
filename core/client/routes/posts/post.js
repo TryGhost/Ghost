@@ -1,5 +1,11 @@
 export default Ember.Route.extend({
     model: function (params) {
-        return this.store.find('post', params.post_id);
+        var post = this.modelFor('posts').findBy('id', params.post_id);
+
+        if (!post) {
+            this.transitionTo('posts.index');
+        }
+
+        return post;
     }
 });
