@@ -2,6 +2,7 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 
 export default {
     name: 'ghost-paths',
+    after: 'store',
 
     initialize: function (container) {
         container.register('ghost:paths', ghostPaths(), {instantiate: false});

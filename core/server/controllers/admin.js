@@ -43,8 +43,14 @@ function setSelected(list, name) {
 adminControllers = {
     'index': function (req, res) {
         /*jslint unparam:true*/
+        var userData;
+
+        if (req.session && req.session.userData) {
+            userData = JSON.stringify(req.session.userData);
+        }
+
         res.render('default-ember', {
-            user: JSON.stringify(req.session.userData)
+            user: userData
         });
     },
     // Route: index
@@ -216,8 +222,13 @@ adminControllers = {
         if (!denied) {
             loginSecurity.push({ip: remoteAddress, time: currentTime});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
+                // Carry over the csrf secret
+                var existingSecret = req.session._csrfSecret;
+
                 req.session.regenerate(function (err) {
                     if (!err) {
+                        req.session._csrfSecret = existingSecret;
+
                         req.session.user = user.id;
                         req.session.userData = user.attributes;
 
@@ -254,7 +265,7 @@ adminControllers = {
     // Route: doSignup
     // Path: /ghost/signup/
     // Method: POST
-    'doSignup': function (req, res) {
+    'doSignup': function (req, res, next) {
         var name = req.body.name,
             email = req.body.email,
             password = req.body.password,
@@ -285,7 +296,8 @@ adminControllers = {
                             message: message,
                             options: {}
                         }]
-                    };
+                    },
+                    existingSecret;
 
                 api.mail.send(payload).otherwise(function (error) {
                     errors.logError(
@@ -295,18 +307,24 @@ adminControllers = {
                     );
                 });
 
+                // Carry over the csrf secret
+                existingSecret = req.session._csrfSecret;
                 req.session.regenerate(function (err) {
-                    if (!err) {
-                        if (req.session.user === undefined) {
-                            req.session.user = user.id;
-                            req.session.userData = user;
-                        }
-
-                        res.json(200, {
-                            redirect: config().paths.subdir + '/ghost/',
-                            userData: req.session.userData
-                        });
+                    if (err) {
+                        return next(err);
                     }
+
+                    req.session._csrfSecret = existingSecret;
+
+                    if (req.session.user === undefined) {
+                        req.session.user = user.id;
+                        req.session.userData = user;
+                    }
+
+                    res.json(200, {
+                        redirect: config().paths.subdir + '/ghost/',
+                        userData: req.session.userData
+                    });
                 });
             });
         }).otherwise(function (error) {

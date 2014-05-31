@@ -26,11 +26,12 @@ var SignupRoute = Ember.Route.extend(styleBody, {
                     data: data
                 }).then(function (resp) {
                     if (resp && resp.userData) {
-                        self.send('signedIn', resp.userData);
-
-                        self.notifications.clear();
-
-                        self.transitionTo('posts');
+                        self.store.pushPayload({ users: [resp.userData]});
+                        self.store.find('user', resp.userData.id).then(function (user) {
+                            self.send('signedIn', user);
+                            self.notifications.clear();
+                            self.transitionTo('posts');
+                        });
                     } else {
                         self.transitionTo('signin');
                     }

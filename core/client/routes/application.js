@@ -1,15 +1,27 @@
 var ApplicationRoute = Ember.Route.extend({
     actions: {
         signedIn: function (user) {
-            this.container.lookup('user:current').setProperties(user);
+            // Update the user on all routes and controllers
+            this.container.unregister('user:current');
+            this.container.register('user:current', user, { instantiate: false });
+
+            this.container.injection('route', 'user', 'user:current');
+            this.container.injection('controller', 'user', 'user:current');
+
+            this.set('user', user);
+            this.set('controller.user', user);
         },
 
         signedOut: function () {
-            this.container.lookup('user:current').setProperties({
-                id: null,
-                name: null,
-                image: null
-            });
+            // Nullify the user on all routes and controllers
+            this.container.unregister('user:current');
+            this.container.register('user:current', null, { instantiate: false });
+
+            this.container.injection('route', 'user', 'user:current');
+            this.container.injection('controller', 'user', 'user:current');
+
+            this.set('user', null);
+            this.set('controller.user', null);
         },
 
         openModal: function (modalName, model) {
