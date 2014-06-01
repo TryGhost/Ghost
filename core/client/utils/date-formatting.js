@@ -1,11 +1,11 @@
 /* global moment */
-var parseDateFormats = ["DD MMM YY HH:mm",
-                        "DD MMM YYYY HH:mm",
-                        "DD/MM/YY HH:mm",
-                        "DD/MM/YYYY HH:mm",
-                        "DD-MM-YY HH:mm",
-                        "DD-MM-YYYY HH:mm",
-                        "YYYY-MM-DD HH:mm"],
+var parseDateFormats = ['DD MMM YY HH:mm',
+                        'DD MMM YYYY HH:mm',
+                        'DD/MM/YY HH:mm',
+                        'DD/MM/YYYY HH:mm',
+                        'DD-MM-YY HH:mm',
+                        'DD-MM-YYYY HH:mm',
+                        'YYYY-MM-DD HH:mm'],
     displayDateFormat = 'DD MMM YY @ HH:mm';
 
 //Parses a string to a Moment

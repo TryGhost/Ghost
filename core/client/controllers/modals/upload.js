@@ -6,7 +6,7 @@ var UploadController = Ember.Controller.extend({
                 return true;
             },
             buttonClass: true,
-            text: "Cancel" // The reject button text
+            text: 'Cancel' // The reject button text
         }
     }
 });

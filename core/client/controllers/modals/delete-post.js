@@ -26,17 +26,17 @@ var DeletePostController = Ember.Controller.extend({
                 //     });
                 // });
             },
-            text: "Delete",
-            buttonClass: "button-delete"
+            text: 'Delete',
+            buttonClass: 'button-delete'
         },
         reject: {
             func: function () {
                 return true;
             },
-            text: "Cancel",
-            buttonClass: "button"
+            text: 'Cancel',
+            buttonClass: 'button'
         }
-    },
+    }
 });
 
 export default DeletePostController;

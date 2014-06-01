@@ -40,7 +40,7 @@ var Post = DS.Model.extend({
 
         if (!this.get('title.length')) {
             validationErrors.push({
-                message: "You must specify a title for the post."
+                message: 'You must specify a title for the post.'
             });
         }
 

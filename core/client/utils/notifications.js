@@ -5,7 +5,7 @@ var Notifications = Ember.ArrayProxy.extend({
         object.typeClass = 'notification-' + object.type;
         // This should be somewhere else.
         if (object.type === 'success') {
-            object.typeClass = object.typeClass + " notification-passive";
+            object.typeClass = object.typeClass + ' notification-passive';
         }
         this._super(object);
     },
