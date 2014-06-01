@@ -26,25 +26,25 @@ var User = DS.Model.extend({
         var validationErrors = [];
 
         if (!validator.isLength(this.get('name'), 0, 150)) {
-            validationErrors.push({message: "Name is too long"});
+            validationErrors.push({message: 'Name is too long'});
         }
 
         if (!validator.isLength(this.get('bio'), 0, 200)) {
-            validationErrors.push({message: "Bio is too long"});
+            validationErrors.push({message: 'Bio is too long'});
         }
 
         if (!validator.isEmail(this.get('email'))) {
-            validationErrors.push({message: "Please supply a valid email address"});
+            validationErrors.push({message: 'Please supply a valid email address'});
         }
 
         if (!validator.isLength(this.get('location'), 0, 150)) {
-            validationErrors.push({message: "Location is too long"});
+            validationErrors.push({message: 'Location is too long'});
         }
 
         if (this.get('website').length) {
             if (!validator.isURL(this.get('website'), { protocols: ['http', 'https'], require_protocol: true }) ||
                 !validator.isLength(this.get('website'), 0, 2000)) {
-                validationErrors.push({message: "Please use a valid url"});
+                validationErrors.push({message: 'Please use a valid url'});
             }
         }
 
@@ -65,11 +65,11 @@ var User = DS.Model.extend({
         var validationErrors = [];
 
         if (!validator.equals(password.newPassword, password.ne2Password)) {
-            validationErrors.push("Your new passwords do not match");
+            validationErrors.push('Your new passwords do not match');
         }
 
         if (!validator.isLength(password.newPassword, 8)) {
-            validationErrors.push("Your password is not long enough. It must be at least 8 characters long.");
+            validationErrors.push('Your password is not long enough. It must be at least 8 characters long.');
         }
 
         return validationErrors;

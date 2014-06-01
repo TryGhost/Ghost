@@ -1,7 +1,7 @@
 import PopoverMixin from 'ghost/mixins/popover-mixin';
 
 var PopoverButton = Ember.Component.extend(PopoverMixin, {
-    tagName: "button",
+    tagName: 'button',
     /*matches with the popover this button toggles*/
     popoverName: null,
     /*Notify popover service this popover should be toggled*/

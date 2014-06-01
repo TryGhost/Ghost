@@ -25,24 +25,24 @@ var SettingsModel = BaseModel.extend({
             postsPerPage;
 
         if (!validator.isLength(this.get('title'), 0, 150)) {
-            validationErrors.push({message: "Title is too long", el: 'title'});
+            validationErrors.push({message: 'Title is too long', el: 'title'});
         }
 
         if (!validator.isLength(this.get('description'), 0, 200)) {
-            validationErrors.push({message: "Description is too long", el: 'description'});
+            validationErrors.push({message: 'Description is too long', el: 'description'});
         }
 
         if (!validator.isEmail(this.get('email')) || !validator.isLength(this.get('email'), 0, 254)) {
-            validationErrors.push({message: "Please supply a valid email address", el: 'email'});
+            validationErrors.push({message: 'Please supply a valid email address', el: 'email'});
         }
 
         postsPerPage = this.get('postsPerPage');
         if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
-            validationErrors.push({message: "Please use a number less than 1000", el: 'postsPerPage'});
+            validationErrors.push({message: 'Please use a number less than 1000', el: 'postsPerPage'});
         }
 
         if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
-            validationErrors.push({message: "Please use a number greater than 0", el: 'postsPerPage'});
+            validationErrors.push({message: 'Please use a number greater than 0', el: 'postsPerPage'});
         }
 
         return validationErrors;
