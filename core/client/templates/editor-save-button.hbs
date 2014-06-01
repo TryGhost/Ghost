@@ -1,12 +1,14 @@
-<button type="button" {{action "save"}} {{bind-attr class="view.isDangerous:button-delete:button-save :js-publish-button" }}>{{view.save-text}}</button>
-<button {{action 'viewSaveTypes'}} {{bind-attr class="controller.isViewingSaveTypes:active :options :up" }} title="Post Settings"><span class="hidden">Post Settings</span>
+<button type="button" {{action "save"}} {{bind-attr class="view.isDangerous:button-delete:button-save :js-publish-button" }}>
+    {{view.save-text}}
 </button>
-{{!-- @TODO: implement popover --}}
-<ul {{bind-attr class="controller.isViewingSaveTypes::hidden :editor-options :overlay" }}>
-    <li {{bind-attr class="controller.willPublish:active"}}>
-        <a {{action "setSaveType" "publish"}} href="#">{{view.publish-text}}</a>
+{{#gh-popover-button popoverName="post-save-menu" classNameBindings="open:active :options :up" title="Post Settings"}}
+    <span class="hidden">Post Settings</span>
+{{/gh-popover-button}} 
+{{#gh-popover name="post-save-menu" closeOnClick="true" tagName="ul" classNames="editor-options overlay" publishTextBinding=view.publish-text draftTextBinding=view.draft-text}}
+    <li {{bind-attr class="controller.willPublish:active" }}>
+        <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
     </li>
-    <li {{bind-attr class="controller.willPublish::active"}}>
-        <a {{action "setSaveType" "draft"}} href="#">{{view.draft-text}}</a>
+    <li {{bind-attr class="controller.willPublish::active" }}>
+        <a {{action "setSaveType" "draft"}} href="#">{{view.draftText}}</a>
     </li>
-</ul>
+{{/gh-popover}}

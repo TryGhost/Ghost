@@ -14,9 +14,12 @@
         <div class="right">
 
             <section id="entry-controls">
-                <a class="post-settings" title="Post Settings" {{action 'editSettings'}}><span class="hidden">Post Settings</span></a>
-                <!-- @TODO Use Ghost Popover (#2565) and style arrow down -->
-                {{view "post-settings-menu-view"}}
+                {{#gh-popover-button popoverName="post-settings-menu" tagName="a" href="#" classNames="post-settings" title="Post Settings"}}
+                    <span class="hidden">Post Settings</span>
+                {{/gh-popover-button}}
+                {{#gh-popover name="post-settings-menu" classNames="post-settings-menu menu-right"}}
+                    {{view "post-settings-menu-view"}}
+                {{/gh-popover}}
             </section>
 
             {{view "editor-save-button" id="entry-actions"}}
