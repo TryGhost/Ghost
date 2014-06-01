@@ -10,6 +10,7 @@ Router.reopen({
 
 Router.map(function () {
     this.route('signin');
+    this.route('signout');
     this.route('signup');
     this.route('forgotten');
     this.route('reset', { path: '/reset/:token' });
