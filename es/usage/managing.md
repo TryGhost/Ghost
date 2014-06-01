@@ -2,7 +2,7 @@
 lang: es
 layout: usage
 meta_title: Cómo usar Ghost - Documentación de Ghost
-meta_description: Una guía detallada sobre el uso de la plataforma de blog Ghost. Ya tienes Ghost pero no sabes bien cómo empezar? Aprende aquí!
+meta_description: Una guía detallada sobre el uso de la plataforma de blog Ghost. ¿Ya tienes Ghost pero no sabes bien cómo empezar? ¡Aprende aquí!
 heading: Usando Ghost
 subheading: Encontrando y configurando funciones a tu manera
 chapter: usage
@@ -16,7 +16,7 @@ next_section: writing
 ##  Gestión de tu blog <a id="managing"></a>
 
 1.  Ve a <code class="path">&lt;your URL&gt;/ghost/editor/</code>
-2.  Escribe un título para tu post en “Post Title”
+2.  Escribe un título para tu post en “Post Title”.
 3.  Escribe tu contenido usando [Markdown](http://daringfireball.net/projects/markdown/syntax)
 4.  Guarda tu Post como "Draft" (borrador) pulsando el botón 'Save Draft' o tecleando Ctrl / CMD + S.<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/draft.gif)
 
@@ -24,7 +24,7 @@ next_section: writing
 
 Una vez que terminaste de escribir tu Post:
 
-1.  Haz click a la flecha al lado de "Save Draft"
+1.  Haz click a la flecha al lado de "Save Draft".
 2.  Selecciona "Publish Now"<br/> ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/publish.gif)
 
 Esto cambiará el botón para guardar a 'Publish Now' volviéndolo Rojo, y una vez pulsado publicará tu Post. Para convertir tu Post al estado 'Draft' de nuevo:
