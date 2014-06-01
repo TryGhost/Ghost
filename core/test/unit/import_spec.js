@@ -8,8 +8,9 @@ var testUtils = require('../utils'),
     errors    = require('../../server/errors'),
 
     // Stuff we are testing
-    knex        = require("../../server/models/base").knex,
+    knex        = require('../../server/models/base').knex,
     migration   = require('../../server/data/migration'),
+    versioning  = require('../../server/data/versioning'),
     exporter    = require('../../server/data/export'),
     importer    = require('../../server/data/import'),
     Importer000 = require('../../server/data/import/000'),
@@ -113,7 +114,7 @@ describe("Import", function () {
 
         it("imports data from 000", function (done) {
             var exportData,
-                migrationStub = sandbox.stub(migration, "getDatabaseVersion", function () {
+                versioningStub = sandbox.stub(versioning, "getDatabaseVersion", function () {
                     return when.resolve("000");
                 });
 
@@ -151,7 +152,7 @@ describe("Import", function () {
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
-                migrationStub.restore();
+                versioningStub.restore();
 
                 done();
             }).catch(done);

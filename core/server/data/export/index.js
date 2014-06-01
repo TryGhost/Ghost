@@ -1,8 +1,8 @@
-var when      = require('when'),
-    _         = require('lodash'),
-    migration = require('../migration'),
-    knex      = require('../../models/base').knex,
-    schema    = require('../schema').tables,
+var _          = require('lodash'),
+    when       = require('when'),
+    versioning = require('../versioning'),
+    knex       = require('../../models/base').knex,
+    schema     = require('../schema').tables,
 
     excludedTables = ['sessions'],
     exporter;
@@ -10,7 +10,7 @@ var when      = require('when'),
 exporter = function () {
     var tablesToExport = _.keys(schema);
 
-    return when.join(migration.getDatabaseVersion(), tablesToExport).then(function (results) {
+    return when.join(versioning.getDatabaseVersion(), tablesToExport).then(function (results) {
         var version = results[0],
             tables = results[1],
             selectOps = _.map(tables, function (name) {
