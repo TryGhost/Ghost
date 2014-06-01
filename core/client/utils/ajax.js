@@ -21,18 +21,18 @@ var getRequestErrorMessage = function (request) {
     // If a non 200 response
     if (request.status !== 200) {
         try {
-            // Try to parse out the error, or default to "Unknown"
+            // Try to parse out the error, or default to 'Unknown'
             if (request.responseJSON.errors && Ember.isArray(request.responseJSON.errors)) {
 
                 message = request.responseJSON.errors.map(function (errorItem) {
                     return errorItem.message;
                 }).join('; ');
             } else {
-                message =  request.responseJSON.error || "Unknown Error";
+                message =  request.responseJSON.error || 'Unknown Error';
             }
         } catch (e) {
-            msgDetail = request.status ? request.status + " - " + request.statusText : "Server was not available";
-            message = "The server returned an error (" + msgDetail + ").";
+            msgDetail = request.status ? request.status + ' - ' + request.statusText : 'Server was not available';
+            message = 'The server returned an error (' + msgDetail + ').';
         }
     }
 

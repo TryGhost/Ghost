@@ -9,5 +9,5 @@ export default DS.Model.extend({
 	created_at: DS.attr('date'),
 	created_by: DS.attr('number'),
 	updated_at: DS.attr('date'),
-	updated_by: DS.attr('number'),
+	updated_by: DS.attr('number')
 });
