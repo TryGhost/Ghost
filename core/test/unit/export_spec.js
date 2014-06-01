@@ -8,6 +8,7 @@ var testUtils = require('../utils'),
 
     // Stuff we are testing
     migration = require('../../server/data/migration'),
+    versioning = require('../../server/data/versioning'),
     exporter = require('../../server/data/export'),
     Settings = require('../../server/models/settings').Settings;
 
@@ -39,7 +40,7 @@ describe("Exporter", function () {
 
     it("exports data", function (done) {
         // Stub migrations to return 000 as the current database version
-        var migrationStub = sandbox.stub(migration, "getDatabaseVersion", function () {
+        var versioningStub = sandbox.stub(versioning, "getDatabaseVersion", function () {
             return when.resolve("003");
         });
 
@@ -61,7 +62,7 @@ describe("Exporter", function () {
             // should not export sqlite data
             should.not.exist(exportData.data.sqlite_sequence);
 
-            migrationStub.restore();
+            versioningStub.restore();
             done();
         }).catch(done);
     });
