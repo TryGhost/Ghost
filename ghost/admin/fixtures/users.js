@@ -1,3 +1,4 @@
+/* jshint ignore:start */
 var users = [
     {
         "id": 1,
@@ -21,3 +22,4 @@ var users = [
 ];
 
 export default users;
+/* jshint ignore:end */

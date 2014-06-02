@@ -1,3 +1,4 @@
+/* jshint ignore:start */
 var settings = {
     "title": "Ghost",
     "description": "Just a blogging platform.",
@@ -22,3 +23,4 @@ var settings = {
 };
 
 export default settings;
+/* jshint ignore:end */
