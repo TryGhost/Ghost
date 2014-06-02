@@ -1,3 +1,4 @@
+/* jshint ignore:start */
 var posts =  [
         {
             "id": 1,
@@ -4563,3 +4564,4 @@ var posts =  [
     ];
 
 export default posts;
+/* jshint ignore:end */

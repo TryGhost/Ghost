@@ -18,7 +18,7 @@ var SigninRoute = Ember.Route.extend(styleBody, {
                     url: this.get('ghostPaths').adminUrl('signin'),
                     type: 'POST',
                     headers: {
-                        "X-CSRF-Token": this.get('csrf')
+                        'X-CSRF-Token': this.get('csrf')
                     },
                     data: data
                 }).then(

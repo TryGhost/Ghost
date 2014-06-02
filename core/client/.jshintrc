@@ -21,6 +21,7 @@
     "esnext": true,
     "onevar": true,
     "white": true,
+    "quotmark": "single",
     "globals": {
         "Ember": true,
         "Em": true,
