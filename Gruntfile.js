@@ -129,30 +129,7 @@ var path           = require('path'),
                 // Linting rules for server side or shared javascript code
                 server: {
                     options: {
-                        node: true,
-                        browser: false,
-                        nomen: false,
-                        strict: false,
-                        sub: true,
-                        eqeqeq: true,
-                        laxbreak: true,
-                        bitwise: true,
-                        curly: true,
-                        forin: true,
-                        immed: true,
-                        latedef: true,
-                        newcap: true,
-                        noarg: true,
-                        noempty: true,
-                        nonew: true,
-                        plusplus: true,
-                        regexp: true,
-                        undef: true,
-                        unused: true,
-                        trailing: true,
-                        indent: 4,
-                        onevar: true,
-                        white: true
+                        jshintrc: '.jshintrc'
                     },
                     files: {
                         src: [
@@ -168,40 +145,7 @@ var path           = require('path'),
                 // Linting rules for client side javascript code
                 client: {
                     options: {
-                        predef: {
-                            document: true,
-                            window: true,
-                            location: true,
-                            setTimeout: true,
-                            Ember: true,
-                            Em: true,
-                            DS: true,
-                            $: true,
-                            validator: true,
-                            ic: true
-                        },
-                        node: false,
-                        browser: true,
-                        nomen: false,
-                        bitwise: true,
-                        curly: true,
-                        eqeqeq: true,
-                        forin: true,
-                        immed: true,
-                        latedef: true,
-                        newcap: true,
-                        noarg: true,
-                        noempty: true,
-                        nonew: true,
-                        plusplus: true,
-                        regexp: true,
-                        undef: true,
-                        unused: true,
-                        trailing: true,
-                        indent: 4,
-                        esnext: true,
-                        onevar: true,
-                        white: true
+                        jshintrc: 'core/client/.jshintrc'
                     },
                     files: {
                         src: [
