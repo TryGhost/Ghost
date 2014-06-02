@@ -1,4 +1,4 @@
-export default Ember.Route.extend({
+var PostsPostRoute = Ember.Route.extend({
     model: function (params) {
         var post = this.modelFor('posts').findBy('id', params.post_id);
 
@@ -9,3 +9,5 @@ export default Ember.Route.extend({
         return post;
     }
 });
+
+export default PostsPostRoute;
