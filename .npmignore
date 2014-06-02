@@ -19,6 +19,7 @@ core/server/data/export/exported*
 .af*
 .git*
 .groc*
+.jshintrc
 *.iml
 config.js
 CONTRIBUTING.md
