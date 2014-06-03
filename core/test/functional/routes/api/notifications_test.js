@@ -139,19 +139,13 @@ describe('Notifications API', function () {
                     // begin delete test
                     request.del(location)
                         .set('X-CSRF-Token', csrfToken)
-                        .expect(200)
+                        .expect(204)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
 
-                            // a delete returns a JSON object containing the notification
-                            // we just deleted.
-                            var deleteResponse = res.body;
-                            deleteResponse.notifications.should.exist;
-                            deleteResponse.notifications[0].type.should.equal(newNotification.type);
-                            deleteResponse.notifications[0].message.should.equal(newNotification.message);
-                            deleteResponse.notifications[0].status.should.equal(newNotification.status);
+                            res.body.should.be.empty;
 
                             done();
                         });

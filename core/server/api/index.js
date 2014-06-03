@@ -223,7 +223,14 @@ http = function (apiMethod) {
                                 'Content-Disposition': contentDispositionHeader()
                             });
                         }
+                        
                         // #### Success
+
+                        // Send a status of 204 and an empty response body on DELETEs
+                        if (req.method === 'DELETE') {
+                            res.send(204);
+                        }
+
                         // Send a properly formatting HTTP response containing the data with correct headers
                         res.json(result || {});
                     });

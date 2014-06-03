@@ -669,19 +669,15 @@ describe('Post API', function () {
             var deletePostId = 1;
             request.del(testUtils.API.getApiQuery('posts/' + deletePostId + '/'))
                 .set('X-CSRF-Token', csrfToken)
-                .expect(200)
+                .expect(204)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    res.should.be.json;
-                    var jsonResponse = res.body;
-                    jsonResponse.should.exist;
-                    jsonResponse.posts.should.exist;
-                    res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /' + jsonResponse.posts[0].slug + '/');
-                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].id.should.eql(deletePostId);
+                    res.headers['x-cache-invalidate'].should.eql('/, /page/*, /rss/, /rss/*, /tag/*, /welcome-to-ghost/');
+                    res.body.should.be.empty;
+
                     done();
                 });
         });
@@ -729,17 +725,14 @@ describe('Post API', function () {
 
                     request.del(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/'))
                         .set('X-CSRF-Token', csrfToken)
-                        .expect(200)
+                        .expect(204)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
 
-                            res.should.be.json;
-                            var jsonResponse = res.body
-                            jsonResponse.should.exist;
-                            jsonResponse.posts.should.exist;
-                            testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                            res.body.should.be.empty;
+
                             done();
                         });
                 });
