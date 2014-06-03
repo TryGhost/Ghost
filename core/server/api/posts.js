@@ -114,7 +114,8 @@ posts = {
                 if (result) {
                     var post = result.toJSON();
 
-                    // If previously was not published and now is, signal the change
+                    // If previously was not published and now is (or vice versa), signal the change
+                    post.statusChanged = false;
                     if (result.updated('status') !== result.get('status')) {
                         post.statusChanged = true;
                     }
