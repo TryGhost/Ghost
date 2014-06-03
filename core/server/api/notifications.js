@@ -1,3 +1,5 @@
+// # Notifications API
+// RESTful API for creating notifications
 var when               = require('when'),
     _                  = require('lodash'),
     errors             = require('../errors'),
@@ -8,13 +10,29 @@ var when               = require('when'),
     notificationCounter = 0,
     notifications;
 
-// ## Notifications
+/**
+ * ## Notification API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 notifications = {
 
+    /**
+     * ### Browse
+     * Fetch all notifications
+     * @returns {Promise(Notifications)}
+     */
     browse: function browse() {
         return when({ 'notifications': notificationsStore });
     },
 
+    /**
+     * ### Destroy
+     * Remove a specific notification
+     *
+     * @param {{id (required), context}} options
+     * @returns {Promise(Notifications)}
+     */
     destroy: function destroy(options) {
         var notification = _.find(notificationsStore, function (element) {
             return element.id === parseInt(options.id, 10);
@@ -33,10 +51,16 @@ notifications = {
         notificationsStore = _.reject(notificationsStore, function (element) {
             return element.id === parseInt(options.id, 10);
         });
-        // **returns:** a promise for the deleted object
         return when({notifications: [notification]});
     },
 
+    /**
+     * ### DestroyAll
+     * Clear all notifications, used for tests
+     *
+     * @private Not exposed over HTTP
+     * @returns {Promise}
+     */
     destroyAll: function destroyAll() {
         notificationsStore = [];
         notificationCounter = 0;
@@ -73,7 +97,6 @@ notifications = {
         });
 
         notificationsStore.push(notification);
-        // **returns:** a promise of the new notification object
         return when({ notifications: [notification]});
     }
 };
