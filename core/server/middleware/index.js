@@ -180,6 +180,15 @@ function redirectToSignup(req, res, next) {
 
     api.users.doesUserExist().then(function (exists) {
         if (!exists) {
+            // TODO remove this when ember admin becomes the default
+            if (req.path.match(/\/ember\//)) {
+                if (!req.path.match(/\/ghost\/ember\/signup\//)) {
+                    return res.redirect(config().paths.subdir + '/ghost/ember/signup/');
+                } else {
+                    return next();
+                }
+            }
+            // END remove this
             return res.redirect(config().paths.subdir + '/ghost/signup/');
         }
         next();
