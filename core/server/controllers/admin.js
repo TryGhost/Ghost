@@ -194,6 +194,37 @@ adminControllers = {
             res.redirect(config().paths.subdir + '/ghost/signin/');
         });
     },
+    // Route: doSignout
+    // Path: /ghost/signout/
+    // Method: POST
+    'doSignout': function (req, res) {
+        req.session.destroy();
+
+        var statusCode,
+            redirectUrl,
+            errorMessage,
+            notification = {
+            type: 'success',
+            message: 'You were successfully signed out.',
+            status: 'passive'
+        };
+
+        if (_.isUndefined(req.session)) {
+            statusCode = 200;
+            redirectUrl = config().paths.subdir + '/ghost/signin/';
+        } else {
+            notification.type = 'error';
+            notification.message = 'Unable to sign out.';
+
+            statusCode = 500;
+            errorMessage = 'There was a problem logging out. Please try again.';
+        }
+
+        return api.notifications.add(notification).then(function () {
+            res.json(statusCode, {error: errorMessage, redirect: redirectUrl});
+        });
+
+    },
     // Route: signin
     // Path: /ghost/signin/
     // Method: GET

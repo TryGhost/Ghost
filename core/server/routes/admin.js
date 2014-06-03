@@ -36,6 +36,7 @@ adminRoutes = function (server) {
     });
 
     server.get('/ghost/signout/', admin.signout);
+    server.post('/ghost/signout/', admin.doSignout);
     server.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.signin);
     server.post('/ghost/signin/', admin.doSignin);
     server.get('/ghost/signup/', middleware.redirectToDashboard, admin.signup);
