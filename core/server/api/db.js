@@ -1,3 +1,5 @@
+// # DB API
+// API for DB operations
 var dataExport       = require('../data/export'),
     dataImport       = require('../data/import'),
     dataProvider     = require('../models'),
@@ -11,10 +13,22 @@ var dataExport       = require('../data/export'),
     api              = {},
     db;
 
-api.notifications    = require('./notifications');
 api.settings         = require('./settings');
 
+/**
+ * ## DB API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 db = {
+    /**
+     * ### Export Content
+     * Generate the JSON to export
+     *
+     * @public
+     * @param {{context}} options
+     * @returns {Promise} Ghost Export JSON format
+     */
     'exportContent': function (options) {
         options = options || {};
 
@@ -29,6 +43,14 @@ db = {
             return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     },
+    /**
+     * ### Import Content
+     * Import posts, tags etc from a JSON blob
+     *
+     * @public
+     * @param {{context}} options
+     * @returns {Promise} Success
+     */
     'importContent': function (options) {
         options = options || {};
         var databaseVersion;
@@ -108,6 +130,14 @@ db = {
             return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
         });
     },
+    /**
+     * ### Delete All Content
+     * Remove all posts and tags
+     *
+     * @public
+     * @param {{context}} options
+     * @returns {Promise} Success
+     */
     'deleteAllContent': function (options) {
         options = options || {};
 
