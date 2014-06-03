@@ -10,7 +10,7 @@ var admin       = require('../controllers/admin'),
 adminRoutes = function (server) {
     // Have ember route look for hits first
     // to prevent conflicts with pre-existing routes
-    server.get('/ghost/ember/*', admin.index);
+    server.get('/ghost/ember/*', middleware.redirectToSignup, admin.index);
 
     var subdir = config().paths.subdir;
     // ### Admin routes
