@@ -1,4 +1,5 @@
 // # Settings API
+// RESTful API for the Setting resource
 var _            = require('lodash'),
     dataProvider = require('../models'),
     when         = require('when'),
@@ -209,7 +210,11 @@ canEditAllSettings = function (settingsInfo, options) {
     return when.all(checks);
 };
 
-// ## API Methods
+/**
+ * ## Settings API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 settings = {
 
     /**

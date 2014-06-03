@@ -1,26 +1,32 @@
+// # Slug API
+// RESTful API for the Slug resource
 var canThis      = require('../permissions').canThis,
     dataProvider = require('../models'),
     errors       = require('../errors'),
     when         = require('when'),
 
     slugs,
-    // `allowedTypes` is used to define allowed slug types and map them against it's model class counterpart
+    // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
     allowedTypes = {
         post: dataProvider.Post,
         tag: dataProvider.Tag
     };
 
 /**
- * ## Generate Slug
- * Create a unique slug for a given post title
- * @param {{type (required), context}} options
- * @param {{title (required), transacting}} options
- * @returns {Promise(String)} Unique string
+ * ## Slugs API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
  */
 slugs = {
 
-    // #### Generate slug
-    // **takes:** a string to generate the slug from
+    /**
+     * ## Generate Slug
+     * Create a unique slug for a given post title
+     * TODO: make it generic for all objects: post, tag, user
+     *
+     * @param {{type (required), title (required), context, transacting}} options
+     * @returns {Promise(String)} Unique string
+     */
     generate: function (options) {
         options = options || {};
 
