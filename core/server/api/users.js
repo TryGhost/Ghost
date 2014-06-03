@@ -1,3 +1,5 @@
+// # Users API
+// RESTful API for the User resource
 var when            = require('when'),
     _               = require('lodash'),
     dataProvider    = require('../models'),
@@ -10,12 +12,18 @@ var when            = require('when'),
     ONE_DAY         = 86400000,
     users;
 
+
+/**
+ * ## Posts API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 users = {
 
     /**
      * ## Browse
      * Fetch all users
-     * @param {object} options (optional)
+     * @param {{context}} options (optional)
      * @returns {Promise(Users)} Users Collection
      */
     browse: function browse(options) {
@@ -29,6 +37,11 @@ users = {
         });
     },
 
+    /**
+     * ### Read
+     * @param {{id, context}} options
+     * @returns {Promise(User)} User
+     */
     read: function read(options) {
         var attrs = ['id'],
             data = _.pick(options, attrs);
@@ -48,6 +61,12 @@ users = {
         });
     },
 
+    /**
+     * ### Edit
+     * @param {User} object the user details to edit
+     * @param {{id, context}} options
+     * @returns {Promise(User)}
+     */
     edit: function edit(object, options) {
         if (options.id === 'me' && options.context && options.context.user) {
             options.id = options.context.user;
@@ -68,6 +87,12 @@ users = {
         });
     },
 
+    /**
+     * ### Add
+     * @param {User} object the user to create
+     * @param {{context}} options
+     * @returns {Promise(User}} Newly created user
+     */
     add: function add(object, options) {
         options = options || {};
 
@@ -89,6 +114,7 @@ users = {
         });
     },
 
+    // TODO complete documentation as part of #2822
     register: function register(object) {
         // TODO: if we want to prevent users from being created with the signup form this is the right place to do it
         return users.add(object, {context: {internal: true}});

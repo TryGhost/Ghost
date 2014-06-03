@@ -1,33 +1,51 @@
+// # Mail API
+// API for sending Mail
 var when       = require("when"),
     config     = require('../config'),
     errors     = require('../errors'),
     mail;
 
-// ## Mail
+/**
+ * ## Mail API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ * @typedef Mail
+ * @param mail
+ */
 mail = {
-
-    // #### Send
-    // **takes:** a json object representing an email.
-    send: function (postData) {
+    /**
+     * ### Send
+     * Send an email
+     *
+     * @public
+     * @param {Mail} object details of the email to send
+     * @returns {Promise}
+     */
+    send: function (object) {
         var mailer = require('../mail');
 
-        // **returns:** a promise from the mailer with the number of successfully sent emails
-        return mailer.send(postData.mail[0].message)
+        // TODO: permissions
+        return mailer.send(object.mail[0].message)
             .then(function (data) {
-                delete postData.mail[0].options;
+                delete object.mail[0].options;
                 // Sendmail returns extra details we don't need and that don't convert to JSON
-                delete postData.mail[0].message.transport;
-                postData.mail[0].status = {
+                delete object.mail[0].message.transport;
+                object.mail[0].status = {
                     message: data.message
                 };
-                return postData;
+                return object;
             })
             .otherwise(function (error) {
                 return when.reject(new errors.EmailError(error.message));
             });
     },
-    // #### SendTest
-    // **takes:** nothing
+    /**
+     * ### SendTest
+     * Send a test email
+     *
+     * @public
+     * @returns {Promise}
+     */
     sendTest: function () {
         var html = '<p><strong>Hello there!</strong></p>' +
             '<p>Excellent!' +

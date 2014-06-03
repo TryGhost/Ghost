@@ -1,4 +1,5 @@
 // # Posts API
+// RESTful API for the Post resource
 var when            = require('when'),
     _               = require('lodash'),
     dataProvider    = require('../models'),
@@ -24,19 +25,31 @@ function prepareInclude(include) {
     return include;
 }
 
-// ## API Methods
+/**
+ * ## Posts API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 posts = {
 
     /**
      * ### Browse
      * Find a paginated set of posts
+     *
+     * Will only return published posts unless we have an authenticated user and an alternative status
+     * parameter.
+     *
+     * Will return without static pages unless told otherwise
+     *
+     * Can return posts for a particular tag by passing a tag slug in
+     *
+     * @public
      * @param {{context, page, limit, status, staticPages, tag}} options (optional)
      * @returns {Promise(Posts)} Posts Collection with Meta
      */
     browse: function browse(options) {
         options = options || {};
 
-        // only published posts if no user is present
         if (!(options.context && options.context.user)) {
             options.status = 'published';
         }
@@ -51,6 +64,8 @@ posts = {
     /**
      * ### Read
      * Find a post, by ID or Slug
+     *
+     * @public
      * @param {{id_or_slug (required), context, status, include, ...}} options
      * @return {Promise(Post)} Post
      */
@@ -81,6 +96,8 @@ posts = {
     /**
      * ### Edit
      * Update properties of a post
+     *
+     * @public
      * @param {Post} object Post or specific properties to update
      * @param {{id (required), context, include,...}} options
      * @return {Promise(Post)} Edited Post
@@ -114,6 +131,8 @@ posts = {
     /**
      * ### Add
      * Create a new post along with any tags
+     *
+     * @public
      * @param {Post} object
      * @param {{context, include,...}} options
      * @return {Promise(Post)} Created Post
@@ -146,6 +165,8 @@ posts = {
     /**
      * ### Destroy
      * Delete a post, cleans up tag relations, but not unused tags
+     *
+     * @public
      * @param {{id (required), context,...}} options
      * @return {Promise(Post)} Deleted Post
      */

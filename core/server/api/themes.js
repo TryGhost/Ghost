@@ -1,3 +1,5 @@
+// # Themes API
+// RESTful API for Themes
 var when               = require('when'),
     _                  = require('lodash'),
     canThis            = require('../permissions').canThis,
@@ -7,9 +9,18 @@ var when               = require('when'),
     when               = require('when'),
     themes;
 
-// ## Themes
+/**
+ * ## Themes API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
 themes = {
-
+    /**
+     * ### Browse
+     * Get a list of all the available themes
+     * @param {{context}} options
+     * @returns {Promise(Themes)}
+     */
     browse: function browse(options) {
         options = options || {};
 
@@ -50,6 +61,13 @@ themes = {
         });
     },
 
+    /**
+     * ### Edit
+     * Change the active theme
+     * @param {Theme} object
+     * @param {{context}} options
+     * @returns {Promise(Theme)}
+     */
     edit: function edit(object, options) {
         var themeName;
 
