@@ -1,11 +1,11 @@
-/*globals describe, beforeEach, it*/
+/*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var testUtils = require('../utils'),
     should    = require('should'),
     sinon     = require('sinon'),
     when      = require('when'),
     assert    = require('assert'),
-    _         = require("lodash"),
-    errors    = require('../../server/errors'),
+    _         = require('lodash'),
 
     // Stuff we are testing
     knex        = require('../../server/models/base').knex,
@@ -16,11 +16,9 @@ var testUtils = require('../utils'),
     Importer000 = require('../../server/data/import/000'),
     Importer001 = require('../../server/data/import/001'),
     Importer002 = require('../../server/data/import/002'),
-    Importer003 = require('../../server/data/import/003'),
-    fixtures    = require('../../server/data/fixtures'),
-    Settings    = require('../../server/models/settings').Settings;
+    Importer003 = require('../../server/data/import/003');
 
-describe("Import", function () {
+describe('Import', function () {
 
     should.exist(exporter);
     should.exist(importer);
@@ -39,13 +37,13 @@ describe("Import", function () {
         sandbox.restore();
     });
 
-    it("resolves 000", function (done) {
-        var importStub = sandbox.stub(Importer000, "importData", function () {
+    it('resolves 000', function (done) {
+        var importStub = sandbox.stub(Importer000, 'importData', function () {
                 return when.resolve();
             }),
             fakeData = { test: true };
 
-        importer("000", fakeData).then(function () {
+        importer('000', fakeData).then(function () {
             importStub.calledWith(fakeData).should.equal(true);
 
             importStub.restore();
@@ -54,13 +52,13 @@ describe("Import", function () {
         }).catch(done);
     });
 
-    it("resolves 001", function (done) {
-        var importStub = sandbox.stub(Importer001, "importData", function () {
+    it('resolves 001', function (done) {
+        var importStub = sandbox.stub(Importer001, 'importData', function () {
                 return when.resolve();
             }),
             fakeData = { test: true };
 
-        importer("001", fakeData).then(function () {
+        importer('001', fakeData).then(function () {
             importStub.calledWith(fakeData).should.equal(true);
 
             importStub.restore();
@@ -69,13 +67,13 @@ describe("Import", function () {
         }).catch(done);
     });
 
-    it("resolves 002", function (done) {
-        var importStub = sandbox.stub(Importer002, "importData", function () {
+    it('resolves 002', function (done) {
+        var importStub = sandbox.stub(Importer002, 'importData', function () {
                 return when.resolve();
             }),
             fakeData = { test: true };
 
-        importer("002", fakeData).then(function () {
+        importer('002', fakeData).then(function () {
             importStub.calledWith(fakeData).should.equal(true);
 
             importStub.restore();
@@ -84,13 +82,13 @@ describe("Import", function () {
         }).catch(done);
     });
 
-    it("resolves 003", function (done) {
-        var importStub = sandbox.stub(Importer003, "importData", function () {
+    it('resolves 003', function (done) {
+        var importStub = sandbox.stub(Importer003, 'importData', function () {
                 return when.resolve();
             }),
             fakeData = { test: true };
 
-        importer("003", fakeData).then(function () {
+        importer('003', fakeData).then(function () {
             importStub.calledWith(fakeData).should.equal(true);
 
             importStub.restore();
@@ -99,7 +97,7 @@ describe("Import", function () {
         }).catch(done);
     });
 
-    describe("000", function () {
+    describe('000', function () {
         should.exist(Importer000);
 
         beforeEach(function (done) {
@@ -112,23 +110,23 @@ describe("Import", function () {
         });
 
 
-        it("imports data from 000", function (done) {
+        it('imports data from 000', function (done) {
             var exportData,
-                versioningStub = sandbox.stub(versioning, "getDatabaseVersion", function () {
-                    return when.resolve("000");
+                versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
+                    return when.resolve('000');
                 });
 
             testUtils.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
 
-                return importer("000", exportData);
+                return importer('000', exportData);
             }).then(function () {
                 // Grab the data from tables
                 return when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
@@ -147,7 +145,7 @@ describe("Import", function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -159,7 +157,7 @@ describe("Import", function () {
         });
     });
 
-    describe("001", function () {
+    describe('001', function () {
         should.exist(Importer001);
 
         beforeEach(function (done) {
@@ -171,7 +169,7 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("safely imports data from 001", function (done) {
+        it('safely imports data from 001', function (done) {
             var exportData,
                 timestamp = 1349928000000;
 
@@ -183,14 +181,14 @@ describe("Import", function () {
                 exportData.data.posts[0].updated_at = timestamp;
                 exportData.data.posts[0].published_at = timestamp;
 
-                return importer("001", exportData);
+                return importer('001', exportData);
             }).then(function () {
                 // Grab the data from tables
                 return when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
@@ -219,14 +217,14 @@ describe("Import", function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
-                _.findWhere(settings, {key: "activeTheme"}).value.should.equal("casper", 'Wrong theme');
+                _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
 
                 // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: "email"}).value;
-                _.findWhere(settings, {key: "email"}).value.should.equal(exportEmail, 'Wrong email in settings');
+                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
+                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -244,7 +242,7 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("doesn't import invalid post data from 001", function (done) {
+        it('doesn\'t import invalid post data from 001', function (done) {
             var exportData;
 
 
@@ -254,7 +252,7 @@ describe("Import", function () {
                 //change title to 151 characters
                 exportData.data.posts[0].title = new Array(152).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return importer("001", exportData);
+                return importer('001', exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -263,10 +261,10 @@ describe("Import", function () {
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
@@ -284,7 +282,7 @@ describe("Import", function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                     // test tags
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -295,14 +293,14 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("doesn't import invalid settings data from 001", function (done) {
+        it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
             testUtils.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
                 //change to blank settings key
                 exportData.data.settings[3].key = null;
-                return importer("001", exportData);
+                return importer('001', exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -311,10 +309,10 @@ describe("Import", function () {
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
@@ -332,7 +330,7 @@ describe("Import", function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                     // test tags
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -344,7 +342,7 @@ describe("Import", function () {
         });
     });
 
-    describe("002", function () {
+    describe('002', function () {
         should.exist(Importer002);
 
         beforeEach(function (done) {
@@ -356,7 +354,7 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("safely imports data from 002", function (done) {
+        it('safely imports data from 002', function (done) {
             var exportData,
                 timestamp = 1349928000000;
 
@@ -368,14 +366,14 @@ describe("Import", function () {
                 exportData.data.posts[0].updated_at = timestamp;
                 exportData.data.posts[0].published_at = timestamp;
 
-                return importer("002", exportData);
+                return importer('002', exportData);
             }).then(function () {
                 // Grab the data from tables
                 return when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
@@ -404,14 +402,14 @@ describe("Import", function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
-                _.findWhere(settings, {key: "activeTheme"}).value.should.equal("casper", 'Wrong theme');
+                _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
 
                 // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: "email"}).value;
-                _.findWhere(settings, {key: "email"}).value.should.equal(exportEmail, 'Wrong email in settings');
+                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
+                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -431,7 +429,7 @@ describe("Import", function () {
             });
         });
 
-        it("doesn't import invalid post data from 002", function (done) {
+        it('doesn\'t import invalid post data from 002', function (done) {
             var exportData;
 
 
@@ -441,7 +439,7 @@ describe("Import", function () {
                 //change title to 151 characters
                 exportData.data.posts[0].title = new Array(152).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return importer("002", exportData);
+                return importer('002', exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -450,10 +448,10 @@ describe("Import", function () {
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
@@ -471,7 +469,7 @@ describe("Import", function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                     // test tags
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -482,14 +480,14 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("doesn't import invalid settings data from 002", function (done) {
+        it('doesn\'t import invalid settings data from 002', function (done) {
             var exportData;
 
             testUtils.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
                 //change to blank settings key
                 exportData.data.settings[3].key = null;
-                return importer("002", exportData);
+                return importer('002', exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -498,10 +496,10 @@ describe("Import", function () {
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
-                    knex("users").select(),
-                    knex("posts").select(),
-                    knex("settings").select(),
-                    knex("tags").select()
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
                 ]).then(function (importedData) {
                     should.exist(importedData);
 
@@ -519,7 +517,7 @@ describe("Import", function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: "databaseVersion"}).value.should.equal("003", 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
                     // test tags
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -531,7 +529,7 @@ describe("Import", function () {
         });
     });
 
-    describe("003", function () {
+    describe('003', function () {
         should.exist(Importer003);
 
         beforeEach(function (done) {
@@ -543,25 +541,25 @@ describe("Import", function () {
             }).catch(done);
         });
 
-        it("safely imports data from 003", function (done) {
+        it('safely imports data from 003', function (done) {
             var exportData;
 
             testUtils.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer("003", exportData);
+                return importer('003', exportData);
             }).then(function () {
                 // Grab the data from tables
                 return when.all([
-                    knex("apps").select(),
-                    knex("app_settings").select()
+                    knex('apps').select(),
+                    knex('app_settings').select()
                 ]);
             }).then(function (importedData) {
                 should.exist(importedData);
 
                 importedData.length.should.equal(2, 'Did not get data successfully');
 
-                var apps = importedData[0],
-                    app_settings = importedData[1];
+                var apps = importedData[0];
+                    // app_settings = importedData[1];
 
                 // test apps
                 apps.length.should.equal(exportData.data.apps.length, 'imported apps');

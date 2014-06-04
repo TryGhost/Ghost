@@ -1,12 +1,11 @@
 /*globals describe, it, beforeEach, afterEach */
-
+/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     when           = require('when'),
     path           = require('path'),
-    fs             = require('fs'),
     _              = require('lodash'),
-    rewire         = require("rewire"),
+    rewire         = require('rewire'),
 
     testUtils      = require('../utils'),
 
@@ -15,6 +14,9 @@ var should         = require('should'),
     theme          = rewire('../../server/config/theme'),
     config         = rewire('../../server/config'),
     configUpdate   = config.__get__('updateConfig');
+
+// To stop jshint complaining
+should.equal(true, true);
 
 describe('Config', function () {
 
@@ -221,8 +223,8 @@ describe('Config', function () {
                     permalinks: {value: '/:year/:month/:day/:slug/'}
                 },
                 today = new Date(),
-                dd = ("0" + today.getDate()).slice(-2),
-                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                dd = ('0' + today.getDate()).slice(-2),
+                mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),
                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
 
@@ -267,6 +269,7 @@ describe('Config', function () {
                 settingsStub = sandbox.stub(settings, 'read', function () {
                     return when({ settings: [{value: '/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/short-and-sweet/';
 
@@ -304,10 +307,11 @@ describe('Config', function () {
                 settingsStub = sandbox.stub(settings, 'read', function () {
                     return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 today = new Date(),
-                dd = ("0" + today.getDate()).slice(-2),
-                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                dd = ('0' + today.getDate()).slice(-2),
+                mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),
                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
 
@@ -344,6 +348,7 @@ describe('Config', function () {
                 settingsStub = sandbox.stub(settings, 'read', function () {
                     return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[5],
                 postLink = '/static-page-test/';
 

@@ -1,12 +1,12 @@
 /*globals describe, it, beforeEach, afterEach */
-
+/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     when           = require('when'),
     path           = require('path'),
     fs             = require('fs'),
     _              = require('lodash'),
-    rewire         = require("rewire"),
+    rewire         = require('rewire'),
 
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
@@ -17,7 +17,7 @@ describe('Bootstrap', function () {
     var sandbox,
         rejectMessage = bootstrap.__get__('rejectMessage'),
         overrideConfig = function (newConfig) {
-            bootstrap.__set__("readConfigFile",  sandbox.stub().returns(
+            bootstrap.__set__('readConfigFile',  sandbox.stub().returns(
                 _.extend({}, defaultConfig, newConfig)
             ));
         },
@@ -37,7 +37,7 @@ describe('Bootstrap', function () {
         // the test infrastructure is setup so that there is always config present,
         // but we want to overwrite the test to actually load config.example.js, so that any local changes
         // don't break the tests
-        bootstrap.__set__("configFile",  path.join(config().paths.appRoot, 'config.example.js'));
+        bootstrap.__set__('configFile',  path.join(config().paths.appRoot, 'config.example.js'));
 
         bootstrap().then(function (config) {
             config.url.should.equal(defaultConfig.url);
@@ -73,8 +73,8 @@ describe('Bootstrap', function () {
         deferred.resolve();
 
         // ensure that the file creation is a stub, the tests shouldn't really create a file
-        bootstrap.__set__("writeConfigFile",  resolvedPromise);
-        bootstrap.__set__("validateConfigEnvironment",  resolvedPromise);
+        bootstrap.__set__('writeConfigFile',  resolvedPromise);
+        bootstrap.__set__('validateConfigEnvironment',  resolvedPromise);
 
         bootstrap().then(function () {
             existsStub.calledOnce.should.be.true;
@@ -254,6 +254,7 @@ describe('Bootstrap', function () {
         overrideConfig({ server: false });
 
         bootstrap().then(function (localConfig) {
+            /*jshint unused:false*/
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);

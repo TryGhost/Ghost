@@ -1,8 +1,7 @@
 /*globals describe, beforeEach, afterEach, it*/
-var assert          = require('assert'),
-    http            = require('http'),
-    nock            = require('nock'),
-    settings        = require('../../server/api').settings;
+/*jshint expr:true*/
+var nock            = require('nock'),
+    settings        = require('../../server/api').settings,
     should          = require('should'),
     sinon           = require('sinon'),
     testUtils       = require('../utils'),
@@ -11,13 +10,16 @@ var assert          = require('assert'),
     // storing current environment
     currentEnv      = process.env.NODE_ENV;
 
+// To stop jshint complaining
+should.equal(true, true);
+
 describe('XMLRPC', function () {
     var sandbox;
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
         // give environment a value that will ping
-        process.env.NODE_ENV = "production";
+        process.env.NODE_ENV = 'production';
     });
 
     afterEach(function () {
@@ -34,6 +36,7 @@ describe('XMLRPC', function () {
             settingsStub = sandbox.stub(settings, 'read', function () {
                 return when({ settings: [{value: '/:slug/'}] });
             });
+        /*jshint unused:false */
 
         xmlrpc.ping(testPost).then(function () {
             ping1.isDone().should.be.true;

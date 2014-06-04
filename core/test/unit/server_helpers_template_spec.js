@@ -1,20 +1,14 @@
-/*globals describe, beforeEach, it*/
-var testUtils = require('../utils'),
-    should    = require('should'),
-    sinon     = require('sinon'),
-    when      = require('when'),
-    _         = require('lodash'),
-    path      = require('path'),
+/*globals describe, it*/
+/*jshint expr:true*/
+var should    = require('should'),
     hbs = require('express-hbs'),
 
     // Stuff we are testing
-    config   = require('../../server/config'),
-    api      = require('../../server/api'),
     template = require('../../server/helpers/template');
 
 describe('Helpers Template', function () {
 
-    it("can execute a template", function () {
+    it('can execute a template', function () {
         hbs.registerPartial('test', '<h1>Hello {{name}}</h1>');
 
         var safeString = template.execute('test', {name: 'world'});
