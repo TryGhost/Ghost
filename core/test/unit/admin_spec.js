@@ -1,4 +1,5 @@
 /*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var fs      = require('fs-extra'),
     should  = require('should'),
     sinon   = require('sinon'),
@@ -7,6 +8,9 @@ var fs      = require('fs-extra'),
 
     // Stuff we are testing
     admin = require('../../server/controllers/admin');
+
+// To stop jshint complaining
+should.equal(true, true);
 
 describe('Admin Controller', function () {
     describe('upload', function () {
@@ -17,7 +21,7 @@ describe('Admin Controller', function () {
             req = {
                 files: {
                     uploadimage: {
-                        path: "/tmp/TMPFILEID"
+                        path: '/tmp/TMPFILEID'
                     }
                 }
             };

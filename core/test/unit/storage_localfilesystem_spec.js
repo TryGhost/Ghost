@@ -1,11 +1,14 @@
 /*globals describe, beforeEach, afterEach, it*/
-var fs = require('fs-extra'),
-    path = require('path'),
-    should = require('should'),
-    config = require('../../server/config'),
-    sinon = require('sinon'),
-    when = require('when'),
+/*jshint expr:true*/
+var fs              = require('fs-extra'),
+    path            = require('path'),
+    should          = require('should'),
+    config          = require('../../server/config'),
+    sinon           = require('sinon'),
     localfilesystem = require('../../server/storage/localfilesystem');
+
+// To stop jshint complaining
+should.equal(true, true);
 
 describe('Local File System Storage', function () {
 
@@ -18,9 +21,9 @@ describe('Local File System Storage', function () {
         sinon.stub(fs, 'unlink').yields();
 
         image = {
-            path: "tmp/123456.jpg",
-            name: "IMAGE.jpg",
-            type: "image/jpeg"
+            path: 'tmp/123456.jpg',
+            name: 'IMAGE.jpg',
+            type: 'image/jpeg'
         };
 
         // Sat Sep 07 2013 21:24
@@ -61,6 +64,7 @@ describe('Local File System Storage', function () {
 
     it('should create month and year directory', function (done) {
         localfilesystem.save(image).then(function (url) {
+            /*jshint unused:false*/
             fs.mkdirs.calledOnce.should.be.true;
             fs.mkdirs.args[0][0].should.equal(path.resolve('./content/images/2013/Sep'));
             done();
@@ -69,6 +73,7 @@ describe('Local File System Storage', function () {
 
     it('should copy temp file to new location', function (done) {
         localfilesystem.save(image).then(function (url) {
+            /*jshint unused:false*/
             fs.copy.calledOnce.should.be.true;
             fs.copy.args[0][0].should.equal('tmp/123456.jpg');
             fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/Sep/IMAGE.jpg'));
@@ -78,6 +83,7 @@ describe('Local File System Storage', function () {
 
     it('should not leave temporary file when uploading', function (done) {
         localfilesystem.save(image).then(function (url) {
+            /*jshint unused:false*/
             fs.unlink.calledOnce.should.be.true;
             fs.unlink.args[0][0].should.equal('tmp/123456.jpg');
             done();
@@ -165,7 +171,7 @@ describe('Local File System Storage', function () {
                     url.should.equal('/content/images/2013/Sep/IMAGE.jpg');
                 } else {
                     // if this unit test is run on an OS that uses forward slash separators,
-                    // localfilesystem.save() will use a path.relative() call on 
+                    // localfilesystem.save() will use a path.relative() call on
                     // one path with backslash separators and one path with forward
                     // slashes and it returns a path that needs to be normalized
                     path.normalize(url).should.equal('/content/images/2013/Sep/IMAGE.jpg');

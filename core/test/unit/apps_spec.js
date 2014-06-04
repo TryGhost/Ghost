@@ -1,6 +1,6 @@
-/*globals describe, beforeEach, afterEach,  before, it*/
-var fs           = require('fs'),
-    path         = require('path'),
+/*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
+var path         = require('path'),
     EventEmitter = require('events').EventEmitter,
     should       = require('should'),
     sinon        = require('sinon'),
@@ -8,7 +8,6 @@ var fs           = require('fs'),
     when         = require('when'),
     helpers      = require('../../server/helpers'),
     filters      = require('../../server/filters'),
-    api          = require('../../server/api'),
 
     // Stuff we are testing
     AppProxy        = require('../../server/apps/proxy'),
@@ -169,7 +168,8 @@ describe('Apps', function () {
                 appProxy.filters.register('superSecretFilter', 5, filterStub);
             }
 
-            registerFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or access a resource (filters.superSecretFilter) without permission.');
+            registerFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or access' +
+                ' a resource (filters.superSecretFilter) without permission.');
 
             registerSpy.called.should.equal(false);
         });
@@ -222,7 +222,8 @@ describe('Apps', function () {
                 appProxy.filters.deregister('superSecretFilter', 5, filterStub);
             }
 
-            deregisterFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or access a resource (filters.superSecretFilter) without permission.');
+            deregisterFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or ' +
+                'access a resource (filters.superSecretFilter) without permission.');
 
             registerSpy.called.should.equal(false);
         });
@@ -260,7 +261,8 @@ describe('Apps', function () {
                 appProxy.helpers.register('otherHelper', sandbox.stub().returns('test result'));
             }
 
-            registerWithoutPermissions.should.throw('The App "TestApp" attempted to perform an action or access a resource (helpers.otherHelper) without permission.');
+            registerWithoutPermissions.should.throw('The App "TestApp" attempted to perform an action or access a ' +
+                'resource (helpers.otherHelper) without permission.');
 
             registerSpy.called.should.equal(false);
         });
@@ -294,8 +296,6 @@ describe('Apps', function () {
         it('does not allow apps to require blacklisted modules at top level', function () {
             var appBox = new AppSandbox(),
                 badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badtop.js'),
-                BadApp,
-                app,
                 loadApp = function () {
                     appBox.loadApp(badAppPath);
                 };
@@ -327,7 +327,6 @@ describe('Apps', function () {
             var appBox = new AppSandbox(),
                 badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badrequire.js'),
                 BadApp,
-                app,
                 loadApp = function () {
                     BadApp = appBox.loadApp(badAppPath);
                 };
@@ -339,7 +338,6 @@ describe('Apps', function () {
             var appBox = new AppSandbox(),
                 badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badoutside.js'),
                 BadApp,
-                app,
                 loadApp = function () {
                     BadApp = appBox.loadApp(badAppPath);
                 };
@@ -382,6 +380,7 @@ describe('Apps', function () {
     });
 
     describe('Permissions', function () {
+        /*jshint quotmark:false*/
         var noGhostPackageJson = {
                 "name": "myapp",
                 "version": "0.0.1",
@@ -469,6 +468,7 @@ describe('Apps', function () {
             sandbox.stub(perms, "getPackageContents").returns(when.reject(new Error('package.json file is malformed')));
 
             perms.read().then(function (readPerms) {
+                /*jshint unused:false*/
                 done(new Error('should not resolve'));
             }).catch(function (err) {
                 err.message.should.equal('package.json file is malformed');
