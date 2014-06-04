@@ -1,2 +1,6 @@
-<input type="file" class="button-add" />
-<button type="submit" class="button-save" {{bind-attr disabled=uploadButtonDisabled}} {{action "upload"}}>{{uploadButtonText}}</button>
+<input type="file" name="uploadimage" class="js-fileupload main" {{bind-attr accept=acceptEncoding}}/>
+{{#unless autoUpload}}
+    <button type="submit" class="button-save" {{bind-attr disabled=uploadButtonDisabled}} {{action "upload"}}>
+        {{uploadButtonText}}
+    </button>
+{{/unless}}
