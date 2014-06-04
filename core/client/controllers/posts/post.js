@@ -2,10 +2,6 @@
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 
 var PostController = Ember.ObjectController.extend({
-    //## Editor state properties
-    isEditingSettings: false,
-    isViewingSaveTypes: false,
-
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),
@@ -44,9 +40,6 @@ var PostController = Ember.ObjectController.extend({
                     self.get('model.status') + '</strong>.');
             }, this.notifications.showErrors);
         },
-        viewSaveTypes: function () {
-            this.toggleProperty('isViewingSaveTypes');
-        },
         setSaveType: function (newType) {
             if (newType === 'publish') {
                 this.set('willPublish', true);
@@ -61,20 +54,6 @@ var PostController = Ember.ObjectController.extend({
 
             this.get('model').save();
         },
-        editSettings: function () {
-            var isEditing = this.toggleProperty('isEditingSettings');
-            if (isEditing) {
-                //Stop editing if the user clicks outside the settings view
-                Ember.run.next(this, function () {
-                    var self = this;
-                    // @TODO has a race condition with click on the editSettings action
-                    $(document).one('click', function () {
-                        self.toggleProperty('isEditingSettings');
-                    });
-                });
-            }
-        },
-
         updateSlug: function () {
             var newSlug = this.get('newSlug'),
                 slug = this.get('slug'),
