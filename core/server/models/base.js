@@ -288,7 +288,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         var slug,
             slugTryCount = 1,
             baseName = Model.prototype.tableName.replace(/s$/, ''),
-            // Look for a post with a matching slug, append an incrementing number if so
+            // Look for a matching slug, append an incrementing number if so
             checkIfSlugExists;
 
         checkIfSlugExists = function (slugToFind) {
@@ -339,10 +339,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|public|user|users|rss|feed)$/g
+        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|public|user|users|rss|feed|app|apps)$/g
             .test(slug) ? slug + '-' + baseName : slug;
 
-        //if slug is empty after trimming use "post"
+        //if slug is empty after trimming use the model name
         if (!slug) {
             slug = baseName;
         }
