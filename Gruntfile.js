@@ -618,6 +618,14 @@ var path           = require('path'),
                 }
             });
 
+            if (grunt.option('fail-fast')) {
+                args.push('--fail-fast');
+            }
+
+            if (grunt.option('concise')) {
+                args.push('--concise');
+            }
+
             grunt.util.spawn({
                 cmd: 'casperjs',
                 args: args,
