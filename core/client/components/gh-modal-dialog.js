@@ -18,15 +18,15 @@ var ModalDialog = Ember.Component.extend({
         return this._super();
     },
 
+    confirmaccept: 'confirmAccept',
+    confirmreject: 'confirmReject',
+
     actions: {
         closeModal: function () {
             this.sendAction();
         },
         confirm: function (type) {
-            var func = this.get('confirm.' + type + '.func');
-            if (typeof func === 'function') {
-                func();
-            }
+            this.sendAction('confirm' + type);
             this.sendAction();
         }
     },
