@@ -1,16 +1,20 @@
-/*globals describe, before, beforeEach, afterEach, it*/
-var testUtils  = require('../utils'),
-    should     = require('should'),
+/*globals describe, after, before, beforeEach, afterEach, it*/
+/*jshint expr:true*/
+var should     = require('should'),
     when       = require('when'),
     sinon      = require('sinon'),
     express    = require('express'),
-    rewire     = require('rewire')
+    rewire     = require('rewire'),
 
     // Stuff we are testing
+
     colors     = require('colors'),
     errors     = rewire('../../server/errors'),
     // storing current environment
     currentEnv = process.env.NODE_ENV;
+
+// This is not useful but required for jshint
+colors.setTheme({silly: 'rainbow'});
 
 describe('Error handling', function () {
 
@@ -18,30 +22,30 @@ describe('Error handling', function () {
     should.exist(errors);
 
     describe('Throwing', function () {
-        it("throws error objects", function () {
-            var toThrow = new Error("test1"),
+        it('throws error objects', function () {
+            var toThrow = new Error('test1'),
                 runThrowError = function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']("test1");
+            runThrowError.should['throw']('test1');
         });
 
-        it("throws error strings", function () {
-            var toThrow = "test2",
+        it('throws error strings', function () {
+            var toThrow = 'test2',
                 runThrowError = function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']("test2");
+            runThrowError.should['throw']('test2');
         });
 
-        it("throws error even if nothing passed", function () {
+        it('throws error even if nothing passed', function () {
             var runThrowError = function () {
                 errors.throwError();
             };
 
-            runThrowError.should['throw']("An error occurred");
+            runThrowError.should['throw']('An error occurred');
         });
     });
 
@@ -51,7 +55,7 @@ describe('Error handling', function () {
         beforeEach(function () {
             logStub = sinon.stub(console, 'error');
             // give environment a value that will console log
-            process.env.NODE_ENV = "development";
+            process.env.NODE_ENV = 'development';
         });
 
         afterEach(function () {
@@ -88,7 +92,9 @@ describe('Error handling', function () {
 
             // Calls log with message on Error objects
             logStub.calledOnce.should.be.true;
-            logStub.calledWith('\nERROR:'.red, err.message.red, '\n', message.white, '\n', message.green, '\n', err.stack, '\n');
+            logStub.calledWith(
+                '\nERROR:'.red, err.message.red, '\n', message.white, '\n', message.green, '\n', err.stack, '\n'
+            );
         });
 
         it('logs errors from three string arguments', function () {
@@ -98,7 +104,9 @@ describe('Error handling', function () {
 
             // Calls log with message on Error objects
             logStub.calledOnce.should.be.true;
-            logStub.calledWith('\nERROR:'.red, message.red, '\n', message.white, '\n', message.green, '\n').should.be.true;
+            logStub.calledWith(
+                '\nERROR:'.red, message.red, '\n', message.white, '\n', message.green, '\n'
+            ).should.be.true;
         });
 
         it('logs errors from an undefined error argument', function () {
@@ -109,7 +117,9 @@ describe('Error handling', function () {
             // Calls log with message on Error objects
 
             logStub.calledOnce.should.be.true;
-            logStub.calledWith('\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green , '\n').should.be.true;
+            logStub.calledWith(
+                '\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green , '\n'
+            ).should.be.true;
         });
 
         it('logs errors from an undefined context argument', function () {
@@ -142,7 +152,9 @@ describe('Error handling', function () {
             // Calls log with message on Error objects
 
             logStub.calledOnce.should.be.true;
-            logStub.calledWith('\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green, '\n').should.be.true;
+            logStub.calledWith(
+                '\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green, '\n'
+            ).should.be.true;
         });
 
         it('logs errors from a null context argument', function () {
@@ -220,7 +232,7 @@ describe('Error handling', function () {
                             }
                         }
                     }
-                }
+                };
             });
             errors.updateActiveTheme('casper');
         });
@@ -242,6 +254,7 @@ describe('Error handling', function () {
                 res = express.response;
 
             sandbox.stub(express.response, 'render', function (view, options, fn) {
+                /*jshint unused:false */
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
@@ -250,7 +263,9 @@ describe('Error handling', function () {
                 this.statusCode.should.equal(404);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                this._headers['cache-control'].should.equal(
+                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                );
 
                 done();
             });
@@ -269,6 +284,7 @@ describe('Error handling', function () {
                 res = express.response;
 
             sandbox.stub(express.response, 'render', function (view, options, fn) {
+                /*jshint unused:false */
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
@@ -277,7 +293,9 @@ describe('Error handling', function () {
                 this.statusCode.should.equal(404);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                this._headers['cache-control'].should.equal(
+                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                );
 
                 done();
             });
@@ -298,6 +316,7 @@ describe('Error handling', function () {
                 res = express.response;
 
             sandbox.stub(express.response, 'render', function (view, options, fn) {
+                /*jshint unused:false */
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
@@ -306,7 +325,9 @@ describe('Error handling', function () {
                 this.statusCode.should.equal(500);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                this._headers['cache-control'].should.equal(
+                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                );
 
                 done();
             });
@@ -325,6 +346,7 @@ describe('Error handling', function () {
                 res = express.response;
 
             sandbox.stub(express.response, 'render', function (view, options, fn) {
+                /*jshint unused:false */
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
@@ -333,7 +355,9 @@ describe('Error handling', function () {
                 this.statusCode.should.equal(500);
 
                 // Test that the headers are correct
-                this._headers['cache-control'].should.equal('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                this._headers['cache-control'].should.equal(
+                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                );
 
                 done();
             });
@@ -346,7 +370,7 @@ describe('Error handling', function () {
             err.code = 500;
             errors.error500(err, req, res, null);
         });
-        
+
         it('Renders custom error template if one exists', function(done){
             var code = 404,
                 error = {message:'Custom view test'},
@@ -355,9 +379,11 @@ describe('Error handling', function () {
                 },
                 res = {
                     status: function(code) {
+                        /*jshint unused:false*/
                         return this;
                     },
                     render: function(view, model, fn){
+                        /*jshint unused:false*/
                         view.should.eql('error');
                         errors.updateActiveTheme('casper');
                         done();

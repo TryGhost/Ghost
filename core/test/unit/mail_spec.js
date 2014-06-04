@@ -1,11 +1,10 @@
 /*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var should          = require('should'),
     sinon           = require('sinon'),
     when            = require('when'),
-    _               = require("lodash"),
-    cp              = require('child_process'),
-    rewire          = require("rewire"),
-    testUtils       = require('../utils'),
+    _               = require('lodash'),
+    rewire          = require('rewire'),
 
     // Stuff we are testing
     mailer          = rewire('../../server/mail'),
@@ -38,7 +37,7 @@ SENDMAIL = {
     }
 };
 
-describe("Mail", function () {
+describe('Mail', function () {
     var overrideConfig = function (newConfig) {
         mailer.__set__('config',  sandbox.stub().returns(
             _.extend({}, defaultConfig, newConfig)
@@ -56,11 +55,11 @@ describe("Mail", function () {
 
         config = sinon.stub().returns(fakeConfig);
 
-        sandbox.stub(mailer, "isWindows", function () {
+        sandbox.stub(mailer, 'isWindows', function () {
             return false;
         });
 
-        sandbox.stub(mailer, "detectSendmail", function () {
+        sandbox.stub(mailer, 'detectSendmail', function () {
             return when.resolve(fakeSendmail);
         });
     });
@@ -119,7 +118,7 @@ describe("Mail", function () {
     it('should disable transport if config is empty & sendmail not found', function (done) {
         overrideConfig({mail: {}});
         mailer.detectSendmail.restore();
-        sandbox.stub(mailer, "detectSendmail", when.reject);
+        sandbox.stub(mailer, 'detectSendmail', when.reject);
         mailer.init().then(function () {
             should.not.exist(mailer.transport);
             done();
@@ -141,7 +140,7 @@ describe("Mail", function () {
 
     it('should fail to send messages when no transport is set', function (done) {
         mailer.detectSendmail.restore();
-        sandbox.stub(mailer, "detectSendmail", when.reject);
+        sandbox.stub(mailer, 'detectSendmail', when.reject);
         mailer.init().then(function () {
             mailer.send().then(function () {
                 should.fail();

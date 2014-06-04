@@ -1,10 +1,10 @@
-/*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('../utils'),
-    should = require('should'),
-    sinon = require('sinon'),
-    when = require('when'),
-    _ = require("lodash"),
-    errors = require('../../server/errors'),
+/*globals describe, before, beforeEach, afterEach, after, it*/
+/*jshint expr:true*/
+var testUtils   = require('../utils'),
+    should      = require('should'),
+    sinon       = require('sinon'),
+    when        = require('when'),
+    _           = require('lodash'),
 
     // Stuff we are testing
     permissions = require('../../server/permissions'),
@@ -39,22 +39,22 @@ describe('Permissions', function () {
     });
 
     var testPerms = [
-            { act: "edit", obj: "post" },
-            { act: "edit", obj: "tag" },
-            { act: "edit", obj: "user" },
-            { act: "edit", obj: "page" },
-            { act: "add", obj: "post" },
-            { act: "add", obj: "user" },
-            { act: "add", obj: "page" },
-            { act: "remove", obj: "post" },
-            { act: "remove", obj: "user" }
+            { act: 'edit', obj: 'post' },
+            { act: 'edit', obj: 'tag' },
+            { act: 'edit', obj: 'user' },
+            { act: 'edit', obj: 'page' },
+            { act: 'add', obj: 'post' },
+            { act: 'add', obj: 'user' },
+            { act: 'add', obj: 'page' },
+            { act: 'remove', obj: 'post' },
+            { act: 'remove', obj: 'user' }
         ],
         currTestPermId = 1,
 
         createPermission = function (name, act, obj) {
             if (!name) {
                 currTestPermId += 1;
-                name = "test" + currTestPermId;
+                name = 'test' + currTestPermId;
             }
 
             var newPerm = {
@@ -131,7 +131,7 @@ describe('Permissions', function () {
         it('can add user permissions', function (done) {
             UserProvider.findOne({id: 1}, { withRelated: ['permissions']}).then(function (testUser) {
                 var testPermission = new Models.Permission({
-                    name: "test edit posts",
+                    name: 'test edit posts',
                     action_type: 'edit',
                     object_type: 'post'
                 });
@@ -154,8 +154,8 @@ describe('Permissions', function () {
 
         it('can add role permissions', function (done) {
             var testRole = new Models.Role({
-                name: "test2",
-                description: "test2 description"
+                name: 'test2',
+                description: 'test2 description'
             });
 
             testRole.save(null, {user: 1})
@@ -164,7 +164,7 @@ describe('Permissions', function () {
                 })
                 .then(function () {
                     var rolePermission = new Models.Permission({
-                        name: "test edit posts",
+                        name: 'test edit posts',
                         action_type: 'edit',
                         object_type: 'post'
                     });
@@ -227,7 +227,7 @@ describe('Permissions', function () {
 
         it('allows edit post with permission', function (done) {
             var fakePost = {
-                    id: "1"
+                    id: '1'
                 };
 
             createTestPermissions()
@@ -237,9 +237,9 @@ describe('Permissions', function () {
                 })
                 .then(function (foundUser) {
                     var newPerm = new Models.Permission({
-                        name: "test3 edit post",
-                        action_type: "edit",
-                        object_type: "post"
+                        name: 'test3 edit post',
+                        action_type: 'edit',
+                        object_type: 'post'
                     });
 
                     return newPerm.save(null, {user: 1}).then(function () {
@@ -281,7 +281,8 @@ describe('Permissions', function () {
                 })
                 .then(function () {
                     permissableStub.restore();
-                    permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }).should.equal(true);
+                    permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false })
+                        .should.equal(true);
 
                     done();
                 })
@@ -310,16 +311,17 @@ describe('Permissions', function () {
                 .then(function () {
 
                     permissableStub.restore();
-                    done(new Error("Allowed testUser to edit post"));
+                    done(new Error('Allowed testUser to edit post'));
                 })
                 .catch(function () {
-                    permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false }).should.equal(true);
+                    permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false })
+                        .should.equal(true);
                     permissableStub.restore();
                     done();
                 });
         });
 
-        it("can get effective user permissions", function (done) {
+        it('can get effective user permissions', function (done) {
             effectivePerms.user(1).then(function (effectivePermissions) {
                 should.exist(effectivePermissions);
 
@@ -349,9 +351,9 @@ describe('Permissions', function () {
                     return UserProvider.findOne({id: 1})
                         .then(function (foundUser) {
                             var newPerm = new Models.Permission({
-                                name: "app test edit post",
-                                action_type: "edit",
-                                object_type: "post"
+                                name: 'app test edit post',
+                                action_type: 'edit',
+                                object_type: 'post'
                             });
 
                             return newPerm.save(null, {user: 1}).then(function () {
@@ -372,7 +374,8 @@ describe('Permissions', function () {
                             return results;
                         })
                         .catch(function (err) {
-                            done(new Error("Did not allow user 1 to edit post 1"));
+                            /*jshint unused:false */
+                            done(new Error('Did not allow user 1 to edit post 1'));
                         });
                 })
                 .then(function (results) {
@@ -384,7 +387,7 @@ describe('Permissions', function () {
                         .edit
                         .post(updatedPost.id)
                         .then(function () {
-                            done(new Error("Allowed an edit of post 1"));
+                            done(new Error('Allowed an edit of post 1'));
                         }).catch(done);
                 }).catch(done);
         });
@@ -397,7 +400,7 @@ describe('Permissions', function () {
                     done();
                 })
                 .catch(function () {
-                    done(new Error("Allowed an edit of post 1"));
+                    done(new Error('Allowed an edit of post 1'));
                 });
         });
 
@@ -406,7 +409,7 @@ describe('Permissions', function () {
                 .edit
                 .post(1)
                 .then(function () {
-                    done(new Error("Should not allow editing post"));
+                    done(new Error('Should not allow editing post'));
                 })
                 .catch(done);
         });
@@ -420,7 +423,7 @@ describe('Permissions', function () {
                     done();
                 })
                 .catch(function () {
-                    done(new Error("Should allow editing post with 'internal'"));
+                    done(new Error('Should allow editing post with "internal"'));
                 });
         });
 
@@ -433,7 +436,7 @@ describe('Permissions', function () {
                     done();
                 })
                 .catch(function () {
-                    done(new Error("Should allow editing post with { internal: true }"));
+                    done(new Error('Should allow editing post with { internal: true }'));
                 });
         });
     });

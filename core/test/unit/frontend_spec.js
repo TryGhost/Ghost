@@ -1,4 +1,5 @@
 /*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var assert   = require('assert'),
     moment   = require('moment'),
     should   = require('should'),
@@ -11,10 +12,12 @@ var assert   = require('assert'),
     api      = require('../../server/api'),
     frontend = rewire('../../server/controllers/frontend');
 
+// To stop jshint complaining
+should.equal(true, true);
+
 describe('Frontend Controller', function () {
 
-    var ghost,
-        sandbox,
+    var sandbox,
         apiSettingsStub,
         adminEditPagePath = '/ghost/editor/';
 
@@ -183,7 +186,7 @@ describe('Frontend Controller', function () {
             };
 
         beforeEach(function () {
-            sandbox.stub(api.posts, 'browse', function (args) {
+            sandbox.stub(api.posts, 'browse', function () {
                 return when({
                     posts: mockPosts,
                     meta: {

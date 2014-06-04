@@ -1,10 +1,9 @@
 /*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var assert          = require('assert'),
     should          = require('should'),
     sinon           = require('sinon'),
-    when            = require('when'),
     _               = require('lodash'),
-    express         = require('express'),
     api             = require('../../server/api'),
     middleware      = require('../../server/middleware').middleware;
 
@@ -178,7 +177,10 @@ describe('Middleware', function () {
             middleware.cacheControl('private')(null, res, function (a) {
                 should.not.exist(a);
                 res.set.calledOnce.should.be.true;
-                res.set.calledWith({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
+                res.set.calledWith({
+                    'Cache-Control':
+                        'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                });
                 done();
             });
         });
@@ -275,16 +277,12 @@ describe('Middleware', function () {
         });
 
         it('should call express.static if valid file type', function (done) {
-            var ghostStub = {
-                    paths: function () {
-                        return {activeTheme: 'ACTIVETHEME'};
-                    }
-                },
-                req = {
+            var req = {
                     url: 'myvalidfile.css'
                 };
 
             middleware.staticTheme(null)(req, null, function (reqArg, res, next) {
+                /*jshint unused:false */
                 middleware.forwardToExpressStatic.calledOnce.should.be.true;
                 assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], req);
                 done();

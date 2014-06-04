@@ -6,41 +6,44 @@
  */
 
 /*globals describe, it */
-var testUtils   = require('../utils'),
-    should      = require('should'),
+/*jshint expr:true*/
+var should      = require('should'),
 
     // Stuff we are testing
     ghostimagepreview     = require('../../shared/lib/showdown/extensions/ghostimagepreview');
 
-describe("Ghost Image Preview showdown extension", function () {
+// To stop jshint complaining
+should.equal(true, true);
 
-    it("should export an array of methods for processing", function () {
+describe('Ghost Image Preview showdown extension', function () {
+
+    it('should export an array of methods for processing', function () {
 
         ghostimagepreview.should.be.a.function;
         ghostimagepreview().should.be.an.instanceof(Array);
 
         ghostimagepreview().forEach(function (processor) {
             processor.should.be.an.Object;
-            processor.should.have.property("type");
-            processor.should.have.property("filter");
+            processor.should.have.property('type');
+            processor.should.have.property('filter');
             processor.type.should.be.a.String;
             processor.filter.should.be.a.function;
         });
     });
 
-    it("should accurately detect images in markdown", function () {
+    it('should accurately detect images in markdown', function () {
         [
-            "![]",
-            "![]()",
-            "![image and another,/ image]",
-            "![image and another,/ image]()",
-            "![image and another,/ image](http://dsurl.stuff)",
-            "![](http://dsurl.stuff)"
+            '![]',
+            '![]()',
+            '![image and another,/ image]',
+            '![image and another,/ image]()',
+            '![image and another,/ image](http://dsurl.stuff)',
+            '![](http://dsurl.stuff)'
             /* No ref-style for now
-             "![][]",
-             "![image and another,/ image][stuff]",
-             "![][stuff]",
-             "![image and another,/ image][]"
+             '![][]',
+             '![image and another,/ image][stuff]',
+             '![][stuff]',
+             '![image and another,/ image][]'
              */
         ]
             .forEach(function (imageMarkup) {
@@ -54,13 +57,13 @@ describe("Ghost Image Preview showdown extension", function () {
             });
     });
 
-    it("should correctly include an image", function () {
+    it('should correctly include an image', function () {
         [
-            "![image and another,/ image](http://dsurl.stuff)",
-            "![](http://dsurl.stuff)"
+            '![image and another,/ image](http://dsurl.stuff)',
+            '![](http://dsurl.stuff)'
             /* No ref-style for now
-             "![image and another,/ image][test]\n\n[test]: http://dsurl.stuff",
-             "![][test]\n\n[test]: http://dsurl.stuff"
+             '![image and another,/ image][test]\n\n[test]: http://dsurl.stuff',
+             '![][test]\n\n[test]: http://dsurl.stuff'
              */
         ]
             .forEach(function (imageMarkup) {
