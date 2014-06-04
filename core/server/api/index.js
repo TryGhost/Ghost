@@ -223,6 +223,7 @@ http = function (apiMethod) {
                                 'Content-Disposition': contentDispositionHeader()
                             });
                         }
+
                         // #### Success
                         // Send a properly formatting HTTP response containing the data with correct headers
                         res.json(result || {});
