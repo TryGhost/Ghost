@@ -261,13 +261,16 @@ function init(server) {
         // ## Start Ghost App
         if (config.getSocket()) {
             // Make sure the socket is gone before trying to create another
-            fs.unlink(config.getSocket(), function (err) {
-                /*jshint unused:false*/
-                httpServer = server.listen(
-                    config.getSocket()
-                );
-                fs.chmod(config.getSocket(), '0660');
-            });
+            try {
+                fs.unlinkSync(config.getSocket());
+            } catch (e) {
+                // We can ignore this.
+            }
+
+            httpServer = server.listen(
+                config.getSocket()
+            );
+            fs.chmod(config.getSocket(), '0660');
 
         } else {
             httpServer = server.listen(
