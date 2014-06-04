@@ -102,9 +102,9 @@ casper.captureScreenshot = function (filename, debugOnly) {
     // If we are in debug mode, OR debugOnly is false
     if (DEBUG || debugOnly === false) {
         filename = filename || "casper_test_fail.png";
-//        casper.then(function () {
-//            casper.capture(new Date().getTime() + '_' + filename);
-//        });
+        casper.then(function () {
+            casper.capture(new Date().getTime() + '_' + filename);
+        });
     }
 };
 
