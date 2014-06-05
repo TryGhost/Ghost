@@ -36,7 +36,7 @@ apiRoutes = function (server) {
     server.post('/ghost/api/v0.1/mail', api.http(api.mail.send));
     server.post('/ghost/api/v0.1/mail/test', api.http(api.mail.sendTest));
     // #### Slugs
-    server.get('/ghost/api/v0.1/slugs/:type/:title', api.http(api.slugs.generate));
+    server.get('/ghost/api/v0.1/slugs/:type/:name', api.http(api.slugs.generate));
 };
 
 module.exports = apiRoutes;
