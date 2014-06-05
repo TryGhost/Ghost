@@ -119,7 +119,7 @@ db = {
             }).then(function importSuccess() {
                 return api.settings.updateSettingsCache();
             }).then(function () {
-                return when.resolve({ db: [] });
+                return when.resolve({ message: 'Data was imported succesfully.', db: [] });
             }).otherwise(function importFailure(error) {
                 return when.reject(new errors.InternalServerError(error.message || error));
             }).finally(function () {
