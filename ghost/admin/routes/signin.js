@@ -1,9 +1,10 @@
 import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
+import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var isEmpty = Ember.isEmpty;
 
-var SigninRoute = Ember.Route.extend(styleBody, {
+var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-login'],
 
     actions: {

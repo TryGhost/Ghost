@@ -1,8 +1,9 @@
 import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
+import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SignoutRoute = AuthenticatedRoute.extend(styleBody, {
+var SignoutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-signout'],
 
     beforeModel: function () {

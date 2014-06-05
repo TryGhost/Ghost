@@ -1,8 +1,9 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
-    
+import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, {
+
+var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
     actions: {
         save: function () {
             this.get('controller').send('save');
