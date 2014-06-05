@@ -411,7 +411,8 @@ describe('Post API', function () {
                                     }
 
                                     var updatedPost = res.body;
-                                    _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                                    // Require cache invalidation when post was updated and published
+                                    _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                                     res.should.be.json;
 
                                     updatedPost.should.exist;
@@ -458,12 +459,99 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
+                            done();
+                        });
+                });
+        });
+
+        it('can edit a new draft and update post', function (done) {
+            var newTitle = 'My Post',
+                newTagName = 'My Tag',
+                publishedState = 'published',
+                newTag = {id: null, name: newTagName},
+                newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post', tags: [newTag]}]};
+
+            request.post(testUtils.API.getApiQuery('posts/?include=tags'))
+                .set('X-CSRF-Token', csrfToken)
+                .send(newPost)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.should.be.json;
+                    var draftPost = res.body;
+                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
+                    draftPost.posts.should.exist;
+                    draftPost.posts.length.should.be.above(0);
+                    draftPost.posts[0].title.should.eql(newTitle);
+                    testUtils.API.checkResponse(draftPost.posts[0], 'post');
+
+                    draftPost.posts[0].title = 'Vote for Casper in red';
+
+                    request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags'))
+                        .set('X-CSRF-Token', csrfToken)
+                        .send(draftPost)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            // Updating a draft should not send x-cache-invalidate headers
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            done();
+                        });
+                });
+        });
+
+        it('can edit a new published post and unpublish', function (done) {
+            var newTitle = 'My Post',
+                newTagName = 'My Tag',
+                draftState = 'draft',
+                newTag = {id: null, name: newTagName},
+                newPost = {posts: [{status: 'published', title: newTitle, markdown: 'my post', tags: [newTag]}]};
+
+            request.post(testUtils.API.getApiQuery('posts/?include=tags'))
+                .set('X-CSRF-Token', csrfToken)
+                .send(newPost)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.should.be.json;
+                    var draftPost = res.body;
+                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=published');
+                    draftPost.posts.should.exist;
+                    draftPost.posts.length.should.be.above(0);
+                    draftPost.posts[0].title.should.eql(newTitle);
+                    testUtils.API.checkResponse(draftPost.posts[0], 'post');
+
+                    draftPost.posts[0].title = 'Vote for Casper in red';
+                    draftPost.posts[0].status = draftState;
+
+                    request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags'))
+                        .set('X-CSRF-Token', csrfToken)
+                        .send(draftPost)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            
+                            var unpublishedPost = res.body;
+                            // Unpublishing a post should send x-cache-invalidate headers
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             done();
                         });
                 });
@@ -492,7 +580,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].page.should.eql(changedValue);
@@ -527,7 +615,7 @@ describe('Post API', function () {
 
                             var putBody = res.body;
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].page.should.eql(changedValue);
@@ -615,7 +703,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts.should.exist;
@@ -843,7 +931,7 @@ describe('Post API', function () {
                                 yyyy = today.getFullYear(),
                                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/' + putBody.posts[0].slug + '/';
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.should.be.json;
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);

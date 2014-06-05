@@ -55,24 +55,25 @@ cacheInvalidationHeader = function (req, result) {
         cacheInvalidate,
         jsonResult = result.toJSON ? result.toJSON() : result,
         post,
-        wasPublished,
-        wasDeleted;
+        hasStatusChanged,
+        wasDeleted,
+        wasPublishedUpdated;
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
             cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
             post = jsonResult.posts[0];
-            wasPublished = post.statusChanged && post.status === 'published';
+            hasStatusChanged = post.statusChanged;
             wasDeleted = method === 'DELETE';
+            // Invalidate cache when post was updated but not when post is draft
+            wasPublishedUpdated = method === 'PUT' && post.status === 'published';
 
             // Remove the statusChanged value from the response
-            if (post.statusChanged) {
-                delete post.statusChanged;
-            }
+            delete post.statusChanged;
 
             // Don't set x-cache-invalidate header for drafts
-            if (wasPublished || wasDeleted) {
+            if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
                 cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*';
                 if (id && post.slug) {
                     return config.urlForPost(settings, post).then(function (postUrl) {
