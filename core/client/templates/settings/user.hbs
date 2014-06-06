@@ -11,7 +11,7 @@
     <header class="user-profile-header">
         <img id="user-cover" class="cover-image" {{bind-attr src=cover title=coverTitle}} />
 
-        <a class="edit-cover-image js-modal-cover button" {{action "openModal" "upload"}}>Change Cover</a>
+        <a class="edit-cover-image js-modal-cover button" {{action "openModal" "upload" user "cover"}}>Change Cover</a>
     </header>
 
     <form class="user-profile" novalidate="novalidate">
@@ -20,7 +20,7 @@
 
             <figure class="user-image">
                 <div id="user-image" class="img" {{bind-attr style=image}} href="#"><span class="hidden">{{name}}"s Picture</span></div>
-                <a href="" {{action "openModal" "upload"}} class="edit-user-image js-modal-image">Edit Picture</a>
+                <a href="" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</a>
             </figure>
 
             <div class="form-group">
