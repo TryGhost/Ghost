@@ -21,5 +21,6 @@ export default {
 
         application.inject('component:gh-popover', 'popover', 'popover:service');
         application.inject('component:gh-popover-button', 'popover', 'popover:service');
+        application.inject('controller:modals.delete-post', 'popover', 'popover:service');
     }
 };
