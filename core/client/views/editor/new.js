@@ -1,8 +1,9 @@
-var EditorNewView = Ember.View.extend({
+import EditorViewMixin from 'ghost/mixins/editor-base-view';
+
+var EditorNewView = Ember.View.extend(EditorViewMixin, {
     tagName: 'section',
     templateName: 'editor/edit',
-    classNames: ['entry-container'],
-    scrollPosition: 0  // percentage of scroll position
+    classNames: ['entry-container']
 });
 
 export default EditorNewView;

@@ -62,6 +62,10 @@ var path           = require('path'),
                     files: ['core/clientold/tpl/**/*.hbs'],
                     tasks: ['handlebars']
                 },
+                shared: {
+                    files: ['core/shared/**/*.js'],
+                    tasks: ['concat:dev', 'concat:dev-ember']
+                },
                 'handlebars-ember': {
                     files: ['core/client/**/*.hbs'],
                     tasks: ['emberTemplates:dev']
