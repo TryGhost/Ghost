@@ -133,7 +133,7 @@ function ghostStartMessages() {
         );
 
         // ensure that Ghost exits correctly on Ctrl+C
-        process.on('SIGINT', function () {
+        process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
                 "\nGhost has shut down".red,
                 "\nYour blog is now offline"
@@ -150,7 +150,7 @@ function ghostStartMessages() {
             "\nCtrl+C to shut down".grey
         );
         // ensure that Ghost exits correctly on Ctrl+C
-        process.on('SIGINT', function () {
+        process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
                 "\nGhost has shutdown".red,
                 "\nGhost was running for",
