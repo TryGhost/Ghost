@@ -5,7 +5,17 @@ var PostController = Ember.ObjectController.extend({
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),
-    willPublish: Ember.computed.oneWay('isPublished'),
+    /**
+     * By default, a post will not change its publish state.
+     * Only with a user-set value (via setSaveType action)
+     * can the post's status change.
+     */
+    willPublish: function (key, val) {
+        if (val) {
+            return val;
+        }
+        return this.get('isPublished');
+    }.property('isPublished'),
     isStaticPage: function (key, val) {
         var self = this;
 
