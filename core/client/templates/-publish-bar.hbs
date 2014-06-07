@@ -1,16 +1,7 @@
 <footer id="publish-bar">
     <nav>
-        <section id="entry-tags" href="#" class="left">
-            <label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
-            <div class="tags">
-            {{#each tags}}
-                <span class="tag">{{name}}</span>
-            {{/each}}
-            </div>
-            <input type="hidden" class="tags-holder" id="tags-holder">
-            <input class="tag-input" id="tags" type="text" data-input-behaviour="tag" />
-            <ul class="suggestions overlay"></ul>
-        </section>
+        {{view "editor-tags" tagName="section" id="entry-tags" class="left"}}
+
         <div class="right">
 
             <section id="entry-controls">
