@@ -20,7 +20,8 @@
         "moment": "2.4.0",
         "nprogress": "0.1.2",
         "showdown": "https://github.com/ErisDS/showdown.git#v0.3.2-ghost",
-        "validator-js": "3.4.0"
+        "validator-js": "3.4.0",
+        "loader.js": "stefanpenner/loader.js#1.0.0"
     },
     "resolutions": {
       "ember": "~1.4.0"
