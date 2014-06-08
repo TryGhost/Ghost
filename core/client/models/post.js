@@ -19,21 +19,10 @@ var Post = DS.Model.extend({
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
     tags: DS.hasMany('tag', { async: true }),
-
-    generateSlug: function () {
-        var title = this.get('title'),
-            url;
-
-        if (!title) {
-            return;
-        }
-
-        url = this.get('ghostPaths').apiUrl('slugs', 'post', encodeURIComponent(title));
-
-        return ic.ajax.request(url, {
-                type: 'GET'
-            });
-    },
+    
+    //## Computed post properties
+    isPublished: Ember.computed.equal('status', 'published'),
+    isDraft: Ember.computed.equal('status', 'draft'),
 
     validate: function () {
         var validationErrors = [];
