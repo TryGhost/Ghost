@@ -488,7 +488,7 @@ var path           = require('path'),
                 'dev-ember': {
                     files: {
                         'core/built/scripts/vendor-ember.js': [
-                            'core/client/assets/vendor/loader.js',
+                            'bower_components/loader.js/loader.js',
                             'bower_components/jquery/dist/jquery.js',
                             'bower_components/handlebars/handlebars.js',
                             'bower_components/ember/ember.js',
