@@ -504,6 +504,9 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/moment/moment.js',
 
+                            'bower_components/jquery-ui/ui/jquery-ui.js',
+                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+
                             'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
                         ]
