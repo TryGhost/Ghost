@@ -162,6 +162,34 @@ function ghostStartMessages() {
     }
 }
 
+
+// This is run after every initialization is done, right before starting server.
+// Its main purpose is to move adding notifications here, so none of the submodules
+// should need to include api, which previously resulted in circular dependencies.
+// This is also a "one central repository" of adding startup notifications in case
+// in the future apps will want to hook into here
+function initNotifications() {
+    if (mailer.state && mailer.state.usingSendmail) {
+        api.notifications.add({
+            type: 'info',
+            message: [
+                "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
+                "It is recommended that you explicitly configure an e-mail service,",
+                "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
+            ].join(' ')
+        });
+    }
+    if (mailer.state && mailer.state.emailDisabled) {
+        api.notifications.add({
+            type: 'warn',
+            message: [
+                "Ghost is currently unable to send e-mail.",
+                "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
+            ].join(' ')
+        });
+    }
+}
+
 // ## Initializes the ghost application.
 // Sets up the express server instance.
 // Instantiates the ghost singleton, helpers, routes, middleware, and apps.
@@ -215,6 +243,8 @@ function init(server) {
         var adminHbs = hbs.create(),
             deferred = when.defer();
 
+        // Output necessary notifications on init
+        initNotifications();
         // ##Configuration
 
         // return the correct mime type for woff filess
