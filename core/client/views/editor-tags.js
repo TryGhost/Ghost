@@ -57,7 +57,6 @@ var EditorTags = Ember.View.extend({
 
         this.set('overlay.left', this.$input.position().left);
         this.$suggestions.html('');
-        window.b = matchingTags;
 
         matchingTags = matchingTags.slice(0, maxSuggestions);
         if (matchingTags.length > 0) {
