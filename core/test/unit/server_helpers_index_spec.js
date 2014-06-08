@@ -171,6 +171,77 @@ describe('Core Helpers', function () {
             should.exist(rendered);
             rendered.string.should.equal("<p>Hello <strong>Wo</strong></p>");
         });
+
+        it('can defer truncating html until the end of a matching <p> tag when context=\"true\" is specified.', function () {
+            var html = "<p>I am a first paragraph. I am longer than 2 words.</p><p>I am a second paragraph.</p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 2, "context": "true"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<p>I am a first paragraph. I am longer than 2 words.</p>");
+        });
+
+        it('can defer truncating html until the end of a matching <pre> tag when context=\"true\" is specified.', function () {
+            var html = "<pre>I am a first pre. I am longer than 2 words.</pre><p>I am a second contextful element.</p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 2, "context": "true"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<pre>I am a first pre. I am longer than 2 words.</pre>");
+        });
+
+        it('can defer truncating html until the end of a matching <blockquote> tag when context=\"true\" is specified.', function () {
+            var html = "<blockquote>I am a first blockquote. I am longer than 2 words.</blockquote><p>I am a second contextful element.</p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 2, "context": "true"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<blockquote>I am a first blockquote. I am longer than 2 words.</blockquote>");
+        });
+
+        it('can defer truncating html until the end of a matching <ul> tag when context=\"true\" is specified.', function () {
+            var html = "<ul><li>I am a first ul.</li><li>I am longer than 2 words.</li></ul><p>I am a second contextful element.</p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 2, "context": "true"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<ul><li>I am a first ul.</li><li>I am longer than 2 words.</li></ul>");
+        });
+
+        it('can defer truncating html until the end of a matching <ol> tag when context=\"true\" is specified.', function () {
+            var html = "<ol><li>I am a first ol.</li><li>I am longer than 2 words.</li></ol><p>I am a second contextful element.</p>",
+                rendered = (
+                    helpers.content
+                        .call(
+                            {html: html},
+                            {"hash": {"words": 2, "context": "true"}}
+                        )
+                );
+
+            should.exist(rendered);
+            rendered.string.should.equal("<ol><li>I am a first ol.</li><li>I am longer than 2 words.</li></ol>");
+        });
+
     });
 
     describe('Author Helper', function () {

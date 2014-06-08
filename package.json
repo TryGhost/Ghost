@@ -37,7 +37,7 @@
         "colors": "0.6.2",
         "compression": "^1.0.2",
         "connect-slashes": "1.2.0",
-        "downsize": "0.0.5",
+        "downsize": "0.0.6",
         "express": "3.4.6",
         "express-hbs": "0.7.10",
         "fs-extra": "0.8.1",

@@ -259,21 +259,41 @@ coreHelpers.tags = function (options) {
 // **returns** SafeString content html, complete or truncated.
 //
 coreHelpers.content = function (options) {
-    var truncateOptions = (options || {}).hash || {};
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
-    _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+    var inputOptions = (options || {}).hash || {},
+        numericTruncateOptions,
+        stringTruncateOptions,
+        downsizeOptions;
+
+    numericTruncateOptions = _.pick(inputOptions, ['words', 'characters']);
+    _.keys(numericTruncateOptions).map(function (key) {
+        numericTruncateOptions[key] = parseInt(numericTruncateOptions[key], 10);
     });
 
-    if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+    stringTruncateOptions = _.pick(inputOptions, ['context']);
+    _.keys(stringTruncateOptions).map(function (key) {
+        stringTruncateOptions[key] = (String(stringTruncateOptions[key]) || '').trim().toLowerCase();
+    });
+
+    if (numericTruncateOptions.hasOwnProperty('words') || numericTruncateOptions.hasOwnProperty('characters')) {
+        // Copy over fully API matching numeric object
+        downsizeOptions = numericTruncateOptions;
+
         // Due to weirdness in downsize the 'words' option
         // must be passed as a string. refer to #1796
         // TODO: when downsize fixes this quirk remove this hack.
-        if (truncateOptions.hasOwnProperty('words')) {
-            truncateOptions.words = truncateOptions.words.toString();
+        if (downsizeOptions.hasOwnProperty('words')) {
+            downsizeOptions.words = downsizeOptions.words.toString();
         }
+
+        if (stringTruncateOptions.context === 'true') {
+            // We're trying to keep context.
+            // Since we know our html is markdown sourced, we pass the important
+            // contextual markdown tags. Content in these tags will not be cleaved.
+            downsizeOptions.contextualTags = ['p', 'ul', 'ol', 'pre', 'blockquote'];
+        }
+
         return new hbs.handlebars.SafeString(
-            downsize(this.html, truncateOptions)
+            downsize(this.html, downsizeOptions)
         );
     }
 
