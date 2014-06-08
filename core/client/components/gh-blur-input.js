@@ -1,4 +1,4 @@
-var BlurTextField = Ember.TextField.extend({
+var BlurInput = Ember.TextField.extend({
     selectOnClick: false,
     click: function (event) {
         if (this.get('selectOnClick')) {
@@ -10,4 +10,4 @@ var BlurTextField = Ember.TextField.extend({
     }
 });
 
-export default BlurTextField;
+export default BlurInput;
