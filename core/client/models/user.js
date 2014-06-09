@@ -41,11 +41,9 @@ var User = DS.Model.extend({
             validationErrors.push({message: 'Location is too long'});
         }
 
-        if (this.get('website').length) {
-            if (!validator.isURL(this.get('website'), { protocols: ['http', 'https'], require_protocol: true }) ||
-                !validator.isLength(this.get('website'), 0, 2000)) {
-                validationErrors.push({message: 'Please use a valid url'});
-            }
+        if (!validator.isURL(this.get('website'), { protocols: ['http', 'https'], require_protocol: true }) ||
+            !validator.isLength(this.get('website'), 0, 2000)) {
+            validationErrors.push({message: 'Please use a valid url'});
         }
 
         return validationErrors;
