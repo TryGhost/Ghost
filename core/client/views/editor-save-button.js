@@ -1,4 +1,4 @@
-export default Ember.View.extend({
+var EditorSaveButtonView = Ember.View.extend({
     templateName: 'editor-save-button',
     tagName: 'section',
     classNames: ['js-publish-splitbutton'],
@@ -21,3 +21,5 @@ export default Ember.View.extend({
         return this.get('controller.isPublished') ? 'Unpublish' : 'Save Draft';
     }.property('controller.isPublished')
 });
+
+export default EditorSaveButtonView;
