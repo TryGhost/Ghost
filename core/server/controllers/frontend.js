@@ -9,7 +9,6 @@ var moment      = require('moment'),
     _           = require('lodash'),
     url         = require('url'),
     when        = require('when'),
-    Route       = require('express').Route,
 
     api         = require('../api'),
     config      = require('../config'),
@@ -18,8 +17,32 @@ var moment      = require('moment'),
     errors      = require('../errors'),
 
     frontendControllers,
-    // Cache static post permalink regex
-    staticPostPermalink = new Route(null, '/:slug/:edit?');
+    staticPostPermalink,
+    oldRoute,
+    dummyRouter = require('express').Router();
+
+// Overload this dummyRouter as we only want the layer object.
+// We don't want to keep in memory many items in an array so we
+// clear the stack array after every invocation.
+oldRoute = dummyRouter.route;
+dummyRouter.route = function () {
+    var layer;
+
+    // Apply old route method
+    oldRoute.apply(dummyRouter, arguments);
+
+    // Grab layer object
+    layer = dummyRouter.stack[0];
+
+    // Reset stack array for memory purposes
+    dummyRouter.stack = [];
+
+    // Return layer
+    return layer;
+};
+
+// Cache static post permalink regex
+staticPostPermalink = dummyRouter.route('/:slug/:edit?');
 
 function getPostPage(options) {
     return api.settings.read('postsPerPage').then(function (response) {
@@ -155,7 +178,7 @@ frontendControllers = {
             editFormat = permalink.value[permalink.value.length - 1] === '/' ? ':edit?' : '/:edit?';
 
             // Convert saved permalink into an express Route object
-            permalink = new Route(null, permalink.value + editFormat);
+            permalink = dummyRouter.route(permalink.value + editFormat);
 
             // Check if the path matches the permalink structure.
             //
