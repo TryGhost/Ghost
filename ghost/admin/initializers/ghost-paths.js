@@ -1,6 +1,6 @@
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-export default {
+var ghostPathsInitializer = {
     name: 'ghost-paths',
     after: 'store',
 
@@ -12,3 +12,5 @@ export default {
         container.injection('controller', 'ghostPaths', 'ghost:paths');
     }
 };
+
+export default ghostPathsInitializer;
