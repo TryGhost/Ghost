@@ -3,6 +3,7 @@
 // middleware_spec.js
 
 var _           = require('lodash'),
+    csrf        = require('csurf'),
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
@@ -185,10 +186,9 @@ var middleware = {
     },
 
     conditionalCSRF: function (req, res, next) {
-        var csrf = express.csrf();
         // CSRF is needed for admin only
         if (res.isAdmin) {
-            csrf(req, res, next);
+            csrf()(req, res, next);
             return;
         }
         next();
