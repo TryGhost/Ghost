@@ -14,10 +14,10 @@ var User = DS.Model.extend({
     language: DS.attr('string'),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
-    last_login: DS.attr('date'),
-    created_at: DS.attr('date'),
+    last_login: DS.attr('moment-date'),
+    created_at: DS.attr('moment-date'),
     created_by: DS.attr('number'),
-    updated_at: DS.attr('date'),
+    updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
 
     isSignedIn: Ember.computed.bool('id'),
