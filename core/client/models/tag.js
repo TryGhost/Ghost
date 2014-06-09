@@ -1,4 +1,4 @@
-export default DS.Model.extend({
+var Tag = DS.Model.extend({
 	uuid: DS.attr('string'),
 	name: DS.attr('string'),
 	slug: DS.attr('string'),
@@ -11,3 +11,5 @@ export default DS.Model.extend({
 	updated_at: DS.attr('date'),
 	updated_by: DS.attr('number')
 });
+
+export default Tag;
