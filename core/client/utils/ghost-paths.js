@@ -9,7 +9,7 @@ var makeRoute = function (root, args) {
     return route;
 };
 
-export default function ghostPaths() {
+function ghostPaths() {
     var path = window.location.pathname,
         subdir = path.substr(0, path.search('/ghost/'));
 
@@ -27,3 +27,5 @@ export default function ghostPaths() {
         }
     };
 }
+
+export default ghostPaths;

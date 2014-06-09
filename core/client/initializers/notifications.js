@@ -1,6 +1,6 @@
 import Notifications from 'ghost/utils/notifications';
 
-export default {
+var injectNotificationsInitializer = {
     name: 'injectNotifications',
 
     initialize: function (container, application) {
@@ -11,3 +11,5 @@ export default {
         application.inject('route', 'notifications', 'notifications:main');
     }
 };
+
+export default injectNotificationsInitializer;
