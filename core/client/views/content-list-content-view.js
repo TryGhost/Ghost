@@ -1,3 +1,5 @@
+import setScrollClassName from 'ghost/utils/set-scroll-classname';
+
 var PostsListView = Ember.View.extend({
     classNames: ['content-list-content'],
 
@@ -17,12 +19,16 @@ var PostsListView = Ember.View.extend({
 
     didInsertElement: function () {
         var el = this.$();
-        el.bind('scroll', Ember.run.bind(this, this.checkScroll));
+        el.on('scroll', Ember.run.bind(this, this.checkScroll));
+        el.on('scroll', Ember.run.bind(el, setScrollClassName, {
+            target: el.closest('.content-list'),
+            offset: 10
+        }));
     },
 
     willDestroyElement: function () {
         var el = this.$();
-        el.unbind('scroll');
+        el.off('scroll');
     }
 });
 
