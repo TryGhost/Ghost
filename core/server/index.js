@@ -240,7 +240,8 @@ function init(server) {
         );
     }).then(function () {
         var adminHbs = hbs.create(),
-            deferred = when.defer();
+            deferred = when.defer(),
+            customPoweredBy = config().customPoweredBy;
 
         // Output necessary notifications on init
         initNotifications();
@@ -252,6 +253,21 @@ function init(server) {
         // enabled gzip compression by default
         if (config().server.compress !== false) {
             server.use(compress());
+        }
+
+        // set a custom x-powered-by header
+        if (customPoweredBy !== undefined) {
+            if (customPoweredBy === false) {
+                server.disable('x-powered-by');
+            } else {
+                server.use(function (req, res, next) {
+                    if (customPoweredBy === true) {
+                        customPoweredBy = 'Ghost';
+                    }
+                    res.header('x-powered-by', customPoweredBy);
+                    next();
+                });
+            }
         }
 
         // ## View engine
