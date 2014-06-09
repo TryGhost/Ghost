@@ -13,7 +13,7 @@ var PopoverService = Ember.Object.extend(Ember.Evented, BodyEventListener, {
     }
 });
 
-export default {
+var popoverInitializer = {
     name: 'popover',
 
     initialize: function (container, application) {
@@ -24,3 +24,5 @@ export default {
         application.inject('controller:modals.delete-post', 'popover', 'popover:service');
     }
 };
+
+export default popoverInitializer;

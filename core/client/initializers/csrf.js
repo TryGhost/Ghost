@@ -1,4 +1,4 @@
-export default {
+var CSRFInitializer = {
     name: 'csrf',
 
     initialize: function (container) {
@@ -8,3 +8,5 @@ export default {
         container.injection('controller', 'csrf', 'csrf:current');
     }
 };
+
+export default CSRFInitializer;

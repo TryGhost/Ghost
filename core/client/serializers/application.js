@@ -1,4 +1,4 @@
-export default DS.RESTSerializer.extend({
+var ApplicationSerializer = DS.RESTSerializer.extend({
     serializeIntoHash: function (hash, type, record, options) {
         // Our API expects an id on the posted object
         options = options || {};
@@ -14,3 +14,5 @@ export default DS.RESTSerializer.extend({
         hash[root] = [data];
     }
 });
+
+export default ApplicationSerializer;

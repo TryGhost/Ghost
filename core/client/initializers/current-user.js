@@ -1,4 +1,4 @@
-export default {
+var currentUserInitializer = {
     name: 'currentUser',
     after: 'store',
 
@@ -32,3 +32,5 @@ export default {
         });
     }
 };
+
+export default currentUserInitializer;

@@ -1,4 +1,4 @@
-export default Ember.View.extend({
+var Form = Ember.View.extend({
     tagName: 'form',
     attributeBindings: ['enctype'],
     reset: function () {
@@ -11,3 +11,5 @@ export default Ember.View.extend({
         this.get('controller').off('reset', this, this.reset);
     }
 });
+
+export default Form;
