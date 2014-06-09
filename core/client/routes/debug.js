@@ -1,13 +1,11 @@
 import styleBody from 'ghost/mixins/style-body';
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 import SettingsModel from 'ghost/models/settings';
 
-var settingsModel = SettingsModel.create();
-
-var DebugRoute = Ember.Route.extend(styleBody, {
+export default AuthenticatedRoute.extend(styleBody, {
     classNames: ['settings'],
+
     model: function () {
-        return settingsModel;
+        return SettingsModel.create();
     }
 });
-
-export default DebugRoute;
