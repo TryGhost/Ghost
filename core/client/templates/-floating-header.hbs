@@ -11,7 +11,7 @@
         <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
     </small>
     <section class="post-controls">
-        {{#link-to "editor" this class="post-edit" title="Edit Post"}}
+        {{#link-to "editor.edit" this class="post-edit" title="Edit Post"}}
             <span class="hidden">Edit Post</span>
         {{/link-to}}
         {{#gh-popover-button popoverName="post-settings-menu" tagName="a" classNames="post-settings" title="Post Settings"}}
