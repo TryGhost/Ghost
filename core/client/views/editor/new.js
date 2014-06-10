@@ -1,8 +1,8 @@
-var NewView = Ember.View.extend({
+var EditorNewView = Ember.View.extend({
     tagName: 'section',
-    templateName: 'editor',
+    templateName: 'editor/edit',
     classNames: ['entry-container'],
     scrollPosition: 0  // percentage of scroll position
 });
 
-export default NewView;
+export default EditorNewView;
