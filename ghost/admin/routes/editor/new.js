@@ -1,7 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 
-var NewRoute = AuthenticatedRoute.extend(styleBody, {
+var EditorNewRoute = AuthenticatedRoute.extend(styleBody, {
     classNames: ['editor'],
 
     model: function () {
@@ -11,4 +11,4 @@ var NewRoute = AuthenticatedRoute.extend(styleBody, {
     }
 });
 
-export default NewRoute;
+export default EditorNewRoute;
