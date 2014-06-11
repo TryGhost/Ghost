@@ -19,7 +19,8 @@ var Codemirror = Ember.TextArea.extend({
     initCodemirror: function () {
         // create codemirror
         this.codemirror = CodeMirror.fromTextArea(this.get('element'), {
-            lineWrapping: true
+            lineWrapping: true,
+            tabindex: 2
         });
         this.codemirror.component = this; // save reference to this
 
