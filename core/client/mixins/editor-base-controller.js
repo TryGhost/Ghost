@@ -22,10 +22,10 @@ var EditorControllerMixin = Ember.Mixin.create({
                 self = this;
 
             this.set('status', status);
-            this.get('model').save().then(function () {
-                console.log('saved');
+            return this.get('model').save().then(function (model) {
                 self.notifications.showSuccess('Post status saved as <strong>' +
-                    self.get('status') + '</strong>.');
+                    model.get('status') + '</strong>.');
+                return model;
             }, this.notifications.showErrors);
         },
 
