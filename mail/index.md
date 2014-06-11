@@ -31,11 +31,11 @@ Once you've decided on what email service to use, you need to add your settings 
 
 ### Mailgun <a id="mailgun"></a>
 
-Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. You'll need to have an email address on hand, and it will ask you to either provide a domain name, or think up a subdomain. You can change this later, so for now why not register a subdomain similar to the name of the blog you're setting up.
+Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. It's free to use up to 10.000 emails per month. After signing up with Mailgun, verify your email address and [log-in to your account](https://www.mailgun.com/cp). Mailgun allows you to use your own domain for sending transactional emails but if you do not own one just yet it is possible to use the handy subdomain that they provide you with. You can change this later, so for now let's use the subdomain automatically generated for you.
 
-Verify your email address with Mailgun, and then you'll have access to their lovely control panel. You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your domain on the right hand side… see the little screencast below to help you find your details.
+You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your sandbox domain on the right hand side.  Here is an updated screencast to understand exactly where to find these details:
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />   
+<img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun SMTP Details retrieval" width="100%" />   
   
 Right, now you've got everything you need, it's time to open up your config file. Open your <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
 
