@@ -118,8 +118,8 @@ var db = {
         },
         posts_tags: {
             id: {type: 'increments', nullable: false, primary: true},
-            post_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'posts'},
-            tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'tags'}
+            post_id: {type: 'integer', nullable: false, unsigned: true, references: 'posts.id'},
+            tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'tags.id'}
         },
         apps: {
             id: {type: 'increments', nullable: false, primary: true},
@@ -138,7 +138,7 @@ var db = {
             uuid: {type: 'string', maxlength: 36, nullable: false},
             key: {type: 'string', maxlength: 150, nullable: false, unique: true},
             value: {type: 'text', maxlength: 65535, nullable: true},
-            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'apps'},
+            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'apps.id'},
             created_at: {type: 'dateTime', nullable: false},
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},
@@ -150,7 +150,7 @@ var db = {
             key: {type: 'string', maxlength: 150, nullable: false},
             value: {type: 'text', maxlength: 65535, nullable: true},
             type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'html'},
-            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'id', inTable: 'apps'},
+            app_id: {type: 'integer', nullable: false, unsigned: true, references: 'apps.id'},
             relatable_id: {type: 'integer', nullable: false, unsigned: true},
             relatable_type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'posts'},
             created_at: {type: 'dateTime', nullable: false},
