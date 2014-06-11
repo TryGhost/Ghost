@@ -33,7 +33,7 @@ Gehe auf [mailgun.com](http://www.mailgun.com/) und registriere dir einen Accoun
 
 Sobald du deine Email-Adresse verifiziert hast, kannst du auf das großartige Control Panel zugreifen Du benötigst nun deinen neuen Email-Nutzernamen und Passwort, welche Mailgun für dich angelegt hat, indem du auf deine Domain auf der rechten Seite klickst (sie unterscheiden sich von deinen bei der Registrierung eingegebenen). Im folgenden findest du einen kleinen Screencast, der dir zeigt wo du diese findest.
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
+<img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />
 
 Jetzt, wo du alles hast was du brauchst, wird es Zeit deine Konfigurationsdatei zu öffnen. Öffne deine <code class="path">config.js</code> mit dem Editor deiner Wahl, navigiere zur Environment deiner Wahl und ändere die Einstellungen ab, so dass sie so aussehen:
 

@@ -35,7 +35,7 @@ chapter: mail
 
 验证你的邮件地址，然后你将可以访问 Mailgun 可爱的控制面板。你需要通过在右边点击你的域名来找到 Mailgun 提供给你的信的邮件服务用户名和密码（而不是刚刚注册的那个）。下面的小视频可以帮你找到这些东西。
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />   
+<img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />   
 
 好了，万事俱备，只欠东风，是时候打开配置文件了。用你喜欢的文本编辑器打开 <code class="path">config.js</code>。找到你想设置邮件的地方，像下面这样修改邮件设置：
 

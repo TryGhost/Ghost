@@ -36,7 +36,7 @@ Mailgunを利用される場合は、[mailgun.com](http://www.mailgun.com/)に�
 
 次に、EメールアドレスをMailgun上でVerify(確認)する必要があります。確認後、Mailgun内で先ほどのドメイン/サブドメイン名の設定ページに行き、SMTP Authenticationボックス内に表示されているLoginとPasswordをコピーします。下の動画で確認してみてください。
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
+<img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />
 
 これですべて完了です。先ほどの<code class="path">config.js</code>ファイルを開き、開発(development)環境と本番(production)環境それぞれの値の中に、次のように書き加えてください:
 
