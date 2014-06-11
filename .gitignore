@@ -20,9 +20,18 @@ bower_components
 projectFilesBackup
 
 .DS_Store
+
+# vim-related
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+.vimrc
 *~
-*.swp
-*.swo
+
+# TernJS
+.tern-project
 
 # Ghost DB file
 *.db
