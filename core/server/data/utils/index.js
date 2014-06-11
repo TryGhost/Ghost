@@ -32,10 +32,9 @@ function createTable(table) {
             if (schema[table][key].hasOwnProperty('unsigned') && schema[table][key].unsigned) {
                 column.unsigned();
             }
-            if (schema[table][key].hasOwnProperty('references') && schema[table][key].hasOwnProperty('inTable')) {
+            if (schema[table][key].hasOwnProperty('references')) {
                 //check if table exists?
                 column.references(schema[table][key].references);
-                column.inTable(schema[table][key].inTable);
             }
             if (schema[table][key].hasOwnProperty('defaultTo')) {
                 column.defaultTo(schema[table][key].defaultTo);
@@ -50,7 +49,7 @@ function deleteTable(table) {
 
 function getTablesFromSqlite3() {
     return knex.raw("select * from sqlite_master where type = 'table'").then(function (response) {
-        return _.reject(_.pluck(response[0], 'tbl_name'), function (name) {
+        return _.reject(_.pluck(response, 'tbl_name'), function (name) {
             return name === 'sqlite_sequence';
         });
     });
