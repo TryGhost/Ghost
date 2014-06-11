@@ -17,8 +17,10 @@ Router.map(function () {
     this.resource('posts', { path: '/' }, function () {
         this.route('post', { path: ':post_id' });
     });
-    this.resource('editor', { path: '/editor/:post_id' });
-    this.route('new', { path: '/editor' });
+    this.resource('editor', function () {
+        this.route('new', { path: '' });
+        this.route('edit', { path: ':post_id' });
+    });
     this.resource('settings', function () {
         this.route('general');
         this.route('user');
