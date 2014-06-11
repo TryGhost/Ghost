@@ -33,7 +33,7 @@ exporter = function () {
             });
 
             return when.resolve(exportData);
-        }, function (err) {
+        }).catch(function (err) {
             console.log('Error exporting data: ' + err);
         });
     });
