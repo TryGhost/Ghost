@@ -9,9 +9,9 @@ var EditorControllerMixin = Ember.Mixin.create({
      * Only with a user-set value (via setSaveType action)
      * can the post's status change.
      */
-    willPublish: function (key, val) {
-        if (val) {
-            return val;
+    willPublish: function (key, value) {
+        if (arguments.length > 1) {
+            return value;
         }
         return this.get('isPublished');
     }.property('isPublished'),
