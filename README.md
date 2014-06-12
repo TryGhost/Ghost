@@ -18,7 +18,7 @@ There are **two** main ways to get started with Ghost, take care to use the meth
 
 If you just want to get a Ghost blog running in the fastest time possible, this method is for you.
 
-For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our forum](http://ghost.org/forum/).
+For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
 
 1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
