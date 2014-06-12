@@ -406,7 +406,7 @@ CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
 
         test.assertExists('#usermenu li.usermenu-help a', 'Help menu item exists');
         test.assertSelectorHasText('#usermenu li.usermenu-help a', 'Help / Support', 'Help menu item has correct text');
-        test.assertEquals(this.getElementAttribute('#usermenu li.usermenu-help a', 'href'), 'http://ghost.org/forum/',
+        test.assertEquals(this.getElementAttribute('#usermenu li.usermenu-help a', 'href'), 'http://support.ghost.org/',
             'Help href is correct');
 
         test.assertExists('#usermenu li.usermenu-signout a', 'Sign Out menu item exists');
