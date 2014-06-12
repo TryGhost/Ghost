@@ -1,10 +1,6 @@
 // # Validation Error
 // Custom error class with status code and type prefilled.
 
-function ValidationError(message) {
-    return new ValidationError(message, null);
-}
-
 function ValidationError(message, offendingProperty) {
     this.message = message;
     this.stack = new Error().stack;
