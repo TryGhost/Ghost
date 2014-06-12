@@ -5,16 +5,16 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         var self = this;
 
         if (arguments.length > 1) {
-            this.set('page', val ? 1 : 0);
+            this.set('page', val);
 
             return this.get('model').save().then(function () {
                 self.notifications.showSuccess('Successfully converted to ' + (val ? 'static page' : 'post'));
 
-                return !!self.get('page');
+                return self.get('page');
             }, this.notifications.showErrors);
         }
 
-        return !!this.get('page');
+        return this.get('page');
     }.property('page'),
 
     newSlugBinding: Ember.computed.oneWay('slug'),
