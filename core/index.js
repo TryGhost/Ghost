@@ -23,7 +23,7 @@ function startGhost(options) {
                 .then(deferred.resolve)
                     .otherwise(function (e) {
                     // We don't return the rejected promise to stop
-                    // the propogation of the rejection and just
+                    // the propagation of the rejection and just
                     // allow the user to manage what to do.
                     deferred.reject(e);
                 });
