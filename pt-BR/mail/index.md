@@ -35,7 +35,7 @@ Entre no endereço do [mailgun.com](http://www.mailgun.com/) e registre uma cont
 
 Verifique seu endereço de e-mail com o Mailgun, e então ele irá lhe dar acesso ao seu amável painel de controle. Você precisará encontrar o seu usuário e senha do novo serviço de email que o Mailgun terá criado para você. (não são aqueles que você se registrou), clicando no seu domínio no canto direito… veja esse pequeno screencast abaixo que irá lhe ajudar a achar seus detalhes.
 
-<img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mailgun.gif" alt="Mailgun details" width="100%" />
+<img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />
 
 Agora que você tem tudo que precisa, é hora de abrir seu arquivo de configuração. Abra seu arquivo <code class="path">config.js</code> no editor de sua escolha. Navegue para o ambiente que você quer configurar o email, e mude as configurações para que seja semelhante a isso:
 
