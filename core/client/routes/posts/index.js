@@ -1,4 +1,6 @@
-var PostsIndexRoute = Ember.Route.extend({
+import AuthenticatedRoute from 'ghost/routes/authenticated';
+
+var PostsIndexRoute = AuthenticatedRoute.extend({
     // redirect to first post subroute
     redirect: function () {
         var firstPost = (this.modelFor('posts') || []).get('firstObject');
