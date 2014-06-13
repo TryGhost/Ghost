@@ -1,4 +1,6 @@
-var PostsPostRoute = Ember.Route.extend({
+import AuthenticatedRoute from 'ghost/routes/authenticated';
+
+var PostsPostRoute = AuthenticatedRoute.extend({
     model: function (params) {
         var post = this.modelFor('posts').findBy('id', params.post_id);
 
