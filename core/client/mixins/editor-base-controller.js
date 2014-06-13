@@ -16,6 +16,17 @@ var EditorControllerMixin = Ember.Mixin.create({
         return this.get('isPublished');
     }.property('isPublished'),
 
+    // remove client-generated tags, which have `id: null`.
+    // Ember Data won't recognize/update them automatically
+    // when returned from the server with ids.
+    updateTags: function () {
+        var tags = this.get('model.tags'),
+        oldTags = tags.filterBy('id', null);
+
+        tags.removeObjects(oldTags);
+        oldTags.invoke('deleteRecord');
+    },
+
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
@@ -23,6 +34,8 @@ var EditorControllerMixin = Ember.Mixin.create({
 
             this.set('status', status);
             return this.get('model').save().then(function (model) {
+                self.updateTags();
+
                 self.notifications.showSuccess('Post status saved as <strong>' +
                     model.get('status') + '</strong>.');
                 return model;
