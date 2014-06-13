@@ -1,9 +1,6 @@
 /* global console */
 
 var EditorControllerMixin = Ember.Mixin.create({
-    //## Computed post properties
-    isPublished: Ember.computed.equal('status', 'published'),
-    isDraft: Ember.computed.equal('status', 'draft'),
     /**
      * By default, a post will not change its publish state.
      * Only with a user-set value (via setSaveType action)
