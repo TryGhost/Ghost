@@ -1,4 +1,6 @@
+/* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
+import SlugGenerator from 'ghost/models/slug-generator';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
     isStaticPage: function (key, val) {
@@ -16,120 +18,140 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         return !!this.get('page');
     }.property('page'),
+    /**
+     * The placeholder is the published date of the post,
+     * or the current date if the pubdate has not been set.
+     */
+    publishedAtPlaceholder: function () {
+        var pubDate = this.get('published_at');
+        if (pubDate) {
+            return formatDate(pubDate);
+        }
+        return formatDate(moment());
+    }.property('publishedAtValue'),
 
-    newSlugBinding: Ember.computed.oneWay('slug'),
+    publishedAtValue: function (key, value) {
+        if (arguments.length > 1) {
+            return value;
+        }
+        return formatDate(this.get('published_at'));
+    }.property('published_at'),
 
-    slugPlaceholder: function () {
-        return this.get('model').generateSlug();
-    }.property('title'),
+    slugValue: function (key, value) {
+        if (arguments.length > 1) {
+            return value;
+        }
+        return this.get('slug');
+    }.property('slug'),
+
+    //Lazy load the slug generator for slugPlaceholder
+    slugGenerator: Ember.computed(function () {
+        return SlugGenerator.create({ghostPaths: this.get('ghostPaths')});
+    }),
+    //Requests slug from title
+    generateSlugPlaceholder: function () {
+        var self = this,
+            slugGenerator = this.get('slugGenerator'),
+            title = this.get('title');
+        slugGenerator.generateSlug(title).then(function (slug) {
+            return self.set('slugPlaceholder', slug);
+        });
+    },
+    titleObserver: function () {
+        Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
+    }.observes('title'),
+    slugPlaceholder: function (key, value) {
+        var slug = this.get('slug');
+
+        //If the post has a slug, that's its placeholder.
+        if (slug) {
+            return slug;
+        }
+
+        //Otherwise, it's whatever value was set by the
+        //  slugGenerator (below)
+        if (arguments.length > 1) {
+            return value;
+        }
+        //The title will stand in until the actual slug has been generated
+        return this.get('title');
+    }.property(),
 
     actions: {
-        updateSlug: function () {
-            var newSlug = this.get('newSlug'),
-                slug = this.get('slug'),
-                placeholder = this.get('slugPlaceholder'),
+        /**
+         * triggered by user manually changing slug
+         */
+        updateSlug: function (newSlug) {
+            var slug = this.get('slug'),
                 self = this;
-
-            newSlug = (!newSlug && placeholder) ? placeholder : newSlug;
 
             // Ignore unchanged slugs
             if (slug === newSlug) {
                 return;
             }
-            //reset to model's slug on empty string
-            if (!newSlug) {
-                this.set('newSlug', slug);
-                return;
-            }
 
-            //Validation complete
             this.set('slug', newSlug);
 
-            // If the model doesn't currently
-            // exist on the server
-            // then just update the model's value
-            if (!this.get('isNew')) {
+            //Don't save just yet if it's an empty slug on a draft
+            if (!newSlug && this.get('isDraft')) {
                 return;
             }
 
-            this.get('model').save().then(function () {
+            this.get('model').save('slug').then(function () {
                 self.notifications.showSuccess('Permalink successfully changed to <strong>' +
                     self.get('slug') + '</strong>.');
             }, this.notifications.showErrors);
         },
 
-        updatePublishedAt: function (userInput) {
-            var self = this,
-                errMessage = '',
-                newPubDate = formatDate(parseDateString(userInput)),
-                pubDate = this.get('publishedAt'),
-                newPubDateMoment,
-                pubDateMoment;
+        /**
+         * Parse user's set published date.
+         * Action sent by post settings menu view.
+         * (#1351)
+         */
+        setPublishedAt: function (userInput) {
+            var errMessage = '',
+                newPublishedAt = parseDateString(userInput),
+                publishedAt = this.get('published_at'),
+                self = this;
 
-            // if there is no new pub date, mark that until the post is published,
-            //    when we'll fill in with the current time.
-            if (!newPubDate) {
-                this.set('publishedAt', '');
+            if (!userInput) {
+                //Clear out the published_at field for a draft
+                if (this.get('isDraft')) {
+                    this.set('published_at', null);
+                }
                 return;
             }
 
-            // Check for missing time stamp on new data
-            // If no time specified, add a 12:00
-            if (newPubDate && !newPubDate.slice(-5).match(/\d+:\d\d/)) {
-                newPubDate += ' 12:00';
-            }
-
-            newPubDateMoment = parseDateString(newPubDate);
-
-            // If there was a published date already set
-            if (pubDate) {
-                // Check for missing time stamp on current model
-                // If no time specified, add a 12:00
-                if (!pubDate.slice(-5).match(/\d+:\d\d/)) {
-                    pubDate += ' 12:00';
-                }
-
-                pubDateMoment = parseDateString(pubDate);
-
-                // Quit if the new date is the same
-                if (pubDateMoment.isSame(newPubDateMoment)) {
-                    return;
-                }
+            // Do nothing if the user didn't actually change the date
+            if (publishedAt && publishedAt.isSame(newPublishedAt)) {
+                return;
             }
 
             // Validate new Published date
-            if (!newPubDateMoment.isValid() || newPubDate.substr(0, 12) === 'Invalid date') {
+            if (!newPublishedAt.isValid()) {
                 errMessage = 'Published Date must be a valid date with format: ' +
                     'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
             }
 
-            if (newPubDateMoment.diff(new Date(), 'h') > 0) {
+            //Can't publish in the future yet
+            if (newPublishedAt.diff(new Date(), 'h') > 0) {
                 errMessage = 'Published Date cannot currently be in the future.';
             }
 
+            //If errors, notify and exit.
             if (errMessage) {
-                // Show error message
                 this.notifications.showError(errMessage);
-                //Hack to push a "change" when it's actually staying
-                //  the same.
-                //This alerts the listener on post-settings-menu
-                this.notifyPropertyChange('publishedAt');
                 return;
             }
 
             //Validation complete
-            this.set('published_at', newPubDateMoment.toDate());
+            this.set('published_at', newPublishedAt);
 
-            // If the model doesn't currently
-            // exist on the server
-            // then just update the model's value
-            if (!this.get('isNew')) {
-                return;
-            }
-
-            this.get('model').save().then(function () {
-                this.notifications.showSuccess('Publish date successfully changed to <strong>' +
-                    self.get('publishedAt') + '</strong>.');
+            //@ TODO: Make sure we're saving ONLY the publish date here,
+            // Don't want to accidentally save text the user's been working on.
+            this.get('model').save('published_at').then(function () {
+                self.notifications.showSuccess('Publish date successfully changed to <strong>' +
+                    formatDate(self.get('published_at')) + '</strong>.');
             }, this.notifications.showErrors);
         }
     }
