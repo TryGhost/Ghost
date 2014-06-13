@@ -45,6 +45,36 @@ function getAddCommands(oldTables, newTables) {
     }
 }
 
+function addColumnCommands(table, columns) {
+    var columnKeys = _.keys(schema[table]),
+        addColumns = _.difference(columnKeys, columns);
+    
+    return _.map(addColumns, function (column) {
+        return function () {
+            utils.addColumn(table, column);
+        };
+    });
+}
+
+function modifyUniqueCommands(table, indexes) {
+    var columnKeys = _.keys(schema[table]);
+    return _.map(columnKeys, function (column) {
+        if (schema[table][column].unique && schema[table][column].unique === true) {
+            if (!_.contains(indexes, table + '_' + column + '_unique')) {
+                return function () {
+                    return utils.addUnique(table, column);
+                };
+            }
+        } else if (!schema[table][column].unique) {
+            if (_.contains(indexes, table + '_' + column + '_unique')) {
+                return function () {
+                    return utils.dropUnique(table, column);
+                };
+            }
+        }
+    });
+}
+
 // Check for whether data is needed to be bootstrapped or not
 init = function () {
     var self = this;
@@ -145,27 +175,61 @@ function backupDatabase() {
 
 // Migrate from a specific version to the latest
 migrateUp = function () {
+    var deleteCommands,
+        addCommands,
+        oldTables,
+        addColumns = [],
+        modifyUniCommands = [],
+        commands = [];
+
     return backupDatabase().then(function () {
-        return utils.getTables();
-    }).then(function (oldTables) {
+        return utils.getTables().then(function (tables) {
+            oldTables = tables;
+        });
+    }).then(function () {
         // if tables exist and client is mysqls check if posts table is okay
         if (!_.isEmpty(oldTables) && client === 'mysql') {
-            return checkMySQLPostTable().then(function () {
-                return oldTables;
-            });
+            return checkMySQLPostTable();
         }
-        return oldTables;
-    }).then(function (oldTables) {
-        var deleteCommands = getDeleteCommands(oldTables, schemaTables),
-            addCommands = getAddCommands(oldTables, schemaTables),
-            commands = [];
+    }).then(function () {
+        deleteCommands = getDeleteCommands(oldTables, schemaTables);
+        addCommands = getAddCommands(oldTables, schemaTables);
+        return when.all(
+            _.map(oldTables, function (table) {
+                return utils.getIndexes(table).then(function (indexes) {
+                    modifyUniCommands = modifyUniCommands.concat(modifyUniqueCommands(table, indexes));
+                });
+            })
+        );
+    }).then(function () {
+        return when.all(
+            _.map(oldTables, function (table) {
+                return utils.getColumns(table).then(function (columns) {
+                    addColumns = addColumns.concat(addColumnCommands(table, columns));
+                });
+            })
+        );
 
+    }).then(function () {
+        modifyUniCommands = _.compact(modifyUniCommands);
+
+        // delete tables
         if (!_.isEmpty(deleteCommands)) {
             commands = commands.concat(deleteCommands);
         }
+        // add tables
         if (!_.isEmpty(addCommands)) {
             commands = commands.concat(addCommands);
         }
+        // add columns if needed
+        if (!_.isEmpty(addColumns)) {
+            commands = commands.concat(addColumns);
+        }
+        // add/drop unique constraint
+        if (!_.isEmpty(modifyUniCommands)) {
+            commands = commands.concat(modifyUniCommands);
+        }
+        // execute the commands in sequence
         if (!_.isEmpty(commands)) {
             return sequence(commands);
         }
