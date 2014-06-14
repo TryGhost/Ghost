@@ -1,34 +1,99 @@
 /* global CodeMirror*/
+import MarkerManager from 'ghost/mixins/marker-manager';
+import setScrollClassName from 'ghost/utils/set-scroll-classname';
 
-var onChangeHandler = function (cm) {
+var onChangeHandler = function (cm, changeObj) {
+    var line,
+        component = cm.component,
+        checkLine = component.checkLine.bind(component),
+        checkMarkers = component.checkMarkers.bind(component);
+
+    // fill array with a range of numbers
+    for (line = changeObj.from.line; line < changeObj.from.line + changeObj.text.length; line += 1) {
+        checkLine(line, changeObj.origin);
+    }
+
+    // Is this a line which may have had a marker on it?
+    checkMarkers();
+
     cm.component.set('value', cm.getDoc().getValue());
 };
 
 var onScrollHandler = function (cm) {
     var scrollInfo = cm.getScrollInfo(),
-        percentage = scrollInfo.top / scrollInfo.height,
         component = cm.component;
+
+    scrollInfo.codemirror = cm;
 
     // throttle scroll updates
     component.throttle = Ember.run.throttle(component, function () {
-        this.set('scrollPosition', percentage);
-    }, 50);
+        this.set('scrollInfo', scrollInfo);
+    }, 10);
 };
 
-var Codemirror = Ember.TextArea.extend({
+var Codemirror = Ember.TextArea.extend(MarkerManager, {
+    didInsertElement: function () {
+        Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
+    },
+
+    afterRenderEvent: function () {
+        var initMarkers = this.initMarkers.bind(this);
+
+        this.initCodemirror();
+        this.codemirror.eachLine(initMarkers);
+        this.sendAction('action', this);
+    },
+
+    // this needs to be placed on the 'afterRender' queue otherwise CodeMirror gets wonky
     initCodemirror: function () {
         // create codemirror
-        this.codemirror = CodeMirror.fromTextArea(this.get('element'), {
-            lineWrapping: true
+        var codemirror = CodeMirror.fromTextArea(this.get('element'), {
+            mode:           'gfm',
+            tabMode:        'indent',
+            tabindex:       '2',
+            cursorScrollMargin: 10,
+            lineWrapping:   true,
+            dragDrop:       false,
+            extraKeys: {
+                Home:   'goLineLeft',
+                End:    'goLineRight'
+            }
         });
-        this.codemirror.component = this; // save reference to this
+
+        codemirror.component = this; // save reference to this
 
         // propagate changes to value property
-        this.codemirror.on('change', onChangeHandler);
+        codemirror.on('change', onChangeHandler);
 
         // on scroll update scrollPosition property
-        this.codemirror.on('scroll', onScrollHandler);
-    }.on('didInsertElement'),
+        codemirror.on('scroll', onScrollHandler);
+
+        codemirror.on('scroll', Ember.run.bind(Ember.$('.CodeMirror-scroll'), setScrollClassName, {
+            target: Ember.$('.entry-markdown'),
+            offset: 10
+        }));
+
+        this.set('codemirror', codemirror);
+    },
+
+    disableCodeMirror: function () {
+        var codemirror = this.get('codemirror');
+
+        codemirror.setOption('readOnly', 'nocursor');
+        codemirror.off('change', onChangeHandler);
+    },
+
+    enableCodeMirror: function () {
+        var codemirror = this.get('codemirror');
+
+        codemirror.setOption('readOnly', false);
+
+        // clicking the trash button on an image dropzone causes this function to fire.
+        // this line is a hack to prevent multiple event handlers from being attached.
+        codemirror.off('change', onChangeHandler);
+
+        codemirror.on('change', onChangeHandler);
+    },
 
     removeThrottle: function () {
         Ember.run.cancel(this.throttle);
@@ -36,8 +101,13 @@ var Codemirror = Ember.TextArea.extend({
 
     removeCodemirrorHandlers: function () {
         // not sure if this is needed.
-        this.codemirror.off('change', onChangeHandler);
-        this.codemirror.off('scroll', onScrollHandler);
+        var codemirror = this.get('codemirror');
+        codemirror.off('change', onChangeHandler);
+        codemirror.off('scroll');
+    }.on('willDestroyElement'),
+
+    clearMarkerManagerMarkers: function () {
+        this.clearMarkers();
     }.on('willDestroyElement')
 });
 
