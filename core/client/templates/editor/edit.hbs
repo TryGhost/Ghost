@@ -10,16 +10,17 @@
         <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
     </header>
     <section id="entry-markdown-content" class="entry-markdown-content">
-        {{gh-codemirror value=markdown scrollPosition=view.scrollPosition}}
+        {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo action="setCodeMirror"}}
     </section>
 </section>
 
 <section class="entry-preview">
     <header class="floatingheader">
-        <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words markdown}} words</span></small>
+        <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words scratch}}</span></small>
     </header>
     <section class="entry-preview-content">
-        {{gh-markdown markdown=markdown scrollPosition=view.scrollPosition}}
+        {{gh-markdown markdown=scratch scrollPosition=view.scrollPosition
+            uploadStarted="disableCodeMirror" uploadFinished="enableCodeMirror" uploadSuccess="handleImgUpload"}}
     </section>
 </section>
 
