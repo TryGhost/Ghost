@@ -1,4 +1,5 @@
 /* global console */
+import boundOneWay from 'ghost/utils/bound-one-way';
 
 var EditorControllerMixin = Ember.Mixin.create({
     /**
@@ -6,12 +7,8 @@ var EditorControllerMixin = Ember.Mixin.create({
      * Only with a user-set value (via setSaveType action)
      * can the post's status change.
      */
-    willPublish: function (key, value) {
-        if (arguments.length > 1) {
-            return value;
-        }
-        return this.get('isPublished');
-    }.property('isPublished'),
+    willPublish: boundOneWay('isPublished'),
+    markdown: Ember.computed.oneWay('model.markdown'),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
@@ -23,13 +20,14 @@ var EditorControllerMixin = Ember.Mixin.create({
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
     },
-
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
                 self = this;
 
             this.set('status', status);
+            //Update with content changes
+            this.set('model.markdown', this.get('markdown'));
             return this.get('model').save().then(function (model) {
                 self.updateTags();
 
