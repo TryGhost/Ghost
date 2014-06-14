@@ -240,7 +240,7 @@ frontendControllers = {
             // then the post must be a static post.
             // If it is not then we must return.
             if (usingStaticPermalink) {
-                if (post.page === 1) {
+                if (post.page) {
                     return render();
                 }
 
