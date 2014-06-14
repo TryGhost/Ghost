@@ -65,7 +65,7 @@ function urlPathForPost(post, permalinks) {
             id: function () { return post.id; }
         };
 
-    if (post.page === 1) {
+    if (post.page) {
         output += '/:slug/';
     } else {
         output += permalinks.value;
