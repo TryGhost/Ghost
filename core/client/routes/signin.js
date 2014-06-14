@@ -10,30 +10,33 @@ var SigninRoute = Ember.Route.extend(styleBody, {
         login: function () {
             var self = this,
                 controller = this.get('controller'),
-                data = controller.getProperties('email', 'password');
+                data = controller.getProperties('email', 'password'),
+                //Data to check if user came in somewhere besides index
+                appController = this.controllerFor('application'),
+                loginTransition = appController.get('loginTransition');
 
             if (!isEmpty(data.email) && !isEmpty(data.password)) {
 
                 ajax({
                     url: this.get('ghostPaths').adminUrl('signin'),
                     type: 'POST',
-                    headers: {
-                        'X-CSRF-Token': this.get('csrf')
-                    },
+                    headers: {'X-CSRF-Token': this.get('csrf')},
                     data: data
-                }).then(
-                    function (response) {
-                        self.store.pushPayload({ users: [response.userData]});
-                        self.store.find('user', response.userData.id).then(function (user) {
-                            self.send('signedIn', user);
-                            self.notifications.clear();
-                            self.transitionTo('posts');
-                        });
-                    }, function (resp) {
-                        // This path is ridiculous, should be a helper in notifications; e.g. notifications.showAPIError
-                        self.notifications.showAPIError(resp, 'There was a problem logging in, please try again.');
+                }).then(function (response) {
+                    self.store.pushPayload({users: [response.userData]});
+                    return self.store.find('user', response.userData.id);
+                }).then(function (user) {
+                    self.send('signedIn', user);
+                    self.notifications.clear();
+                    if (loginTransition) {
+                        appController.set('loginTransition', null);
+                        loginTransition.retry();
+                    } else {
+                        self.transitionTo('posts');
                     }
-                );
+                }).catch(function (resp) {
+                    self.notifications.showAPIError(resp, 'There was a problem logging in, please try again.');
+                });
             } else {
                 this.notifications.clear();
 
