@@ -1,6 +1,7 @@
 /* global console */
 import MarkerManager from 'ghost/mixins/marker-manager';
 import PostModel from 'ghost/models/post';
+import boundOneWay from 'ghost/utils/bound-one-way';
 
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.isDirty`)
@@ -19,12 +20,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
      * Only with a user-set value (via setSaveType action)
      * can the post's status change.
      */
-    willPublish: function (key, value) {
-        if (arguments.length > 1) {
-            return value;
-        }
-        return this.get('isPublished');
-    }.property('isPublished'),
+    willPublish: boundOneWay('isPublished'),
 
     // set by the editor route and `isDirty`. useful when checking
     // whether the number of tags has changed for `isDirty`.
@@ -120,7 +116,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
     },
-
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
