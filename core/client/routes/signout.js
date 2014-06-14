@@ -1,7 +1,8 @@
 import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 
-var SignoutRoute = Ember.Route.extend(styleBody, {
+var SignoutRoute = AuthenticatedRoute.extend(styleBody, {
     classNames: ['ghost-signout'],
 
     beforeModel: function () {
