@@ -4,6 +4,15 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
+    init: function () {
+        this._super();
+
+        // when creating a new post we want to observe the title
+        // to generate the post's slug
+        if (this.get('isNew')) {
+            this.addObserver('title', this, 'titleObserver');
+        }
+    },
     isStaticPage: function (key, val) {
         var self = this;
 
@@ -43,12 +52,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             slugGenerator = this.get('slugGenerator'),
             title = this.get('title');
         slugGenerator.generateSlug(title).then(function (slug) {
-            return self.set('slugPlaceholder', slug);
+            self.set('slugPlaceholder', slug);
         });
     },
     titleObserver: function () {
-        Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
-    }.observes('title'),
+        if (this.get('isNew') && this.get('model').changedAttributes().hasOwnProperty('title')) {
+            Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
+        }
+    },
     slugPlaceholder: function (key, value) {
         var slug = this.get('slug');
 
@@ -74,22 +85,58 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             var slug = this.get('slug'),
                 self = this;
 
-            // Ignore unchanged slugs
-            if (slug === newSlug) {
+            newSlug = newSlug || slug;
+
+            newSlug = newSlug.trim();
+
+            // Ignore unchanged slugs or candidate slugs that are empty
+            if (!newSlug || slug === newSlug) {
                 return;
             }
 
-            this.set('slug', newSlug);
+            this.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
+                // If after getting the sanitized and unique slug back from the API
+                // we end up with a slug that matches the existing slug, abort the change
+                if (serverSlug === slug) {
+                    return;
+                }
 
-            //Don't save just yet if it's an empty slug on a draft
-            if (!newSlug && this.get('isDraft')) {
-                return;
-            }
+                // Because the server transforms the candidate slug by stripping
+                // certain characters and appending a number onto the end of slugs
+                // to enforce uniqueness, there are cases where we can get back a 
+                // candidate slug that is a duplicate of the original except for
+                // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
 
-            this.get('model').save('slug').then(function () {
-                self.notifications.showSuccess('Permalink successfully changed to <strong>' +
-                    self.get('slug') + '</strong>.');
-            }, this.notifications.showErrors);
+                // get the last token out of the slug candidate and see if it's a number
+                var slugTokens = serverSlug.split('-'),
+                    check = Number(slugTokens.pop());
+
+                // if the candidate slug is the same as the existing slug except
+                // for the incrementor then the existing slug should be used
+                if (Number.isInteger(check) && check > 0) {
+                    if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                        return;
+                    }
+                }
+
+                self.set('slug', serverSlug);
+
+                if (self.hasObserverFor('title')) {
+                    self.removeObserver('title', this, 'titleObserver');
+                }
+
+                // If this is a new post.  Don't save the model.  Defer the save
+                // to the user pressing the save button
+                if (self.get('isNew')) {
+                    return;
+                }
+
+                // Save post model properties excluding any changes to the post body
+                return self.get('model').save().then(function () {
+                    self.notifications.showSuccess('Permalink successfully changed to <strong>' +
+                        self.get('slug') + '</strong>.');
+                }, self.notifications.showErrors);
+            });
         },
 
         /**
