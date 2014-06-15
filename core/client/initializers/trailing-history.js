@@ -1,14 +1,8 @@
 /*global Ember */
 
 var trailingHistory = Ember.HistoryLocation.extend({
-    setURL: function (path) {
-        var state = this.getState();
-        path = this.formatURL(path);
-        path = path.replace(/\/?$/, '/');
-
-        if (state && state.path !== path) {
-            this.pushState(path);
-        }
+    formatURL: function () {
+        return this._super.apply(this, arguments).replace(/\/?$/, '/');
     }
 });
 
