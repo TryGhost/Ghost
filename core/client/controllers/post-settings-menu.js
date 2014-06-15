@@ -1,6 +1,7 @@
 /* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 import SlugGenerator from 'ghost/models/slug-generator';
+import boundOneWay from 'ghost/utils/bound-one-way';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
     isStaticPage: function (key, val) {
@@ -29,21 +30,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         }
         return formatDate(moment());
     }.property('publishedAtValue'),
+    publishedAtValue: boundOneWay('published_at', formatDate),
 
-    publishedAtValue: function (key, value) {
-        if (arguments.length > 1) {
-            return value;
-        }
-        return formatDate(this.get('published_at'));
-    }.property('published_at'),
-
-    slugValue: function (key, value) {
-        if (arguments.length > 1) {
-            return value;
-        }
-        return this.get('slug');
-    }.property('slug'),
-
+    slugValue: boundOneWay('slug'),
     //Lazy load the slug generator for slugPlaceholder
     slugGenerator: Ember.computed(function () {
         return SlugGenerator.create({ghostPaths: this.get('ghostPaths')});
