@@ -121,22 +121,22 @@ describe('Middleware', function () {
     describe('cleanNotifications', function () {
 
         beforeEach(function (done) {
-            api.notifications.add({
+            api.notifications.add({ notifications: [{
                 id: 0,
                 status: 'passive',
                 message: 'passive-one'
-            }).then(function () {
-                return api.notifications.add({
+            }] }).then(function () {
+                return api.notifications.add({ notifications: [{
                     id: 1,
                     status: 'passive',
                     message: 'passive-two'
-                });
+                }] });
             }).then(function () {
-                return api.notifications.add({
+                return api.notifications.add({ notifications: [{
                     id: 2,
                     status: 'aggressive',
                     message: 'aggressive'
-                });
+                }] });
             }).then(function () {
                 done();
             }).catch(done);

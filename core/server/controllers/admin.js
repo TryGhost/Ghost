@@ -149,7 +149,7 @@ adminControllers = {
 
                 errors.logError(err, 'admin.js', "Your export file could not be generated.");
 
-                return api.notifications.add(notification).then(function () {
+                return api.notifications.add({ notifications: [notification]}).then(function () {
                     res.redirect(config().paths.subdir + '/ghost/debug');
                 });
             });
@@ -190,7 +190,7 @@ adminControllers = {
             status: 'passive'
         };
 
-        return api.notifications.add(notification).then(function () {
+        return api.notifications.add({ notifications: [notification] }).then(function () {
             res.redirect(config().paths.subdir + '/ghost/signin/');
         });
     },
@@ -220,7 +220,7 @@ adminControllers = {
             errorMessage = 'There was a problem logging out. Please try again.';
         }
 
-        return api.notifications.add(notification).then(function () {
+        return api.notifications.add({ notifications: [notification] }).then(function () {
             res.json(statusCode, {error: errorMessage, redirect: redirectUrl});
         });
 
@@ -408,7 +408,7 @@ adminControllers = {
                 status: 'passive'
             };
 
-            return api.notifications.add(notification).then(function () {
+            return api.notifications.add({ notifications: [notification] }).then(function () {
                 res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
 
@@ -444,7 +444,7 @@ adminControllers = {
 
             errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
 
-            return api.notifications.add(notification).then(function () {
+            return api.notifications.add({ notifications: [notification] }).then(function () {
                 res.redirect(config().paths.subdir + '/ghost/forgotten');
             });
         });
@@ -464,7 +464,7 @@ adminControllers = {
                 status: 'passive'
             };
 
-            return api.notifications.add(notification).then(function () {
+            return api.notifications.add({ notifications: [notification] }).then(function () {
                 res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
             });
         }).otherwise(function (err) {
