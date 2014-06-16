@@ -23,6 +23,14 @@ var SigninRoute = Ember.Route.extend(styleBody, {
                     headers: {'X-CSRF-Token': this.get('csrf')},
                     data: data
                 }).then(function (response) {
+                    // once the email and password are pulled from the controller
+                    // they need to be cleared, or they will reappear next time the signin
+                    // page is visited
+                    controller.setProperties({
+                        email: '',
+                        password: ''
+                    });
+
                     self.store.pushPayload({users: [response.userData]});
                     return self.store.find('user', response.userData.id);
                 }).then(function (user) {
