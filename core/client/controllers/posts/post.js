@@ -11,7 +11,7 @@ var PostController = Ember.ObjectController.extend({
 
             this.get('model').save().then(function () {
                 self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
-            }, function() {
+            }, function () {
                 self.notifications.showError('An error occured while saving the post.');
             });
         }
