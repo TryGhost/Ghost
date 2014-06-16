@@ -1,7 +1,7 @@
 var _              = require('lodash'),
     when           = require('when'),
     errors         = require('../errors'),
-    nodefn         = require('when/node/function'),
+    nodefn         = require('when/node'),
     bcrypt         = require('bcryptjs'),
     Posts          = require('./post').Posts,
     ghostBookshelf = require('./base'),
