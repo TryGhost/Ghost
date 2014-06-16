@@ -35,7 +35,7 @@ describe('Notifications API', function () {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
             message: 'This is an error', // A string. Should fit in one line.
         };
-        NotificationsAPI.add(msg).then(function (notification) {
+        NotificationsAPI.add({ notifications: [msg] }).then(function (notification) {
             NotificationsAPI.browse().then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -52,7 +52,7 @@ describe('Notifications API', function () {
             message: 'Hello, this is dog'
         };
 
-        NotificationsAPI.add(msg).then(function (result) {
+        NotificationsAPI.add({ notifications: [msg] }).then(function (result) {
             var notification;
 
             should.exist(result);
@@ -74,7 +74,7 @@ describe('Notifications API', function () {
             id: 99
         };
 
-        NotificationsAPI.add(msg).then(function (result) {
+        NotificationsAPI.add({ notifications: [msg] }).then(function (result) {
             var notification;
 
             should.exist(result);
@@ -96,7 +96,7 @@ describe('Notifications API', function () {
             message: 'Goodbye, cruel world!'
         };
 
-        NotificationsAPI.add(msg).then(function (result) {
+        NotificationsAPI.add({ notifications: [msg] }).then(function (result) {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy({ id: notification.id }).then(function (result) {

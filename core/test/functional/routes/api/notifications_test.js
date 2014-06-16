@@ -85,7 +85,7 @@ describe('Notifications API', function () {
         it('creates a new notification', function (done) {
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('X-CSRF-Token', csrfToken)
-                .send(newNotification)
+                .send({ notifications: [newNotification] })
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -118,7 +118,7 @@ describe('Notifications API', function () {
             // create the notification that is to be deleted
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('X-CSRF-Token', csrfToken)
-                .send(newNotification)
+                .send({ notifications: [newNotification] })
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
