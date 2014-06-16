@@ -113,7 +113,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 // if the candidate slug is the same as the existing slug except
                 // for the incrementor then the existing slug should be used
-                if (Number.isInteger(check) && check > 0) {
+                if (_.isNumber(check) && check > 0) {
                     if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
                         return;
                     }
