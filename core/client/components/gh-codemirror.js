@@ -1,12 +1,13 @@
-/* global CodeMirror*/
+/*global CodeMirror */
+
 import MarkerManager from 'ghost/mixins/marker-manager';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 
 var onChangeHandler = function (cm, changeObj) {
     var line,
         component = cm.component,
-        checkLine = component.checkLine.bind(component),
-        checkMarkers = component.checkMarkers.bind(component);
+        checkLine = _.bind(component.checkLine, component),
+        checkMarkers = _.bind(component.checkMarkers, component);
 
     // fill array with a range of numbers
     for (line = changeObj.from.line; line < changeObj.from.line + changeObj.text.length; line += 1) {
@@ -37,7 +38,7 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
     },
 
     afterRenderEvent: function () {
-        var initMarkers = this.initMarkers.bind(this);
+        var initMarkers = _.bind(this.initMarkers, this);
 
         this.initCodemirror();
         this.codemirror.eachLine(initMarkers);
