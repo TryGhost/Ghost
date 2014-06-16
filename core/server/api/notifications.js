@@ -3,6 +3,7 @@
 var when               = require('when'),
     _                  = require('lodash'),
     errors             = require('../errors'),
+    utils              = require('./utils'),
 
     // Holds the persistent notifications
     notificationsStore = [],
@@ -73,31 +74,39 @@ notifications = {
      *
      * **takes:** a notification object of the form
      * ```
-     *  msg = {
+     *  msg = { notifications: [{
      *      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
      *      message: 'This is an error', // A string. Should fit in one line.
      *      location: 'bottom', // A string where this notification should appear. can be 'bottom' or 'top'
      *      dismissable: true // A Boolean. Whether the notification is dismissable or not.
-     *  };
+     *  }] };
      * ```
      */
-    add: function add(notification) {
+    add: function add(object) {
 
         var defaults = {
-            dismissable: true,
-            location: 'bottom',
-            status: 'persistent'
-        };
+                dismissable: true,
+                location: 'bottom',
+                status: 'persistent'
+            },
+            addedNotifications = [];
 
-        notificationCounter = notificationCounter + 1;
 
-        notification = _.assign(defaults, notification, {
-            id: notificationCounter
-            //status: 'persistent'
+        return utils.checkObject(object, 'notifications').then(function (checkedNotificationData) {
+            _.each(checkedNotificationData.notifications, function (notification) {
+                notificationCounter = notificationCounter + 1;
+
+                notification = _.assign(defaults, notification, {
+                    id: notificationCounter
+                    //status: 'persistent'
+                });
+
+                notificationsStore.push(notification);
+                addedNotifications.push(notification);
+            });
+
+            return when({ notifications: addedNotifications});
         });
-
-        notificationsStore.push(notification);
-        return when({ notifications: [notification]});
     }
 };
 

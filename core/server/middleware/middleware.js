@@ -77,7 +77,7 @@ var middleware = {
                     };
                     // let's only add the notification once
                     if (!_.contains(_.pluck(notifications, 'id'), 'failedauth')) {
-                        api.notifications.add(msg);
+                        api.notifications.add({ notifications: [msg] });
                     }
                     redirect = '?r=' + encodeURIComponent(reqPath);
                 }

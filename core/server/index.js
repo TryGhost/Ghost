@@ -44,10 +44,10 @@ function doFirstRun() {
         'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
     ];
 
-    return api.notifications.add({
+    return api.notifications.add({ notifications: [{
         type: 'info',
         message: firstRunMessage.join(' ')
-    });
+    }] });
 }
 
 function initDbHashAndFirstRun() {
@@ -169,23 +169,23 @@ function ghostStartMessages() {
 // in the future apps will want to hook into here
 function initNotifications() {
     if (mailer.state && mailer.state.usingSendmail) {
-        api.notifications.add({
+        api.notifications.add({ notifications: [{
             type: 'info',
             message: [
                 "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
                 "It is recommended that you explicitly configure an e-mail service,",
                 "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
             ].join(' ')
-        });
+        }] });
     }
     if (mailer.state && mailer.state.emailDisabled) {
-        api.notifications.add({
+        api.notifications.add({ notifications: [{
             type: 'warn',
             message: [
                 "Ghost is currently unable to send e-mail.",
                 "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
             ].join(' ')
-        });
+        }] });
     }
 }
 
