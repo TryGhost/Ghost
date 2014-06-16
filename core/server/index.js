@@ -254,6 +254,12 @@ function init(server) {
             server.use(compress());
         }
 
+        // add Ghost x-powered-by header
+        server.use(function (req, res, next) {
+            res.header('X-Powered-By', 'Ghost');
+            next();
+        });
+
         // ## View engine
         // set the view engine
         server.set('view engine', 'hbs');
