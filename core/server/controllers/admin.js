@@ -254,11 +254,11 @@ adminControllers = {
             loginSecurity.push({ip: remoteAddress, time: currentTime});
             api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
                 // Carry over the csrf secret
-                var existingSecret = req.session._csrfSecret;
+                var existingSecret = req.session.csrfSecret;
 
                 req.session.regenerate(function (err) {
                     if (!err) {
-                        req.session._csrfSecret = existingSecret;
+                        req.session.csrfSecret = existingSecret;
 
                         req.session.user = user.id;
                         req.session.userData = user.attributes;
@@ -339,13 +339,13 @@ adminControllers = {
                 });
 
                 // Carry over the csrf secret
-                existingSecret = req.session._csrfSecret;
+                existingSecret = req.session.csrfSecret;
                 req.session.regenerate(function (err) {
                     if (err) {
                         return next(err);
                     }
 
-                    req.session._csrfSecret = existingSecret;
+                    req.session.csrfSecret = existingSecret;
 
                     if (req.session.user === undefined) {
                         req.session.user = user.id;
