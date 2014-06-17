@@ -4,7 +4,7 @@
 var _       = require('lodash'),
     express = require('express'),
     fs      = require('fs-extra'),
-    nodefn  = require('when/node/function'),
+    nodefn  = require('when/node'),
     path    = require('path'),
     when    = require('when'),
     errors  = require('../errors'),
