@@ -122,7 +122,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.set('slug', serverSlug);
 
                 if (self.hasObserverFor('title')) {
-                    self.removeObserver('title', this, 'titleObserver');
+                    self.removeObserver('title', self, 'titleObserver');
                 }
 
                 // If this is a new post.  Don't save the model.  Defer the save
