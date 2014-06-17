@@ -1,7 +1,7 @@
 var cp         = require('child_process'),
     _          = require('lodash'),
     when       = require('when'),
-    nodefn     = require('when/node/function'),
+    nodefn     = require('when/node'),
     nodemailer = require('nodemailer'),
     config     = require('./config');
 

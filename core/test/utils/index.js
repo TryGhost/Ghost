@@ -1,7 +1,7 @@
 var knex          = require('../../server/models/base').knex,
     when          = require('when'),
     sequence      = require('when/sequence'),
-    nodefn        = require('when/node/function'),
+    nodefn        = require('when/node'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
