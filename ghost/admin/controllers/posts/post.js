@@ -4,14 +4,12 @@ var PostController = Ember.ObjectController.extend({
 
     actions: {
         toggleFeatured: function () {
-            var featured = !this.get('featured'),
+            var featured = this.toggleProperty('featured'),
                 self = this;
-
-            this.set('featured', featured);
 
             this.get('model').save().then(function () {
                 self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
-            }, function () {
+            }).catch(function () {
                 self.notifications.showError('An error occured while saving the post.');
             });
         }
