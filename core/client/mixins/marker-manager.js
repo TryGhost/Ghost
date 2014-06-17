@@ -11,10 +11,10 @@ var MarkerManager = Ember.Mixin.create({
     // Add markers to the line if it needs one
     initMarkers: function (line) {
         var imageMarkdownRegex = this.get('imageMarkdownRegex'),
-        markerRegex = this.get('markerRegex'),
-        editor = this.get('codemirror'),
-        isImage = line.text.match(imageMarkdownRegex),
-        hasMarker = line.text.match(markerRegex);
+            markerRegex = this.get('markerRegex'),
+            editor = this.get('codemirror'),
+            isImage = line.text.match(imageMarkdownRegex),
+            hasMarker = line.text.match(markerRegex);
 
         if (isImage && !hasMarker) {
             this.addMarker(line, editor.getLineNumber(line));
@@ -159,12 +159,11 @@ var MarkerManager = Ember.Mixin.create({
 
     // Removes the marker on the given line if there is one
     stripMarkerFromLine: function (line) {
-        var ln,
-            editor = this.get('codemirror'),
+        var editor = this.get('codemirror'),
+            ln = editor.getLineNumber(line),
             markerRegex = /\{<([\w\W]*?)>\}/,
             markerText = line.text.match(markerRegex);
 
-        ln = editor.getLineNumber(line);
 
         if (markerText) {
             editor.replaceRange(
@@ -189,7 +188,7 @@ var MarkerManager = Ember.Mixin.create({
 
         editor.eachLine(function (line) {
             var markerText = self.markerRegexForId(id).exec(line.text),
-            ln;
+                ln;
 
             if (markerText) {
                 ln = editor.getLineNumber(line);

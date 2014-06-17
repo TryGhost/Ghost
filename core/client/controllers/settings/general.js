@@ -1,4 +1,3 @@
-
 var elementLookup = {
     title: '#blog-title',
     description: '#blog-description',
@@ -20,7 +19,7 @@ var SettingsGeneralController = Ember.ObjectController.extend({
     }.property('permalinks'),
 
     actions: {
-        'save': function () {
+        save: function () {
             // Validate and save settings
             var model = this.get('model'),
                 // @TODO: Don't know how to scope this to this controllers view because this.view is null
@@ -46,11 +45,11 @@ var SettingsGeneralController = Ember.ObjectController.extend({
             }
         },
 
-        'uploadLogo': function () {
+        uploadLogo: function () {
             // @TODO: Integrate with Modal component
         },
 
-        'uploadCover': function () {
+        uploadCover: function () {
             // @TODO: Integrate with Modal component
         }
     }
