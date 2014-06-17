@@ -609,7 +609,7 @@ var path           = require('path'),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
                 args = ['test']
                     .concat(grunt.option('target') || ['admin/', 'frontend/'])
-                    .concat(['--includes=base.js', '--verbose', '--log-level=debug', '--port=2369']);
+                    .concat(['--includes=base.js', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs
             _.each(options, function processOption(option) {
@@ -622,8 +622,11 @@ var path           = require('path'),
                 args.push('--fail-fast');
             }
 
-            if (grunt.option('concise')) {
+            // Show concise logs in Travis as ours are getting too long
+            if (grunt.option('concise') || process.env.TRAVIS) {
                 args.push('--concise');
+            } else {
+                args.push('--verbose');
             }
 
             grunt.util.spawn({
