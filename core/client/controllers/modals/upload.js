@@ -1,5 +1,6 @@
 
 var UploadController = Ember.Controller.extend({
+    acceptEncoding: 'image/*',
     actions: {
         confirmReject: function () {
             return true;

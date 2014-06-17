@@ -1,2 +1,4 @@
-<input type="file" class="button-add" />
-<button type="submit" class="button-save" {{bind-attr disabled=uploadButtonDisabled}} {{action "upload"}}>{{uploadButtonText}}</button>
+<section class="js-drop-zone">
+    <img class="js-upload-target" {{bind-attr src=src}} alt="logo">
+    <input data-url="upload" class="js-fileupload main" type="file" name="uploadimage" {{#if options.acceptEncoding}}accept="{{options.acceptEncoding}}"{{/if}}>
+</section>
