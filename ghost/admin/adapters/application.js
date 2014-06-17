@@ -9,6 +9,17 @@ var ApplicationAdapter = DS.RESTAdapter.extend({
         'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
     },
 
+    findQuery: function (store, type, query) {
+        var id;
+
+        if (query.id) {
+            id = query.id;
+            delete query.id;
+        }
+
+        return this.ajax(this.buildURL(type.typeKey, id), 'GET', { data: query });
+    },
+
     buildURL: function (type, id) {
         // Ensure trailing slashes
         var url = this._super(type, id);

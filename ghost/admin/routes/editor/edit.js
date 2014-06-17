@@ -21,9 +21,10 @@ var EditorEditRoute = AuthenticatedRoute.extend(styleBody, {
             return post;
         }
 
-        return this.store.filter('post', { status: 'all', staticPages: 'all' }, function (post) {
-            //post.get('id') returns a string, so compare with params.post_id
-            return post.get('id') === params.post_id;
+        return this.store.find('post', {
+            id: params.post_id,
+            status: 'all',
+            staticPages: 'all'
         }).then(function (records) {
             var post = records.get('firstObject');
 
