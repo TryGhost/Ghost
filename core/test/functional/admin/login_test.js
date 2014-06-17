@@ -20,10 +20,10 @@ CasperTest.begin('Ensure a User is Registered', 2, function suite(test) {
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
         test.assertSelectorHasText('.notification-error', 'already registered');
         // If the previous assert succeeds, then we should skip the next check and just pass.
-        casper.echo('Already registered!');
+        casper.echoConcise('Already registered!');
     }, function onTimeout() {
         test.assertUrlMatch(/\/ghost\/$/, 'If we\'re not already registered, we should be logged in.');
-        casper.echo('Successfully registered.');
+        casper.echoConcise('Successfully registered.');
     }, 2000);
 
     casper.thenOpen(url + 'logout/', function then() {
@@ -41,7 +41,7 @@ CasperTest.begin("Ghost admin will load login page", 3, function suite(test) {
                 return document.querySelector(selector).getAttribute('href');
             }, '.forgotten-password');
 
-            casper.echo('LINK' + link);
+            casper.echoConcise('LINK' + link);
             test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
         });
     });
