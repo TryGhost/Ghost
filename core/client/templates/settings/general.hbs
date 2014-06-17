@@ -29,9 +29,9 @@
             <div class="form-group">
                 <label for="blog-logo">Blog Logo</label>
                 {{#if logo}}
-                    <a class="js-modal-logo" href="#" {{action "openModal" "upload"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></a>
+                    <a class="js-modal-logo" href="#" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></a>
                 {{else}}
-                    <a class="button-add js-modal-logo" {{action "openModal" "upload"}}>Upload Image</a>
+                    <a class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</a>
                 {{/if}}
                 <p>Display a sexy logo for your publication</p>
             </div>
@@ -39,9 +39,9 @@
             <div class="form-group">
                 <label for="blog-cover">Blog Cover</label>
                 {{#if cover}}
-                    <a class="js-modal-cover" href="#" {{action "openModal" "upload"}}><img id="blog-cover" {{bind-attr src=logo}} alt="cover photo"></a>
+                    <a class="js-modal-cover" href="#" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></a>
                 {{else}}
-                    <a class="button-add js-modal-cover" {{action "openModal" "upload"}}>Upload Image</a>
+                    <a class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</a>
                 {{/if}}
                 <p>Display a cover image on your site</p>
             </div>
