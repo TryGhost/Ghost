@@ -25,7 +25,14 @@ function parseDefaultSettings() {
 
     return defaultSettingsFlattened;
 }
-defaultSettings = parseDefaultSettings();
+
+function getDefaultSettings() {
+    if (!defaultSettings) {
+        defaultSettings = parseDefaultSettings();
+    }
+
+    return defaultSettings;
+}
 
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
@@ -43,7 +50,7 @@ Settings = ghostBookshelf.Model.extend({
     validate: function () {
         var self = this;
         return when(validation.validateSchema(self.tableName, self.toJSON())).then(function () {
-            return validation.validateSettings(defaultSettings, self);
+            return validation.validateSettings(getDefaultSettings(), self);
         });
     },
 
@@ -117,12 +124,31 @@ Settings = ghostBookshelf.Model.extend({
         });
     },
 
+    populateDefault: function (key) {
+        if (!getDefaultSettings()[key]) {
+            return when.reject(new errors.NotFoundError('Unable to find default setting: ' + key));
+        }
+
+        // TOOD: databaseVersion and currentVersion special cases?
+
+        this.findOne({ key: key }).then(function (foundSetting) {
+            if (foundSetting) {
+                return foundSetting;
+            }
+
+            var defaultSetting = _.clone(getDefaultSettings()[key]);
+            defaultSetting.value = defaultSetting.defaultValue;
+
+            return Settings.forge(defaultSetting).save(null, {user: 1});
+        });
+    },
+
     populateDefaults: function () {
         return this.findAll().then(function (allSettings) {
             var usedKeys = allSettings.models.map(function (setting) { return setting.get('key'); }),
                 insertOperations = [];
 
-            _.each(defaultSettings, function (defaultSetting, defaultSettingKey) {
+            _.each(getDefaultSettings(), function (defaultSetting, defaultSettingKey) {
                 var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                 // Temporary code to deal with old databases with currentVersion settings
                 if (defaultSettingKey === 'databaseVersion' && usedKeys.indexOf('currentVersion') !== -1) {
