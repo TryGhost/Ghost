@@ -2,12 +2,16 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 
 var PostsIndexRoute = AuthenticatedRoute.extend({
     // redirect to first post subroute
-    redirect: function () {
-        var firstPost = (this.modelFor('posts') || []).get('firstObject');
+    beforeModel: function () {
+        var self = this;
 
-        if (firstPost) {
-            this.transitionTo('posts.post', firstPost);
-        }
+        return this.store.find('post', {
+            status: 'all',
+            staticPages: 'all'
+        }).then(function (records) {
+            var post = records.get('firstObject');
+            return self.transitionTo('posts.post', post);
+        });
     }
 });
 

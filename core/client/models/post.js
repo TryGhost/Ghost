@@ -19,7 +19,7 @@ var Post = DS.Model.extend({
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
     tags: DS.hasMany('tag', { async: true }),
-    
+
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),
