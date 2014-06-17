@@ -83,18 +83,24 @@ casper.failOnTimeout = function (test, message) {
     };
 };
 
+casper.echoConcise = function (message, style) {
+    if (!casper.cli.options.concise) {
+        casper.echo(message, style);
+    }
+}
+
 // ## Debugging
 // output all errors to the console
 casper.on('remote.message', function (msg) {
-    casper.echo('GOT CONSOLE LOG: ' + msg);
+    casper.echoConcise('GOT CONSOLE LOG: ' + msg);
 });
 
 casper.on('error', function (msg) {
-    casper.echo('GOT ERROR, ' + msg);
+    casper.echoConcise('GOT ERROR, ' + msg);
 });
 
 casper.on("page.error", function (msg) {
-    this.echo("GOT PAGE ERROR: " + msg, "ERROR");
+    casper.echoConcise("GOT PAGE ERROR: " + msg, "ERROR");
 });
 
 casper.captureScreenshot = function (filename, debugOnly) {
@@ -202,9 +208,9 @@ CasperTest.Routines = (function () {
             var errorText = casper.evaluate(function () {
                 return document.querySelector('.notification-error').innerText;
             });
-            this.echo('It appears as though a user is already registered. Error text: ' + errorText);
+            casper.echoConcise('It appears as though a user is already registered. Error text: ' + errorText);
         }, function onTimeout() {
-            this.echo('It appears as though a user was not already registered.');
+            casper.echoConcise('It appears as though a user was not already registered.');
         }, 2000);
     }
 
