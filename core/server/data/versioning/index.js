@@ -13,9 +13,7 @@ var _               = require('lodash'),
 function getDefaultDatabaseVersion() {
     if (!defaultDatabaseVersion) {
         // This be the current version according to the software
-        defaultDatabaseVersion = _.find(defaultSettings.core, function (setting) {
-            return setting.key === 'databaseVersion';
-        }).defaultValue;
+        defaultDatabaseVersion = defaultSettings.core.databaseVersion.defaultValue;
     }
 
     return defaultDatabaseVersion;
