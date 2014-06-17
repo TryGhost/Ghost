@@ -111,7 +111,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     // when returned from the server with ids.
     updateTags: function () {
         var tags = this.get('model.tags'),
-        oldTags = tags.filterBy('id', null);
+            oldTags = tags.filterBy('id', null);
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
