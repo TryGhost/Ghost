@@ -1,23 +1,18 @@
 import itemView from 'ghost/views/item-view';
 
 var PostItemView = itemView.extend({
-    classNameBindings: ['isFeatured', 'isPage'],
+    classNameBindings: ['isFeatured:featured', 'isPage:page'],
 
-    isFeatured: function () {
-        if (this.get('controller.model.featured')) {
-            return 'featured';
-        }
-    }.property('controller.model.featured'),
+    isFeatured: Ember.computed.alias('controller.model.featured'),
 
-    isPage: function () {
-        if (this.get('controller.model.page')) {
-            return 'page';
-        }
-    }.property('controller.model.page'),
+    isPage: Ember.computed.alias('controller.model.page'),
 
+    // WIP for #2308
+    /*
     openEditor: function () {
         this.get('controller').send('openEditor', this.get('controller.model'));  // send action to handle transition to editor route
     }.on('doubleClick')
+    */
 });
 
 export default PostItemView;
