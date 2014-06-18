@@ -81,6 +81,10 @@
         @include animation-iteration-count(1);
         @include animation-fill-mode(forwards);
     }
+  
+    &.notification-passive:hover {
+        @include animation(fade-in 0.2s linear);
+    }
 }
 
 .notification-error {
