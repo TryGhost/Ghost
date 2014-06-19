@@ -1,5 +1,6 @@
-import styleBody from 'ghost/mixins/style-body';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
+import styleBody from 'ghost/mixins/style-body';
+import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
 var paginationSettings = {
     status: 'all',
@@ -8,7 +9,7 @@ var paginationSettings = {
     limit: 15
 };
 
-var PostsRoute = AuthenticatedRoute.extend(styleBody, {
+var PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, {
     classNames: ['manage'],
 
     model: function () {
@@ -24,9 +25,19 @@ var PostsRoute = AuthenticatedRoute.extend(styleBody, {
         controller.set('paginationSettings', paginationSettings);
     },
 
+    shortcuts: {
+        'up': 'moveUp',
+        'down': 'moveDown'
+    },
     actions: {
         openEditor: function (post) {
             this.transitionTo('editor', post);
+        },
+        moveUp: function () {
+            window.alert('@todo keyboard post navigation: up');
+        },
+        moveDown: function () {
+            window.alert('@todo keyboard post navigation: down');
         }
     }
 });
