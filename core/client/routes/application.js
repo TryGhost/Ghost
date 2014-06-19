@@ -1,5 +1,15 @@
-var ApplicationRoute = Ember.Route.extend({
+import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+
+var ApplicationRoute = Ember.Route.extend(ShortcutsRoute, {
+    shortcuts: {
+        'esc': 'closePopups'
+    },
     actions: {
+        closePopups: function () {
+            this.get('popover').closePopovers();
+            this.get('notifications').closeAll();
+            // @todo close modals
+        },
         signedIn: function (user) {
             // Update the user on all routes and controllers
             this.container.unregister('user:current');
