@@ -106,16 +106,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             '==============================';
     },
 
-    // remove client-generated tags, which have `id: null`.
-    // Ember Data won't recognize/update them automatically
-    // when returned from the server with ids.
-    updateTags: function () {
-        var tags = this.get('model.tags'),
-            oldTags = tags.filterBy('id', null);
-
-        tags.removeObjects(oldTags);
-        oldTags.invoke('deleteRecord');
-    },
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
@@ -126,7 +116,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
             this.set('status', status);
             return this.get('model').save().then(function (model) {
-                self.updateTags();
+                model.updateTags();
                 // `updateTags` triggers `isDirty => true`.
                 // for a saved model it would otherwise be false.
                 self.set('isDirty', false);

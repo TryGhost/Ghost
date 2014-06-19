@@ -30,8 +30,11 @@ var ApplicationRoute = Ember.Route.extend({
             // so we're skipping asserting if one exists
             if (this.controllerFor(modalName, true)) {
                 this.controllerFor(modalName).set('model', model);
-                this.controllerFor(modalName).set('imageType', type);
-                this.controllerFor(modalName).set('src', model.get(type));
+
+                if (type) {
+                    this.controllerFor(modalName).set('imageType', type);
+                    this.controllerFor(modalName).set('src', model.get(type));
+                }
             }
             return this.render(modalName, {
                 into: 'application',

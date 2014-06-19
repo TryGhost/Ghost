@@ -34,7 +34,18 @@ var Post = DS.Model.extend({
         }
 
         return validationErrors;
-    }.property('title')
+    }.property('title'),
+
+    // remove client-generated tags, which have `id: null`.
+    // Ember Data won't recognize/update them automatically
+    // when returned from the server with ids.
+    updateTags: function () {
+        var tags = this.get('tags'),
+        oldTags = tags.filterBy('id', null);
+
+        tags.removeObjects(oldTags);
+        oldTags.invoke('deleteRecord');
+    }
 });
 
 export default Post;
