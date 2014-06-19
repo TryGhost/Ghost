@@ -20,7 +20,7 @@ var LeaveEditorController = Ember.Controller.extend({
             }
 
             // definitely want to clear the data store and post of any unsaved, client-generated tags
-            editorController.updateTags();
+            model.updateTags();
 
             if (model.get('isNew')) {
                 // the user doesn't want to save the new, unsaved post, so delete it.

@@ -1,9 +1,13 @@
 var DeletePostController = Ember.Controller.extend({
     actions: {
         confirmAccept: function () {
-            var self = this;
+            var self = this,
+                model = this.get('model');
 
-            this.get('model').destroyRecord().then(function () {
+            // definitely want to clear the data store and post of any unsaved, client-generated tags
+            model.updateTags();
+
+            model.destroyRecord().then(function () {
                 self.get('popover').closePopovers();
                 self.notifications.showSuccess('Your post has been deleted.');
                 self.transitionToRoute('posts.index');
