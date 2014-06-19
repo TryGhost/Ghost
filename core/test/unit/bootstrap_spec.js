@@ -15,7 +15,6 @@ var should         = require('should'),
 
 describe('Bootstrap', function () {
     var sandbox,
-        rejectMessage = bootstrap.__get__('rejectMessage'),
         overrideConfig = function (newConfig) {
             bootstrap.__set__('readConfigFile',  sandbox.stub().returns(
                 _.extend({}, defaultConfig, newConfig)
@@ -30,7 +29,6 @@ describe('Bootstrap', function () {
     afterEach(function () {
         bootstrap         = rewire('../../bootstrap');
         sandbox.restore();
-
     });
 
     it('loads the config file if one exists', function (done) {
@@ -120,7 +118,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -134,7 +132,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -148,7 +146,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -162,7 +160,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -176,7 +174,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -189,7 +187,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -202,7 +200,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -215,7 +213,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -229,7 +227,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -243,7 +241,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -258,7 +256,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -294,7 +292,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -307,7 +305,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);
@@ -320,7 +318,7 @@ describe('Bootstrap', function () {
             done(expectedError);
         }).catch(function (err) {
             should.exist(err);
-            err.should.contain(rejectMessage);
+            err.should.be.an.Error;
 
             done();
         }).catch(done);

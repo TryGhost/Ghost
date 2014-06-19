@@ -699,6 +699,8 @@ var path           = require('path'),
             var done = this.async();
             bootstrap().then(function () {
                 done();
+            }).catch(function (err) {
+                grunt.fail.fatal(err.stack);
             });
         });
 
