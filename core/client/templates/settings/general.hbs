@@ -67,11 +67,13 @@
 
             <div class="form-group">
                 <label for="activeTheme">Theme</label>
-                <select id="activeTheme" name="general[activeTheme]">
-                    {{#each availableThemes}}
-                        <option value="{{name}}" {{#if active}}selected{{/if}}>{{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}}{{/if}}</option>
-                    {{/each}}
-                </select>
+                {{view Ember.Select
+                        id="activeTheme"
+                        name="general[activeTheme]"
+                        content=themes
+                        optionValuePath="content.name"
+                        optionLabelPath="content.label"
+                        value=activeTheme}}
                 <p>Select a theme for your blog</p>
             </div>
 
