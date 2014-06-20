@@ -373,6 +373,7 @@ adminControllers = {
             adminNav: setSelected(adminNavbar, 'login')
         });
     },
+    // TODO: remove when old admin is removed, functionality lives now in api/authentication
     // Route: doForgotten
     // Path: /ghost/forgotten/
     // Method: POST
@@ -449,6 +450,7 @@ adminControllers = {
             });
         });
     },
+    // TODO: remove when old admin is removed, functionality lives now in api/authentication
     // Route: doReset
     // Path: /ghost/reset/:token
     // Method: POST
@@ -469,21 +471,6 @@ adminControllers = {
             });
         }).otherwise(function (err) {
             res.json(401, {error: err.message});
-        });
-    },
-    // Route: doChangePassword
-    // Path: /ghost/changepw/
-    // Method: POST
-    'doChangePassword': function (req, res) {
-        return api.users.changePassword({
-            currentUser: req.session.user,
-            oldpw: req.body.password,
-            newpw: req.body.newpassword,
-            ne2pw: req.body.ne2password
-        }).then(function () {
-            res.json(200, {msg: 'Password changed successfully'});
-        }, function (error) {
-            res.send(401, {error: error.message});
         });
     }
 };
