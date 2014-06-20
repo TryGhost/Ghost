@@ -494,6 +494,7 @@ var path           = require('path'),
                         'core/built/scripts/vendor-ember.js': [
                             'bower_components/loader.js/loader.js',
                             'bower_components/jquery/dist/jquery.js',
+                            'bower_components/lodash/dist/lodash.js',
                             'bower_components/handlebars/handlebars.js',
                             'bower_components/ember/ember.js',
                             'bower_components/ember-data/ember-data.js',
@@ -604,11 +605,14 @@ var path           = require('path'),
         // ### Spawn Casper.js
         // Custom test runner for our Casper.js functional tests
         // This really ought to be refactored into a separate grunt task module
-        grunt.registerTask('spawnCasperJS', function () {
+        grunt.registerTask('spawnCasperJS', function (target) {
+
+            target = _.contains(['client', 'clientold', 'frontend'], target) ? target + '/' : undefined;
+
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
                 args = ['test']
-                    .concat(grunt.option('target') || ['admin/', 'frontend/'])
+                    .concat(grunt.option('target') || target || ['client/', 'frontend/'])
                     .concat(['--includes=base.js', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs
@@ -725,8 +729,8 @@ var path           = require('path'),
         //
         // `NODE_ENV=testing grunt mochacli:section`
         //
-        // If you need to run an individual unit test file, you can do so, providing you have mocha installed globally by
-        // using a command in the form:
+        // If you need to run an individual unit test file, you can do so, providing you have mocha installed globally
+        // by using a command in the form:
         //
         // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/unit/config_spec.js`
         //
