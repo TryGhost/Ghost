@@ -4,8 +4,7 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 var paginationSettings = {
     status: 'all',
     staticPages: 'all',
-    page: 1,
-    limit: 15
+    page: 1
 };
 
 var PostsRoute = AuthenticatedRoute.extend(styleBody, {
