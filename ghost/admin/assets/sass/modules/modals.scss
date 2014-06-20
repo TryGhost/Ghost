@@ -21,7 +21,6 @@
     overflow-x: auto;
     overflow-y: scroll;
     z-index: 1040;
-    pointer-events: none;
     @include transition(all 0.15s linear 0s);
     @include transform(translateZ(0));
 }
@@ -57,7 +56,6 @@
     padding-bottom: 30px;
     z-index: 1050;
     pointer-events: auto;
-
 
     @media (max-width: 800px) {
         width: auto;
