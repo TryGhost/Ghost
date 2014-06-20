@@ -25,10 +25,10 @@ var Markdown = Ember.Component.extend({
                 filestorage: false
             });
 
-            dropzones.on('uploadstart', this.sendAction.bind(this, 'uploadStarted'));
-            dropzones.on('uploadfailure', this.sendAction.bind(this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', this.sendAction.bind(this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', this.sendAction.bind(this, 'uploadSuccess'));
+            dropzones.on('uploadstart', _.bind(this.sendAction, this, 'uploadStarted'));
+            dropzones.on('uploadfailure', _.bind(this.sendAction, this, 'uploadFinished'));
+            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadFinished'));
+            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadSuccess'));
         });
     }.observes('markdown')
 });
