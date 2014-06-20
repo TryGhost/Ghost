@@ -33,25 +33,25 @@ var middleware = {
     authenticate: function (req, res, next) {
         var noAuthNeeded = [
                 '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
-                '/ghost/forgotten/', '/ghost/reset/', '/ghost/ember/',
-                '/ghost/ember/signin'
+                '/ghost/forgotten/', '/ghost/reset/', '/ghost/ember/'
             ],
+            path,
             subPath;
 
         // SubPath is the url path starting after any default subdirectories
         // it is stripped of anything after the two levels `/ghost/.*?/` as the reset link has an argument
-        subPath = req.path.substring(config().paths.subdir.length);
+        path = req.path.substring(config().paths.subdir.length);
         /*jslint regexp:true, unparam:true*/
-        subPath = subPath.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
+        subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
             return a;
         });
 
         if (res.isAdmin) {
-            if (subPath.indexOf('/ghost/api/') === 0) {
+            if (subPath.indexOf('/ghost/api/') === 0 && path.indexOf('/ghost/api/v0.1/authentication/passwordreset/') !== 0) {
                 return middleware.authAPI(req, res, next);
             }
 
-            if (noAuthNeeded.indexOf(subPath) < 0) {
+            if (noAuthNeeded.indexOf(subPath) < 0 && subPath.indexOf('/ghost/api/') !== 0) {
                 return middleware.auth(req, res, next);
             }
         }

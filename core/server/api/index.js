@@ -4,19 +4,20 @@
 // Ghost's JSON API is integral to the workings of Ghost, regardless of whether you want to access data internally,
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
-var _             = require('lodash'),
-    when          = require('when'),
-    config        = require('../config'),
+var _              = require('lodash'),
+    when           = require('when'),
+    config         = require('../config'),
     // Include Endpoints
-    db            = require('./db'),
-    mail          = require('./mail'),
-    notifications = require('./notifications'),
-    posts         = require('./posts'),
-    settings      = require('./settings'),
-    tags          = require('./tags'),
-    themes        = require('./themes'),
-    users         = require('./users'),
-    slugs         = require('./slugs'),
+    db             = require('./db'),
+    mail           = require('./mail'),
+    notifications  = require('./notifications'),
+    posts          = require('./posts'),
+    settings       = require('./settings'),
+    tags           = require('./tags'),
+    themes         = require('./themes'),
+    users          = require('./users'),
+    slugs          = require('./slugs'),
+    authentication = require('./authentication'),
 
     http,
     formatHttpErrors,
@@ -254,7 +255,8 @@ module.exports = {
     tags: tags,
     themes: themes,
     users: users,
-    slugs: slugs
+    slugs: slugs,
+    authentication: authentication
 };
 
 /**

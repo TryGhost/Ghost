@@ -116,6 +116,11 @@ var fixtures = {
             "object_type":      "user"
         },
         {
+            "name":             "Remove users",
+            "action_type":      "remove",
+            "object_type":      "user"
+        },
+        {
             "name":             "Browse settings",
             "action_type":      "browse",
             "object_type":      "setting"

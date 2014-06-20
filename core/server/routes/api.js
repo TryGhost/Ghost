@@ -20,7 +20,10 @@ apiRoutes = function (middleware) {
     // ## Users
     router.get('/ghost/api/v0.1/users/', api.http(api.users.browse));
     router.get('/ghost/api/v0.1/users/:id/', api.http(api.users.read));
+    router.put('/ghost/api/v0.1/users/password/', api.http(api.users.changePassword));
     router.put('/ghost/api/v0.1/users/:id/', api.http(api.users.edit));
+    router['delete']('/ghost/api/v0.1/users/:id/', api.http(api.users.destroy));
+
     // ## Tags
     router.get('/ghost/api/v0.1/tags/', api.http(api.tags.browse));
     // ## Themes
@@ -37,8 +40,11 @@ apiRoutes = function (middleware) {
     // ## Mail
     router.post('/ghost/api/v0.1/mail', api.http(api.mail.send));
     router.post('/ghost/api/v0.1/mail/test', api.http(api.mail.sendTest));
-    // #### Slugs
+    // ## Slugs
     router.get('/ghost/api/v0.1/slugs/:type/:name', api.http(api.slugs.generate));
+    // ## Authentication
+    router.post('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.generateResetToken));
+    router.put('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.resetPassword));
 
     return router;
 };

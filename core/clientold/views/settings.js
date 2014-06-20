@@ -401,20 +401,20 @@
                 validator.handleErrors(validationErrors);
             } else {
                 $.ajax({
-                    url: Ghost.paths.subdir + '/ghost/changepw/',
-                    type: 'POST',
+                    url: Ghost.paths.subdir + '/ghost/api/v0.1/users/password/',
+                    type: 'PUT',
                     headers: {
                         'X-CSRF-Token': $("meta[name='csrf-param']").attr('content')
                     },
-                    data: {
-                        password: oldPassword,
-                        newpassword: newPassword,
-                        ne2password: ne2Password
-                    },
+                    data: {password: [{
+                        oldPassword: oldPassword,
+                        newPassword: newPassword,
+                        ne2Password: ne2Password
+                    }]},
                     success: function (msg) {
                         Ghost.notifications.addItem({
                             type: 'success',
-                            message: msg.msg,
+                            message: msg.password[0].message,
                             status: 'passive',
                             id: 'success-98'
                         });
