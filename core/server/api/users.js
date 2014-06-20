@@ -113,22 +113,63 @@ users = {
             return when.reject(new errors.NoPermissionError('You do not have permission to add a users.'));
         });
     },
+    /**
+     * ### Destroy
+     * @param {{id, context}} options
+     * @returns {Promise(User)}
+     */
+    destroy: function destroy(options) {
+        return canThis(options.context).remove.user(options.id).then(function () {
+            return users.read(options).then(function (result) {
+                return dataProvider.User.destroy(options).then(function () {
+                    return result;
+                });
+            });
+        }, function () {
+            return when.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
+        });
+    },
 
-    // TODO complete documentation as part of #2822
+    /**
+     * ### Register
+     * Allow to register a user using the API without beeing authenticated in. Needed to set up the first user.
+     * @param {User} object the user to create
+     * @returns {Promise(User}} Newly created user
+     */
+    // TODO: create a proper API end point and use JSON API format
     register: function register(object) {
         // TODO: if we want to prevent users from being created with the signup form this is the right place to do it
         return users.add(object, {context: {internal: true}});
     },
 
-
     check: function check(object) {
         return dataProvider.User.check(object);
     },
 
-    changePassword: function changePassword(object) {
-        return dataProvider.User.changePassword(object);
+    /**
+     * ### Change Password
+     * @param {password} object 
+     * @param {{context}} options
+     * @returns {Promise(password}} success message
+     */
+    changePassword: function changePassword(object, options) {
+        var oldPassword,
+            newPassword,
+            ne2Password;
+        return utils.checkObject(object, 'password').then(function (checkedPasswordReset) {
+            oldPassword = checkedPasswordReset.password[0].oldPassword;
+            newPassword = checkedPasswordReset.password[0].newPassword;
+            ne2Password = checkedPasswordReset.password[0].ne2Password;
+
+            return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
+                return when.resolve({password: [{message: 'Password changed successfully.'}]});
+            }).otherwise(function (error) {
+                return when.reject(new errors.UnauthorizedError(error.message));
+            });
+        });
     },
 
+    // TODO: remove when old admin is removed, functionality lives now in api/authentication
     generateResetToken: function generateResetToken(email) {
         var expires = Date.now() + ONE_DAY;
         return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
@@ -137,6 +178,7 @@ users = {
         });
     },
 
+    // TODO: remove when old admin is removed -> not needed anymore
     validateToken: function validateToken(token) {
         return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
             var dbHash = response.settings[0].value;
@@ -144,6 +186,7 @@ users = {
         });
     },
 
+    // TODO: remove when old admin is removed, functionality lives now in api/authentication
     resetPassword: function resetPassword(token, newPassword, ne2Password) {
         return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
             var dbHash = response.settings[0].value;
