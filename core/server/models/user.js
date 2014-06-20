@@ -267,14 +267,10 @@ User = ghostBookshelf.Model.extend({
      * Naive change password method
      * @param {object} _userdata email, old pw, new pw, new pw2
      */
-    changePassword: function (_userdata) {
+    changePassword: function (oldPassword, newPassword, ne2Password, options) {
         var self = this,
-            userid = _userdata.currentUser,
-            oldPassword = _userdata.oldpw,
-            newPassword = _userdata.newpw,
-            ne2Password = _userdata.ne2pw,
+            userid = options.context.user,
             user = null;
-
 
         if (newPassword !== ne2Password) {
             return when.reject(new Error('Your new passwords do not match'));
@@ -294,7 +290,6 @@ User = ghostBookshelf.Model.extend({
             return nodefn.call(bcrypt.hash, newPassword, salt);
         }).then(function (hash) {
             user.save({password: hash});
-
             return user;
         });
     },
