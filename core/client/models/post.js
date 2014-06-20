@@ -1,4 +1,8 @@
-var Post = DS.Model.extend({
+import ValidationEngine from 'ghost/mixins/validation-engine';
+
+var Post = DS.Model.extend(ValidationEngine, {
+    validationType: 'post',
+
     uuid: DS.attr('string'),
     title: DS.attr('string'),
     slug: DS.attr('string'),
@@ -23,18 +27,6 @@ var Post = DS.Model.extend({
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),
-
-    validate: function () {
-        var validationErrors = [];
-
-        if (!this.get('title.length')) {
-            validationErrors.push({
-                message: 'You must specify a title for the post.'
-            });
-        }
-
-        return validationErrors;
-    }.property('title'),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
