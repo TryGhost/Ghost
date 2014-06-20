@@ -28,6 +28,7 @@
         "DS": true,
         "$": true,
         "validator": true,
-        "ic": true
+        "ic": true,
+        "_": true
     }
 }
