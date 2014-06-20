@@ -5,6 +5,7 @@
  *
  * Dropdowns
  * Menu
+ * Menu Positioning Options
  * Post Settings
  */
 
@@ -23,7 +24,8 @@
         color: $darkgrey;
         @include icon-after($i-chevron-down, 8px);
     }
-}
+
+} // .dropdown
 
 
  /* ==========================================================================
@@ -58,7 +60,7 @@
         border-color: $darkgrey transparent;
         display: block;
         width: 0;
-    }
+    } // &:before
 
     // Stop :hover shadow from overflowing
     li {
@@ -78,7 +80,7 @@
             background: $blue;
             box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset;
         }
-    }
+    } // a, p
 
     // Add a check mark to the currently active menu item
     .active a {
@@ -89,7 +91,14 @@
         }
     }
 
-}
+} // .menu
+
+
+/* ==========================================================================
+   Menu Positioning Options
+   ---
+   Combine above classes into one usable class
+   ========================================================================== */
 
 // This extend moves the chiclet to the top, for menus which drop down.
 .menu-drop {
@@ -137,6 +146,8 @@
 
 /* ==========================================================================
    Post Settings
+   ---
+   There classes are used on conjunction with the above classes
    ========================================================================== */
 
 .post-settings {
@@ -153,7 +164,7 @@
     &.active {
         color: $darkgrey;
     }
-}
+} // .post-settings
 
 .post-settings-menu {
     padding-top: 0;
@@ -203,7 +214,7 @@
                 border: none;
             }
         }
-    }
+    } // input
 
     .post-setting-item {
         padding: 5px 0 0 10px;
@@ -212,10 +223,24 @@
     .checkbox {
         position: relative;
         margin-top: 0;
-        width: 18px;
-        border: lighten($grey, 10%) 1px solid;
-        background: $grey;
-    }
+        top: 0; // Resets a global `form label` style
+        border: 0;
+        &:after {
+            border-color: lighten($grey, 10%);
+            background: $grey;
+        }
+    } // .checkbox
+
+    // Colour the checkbox border correctly for a dark background
+    input[type='checkbox'] {
+        &:focus {
+            & + .checkbox {
+                &:after {
+                    border-color: lighten($grey, 10%);
+                }
+            }
+        }
+    } // input[type='checkbox']
 
     .delete {
         display: block;
@@ -227,6 +252,9 @@
             margin-right: 10px
         };
 
-        &:hover { background: $red; }
-    }
-}
+        &:hover {
+            background: $red;
+        }
+    } // .delete
+
+} // .post-settings-menu

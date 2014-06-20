@@ -191,7 +191,7 @@ input[type="checkbox"] {
     position: relative;
     width: auto;
 
-    // Create a checkmark, hidden by default
+    // Create a tick, hidden by default
     &:before {
         content: '';
         position: absolute;
@@ -208,7 +208,7 @@ input[type="checkbox"] {
 
     // The background for the faux checkbox
     &:after {
-        content: "";
+        content: '';
         display: inline-block;
         width: 18px;
         height: 18px;
@@ -228,7 +228,7 @@ input[type="checkbox"] {
     }
 }
 
-// If the checkbox is checked, show :before and :after elements correctly
+// Colour the checkbox correctly when checked
 input[type='checkbox'] {
     &:checked + .checkbox {
         &:after {
@@ -236,24 +236,29 @@ input[type='checkbox'] {
             border-color: lighten($green, 10%);
         }
     }
-
 }
+
 input[type='checkbox'] {
+
+    // When checkbox is checked, show the tick
     &:checked + .checkbox:before {
         opacity: 1;
     }
+
     &:focus {
         & + .checkbox {
             &:after {
                 border: $brown 1px solid;
             }
         }
-    }
+    } // &:focus
+
     &:active {
         & + .checkbox {
             &:after {
                 background: $lightbrown;
             }
         }
-    }
-}
+    } // &:active
+
+} // input[type='checkbox']
