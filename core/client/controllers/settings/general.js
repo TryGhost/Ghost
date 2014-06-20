@@ -1,10 +1,3 @@
-var elementLookup = {
-    title: '#blog-title',
-    description: '#blog-description',
-    email: '#email-address',
-    postsPerPage: '#postsPerPage'
-};
-
 var SettingsGeneralController = Ember.ObjectController.extend({
     isDatedPermalinks: function (key, value) {
         // setter
@@ -18,40 +11,30 @@ var SettingsGeneralController = Ember.ObjectController.extend({
         return slugForm !== '/:slug/';
     }.property('permalinks'),
 
+    themes: function () {
+        return this.get('availableThemes').reduce(function (themes, t) {
+            var theme = {};
+
+            theme.name = t.name;
+            theme.label = t.package ? t.package.name + ' - ' + t.package.version : t.name;
+            theme.package = t.package;
+            theme.active = !!t.active;
+
+            themes.push(theme);
+
+            return themes;
+        }, []);
+    }.property('availableThemes').readOnly(),
+
     actions: {
         save: function () {
-            // Validate and save settings
-            var model = this.get('model'),
-                // @TODO: Don't know how to scope this to this controllers view because this.view is null
-                errs = model.validate();
+            var self = this;
 
-            if (errs.length > 0) {
-                // Set the actual element from this view based on the error
-                errs.forEach(function (err) {
-                    // @TODO: Probably should still be scoped to this controllers root element.
-                    err.el = $(elementLookup[err.el]);
-                });
-
-                // Let the applicationRoute handle validation errors
-                this.send('handleErrors', errs);
-            } else {
-                model.save().then(function () {
-                    // @TODO: Notification of success
-                    window.alert('Saved data!');
-                }, function () {
-                    // @TODO: Notification of error
-                    window.alert('Error saving data');
-                });
-            }
+            return this.get('model').save().then(function (model) {
+                self.notifications.showSuccess('Settings successfully saved.');
+                return model;
+            }).catch(this.notifications.showErrors);
         },
-
-        uploadLogo: function () {
-            // @TODO: Integrate with Modal component
-        },
-
-        uploadCover: function () {
-            // @TODO: Integrate with Modal component
-        }
     }
 });
 
