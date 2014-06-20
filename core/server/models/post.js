@@ -286,6 +286,10 @@ Post = ghostBookshelf.Model.extend({
         var postCollection = Posts.forge(),
             tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false;
 
+        if (options.limit) {
+            options.limit = parseInt(options.limit) || 15;
+        }
+
         options = this.filterOptions(options, 'findPage');
 
         // Set default settings for options
