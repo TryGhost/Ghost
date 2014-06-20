@@ -47,7 +47,6 @@ adminRoutes = function (middleware) {
     router.post('/ghost/forgotten/', admin.doForgotten);
     router.get('/ghost/reset/:token', admin.reset);
     router.post('/ghost/reset/:token', admin.doReset);
-    router.post('/ghost/changepw/', admin.doChangePassword);
 
     router.get('/ghost/editor/:id/:action', admin.editor);
     router.get('/ghost/editor/:id/', admin.editor);

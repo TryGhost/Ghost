@@ -4,7 +4,7 @@
 function UnauthorizedError(message) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 404;
+    this.code = 401;
     this.type = this.name;
 }
 
