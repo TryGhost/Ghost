@@ -43,6 +43,7 @@ var UploadModal = ModalDialog.extend({
                 func.apply(this);
             }
             this.sendAction();
+            this.sendAction('confirm' + type);
         }
     }
 });
