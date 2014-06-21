@@ -24,9 +24,7 @@ languages:
     - name: 'Português'
       key: 'pt-BR'
     - name: العربية
-      key: 'ar_AR'
-	  
-
+      key: 'ar_AR' 
 port:         4478
 
 translations:
