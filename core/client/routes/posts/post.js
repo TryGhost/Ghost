@@ -1,7 +1,8 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
+import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
-var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, {
+var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
@@ -33,6 +34,14 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, {
             return self.transitionTo('posts.index');
         });
     },
+    shortcuts: {
+        'ctrl+e, command+e': 'openEditor'
+    },
+    actions: {
+        openEditor: function () {
+            this.transitionTo('editor.edit', this.get('controller.model'));
+        }
+    }
 });
 
 export default PostsPostRoute;
