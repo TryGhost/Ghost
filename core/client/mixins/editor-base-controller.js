@@ -15,6 +15,15 @@ Ember.get(PostModel, 'attributes').forEach(function (name) {
 watchedProps.push('tags.[]');
 
 var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
+    init: function () {
+        var self = this;
+
+        this._super();
+
+        window.onbeforeunload = function () {
+            return self.get('isDirty') ? self.unloadDirtyMessage() : null;
+        };
+    },
     /**
      * By default, a post will not change its publish state.
      * Only with a user-set value (via setSaveType action)
