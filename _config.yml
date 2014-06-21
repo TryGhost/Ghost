@@ -23,6 +23,9 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: العربية
+      key: 'ar_AR'
+	  
 
 port:         4478
 
@@ -137,7 +140,24 @@ translations:
     help:         'Ajuda'
     upgrading:    'Atualizando' 
     troubleshooting: 'Resolução de Problemas'
-
+  ar_AR:
+    site_title:   'Ghost دليل'
+    installation: 'التثبيت'
+    usage:        'الاستخدام'
+    email:        'البريد الإلكتروني'
+    themes:       'قوالب'
+    translations: 'ترجمة'
+    help:         'مساعدة'
+    deploy:       'نشر'
+    upgrading:    'الترقية'
+    troubleshooting: 'الأخطاء وإصلاحها'
+    configuration: 'إعداد'
+    faq:          'أسئلة وأجوبة'
+    managing:     'إدارة'
+    settings:     'الإعدادات'
+    writing:      'الكتابة'
+    back:         'العودة'
+    next:         'التالي'
 # If running locally, simply comment out the line below to make all urls relative
 
 #url:          http://docs.ghost.org
