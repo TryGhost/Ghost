@@ -109,7 +109,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
-                model = this.get('model'),
                 self = this;
 
             // set markdown equal to what's in the editor, minus the image markers.
@@ -117,7 +116,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
             this.set('status', status);
 
-            return model.save().then(function () {
+            return this.get('model').save().then(function (model) {
                 model.updateTags();
                 // `updateTags` triggers `isDirty => true`.
                 // for a saved model it would otherwise be false.
@@ -126,8 +125,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 self.notifications.showSuccess('Post status saved as <strong>' +
                                                 model.get('status') + '</strong>.');
                 return model;
-            }, function (errors) {
+            }).catch(function (errors) {
                 self.notifications.showErrors(errors);
+                return Ember.RSVP.reject(errors);
             });
         },
 
