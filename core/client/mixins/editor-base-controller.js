@@ -109,22 +109,26 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
+                model = this.get('model'),
                 self = this;
 
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
 
             this.set('status', status);
-            return this.get('model').save().then(function (model) {
+
+            return model.save().then(function () {
                 model.updateTags();
                 // `updateTags` triggers `isDirty => true`.
                 // for a saved model it would otherwise be false.
                 self.set('isDirty', false);
 
                 self.notifications.showSuccess('Post status saved as <strong>' +
-                    model.get('status') + '</strong>.');
+                                                model.get('status') + '</strong>.');
                 return model;
-            }, this.notifications.showErrors);
+            }, function (errors) {
+                self.notifications.showErrors(errors);
+            });
         },
 
         setSaveType: function (newType) {

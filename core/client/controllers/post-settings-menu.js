@@ -23,7 +23,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.notifications.showSuccess('Successfully converted to ' + (val ? 'static page' : 'post'));
 
                 return self.get('page');
-            }, this.notifications.showErrors);
+            }, function (errors) {
+                self.notifications.showErrors(errors);
+            });
         }
 
         return this.get('page');
@@ -103,7 +105,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 // Because the server transforms the candidate slug by stripping
                 // certain characters and appending a number onto the end of slugs
-                // to enforce uniqueness, there are cases where we can get back a 
+                // to enforce uniqueness, there are cases where we can get back a
                 // candidate slug that is a duplicate of the original except for
                 // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
 
@@ -135,7 +137,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return self.get('model').save().then(function () {
                     self.notifications.showSuccess('Permalink successfully changed to <strong>' +
                         self.get('slug') + '</strong>.');
-                }, self.notifications.showErrors);
+                }, function (errors) {
+                    self.notifications.showErrors(errors);
+                });
             });
         },
 
@@ -183,12 +187,12 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             //Validation complete
             this.set('published_at', newPublishedAt);
 
-            //@ TODO: Make sure we're saving ONLY the publish date here,
-            // Don't want to accidentally save text the user's been working on.
-            this.get('model').save('published_at').then(function () {
+            this.get('model').save().then(function () {
                 self.notifications.showSuccess('Publish date successfully changed to <strong>' +
                     formatDate(self.get('published_at')) + '</strong>.');
-            }, this.notifications.showErrors);
+            }, function (errors) {
+                self.notifications.showErrors(errors);
+            });
         }
     }
 });
