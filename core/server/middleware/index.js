@@ -361,6 +361,9 @@ module.exports = function (server, dbHash) {
     // ToDo: Remove when ember handles passive notifications.
     expressServer.use(middleware.cleanNotifications);
 
+    //profanity
+    expressServer.use(middleware.profanity.init);
+
     // ### Routing
     // Set up API routes
     expressServer.use(subdir, routes.api(middleware));

@@ -9,6 +9,7 @@ var _           = require('lodash'),
     config      = require('../config'),
     path        = require('path'),
     api         = require('../api'),
+    profanity   = require('profanity-middleware'),
 
     expressServer,
     ONE_HOUR_MS = 60 * 60 * 1000,
@@ -194,7 +195,8 @@ var middleware = {
         next();
     },
 
-    busboy: busboy
+    busboy: busboy,
+    profanity: profanity
 };
 
 module.exports = middleware;
