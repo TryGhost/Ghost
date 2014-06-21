@@ -143,6 +143,11 @@ casper.fillAndSave = function (selector, data) {
     casper.thenClick(selector + ' .button-save');
 };
 
+// ## Debugging
+var jsErrors = [],
+    pageErrors = [],
+    resourceErrors = [];
+
 // ## Echo Concise
 // Does casper.echo but checks for the presence of the --concise flag
 casper.echoConcise = function (message, style) {
@@ -151,18 +156,43 @@ casper.echoConcise = function (message, style) {
     }
 };
 
-// ## Debugging
-// output all errors to the console
+// pass through all console.logs
 casper.on('remote.message', function (msg) {
-    casper.echoConcise('GOT CONSOLE LOG: ' + msg);
+    casper.echoConcise('CONSOLE LOG: ' + msg, 'INFO');
 });
 
-casper.on('error', function (msg) {
-    casper.echoConcise('GOT ERROR, ' + msg);
+// output any errors
+casper.on('error', function (msg, trace) {
+    casper.echoConcise('ERROR, ' + msg, 'ERROR');
+    if (trace) {
+        casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
+        casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
+        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+    }
+    jsErrors.push(msg);
 });
 
-casper.on('page.error', function (msg) {
-    casper.echoConcise('GOT PAGE ERROR: ' + msg, 'ERROR');
+// output any page errors
+casper.on('page.error', function (msg, trace) {
+    casper.echoConcise('PAGE ERROR: ' + msg, 'ERROR');
+    if (trace) {
+        casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
+        casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
+        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+    }
+    pageErrors.push(msg);
+});
+
+casper.on('resource.received', function(resource) {
+    var status = resource.status;
+    if(status >= 400) {
+        casper.echoConcise('RESOURCE ERROR: ' + resource.url + ' failed to load (' + status + ')', 'ERROR');
+
+        resourceErrors.push({
+            url: resource.url,
+            status: resource.status
+        });
+    }
 });
 
 casper.captureScreenshot = function (filename, debugOnly) {
@@ -176,15 +206,33 @@ casper.captureScreenshot = function (filename, debugOnly) {
     }
 };
 
-
-
-// on failure, grab a screenshot
-casper.test.on('fail', function captureFailure(test) {
+ // on failure, grab a screenshot
+casper.test.on('fail', function captureFailure() {
     casper.captureScreenshot(casper.test.filename || 'casper_test_fail.png', false);
     casper.then(function () {
         console.log(casper.getHTML());
         casper.exit(1);
     });
+});
+
+// on exit, output any errors
+casper.test.on('exit', function() {
+    if (jsErrors.length > 0) {
+        casper.echo(jsErrors.length + ' Javascript errors found', 'WARNING');
+    } else {
+        casper.echo(jsErrors.length + ' Javascript errors found', 'INFO');
+    }
+    if (pageErrors.length > 0) {
+        casper.echo(pageErrors.length + ' Page errors found', 'WARNING');
+    } else {
+        casper.echo(pageErrors.length + ' Page errors found', 'INFO');
+    }
+
+    if (resourceErrors.length > 0) {
+        casper.echo(resourceErrors.length + ' Resource errors found', 'WARNING');
+    } else {
+        casper.echo(resourceErrors.length + ' Resource errors found', 'INFO');
+    }
 });
 
 var CasperTest = (function () {
