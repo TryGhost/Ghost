@@ -160,6 +160,7 @@
                 description = this.$('#blog-description').val(),
                 email = this.$('#email-address').val(),
                 postsPerPage = this.$('#postsPerPage').val(),
+                profanity = this.$('#profanity').is(":checked"),
                 permalinks = this.$('#permalinks').is(':checked') ? '/:year/:month/:day/:slug/' : '/:slug/',
                 validationErrors = [];
 
@@ -193,7 +194,8 @@
                     email: email,
                     postsPerPage: postsPerPage,
                     activeTheme: this.$('#activeTheme').val(),
-                    permalinks: permalinks
+                    permalinks: permalinks,
+                    profanity: profanity
                 }, {
                     success: this.saveSuccess,
                     error: this.saveError

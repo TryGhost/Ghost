@@ -54,6 +54,13 @@
                 "isIn": [["true", "false"]]
             }
         },
+        "profanity": {
+            "defaultValue": "true",
+            "validations": {
+                "isNull": false,
+                "isIn": [["true", "false"]]
+            }
+        },
         "permalinks": {
             "defaultValue": "/:slug/",
             "validations": {

@@ -64,6 +64,13 @@
                 <label class="checkbox" for="permalinks"></label>
                 <p>Include the date in your post URLs</p>
             </div>
+            
+            <div class="form-group">
+                <label for="permalinks">Profanity Filters</label>
+                {{input id="profanity" name="general[profanity]" type="checkbox" checked=isProfanity}}
+                <label class="checkbox" for="profanity"></label>
+                <p>Obscure foul words on each post</p>
+            </div>
 
             <div class="form-group">
                 <label for="activeTheme">Theme</label>

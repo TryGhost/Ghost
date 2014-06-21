@@ -66,6 +66,13 @@
             </div>
 
             <div class="form-group">
+                <label for="profanity">Profanity Filters</label>
+                <input id="profanity" name="general[profanity]" type="checkbox" value='profanity'/>
+                <label class="checkbox" for="profanity"></label>
+                <p>Obscure foul words on each post</p>
+            </div>
+            
+            <div class="form-group">
                 <label for="activeTheme">Theme</label>
                 <select id="activeTheme" name="general[activeTheme]">
                     {{#each availableThemes}}

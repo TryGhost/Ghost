@@ -14,6 +14,7 @@ var SettingsModel = BaseModel.extend({
     postsPerPage: null,
     forceI18n: null,
     permalinks: null,
+    profanity: null,
     activeTheme: null,
     activeApps: null,
     installedApps: null,
