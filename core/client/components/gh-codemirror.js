@@ -2,6 +2,7 @@
 
 import MarkerManager from 'ghost/mixins/marker-manager';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
+import 'ghost/utils/codemirror-shortcuts';
 
 var onChangeHandler = function (cm, changeObj) {
     var line,
