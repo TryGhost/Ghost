@@ -11,6 +11,7 @@ var PostController = Ember.ObjectController.extend({
                 self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
             }).catch(function (errors) {
                 self.notifications.showErrors(errors);
+                return Ember.RSVP.reject(errors);
             });
         }
     }
