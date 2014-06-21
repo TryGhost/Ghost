@@ -1,7 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import styleBody from 'ghost/mixins/style-body';
+import base from 'ghost/mixins/editor-route-base';
 
-var EditorNewRoute = AuthenticatedRoute.extend(styleBody, {
+var EditorNewRoute = AuthenticatedRoute.extend(base, {
     classNames: ['editor'],
 
     model: function () {

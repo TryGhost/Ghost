@@ -46,6 +46,9 @@ var Notifications = Ember.ArrayProxy.extend({
             type: 'warn',
             message: message
         });
+    },
+    closeAll: function () {
+        window.alert('@TODO implement closeALl notifications');
     }
 });
 
