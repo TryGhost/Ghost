@@ -1,47 +1,61 @@
 ---
+<div dir="RTL">
 lang: ar_AR
-layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
-permalink: /ar_AR/installation/deploy/
-chapter: installation
-section: deploy
+
+layout: تنصيب
+
+meta_title: كيفية تثبيت ڨوست على الخادم الخاص بك - 
+   مستندات ڨوست  
+
+meta_description: كل ما تحتاجه للحصول على ڨوست 
+
+منصة التدوين وتشغيلها على البيئة المحلية أو البعيدة.
+
+heading: تثبيت ڨوست &amp; بدء العمل
+
+subheading: الخطوات الأولى لإنشاء بلوق جديد للمرة الأولى.
+
+/permalink: /ar_AR/installation/deploy
+
+chapter: تركيب
+
+section: نشر
+
 prev_section: linux
-next_section: upgrading
+
+next_section: ترقية
 ---
-## Getting Ghost Live <a id="deploy"></a>
+##    إنشاء ڨوست <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+انت على استعداد لتركيب ڨوست؟ ممتاز!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+اول شي تحتاج إلى التأكد، ما إذا كنت تريد تثبيت وإعداد ڨوست بنفسك، أو ما إذا كنت تفضل استخدام برنامج تنصيب.
 
-### Installers
+### برامج التنصيب
 
-There are a couple of options for simple installers at the moment:
+هناك بضعة خيارات لتركيب بسيط في الوقت الراهن:
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   نشر إلى سحابة مع [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   إطلاق ڨوست مع [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   الحصول على ڨوست وتشغيله مع [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### تنصيب يدوي
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+سوف تحتاج الى استضافة لديها او تسمح بتثبيت [Node.js](http://nodejs.org).
+    هذا يعني شيئا مثل سحابة ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/))  أو حزمة أخرى لديها  SSH  وسوف تسمح لك لتثبيت Node.js. هناك الكثير و  يمكن أن تكون رخيصة .
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+ما لا يعمل في الوقت الراهن، هو استضافة مشتركة حيث ان هذا عادة ما تستهدف على وجه التحديد استضافة PHP. على الرغم من تقديم بعض الاستضافات Ruby، و قد تقدم Node.js في المستقبل بماانها  متشابهة الى حد ما.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>للأسف، فإن العديد من الحلول السحابية  مثل Nodejitsu   او Heroku غير متوافقة مع ڨوست  ستعمل في البداية، لكن سوف تحذف ملفاتك وبالتالي كل الملفات المرفوعه من الصور وقاعدة البيانات الخاصة بك سوف تختفي. Heroku يدعم MySQL لذلك يمكن أن تستخدم هذا، ولكن سوف  تفقد أي صور تم تحميلها.
 
-The following links contain instructions on how to get up and running with:
+الروابط التالية تحتوي على تعليمات حول كيفية الحصول على المنصة وتشغيلها مع:
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - عن [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - عن [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - عن [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - عن [Gregg Housh](http://0v.org/)
+*   راجع هذا... [installation forum](https://en.ghost.org/forum/installation) لمزيد من الدروس... 
 
 ## Making Ghost run forever
 
