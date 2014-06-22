@@ -241,7 +241,6 @@
 
             this.$('#permalinks').prop('checked', this.model.get('permalinks') !== '/:slug/');
             this.$('#profanity').prop('checked', this.model.get('profanity') === 'true');
-            console.log(this.model.get('profanity'));
             this.$('.js-drop-zone').upload();
 
             Countable.live(document.getElementById('blog-description'), function (counter) {
