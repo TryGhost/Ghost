@@ -227,6 +227,21 @@ function checkSSL(req, res, next) {
     next();
 }
 
+// Check to see if we should use Profanity filters
+// and modify req as needed
+function checkProfanity(req, res, next) {
+    api.settings.read({key: 'profanity'}).then(function (response) {
+        var profanity = response.settings[0];
+        if (profanity.value === 'true') {
+            middleware.profanity.init(req, res, next);
+        } else
+            next(); //no profanity to filter
+    }).otherwise(function (err) {
+        //pass on the error
+        next(err);
+    });
+}
+
 // ### Robots Middleware
 // Handle requests to robots.txt and cache file
 function robots() {
@@ -362,8 +377,8 @@ module.exports = function (server, dbHash) {
     expressServer.use(middleware.cleanNotifications);
 
     //profanity
-    expressServer.use(middleware.profanity.init);
-
+    expressServer.use(checkProfanity);
+    
     // ### Routing
     // Set up API routes
     expressServer.use(subdir, routes.api(middleware));
