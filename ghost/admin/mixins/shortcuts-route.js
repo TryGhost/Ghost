@@ -14,12 +14,20 @@ key.filter = function () {
  *
  * To implement shortcuts, add this mixin to your `extend()`,
  * and implement a `shortcuts` hash.
- * In this hash, keys are shortcut combinations
- *  (see [keymaster docs](https://github.com/madrobby/keymaster/blob/master/README.markdown)), and values are controller action names.
+ * In this hash, keys are shortcut combinations and values are route action names.
+ *  (see [keymaster docs](https://github.com/madrobby/keymaster/blob/master/README.markdown)),
+ * 
  * ```javascript
  * shortcuts: {
  *     'ctrl+s, command+s': 'save',
- *     'ctrl+alt+p': 'toggleZenMode'
+ *     'ctrl+alt+z': 'toggleZenMode'
+ * }
+ * ```
+ * For more complex actions, shortcuts can instead have their value
+ * be an object like {action, options}
+ * ```javascript
+ * shortcuts: {
+ *      'ctrl+k': {action: 'markdownShortcut', options: 'createLink'}
  * }
  * ```
  */
@@ -30,10 +38,16 @@ var ShortcutsRoute = Ember.Mixin.create({
 
         Ember.keys(shortcuts).forEach(function (shortcut) {
             key(shortcut, function (event) {
+                var action = shortcuts[shortcut],
+                    options;
+                if (Ember.typeOf(action) !== 'string') {
+                    options = action.options;
+                    action = action.action;
+                }
+                
                 //stop things like ctrl+s from actually opening a save dialogue
                 event.preventDefault();
-                //map the shortcut to its action
-                self.send(shortcuts[shortcut], event);
+                self.send(action, options);
             });
         });
     },
