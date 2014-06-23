@@ -61,17 +61,17 @@ casper.writeContentToCodeMirror = function (content) {
     }, 2000);
 };
 
-casper.waitForOpaque = function (classname, then, timeout) {
-    timeout = timeout || casper.failOnTimeout(casper.test, 'waitForOpaque failed on ' + classname);
+casper.waitForOpacity = function (classname, opacity, then, timeout) {
+    timeout = timeout || casper.failOnTimeout(casper.test, 'waitForOpacity failed on ' + classname + ' ' + opacity);
     casper.waitForSelector(classname).then(function () {
         casper.waitFor(function checkOpaque() {
-            var value = this.evaluate(function (element) {
+            var value = this.evaluate(function (element, opacity) {
                 var target = document.querySelector(element);
                 if (target === null) {
                     return null;
                 }
-                return window.getComputedStyle(target).getPropertyValue('opacity') === '1';
-            }, classname);
+                return window.getComputedStyle(target).getPropertyValue('opacity') === opacity;
+            }, classname, opacity);
             if (value !== true && value !== false) {
                 casper.test.fail('Unable to find element: ' + classname);
             }
@@ -79,6 +79,15 @@ casper.waitForOpaque = function (classname, then, timeout) {
         }, then, timeout);
     });
 };
+
+casper.waitForOpaque = function (classname, then, timeout) {
+    casper.waitForOpacity(classname, '1', then, timeout);
+};
+
+casper.waitForTransparent = function (classname, then, timeout) {
+    casper.waitForOpacity(classname, '0', then, timeout);
+};
+
 
 // ### Then Open And Wait For Page Load
 // Always wait for the `#main` element as some indication that the ember app has loaded.
@@ -97,7 +106,7 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
         },
         'editor': {
             url: 'ghost/ember/editor/',
-            selector: '#main-menu .editor.active'
+            selector: '#entry-title'
         },
         'settings': {
             url: 'ghost/ember/settings/',
