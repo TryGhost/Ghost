@@ -119,7 +119,7 @@ db = {
             }).then(function importSuccess() {
                 return api.settings.updateSettingsCache();
             }).then(function () {
-                return when.resolve({ db: [] });
+                return when.resolve({ message: 'Import successful', db: [] });
             }).otherwise(function importFailure(error) {
                 return when.reject(new errors.InternalServerError(error.message || error));
             }).finally(function () {
@@ -127,7 +127,7 @@ db = {
                 return nodefn.call(fs.unlink, options.importfile.path);
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
+            return when.reject(new errors.NoPermissionError('You do not have permission to import data. (no rights)'));
         });
     },
     /**
