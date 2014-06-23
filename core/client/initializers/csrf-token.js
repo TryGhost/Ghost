@@ -1,12 +1,12 @@
 var CSRFTokenInitializer = {
     name: 'csrf-token',
 
-    initialize: function (container) {
-        container.register('csrf:token', $('meta[name="csrf-param"]').attr('content'), { instantiate: false });
+    initialize: function (container, application) {
+        application.register('csrf:token', $('meta[name="csrf-param"]').attr('content'), { instantiate: false });
 
-        container.injection('route', 'csrf', 'csrf:token');
-        container.injection('model', 'csrf', 'csrf:token');
-        container.injection('controller', 'csrf', 'csrf:token');
+        application.inject('route', 'csrf', 'csrf:token');
+        application.inject('model', 'csrf', 'csrf:token');
+        application.inject('controller', 'csrf', 'csrf:token');
     }
 };
 
