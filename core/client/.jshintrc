@@ -29,6 +29,7 @@
         "$": true,
         "validator": true,
         "ic": true,
-        "_": true
+        "_": true,
+        "NProgress": true
     }
 }
