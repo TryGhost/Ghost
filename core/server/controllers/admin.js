@@ -42,15 +42,21 @@ function setSelected(list, name) {
 
 adminControllers = {
     'index': function (req, res) {
+
         /*jslint unparam:true*/
-        var userData;
+        var userData,
+            // config we need on the frontend
+            frontConfig = {
+                apps: config().apps
+            };
 
         if (req.session && req.session.userData) {
             userData = JSON.stringify(req.session.userData);
         }
 
         res.render('default-ember', {
-            user: userData
+            user: userData,
+            config: JSON.stringify(frontConfig)
         });
     },
     // Route: index
