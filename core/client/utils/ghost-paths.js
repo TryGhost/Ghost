@@ -15,6 +15,7 @@ function ghostPaths() {
 
     return {
         subdir: subdir,
+        blogRoot: subdir + '/',
         adminRoot: subdir + '/ghost',
         apiRoot: subdir + '/ghost/api/v0.1',
 
