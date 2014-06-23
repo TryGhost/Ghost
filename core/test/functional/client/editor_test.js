@@ -2,7 +2,7 @@
 // Test the editor screen works as expected
 
 /*globals casper, __utils__, url, testPost */
-CasperTest.emberBegin('Ghost editor functions correctly', 15, function suite(test) {
+CasperTest.emberBegin('Ghost editor functions correctly', 19, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -84,6 +84,33 @@ CasperTest.emberBegin('Ghost editor functions correctly', 15, function suite(tes
 
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
         test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
+    });
+
+    // Part 5: Editor global shortcuts
+    casper.then(function tryZenShortcut() {
+        casper.sendKeys('#main', 'z', {modifiers: 'alt+shift'});
+    });
+
+    casper.waitForSelector('.editor.zen', function then() {
+        casper.waitForTransparent('#global-header', function then() {
+            test.assert(true, 'header becomes transparent');
+        });
+        casper.waitForTransparent('#publish-bar', function then() {
+            test.assert(true, 'publish bar becomes transparent');
+        });
+    });
+
+    casper.then(function tryZenShortcut() {
+        casper.sendKeys('#main', 'z', {modifiers: 'alt+shift'});
+    });
+
+    casper.waitWhileSelector('.editor.zen', function then() {
+        casper.waitForOpaque('#global-header', function then() {
+            test.assert(true, 'header becomes opaque');
+        });
+        casper.waitForOpaque('#publish-bar', function then() {
+            test.assert(true, 'publish bar becomes opaque');
+        });
     });
 });
 
