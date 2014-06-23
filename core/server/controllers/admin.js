@@ -47,6 +47,7 @@ adminControllers = {
         var userData,
             // config we need on the frontend
             frontConfig = {
+                fileStorage: config().fileStorage,
                 apps: config().apps
             };
 
