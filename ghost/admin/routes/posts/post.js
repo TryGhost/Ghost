@@ -11,7 +11,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
         postId = Number(params.post_id);
 
         if (!Number.isInteger(postId) || !Number.isFinite(postId) || postId <= 0) {
-            this.transitionTo('posts.index');
+            this.transitionTo('error404', params.post_id);
         }
 
         post = this.store.getById('post', postId);
