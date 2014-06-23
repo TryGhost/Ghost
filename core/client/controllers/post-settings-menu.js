@@ -23,8 +23,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.notifications.showSuccess('Successfully converted to ' + (val ? 'static page' : 'post'));
 
                 return self.get('page');
-            }, function (errors) {
+            }).catch(function (errors) {
                 self.notifications.showErrors(errors);
+                return Ember.RSVP.reject(errors);
             });
         }
 
@@ -137,8 +138,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return self.get('model').save().then(function () {
                     self.notifications.showSuccess('Permalink successfully changed to <strong>' +
                         self.get('slug') + '</strong>.');
-                }, function (errors) {
+                }).catch(function (errors) {
                     self.notifications.showErrors(errors);
+                    return Ember.RSVP.reject(errors);
                 });
             });
         },
@@ -190,8 +192,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.get('model').save().then(function () {
                 self.notifications.showSuccess('Publish date successfully changed to <strong>' +
                     formatDate(self.get('published_at')) + '</strong>.');
-            }, function (errors) {
+            }).catch(function (errors) {
                 self.notifications.showErrors(errors);
+                return Ember.RSVP.reject(errors);
             });
         }
     }
