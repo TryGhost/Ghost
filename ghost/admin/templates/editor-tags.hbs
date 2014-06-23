@@ -1,9 +1,0 @@
-<label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
-<div class="tags">
-{{#each tags}}
-    <span class="tag" {{action 'tagClick' this target="view"}}>{{name}}</span>
-{{/each}}
-</div>
-<input type="hidden" class="tags-holder" id="tags-holder">
-{{input type="text" id="tags" class="tag-input" value=view.input}}
-<ul class="suggestions overlay" {{bind-attr style=view.overlayStyle}}></ul>

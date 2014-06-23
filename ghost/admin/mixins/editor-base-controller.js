@@ -15,6 +15,9 @@ Ember.get(PostModel, 'attributes').forEach(function (name) {
 watchedProps.push('tags.[]');
 
 var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
+
+    needs: ['post-tags-input'],
+
     init: function () {
         var self = this;
 
@@ -119,6 +122,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
                 self = this;
+
+            // ensure an incomplete tag is finalised before save
+            this.get('controllers.post-tags-input').send('addNewTag');
 
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
