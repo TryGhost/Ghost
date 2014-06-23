@@ -63,20 +63,21 @@ casper.writeContentToCodeMirror = function (content) {
 
 casper.waitForOpaque = function (classname, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'waitForOpaque failed on ' + classname);
-
-    casper.waitFor(function checkOpaque() {
-        var value = this.evaluate(function (element) {
-            var target = document.querySelector(element);
-            if (target === null) {
-                return null;
+    casper.waitForSelector(classname).then(function () {
+        casper.waitFor(function checkOpaque() {
+            var value = this.evaluate(function (element) {
+                var target = document.querySelector(element);
+                if (target === null) {
+                    return null;
+                }
+                return window.getComputedStyle(target).getPropertyValue('opacity') === '1';
+            }, classname);
+            if (value !== true && value !== false) {
+                casper.test.fail('Unable to find element: ' + classname);
             }
-            return window.getComputedStyle(target).getPropertyValue('opacity') === '1';
-        }, classname);
-        if (value !== true && value !== false) {
-            casper.test.fail('Unable to find element: ' + classname);
-        }
-        return value;
-    }, then, timeout);
+            return value;
+        }, then, timeout);
+    });
 };
 
 // ### Then Open And Wait For Page Load
@@ -104,11 +105,11 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
         },
         'settings.general': {
             url: 'ghost/ember/settings/general',
-            selector: '.settings-content form#settings-general'
+            selector: '.settings-content .settings-general'
         },
         'settings.user': {
             url: 'ghost/ember/settings/user',
-            selector: '.settings-content form.user-profile'
+            selector: '.settings-content .settings-user'
         },
         'signin': {
             url: 'ghost/ember/signin/',
@@ -125,7 +126,8 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     };
 
     return casper.thenOpen(url + screens[screen].url).then(function () {
-        return casper.waitForSelector(screens[screen].selector, then, timeout, 15000);
+        // Some screens fade in
+        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
     });
 };
 

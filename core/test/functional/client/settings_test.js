@@ -7,7 +7,7 @@
 // These are used to check that a switch to a tab is complete, or that we are on the right tab.
 var generalTabDetector = '.settings-content form#settings-general',
     userTabDetector = '.settings-content form.user-profile';
-
+//
 CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -34,9 +34,6 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
             // assert that the right menu item is active
             test.assertExists('.settings-menu .users.active', 'User tab is active');
             test.assertDoesntExist('.settings-menu .general.active', 'General tab is not active');
-
-            // Check Elements on the page are correct?
-
         }, casper.failOnTimeout(test, 'waitForSelector `userTabDetector` timed out'));
 
         casper.thenClick('.settings-menu .general a');
@@ -44,17 +41,139 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
             // assert that the right menu item is active
             test.assertExists('.settings-menu .general.active', 'General tab is active');
             test.assertDoesntExist('.settings-menu .users.active', 'User tab is not active');
-
-            // Check Elements on the page are correct?
-
         }, casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
+});
 
-// ### Saving settings tests
+// ## General settings tests
+CasperTest.emberBegin('General settings pane is correct', 8, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
+    });
+
+    function assertImageUploaderModalThenClose() {
+        test.assertSelectorHasText('.description', 'Add image');
+        casper.click('#modal-container .js-button-accept');
+        casper.waitForSelector('.notification-success', function onSuccess() {
+            test.assert(true, 'Got success notification');
+        }, casper.failOnTimeout(test, 'No success notification'));
+    }
+
+    // Ensure image upload modals display correctly
+
+    // Test Blog Logo Upload Button
+    casper.waitForSelector('.js-modal-logo', function () {
+        casper.click('.js-modal-logo');
+    });
+
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
+        casper.failOnTimeout(test, 'No upload logo modal container appeared'));
+
+    // Test Blog Cover Upload Button
+    casper.waitForSelector('.js-modal-cover', function () {
+        casper.click('.js-modal-cover');
+    });
+
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
+        casper.failOnTimeout(test, 'No upload cover modal container appeared'));
+
+    function handleSettingsRequest(requestData) {
+        // make sure we only get requests from the user pane
+        if (requestData.url.indexOf('users/') !== -1) {
+            test.fail('Saving a settings pane triggered the user pane to save');
+        }
+    }
+
+    casper.then(function listenForRequests() {
+        casper.on('resource.requested', handleSettingsRequest);
+    });
+
+    // Ensure can save
+    casper.waitForSelector('header .button-save').then(function () {
+        casper.thenClick('header .button-save').waitFor(function successNotification() {
+            return this.evaluate(function () {
+                return document.querySelectorAll('.js-bb-notification section').length > 0;
+            });
+        }, function doneWaiting() {
+            test.pass('Waited for notification');
+        }, casper.failOnTimeout(test, 'Saving the general pane did not result in a notification'));
+    });
+
+    casper.then(function checkSettingsWereSaved() {
+        casper.removeListener('resource.requested', handleSettingsRequest);
+    });
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Got success notification');
+    }, casper.failOnTimeout(test, 'No success notification :('));
+});
+
+//// ## General settings validations tests
+//CasperTest.emberBegin('General settings validation is correct', 3, function suite(test) {
+//    casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
+//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
+//    });
+//
+//    // Ensure general blog title field length validation
+//    this.fillAndSave('form#settings-general', {
+//        'general[title]': new Array(152).join('a')
+//    });
+//
+//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+//        test.assertSelectorHasText('.notification-error', 'too long');
+//    }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
+//
+//    this.thenClick('.js-bb-notification .close');
+//
+//    // Ensure general blog description field length validation
+//    this.fillAndSave('form#settings-general', {
+//        '#blog-description': new Array(202).join('a')
+//    });
+//
+//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+//        test.assertSelectorHasText('.notification-error', 'too long');
+//    }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
+//
+//    this.thenClick('.js-bb-notification .close');
+//
+//    // Ensure postsPerPage number field form validation
+//    this.fillAndSave('form#settings-general', {
+//        'general[postsPerPage]': 'notaninteger'
+//    });
+//
+//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+//        test.assertSelectorHasText('.notification-error', 'use a number');
+//    }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
+//
+//    this.thenClick('.js-bb-notification .close');
+//
+//    // Ensure postsPerPage max of 1000
+//    this.fillAndSave('form#settings-general', {
+//        'general[postsPerPage]': '1001'
+//    });
+//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+//        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
+//    }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
+//
+//    this.thenClick('.js-bb-notification .close');
+//
+//    // Ensure postsPerPage min of 0
+//    this.fillAndSave('form#settings-general', {
+//        'general[postsPerPage]': '-1'
+//    });
+//
+//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+//        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
+//    }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
+//});
+
+// ### User settings tests
 // Please uncomment and fix these as the functionality is implemented
 
 //CasperTest.emberBegin('Can save settings', 6, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad(url + 'ghost/ember/settings/user/', function testTitleAndUrl() {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Landed on the correct URL');
 //    });
@@ -99,7 +218,6 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //        test.assertEval(function testUserIsActive() {
 //            return document.querySelector('.settings-menu .general').classList.contains('active');
 //        }, 'general tab is marked active');
-//
 //    });
 //
 //    casper.thenClick('#general .button-save').waitFor(function successNotification() {
@@ -122,81 +240,13 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //        casper.removeListener('resource.requested', handleUserRequest);
 //        casper.removeListener('resource.requested', handleSettingsRequest);
 //    });
-});
+
+
 //
-//CasperTest.begin('Ensure general blog title field length validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    casper.waitForSelector('#general', function then() {
-//        this.fill('form#settings-general', {
-//            'general[title]': new Array(152).join('a')
-//        });
-//    }, casper.failOnTimeout(test, 'waitForSelector #general timed out'));
-//
-//    casper.thenClick('#general .button-save');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'too long');
-//    }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
-//});
-//
-//CasperTest.begin('Ensure general blog description field length validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    casper.waitForSelector('#general', function then() {
-//        this.fillSelectors('form#settings-general', {
-//            '#blog-description': new Array(202).join('a')
-//        });
-//    }, casper.failOnTimeout(test, 'waitForSelector #general timed out'));
-//
-//    casper.thenClick('#general .button-save');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'too long');
-//    }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
-//});
-//
-//CasperTest.begin('Ensure image upload modals display correctly', 6, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    function assertImageUploaderModalThenClose() {
-//        test.assertSelectorHasText('.description', 'Add image');
-//        this.click('#modal-container .js-button-accept');
-//        casper.waitForSelector('.notification-success', function onSuccess() {
-//            test.assert(true, 'Got success notification');
-//        }, casper.failOnTimeout(test, 'No success notification'));
-//    }
-//
-//    // Test Blog Logo Upload Button
-//    casper.waitForOpaque('#general', function then() {
-//        this.click('#general .js-modal-logo');
-//    }, casper.failOnTimeout(test, 'waitForOpaque #general timed out'));
-//
-//    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
-//        casper.failOnTimeout(test, 'No upload logo modal container appeared'));
-//
-//    // Test Blog Cover Upload Button
-//    casper.waitForOpaque('#general', function then() {
-//                this.click('#general .js-modal-cover');
-//    }, casper.failOnTimeout(test, 'waitForOpaque #general timed out'));
-//
-//    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
-//        casper.failOnTimeout(test, 'No upload cover modal container appeared'));
-//});
-//
-//CasperTest.begin('User settings screen validates email', 6, function suite(test) {
+//CasperTest.emberBegin('User settings screen validates email', 6, function suite(test) {
 //    var email, brokenEmail;
 //
-//    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
@@ -235,70 +285,18 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //    }, casper.failOnTimeout(test, 'No success notification :('));
 //});
 //
-//CasperTest.begin('Ensure postsPerPage number field form validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
+//
+//CasperTest.emberBegin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
+//        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
-//
-//    casper.waitForSelector('#general', function then() {
-//        this.fill('form#settings-general', {
-//            'general[postsPerPage]': 'notaninteger'
-//        });
-//    }, casper.failOnTimeout(test, 'waitForSelector #general timed out'));
-//
-//    casper.thenClick('#general .button-save');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'use a number');
-//    }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
-//});
-//
-//CasperTest.begin('Ensure postsPerPage max of 1000', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    casper.waitForSelector('#general', function then() {
-//        this.fill('form#settings-general', {
-//            'general[postsPerPage]': '1001'
-//        });
-//    }, casper.failOnTimeout(test, 'waitForSelector #general timed out'));
-//
-//    casper.thenClick('#general .button-save');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
-//    }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
-//});
-//
-//CasperTest.begin('Ensure postsPerPage min of 0', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/general/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    casper.waitForSelector('#general', function then() {
-//        this.fill('form#settings-general', {
-//            'general[postsPerPage]': '-1'
-//        });
-//    }, casper.failOnTimeout(test, 'waitForSelector #general timed out'));
-//
-//    casper.thenClick('#general .button-save');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
-//    }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
-//});
-//
-//CasperTest.begin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
 //
 //    function getRemainingBioCharacterCount() {
 //        return casper.getHTML('.word-count');
 //    }
 //
-//    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+//    casper.thenOpenAndWaitForPageLoad(url + 'ghost/settings/user/', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
@@ -318,8 +316,8 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //    });
 //});
 //
-//CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+//CasperTest.emberBegin('Ensure user bio field length validation', 3, function suite(test) {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
@@ -337,8 +335,8 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //    }, casper.failOnTimeout(test, 'Bio field length error did not appear', 2000));
 //});
 //
-//CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+//CasperTest.emberBegin('Ensure user url field validation', 3, function suite(test) {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
@@ -356,8 +354,8 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 //    }, casper.failOnTimeout(test, 'Url validation error did not appear', 2000));
 //});
 //
-//CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
-//    casper.thenOpen(url + 'ghost/settings/user/', function testTitleAndUrl() {
+//CasperTest.emberBegin('Ensure user location field length validation', 3, function suite(test) {
+//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //    });
