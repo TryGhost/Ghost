@@ -21,12 +21,12 @@ var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
             this.get('controller.codemirror').shortcut(options.type);
         }
     },
-    
+
     shortcuts: {
         //General Editor shortcuts
         'ctrl+s, command+s': 'save',
         'ctrl+alt+p': 'publish',
-        'ctrl+alt+z': 'toggleZenMode',
+        'alt+shift+z': 'toggleZenMode',
         //CodeMirror Markdown Shortcuts
         'ctrl+alt+u': {action: 'codeMirrorShortcut', options: {type: 'strike'}},
         'ctrl+alt+1': {action: 'codeMirrorShortcut', options: {type: 'h1'}},
