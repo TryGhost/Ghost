@@ -286,36 +286,32 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
 //});
 //
 //
-//CasperTest.emberBegin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    function getRemainingBioCharacterCount() {
-//        return casper.getHTML('.word-count');
-//    }
-//
-//    casper.thenOpenAndWaitForPageLoad(url + 'ghost/settings/user/', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
-//    });
-//
-//    casper.then(function checkCharacterCount() {
-//        test.assert(getRemainingBioCharacterCount() === '200', 'Bio remaining characters is 200');
-//    });
-//
-//    casper.then(function setBioToValid() {
-//        casper.fillSelectors('.user-profile', {
-//                '#user-bio': 'asdf\n' // 5 characters
-//            }, false);
-//    });
-//
-//    casper.then(function checkCharacterCount() {
-//        test.assert(getRemainingBioCharacterCount() === '195', 'Bio remaining characters is 195');
-//    });
-//});
-//
+CasperTest.emberBegin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
+    });
+
+    function getRemainingBioCharacterCount() {
+        return casper.getHTML('.word-count');
+    }
+
+    casper.then(function checkCharacterCount() {
+        console.log("PENIS " + getRemainingBioCharacterCount());
+        test.assert(getRemainingBioCharacterCount() === '200', 'Bio remaining characters is 200');
+    });
+
+    casper.then(function setBioToValid() {
+        casper.fillSelectors('.user-profile', {
+            '#user-bio': 'asdf\n' // 5 characters
+        }, false);
+    });
+
+    casper.then(function checkCharacterCount() {
+        test.assert(getRemainingBioCharacterCount() === '195', 'Bio remaining characters is 195');
+    });
+});
+
 //CasperTest.emberBegin('Ensure user bio field length validation', 3, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
