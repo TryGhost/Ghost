@@ -22,7 +22,7 @@ var Markdown = Ember.Component.extend({
 
             uploader.call(dropzones, {
                 editor: true,
-                filestorage: false
+                fileStorage: this.get('config.fileStorage')
             });
 
             dropzones.on('uploadstart', _.bind(this.sendAction, this, 'uploadStarted'));

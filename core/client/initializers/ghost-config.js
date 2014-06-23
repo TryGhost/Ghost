@@ -6,6 +6,7 @@ var ConfigInitializer = {
 
         application.inject('route', 'config', 'ghost:config');
         application.inject('controller', 'config', 'ghost:config');
+        application.inject('component', 'config', 'ghost:config');
     }
 };
 
