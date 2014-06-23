@@ -31,7 +31,7 @@ var PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, loadingInd
     },
     actions: {
         openEditor: function (post) {
-            this.transitionTo('editor', post);
+            this.transitionTo('editor.edit', post);
         },
         moveUp: function () {
             window.alert('@todo keyboard post navigation: up');
