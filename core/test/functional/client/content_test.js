@@ -40,11 +40,11 @@ CasperTest.emberBegin("Content screen is correct", 17, function suite(test) {
     });
 
     casper.then(function postSettingsMenuItems() {
-        test.assertExists('.post-settings-menu #static-page', 'post settings static page exists');
+        test.assertExists('.post-settings-menu .post-setting-static-page', 'post settings static page exists');
         test.assertExists('.post-settings-menu a.delete', 'post settings delete this post exists');
     });
 
-    // A bug is causing this to not always be activated. Uncomment when fixed
+    // A bug is causing this to not always be activated. TODO: Uncomment when fixed #3008
 //    casper.then(function testActiveItem() {
 //        test.assertExists('.content-list-content li:first-of-type .active', 'first item is active');
 //        test.assertDoesntExist('.content-list-content li:nth-of-type(2) .active', 'second item is not active');
@@ -87,7 +87,7 @@ CasperTest.emberBegin('Content list shows correct post status', 7, function test
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
     });
 
-    casper.thenClick('.post-settings-menu #static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page');
 
     casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
         test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
@@ -143,7 +143,7 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
     });
 });
 
-// Uncomment when test is implemented... much needed!
+// TODO: Implement this test... much needed!
 //CasperTest.emberBegin('Infinite scrolling', 2, function suite(test) {
 //    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 //
