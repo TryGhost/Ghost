@@ -47,8 +47,8 @@ adminControllers = {
         var userData,
             // config we need on the frontend
             frontConfig = {
-                fileStorage: config().fileStorage,
-                apps: config().apps
+                apps: config().apps,
+                fileStorage: config().fileStorage
             };
 
         if (req.session && req.session.userData) {
