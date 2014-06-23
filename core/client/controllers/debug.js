@@ -1,37 +1,66 @@
-/*global alert, console */
-
-var Debug = Ember.Controller.extend(Ember.Evented, {
+var DebugController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
+
+    exportPath: function () {
+        return this.get('ghostPaths').apiUrl('db');
+    }.property(),
+
     actions: {
-        importData: function (file) {
-            var self = this;
+        onUpload: function (file) {
+            var self = this,
+                formData = new FormData();
+
             this.set('uploadButtonText', 'Importing');
-            this.get('model').importFrom(file)
-                .then(function (response) {
-                    console.log(response);
-                    alert('@TODO: success');
-                })
-                .catch(function (response) {
-                    console.log(response);
-                    alert('@TODO: error');
-                })
-                .finally(function () {
-                    self.set('uploadButtonText', 'Import');
-                    self.trigger('reset');
-                });
+
+            formData.append('importfile', file);
+
+            ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
+                type: 'POST',
+                headers: {
+                    'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+                },
+                data: formData,
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false
+            }).then(function () {
+                self.notifications.showSuccess('Import successful.');
+            }).catch(function (response) {
+                self.notifications.showErrors(response);
+            }).finally(function () {
+                self.set('uploadButtonText', 'Import');
+                self.trigger('reset');
+            });
         },
+
+        exportData: function () {
+            var self = this;
+
+            ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
+                type: 'GET'
+            }).then(function () {
+                self.notifications.showSuccess('Data exported successfully.');
+            }).catch(function (response) {
+                self.notifications.showErrors(response);
+            });
+        },
+
         sendTestEmail: function () {
-            this.get('model').sendTestEmail()
-                .then(function (response) {
-                    console.log(response);
-                    alert('@TODO: success');
-                })
-                .catch(function (response) {
-                    console.log(response);
-                    alert('@TODO: error');
-                });
+            var self = this;
+
+            ic.ajax.request(this.get('ghostPaths').apiUrl('mail', 'test'), {
+                type: 'POST',
+                headers: {
+                    'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+                }
+            }).then(function () {
+                self.notifications.showSuccess('Check your email for the test message:');
+            }).catch(function (response) {
+                self.notifications.showErrors(response);
+            });
         }
     }
 });
 
-export default Debug;
+export default DebugController;
