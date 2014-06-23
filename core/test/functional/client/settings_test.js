@@ -20,7 +20,7 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
         test.assertExists('.settings-menu', 'Settings menu is present');
         test.assertExists('.settings-menu .general', 'General tab is present');
         test.assertExists('.settings-menu .users', 'Users tab is present');
-        test.assertExists('.settings-menu .apps', 'Apps is present');
+        test.assertNotExists('.settings-menu .apps', 'Apps is present');
         test.assertExists('.wrapper', 'Settings main view is present');
         test.assertExists('.settings-content', 'Settings content view is present');
         test.assertExists('.settings-menu .general.active', 'General tab is marked active');

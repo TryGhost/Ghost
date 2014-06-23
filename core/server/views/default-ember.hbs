@@ -41,9 +41,8 @@
 
     <script>
     window.ENV = {
-        {{#user}}
-        user: {{{this}}}
-        {{/user}}
+        {{#user}}user: {{{this}}},{{/user}}
+        config: {{{config}}}
     };
     window.App = require('ghost/app')['default'].create(window.ENV);
     </script>
