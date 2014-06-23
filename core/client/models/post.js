@@ -4,7 +4,7 @@ var Post = DS.Model.extend(ValidationEngine, {
     validationType: 'post',
 
     uuid: DS.attr('string'),
-    title: DS.attr('string'),
+    title: DS.attr('string', {defaultValue: ''}),
     slug: DS.attr('string'),
     markdown: DS.attr('string', {defaultValue: ''}),
     html: DS.attr('string'),
