@@ -17,7 +17,7 @@ var ValidationEngine = Ember.Mixin.create({
 
         return new Ember.RSVP.Promise(function (resolve, reject) {
             if (!type || !validator) {
-                return reject('The validator specified, "' + type + '", did not exist!');
+                return reject(self.formatErrors('The validator specified, "' + type + '", did not exist!'));
             }
 
             var validationErrors = validator.validate(self);
@@ -26,8 +26,31 @@ var ValidationEngine = Ember.Mixin.create({
                 return resolve();
             }
 
-            return reject(validationErrors);
+            return reject(self.formatErrors(validationErrors));
         });
+    },
+
+    // format errors to be used in `notifications.showErrors`.
+    // format is [{ message: 'concatenated error messages' }]
+    formatErrors: function (errors) {
+        var message = 'There was an error saving this ' + this.get('validationType');
+
+        if (Ember.isArray(errors)) {
+            // get validation error messages
+            message += ': ' + errors.mapBy('message').join(' ');
+        } else if (typeof errors === 'object') {
+            // Get messages from server response
+            message += ': ' + getRequestErrorMessage(errors);
+        } else if (typeof errors === 'string') {
+            message += ': ' + errors;
+        } else {
+            message += '.';
+        }
+
+        // set format for notifications.showErrors
+        message = [{ message: message }];
+
+        return message;
     },
 
     // override save to do validation first
@@ -37,31 +60,24 @@ var ValidationEngine = Ember.Mixin.create({
             // ref: https://github.com/emberjs/ember.js/pull/4301
             _super = this.__nextSuper;
 
+        // model.destroyRecord() calls model.save() behind the scenes.
+        // in that case, we don't need validation checks or error propagation.
+        if (this.get('isDeleted')) {
+            return this._super();
+        }
+
         // If validation fails, reject with validation errors.
         // If save to the server fails, reject with server response.
         return this.validate().then(function () {
             return _super.call(self);
         }).catch(function (result) {
-            var message = 'There was an error saving this ' + self.get('validationType');
-
-            if (Ember.isArray(result)) {
-                // get validation error messages
-                message += ': ' + result.mapBy('message').join(' ');
-            } else if (typeof result === 'object') {
-                // Get messages from server response
-                message += ': ' + getRequestErrorMessage(result);
-            } else if (typeof result === 'string') {
-                message += ': ' + result;
-            } else {
-                message += '.';
+            // server save failed, format the errors and reject the promise.
+            // if validations failed, the errors will already be formatted for us.
+            if (! Ember.isArray(result)) {
+                result = self.formatErrors(result);
             }
 
-            // set format for notifications.showErrors
-            message = [{ message: message }];
-
-            return new Ember.RSVP.Promise(function (resolve, reject) {
-                reject(message);
-            });
+            return Ember.RSVP.reject(result);
         });
     }
 });

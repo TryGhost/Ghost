@@ -14,8 +14,8 @@ var LeaveEditorController = Ember.Controller.extend({
                 model = editorController.get('model');
             }
 
-            // @TODO: throw some kind of error here? return true will send it upward?
             if (!transition || !editorController) {
+                this.notifications.showError('Sorry, there was an error in the application. Please let the Ghost team know what happened.');
                 return true;
             }
 
