@@ -6,8 +6,7 @@ var UploadModal = ModalDialog.extend({
 
     didInsertElement: function () {
         this._super();
-        var filestorage = $('#general').data('filestorage');
-        upload.call(this.$('.js-drop-zone'), {fileStorage: filestorage});
+        upload.call(this.$('.js-drop-zone'), {fileStorage: this.get('config.fileStorage')});
     },
     confirm: {
         reject: {
