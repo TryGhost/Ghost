@@ -1,6 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var paginationSettings = {
     status: 'all',
@@ -8,7 +9,7 @@ var paginationSettings = {
     page: 1
 };
 
-var PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, {
+var PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, loadingIndicator, {
     classNames: ['manage'],
 
     model: function () {

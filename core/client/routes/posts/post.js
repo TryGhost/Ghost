@@ -1,6 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
+import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var PostsPostRoute = AuthenticatedRoute.extend({
+var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, {
     model: function (params) {
         var self = this,
             post,
