@@ -13,6 +13,7 @@
    ========================================================================== */
 
 .notifications {
+
     @media (min-width: 401px) {
         position: absolute;
         bottom: 0;
@@ -48,16 +49,23 @@
     };
     width: 100%;
     min-height: 40px;
-    padding: 10px 43px 10px 57px;
+    max-height: 253px;
     margin: 0 0 15px 0;
     color: rgba(255,255,255,0.9);
     background: $blue;
-    position:relative;
+    position: relative;
     box-shadow: $shadow;
     @include transform(translateZ(0));
 
     @media (max-width: 400px) {
         margin-bottom: 1px;
+    }
+
+    .notification-message {
+        display: block;
+        padding: 10px 43px 10px 57px;
+        max-height: 253px;
+        overflow: auto;
     }
 
     .close {
@@ -67,7 +75,6 @@
             top: 8px;
             right: 9px;
         };
-        display: inline-block;
         color: rgba(255,255,255,0.6);
         cursor: pointer;
         &:hover {
@@ -93,7 +100,7 @@
         @include animation-iteration-count(1);
         @include animation-fill-mode(forwards);
     }
-  
+
     &.notification-passive:hover {
         @include animation(fade-in 0.2s linear);
     }
