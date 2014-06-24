@@ -1,4 +1,5 @@
 var Notifications = Ember.ArrayProxy.extend({
+    delayedNotifications: [],
     content: Ember.A(),
     timeout: 3000,
     pushObject: function (object) {
@@ -9,43 +10,58 @@ var Notifications = Ember.ArrayProxy.extend({
         }
         this._super(object);
     },
-    showError: function (message) {
-        this.pushObject({
+    handleNotification: function (message, delayed) {
+        if (!delayed) {
+            this.pushObject(message);
+        } else {
+            this.delayedNotifications.push(message);
+        }
+    },
+    showError: function (message, delayed) {
+        this.handleNotification({
             type: 'error',
             message: message
-        });
+        }, delayed);
     },
     showErrors: function (errors) {
         for (var i = 0; i < errors.length; i += 1) {
             this.showError(errors[i].message || errors[i]);
         }
     },
-    showAPIError: function (resp, defaultErrorText) {
+    showAPIError: function (resp, defaultErrorText, delayed) {
         defaultErrorText = defaultErrorText || 'There was a problem on the server, please try again.';
 
         if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.error) {
-            this.showError(resp.jqXHR.responseJSON.error);
+            this.showError(resp.jqXHR.responseJSON.error, delayed);
         } else {
-            this.showError(defaultErrorText);
+            this.showError(defaultErrorText, delayed);
         }
     },
-    showInfo: function (message) {
-        this.pushObject({
+    showInfo: function (message, delayed) {
+        this.handleNotification({
             type: 'info',
             message: message
-        });
+        }, delayed);
     },
-    showSuccess: function (message) {
-        this.pushObject({
+    showSuccess: function (message, delayed) {
+        this.handleNotification({
             type: 'success',
             message: message
-        });
+        }, delayed);
     },
-    showWarn: function (message) {
-        this.pushObject({
+    showWarn: function (message, delayed) {
+        this.handleNotification({
             type: 'warn',
             message: message
+        }, delayed);
+    },
+    displayDelayed: function () {
+        var self = this;
+
+        self.delayedNotifications.forEach(function (message) {
+            self.pushObject(message);
         });
+        self.delayedNotifications = [];
     },
     closeAll: function () {
         this.clear();
