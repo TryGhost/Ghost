@@ -150,8 +150,10 @@ casper.failOnTimeout = function (test, message) {
 // With Ember in place, we don't want to submit forms, rather press the green button which always has a class of
 // 'button-save'. This method handles that smoothly.
 casper.fillAndSave = function (selector, data) {
-    casper.fill(selector, data, false);
-    casper.thenClick(selector + ' .button-save');
+    casper.then(function doFill() {
+        casper.fill(selector, data, false);
+        casper.thenClick('.button-save');
+    });
 };
 
 // ## Debugging
