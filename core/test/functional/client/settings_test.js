@@ -297,7 +297,6 @@ CasperTest.emberBegin('User settings screen shows remaining characters for Bio p
     }
 
     casper.then(function checkCharacterCount() {
-        console.log("PENIS " + getRemainingBioCharacterCount());
         test.assert(getRemainingBioCharacterCount() === '200', 'Bio remaining characters is 200');
     });
 
