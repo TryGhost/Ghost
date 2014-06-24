@@ -1,29 +1,40 @@
 // # Content Test
 // Test the content screen, uses the editor to create dummy content
 
-/*globals casper, __utils__, url, testPost, newUser */
+/*globals CasperTest, casper, testPost, newUser */
 
-CasperTest.emberBegin("Content screen is correct", 17, function suite(test) {
+CasperTest.emberBegin('Content screen is correct', 17, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testViews() {
-        test.assertExists(".content-view-container", "Content main view is present");
-        test.assertExists(".content-list-content", "Content list view is present");
+        test.assertExists('.content-view-container', 'Content main view is present');
+        test.assertExists('.content-list-content', 'Content list view is present');
         test.assertExists('.content-list .floatingheader a.button.button-add', 'add new post button exists');
-        test.assertEquals(this.getElementAttribute('.content-list .floatingheader a.button.button-add', 'href'), '/ghost/ember/editor/', 'add new post href is correct');
-        test.assertExists(".content-list-content li .entry-title", "Content list view has at least one item");
-        test.assertSelectorHasText(".content-list-content li:first-of-type h3", testPost.title, "title is present and has content");
-        test.assertSelectorHasText(".content-list-content li:first-of-type .entry-meta .status .draft", 'Draft', "status is present has content");
-        test.assertExists(".content-preview", "Content preview is present");
-        test.assertSelectorHasText('.content-preview header .status', 'Written', 'preview header contains "Written" when post is a draft');
-        test.assertSelectorHasText('.content-preview header .author', newUser.name, 'preview header contains author name');
+        test.assertEquals(
+            this.getElementAttribute('.content-list .floatingheader a.button.button-add', 'href'),
+            '/ghost/ember/editor/', 'add new post href is correct'
+        );
+        test.assertExists('.content-list-content li .entry-title', 'Content list view has at least one item');
+        test.assertSelectorHasText(
+            '.content-list-content li:first-of-type h3', testPost.title, 'title is present and has content'
+        );
+        test.assertSelectorHasText(
+            '.content-list-content li:first-of-type .entry-meta .status .draft', 'Draft', 'correct status is present'
+        );
+        test.assertExists('.content-preview', 'Content preview is present');
+        test.assertSelectorHasText(
+            '.content-preview header .status', 'Written', 'preview header contains "Written" when post is a draft'
+        );
+        test.assertSelectorHasText(
+            '.content-preview header .author', newUser.name, 'preview header contains author name'
+        );
     });
 
     casper.then(function testEditPostButton() {
@@ -50,7 +61,7 @@ CasperTest.emberBegin("Content screen is correct", 17, function suite(test) {
 //        test.assertDoesntExist('.content-list-content li:nth-of-type(2) .active', 'second item is not active');
 //
 //        // Ember adds script tags into the list so we need to use nth-of-type
-//    }).thenClick(".content-list-content li:nth-of-type(2) a", function then() {
+//    }).thenClick('.content-list-content li:nth-of-type(2) a', function then() {
 //        test.assertDoesntExist('.content-list-content li:first-of-type .active', 'first item is not active');
 //        test.assertExists('.content-list-content li:nth-of-type(2) .active', 'second item is active');
 //    });
@@ -62,7 +73,7 @@ CasperTest.emberBegin('Content list shows correct post status', 7, function test
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Select first non-draft, non-static post.  Should be second in the list at this stage of testing.
@@ -76,8 +87,12 @@ CasperTest.emberBegin('Content list shows correct post status', 7, function test
 
     // Test for 'Published' in header
     casper.then(function testHeader() {
-        test.assertSelectorHasText('.content-preview header .status', 'Published', 'preview header contains "Published" when post is published');
-        test.assertSelectorHasText('.content-preview header .author', newUser.name, 'preview header contains author name');
+        test.assertSelectorHasText(
+            '.content-preview header .status', 'Published', 'preview header contains "Published" when post is published'
+        );
+        test.assertSelectorHasText(
+            '.content-preview header .author', newUser.name, 'preview header contains author name'
+        );
     });
 
     // Change post to static page
@@ -103,7 +118,7 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Open post settings menu
@@ -120,8 +135,8 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
 
     casper.thenClick('.js-button-reject');
 
-    casper.waitWhileVisible("#modal-container", function onSuccess() {
-        test.assert(true, "clicking cancel should close the delete post modal");
+    casper.waitWhileVisible('#modal-container', function onSuccess() {
+        test.assert(true, 'clicking cancel should close the delete post modal');
     });
 
     // Test delete
@@ -149,18 +164,18 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+//        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
 //    });
 //});
 
-CasperTest.emberBegin("Posts can be marked as featured", 10, function suite(test) {
+CasperTest.emberBegin('Posts can be marked as featured', 10, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Mark as featured
@@ -209,7 +224,7 @@ CasperTest.emberBegin('Post url can be changed', 7, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('a.post-settings');
@@ -224,7 +239,7 @@ CasperTest.emberBegin('Post url can be changed', 7, function suite(test) {
             '#url': 'new-url'
         }, false);
 
-        this.click('a.post-settings')
+        this.click('a.post-settings');
     });
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
@@ -248,7 +263,7 @@ CasperTest.emberBegin('Post published date can be changed', 7, function suite(te
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('a.post-settings');
@@ -263,7 +278,7 @@ CasperTest.emberBegin('Post published date can be changed', 7, function suite(te
             '.post-setting-date': '22 May 14 @ 23:39'
         }, false);
 
-        this.click('a.post-settings')
+        this.click('a.post-settings');
     });
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
@@ -287,7 +302,7 @@ CasperTest.emberBegin('Post can be changed to static page', 7, function suite(te
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, "Landed on the correct URL");
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('.content-preview a.post-settings');

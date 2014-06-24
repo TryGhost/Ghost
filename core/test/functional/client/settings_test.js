@@ -1,7 +1,7 @@
 // # Settings Test
 // Test the various tabs on the settings page
 
-/*globals casper, CasperTest, url */
+/*globals CasperTest, casper */
 
 // These classes relate to elements which only appear when a given tab is loaded.
 // These are used to check that a switch to a tab is complete, or that we are on the right tab.
@@ -67,16 +67,16 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
         casper.click('.js-modal-logo');
     });
 
-    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
-        casper.failOnTimeout(test, 'No upload logo modal container appeared'));
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description',
+        assertImageUploaderModalThenClose, casper.failOnTimeout(test, 'No upload logo modal container appeared'));
 
     // Test Blog Cover Upload Button
     casper.waitForSelector('.js-modal-cover', function () {
         casper.click('.js-modal-cover');
     });
 
-    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description', assertImageUploaderModalThenClose,
-        casper.failOnTimeout(test, 'No upload cover modal container appeared'));
+    casper.waitForSelector('#modal-container .modal-content .js-drop-zone .description',
+        assertImageUploaderModalThenClose, casper.failOnTimeout(test, 'No upload cover modal container appeared'));
 
     function handleSettingsRequest(requestData) {
         // make sure we only get requests from the user pane
@@ -110,14 +110,14 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
 });
 
 //// ## General settings validations tests
-//CasperTest.emberBegin('General settings validation is correct', 3, function suite(test) {
+//CasperTest.emberBegin('General settings validation is correct', 7, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Ghost doesn\'t require login this time');
+//        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
 //    });
 //
 //    // Ensure general blog title field length validation
-//    this.fillAndSave('form#settings-general', {
+//    casper.fillAndSave('form#settings-general', {
 //        'general[title]': new Array(152).join('a')
 //    });
 //
@@ -125,21 +125,21 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
 //        test.assertSelectorHasText('.notification-error', 'too long');
 //    }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
 //
-//    this.thenClick('.js-bb-notification .close');
+//    casper.thenClick('.js-bb-notification .close');
 //
 //    // Ensure general blog description field length validation
-//    this.fillAndSave('form#settings-general', {
-//        '#blog-description': new Array(202).join('a')
+//    casper.fillAndSave('form#settings-general', {
+//        'general[description]': new Array(202).join('a')
 //    });
 //
 //    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
 //        test.assertSelectorHasText('.notification-error', 'too long');
 //    }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
 //
-//    this.thenClick('.js-bb-notification .close');
+//    casper.thenClick('.js-bb-notification .close');
 //
 //    // Ensure postsPerPage number field form validation
-//    this.fillAndSave('form#settings-general', {
+//    casper.fillAndSave('form#settings-general', {
 //        'general[postsPerPage]': 'notaninteger'
 //    });
 //
@@ -147,20 +147,21 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
 //        test.assertSelectorHasText('.notification-error', 'use a number');
 //    }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
 //
-//    this.thenClick('.js-bb-notification .close');
+//    casper.thenClick('.js-bb-notification .close');
 //
 //    // Ensure postsPerPage max of 1000
-//    this.fillAndSave('form#settings-general', {
+//    casper.fillAndSave('form#settings-general', {
 //        'general[postsPerPage]': '1001'
 //    });
+//
 //    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
 //        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
 //    }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
 //
-//    this.thenClick('.js-bb-notification .close');
+//    casper.thenClick('.js-bb-notification .close');
 //
 //    // Ensure postsPerPage min of 0
-//    this.fillAndSave('form#settings-general', {
+//    casper.fillAndSave('form#settings-general', {
 //        'general[postsPerPage]': '-1'
 //    });
 //
