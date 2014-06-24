@@ -87,7 +87,7 @@ CasperTest.emberBegin("Can't spam it", 4, function suite(test) {
 
     casper.captureScreenshot('login_spam_test2.png');
 
-    casper.waitForText('Slow down, there are way too many login attempts!', function onSuccess() {
+    casper.waitForText('attempts remaining!', function onSuccess() {
         test.assert(true, 'Spamming the login did result in an error notification');
         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
     }, function onTimeout() {
