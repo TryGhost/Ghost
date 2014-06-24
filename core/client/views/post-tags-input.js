@@ -22,6 +22,10 @@ var PostTagsInputView = Ember.View.extend({
         this.get('controller').send('loadAllTags');
     },
 
+    willDestroyElement: function () {
+        this.get('controller').send('reset');
+    },
+
     overlayStyles: function () {
         var styles = [],
             leftPos;
