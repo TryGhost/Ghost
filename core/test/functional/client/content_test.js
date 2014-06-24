@@ -151,7 +151,7 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
 
         casper.waitForSelector('.notification-success', function onSuccess() {
             test.assert(true, 'Got success notification from delete post');
-            test.assertSelectorHasText('.notification-success', 'Your post has been deleted.');
+            test.assertSelectorHasText('.notification-message', 'Your post has been deleted.');
         }, function onTimeout() {
             test.fail('No success notification from delete post');
         });
@@ -187,7 +187,7 @@ CasperTest.emberBegin('Posts can be marked as featured', 10, function suite(test
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Post successfully marked as featured.');
+        test.assertSelectorHasText('.notification-message', 'Post successfully marked as featured.');
     }, function onTimeout() {
         test.assert(false, 'No success notification :(');
     });
@@ -209,7 +209,7 @@ CasperTest.emberBegin('Posts can be marked as featured', 10, function suite(test
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Post successfully marked as not featured.');
+        test.assertSelectorHasText('.notification-message', 'Post successfully marked as not featured.');
         test.assertDoesntExist('.content-preview .featured');
         test.assertDoesntExist('.content-list-content li.featured:first-of-type');
     }, function onTimeout() {
@@ -244,7 +244,7 @@ CasperTest.emberBegin('Post url can be changed', 7, function suite(test) {
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Permalink successfully changed to new-url.');
+        test.assertSelectorHasText('.notification-message', 'Permalink successfully changed to new-url.');
         casper.click('.notification-success a.close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
@@ -283,7 +283,7 @@ CasperTest.emberBegin('Post published date can be changed', 7, function suite(te
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Publish date successfully changed to 22 May 14 @ 23:39.');
+        test.assertSelectorHasText('.notification-message', 'Publish date successfully changed to 22 May 14 @ 23:39.');
         casper.click('.notification-success a.close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
