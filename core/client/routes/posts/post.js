@@ -35,7 +35,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
         });
     },
     shortcuts: {
-        'ctrl+e, command+e': 'openEditor'
+        'enter': 'openEditor'
     },
     actions: {
         openEditor: function () {
