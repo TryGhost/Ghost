@@ -29,6 +29,17 @@ var Notifications = Ember.ArrayProxy.extend({
             this.showError(defaultErrorText);
         }
     },
+    showAPIErrors: function (resp, defaultErrorText) {
+        defaultErrorText = defaultErrorText || 'There was a problem on the server, please try again.';
+
+        if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
+            for (var i = 0; i < resp.jqXHR.responseJSON.errors.length; i += 1) {
+                this.showError(resp.jqXHR.responseJSON.errors[i].message);
+            }
+        } else {
+            this.showError(defaultErrorText);
+        }
+    },
     showInfo: function (message) {
         this.pushObject({
             type: 'info',
