@@ -512,6 +512,7 @@ var path           = require('path'),
 
                             'bower_components/jquery-ui/ui/jquery-ui.js',
                             'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+                            'bower_components/fastclick/lib/fastclick.js',
                             'bower_components/nprogress/nprogress.js',
 
                             'core/shared/lib/showdown/extensions/ghostimagepreview.js',
