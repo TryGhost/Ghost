@@ -6,7 +6,13 @@ var Router = Ember.Router.extend();
 
 Router.reopen({
     location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
-    rootURL: ghostPaths().subdir + '/ghost/ember/' // admin interface lives under sub-directory /ghost
+    rootURL: ghostPaths().subdir + '/ghost/ember/', // admin interface lives under sub-directory /ghost
+
+    clearNotifications: function () {
+        // @TODO This should call closePassive() to only close passive notifications
+        this.notifications.closeAll();
+        this.notifications.displayDelayed();
+    }.on('didTransition')
 });
 
 Router.map(function () {
