@@ -9,6 +9,6 @@
         <div class="password-wrap">
             {{input class="password" type="password" placeholder="Password" name="password" value=password }}
         </div>
-        <button class="button-save" type="submit" {{action "signup"}}>Sign Up</button>
+        <button class="button-save" type="submit" {{action "signup"}} {{bind-attr disabled=submitting}}>Sign Up</button>
     </form>
 </section>
