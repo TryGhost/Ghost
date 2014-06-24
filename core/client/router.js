@@ -36,6 +36,9 @@ Router.map(function () {
     this.route('debug');
     //Redirect legacy content to posts
     this.route('content');
+
+    this.route('error404', { path: '/*path' });
+
 });
 
 export default Router;
