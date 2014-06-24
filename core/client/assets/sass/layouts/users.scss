@@ -35,9 +35,12 @@
         display: inline-block;
         float: right;
 
-        label { margin: 0}
+        label {
+            margin: 0;
+        }
 
-        &:hover .user-search-input, .user-search-input:focus {
+        &:hover .user-search-input,
+        .user-search-input:focus {
             width: 260px;
             padding: 0 10px;
         }
@@ -187,14 +190,24 @@
         fieldset {
             padding: 0 40px;
         }
+
+        textarea {
+            min-width: 240px;
+        }
     }
 
     fieldset.user-details-top {
-        margin-bottom: 0;
-        padding: 10px 0 0 0;
 
-        p {
-            color: #fff;
+        @media (max-width: 500px) {
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 501px) {
+            margin-bottom: 0;
+            padding: 10px 0 0 0;
+            p {
+                color: #fff;
+            }
         }
     }
 
@@ -212,6 +225,10 @@
         border: 5px solid #fff;
         background: #fff;
         z-index: 2;
+
+        @media (max-width: 500px) {
+            margin-left: -10px;
+        }
 
         .img {
             display: block;
@@ -241,8 +258,10 @@
         @include transition(opacity 0.3s ease);
     }
 
-    #user-name {
-        border-color: #fff;
+    @media (min-width: 501px) {
+        #user-name {
+            border-color: #fff;
+        }
     }
 
     .user-details-bottom {
