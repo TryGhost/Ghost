@@ -4,6 +4,7 @@
  * Table of Contents
  *
  * Dropdowns
+ * Dropdown Show & Hide
  * Menu
  * Menu Positioning Options
  * Post Settings
@@ -26,6 +27,27 @@
     }
 
 } // .dropdown
+
+a.dropdown,
+button.dropdown {
+    cursor: pointer;
+}
+
+
+ /* ==========================================================================
+   Dropdown Show & Hide
+   ---
+   Sadly !important is needed, to counteract the stringer selectors applying
+   a display property.
+   ========================================================================== */
+
+.ghost-popover {
+    display: none !important;
+}
+
+.ghost-popover.open {
+    display: block !important;
+}
 
 
  /* ==========================================================================
