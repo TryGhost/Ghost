@@ -8,12 +8,10 @@ var Debug = Ember.Controller.extend(Ember.Evented, {
             this.set('uploadButtonText', 'Importing');
             this.get('model').importFrom(file)
                 .then(function (response) {
-                    console.log(response);
-                    alert('@TODO: success');
+                    self.notifications.showSuccess(response.message);
                 })
                 .catch(function (response) {
-                    console.log(response);
-                    alert('@TODO: error');
+                    self.notifications.showErrors(response.jqXHR.responseJSON.errors);
                 })
                 .finally(function () {
                     self.set('uploadButtonText', 'Import');
