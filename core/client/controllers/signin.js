@@ -43,7 +43,7 @@ var SigninController = Ember.ObjectController.extend(ValidationEngine, {
                         appController.set('loginTransition', null);
                         loginTransition.retry();
                     } else {
-                        self.transitionTo('posts');
+                        self.transitionToRoute('posts');
                     }
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
