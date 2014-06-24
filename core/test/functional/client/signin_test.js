@@ -1,22 +1,16 @@
 // # Signin Test
 // Test that signin works, including testing our spam prevention mechanisms
 
-/*globals casper, __utils__, url, newUser, user, falseUser */
-
-//CasperTest.emberBegin('Ensure Session is Killed', 1, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('signout', function ensureSignedOut() {
-//        test.assertUrlMatch(/ghost\/ember\/sign/, 'We got redirected to signin or signup page');
-//    });
-//}, true);
+/*globals CasperTest, casper, url, newUser, user, falseUser */
 
 CasperTest.emberBegin('Ensure a User is Registered', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signup', function checkUrl() {
         test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque(".signup-box",
+    casper.waitForOpaque('.signup-box',
         function then() {
-            this.fillAndSave("#signup", newUser);
+            this.fillAndSave('#signup', newUser);
         },
         function onTimeout() {
             test.fail('Sign up form didn\'t fade in.');
@@ -39,9 +33,9 @@ CasperTest.emberBegin('Ensure a User is Registered', 3, function suite(test) {
     });
 }, true);
 
-CasperTest.emberBegin("Ghost admin will load login page", 3, function suite(test) {
+CasperTest.emberBegin('Ghost admin will load login page', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'We should be presented with the signin page.');
 
         casper.then(function testLink() {
@@ -64,15 +58,15 @@ CasperTest.emberBegin('Redirects login to signin', 2, function suite(test) {
     });
 }, true);
 
-CasperTest.emberBegin("Can't spam it", 4, function suite(test) {
+CasperTest.emberBegin('Can\'t spam it', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque(".login-box",
+    casper.waitForOpaque('.login-box',
         function then() {
-            this.fillAndSave("#login", falseUser);
+            this.fillAndSave('#login', falseUser);
         },
         function onTimeout() {
             test.fail('Sign in form didn\'t fade in.');
@@ -82,7 +76,7 @@ CasperTest.emberBegin("Can't spam it", 4, function suite(test) {
     casper.captureScreenshot('login_spam_test.png');
 
     casper.waitForText('attempts remaining!', function then() {
-        this.fillAndSave("#login", falseUser);
+        this.fillAndSave('#login', falseUser);
     });
 
     casper.captureScreenshot('login_spam_test2.png');
@@ -100,22 +94,22 @@ CasperTest.emberBegin("Can't spam it", 4, function suite(test) {
 }, true);
 
 
-CasperTest.emberBegin("Login limit is in place", 4, function suite(test) {
+CasperTest.emberBegin('Login limit is in place', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque(".login-box",
+    casper.waitForOpaque('.login-box',
         function then() {
-            this.fillAndSave("#login", falseUser);
+            this.fillAndSave('#login', falseUser);
         },
         function onTimeout() {
             test.fail('Sign in form didn\'t fade in.');
         });
 
     casper.wait(2100, function doneWait() {
-        this.fillAndSave("#login", falseUser);
+        this.fillAndSave('#login', falseUser);
     });
 
     casper.waitForText('remaining', function onSuccess() {
@@ -129,48 +123,47 @@ CasperTest.emberBegin("Login limit is in place", 4, function suite(test) {
     casper.wait(2000);
 }, true);
 
-CasperTest.emberBegin("Can login to Ghost", 5, function suite(test) {
+CasperTest.emberBegin('Can login to Ghost', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-        test.assertTitle("Ghost Admin", "Ghost admin has no title");
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque(".login-box", function then() {
-        this.fillAndSave("#login", user);
+    casper.waitForOpaque('.login-box', function then() {
+        this.fillAndSave('#login', user);
     });
 
     casper.wait(2000);
 
     casper.waitForResource(/posts/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists("#global-header", "Global admin header is present");
-        test.assertExists(".manage", "We're now on content");
+        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.manage', 'We\'re now on content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
 }, true);
 
-// Uncomment when signin / email validation has been readded to the frontend
-//CasperTest.emberBegin('Ensure email field form validation', 3, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-//        test.assertTitle("Ghost Admin", "Ghost admin has no title");
-//        test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
-//    });
-//
-//    casper.waitForOpaque(".js-login-box",
-//        function then() {
-//            this.fillAndSave("form.login-form", {
-//                'email': 'notanemail'
-//            });
-//        },
-//        function onTimeout() {
-//            test.fail('Login form didn\'t fade in.');
-//        });
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'Invalid Email');
-//    }, function onTimeout() {
-//        test.fail('Email validation error did not appear');
-//    }, 2000);
-//
-//}, true);
+CasperTest.emberBegin('Ensure email field form validation', 3, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.js-login-box',
+        function then() {
+            this.fillAndSave('form.login-form', {
+                'email': 'notanemail'
+            });
+        },
+        function onTimeout() {
+            test.fail('Login form didn\'t fade in.');
+        });
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'Invalid Email');
+    }, function onTimeout() {
+        test.fail('Email validation error did not appear');
+    }, 2000);
+
+}, true);
