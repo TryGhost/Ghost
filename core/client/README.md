@@ -140,7 +140,7 @@ Keep track of development and community news.
 
 ## Versioning
 
-`NB: Pre-1.0 we're play pretty fast and loose with Semver`
+`NB: Pre-1.0 we're playing it pretty fast and loose with Semver`
 
 For transparency into our release cycle and in striving to maintain backward compatibility, Ghost-UI is maintained under the Semantic Versioning guidelines.
 
