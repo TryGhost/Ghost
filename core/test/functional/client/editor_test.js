@@ -1,7 +1,7 @@
 // # Editor Test
 // Test the editor screen works as expected
 
-/*globals casper, __utils__, url, testPost */
+/*globals CasperTest, casper, testPost, $ */
 CasperTest.emberBegin('Ghost editor functions correctly', 19, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -130,7 +130,9 @@ CasperTest.emberBegin('Markdown in editor works', 4, function suite(test) {
             return document.querySelector('.CodeMirror-wrap textarea').value;
         }, '![sometext]()', 'Editor value is correct');
 
-        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'Add image of sometext', 'Editor value is correct');
+        test.assertSelectorHasText(
+            '.entry-preview .rendered-markdown', 'Add image of sometext', 'Alt value is correct'
+        );
     }, function onTimeout() {
         test.assert('false', 'markdown did not re-render');
     });
@@ -159,9 +161,9 @@ CasperTest.emberBegin('Image Uploads', 17, function suite(test) {
     casper.thenClick('.entry-preview .image-uploader a.image-url');
 
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
-        test.assertExists('.image-uploader-url .url.js-upload-url', 'Image URL uploader exists')
-        test.assertExists('.image-uploader-url .button-save.js-button-accept', 'Image URL accept button exists')
-        test.assertExists('.image-uploader-url .image-upload', 'Back to normal image upload style button exists')
+        test.assertExists('.image-uploader-url .url.js-upload-url', 'Image URL uploader exists');
+        test.assertExists('.image-uploader-url .button-save.js-button-accept', 'Image URL accept button exists');
+        test.assertExists('.image-uploader-url .image-upload', 'Back to normal image upload style button exists');
     });
 
     // Test image source location
@@ -208,7 +210,7 @@ CasperTest.emberBegin('Image Uploads', 17, function suite(test) {
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
-        var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + imageURL + '"]'
+        var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + imageURL + '"]';
         test.assertExists(imageJQuerySelector, 'Uploaded image tag properly links to inputted image URL');
     });
 });
@@ -253,14 +255,16 @@ CasperTest.emberBegin('Post settings menu', 30, function suite(test) {
         test.assertExists('.post-settings-menu input#url', 'url field exists');
         test.assertExists('.post-settings-menu input.post-setting-date', 'publication date field exists');
         test.assertExists('.post-settings-menu input.post-setting-static-page', 'static page checkbox field exists');
-        test.assertExists('.post-settings-menu a.delete', 'delete post button exists')
+        test.assertExists('.post-settings-menu a.delete', 'delete post button exists');
     });
 
     casper.thenClick('#publish-bar a.post-settings');
 
     casper.waitUntilVisible('#publish-bar .post-settings-menu', function onSuccess() {
         test.assert(true, 'popup menu should be visible after clicking post-settings icon');
-        test.assertNotVisible('.post-settings-menu a.delete', 'delete post btn shouldn\'t be visible on unsaved drafts');
+        test.assertNotVisible(
+            '.post-settings-menu a.delete', 'delete post button shouldn\'t be visible on unsaved drafts'
+        );
     });
 
     casper.thenClick('#publish-bar a.post-settings');
@@ -303,7 +307,7 @@ CasperTest.emberBegin('Post settings menu', 30, function suite(test) {
             '#url': 'new-url-editor'
         }, false);
 
-        this.click('#publish-bar a.post-settings')
+        this.click('#publish-bar a.post-settings');
     });
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
@@ -331,7 +335,7 @@ CasperTest.emberBegin('Post settings menu', 30, function suite(test) {
             '.post-setting-date': '10 May 14 @ 00:17'
         }, false);
 
-        this.click('#publish-bar a.post-settings')
+        this.click('#publish-bar a.post-settings');
     });
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
