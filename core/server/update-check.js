@@ -5,14 +5,14 @@
 // Blog owners can opt-out of update checks by setting 'updateCheck: false' in their config.js
 //
 // The data collected is as follows:
-// - blog id - a hash of the blog hostname, pathname and dbHash, we do not store URL, IP or other identifiable info
+// - blog id - a hash of the blog hostname, pathname and dbHash. No identifiable info is stored.
 // - ghost version
 // - node version
 // - npm version
 // - env - production or development
-// - database type - SQLite, MySQL, pg
+// - database type - SQLite, MySQL, PostgreSQL
 // - email transport - mail.options.service, or otherwise mail.transport
-// - created date - the date the database was created
+// - created date - database creation date
 // - post count - total number of posts
 // - user count - total number of users
 // - theme - name of the currently active theme
