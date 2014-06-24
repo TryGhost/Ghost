@@ -1,4 +1,8 @@
-var Setting = DS.Model.extend({
+import ValidationEngine from 'ghost/mixins/validation-engine';
+
+var Setting = DS.Model.extend(ValidationEngine, {
+    validationType: 'setting',
+
     title: DS.attr('string'),
     description: DS.attr('string'),
     email: DS.attr('string'),

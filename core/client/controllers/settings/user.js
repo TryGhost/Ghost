@@ -23,13 +23,14 @@ var SettingsUserController = Ember.Controller.extend({
         save: function () {
             var self = this;
             
+            // @TODO This should call closePassive() to only close passive notifications
+            self.notifications.closeAll();
+
             alert('@TODO: Saving user...');
 
             if (this.user.validate().get('isValid')) {
                 this.user.save().then(function (response) {
 
-                    // @TODO This should call closePassive() to only close passive notifications
-                    self.notifications.closeAll();
                     alert('Done saving' + JSON.stringify(response));
                 }, function () {
                     alert('Error saving.');

@@ -5,6 +5,7 @@ import PostValidator from 'ghost/validators/post';
 import SignupValidator from 'ghost/validators/signup';
 import SigninValidator from 'ghost/validators/signin';
 import ForgotValidator from 'ghost/validators/forgotten';
+import SettingValidator from 'ghost/validators/setting';
 
 ValidatorExtensions.init();
 
@@ -13,7 +14,8 @@ var ValidationEngine = Ember.Mixin.create({
         post: PostValidator,
         signup: SignupValidator,
         signin: SigninValidator,
-        forgotten: ForgotValidator
+        forgotten: ForgotValidator,
+        setting: SettingValidator
     },
 
     validate: function (opts) {
