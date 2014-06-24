@@ -1,72 +1,80 @@
 ---
+<div dir="RTL">
 lang: ar_AR
-layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
-permalink: /ar_AR/installation/linux/
-chapter: installation
-section: linux
-prev_section: windows
-next_section: deploy
+
+layout: تنصيب
+
+meta_title: كيفية تثبيت ڨوست على الخادم الخاص بك - دليل ڨوست
+
+meta_description: كل ما تحتاجه للحصول على منصة التدوين ڨوست وتشغيلها على البيئة المحلية أو عن بعد.
+
+heading: تثبيت ڨوست &amp; بدء العمل
+
+subheading: الخطوات الأولى لإنشاء مدونتك للمرة الأولى.
+
+section: لينكس
+
+prev_section: وندوز
+
+next_section: نشر
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# التنصيب على لينكس <a id="install-linux"></a>
 
-### Install Node
+### تثبيت Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   تحميل  أرشيف`.tar.gz` من  [http://nodejs.org](http://nodejs.org), أو تريد تتبع كيفية التنصيب من مدير الحزم [تثبيت من مدير الحزم](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) 
+*  التأكد من أن  Node و npm موجودة و ذالك بكتابة التالي `node -v` و `npm -v` في الطرفية
 
-### Install and Run Ghost
-
-
-**If you are using Linux on your desktop follow these steps:**
-
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+### تنصيب و تشغيل ڨوست
 
 
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
+**إذا كنت تستخدم لينكس الجهاز الخاص بك اتبع الخطوات التالية:**
 
-*   Use the following command to download the latest release of Ghost:
+*   الدخول على [http://ghost.org](http://ghost.org), و بعد ذالك انقر على 'Download Ghost Source Code' 
+*   في صفحة التحميل, أنقر على زر تحميل آخر اصدارفي شكل أرشيف & ثم استخراج الأرشيف في المكان الذي  تريد تنصيب قوست فيه 
+
+
+**إذا كنت تستخدم لينكس نظام التشغيل فس بيئة افتراضية أو من خلال SSH وليس هناك فقط الطرفية Terminal
+:**
+
+*   استعمل الاوامر التالية لتحميل آحر اصدار من ڨوست:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   فك الارشيف و غير المسار باستعمال الامر التالي:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+**بعد فك ارشيف ڨوست بنجاح افتح الطرفية و نفذ التالي:**
 
-*   Change into the directory you extracted Ghost to with the following command:
+*   نغير المسار الى المسار الذي استخرجنا ڨوست فيه
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   لتنصيب ڨوست اكتب التالي:
 
     ```
     npm install --production
     ```
-    <span class="note">note the two dashes</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode: 
+*   عندما يتم تنصيب npm أكتب التالي لتبدأ ڨوست في مرحلة التطوير
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   ڨوست الآن سوف يشتغل على هذا العنوان  **127.0.0.1:2368
+***<br />
+    <span class="note">يمكنك ضبط عنوان IP والمنفذ في **config.js**</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   في المتصفح انتقل الى [http://127.0.0.1:2368](http://127.0.0.1:2368) لرؤية مدونتك الجديدة
+*   غيّر العنوان الى [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) لانشاء المستخدم المشرف admin 

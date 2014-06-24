@@ -5,15 +5,15 @@ lang: ar_AR
 layout: تنصيب
 
 meta_title: كيفية تثبيت ڨوست على الخادم الخاص بك - 
-   مستندات ڨوست  
+   دليل ڨوست  
 
-meta_description: كل ما تحتاجه للحصول على ڨوست 
+meta_description: كل ما تحتاجه للحصول على منصة التدوين ڨوست 
 
-منصة التدوين وتشغيلها على البيئة المحلية أو البعيدة.
+ وتشغيلها على البيئة المحلية أو عن بعد.
 
 heading: تثبيت ڨوست &amp; بدء العمل
 
-subheading: الخطوات الأولى لإنشاء بلوق جديد للمرة الأولى.
+subheading: الخطوات الأولى لإنشاء مدونتك للمرة الأولى.
 
 /permalink: /ar_AR/installation/deploy
 
@@ -21,7 +21,7 @@ chapter: تركيب
 
 section: نشر
 
-prev_section: linux
+prev_section: لينكس
 
 next_section: ترقية
 ---
@@ -57,30 +57,29 @@ next_section: ترقية
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - عن [Gregg Housh](http://0v.org/)
 *   راجع هذا... [installation forum](https://en.ghost.org/forum/installation) لمزيد من الدروس... 
 
-## Making Ghost run forever
+## جعل ڨوست يشتغل باستمرار
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+الطريقة الموصوفة سابقا لبدء ڨوست هي `npm start`. هذه طريقة جيدة للقيام بالتجربة والاختبارات  في بيئة محلية، ولكن إذا قمت بتشغيل ڨوست باستخدام سطر الأوامر فإنه يتوقف كلما  اغلقت نافذة  الأوامر تسجيل الخروج من SSH. لمنع  ذالك يجب تشغيل ڨوست كخدمة. هناك طريقتان لتحقيق ذلك.
+###   <a id="forever"></a> [https://npmjs.org/package/forever](https://npmjs.org/package/forever))Forever)
 
-### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
+يمكنك استخدام `forever` لتشغيل ڨوست كمهمة خلفية. `forever`  أيضا سوف  يهتم بمعاينة ملفات التثبيت الخاصة  بك و سيتم إعادة تشغيل  إذا تعطل.
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+*   لتثبيت `forever` اكتب `npm install forever -g` 
+*   لتبدأ استعمال ڨوست عن طريق `forever`   اكتب من داخل مسار تنصيب ڨوست `NODE_ENV=production forever start index.js`
+*   لإيقاف ڨوست اكتب `forever stop index.js`
+*   للتحقق مما إذا ڨوست قيد التشغيل حاليا اكتب `forever list`
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+###  [http://supervisord.org/](http://supervisord.org/)) Supervisor) <a id="supervisor"></a>
 
-### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
+توزيعات لينكس المعروفة &mdash;  مثل  فيدورا، ديبيان، وأوبونتو &mdash; تحتوي على حزمة Supervisor: نظام التحكم في العملية والذي يسمح لك بتشغيل ڨوست عند بدء التشغيل بدون استخدام البرامج النصية init scripts. على عكس Supervisor, init script هو محمول بين توزيعات لينكس والإصدارات.
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
-
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
-    *   Debian/Ubuntu: `apt-get install supervisor`
-    *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
-
+*   [تثبيت Supervisor](http://supervisord.org/installing.html) كما هو مطلوب لتوزيعة لينكس الخاص بك. عادة، يكون:
+    *    `apt-get install supervisor`:Debian/Ubuntu
+    *    `yum install supervisor`:Fedora
+    *   معظم التوزيعات الأخرى: `easy_install supervisor`
+*   تأكد من أن Supervisor  قيد التشغيل, عن طريق كتابة `service supervisor start`
+*   انشاء سكريبت بدءالتشغيل لملف تثبيت ڨوست الخاص بك. عادة هذا  يكون في : `/etc/supervisor/conf.d/ghost.conf`
+مثال
     ```
     [program:ghost]
     command = node /path/to/ghost/index.js
@@ -93,44 +92,44 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*    بدء ڨوست باستخدام : `supervisorctl start ghost` 
+*   لوقف ڨوست: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+يمكنك ان تطالع [documentation for Supervisor](http://supervisord.org) لمزيد من المعلومات
 
 ### Init Script <a id="init-script"></a>
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+نظام لينكس يستخدم Init Script لتعمل على نظام التشغيل. هذا السكريبت موجود في  /etc/init.d. لجعل قوست يشتغل باستمرار و يعيد الاشتغال بعد اعادة تشغيل النظام يمكنك اعداد init script  ليقوم بالامر. والمثال التالي يعمل على أوبونتو وتم اختباره على **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   إنشاء ملف  etc/init.d/ghost/  باستخدام الأمر التالي :
 
     ```
     $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   افتح الملف باستخدام `nano /etc/init.d/ghost` وتحقق من التالي:
+*   تغيير المتغير `GHOST_ROOT`  إلى المسار حيث قمت بتثبيت ڨوست 
+*   تحقق مما إذا كان المتغير`DAEMON` هو نفس الناتج من `which node`
+*    Init script يشتغل مع المستخدم و مجموعة المستخديم الخاصة به على ڨوست في النظام, لانشائهم نتبع التالي:
 
     ```
     $ sudo useradd -r ghost -U
     ```
 
-*   Let's also make sure the Ghost user can access the installation:
+*   لنتحقق من ان المستخدم له صلاحيات دخول ملف التثبيت:
 
     ```
     $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
-*   Change the execution permission for the init script by typing
+*   تغيير إذن التنفيذ ل init script بكتابة:
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   الان يمكنك التحكم في ڨوست بالاوامر التالية:
 
     ```
     $ sudo service ghost start
@@ -139,40 +138,40 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line:
+*   لبدء ڨوست على نظام تشغيل init script الذي تم إنشاؤه حديثا لابد من يكون مسجلا في قائمة بدء التشغيل..
+    اكتب الأمرين التاليين في سطر الأوامر:
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
 
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+*   دعونا نتأكد من المستخدم الخاص بك يمكنه تغيير الملفات، config.js  مثال في مسارتنصيب ڨوست، على سبيل المثال عن طريق تعيينك  في مجموعة المستخدمين:
     ```
     $ sudo adduser USERNAME ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   إذا قمت بإعادة تشغيل الخادم الخاص بك ڨوست ينبغي أن يشتغل اوتوماتكيا.
 
 
-## Setting up Ghost with a domain name <a id="nginx-domain"></a>
+## اعداد ڨوست مع اسم نطاق <a id="nginx-domain"></a>
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
+إذا كنت اعددت ڨوست للتشغيل الدائم يمكنك أيضا إعداد خادم ويب كبديل لخدمة مدونتك مع نطاقك.
+في هذا المثال نفترض انك تستخدم **Ubuntu 12.04** و تستخدم **nginx** كما خادم ويب.
+فإنه يفترض أيضا أن قوست قيد التشغيل في الخلفية مع واحدة من الطرق المذكورة أعلاه.
 
-*   Install nginx
+*   تنصيب nginx
 
     ```
     $ sudo apt-get install nginx
     ```
     <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
 
-*   Configure your site
+*   اعداد موقعك
 
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   انشاء ملف جديد في `/etc/nginx/sites-available/ghost.conf`
+    *   افتح الملف بمحرر النصوص (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        وقم بلصق التالي
 
         ```
         server {
@@ -188,36 +187,36 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   تغيير `server_name` لاسم نطاقك
+    *   الارتباط الرمزي التكوين الخاص بك في `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
     ```
 
-    *   Restart nginx
+    *   اعادة تشغيل nginx
 
     ```
     $ sudo service nginx restart
     ```
 
-## Setting up Ghost with SSL <a id="ssl"></a>
+## اعداد قوست مع SSL <a id="ssl"></a>
 
-After setting up a custom domain it is a good idea to secure the admin interface or maybe your whole blog using HTTPS. It is advisable to protect the admin interface with HTTPS because username and password are going to be transmitted in plaintext if you do not enable encryption.
+بعد إعداد النطاق المخصص بك ا من المستحسن تأمين واجهة الادارة أو ربما المدونة كلها باستخدام HTTPS. فإنه من االجيدحماية واجهة الادارة مع HTTPS لأن اسم المستخدم وكلمة المرور سوف يتم إرسالها في نص عادي إذا لم تقم بالتشفير.
 
-The following example will show you how to set up SSL. We assume, that you have followed this guide so far and use nginx as your proxy server. A setup with another proxy server should look similar.
+والمثال التالي يظهر لك كيفية إعداد SSL. ونحن نفترض أن كنت قد اتبعت هذا الدليل حتى الآن، وتسخدم  nginx ك proxy server. الاعددات مع سرفر اخر  متشابهة
 
-First you need to obtain a SSL certificate from a provider you trust. Your provider will guide you through the process of generating your private key and a certificate signing request (CSR). After you have received the certificate file you have to copy the CRT file from your certificate provider and the KEY file which is generated during issuing the CSR to the server.
+تحتاج أولا إلى الحصول على شهادة SSL من مزود تثق به. سوف يوفر دليل لكم من خلال عملية توليد المفتاح الخاص وطلب توقيع شهادة (CSR). بعد أن كنت قد حصلت على ملف الشهادة لديك انسخ ملف CRT من مزود شهادتك وملف KEY الذي يتم إنشاؤهه خلال إصدارCRT إلى السرفر.
 
 - `mkdir /etc/nginx/ssl`
 - `cp server.crt /etc/nginx/ssl/server.crt`
 - `cp server.key /etc/nginx/ssl/server.key`
 
-After these two files are in place you need to update your nginx configuration.
+بعد وضع الملفين في مكانهما لابد من تحديث اعدادات nginx
 
-*   Open the nginx configuration file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-*   Add the settings indicated with a plus to your configuration file:
-
+*   افتح ملف اعدادات nginx بمحرر النصوص(e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+*   إضافة الإعدادات المشار لها + لملف التكوين الخاص بك:
+  
     ```
      server {
          listen 80;
@@ -236,14 +235,14 @@ After these two files are in place you need to update your nginx configuration.
      }
     ```
 
-    *   Restart nginx
+    *   اعادة تشغيل nginx
 
     ```
     $ sudo service nginx restart
     ```
 
-After these steps you should be able to reach the admin area of your blog using a secure HTTPS connection. If you want to force all your traffic to use SSL it is possible to change the protocol of the url setting in your config.js file to https (e.g.: `url: 'https://my-ghost-blog.com'`). This will force the use of SSL for frontend and admin. All requests sent over HTTP will be redirected to HTTPS. If you include images in your post that are retrieved from domains that are using HTTP an 'insecure content' warning will appear. Scripts and fonts from HTTP domains will stop working.
+بعد هذه الخطوات يجب أن تكون قادر على الوصول إلى منطقة  الادمن من مدونتك باستخدام اتصال HTTPS الآمن. إذا كنت تريد أن تجبر كل حركة المرور الخاصة بك لاستخدام SSL فمن الممكن لتغيير بروتوكول الإعداد  في ملف config.js الخاص لHTTPS (e.g.: `url: 'https://my-ghost-blog.com'`). وهذا يفرض استخدام SSL للالواجهة واالادمن. سيتم توجيه جميع الطلبات المرسلة عبر HTTP إلى HTTPS. إذا قمت بتضمين الصور في رسالتك التي تم استردادها من المجالات التي تستخدم HTTPسوف تظهر رسالة إنذار 'محتوى غير آمن'. سوف  تتوقف عن العمل الكتابات والخطوط من المجالات HTTP
 
-In most cases you'll want to force SSL for the administration interface and serve the frontend using HTTP and HTTPS. To force SSL for the admin area the option `forceAdminSSL: true` was introduced.
+في معظم الحالات سترغب في فرض SSL لواجهة إدارة وخدمة الواجهة الأمامية باستخدام HTTP و HTTPS. لإجبار SSL لمنطقة مشرف `forceAdminSSL: true`.
 
-If you need further information on how to set up SSL for your proxy server the official SSL documention of [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) and [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) are a perfect place to start.
+اذا كنت بحاجة الى مزيد من المعلومات حول كيفية إعداد SSL لخادم الوكيل الخاص بك في documention SSL الرسمي [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) و [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) مكان المثالي لبدء.

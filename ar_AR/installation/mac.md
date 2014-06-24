@@ -1,21 +1,32 @@
 ---
+<div dir="RTL">
 lang: ar_AR
-layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+
+layout: تنصيب
+
+meta_title: كيفية تثبيت ڨوست على الخادم الخاص بك - دليل ڨوست
+
+meta_description: كل ما تحتاجه للحصول على منصة التدوين ڨوست وتشغيلها على البيئة المحلية أو عن بعد.
+
+heading: تثبيت ڨوست &amp; بدء العمل
+
+subheading: الخطوات الأولى لإنشاء مدونتك للمرة الأولى
+
 permalink: /ar_AR/installation/mac/
-chapter: installation
-section: mac
-prev_section: installation
-next_section: windows
+
+chapter: تركيب
+
+section: ماك
+
+prev_section: تركيب
+
+next_section: وندوز
 ---
 
 
-# Installing on Mac <a id="install-mac"></a>
+# التنصيب على الماك <a id="install-mac"></a>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+لتنصيب Node.js و ڨوست on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
 
 ### Install Node
 
