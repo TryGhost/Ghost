@@ -124,6 +124,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 isNew = this.get('isNew'),
                 self = this;
 
+            // @TODO This should call closePassive() to only close passive notifications
+            self.notifications.closeAll();
+
             // ensure an incomplete tag is finalised before save
             this.get('controllers.post-tags-input').send('addNewTag');
 
@@ -136,9 +139,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 // `updateTags` triggers `isDirty => true`.
                 // for a saved model it would otherwise be false.
                 self.set('isDirty', false);
-
-                // @TODO This should call closePassive() to only close passive notifications
-                self.notifications.closeAll();
 
                 self.notifications.showSuccess('Post status saved as <strong>' +
                                                 model.get('status') + '</strong>.', isNew ? true : false);
