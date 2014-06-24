@@ -8,8 +8,10 @@ var ApplicationRoute = Ember.Route.extend(ShortcutsRoute, {
         closePopups: function () {
             this.get('popover').closePopovers();
             this.get('notifications').closeAll();
-            // @todo close modals
+
+            this.send('closeModal');
         },
+
         signedIn: function (user) {
             // Update the user on all routes and controllers
             this.container.unregister('user:current');
