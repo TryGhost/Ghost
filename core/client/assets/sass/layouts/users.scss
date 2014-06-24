@@ -138,6 +138,8 @@
 
     .user-profile-header {
         position: relative;
+        max-height: 400px;
+        overflow: hidden;
 
         // Gradient overlay
         &:after {
