@@ -1,9 +1,24 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import mobileUtils from 'ghost/utils/mobile-utils';
 
 var ApplicationRoute = Ember.Route.extend(ShortcutsRoute, {
     shortcuts: {
         'esc': 'closePopups'
     },
+
+    mobileInteractions: function () {
+        var responsiveAction = mobileUtils.responsiveAction;
+
+        Ember.run.scheduleOnce('afterRender', document, function () {
+            // ### Toggle the sidebar menu
+            $('[data-off-canvas]').on('click', function (event) {
+                responsiveAction(event, '(max-width: 650px)', function () {
+                    $('body').toggleClass('off-canvas');
+                });
+            });
+        });
+    }.on('init'),
+
     actions: {
         closePopups: function () {
             this.get('popover').closePopovers();

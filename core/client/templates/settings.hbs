@@ -1,28 +1,26 @@
-<div class="wrapper">
-    <aside class="settings-sidebar" role="complementary">
-        <header>
-            <h1 class="title">Settings</h1>
-        </header>
-        <nav class="settings-menu">
-            <ul>
-                {{#view "item-view" tagName="li" class="general"}}
-                    {{#link-to "settings.general"}}General{{/link-to}}
-                {{/view}}
+<aside class="settings-sidebar" role="complementary">
+    <header>
+        <h1 class="title">Settings</h1>
+    </header>
+    <nav class="settings-menu">
+        <ul>
+            {{#view "item-view" tagName="li" class="general"}}
+            {{#link-to "settings.general"}}General{{/link-to}}
+            {{/view}}
 
-                {{#view "item-view" tagName="li" class="users"}}
-                    {{#link-to "settings.user"}}User{{/link-to}}
-                {{/view}}
+            {{#view "item-view" tagName="li" class="users"}}
+            {{#link-to "settings.user"}}User{{/link-to}}
+            {{/view}}
 
-                {{#if showApps}}
-                    {{#view "item-view" tagName="li" class="apps"}}
-                        {{#link-to "settings.apps"}}Apps{{/link-to}}
-                    {{/view}}
-                {{/if}}
-            </ul>
-        </nav>
-    </aside>
+            {{#if showApps}}
+            {{#view "item-view" tagName="li" class="apps"}}
+            {{#link-to "settings.apps"}}Apps{{/link-to}}
+            {{/view}}
+            {{/if}}
+        </ul>
+    </nav>
+</aside>
 
-    <section class="settings-content active">
-        {{outlet}}
-    </section>
-</div>
+<section class="settings-content active">
+    {{outlet}}
+</section>
