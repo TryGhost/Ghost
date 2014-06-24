@@ -48,7 +48,7 @@ var Notifications = Ember.ArrayProxy.extend({
         });
     },
     closeAll: function () {
-        window.alert('@TODO implement closeALl notifications');
+        this.clear();
     }
 });
 
