@@ -6,7 +6,7 @@
         <div class="password-wrap">
             {{input class="password" type="password" placeholder="Password" name="password" value=password}}
         </div>
-        <button class="button-save" type="submit" {{action "login"}}>Log in</button>
+        <button class="button-save" type="submit" {{action "login"}} {{bind-attr disabled=submitting}}>Log in</button>
         <section class="meta">
             {{#link-to 'forgotten' class="forgotten-password"}}Forgotten password?{{/link-to}}
         </section>
