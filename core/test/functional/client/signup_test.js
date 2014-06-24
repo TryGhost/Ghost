@@ -1,13 +1,15 @@
 // # Signup Test
 // Test that signup works correctly
 
-CasperTest.emberBegin("Ghost signup fails properly", 5, function suite(test) {
+/*global CasperTest, casper, email */
+
+CasperTest.emberBegin('Ghost signup fails properly', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signup', function then() {
         test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function signupWithShortPassword() {
-        casper.fillAndSave("#signup", {email: email, password: 'test'});
+        casper.fillAndSave('#signup', {email: email, password: 'test'});
     });
 
     // should now throw a short password error
@@ -19,7 +21,7 @@ CasperTest.emberBegin("Ghost signup fails properly", 5, function suite(test) {
     });
 
     casper.then(function signupWithLongPassword() {
-        casper.fillAndSave("#signup", {email: email, password: 'testing1234'});
+        casper.fillAndSave('#signup', {email: email, password: 'testing1234'});
     });
 
     // should now throw a 1 user only error
