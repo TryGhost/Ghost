@@ -88,9 +88,15 @@
 
 }
 
+button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+}
+
 // This is the default button style
 .button,
-button,
+// button,
 input[type="button"] {
     @extend %btn;
     color:#777;

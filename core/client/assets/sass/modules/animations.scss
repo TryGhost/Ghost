@@ -28,13 +28,19 @@
    TODO: Make the fadeIn keyframe name hyphenated, not camelCase
    ========================================================================== */
 
-@include keyframes(fadeIn) {
+@include keyframes(fade-in) {
     from {
         opacity: 0;
     }
     to {
         opacity: 1;
     }
+}
+.fade-in {
+    -o-animation: fade-in 0.5s;
+    -moz-animation: fade-in 0.5s;
+    -webkit-animation: fade-in 0.5s;
+    animation: fade-in 0.5s;
 }
 
 /* ==========================================================================
@@ -49,4 +55,10 @@
     to {
         opacity: 0;
     }
+}
+.fade-out {
+    -o-animation: fade-out 0.5s;
+    -moz-animation: fade-out 0.5s;
+    -webkit-animation: fade-out 0.5s;
+    animation: fade-out 0.5s;
 }
