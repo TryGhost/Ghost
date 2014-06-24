@@ -1,11 +1,12 @@
 /*global Ember */
+import ghostPaths from 'ghost/utils/ghost-paths';
 
 // ensure we don't share routes between all Router instances
 var Router = Ember.Router.extend();
 
 Router.reopen({
     location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
-    rootURL: '/ghost/ember/' // admin interface lives under sub-directory /ghost
+    rootURL: ghostPaths().subdir + '/ghost/ember/' // admin interface lives under sub-directory /ghost
 });
 
 Router.map(function () {
