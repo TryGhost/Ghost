@@ -8,6 +8,7 @@ var injectNotificationsInitializer = {
 
         application.inject('controller', 'notifications', 'notifications:main');
         application.inject('component', 'notifications', 'notifications:main');
+        application.inject('router', 'notifications', 'notifications:main');
         application.inject('route', 'notifications', 'notifications:main');
     }
 };

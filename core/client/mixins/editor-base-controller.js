@@ -118,11 +118,11 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
+                isNew = this.get('isNew'),
                 self = this;
 
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
-
             this.set('status', status);
 
             return this.get('model').save().then(function (model) {
@@ -131,8 +131,11 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 // for a saved model it would otherwise be false.
                 self.set('isDirty', false);
 
+                // @TODO This should call closePassive() to only close passive notifications
+                self.notifications.closeAll();
+
                 self.notifications.showSuccess('Post status saved as <strong>' +
-                                                model.get('status') + '</strong>.');
+                                                model.get('status') + '</strong>.', isNew ? true : false);
                 return model;
             }).catch(function (errors) {
                 self.notifications.showErrors(errors);

@@ -16,10 +16,10 @@ var SignoutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
                 'X-CSRF-Token': this.get('csrf')
             }
         }).then(function () {
-            self.notifications.showSuccess('You were successfully signed out.');
             self.transitionTo('signin');
+            self.notifications.showSuccess('You were successfully signed out.', true);
         }, function (resp) {
-            self.notifications.showAPIError(resp, 'There was a problem logging out, please try again.');
+            self.notifications.showAPIError(resp, 'There was a problem logging out, please try again.', true);
             self.transitionTo('posts');
         });
     }
