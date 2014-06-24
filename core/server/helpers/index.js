@@ -31,6 +31,11 @@ var downsize        = require('downsize'),
             'templates.js',
             'models.js',
             'views.js'
+        ],
+        ember: [
+            'vendor-ember.js',
+            'templates-ember.js',
+            'ghost-dev-ember.js'
         ]
     };
 
@@ -346,6 +351,19 @@ coreHelpers.apps = function (context, options) {
 
 coreHelpers.ghost_script_tags = function () {
     var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
+
+    scriptList = _.map(scriptList, function (fileName) {
+        return scriptTemplate({
+            source: config().paths.subdir + '/ghost/scripts/' + fileName,
+            version: coreHelpers.assetHash
+        });
+    });
+
+    return scriptList.join('');
+};
+
+coreHelpers.ember_script_tags = function () {
+    var scriptList = scriptFiles.ember;
 
     scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
@@ -810,6 +828,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAdminHelper('asset', coreHelpers.asset);
 
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
+
+    registerAdminHelper('ember_script_tags', coreHelpers.ember_script_tags);
 
     registerAdminHelper('file_storage', coreHelpers.file_storage);
 
