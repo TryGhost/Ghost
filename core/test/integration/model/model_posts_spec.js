@@ -252,11 +252,6 @@ describe('Post Model', function () {
     });
 
     it('can generate a non conflicting slug', function (done) {
-        var newPost = {
-                title: 'Test Title',
-                markdown: 'Test Content 1'
-            };
-
         // Create 12 posts with the same title
         sequence(_.times(12, function (i) {
             return function () {
