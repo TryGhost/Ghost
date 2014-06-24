@@ -30,10 +30,10 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                         self.store.find('user', resp.userData.id).then(function (user) {
                             self.send('signedIn', user);
                             self.notifications.clear();
-                            self.transitionTo('posts');
+                            self.transitionToRoute('posts');
                         });
                     } else {
-                        self.transitionTo('signin');
+                        self.transitionToRoute('signin');
                     }
                 }, function (resp) {
                     self.toggleProperty('submitting');
