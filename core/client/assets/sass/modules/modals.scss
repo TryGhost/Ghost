@@ -1,9 +1,17 @@
-//
-// Modals
-// --------------------------------------------------
+/*
+ * Modals styles
+ *
+ * Table of Contents
+ *
+ * Modal Container
+ */
+
+
+/* ==========================================================================
+   Modal Container
+   ========================================================================== */
 
 #modal-container { // TODO: This should probably not be an ID
-    @include box-sizing(border-box);
     display: none;
     position: fixed;
     top: 0;
@@ -13,7 +21,6 @@
     overflow-x: auto;
     overflow-y: scroll;
     z-index: 1040;
-    pointer-events: none;
     @include transition(all 0.15s linear 0s);
     @include transform(translateZ(0));
 }
@@ -35,12 +42,11 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.6);
     z-index: 1030;
 }
 
 .modal {
-    @include box-sizing(border-box);
     left: 50%;
     right: auto;
     width: 450px;
@@ -51,8 +57,7 @@
     z-index: 1050;
     pointer-events: auto;
 
-
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         width: auto;
         padding: 10px;
     };
@@ -61,12 +66,12 @@
         min-width: 100px;
     }
 
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         width: 100%;
         margin-left: 0;
     }
 
-    //Uploaders
+    // Uploaders
     .image-uploader,
     .pre-image-uploader {
         margin: 0;
@@ -77,13 +82,12 @@
     @extend .modal;
     padding: 60px 0 30px;
 
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         padding: 30px 0;
     }
 }
 
 .modal-content {
-    @include box-sizing(padding-box);
     position: relative;
     padding: 20px;
     background-clip: padding-box;
@@ -92,7 +96,6 @@
     box-shadow: rgba(0,0,0,0.2) 0 0 0 6px;
 
     .close {
-        @include box-sizing(border-box);
         position: absolute;
         top: 15px;
         right: 15px;
@@ -137,7 +140,7 @@
 .modal-style-wide {
     width: 550px;
 
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         width: 100%;
     }
 }

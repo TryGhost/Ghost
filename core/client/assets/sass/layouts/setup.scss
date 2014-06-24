@@ -1,15 +1,28 @@
-//
-// Setup Ghost for The First Time
-// --------------------------------------------------
+/*
+ * Setup screen styles
+ *
+ * Table of Contents
+ *
+ * Setup Ghost for The First Time
+ */
+
+
+/* ==========================================================================
+   Setup Ghost for The First Time
+   ========================================================================== */
 
 .ghost-setup {
     color: $midgrey;
     background: $darkgrey;
-    @include breakpoint(550px) { background: darken($darkgrey, 5%); }
+    @media (max-width: 550px) {
+        background: darken($darkgrey, 5%);
+    }
 
     main {
         top: 15px;
-        @include breakpoint(550px) { top: 0; }
+        @media (max-width: 550px) {
+            top: 0;
+        }
     }
 
     input:-webkit-autofill {
@@ -22,7 +35,7 @@
         font-size: 26px;
         color: $lightgrey;
 
-        @include breakpoint(550px) {
+        @media (max-width: 550px) {
             font-size: 20px;
         }
     }
@@ -35,7 +48,7 @@
         font-size: 16px;
         color: $midgrey;
 
-        @include breakpoint(550px) {
+        @media (max-width: 550px) {
             font-size: 14px;
         }
     }
@@ -50,24 +63,27 @@
 }
 
 .setup-form {
-    @include box-sizing(border-box);
     max-width: 530px;
     padding: 40px;
     color: lighten($midgrey, 15%);
     background: darken($darkgrey, 5%);
 
-    @include breakpoint(400px) {
+    @media (max-width: 400px) {
         padding: 15px;
     }
 
     header {
         margin-bottom: 45px;
-        @include breakpoint(550px) { margin-bottom: 35px; }
+        @media (max-width: 550px) {
+            margin-bottom: 35px;
+        }
     }
 
     footer {
         margin: 40px 0 5px 0;
-        @include breakpoint(550px) { margin-top: 35px; }
+        @media (max-width: 550px) {
+            margin-top: 35px;
+        }
     }
 
     label {
@@ -75,7 +91,7 @@
         color: $lightgrey;
         font-weight: 300;
 
-        @include breakpoint(550px) {
+        @media (max-width: 550px) {
             width: 100%;
         }
     }
@@ -83,7 +99,7 @@
     .form-group {
         padding-left: 110px;
 
-        @include breakpoint(550px) {
+        @media (max-width: 550px) {
             padding-left: 0;
         }
     }
@@ -96,7 +112,7 @@
         background: lighten($darkgrey, 10%);
         @include transition(background ease 0.25s);
 
-        @include breakpoint(550px) {
+        @media (max-width: 550px) {
             width: 100%;
         }
 

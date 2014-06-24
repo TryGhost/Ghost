@@ -1,25 +1,19 @@
-//
-// Animations
-// --------------------------------------------------
+/*
+ * Reusable keyframe animations
+ *
+ * Table of Contents
+ *
+ * Off-Canvas
+ * Fade In
+ * Fade Out
+ */
 
-@-webkit-keyframes off-canvas {
-    0%   { left:0; }
-    100% { left:300px; }
-}
-@-moz-keyframes off-canvas {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
-@-o-keyframes off-canvas {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
-@keyframes off-canvas {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
 
-@include keyframes(fadeIn) {
+/* ==========================================================================
+   Off-Canvas
+   ========================================================================== */
+
+@include keyframes(off-canvas) {
     from {
         opacity: 0;
     }
@@ -28,3 +22,43 @@
     }
 }
 
+
+/* ==========================================================================
+   Fade In
+   TODO: Make the fadeIn keyframe name hyphenated, not camelCase
+   ========================================================================== */
+
+@include keyframes(fade-in) {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.fade-in {
+    -o-animation: fade-in 0.5s;
+    -moz-animation: fade-in 0.5s;
+    -webkit-animation: fade-in 0.5s;
+    animation: fade-in 0.5s;
+}
+
+/* ==========================================================================
+   Fade Out
+   TODO: Make the fadeIn keyframe name hyphenated, not camelCase
+   ========================================================================== */
+
+@include keyframes(fade-out) {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+.fade-out {
+    -o-animation: fade-out 0.5s;
+    -moz-animation: fade-out 0.5s;
+    -webkit-animation: fade-out 0.5s;
+    animation: fade-out 0.5s;
+}

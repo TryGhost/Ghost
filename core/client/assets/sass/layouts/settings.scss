@@ -1,6 +1,18 @@
-//
-// Settings
-// --------------------------------------------------
+/*
+ * Setting pages styles
+ *
+ * Table of Contents
+ *
+ * Settings
+ * Sidebar
+ * Content
+ * Code Injection
+ */
+
+
+/* ==========================================================================
+   Settings
+   ========================================================================== */
 
 .settings {
     // The main white bg for the page
@@ -13,7 +25,7 @@
         margin: 0;
         padding: 0;
 
-        @include breakpoint($tablet) {
+        @media (max-width: 800px) {
             overflow-x: hidden;
         }
     }
@@ -27,14 +39,14 @@
         padding: 0;
         border: none;
     }
-}//.settings
+} // .settings
 
 
 /* =============================================================================
    Sidebar
    ============================================================================= */
 
-//The whole left column sidebar, duh.
+// The whole left column sidebar, duh.
 .settings-sidebar {
     width: 20%;
     position: absolute;
@@ -44,7 +56,7 @@
     z-index: 700;
     background: #fff;
     box-shadow: $lightbrown 1px 0 0;
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         width: 100%;
         box-shadow: none;
     }
@@ -53,22 +65,24 @@
         position: relative;
         z-index: 400;
         height: 17px;
-        padding: 30px 15px 30px 40px;
+        padding: 30px 15px 47px 40px;
         margin-bottom: 0;
         border-bottom: none;
         box-shadow: #edece4 0 -1px 0 inset, #edece4 1px 0 0;
-        //Transparent gradient to make bg fade out as it goes out the top.
+
+        // Transparent gradient to make bg fade out as it goes out the top.
+        // TODO: Much improve
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
         background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
         background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
 
-        @include breakpoint($netbook) {
+        @media (max-width: 1000px) {
             padding-left: 15px;
         };
     }
-}//.settings-sidebar
+} // .settings-sidebar
 
-//Main settings-menu styles, apply to every item
+// Main settings-menu styles, apply to every item
 .settings-menu {
     position: absolute;
     top: 0;
@@ -76,25 +90,25 @@
     bottom: 0;
     right: -1px;
     overflow: auto;
-    @include breakpoint($tablet) { right: 0; };
+    @media (max-width: 800px) { right: 0; };
 
     // Create placeholder the same height as the floating header
     // to push content down by the same amount
     &:before {
         display: block;
         content: "";
-        height: 77px; //30px + 17px title + 30px
+        height: 77px; // 30px + 17px title + 30px
     }
 
     ul {
         border-top: none;
-        @include breakpoint($tablet) { border-bottom: #edece4 1px solid; }
+        @media (max-width: 800px) { border-bottom: #edece4 1px solid; }
     }
 
     li {
         margin-right: 1px;
         border-top: #fff 1px solid;
-        @include breakpoint($tablet) {
+        @media (max-width: 800px) {
             margin-right: 0;
             border-top: #edece4 1px solid;
         }
@@ -102,26 +116,28 @@
         a {
             padding: 15px 15px 15px 40px;
             border-bottom: none;
-            @include breakpoint($netbook) { padding-left: 15px; }
-            @include breakpoint($tablet) {
+            @media (max-width: 1000px) { padding-left: 15px; }
+            @media (max-width: 800px) {
                 @include icon-after($i-chevron) {float: right;margin-top: 5px;};
             }
         }
 
-        &:first-child { border-top: none; }
-        &:first-child.active { border-top: none; }
+        &:first-child {
+            border-top: none;
+        }
+        &:first-child.active {
+            border-top: none;
+        }
 
         &.active {
-            @include breakpoint($biggerthan-tablet) {
+            @media (min-width: 1001px) {
                 // only apply active styles on larger devices
 
                 margin-right: 0;
                 position: relative;
                 z-index: 300;
                 border-top: #edece4 1px solid;
-                box-shadow: 
-                    #fff 1px 0 0,
-                    #edece4 0 1px 0;
+                box-shadow: #fff 1px 0 0, #edece4 0 1px 0;
                 @include transition;
 
                 a {
@@ -132,28 +148,42 @@
                 }
 
             }
-        }//.active
+        } // .active
 
-    }//li
+    } // li
 
     // Give all icons some space
     li a:before {
         margin-right: 20px;
-        @include breakpoint($netbook) {
+        @media (max-width: 1000px) {
             margin-right: 15px;
         }
     }
 
     // Add the icons for specific menu items
-    .general a { @include icon($i-settings) }
-    .publishing a { @include icon($i-content) }
-    .services a { @include icon($i-services) }
-    .users a { @include icon($i-users) }
-    .appearance a { @include icon($i-appearance) }
-    .apps a { @include icon($i-app) }
-    .code a { @include icon($i-code) }
+    .general a {
+        @include icon($i-settings);
+    }
+    .publishing a {
+        @include icon($i-content);
+    }
+    .services a {
+        @include icon($i-services);
+    }
+    .users a {
+        @include icon($i-users);
+    }
+    .appearance a {
+        @include icon($i-appearance);
+    }
+    .apps a {
+        @include icon($i-app);
+    }
+    .code a {
+        @include icon($i-code);
+    }
 
-}//.settings-menu
+} // .settings-menu
 
 
 /* =============================================================================
@@ -170,7 +200,7 @@
     bottom: 0;
     background: #fff;
 
-    @include breakpoint($tablet) {
+    @media (max-width: 800px) {
         display: none;
         width: 100%;
         left: 100%;
@@ -180,23 +210,27 @@
 
     img {
         max-width: 100%;
+        max-height: 400px;
     }
 
     display: none;
     &.active {display: block;}
 
+    // TODO: Header could really be more specific (class)
     > header {
         position: relative;
         z-index: 200;
         height: 17px;
-        padding: 30px 220px 29px 40px;
+        padding: 30px 220px 46px 40px;
         border-bottom: $lightbrown 1px solid;
         margin-bottom: 40px;
         text-transform: none;
         font-weight: normal;
         line-height: inherit;
         color: inherit;
-        //Transparent gradient to make bg fade out as it goes out the top.
+
+        // Transparent gradient to make bg fade out as it goes out the top.
+        // TODO: Significantly improve
         background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0.90) 100%);
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(25%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0.90)));
         background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
@@ -204,9 +238,13 @@
         background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
         background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,0.90) 100%);
 
-        @include breakpoint($netbook) { padding-left: 15px; }
-        @include breakpoint($tablet) { padding-left: 115px; }
-        @include breakpoint($letterbox) {
+        @media (max-width: 1000px) {
+            padding-left: 15px;
+        }
+        @media (max-width: 800px) {
+            padding-left: 115px;
+        }
+        @media (max-height: 600px) {
             height: auto;
             padding: 5px;
             position: absolute;
@@ -215,9 +253,11 @@
             border: none;
             background: transparent;
 
-            .title { display: none; }
+            .title {
+                display: none;
+            }
         }
-        @include breakpoint(650px) {
+        @media (max-width: 650px) {
             padding-left: 15px;
 
             .button-back {
@@ -234,7 +274,7 @@
             }
         }
 
-    }//header
+    } // header
 
     .page-actions {
         position: absolute;
@@ -243,8 +283,8 @@
         z-index: 700;
         font-size: 1em;
 
-        @include breakpoint($netbook) { right: 15px; }
-        @include breakpoint(650px) {
+        @media (max-width: 1000px) { right: 15px; }
+        @media (max-width: 650px) {
             position: fixed;
             top: 5px;
             right: 4px;
@@ -287,19 +327,24 @@
             display: block;
             content: "";
             height: 77px; //30px + 17px title + 30px
-            @include breakpoint($letterbox) { display: none; }
+            @media (max-height: 600px) { display: none; }
         }
 
         &.no-padding {
             padding: 0;
         }
 
-        @include breakpoint($netbook) { padding-left: 15px; }
-        @include breakpoint(550px) { padding: 0 15px 40px; }
+        @media (max-width: 1000px) {
+            padding-left: 15px;
+        }
+        @media (max-width: 550px) {
+            padding: 0 15px 40px;
+        }
     }
 
-    .description-container, .bio-container {
-        max-width: 370px;
+    .description-container,
+    .bio-container {
+        max-width: 510px;
     }
 
     .word-count {
@@ -309,7 +354,7 @@
         color: darken($brown, 5%);
     }
 
-}//.settings-content
+} // .settings-content
 
 
 /* =============================================================================

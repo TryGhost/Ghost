@@ -1,15 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bourbon (3.1.8)
-      sass (>= 3.2.0)
+    bourbon (4.0.1)
+      sass (~> 3.3)
       thor
     sass (3.3.1)
-    thor (0.18.1)
+    thor (0.19.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  bourbon (~> 3.1.8)
+  bourbon (~> 4.0.1)
   sass (~> 3.3.1)

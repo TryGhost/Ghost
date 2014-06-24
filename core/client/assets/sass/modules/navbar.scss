@@ -1,50 +1,74 @@
-//
-// Navbar
-// --------------------------------------------------
+/*
+ * Navbar styling
+ *
+ * Table of Contents
+ *
+ * Ghost Logo
+ * Nav Bar
+ * Mobile Navigation
+ */
+
+
+/* ==========================================================================
+   Ghost Logo
+   ========================================================================== */
 
 .ghost-logo {
-    @include icon($i-ghost) { line-height: 0; }
+    @include icon($i-ghost) {
+        line-height: 0;
+    }
     display: block;
-    float:left;
-    height:40px;
-    padding:12px 15px;
+    float: left;
+    height: 40px;
+    padding: 12px 15px;
     color: lighten($grey, 10%);
     @include box-sizing(border-box);
 
-    &:hover {text-decoration:none;}
+    &:hover {
+        text-decoration: none;
+    }
 }
 
 .ghost-logo:hover {
     color: $lightgrey;
-    background:darken($darkgrey, 2%);
+    background: darken($darkgrey, 2%);
 }
+
+
+/* ==========================================================================
+   Nav Bar
+   ========================================================================== */
 
 .navbar {
     height: 40px;
     font-size: 0.85em;
     background: $darkgrey;
-    @include breakpoint($netbook) {font-weight:normal}
+    @media (max-width: 1000px) {
+        font-weight: normal;
+    }
 
     // The main navbar styles, apply to to everything.
     nav {
 
         ul {
-            float:left;
-            border-left:$grey 1px solid;
-            border-top:none;
+            float: left;
+            border-left: $grey 1px solid;
+            border-top: none;
+            margin: 0;
+            padding: 0;
         }
 
         li {
-            float:left;
+            float: left;
             font-size: 1em;
-            position:relative;
-            border-right:$grey 1px solid;
+            position: relative;
+            border-right: $grey 1px solid;
 
             a {
                 display: block;
-                height:40px;
-                padding:11px 15px;
-                border-bottom:none;
+                height: 40px;
+                padding: 11px 15px;
+                border-bottom: none;
                 color: $midgrey;
                 text-transform: uppercase;
                 @include box-sizing(border-box);
@@ -54,25 +78,25 @@
             &.active a {
                 color: $lightgrey;
                 text-decoration: none;
-                position:relative;
-                background:darken($grey, 2%);
+                position: relative;
+                background: darken($grey, 2%);
                 box-shadow: 0 -2px 2px rgba(0,0,0,0.2) inset;
             }
 
             // Make a little arrow pointing up at the currently active menu item
             &.active a:after {
-                content:"";
-                position:absolute;
-                bottom:0;
-                left:50%;
-                margin-left:-5px;
-                border-width:0 5px 5px 5px;
-                border-style:solid;
-                border-color:$lightbrown transparent;
-                display:block;
-                width:0;
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 0 5px 5px 5px;
+                border-style: solid;
+                border-color: $lightbrown transparent;
+                display: block;
+                width: 0;
 
-                @include breakpoint($mobile) {
+                @media (max-width: 400px) {
                     border-color: #fff transparent;
                 }
 
@@ -80,9 +104,9 @@
 
             ul {
                 position: absolute;
-                top:40px;
-                right:0;
-                min-width:200px;
+                top: 40px;
+                right: 0;
+                min-width: 200px;
                 background: $darkgrey;
             }
 
@@ -94,13 +118,25 @@
         }
 
         // Add some icons to specific nav items
-        a:before {margin-right: 5px;}
-        .dashboard a {  @include icon($i-stats) {vertical-align: -10%} }
-        .content a {    @include icon($i-content) }
-        .editor a {     @include icon($i-add) }
-        .settings a {   @include icon($i-settings2) }
+        a:before {
+            margin-right: 5px;
+        }
+        .dashboard a {
+            @include icon($i-stats) {
+                vertical-align: -10%;
+            }
+        }
+        .content a {
+            @include icon($i-content);
+        }
+        .editor a {
+            @include icon($i-add);
+        }
+        .settings a {
+            @include icon($i-settings2);
+        }
 
-    }//nav ul
+    } //nav ul
 
     // Style any nav items which have dropdowns
     .subnav {
@@ -108,7 +144,9 @@
 
         // The anchor which toggles the menu open/closed
         > a {
-            @include icon-after($i-chevron-down, 8px) {margin-left: 8px};
+            @include icon-after($i-chevron-down, 8px) {
+                margin-left: 8px;
+            };
 
             &.active {
                 color: $lightgrey;
@@ -124,14 +162,15 @@
             padding: 7px 0;
             border-left: none;
             position: absolute;
-            top:40px;
-            left:-1px;
+            top: 40px;
+            left: -1px;
             z-index: 800;
-            background:darken($grey, 3%);
+            background: darken($grey, 3%);
             box-shadow: rgba(0,0,0,0.2) 0 4px 6px;
         }
 
         li {
+            list-style: none;
             a {
                 color: $lightgrey;
 
@@ -141,7 +180,9 @@
                     box-shadow: none;
                 }
 
-                &:before { margin-right: 1em; } // space for icons
+                &:before {
+                    margin-right: 1em;
+                } // space for icons
             }
         }
 
@@ -158,23 +199,23 @@
 
 // The user menu in the top right corner of the screen
 .usermenu.subnav {
-    position:absolute;
-    top:0;
-    right:0;
-    border-right:none;
-    border-left:$grey 1px solid;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-right: none;
+    border-left: $grey 1px solid;
 
     > a {
-        padding-left:43px; //15px + 18px avatar + 10px
+        padding-left: 43px; //15px + 18px avatar + 10px
     }
 
     .avatar {
-        height:18px;
-        width:18px;
+        height: 18px;
+        width: 18px;
         border-radius: 50px;
-        position:absolute;
-        top:11px;
-        left:15px;
+        position: absolute;
+        top: 11px;
+        left: 15px;
     }
 
     > ul {
@@ -183,10 +224,18 @@
     }
 
     //Add some icons to specific items
-    .usermenu-profile a { @include icon($i-user) }
-    .usermenu-help a { @include icon($i-support, 1.1em) }
-    .usermenu-shortcuts a { @include icon($i-pc)  }
-    .usermenu-signout a { @include icon($i-power) }
+    .usermenu-profile a {
+        @include icon($i-user);
+    }
+    .usermenu-help a {
+        @include icon($i-support, 1.1em);
+    }
+    .usermenu-shortcuts a {
+        @include icon($i-pc);
+    }
+    .usermenu-signout a {
+        @include icon($i-power);
+    }
 }
 
 
@@ -196,11 +245,11 @@
 
 // Yo dawg, I heard you like nav menus so I put nav menus in your nav menus
 #global-header {
-    @include breakpoint(650px) {
+    @media (max-width: 650px) {
 
         .ghost-logo {
             @include icon($i-menu, 14px);
-            height:40px;
+            height: 40px;
             width: 40px;
             text-align: center;
             padding:12px 0;
@@ -223,7 +272,7 @@
             padding-top: 40px;
             font-weight:normal;
             background: $darkgrey;
-            border-left:none;
+            border-left: none;
             @include transition(left 0.3s ease 0.2s);
             .off-canvas & {
                 left: 0;
@@ -232,37 +281,45 @@
         }
 
         li {
-            float:none;
-            border-right:none;
-            border-bottom:$grey 1px solid;
+            float: none;
+            border-right: none;
+            border-bottom: $grey 1px solid;
 
             a:hover,
-            &.active a {box-shadow: none;}
+            &.active a {
+                box-shadow: none;
+            }
 
-            &.active a:after {display:none;}
+            &.active a:after {
+                display: none;
+            }
 
-            a:before {margin-right: 1em;}
+            a:before {
+                margin-right: 1em;
+            }
 
             ul {
                 position: static;
-                min-width:0;
+                min-width: 0;
                 background: $darkgrey;
             }
 
-            li {width: auto;}
+            li {
+                width: auto;
+            }
 
         }
 
         .usermenu {
-            position:fixed;
-            top:0;
-            right:auto;
+            position: fixed;
+            top: 0;
+            right: auto;
             bottom: auto;
-            left:-280px;
-            height:40px;
+            left: -280px;
+            height: 40px;
             z-index: 990;
-            width:279px;
-            border-left:none;
+            width: 279px;
+            border-left: none;
             border-right: darken($grey, 7%) 1px solid;
             border-bottom: darken($grey, 5%) 1px solid;
             @include gradient(darken($darkgrey, 8%), darken($darkgrey, 3%));
@@ -272,8 +329,12 @@
                 @include transition(left 0.3s ease 0s);
             }
             > a {
-                &:hover { background: inherit; }
-                &.active { background: darken($grey, 3%); }
+                &:hover {
+                    background: inherit;
+                }
+                &.active {
+                    background: darken($grey, 3%);
+                }
             }
 
             > ul {
@@ -293,13 +354,19 @@
                 a {
                     background: darken($grey, 3%);
 
-                    &:hover {background: darken($grey, 8%)}
-                    &:before { margin-right: 1em; } // space for icons
+                    &:hover {
+                        background: darken($grey, 8%);
+                    }
+                    &:before {
+                        margin-right: 1em;
+                    } // space for icons
                 }
 
             }
 
-            .divider {display: none}
+            .divider {
+                display: none;
+            }
 
         }
     }

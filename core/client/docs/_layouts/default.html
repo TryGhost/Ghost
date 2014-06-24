@@ -1,55 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <!-- Meta, title, CSS, favicons, etc. -->
-    {% include header.html %}
+    <meta charset="UTF-8">
+    <title>{{ page.title }}</title>
+    
+    <link rel="stylesheet" href="/dist/css/ghost-ui.min.css">
+
+    <!-- Fonts -->
+    <!-- <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" /> -->
+
 </head>
 <body>
-<a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
 
-<!-- Docs master nav -->
-{% include nav-main.html %}
-
-<!-- Docs page layout -->
-<div class="bs-docs-header" id="content">
-    <div class="container">
-        <h1>{{ page.title }}</h1>
-        <p>{{ page.lead }}</p>
-    </div>
-</div>
-
-<div class="container bs-docs-container">
-
-    <div class="row">
-        <div class="col-md-9" role="main">
-            {{ content }}
-        </div>
-        <div class="col-md-3">
-            <div class="bs-docs-sidebar hidden-print" role="complementary">
-                <ul class="nav bs-docs-sidenav">
-                    {% if page.slug == "getting-started" %}
-                        {% include nav-getting-started.html %}
-                    {% elsif page.slug == "css" %}
-                        {% include nav-css.html %}
-                    {% elsif page.slug == "components" %}
-                        {% include nav-components.html %}
-                    {% elsif page.slug == "js" %}
-                    {   % include nav-javascript.html %}
-                    {% elsif page.slug == "customize" %}
-                        {% include nav-customize.html %}
-                    {% elsif page.slug == "about" %}
-                        {% include nav-about.html %}
-                    {% elsif page.slug == "migration" %}
-                        {% include nav-migration.html %}
-                    {% endif %}
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li>
+                <a href="/css/">CSS</a>
+                <ul>
+                    <li><a href="/css/buttons/">Buttons</a></li>
                 </ul>
-                <a class="back-to-top" href="#top">Back to top</a>
-            </div>
-        </div>
-    </div>
+            </li>
+        </ul>
+    </nav>
 
-</div>
-
-{% include footer.html %}
-</body>}}
+    {{content}}
+    
+</body>
 </html>

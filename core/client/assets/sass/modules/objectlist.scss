@@ -1,0 +1,114 @@
+/*
+ * Object list styles
+ *
+ * Table of Contents
+ *
+ * Object List
+ */
+
+
+ /* ==========================================================================
+   Object List
+   ========================================================================== */
+
+.object-list + .object-list {
+    margin-top: 34px;
+}
+
+.object-list-title {
+    font-size: 13px;
+    font-weight: normal;
+    color: $midbrown;
+    margin-bottom: 14px;
+} // .object-list-title
+
+.object-list-item {
+
+    @include display(flex);
+    @include justify-content(start);
+    @include align-items(center);
+
+    padding-left: 15px;
+    padding-right: 15px;
+
+    border-top: 1px solid $lightbrown;
+    min-height: 68px;
+
+    &:hover {
+        background: lighten($lightbrown, 5%);
+    }
+    &:last-child:hover {
+        box-shadow: inset 0px -1px 0px $lightbrown;
+    }
+
+} // .object-list-item
+
+.object-list-item-icon {
+    width: 35px;
+    height: 35px;
+    display: block;
+    border-radius: 100%;
+    background: $lightbrown;
+    font-size: 0px;
+    color: transparent;
+    overflow: hidden;
+    position: relative;
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        margin-top: -7px;
+        text-align: center;
+        color: $brown;
+        font-size: 14px;
+    }
+} // .object-list-item-icon
+
+.object-list-item-figure {
+    width: 35px;
+    border-radius: 100%;
+    display: block;
+    border: 1px solid #979797;
+} // .object-list-item-figure
+
+.object-list-item-body {
+
+    @include flex(1);
+    @include align-items(stretch);
+
+    padding-left: 15px;
+    line-height: 1;
+
+    .name {
+        display: inline-block;
+        font-size: 15px;
+        font-weight: 400;
+        color: $darkgrey;
+    }
+    .description {
+        display: inline-block;
+        font-size: 12px;
+        color: $midbrown;
+        margin-top: 3px;
+    }
+
+} // .object-list-item-body
+
+.object-list-item-aside {
+    .object-list-action + .object-list-action {
+        margin-left: 20px;
+    }
+    .role-label + .role-label {
+        margin-left: 5px;
+    }
+} // .object-list-item-aside
+
+.object-list-action {
+    font-size: 11px;
+    text-transform: uppercase;
+    text-decoration: underline;
+    &:hover {
+
+    }
+} // .object-list-action

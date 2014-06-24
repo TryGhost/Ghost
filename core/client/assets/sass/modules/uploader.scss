@@ -1,6 +1,16 @@
-//
-// Image Uploader
-// --------------------------------------------------
+/*
+ * Image Uploader styles
+ *
+ * Table of Contents
+ *
+ * Image Uploader
+ * Pre Image Uploader
+ */
+
+
+/* ==========================================================================
+   Image Uploader
+   ========================================================================== */
 
 .image-uploader {
     @include box-sizing(border-box);
@@ -74,8 +84,6 @@
       margin: 0 0 0 10px;
     }
 
-
-
     input {
         &.main{
             position: absolute;
@@ -144,7 +152,12 @@
         }
     }
 
-}
+} // .image-uploader
+
+
+/* ==========================================================================
+   Pre Image Uploader
+   ========================================================================== */
 
 .pre-image-uploader {
     @include box-sizing(border-box);
@@ -201,4 +214,4 @@
         }
     }
 
-}//.pre-image-uploader
+} // .pre-image-uploader

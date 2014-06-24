@@ -1,6 +1,16 @@
-//
-// Content Management
-// --------------------------------------------------
+/*
+ * Content screen styles
+ *
+ * Table of Contents
+ *
+ * Content Management
+ * Preview
+ */
+
+
+/* ==========================================================================
+   Content Management
+   ========================================================================== */
 
 .manage {
     .content-view-container {
@@ -8,78 +18,78 @@
         height: 100%;
         width: 100%;
 
-        @include breakpoint($tablet) {
+        @media (max-width: 800px) {
             overflow-x: hidden;
         }
-    }
+    } // .content-view-container
     .content-list {
-        @include box-sizing(border-box);
         width: 35%;
         padding: 15px;
         position: absolute;
-        bottom:0;
-        top:0;
-        left:0;
-        border-right:$lightbrown 2px solid;
+        bottom: 0;
+        top: 0;
+        left: 0;
+        border-right: $lightbrown 2px solid;
         background: #fff;
         box-shadow: $shadow;
 
-        @include breakpoint($tablet) {
-            width:auto;
-            right:0;
+        @media (max-width: 800px) {
+            width: auto;
+            right: 0;
             z-index: 500;
-            border:none;
+            border: none;
         }
 
 
         .content-filter {
-            position:relative;
+            position: relative;
             z-index: 300;
             > a {
                 padding: 5px;
-                margin-left:-5px;
+                margin-left: -5px;
             }
 
             .menu-drop {
                 display: block;
             }
-        }
+        } // .content-filter
 
         .button-add {
             @include icon($i-add);
-            position:absolute;
-            top:10px;
-            right:15px;
+            position: absolute;
+            top: 10px;
+            right: 15px;
             z-index: 700;
             color: #fff;
-            padding-left:5px;
-        }
+            padding: 3px 4px 3px 5px;
+            min-height: 0;
+        } // .button-add
 
 
         .content-list-content {
-            position:absolute;
-            top:0;
-            right:0;
-            bottom:0;
-            left:0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
             overflow: auto;
             padding-top: 40px;
-        }
+        } // .content-list-content
 
         .entry-title {
             font-size: 1.4em;
-            line-height:1.1em;
-            margin-bottom:0.5em;
+            line-height: 1.1em;
+            margin-bottom: 0.5em;
             font-weight: normal;
         }
 
         .views {
             @include icon($i-stats, 10px, $brown);
-            float:right;
+            float: right;
             text-align: right;
-            margin-left:15px;
-            @include breakpoint($tablet) {
-                float:none;
+            margin-left: 15px;
+            @media (max-width: 800px) {
+                float: none;
             }
         }
 
@@ -100,40 +110,50 @@
 
       ol {
             list-style: none;
-            padding:0;
-            margin:0;
+            padding: 0;
+            margin: 0;
             border-top: $lightbrown 1px solid;
 
             li {
-                margin:0;
+                margin: 0;
                 padding: 0;
                 border-bottom: $lightbrown 1px solid;
-                position:relative;
+                position: relative;
 
                 a {
 
-                    display:block;
-                    padding:20px 15px;
+                    display: block;
+                    padding: 20px 15px;
                     color: $brown;
-                    @include breakpoint($mobile) { padding:15px; }
-                    @include breakpoint($tablet) { padding-right: 40px; }
+                    @media (max-width: 400px) {
+                        padding: 15px;
+                    }
+                    @media (max-width: 800px) {
+                        padding-right: 40px;
+                    }
 
                     @include icon-after($i-chevron) {
-                        position:absolute;
-                        top:50%;
-                        margin-top:-6px;
-                        right:15px;
+                        position: absolute;
+                        top: 50%;
+                        margin-top: -6px;
+                        right: 15px;
                     }
-                    @include breakpoint($biggerthan-tablet) { &::after {display: none} }
+                    @media (min-width: 801px) {
+                        &:after {
+                            display: none;
+                        }
+                    }
 
-                    &:hover { text-decoration: none; }
+                    &:hover {
+                        text-decoration: none;
+                    }
 
-                }
+                } // a
 
-            }//li
+            } // li
 
             li.active {
-                @include breakpoint($biggerthan-tablet) {
+                @media (min-width: 801px) {
                     // only apply active styles on larger devices
 
                     border-bottom: lighten($midgrey, 40%) 1px solid;
@@ -148,8 +168,12 @@
                         @include transition(all 0.4s ease);
                     }
 
-                    .entry-title { font-weight: bold; }
-                    .entry-meta { color: $darkgrey; }
+                    .entry-title {
+                        font-weight: bold;
+                    }
+                    .entry-meta {
+                        color: $darkgrey;
+                    }
 
                     .views {
                         @include icon($i-stats, 10px, $darkgrey);
@@ -158,18 +182,20 @@
                     }
 
                 }
-            }//li.active
-        }
+            } // li.active
+        } // ol
 
-    }//.content-list
+    } // .content-list
+} // .manage
 
 
 /* =============================================================================
    Preview
    ============================================================================= */
 
+.manage {
+
     .content-preview {
-        @include box-sizing(border-box);
         width: 65%;
         padding: 15px;
         position: absolute;
@@ -179,7 +205,7 @@
         border-left:$lightbrown 2px solid;
         background: #fff;
         box-shadow: $shadow;
-        @include breakpoint($tablet) {
+        @media (max-width: 800px) {
             width: auto;
             left: 100%;
             right: -100%;
@@ -220,7 +246,7 @@
                 max-width: 700px;
                 margin:0 auto;
             }
-        }
+        } // .content-preview-content
 
         .post-controls {
             float:right;
@@ -244,7 +270,7 @@
             height:auto;
         }
 
-    }//.preview-post
+    } // .preview-post
 
     .no-posts-box {
         position: relative;
@@ -253,7 +279,7 @@
         padding: 0px;
         display: table;
         z-index: 600;
-        @include breakpoint($tablet) {
+        @media (max-width: 800px) {
             position: fixed;
             top: 45%;
             left: 50%;
@@ -263,7 +289,7 @@
             vertical-align: middle;
             display: table-cell;
             text-align: center;
-            @include breakpoint($tablet) {
+            @media (max-width: 800px) {
                 display: block;
                 position: relative;
                 left: -50%;
@@ -274,6 +300,8 @@
                 font-weight: 200;
                 font-size: 2em;
             }
-        }
-    }//.no-posts-box
-}//.manage
+        } // ,no-posts
+
+    } // .no-posts-box
+
+} // .manage

@@ -1,6 +1,16 @@
-//
-// Users
-// --------------------------------------------------
+/*
+ * Users screen styles
+ *
+ * Table of Contents
+ *
+ * Users
+ * User Profile
+ */
+
+
+/* ==========================================================================
+   Users
+   ========================================================================== */
 
 .settings {
 
@@ -25,15 +35,17 @@
         display: inline-block;
         float: right;
 
-        label { margin: 0}
+        label {
+            margin: 0;
+        }
 
-        &:hover .user-search-input, .user-search-input:focus {
+        &:hover .user-search-input,
+        .user-search-input:focus {
             width: 260px;
             padding: 0 10px;
         }
 
         .user-search-input {
-            @include box-sizing(border-box);
             width: 0px;
             padding: 0;
             border: none;
@@ -54,7 +66,6 @@
     }
 
     .user {
-        @include box-sizing(border-box);
         display: block;
         width: 100%;
         padding: 20px;
@@ -75,7 +86,6 @@
             border-radius: 20px;
 
             &.invite {
-                @include box-sizing(border-box);
                 padding-top: 8px;
                 text-align: center;
                 @include icon($i-mail, 1em, $brown);
@@ -128,6 +138,8 @@
 
     .user-profile-header {
         position: relative;
+        max-height: 400px;
+        overflow: hidden;
 
         // Gradient overlay
         &:after {
@@ -162,7 +174,9 @@
             color 0.3s ease,
             background 0.3s ease
         );
-        @include breakpoint($netbook) { right: 15px;}
+        @media (max-width: 1000px) {
+            right: 15px;
+        }
 
         &:hover {
             color: #fff;
@@ -178,19 +192,28 @@
         fieldset {
             padding: 0 40px;
         }
+
+        textarea {
+            min-width: 240px;
+        }
     }
 
     fieldset.user-details-top {
-        margin-bottom: 0;
-        padding: 10px 0 0 0;
 
-        p {
-            color: #fff;
+        @media (max-width: 500px) {
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 501px) {
+            margin-bottom: 0;
+            padding: 10px 0 0 0;
+            p {
+                color: #fff;
+            }
         }
     }
 
     .user-image {
-        @include box-sizing(border-box);
         display: block;
         position: relative;
         width: 120px;
@@ -204,6 +227,10 @@
         border: 5px solid #fff;
         background: #fff;
         z-index: 2;
+
+        @media (max-width: 500px) {
+            margin-left: -10px;
+        }
 
         .img {
             display: block;
@@ -233,8 +260,10 @@
         @include transition(opacity 0.3s ease);
     }
 
-    #user-name {
-        border-color: #fff;
+    @media (min-width: 501px) {
+        #user-name {
+            border-color: #fff;
+        }
     }
 
     .user-details-bottom {
@@ -242,4 +271,4 @@
         margin: -30px 0 0 0;
     }
 
-} //.settings
+} // .settings
