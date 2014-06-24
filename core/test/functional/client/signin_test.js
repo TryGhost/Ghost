@@ -81,7 +81,7 @@ CasperTest.emberBegin("Can't spam it", 4, function suite(test) {
 
     casper.captureScreenshot('login_spam_test.png');
 
-    casper.wait(200, function doneWait() {
+    casper.waitForText('attempts remaining!', function then() {
         this.fillAndSave("#login", falseUser);
     });
 

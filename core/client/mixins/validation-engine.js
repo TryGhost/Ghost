@@ -2,15 +2,23 @@ import { getRequestErrorMessage } from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
 import PostValidator from 'ghost/validators/post';
+import SignupValidator from 'ghost/validators/signup';
+import SigninValidator from 'ghost/validators/signin';
+import ForgotValidator from 'ghost/validators/forgotten';
 
 ValidatorExtensions.init();
 
 var ValidationEngine = Ember.Mixin.create({
     validators: {
-        post: PostValidator
+        post: PostValidator,
+        signup: SignupValidator,
+        signin: SigninValidator,
+        forgotten: ForgotValidator
     },
 
-    validate: function () {
+    validate: function (opts) {
+        opts = opts || {};
+
         var self = this,
             type = this.get('validationType'),
             validator = this.get('validators.' + type);
@@ -26,7 +34,11 @@ var ValidationEngine = Ember.Mixin.create({
                 return resolve();
             }
 
-            return reject(self.formatErrors(validationErrors));
+            if (opts.format !== false) {
+                validationErrors = self.formatErrors(validationErrors);
+            }
+
+            return reject(validationErrors);
         });
     },
 
