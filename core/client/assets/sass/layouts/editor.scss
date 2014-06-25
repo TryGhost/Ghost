@@ -871,13 +871,8 @@ body.zen {
 
 .CodeMirror div.CodeMirror-cursor {
     position: absolute;
-    visibility: hidden;
     border-right: none;
     width: 0;
-}
-
-.CodeMirror-focused div.CodeMirror-cursor {
-    visibility: visible;
 }
 
 .CodeMirror-selected { background: #d9d9d9; }
