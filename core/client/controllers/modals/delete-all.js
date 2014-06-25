@@ -1,15 +1,22 @@
-/*global alert */
-
 var DeleteAllController = Ember.Controller.extend({
     actions: {
         confirmAccept: function () {
-            alert('Deleting everything!');
+            var self = this;
 
-            this.notifications.showSuccess('Everything has been deleted.');
+            ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
+                }
+            }).then(function () {
+                self.notifications.showSuccess('All content deleted from database.');
+            }).catch(function (response) {
+                self.notifications.showErrors(response);
+            });
         },
 
         confirmReject: function () {
-            return true;
+            return false;
         }
     },
 
