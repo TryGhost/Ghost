@@ -33,6 +33,12 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
         email: email,
         password: password
     },
+    newSetup = {
+        'blog-title': 'Test Blog',
+        name: 'Test User',
+        email: email,
+        password: password
+    },
     user = {
         email: email,
         password: password
@@ -126,11 +132,16 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
         },
         'signout': {
             url: 'ghost/ember/signout/',
-            selector: '.button-save'
+            // When no user exists we get redirected to setup which has button-add
+            selector: '.button-save, .button-add'
         },
         'signup': {
             url: 'ghost/ember/signup/',
             selector: '.button-save'
+        },
+        'setup': {
+            url: 'ghost/ember/setup/',
+            selector: '.button-add'
         }
     };
 
@@ -147,12 +158,22 @@ casper.failOnTimeout = function (test, message) {
 };
 
 // ### Fill And Save
-// With Ember in place, we don't want to submit forms, rather press the green button which always has a class of
+// With Ember in place, we don't want to submit forms, rather press the button which always has a class of
 // 'button-save'. This method handles that smoothly.
 casper.fillAndSave = function (selector, data) {
     casper.then(function doFill() {
         casper.fill(selector, data, false);
         casper.thenClick('.button-save');
+    });
+};
+
+// ### Fill And Add
+// With Ember in place, we don't want to submit forms, rather press the green button which always has a class of
+// 'button-add'. This method handles that smoothly.
+casper.fillAndAdd = function (selector, data) {
+    casper.then(function doFill() {
+        casper.fill(selector, data, false);
+        casper.thenClick('.button-add');
     });
 };
 
@@ -317,7 +338,7 @@ var CasperTest = (function () {
                 if (!_isUserRegistered) {
 
                     CasperTest.Routines.emberSignout.run();
-                    CasperTest.Routines.emberSignup.run();
+                    CasperTest.Routines.emberSetup.run();
 
                     _isUserRegistered = true;
                 }
@@ -382,12 +403,12 @@ CasperTest.Routines = (function () {
         }, 2000);
     }
 
-    function emberSignup() {
-        casper.thenOpenAndWaitForPageLoad('signup', function then() {
+    function emberSetup() {
+        casper.thenOpenAndWaitForPageLoad('setup', function then() {
             casper.captureScreenshot('ember_signing_up1.png');
 
-            casper.waitForOpaque('.signup-box', function then() {
-                this.fillAndSave('#signup', newUser);
+            casper.waitForOpaque('.setup-box', function then() {
+                this.fillAndAdd('#setup', newSetup);
             });
 
             casper.captureScreenshot('ember_signing_up2.png');
@@ -531,7 +552,7 @@ CasperTest.Routines = (function () {
         login: _createRunner(login),
         logout: _createRunner(logout),
         togglePermalinks: _createRunner(togglePermalinks),
-        emberSignup: _createRunner(emberSignup),
+        emberSetup: _createRunner(emberSetup),
         emberSignin: _createRunner(emberSignin),
         emberSignout: _createRunner(emberSignout),
         createTestPost: _createRunner(createTestPost)

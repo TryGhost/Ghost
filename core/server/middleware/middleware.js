@@ -33,7 +33,8 @@ var middleware = {
     authenticate: function (req, res, next) {
         var noAuthNeeded = [
                 '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
-                '/ghost/forgotten/', '/ghost/reset/', '/ghost/ember/'
+                '/ghost/forgotten/', '/ghost/reset/', '/ghost/ember/',
+                '/ghost/setup/'
             ],
             path,
             subPath;
@@ -65,29 +66,17 @@ var middleware = {
         if (!req.session.user) {
             var subPath = req.path.substring(config().paths.subdir.length),
                 reqPath = subPath.replace(/^\/ghost\/?/gi, ''),
-                redirect = '',
-                msg;
+                redirect = '';
 
-            return api.notifications.browse().then(function (notifications) {
-                if (reqPath !== '') {
-                    msg = {
-                        type: 'error',
-                        message: 'Please Sign In',
-                        status: 'passive'
-                    };
-                    // let's only add the notification once
-                    if (!_.contains(_.pluck(notifications, 'id'), 'failedauth')) {
-                        api.notifications.add({ notifications: [msg] });
-                    }
-                    redirect = '?r=' + encodeURIComponent(reqPath);
-                }
+            if (reqPath !== '') {
+                redirect = '?r=' + encodeURIComponent(reqPath);
+            }
 
-                if (subPath.indexOf('/ember') > -1) {
-                    return res.redirect(config().paths.subdir + '/ghost/ember/signin');
-                }
+            if (subPath.indexOf('/ember') > -1) {
+                return res.redirect(config().paths.subdir + '/ghost/ember/signin/');
+            }
 
-                return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
-            });
+            return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
         }
         next();
     },

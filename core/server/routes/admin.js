@@ -13,7 +13,7 @@ adminRoutes = function (middleware) {
 
     // Have ember route look for hits first
     // to prevent conflicts with pre-existing routes
-    router.get('/ghost/ember/*', middleware.redirectToSignup, admin.index);
+    router.get('/ghost/ember/*', middleware.redirectToSetup, admin.index);
 
     // ### Admin routes
     router.get('/logout/', function redirect(req, res) {
@@ -37,6 +37,7 @@ adminRoutes = function (middleware) {
         res.redirect(301, subdir + '/ghost/signup/');
     });
 
+    router.post('/ghost/setup/', admin.doSignup);
     router.get('/ghost/signout/', admin.signout);
     router.post('/ghost/signout/', admin.doSignout);
     router.get('/ghost/signin/', middleware.redirectToSignup, middleware.redirectToDashboard, admin.signin);
