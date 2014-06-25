@@ -6,6 +6,7 @@
  * Globals
  * Helpers
  * Floats
+ * Table Layout
  * Box
  * Main
  */
@@ -43,6 +44,16 @@ body {
 }
 .left {
     float: left;
+}
+
+
+/* ==========================================================================
+   Table Layout
+   ========================================================================== */
+
+.vertical {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 
