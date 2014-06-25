@@ -261,8 +261,8 @@
 
         .post-edit {
             @include icon($i-edit, 14px);
-            margin-right:7px;
-            padding: 5px;
+            margin-right: 2px;
+            padding: 0 10px;
         }
 
         img {
