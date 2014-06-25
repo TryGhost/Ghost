@@ -1,21 +1,8 @@
-{{#if title}}
+{{partial "floating-header"}}
 
-    {{partial "floating-header"}}
-
-    {{#view "content-preview-content-view" tagName="section"}}
-        <div class="wrapper">
-            <h1>{{{title}}}</h1>
-            {{{html}}}
-        </div>
-    {{/view}}
-
-{{else}}
-
-    <div class="no-posts-box">
-        <div class="no-posts">
-            <h3>You Haven't Written Any Posts Yet!</h3>
-            {{#link-to "editor.new"}}<button class="button-add large" title="New Post">Write a new Post</button>{{/link-to}}
-        </div>
+{{#view "content-preview-content-view" tagName="section"}}
+    <div class="wrapper">
+        <h1>{{{title}}}</h1>
+        {{{html}}}
     </div>
-
-{{/if}}
+{{/view}}
