@@ -44,6 +44,12 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
     afterRenderEvent: function () {
         var initMarkers = _.bind(this.initMarkers, this);
 
+        // Allow tabbing behaviour when viewing on small screen (not mobile)
+        $('.floatingheader').on('click', function () {
+            $('.entry-markdown').toggleClass('active');
+            $('.entry-preview').toggleClass('active');
+        });
+
         // replaces CodeMirror with TouchEditor only if we're on mobile
         mobileCodeMirror.createIfMobile();
 
