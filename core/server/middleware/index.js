@@ -168,22 +168,28 @@ function updateActiveTheme(req, res, next) {
     });
 }
 
-// Redirect to signup if no users are currently created
+// Redirect to signup if no user exists
+// TODO Remove this when 
 function redirectToSignup(req, res, next) {
     /*jslint unparam:true*/
 
     api.users.doesUserExist().then(function (exists) {
         if (!exists) {
-            // TODO remove this when ember admin becomes the default
-            if (req.path.match(/\/ember\//)) {
-                if (!req.path.match(/\/ghost\/ember\/signup\//)) {
-                    return res.redirect(config().paths.subdir + '/ghost/ember/signup/');
-                } else {
-                    return next();
-                }
-            }
-            // END remove this
             return res.redirect(config().paths.subdir + '/ghost/signup/');
+        }
+        next();
+    }).otherwise(function (err) {
+        return next(new Error(err));
+    });
+}
+
+// Redirect to setup if no user exists
+function redirectToSetup(req, res, next) {
+    /*jslint unparam:true*/
+
+    api.users.doesUserExist().then(function (exists) {
+        if (!exists && !req.path.match(/\/ghost\/ember\/setup\//)) {
+            return res.redirect(config().paths.subdir + '/ghost/ember/setup/');
         }
         next();
     }).otherwise(function (err) {
@@ -383,3 +389,4 @@ module.exports = function (server, dbHash) {
 module.exports.middleware = middleware;
 // Expose middleware functions in this file as well
 module.exports.middleware.redirectToSignup = redirectToSignup;
+module.exports.middleware.redirectToSetup = redirectToSetup;
