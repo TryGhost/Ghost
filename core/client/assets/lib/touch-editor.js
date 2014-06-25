@@ -46,7 +46,8 @@ var createTouchEditor = function createTouchEditor() {
         nthLine: noop,
         refresh: noop,
         selectLines: noop,
-        on: noop
+        on: noop,
+        off: noop
     };
 
     return TouchEditor;
