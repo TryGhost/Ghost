@@ -49,8 +49,7 @@
                 outline: 0;
             }
         }
-
-    }
+    } // .entry-title
 
     .entry-container {
         position: relative;
@@ -62,7 +61,8 @@
     .entry-preview { right: 0; border-left: $lightbrown 2px solid; }
 
     // The visual styles for both panels
-    .entry-markdown, .entry-preview {
+    .entry-markdown,
+    .entry-preview {
         width: 50%;
         padding: 15px;
         position: absolute;
@@ -115,19 +115,6 @@
                 color: $brown;
             }
 
-            .markdown-help {
-                position: relative;
-                top: -5px;
-                right: -5px;
-                @include icon($i-question, '', lighten($brown, 15%));
-                float: right;
-                padding: 5px;
-
-                &:hover {
-                    @include icon($i-question, '', $brown);
-                }
-            }
-
             .entry-word-count {
                 float: right;
             }
@@ -167,7 +154,7 @@
             }
         }
 
-    }
+    } // .entry-markdown, .entry-preview
 
     .entry-markdown-content {
 
@@ -250,7 +237,7 @@
             font-weight: bold;
         }
 
-    }
+    } // .entry-markdown-content
 
     .entry-preview {
         // Align the tab of entry-preview on the right
@@ -284,7 +271,7 @@
                 padding: 15px;
             }
         }
-    }
+    } // .entry-preview
 
     // Special case, when scrolling, add shadows to content headers.
     .scrolling {
@@ -307,9 +294,22 @@
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
         }
-    }
+    } // .scrolling
 
 } // .editor
+
+.markdown-help {
+    position: relative;
+    top: -5px;
+    right: -5px;
+    @include icon($i-question, '', lighten($brown, 15%));
+    float: right;
+    padding: 5px;
+
+    &:hover {
+        @include icon($i-question, '', $brown);
+    }
+}
 
 
 /* =============================================================================
