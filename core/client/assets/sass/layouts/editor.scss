@@ -524,7 +524,7 @@ body.zen {
         content: "";
         position: fixed;
         top: 10px;
-        right: 270px;
+        right: 220px;
         width: 20px;
         height: 26px;
         @include linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
@@ -532,7 +532,7 @@ body.zen {
         pointer-events: none;
 
         @media (max-width: 400px) {
-            right: 161px;
+            right: 165px;
         }
     }
 
@@ -542,7 +542,7 @@ body.zen {
         vertical-align: middle;
         width: auto;
         max-width: 80%;
-        max-width: calc(100% - 320px);
+        max-width: calc(100% - 250px);
         height: 22px;
         padding-left: 5px;
         padding-bottom: 20px;
