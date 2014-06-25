@@ -30,21 +30,20 @@ describe('Middleware', function () {
 
             req.path = '';
 
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/'));
-                done();
-            }).catch(done);
+            middleware.auth(req, res, null)
 
+            assert(res.redirect.calledWithMatch('/ghost/signin/'));
+            done();
         });
 
-        it('should redirect to signin path with redirect paramater stripped of /ghost/', function(done) {
+        it('should redirect to signin path with redirect parameter stripped of /ghost/', function(done) {
             var path = 'test/path/party';
 
             req.path = '/ghost/' + path;
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                done();
-            }).catch(done);
+            middleware.auth(req, res, null)
+
+            assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
+            done();
         });
 
         it('should call next if session user exists', function (done) {

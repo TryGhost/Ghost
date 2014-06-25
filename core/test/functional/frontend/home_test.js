@@ -5,7 +5,7 @@
 /*globals CasperTest, casper, __utils__, url, testPost, falseUser, email */
 CasperTest.begin('Home page loads', 3, function suite(test) {
     casper.start(url, function then(response) {
-        test.assertTitle('Ghost', 'The homepage should have a title and it should be Ghost');
+        test.assertTitle('Test Blog', 'The homepage should have a title and it should be "Test Blog"');
         test.assertExists('.content .post', 'There is at least one post on this page');
         test.assertSelectorHasText('.poweredby', 'Proudly published with Ghost');
     });

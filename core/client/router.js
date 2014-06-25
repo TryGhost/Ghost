@@ -16,6 +16,7 @@ Router.reopen({
 });
 
 Router.map(function () {
+    this.route('setup');
     this.route('signin');
     this.route('signout');
     this.route('signup');
