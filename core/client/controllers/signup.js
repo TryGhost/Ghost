@@ -14,6 +14,9 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
         signup: function () {
             var self = this;
 
+            // @TODO This should call closePassive() to only close passive notifications
+            self.notifications.closeAll();
+
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
@@ -29,7 +32,6 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                         self.store.pushPayload({ users: [resp.userData]});
                         self.store.find('user', resp.userData.id).then(function (user) {
                             self.send('signedIn', user);
-                            self.notifications.clear();
                             self.transitionToRoute('posts');
                         });
                     } else {
