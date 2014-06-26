@@ -7,8 +7,8 @@ var db = {
             markdown: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
             html: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
             image: {type: 'text', maxlength: 2000, nullable: true},
-            featured: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[false, true]]}},
-            page: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[false, true]]}},
+            featured: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[0, 1, false, true]]}},
+            page: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[0, 1, false, true]]}},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'draft'},
             language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
             meta_title: {type: 'string', maxlength: 150, nullable: true},
@@ -118,7 +118,7 @@ var db = {
         },
         apps: {
             id: {type: 'increments', nullable: false, primary: true},
-            uuid: {type: 'string', maxlength: 36, nullable: false},
+            uuid: {type: 'string', maxlength: 36, nullable: false, validations: {'isUUID': true}},
             name: {type: 'string', maxlength: 150, nullable: false, unique: true},
             slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
             version: {type: 'string', maxlength: 150, nullable: false},
@@ -130,7 +130,7 @@ var db = {
         },
         app_settings: {
             id: {type: 'increments', nullable: false, primary: true},
-            uuid: {type: 'string', maxlength: 36, nullable: false},
+            uuid: {type: 'string', maxlength: 36, nullable: false, validations: {'isUUID': true}},
             key: {type: 'string', maxlength: 150, nullable: false, unique: true},
             value: {type: 'text', maxlength: 65535, nullable: true},
             app_id: {type: 'integer', nullable: false, unsigned: true, references: 'apps.id'},
@@ -141,7 +141,7 @@ var db = {
         },
         app_fields: {
             id: {type: 'increments', nullable: false, primary: true},
-            uuid: {type: 'string', maxlength: 36, nullable: false},
+            uuid: {type: 'string', maxlength: 36, nullable: false, validations: {'isUUID': true}},
             key: {type: 'string', maxlength: 150, nullable: false},
             value: {type: 'text', maxlength: 65535, nullable: true},
             type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'html'},

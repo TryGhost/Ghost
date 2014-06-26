@@ -27,6 +27,7 @@ validateSchema = function (tableName, model) {
 
     _.each(columns, function (columnKey) {
         var message = '';
+
         // check nullable
         if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
                 && schema[tableName][columnKey].nullable !== true) {
@@ -35,8 +36,9 @@ validateSchema = function (tableName, model) {
                 validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
             }
         }
+
         // TODO: check if mandatory values should be enforced
-        if (model[columnKey]) {
+        if (model[columnKey] !== null && model[columnKey] !== undefined) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
@@ -54,7 +56,7 @@ validateSchema = function (tableName, model) {
             //check type
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey])) {
-                    message = 'Value in [' + tableName + '.' + columnKey + '] is no valid integer.';
+                    message = 'Value in [' + tableName + '.' + columnKey + '] is not an integer.';
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
             }
@@ -64,6 +66,8 @@ validateSchema = function (tableName, model) {
     if (validationErrors.length !== 0) {
         return when.reject(validationErrors);
     }
+
+    return when.resolve();
 };
 
 // Validation for settings
@@ -81,6 +85,8 @@ validateSettings = function (defaultSettings, model) {
     if (validationErrors.length !== 0) {
         return when.reject(validationErrors);
     }
+
+    return when.resolve();
 };
 
 // Validate default settings using the validator module.
@@ -102,6 +108,7 @@ validateSettings = function (defaultSettings, model) {
 // available validators: https://github.com/chriso/validator.js#validators
 validate = function (value, key, validations) {
     var validationErrors = [];
+
     _.each(validations, function (validationOptions, validationName) {
         var goodResult = true;
 
@@ -116,7 +123,7 @@ validate = function (value, key, validations) {
 
         // equivalent of validator.isSomething(option1, option2)
         if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
-            validationErrors.push(new errors.ValidationError('Settings validation (' + validationName + ') failed for ' + key, key));
+            validationErrors.push(new errors.ValidationError('Validation (' + validationName + ') failed for ' + key, key));
         }
 
         validationOptions.shift();
