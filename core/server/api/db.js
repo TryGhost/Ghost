@@ -101,16 +101,14 @@ db = {
 
                 _.each(_.keys(importData.data), function (tableName) {
                     _.each(importData.data[tableName], function (importValues) {
-                        try {
-                            validation.validateSchema(tableName, importValues);
-                        } catch (err) {
-                            error += error !== "" ? "<br>" : "";
+                        validation.validateSchema(tableName, importValues).catch(function (err) {
+                            error += error !== '' ? '<br>' : '';
                             error += err.message;
-                        }
+                        });
                     });
                 });
 
-                if (error !== "") {
+                if (error !== '') {
                     return when.reject(new Error(error));
                 }
                 // Import for the current version
@@ -119,7 +117,7 @@ db = {
             }).then(function importSuccess() {
                 return api.settings.updateSettingsCache();
             }).then(function () {
-                return when.resolve({ message: 'Import successful', db: [] });
+                return when.resolve({ db: [] });
             }).otherwise(function importFailure(error) {
                 return when.reject(new errors.InternalServerError(error.message || error));
             }).finally(function () {
