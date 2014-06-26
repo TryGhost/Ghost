@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper */
 
-CasperTest.emberBegin('Admin navigation bar is correct', 28, function suite(test) {
+CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
