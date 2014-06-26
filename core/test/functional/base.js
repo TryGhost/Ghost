@@ -279,13 +279,13 @@ var CasperTest = (function () {
     casper.test.tearDown(function (done) {
         casper.then(_beforeDoneHandler);
 
-        CasperTest.Routines.emberSignout.run();
+        CasperTest.Routines.signout.run();
 
         casper.run(done);
     });
 
     // Wrapper around `casper.test.begin`
-    function begin(testName, expect, suite, doNotAutoLogin) {
+    function oldBegin(testName, expect, suite, doNotAutoLogin) {
         _beforeDoneHandler = _noop;
 
         var runTest = function (test) {
@@ -296,16 +296,16 @@ var CasperTest = (function () {
             if (!doNotAutoLogin) {
                 // Only call register once for the lifetime of Mindless
                 if (!_isUserRegistered) {
-                    CasperTest.Routines.logout.run(test);
-                    CasperTest.Routines.register.run(test);
+                    CasperTest.Routines.oldLogout.run(test);
+                    CasperTest.Routines.oldRegister.run(test);
 
                     _isUserRegistered = true;
                 }
 
                 /* Ensure we're logged out at the start of every test or we may get
                    unexpected failures. */
-                CasperTest.Routines.logout.run(test);
-                CasperTest.Routines.login.run(test);
+                CasperTest.Routines.oldLogout.run(test);
+                CasperTest.Routines.oldLogin.run(test);
             }
 
             suite.call(casper, test);
@@ -325,7 +325,7 @@ var CasperTest = (function () {
         }
     }
 
-    function emberBegin(testName, expect, suite, doNotAutoLogin) {
+    function begin(testName, expect, suite, doNotAutoLogin) {
         _beforeDoneHandler = _noop;
 
         var runTest = function (test) {
@@ -337,16 +337,16 @@ var CasperTest = (function () {
                 // Only call register once for the lifetime of CasperTest
                 if (!_isUserRegistered) {
 
-                    CasperTest.Routines.emberSignout.run();
-                    CasperTest.Routines.emberSetup.run();
+                    CasperTest.Routines.signout.run();
+                    CasperTest.Routines.setup.run();
 
                     _isUserRegistered = true;
                 }
 
                 /* Ensure we're logged out at the start of every test or we may get
                  unexpected failures. */
-                CasperTest.Routines.emberSignout.run();
-                CasperTest.Routines.emberSignin.run();
+                CasperTest.Routines.signout.run();
+                CasperTest.Routines.signin.run();
             }
 
             suite.call(casper, test);
@@ -377,8 +377,8 @@ var CasperTest = (function () {
     }
 
     return {
+        oldBegin: oldBegin,
         begin: begin,
-        emberBegin: emberBegin,
         beforeDone: beforeDone
     };
 
@@ -386,7 +386,7 @@ var CasperTest = (function () {
 
 CasperTest.Routines = (function () {
 
-    function register(test) {
+    function oldRegister(test) {
         casper.thenOpen(url + 'ghost/signup/');
 
         casper.waitForOpaque('.signup-box', function then() {
@@ -403,15 +403,15 @@ CasperTest.Routines = (function () {
         }, 2000);
     }
 
-    function emberSetup() {
+    function setup() {
         casper.thenOpenAndWaitForPageLoad('setup', function then() {
-            casper.captureScreenshot('ember_signing_up1.png');
+            casper.captureScreenshot('ember_setting_up1.png');
 
             casper.waitForOpaque('.setup-box', function then() {
                 this.fillAndAdd('#setup', newSetup);
             });
 
-            casper.captureScreenshot('ember_signing_up2.png');
+            casper.captureScreenshot('ember_setting_up2.png');
 
             casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
                 var errorText = casper.evaluate(function () {
@@ -422,12 +422,12 @@ CasperTest.Routines = (function () {
                 casper.echoConcise('It appears as though a user was not already registered.');
             }, 2000);
 
-            casper.captureScreenshot('ember_signing_up3.png');
+            casper.captureScreenshot('ember_setting_up3.png');
 
         });
     }
 
-    function login(test) {
+    function oldLogin(test) {
         casper.thenOpen(url + 'ghost/signin/');
 
         casper.waitForResource(/ghost\/signin/);
@@ -447,7 +447,7 @@ CasperTest.Routines = (function () {
         });
     }
 
-    function emberSignin() {
+    function signin() {
         casper.thenOpenAndWaitForPageLoad('signin', function then() {
 
             casper.waitForOpaque('.login-box', function then() {
@@ -464,7 +464,7 @@ CasperTest.Routines = (function () {
         });
     }
 
-    function logout(test) {
+    function oldLogout(test) {
         casper.thenOpen(url + 'ghost/signout/');
 
         casper.captureScreenshot('logging_out.png');
@@ -473,7 +473,7 @@ CasperTest.Routines = (function () {
         casper.waitForResource(/ghost\/sign/);
     }
 
-    function emberSignout() {
+    function signout() {
         casper.thenOpenAndWaitForPageLoad('signout', function then() {
             casper.captureScreenshot('ember_signing_out.png');
         });
@@ -481,12 +481,7 @@ CasperTest.Routines = (function () {
 
     // This will need switching over to ember once settings general is working properly.
     function togglePermalinks(state) {
-        casper.thenOpen(url + 'ghost/settings/general');
-
-        casper.waitForResource(/ghost\/settings\/general/);
-
-        casper.waitForSelector('#general');
-        casper.waitForOpaque('#general', function then() {
+        casper.thenOpenAndWaitForPageLoad('settings.general', function then() {
             var currentState = this.evaluate(function () {
                 return document.querySelector('#permalinks') && document.querySelector('#permalinks').checked ? 'on' : 'off';
             });
@@ -548,13 +543,13 @@ CasperTest.Routines = (function () {
     }
 
     return {
-        register: _createRunner(register),
-        login: _createRunner(login),
-        logout: _createRunner(logout),
+        oldRegister: _createRunner(oldRegister),
+        oldLogin: _createRunner(oldLogin),
+        oldLogout: _createRunner(oldLogout),
         togglePermalinks: _createRunner(togglePermalinks),
-        emberSetup: _createRunner(emberSetup),
-        emberSignin: _createRunner(emberSignin),
-        emberSignout: _createRunner(emberSignout),
+        setup: _createRunner(setup),
+        signin: _createRunner(signin),
+        signout: _createRunner(signout),
         createTestPost: _createRunner(createTestPost)
     };
 

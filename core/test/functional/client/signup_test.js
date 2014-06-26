@@ -4,7 +4,7 @@
 /*global CasperTest, casper, email */
 
 
-CasperTest.emberBegin('Ghost signup fails properly', 0, function suite(test) {
+CasperTest.begin('Ghost signup fails properly', 0, function suite(test) {
 /*
     casper.thenOpenAndWaitForPageLoad('signup', function then() {
         test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');

@@ -2,7 +2,7 @@
 // Test the editor screen works as expected
 
 /*globals CasperTest, casper, testPost, $ */
-CasperTest.emberBegin('Ghost editor functions correctly', 19, function suite(test) {
+CasperTest.begin('Ghost editor functions correctly', 19, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -115,7 +115,7 @@ CasperTest.emberBegin('Ghost editor functions correctly', 19, function suite(tes
 });
 
 // TODO: Expand markdown tests to cover more markdown, and keyboard shortcuts
-CasperTest.emberBegin('Markdown in editor works', 4, function suite(test) {
+CasperTest.begin('Markdown in editor works', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -138,7 +138,7 @@ CasperTest.emberBegin('Markdown in editor works', 4, function suite(test) {
     });
 });
 
-CasperTest.emberBegin('Image Uploads', 17, function suite(test) {
+CasperTest.begin('Image Uploads', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -215,7 +215,7 @@ CasperTest.emberBegin('Image Uploads', 17, function suite(test) {
     });
 });
 
-CasperTest.emberBegin('Tag editor', 7, function suite(test) {
+CasperTest.begin('Tag editor', 7, function suite(test) {
 casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
     test.assertTitle('Ghost Admin', 'Ghost admin has no title');
     test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -243,7 +243,7 @@ casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
     });
 });
 
-CasperTest.emberBegin('Post settings menu', 30, function suite(test) {
+CasperTest.begin('Post settings menu', 30, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -406,7 +406,7 @@ CasperTest.emberBegin('Post settings menu', 30, function suite(test) {
     });
 });
 
-CasperTest.emberBegin('Publish menu - new post', 11, function suite(test) {
+CasperTest.begin('Publish menu - new post', 11, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
@@ -451,7 +451,7 @@ CasperTest.emberBegin('Publish menu - new post', 11, function suite(test) {
     });
 });
 
-CasperTest.emberBegin('Publish menu - existing post', 21, function suite(test) {
+CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     // Create a post, save it and test refreshed editor
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -550,7 +550,7 @@ CasperTest.emberBegin('Publish menu - existing post', 21, function suite(test) {
 
 
 // test the markdown help modal
-CasperTest.emberBegin('Markdown help modal', 5, function suite(test) {
+CasperTest.begin('Markdown help modal', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');

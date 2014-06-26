@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, url, newUser, user, falseUser */
 
-CasperTest.emberBegin('Ensure a User is Registered', 3, function suite(test) {
+CasperTest.begin('Ensure a User is Registered', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signup', function checkUrl() {
         test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');
     });
@@ -33,7 +33,7 @@ CasperTest.emberBegin('Ensure a User is Registered', 3, function suite(test) {
     });
 }, true);
 
-CasperTest.emberBegin('Ghost admin will load login page', 3, function suite(test) {
+CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'We should be presented with the signin page.');
@@ -51,14 +51,14 @@ CasperTest.emberBegin('Ghost admin will load login page', 3, function suite(test
 
 // Note, this test applies to a global redirect, which sends us to the standard admin.
 // Once Ember becomes the standard admin, this test should still pass.
-CasperTest.emberBegin('Redirects login to signin', 2, function suite(test) {
+CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     casper.start(url + 'ghost/login/', function testRedirect(response) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
 }, true);
 
-CasperTest.emberBegin('Can\'t spam it', 4, function suite(test) {
+CasperTest.begin('Can\'t spam it', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
@@ -94,7 +94,7 @@ CasperTest.emberBegin('Can\'t spam it', 4, function suite(test) {
 }, true);
 
 
-CasperTest.emberBegin('Login limit is in place', 4, function suite(test) {
+CasperTest.begin('Login limit is in place', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
@@ -123,7 +123,7 @@ CasperTest.emberBegin('Login limit is in place', 4, function suite(test) {
     casper.wait(2000);
 }, true);
 
-CasperTest.emberBegin('Can login to Ghost', 5, function suite(test) {
+CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');
@@ -144,7 +144,7 @@ CasperTest.emberBegin('Can login to Ghost', 5, function suite(test) {
     });
 }, true);
 
-CasperTest.emberBegin('Ensure email field form validation', 3, function suite(test) {
+CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/signin\/$/, 'Landed on the correct URL');

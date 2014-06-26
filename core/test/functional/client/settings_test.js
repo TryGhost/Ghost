@@ -7,8 +7,8 @@
 // These are used to check that a switch to a tab is complete, or that we are on the right tab.
 var generalTabDetector = '.settings-content form#settings-general',
     userTabDetector = '.settings-content form.user-profile';
-//
-CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
+
+CasperTest.begin('Settings screen is correct', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
@@ -46,7 +46,7 @@ CasperTest.emberBegin('Settings screen is correct', 17, function suite(test) {
 });
 
 // ## General settings tests
-CasperTest.emberBegin('General settings pane is correct', 8, function suite(test) {
+CasperTest.begin('General settings pane is correct', 8, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
@@ -110,70 +110,70 @@ CasperTest.emberBegin('General settings pane is correct', 8, function suite(test
 });
 
 //// ## General settings validations tests
-CasperTest.emberBegin('General settings validation is correct', 7, function suite(test) {
-   casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
-       test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-       test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
-   });
+CasperTest.begin('General settings validation is correct', 7, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
+    });
 
-   // Ensure general blog title field length validation
-   casper.fillAndSave('form#settings-general', {
-       'general[title]': new Array(152).join('a')
-   });
+    // Ensure general blog title field length validation
+    casper.fillAndSave('form#settings-general', {
+        'general[title]': new Array(152).join('a')
+    });
 
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'too long');
-   }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'too long');
+    }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
 
-   casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.js-bb-notification .close');
 
-   // Ensure general blog description field length validation
-   casper.fillAndSave('form#settings-general', {
-       'general[description]': new Array(202).join('a')
-   });
+    // Ensure general blog description field length validation
+    casper.fillAndSave('form#settings-general', {
+        'general[description]': new Array(202).join('a')
+    });
 
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'too long');
-   }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'too long');
+    }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
 
-   casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.js-bb-notification .close');
 
-   // Ensure postsPerPage number field form validation
-   casper.fillAndSave('form#settings-general', {
-       'general[postsPerPage]': 'notaninteger'
-   });
+    // Ensure postsPerPage number field form validation
+    casper.fillAndSave('form#settings-general', {
+        'general[postsPerPage]': 'notaninteger'
+    });
 
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'use a number');
-   }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number');
+    }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
 
-   casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.js-bb-notification .close');
 
-   // Ensure postsPerPage max of 1000
-   casper.fillAndSave('form#settings-general', {
-       'general[postsPerPage]': '1001'
-   });
+    // Ensure postsPerPage max of 1000
+    casper.fillAndSave('form#settings-general', {
+        'general[postsPerPage]': '1001'
+    });
 
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
-   }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
+    }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
 
-   casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.js-bb-notification .close');
 
-   // Ensure postsPerPage min of 0
-   casper.fillAndSave('form#settings-general', {
-       'general[postsPerPage]': '-1'
-   });
+    // Ensure postsPerPage min of 0
+    casper.fillAndSave('form#settings-general', {
+        'general[postsPerPage]': '-1'
+    });
 
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
-   }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
+    }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
 });
 
 // ### User settings tests
 // Please uncomment and fix these as the functionality is implemented
 
-//CasperTest.emberBegin('Can save settings', 6, function suite(test) {
+//CasperTest.begin('Can save settings', 6, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Landed on the correct URL');
@@ -244,7 +244,7 @@ CasperTest.emberBegin('General settings validation is correct', 7, function suit
 
 
 //
-//CasperTest.emberBegin('User settings screen validates email', 6, function suite(test) {
+//CasperTest.begin('User settings screen validates email', 6, function suite(test) {
 //    var email, brokenEmail;
 //
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
@@ -287,7 +287,7 @@ CasperTest.emberBegin('General settings validation is correct', 7, function suit
 //});
 //
 //
-CasperTest.emberBegin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
+CasperTest.begin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
@@ -312,7 +312,7 @@ CasperTest.emberBegin('User settings screen shows remaining characters for Bio p
     });
 });
 
-//CasperTest.emberBegin('Ensure user bio field length validation', 3, function suite(test) {
+//CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
@@ -331,7 +331,7 @@ CasperTest.emberBegin('User settings screen shows remaining characters for Bio p
 //    }, casper.failOnTimeout(test, 'Bio field length error did not appear', 2000));
 //});
 //
-//CasperTest.emberBegin('Ensure user url field validation', 3, function suite(test) {
+//CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
@@ -350,7 +350,7 @@ CasperTest.emberBegin('User settings screen shows remaining characters for Bio p
 //    }, casper.failOnTimeout(test, 'Url validation error did not appear', 2000));
 //});
 //
-//CasperTest.emberBegin('Ensure user location field length validation', 3, function suite(test) {
+//CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
 //        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
