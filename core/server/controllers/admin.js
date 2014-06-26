@@ -307,15 +307,26 @@ adminControllers = {
         var name = req.body.name,
             email = req.body.email,
             password = req.body.password,
+            blogTitle = req.body.blogTitle,
             users = [{
                 name: name,
                 email: email,
                 password: password
             }];
-
+        
         api.users.register({users: users}).then(function (response) {
-            var user = response.users[0];
-            api.settings.edit({settings: [{key: 'email', value: email}]}, {context: {user: 1}}).then(function () {
+            var user = response.users[0],
+                settings = [];
+
+            settings.push({key: 'email', value: email});
+
+            // Handles the additional values set by the setup screen.
+            if (!_.isEmpty(blogTitle)) {
+                settings.push({key: 'title', value: blogTitle});
+                settings.push({key: 'description', value: 'Thoughts, stories and ideas by ' + name});
+            }
+
+            api.settings.edit({settings: settings}, {context: {user: 1}}).then(function () {
                 var message = {
                         to: email,
                         subject: 'Your New Ghost Blog',

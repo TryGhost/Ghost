@@ -3,15 +3,13 @@
 
 /*global CasperTest, casper, email */
 
-
-CasperTest.emberBegin('Ghost signup fails properly', 0, function suite(test) {
-/*
-    casper.thenOpenAndWaitForPageLoad('signup', function then() {
-        test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');
+CasperTest.emberBegin('Ghost setup fails properly', 5, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('setup', function then() {
+        test.assertUrlMatch(/ghost\/ember\/setup\/$/, 'Landed on the correct URL');
     });
 
-    casper.then(function signupWithShortPassword() {
-        casper.fillAndSave('#signup', {email: email, password: 'test'});
+    casper.then(function setupWithShortPassword() {
+        casper.fillAndAdd('#setup', {email: email, password: 'test'});
     });
 
     // should now throw a short password error
@@ -22,8 +20,8 @@ CasperTest.emberBegin('Ghost signup fails properly', 0, function suite(test) {
         test.assert(false, 'No error notification :(');
     });
 
-    casper.then(function signupWithLongPassword() {
-        casper.fillAndSave('#signup', {email: email, password: 'testing1234'});
+    casper.then(function setupWithLongPassword() {
+        casper.fillAndAdd('#setup', {email: email, password: 'testing1234'});
     });
 
     // should now throw a 1 user only error
@@ -33,5 +31,4 @@ CasperTest.emberBegin('Ghost signup fails properly', 0, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification :(');
     });
-*/
 }, true);

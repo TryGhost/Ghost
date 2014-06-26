@@ -6,8 +6,8 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getPageContent(),
-            siteTitle = '<title><![CDATA[Ghost]]></title>',
-            siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
+            siteTitle = '<title><![CDATA[Test Blog]]></title>',
+            siteDescription = '<description><![CDATA[Thoughts, stories and ideas by Test User]]></description>',
             siteUrl = '<link>http://127.0.0.1:2369/</link>',
             postTitle = '<![CDATA[Welcome to Ghost]]>',
             postStart = '<description><![CDATA[<p>You\'re live!',
