@@ -114,7 +114,9 @@ input[type="submit"] {
 }
 
 // Button for actions which add stuff
-.button-add {
+.button-add,
+button[type="submit"].button-add,
+input[type="submit"].button-add {
     @extend %btn;
     background: $green;
     &:hover {
