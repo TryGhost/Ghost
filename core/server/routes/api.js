@@ -39,7 +39,17 @@ apiRoutes = function (middleware) {
     router['delete']('/ghost/api/v0.1/db/', api.http(api.db.deleteAllContent));
     // ## Mail
     router.post('/ghost/api/v0.1/mail', api.http(api.mail.send));
-    router.post('/ghost/api/v0.1/mail/test', api.http(api.mail.sendTest));
+    router.post('/ghost/api/v0.1/mail/test', function (req, res) {
+        api.settings.read('email').then(function (result) {
+            // attach the to: address to the request body so that it is available
+            // to the http api handler
+            req.body = { to: result.settings[0].value };
+
+            api.http(api.mail.sendTest)(req, res);
+        }).catch(function () {
+            api.http(api.mail.sendTest)(req, res);
+        });
+    });
     // ## Slugs
     router.get('/ghost/api/v0.1/slugs/:type/:name', api.http(api.slugs.generate));
     // ## Authentication
