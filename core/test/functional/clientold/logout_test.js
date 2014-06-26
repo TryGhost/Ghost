@@ -4,9 +4,9 @@
 
 /*globals casper, __utils__, url, testPost, falseUser, email */
 CasperTest.begin("Ghost logout works correctly", 2, function suite(test) {
-    CasperTest.Routines.register.run(test);
-    CasperTest.Routines.logout.run(test);
-    CasperTest.Routines.login.run(test);
+    CasperTest.Routines.oldRegister.run(test);
+    CasperTest.Routines.oldLogout.run(test);
+    CasperTest.Routines.oldLogin.run(test);
 
     casper.thenOpen(url + "ghost/", function then() {
         test.assertEquals(casper.getCurrentUrl(), url + "ghost/", "Ghost doesn't require login this time");

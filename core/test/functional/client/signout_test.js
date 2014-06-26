@@ -2,10 +2,10 @@
 // Test that signout works correctly
 
 /*globals CasperTest, casper */
-CasperTest.emberBegin('Ghost signout works correctly', 4, function suite(test) {
-    CasperTest.Routines.register.run(test);
-    CasperTest.Routines.logout.run(test);
-    CasperTest.Routines.login.run(test);
+CasperTest.begin('Ghost signout works correctly', 4, function suite(test) {
+    CasperTest.Routines.setup.run(test);
+    CasperTest.Routines.signout.run(test);
+    CasperTest.Routines.signin.run(test);
 
     casper.thenOpenAndWaitForPageLoad('root', function then() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
