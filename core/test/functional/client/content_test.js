@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, testPost, newUser */
 
-CasperTest.emberBegin('Content screen is correct', 17, function suite(test) {
+CasperTest.begin('Content screen is correct', 17, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
@@ -67,7 +67,7 @@ CasperTest.emberBegin('Content screen is correct', 17, function suite(test) {
 //    });
 });
 
-CasperTest.emberBegin('Content list shows correct post status', 7, function testStaticPageStatus(test) {
+CasperTest.begin('Content list shows correct post status', 7, function testStaticPageStatus(test) {
     CasperTest.Routines.createTestPost.run(true);
 
     // Begin test
@@ -111,7 +111,7 @@ CasperTest.emberBegin('Content list shows correct post status', 7, function test
     });
 });
 
-CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
+CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
     // Create a post that can be deleted
     CasperTest.Routines.createTestPost.run(false);
 
@@ -159,7 +159,7 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
 });
 
 // TODO: Implement this test... much needed!
-//CasperTest.emberBegin('Infinite scrolling', 2, function suite(test) {
+//CasperTest.begin('Infinite scrolling', 2, function suite(test) {
 //    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
@@ -168,7 +168,7 @@ CasperTest.emberBegin('Delete post modal', 7, function testDeleteModal(test) {
 //    });
 //});
 
-CasperTest.emberBegin('Posts can be marked as featured', 10, function suite(test) {
+CasperTest.begin('Posts can be marked as featured', 10, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -217,7 +217,7 @@ CasperTest.emberBegin('Posts can be marked as featured', 10, function suite(test
     });
 });
 
-CasperTest.emberBegin('Post url can be changed', 7, function suite(test) {
+CasperTest.begin('Post url can be changed', 7, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -256,7 +256,7 @@ CasperTest.emberBegin('Post url can be changed', 7, function suite(test) {
     });
 });
 
-CasperTest.emberBegin('Post published date can be changed', 7, function suite(test) {
+CasperTest.begin('Post published date can be changed', 7, function suite(test) {
     // Create a sample post
       CasperTest.Routines.createTestPost.run(false);
 
@@ -295,7 +295,7 @@ CasperTest.emberBegin('Post published date can be changed', 7, function suite(te
     });
 });
 
-CasperTest.emberBegin('Post can be changed to static page', 7, function suite(test) {
+CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
