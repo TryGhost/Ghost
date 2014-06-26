@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, testPost, newUser */
 
-CasperTest.begin('Content screen is correct', 17, function suite(test) {
+CasperTest.begin('Content screen is correct', 21, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
@@ -55,16 +55,15 @@ CasperTest.begin('Content screen is correct', 17, function suite(test) {
         test.assertExists('.post-settings-menu a.delete', 'post settings delete this post exists');
     });
 
-    // A bug is causing this to not always be activated. TODO: Uncomment when fixed #3008
-//    casper.then(function testActiveItem() {
-//        test.assertExists('.content-list-content li:first-of-type .active', 'first item is active');
-//        test.assertDoesntExist('.content-list-content li:nth-of-type(2) .active', 'second item is not active');
-//
-//        // Ember adds script tags into the list so we need to use nth-of-type
-//    }).thenClick('.content-list-content li:nth-of-type(2) a', function then() {
-//        test.assertDoesntExist('.content-list-content li:first-of-type .active', 'first item is not active');
-//        test.assertExists('.content-list-content li:nth-of-type(2) .active', 'second item is active');
-//    });
+    casper.then(function testActiveItem() {
+        test.assertExists('.content-list-content li:first-of-type .active', 'first item is active');
+        test.assertDoesntExist('.content-list-content li:nth-of-type(2) .active', 'second item is not active');
+
+        // Ember adds script tags into the list so we need to use nth-of-type
+    }).thenClick('.content-list-content li:nth-of-type(2) a', function then() {
+        test.assertDoesntExist('.content-list-content li:first-of-type .active', 'first item is not active');
+        test.assertExists('.content-list-content li:nth-of-type(2) .active', 'second item is active');
+    });
 });
 
 CasperTest.begin('Content list shows correct post status', 7, function testStaticPageStatus(test) {

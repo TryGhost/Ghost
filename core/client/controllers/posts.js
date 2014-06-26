@@ -15,31 +15,40 @@ var PostsController = Ember.ArrayController.extend({
     //     published_at: DESC
     //     updated_at: DESC
     orderBy: function (item1, item2) {
-        var status1 = item1.get('status'),
-            status2 = item2.get('status'),
 
-            updatedAt1, updatedAt2,
-            publishedAt1, publishedAt2;
+        function publishedAtCompare() {
+            var published1 = item1.get('published_at'),
+                published2 = item2.get('published_at');
 
-        if (status1 === status2) {
-            if (status1 === 'draft') {
-                updatedAt1 = item1.get('updated_at');
-                updatedAt2 = item2.get('updated_at');
-
-                return (new Date(updatedAt1)) < (new Date(updatedAt2)) ? 1 : -1;
-            } else {
-                publishedAt1 = item1.get('published_at');
-                publishedAt2 = item2.get('published_at');
-
-                return (new Date(publishedAt1)) < new Date(publishedAt2) ? 1 : -1;
+            if (!published1 && !published2) {
+                return 0;
             }
+
+            if (!published1 && published2) {
+                return -1;
+            }
+
+            if (!published2 && published1) {
+                return 1;
+            }
+
+            return Ember.compare(item1.get('published_at').valueOf(), item2.get('published_at').valueOf());
         }
 
-        if (status2 === 'draft') {
-            return 1;
+        var statusResult = Ember.compare(item1.get('status'), item2.get('status')),
+            updatedAtResult = Ember.compare(item1.get('updated_at').valueOf(), item2.get('updated_at').valueOf()),
+            publishedAtResult = publishedAtCompare();
+
+        if (statusResult === 0) {
+            if (publishedAtResult === 0) {
+                // This should be DESC
+                return updatedAtResult * -1;
+            }
+            // This should be DESC
+            return publishedAtResult * -1;
         }
 
-        return -1;
+        return statusResult;
     },
 
     // set from PostsRoute
