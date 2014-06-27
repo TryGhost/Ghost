@@ -594,7 +594,7 @@ var path           = require('path'),
             "update_submodules": {
                 default: {
                     options: {
-                        params: false // blanks command-line parameters
+                        params: "--init"
                     }
                 }
             }
