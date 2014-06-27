@@ -4,7 +4,9 @@ var ForgotValidator = Ember.Object.create({
             validationErrors = [];
 
         if (!validator.isEmail(data.email)) {
-            validationErrors.push('Invalid Email');
+            validationErrors.push({
+                message: 'Invalid Email'
+            });
         }
 
         return validationErrors;

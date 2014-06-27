@@ -73,50 +73,9 @@ var User = DS.Model.extend({
         return validationErrors;
     },
 
-    fetchForgottenPasswordFor: function (email) {
-        var forgottenUrl = this.get('ghostPaths').apiUrl('forgotten');
 
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-            if (!validator.isEmail(email)) {
-                reject(new Error('Please enter a correct email address.'));
-            } else {
-                resolve(ic.ajax.request(forgottenUrl, {
-                    type: 'POST',
-                    headers: {
-                        // @TODO Find a more proper way to do this.
-                        'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
-                    },
-                    data: {
-                        email: email
-                    }
-                }));
-            }
-        });
-    },
 
-    resetPassword: function (passwords, token) {
-        var self = this,
-            resetUrl = this.get('ghostPaths').apiUrl('reset');
 
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-            if (!self.validatePassword(passwords).get('passwordIsValid')) {
-                reject(new Error('Errors found! ' + JSON.stringify(self.get('passwordErrors'))));
-            } else {
-                resolve(ic.ajax.request(resetUrl, {
-                    type: 'POST',
-                    headers: {
-                        // @TODO: find a more proper way to do this.
-                        'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
-                    },
-                    data: {
-                        newpassword: passwords.newPassword,
-                        ne2password: passwords.ne2Password,
-                        token: token
-                    }
-                }));
-            }
-        });
-    }
 });
 
 export default User;
