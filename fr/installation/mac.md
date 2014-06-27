@@ -1,10 +1,10 @@
 ---
 lang: fr
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Comment installer Ghost sur Mac - Doc Ghost
+meta_description: Tout ce que vous devez savoir pour faire fonctionner votre plateforme de blog Ghost sur votre environnement local ou distant.
+heading: Installing Ghost &amp;
+subheading: Installez Ghost sur Mac
 permalink: /fr/installation/mac/
 chapter: installation
 section: mac
@@ -15,30 +15,29 @@ next_section: windows
 
 # Installing on Mac <a id="install-mac"></a>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+Pour installer Node.js et Ghost sur votre Mac, vous devez tout d'abord ouvrir un terminal. Vous pouvez en obtenir un en ouvrant la recherche rapide en tappant "Terminal".
 
 ### Install Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   Sur [http://nodejs.org](http://nodejs.org) cliquez sur install, un fichier '.pkg' va être téléchargé
+*   Une fois téléchargé, cliquez dessus pour ouvrir l'installeur, cela va installer node et npm
+*   Entrez votre mot de passe et cliquez sur 'installer le logiciel'
+*   Une fois l'installation terminée, allez sur le terminal et tappez `echo $PATH` pour verifier que '/usr/local/bin/' est référencé dans le path
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="note"><strong>Note:</strong> Si '/usr/local/bin' n'apparaît pas dans la variable d'environnement $PATH, visitez <a href="#export-path">la page de résolution des problèmes</a> pour trouver une façon de corriger ça</p>
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+Si vous êtes bloqués, vous pouvez regarder la vidéo en entier [process in action ici](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
 
 ### Install and Run Ghost
 
-*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Sur la [page de téléchargement](https://ghost.org/download/), cliquez sur le boutton de téléchargement pour récupérer la dernière version de Ghost sous format zip.
+*   Cliquez sur la flèche à côté du fichier téléchargé et choisissez 'afficher dans le finder'
+*   Dans le finder, double-cliquez sur le fichier zip pour l'extraire
+*   Ensuite, recupéréz le dossier qui viens d'être créer 'ghost-#.#.#' et glissez le dans la bar de votre terminal, cela va ouvrir un nouveau terminal localisé dans le bon dossier.
+*   Dans le nouveau terminal, tappez `npm install --production` <span class="note">notez qu'il y a deux tirets</span>
+*   Une fois que npm a terminé, tappez `npm start` pour démarrer Ghost en mode développement
+*   Dans un navigateur, visitez <code class="path">127.0.0.1:2368</code> pour accéder à votre nouveau blog Ghost
+*   Visitez <code class="path">127.0.0.1:2368/ghost</code> pour accéder à l'interface administrateur. Une fois sur cette page, vous êtes invités à créer un utilisateur admin et ainsi pouvoir vous identifier.
+*   Accédez aux [documentations d'usage](/usage) pour les étapes suivantes.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
-
