@@ -22,7 +22,7 @@ var Post = DS.Model.extend(ValidationEngine, {
     updated_by: DS.belongsTo('user', { async: true }),
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
-    tags: DS.hasMany('tag', { async: true }),
+    tags: DS.hasMany('tag', { embedded: 'always' }),
 
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
