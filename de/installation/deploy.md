@@ -114,7 +114,7 @@ Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init
     *   Neustart: `service ghost restart`
     *   Status: `service ghost status`
 
-*   Um Ghost beim Systemstart automatisch zu starten, muss das Init-Script entsprechend registriert werden. 
+*   Um Ghost beim Systemstart automatisch zu starten, muss das Init-Script entsprechend registriert werden.
     Das geht mit den folgenden Befehlen:
 
     ```

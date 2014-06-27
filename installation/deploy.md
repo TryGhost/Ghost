@@ -57,6 +57,19 @@ You can use `forever` to run Ghost as a background task. `forever` will also tak
 *   To stop Ghost type `forever stop index.js`
 *   To check if Ghost is currently running type `forever list`
 
+### PM2 ([https://github.com/Unitech/pm2](https://github.com/Unitech/pm2))
+
+PM2 is a more advanced solution than node-forever for NodeJS applications. In addition to automatically restart on crash, it also allows you [to deploy your code easily](https://github.com/Unitech/pm2#deployment), to generate init script to restart your apps on server reboot and finally to reload Ghost without any downtime.
+
+*   To install `pm2`, type `npm install pm2 -g`
+*   To launch Ghost on your server do `NODE_ENV=production pm2 start index.js --name "Ghost"`
+*   To stop Ghost `pm2 stop Ghost`
+*   To restart `pm2 restart Ghost`
+*   And to reload Ghost without downtime `pm2 reload Ghost`
+
+*   Regarding Ghost deployment (from local to remote) : [https://github.com/Unitech/pm2#deployment](https://github.com/Unitech/pm2#deployment)
+*   Regarding init script generation : [https://github.com/Unitech/pm2#startup-script](https://github.com/Unitech/pm2#startup-script)
+
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
 Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
