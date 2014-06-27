@@ -118,9 +118,57 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             '==============================';
     },
 
+    //TODO: This has to be moved to the I18n localization file.
+    //This structure is supposed to be close to the i18n-localization which will be used soon.
+    messageMap: {
+        errors: {
+            post: {
+                published: {
+                    'published': 'Your post could not be updated.',
+                    'draft': 'Your post could not be saved as a draft.'
+                },
+                draft: {
+                    'published': 'Your post could not be published.',
+                    'draft': 'Your post could not be saved as a draft.'
+                }
+
+            }
+        },
+
+        success: {
+            post: {
+                published: {
+                    'published': 'Your post has been updated.',
+                    'draft': 'Your post has been saved as a draft.'
+                },
+                draft: {
+                    'published': 'Your post has been published.',
+                    'draft': 'Your post has been saved as a draft.'
+                }
+            }
+        }
+    },
+
+    showSaveNotification: function (prevStatus, status, delay) {
+        var message = this.messageMap.success.post[prevStatus][status];
+        this.notifications.closeAll();
+
+        this.notifications.showSuccess(message, delay);
+    },
+
+    showErrorNotification: function (prevStatus, status, errors, delay) {
+        var message = this.messageMap.errors.post[prevStatus][status];
+        this.notifications.closeAll();
+
+        message += '<br />' + errors[0].message;
+
+        this.notifications.showError(message, delay);
+    },
+
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
+                prevStatus = this.get('status'),
                 isNew = this.get('isNew'),
                 self = this;
 
@@ -140,11 +188,11 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 // for a saved model it would otherwise be false.
                 self.set('isDirty', false);
 
-                self.notifications.showSuccess('Post status saved as <strong>' +
-                                                model.get('status') + '</strong>.', isNew ? true : false);
+                self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+
                 return model;
             }).catch(function (errors) {
-                self.notifications.showErrors(errors);
+                self.showErrorNotification(prevStatus, self.get('status'), errors);
                 return Ember.RSVP.reject(errors);
             });
         },
