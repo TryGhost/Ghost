@@ -44,7 +44,7 @@ Les liens suivants contiennent des instructions sur comment être opérationnel 
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
 *   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
 
-## Faire tourner en permanence Ghost 
+## Faire tourner en permanence Ghost
 
 La méthode décrite précédemment pour démarrer Ghost est `npm start`. C'est une bonne manière de faire du développement local et des tests, mais si vous démarrez Ghost à l'aide de cette ligne de commande, Ghost se fermera dès que vous fermerez la fenêtre du terminal ou que vous vous déconnecterez du SSH. Pour éviter que Ghost se ferme, vous devez lancer Ghost en tant que service. Il y a deux manières de faire.
 
@@ -56,6 +56,19 @@ Vous pouvez utiliser `forever` pour lancer Ghost en tâche de fond. `forever` pr
 *   Pour lancer Ghost en utilisant  `forever` depuis le répertoire d'installation, tapez `NODE_ENV=production forever start index.js`
 *   Pour stopper Ghost, tapez `forever stop index.js`
 *   Pour vérifier si Ghost est actuellement lancé, tapez `forever list`
+
+### PM2 ([https://github.com/Unitech/pm2](https://github.com/Unitech/pm2))
+
+PM2 est une solution plus aboutie que node-forever pour les applications NodeJS. En plus de proposer un redemarage automatique en cas de crash, elle permet aussi de [deployer votre code facilement](https://github.com/Unitech/pm2#deployment), de créer un init script en cas de redémarage de votre serveur et même de redemarrer Ghost à chaud.
+
+*   Pour installer `pm2`, tapez `npm install pm2 -g`
+*   Pour lancer Ghost tapez `NODE_ENV=production pm2 start index.js --name "Ghost"`
+*   Pour stopper `pm2 stop Ghost`
+*   Pour redémarrer Ghost `pm2 restart Ghost`
+*   Pour recharger Ghost à chaud `pm2 reload Ghost`
+
+*   Concernant le deploiement de votre application (local vers serveur) : [https://github.com/Unitech/pm2#deployment](https://github.com/Unitech/pm2#deployment)
+*   Concernant la generation automatique de script init : [https://github.com/Unitech/pm2#startup-script](https://github.com/Unitech/pm2#startup-script)
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/))
 
@@ -277,4 +290,3 @@ Les systèmes Linux utilisent des init scripts (scripts d'initialisation) pour e
 ## Mettre en place Ghost avec un nom de domaine
 
 La documentation sur comment utiliser nginx en tant que proxy inversé arrive bientôt !
-

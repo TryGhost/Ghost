@@ -57,6 +57,19 @@ Du kannst `forever` nutzen, um Ghost als Hintergrunddienst zu betreiben. `foreve
 * Um Ghost zu stoppen, führe `forever stop index.js` aus
 * Um herauszufinden ob Ghost momentan läuft, führe `forever list` aus
 
+### PM2 ([https://github.com/Unitech/pm2](https://github.com/Unitech/pm2))
+
+PM2 ist eine fortgeschrittene Lösung als Node-forever für NodeJS Anwendungen. In Ergänzung zum automatischen Neustart im Crash-Fall, ist es möglich mit pm2 Ihr Code leichter als [je zuvor zu entwickeln](https://github.com/Unitech/pm2#deployment), ein Initskript bei Serverneustart zu erstellen, und selbst Ghost ohne Ausfallszeit neuzustarten.
+
+*   Zur Installation pm2, `npm install pm2 –g` eingeben
+*   Zur Ausführung Ghost auf Ihren Server: `NODE_ENV=production pm2 start index.js --name "Ghost"` eingeben
+*   Zum Ghost-Stop: `pm2 stop Ghost`
+*   Zum Neustart `pm2 restart Ghost`
+*   Und zum Ghost Neustart ohne Ausfallszeit: `pm2 reload Ghost`
+
+*   Bezüglich Ghostsvorgang (von Lokal auf Remote): [https://github.com/Unitech/pm2#deployment](https://github.com/Unitech/pm2#deployment)
+*   Bezüglich Initskriptserstellung : [https://github.com/Unitech/pm2#startup-script](https://github.com/Unitech/pm2#startup-script)
+
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
 Beliebte Linux-Distributionen wie Fedora, Debian und Ubuntu bieten ein Paket für Supervisor: Eine Prozessverwaltung die es ermöglicht Ghost ohne herkömmliche Init-Scripte beim Systemstart auszuführen. Anders als ein Init-Script ist Supvervisor über verschiedene Distrubitionen und Kernel-Versionen hinweg portabel.
@@ -114,7 +127,7 @@ Linux-Systeme führen Init-Scripte beim Systemstart aus. Sie liegen in /etc/init
     *   Neustart: `service ghost restart`
     *   Status: `service ghost status`
 
-*   Um Ghost beim Systemstart automatisch zu starten, muss das Init-Script entsprechend registriert werden. 
+*   Um Ghost beim Systemstart automatisch zu starten, muss das Init-Script entsprechend registriert werden.
     Das geht mit den folgenden Befehlen:
 
     ```
