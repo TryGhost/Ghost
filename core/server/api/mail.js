@@ -1,6 +1,6 @@
 // # Mail API
 // API for sending Mail
-var when       = require("when"),
+var when       = require('when'),
     config     = require('../config'),
     errors     = require('../errors'),
     mail;
@@ -39,14 +39,16 @@ mail = {
                 return when.reject(new errors.EmailError(error.message));
             });
     },
+
     /**
      * ### SendTest
      * Send a test email
      *
      * @public
+     * @param {Object} required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: function () {
+    sendTest: function (object) {
         var html = '<p><strong>Hello there!</strong></p>' +
             '<p>Excellent!' +
             ' You\'ve successfully setup your email config for your Ghost blog over on ' + config().url + '</p>' +
@@ -57,6 +59,7 @@ mail = {
 
             payload = {mail: [{
                 message: {
+                    to: object.to,
                     subject: 'Test Ghost Email',
                     html: html
                 }
@@ -65,4 +68,5 @@ mail = {
         return mail.send(payload);
     }
 };
+
 module.exports = mail;
