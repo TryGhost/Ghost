@@ -153,6 +153,7 @@ var db = {
             app_id: {type: 'integer', nullable: false, unsigned: true, references: 'apps.id'},
             relatable_id: {type: 'integer', nullable: false, unsigned: true},
             relatable_type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'posts'},
+            active: {type: 'bool', nullable: false, defaultTo: true, validations: {'isIn': [[false, true]]}},
             created_at: {type: 'dateTime', nullable: false},
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},

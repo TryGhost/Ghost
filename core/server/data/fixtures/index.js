@@ -144,6 +144,26 @@ var fixtures = {
             "name":             "Edit themes",
             "action_type":      "edit",
             "object_type":      "theme"
+        },
+        {
+            "name":             "Browse apps",
+            "action_type":      "browse",
+            "object_type":      "app"
+        },
+        {
+            "name":             "Read apps",
+            "action_type":      "read",
+            "object_type":      "app"
+        },
+        {
+            "name":             "Edit apps",
+            "action_type":      "edit",
+            "object_type":      "app"
+        },
+        {
+            "name":             "Remove apps",
+            "action_type":      "remove",
+            "object_type":      "app"
         }
     ]
 };
