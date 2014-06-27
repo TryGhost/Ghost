@@ -524,10 +524,7 @@ CasperTest.Routines = (function () {
             casper.thenClick('.js-publish-button');
         }
 
-        // **Note:** This should include tags on all post requests! Uncomment and replace lines below with this when fixed.
-        //    casper.waitForResource(/posts\/\?include=tags$/);
-
-        casper.waitForResource(/posts\/$/);
+        casper.waitForResource(/posts\/\?include=tags$/);
     }
 
     function _createRunner(fn) {

@@ -8,7 +8,8 @@ var PostsIndexRoute = AuthenticatedRoute.extend(loadingIndicator, {
 
         return this.store.find('post', {
             status: 'all',
-            staticPages: 'all'
+            staticPages: 'all',
+            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 
