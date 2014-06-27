@@ -19,6 +19,10 @@ var SigninController = Ember.ObjectController.extend(ValidationEngine, {
                 loginTransition = appController.get('loginTransition');
 
             this.toggleProperty('submitting');
+            
+            // @TODO This should call closePassive() to only close passive notifications
+            self.notifications.closeAll();
+
             this.validate({ format: false }).then(function () {
                 ajax({
                     url: self.get('ghostPaths').adminUrl('signin'),
@@ -38,7 +42,6 @@ var SigninController = Ember.ObjectController.extend(ValidationEngine, {
                     return self.store.find('user', response.userData.id);
                 }).then(function (user) {
                     self.send('signedIn', user);
-                    self.notifications.clear();
                     if (loginTransition) {
                         appController.set('loginTransition', null);
                         loginTransition.retry();
@@ -51,7 +54,6 @@ var SigninController = Ember.ObjectController.extend(ValidationEngine, {
                 });
             }).catch(function (errors) {
                 self.toggleProperty('submitting');
-                self.notifications.clear();
                 self.notifications.showErrors(errors);
             });
         }
