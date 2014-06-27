@@ -50,7 +50,7 @@ var LeaveEditorController = Ember.Controller.extend({
             buttonClass: 'button-delete'
         },
         reject: {
-            text: 'Cancel',
+            text: 'Stay',
             buttonClass: 'button'
         }
     }
