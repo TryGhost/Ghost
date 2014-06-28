@@ -63,6 +63,22 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         return hashCurrent === hashPrevious;
     },
 
+    // a hook created in editor-route-base's setupController
+    modelSaved: function () {
+        var model = this.get('model');
+
+        // safer to updateTags on save in one place
+        // rather than in all other places save is called
+        model.updateTags();
+
+        // set previousTagNames to current tagNames for isDirty check
+        this.set('previousTagNames', this.get('tagNames'));
+
+        // `updateTags` triggers `isDirty => true`.
+        // for a saved model it would otherwise be false.
+        this.set('isDirty', false);
+    },
+
     // an ugly hack, but necessary to watch all the model's properties
     // and more, without having to be explicit and do it manually
     isDirty: Ember.computed.apply(Ember, watchedProps.concat(function (key, value) {
@@ -76,7 +92,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             changedAttributes;
 
         if (!this.tagNamesEqual()) {
-            this.set('previousTagNames', this.get('tagNames'));
             return true;
         }
 
@@ -183,13 +198,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             this.set('status', status);
 
             return this.get('model').save().then(function (model) {
-                model.updateTags();
-                // `updateTags` triggers `isDirty => true`.
-                // for a saved model it would otherwise be false.
-                self.set('isDirty', false);
-
                 self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
-
                 return model;
             }).catch(function (errors) {
                 self.showErrorNotification(prevStatus, self.get('status'), errors);
