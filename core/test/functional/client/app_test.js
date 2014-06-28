@@ -65,3 +65,20 @@ CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
         test.assertEquals(signoutHref, '/ghost/ember/signout/', 'Sign Out href is correct');
     }, casper.failOnTimeout(test, 'WaitForSelector #usermenu ul.overlay failed'));
 });
+
+CasperTest.begin('Can transition to the editor and back', 6, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+    });
+
+    casper.thenTransitionAndWaitForScreenLoad('editor', function testTransitionToEditor() {
+        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertExists('.entry-markdown', 'Ghost editor is present');
+        test.assertExists('.entry-preview', 'Ghost preview is present');
+    });
+
+    casper.thenTransitionAndWaitForScreenLoad('content', function testTransitionToContent() {
+        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+    });
+});

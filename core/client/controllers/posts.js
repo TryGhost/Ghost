@@ -15,7 +15,6 @@ var PostsController = Ember.ArrayController.extend({
     //     published_at: DESC
     //     updated_at: DESC
     orderBy: function (item1, item2) {
-
         function publishedAtCompare() {
             var published1 = item1.get('published_at'),
                 published2 = item2.get('published_at');
@@ -35,9 +34,25 @@ var PostsController = Ember.ArrayController.extend({
             return Ember.compare(item1.get('published_at').valueOf(), item2.get('published_at').valueOf());
         }
 
-        var statusResult = Ember.compare(item1.get('status'), item2.get('status')),
-            updatedAtResult = Ember.compare(item1.get('updated_at').valueOf(), item2.get('updated_at').valueOf()),
-            publishedAtResult = publishedAtCompare();
+        var updated1 = item1.get('updated_at'),
+            updated2 = item2.get('updated_at'),
+            statusResult,
+            updatedAtResult,
+            publishedAtResult;
+
+        // when `updated_at` is undefined, the model is still
+        // being written to with the results from the server
+        if (item1.get('isNew') || !updated1) {
+            return -1;
+        }
+
+        if (item2.get('isNew') || !updated2) {
+            return 1;
+        }
+
+        statusResult = Ember.compare(item1.get('status'), item2.get('status'));
+        updatedAtResult = Ember.compare(updated1.valueOf(), updated2.valueOf());
+        publishedAtResult = publishedAtCompare();
 
         if (statusResult === 0) {
             if (publishedAtResult === 0) {
