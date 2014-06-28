@@ -15,7 +15,6 @@ var PostsController = Ember.ArrayController.extend({
     //     published_at: DESC
     //     updated_at: DESC
     orderBy: function (item1, item2) {
-
         function publishedAtCompare() {
             var published1 = item1.get('published_at'),
                 published2 = item2.get('published_at');

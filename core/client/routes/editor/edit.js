@@ -24,7 +24,8 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
         return this.store.find('post', {
             id: params.post_id,
             status: 'all',
-            staticPages: 'all'
+            staticPages: 'all',
+            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 
@@ -43,11 +44,8 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
     setupController: function (controller, model) {
         this._super(controller, model);
         controller.set('scratch', model.get('markdown'));
-
-        model.get('tags').then(function (tags) {
-            // used to check if anything has changed in the editor
-            controller.set('previousTagNames', tags.mapBy('name'));
-        });
+        // used to check if anything has changed in the editor
+        controller.set('previousTagNames', model.get('tags').mapBy('name'));
     },
 
     actions: {

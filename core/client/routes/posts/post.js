@@ -23,7 +23,8 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
         return this.store.find('post', {
             id: params.post_id,
             status: 'all',
-            staticPages: 'all'
+            staticPages: 'all',
+            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 
