@@ -46,6 +46,9 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
         controller.set('scratch', model.get('markdown'));
         // used to check if anything has changed in the editor
         controller.set('previousTagNames', model.get('tags').mapBy('name'));
+
+        // attach model-related listeners created in editor-route-base
+        this.attachModelHooks(controller, model);
     },
 
     actions: {
@@ -73,6 +76,9 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
 
             // since the transition is now certain to complete..
             window.onbeforeunload = null;
+
+            // remove model-related listeners created in editor-route-base
+            this.detachModelHooks(controller, model);
         }
     }
 });
