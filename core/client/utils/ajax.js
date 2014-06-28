@@ -26,7 +26,7 @@ var getRequestErrorMessage = function (request) {
 
                 message = request.responseJSON.errors.map(function (errorItem) {
                     return errorItem.message;
-                }).join('; ');
+                }).join('<br />');
             } else {
                 message =  request.responseJSON.error || 'Unknown Error';
             }
