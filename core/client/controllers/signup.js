@@ -14,8 +14,7 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
         signup: function () {
             var self = this;
 
-            // @TODO This should call closePassive() to only close passive notifications
-            self.notifications.closeAll();
+            self.notifications.closePassive();
 
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
