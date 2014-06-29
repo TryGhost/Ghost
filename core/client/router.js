@@ -9,8 +9,7 @@ Router.reopen({
     rootURL: ghostPaths().subdir + '/ghost/', // admin interface lives under sub-directory /ghost
 
     clearNotifications: function () {
-        // @TODO This should call closePassive() to only close passive notifications
-        this.notifications.closeAll();
+        this.notifications.closePassive();
         this.notifications.displayDelayed();
     }.on('didTransition')
 });

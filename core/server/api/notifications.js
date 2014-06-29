@@ -39,7 +39,7 @@ notifications = {
             return element.id === parseInt(options.id, 10);
         });
 
-        if (notification && !notification.dismissable) {
+        if (notification && !notification.dismissible) {
             return when.reject(
                 new errors.NoPermissionError('You do not have permission to dismiss this notification.')
             );
@@ -78,14 +78,14 @@ notifications = {
      *      type: 'error', // this can be 'error', 'success', 'warn' and 'info'
      *      message: 'This is an error', // A string. Should fit in one line.
      *      location: 'bottom', // A string where this notification should appear. can be 'bottom' or 'top'
-     *      dismissable: true // A Boolean. Whether the notification is dismissable or not.
+     *      dismissible: true // A Boolean. Whether the notification is dismissible or not.
      *  }] };
      * ```
      */
     add: function add(object) {
 
         var defaults = {
-                dismissable: true,
+                dismissible: true,
                 location: 'bottom',
                 status: 'persistent'
             },

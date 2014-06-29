@@ -166,14 +166,14 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status];
-        this.notifications.closeAll();
+        this.notifications.closePassive();
 
         this.notifications.showSuccess(message, delay);
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
         var message = this.messageMap.errors.post[prevStatus][status];
-        this.notifications.closeAll();
+        this.notifications.closePassive();
 
         message += '<br />' + errors[0].message;
 
@@ -187,8 +187,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 isNew = this.get('isNew'),
                 self = this;
 
-            // @TODO This should call closePassive() to only close passive notifications
-            self.notifications.closeAll();
+            self.notifications.closePassive();
 
             // ensure an incomplete tag is finalised before save
             this.get('controllers.post-tags-input').send('addNewTag');
