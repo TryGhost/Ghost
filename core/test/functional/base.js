@@ -151,6 +151,44 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     });
 };
 
+casper.thenTransitionAndWaitForScreenLoad = function (screen, then, timeout) {
+    then = then || function () {};
+    timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
+
+    var screens = {
+        'root': {
+            linkSelector: '#main-menu > li.content a',
+            selector: '#main-menu .content.active'
+        },
+        'content': {
+            linkSelector: '#main-menu > li.content a',
+            selector: '#main-menu .content.active'
+        },
+        'editor': {
+            linkSelector: '#main-menu > li.editor a',
+            selector: '#entry-title'
+        },
+        'settings': {
+            linkSelector: '#main-menu > li.settings a',
+            selector: '.settings-content'
+        },
+        'settings.user': {
+            linkSelector: '#user-menu li.usermenu-profile a',
+            selector: '.settings-content .settings-user'
+        },
+        'signout': {
+            linkSelector: '#user-menu li.usermenu-signout a',
+            // When no user exists we get redirected to setup which has button-add
+            selector: '.button-save, .button-add'
+        },
+    };
+
+    return casper.thenClick(screens[screen].linkSelector).then(function () {
+        // Some screens fade in
+        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
+    });
+};
+
 casper.failOnTimeout = function (test, message) {
     return function onTimeout() {
         test.fail(message);
