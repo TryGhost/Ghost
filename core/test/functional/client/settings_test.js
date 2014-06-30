@@ -11,7 +11,7 @@ var generalTabDetector = '.settings-content form#settings-general',
 CasperTest.begin('Settings screen is correct', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testViews() {
@@ -49,7 +49,7 @@ CasperTest.begin('Settings screen is correct', 17, function suite(test) {
 CasperTest.begin('General settings pane is correct', 8, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
     });
 
     function assertImageUploaderModalThenClose() {
@@ -113,7 +113,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
 CasperTest.begin('General settings validation is correct', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/settings\/general\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
     });
 
     // Ensure general blog title field length validation
@@ -176,7 +176,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
 //CasperTest.begin('Can save settings', 6, function suite(test) {
 //    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Landed on the correct URL');
+//        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Landed on the correct URL');
 //    });
 //
 //    function handleUserRequest(requestData) {
@@ -291,7 +291,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
 // CasperTest.begin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
 //     casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
 //         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//         test.assertUrlMatch(/ghost\/ember\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
+//         test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Ghost doesn\'t require login this time');
 //     });
 
 //     function getRemainingBioCharacterCount() {

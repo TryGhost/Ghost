@@ -10,7 +10,7 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testViews() {
@@ -19,7 +19,7 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
         test.assertExists('.content-list .floatingheader a.button.button-add', 'add new post button exists');
         test.assertEquals(
             this.getElementAttribute('.content-list .floatingheader a.button.button-add', 'href'),
-            '/ghost/ember/editor/', 'add new post href is correct'
+            '/ghost/editor/', 'add new post href is correct'
         );
         test.assertExists('.content-list-content li .entry-title', 'Content list view has at least one item');
         test.assertSelectorHasText(
@@ -72,7 +72,7 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Select first non-draft, non-static post.  Should be second in the list at this stage of testing.
@@ -117,7 +117,7 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Open post settings menu
@@ -163,7 +163,7 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+//        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
 //    });
 //});
 
@@ -174,7 +174,7 @@ CasperTest.begin('Posts can be marked as featured', 10, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     // Mark as featured
@@ -223,7 +223,7 @@ CasperTest.begin('Post url can be changed', 7, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('a.post-settings');
@@ -262,7 +262,7 @@ CasperTest.begin('Post published date can be changed', 7, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('a.post-settings');
@@ -301,7 +301,7 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.thenClick('.content-preview a.post-settings');

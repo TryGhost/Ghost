@@ -7,7 +7,7 @@
 CasperTest.begin('Ghost signup fails properly', 0, function suite(test) {
 /*
     casper.thenOpenAndWaitForPageLoad('signup', function then() {
-        test.assertUrlMatch(/ghost\/ember\/signup\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/signup\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function signupWithShortPassword() {

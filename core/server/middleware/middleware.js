@@ -37,12 +37,7 @@ var middleware = {
     // exceptions for signin, signout, signup, forgotten, reset only
     // api and frontend use different authentication mechanisms atm
     authenticate: function (req, res, next) {
-        var noAuthNeeded = [
-                '/ghost/signin/', '/ghost/signout/', '/ghost/signup/',
-                '/ghost/forgotten/', '/ghost/reset/', '/ghost/ember/',
-                '/ghost/setup/'
-            ],
-            path,
+        var path,
             subPath;
 
         // SubPath is the url path starting after any default subdirectories
@@ -80,43 +75,7 @@ var middleware = {
                     }
                 )(req, res, next);
             }
-            if (noAuthNeeded.indexOf(subPath) < 0 && subPath.indexOf('/ghost/api/') !== 0) {
-                return middleware.auth(req, res, next);
-            }
         }
-        next();
-    },
-
-    // ### Auth Middleware
-    // Authenticate a request by redirecting to login if not logged in.
-    // We strip /ghost/ out of the redirect parameter for neatness
-    auth: function (req, res, next) {
-        if (!req.user) {
-            var subPath = req.path.substring(config().paths.subdir.length),
-                reqPath = subPath.replace(/^\/ghost\/?/gi, ''),
-                redirect = '';
-
-            if (reqPath !== '') {
-                redirect = '?r=' + encodeURIComponent(reqPath);
-            }
-
-            if (subPath.indexOf('/ember') > -1) {
-                return res.redirect(config().paths.subdir + '/ghost/ember/signin/');
-            }
-
-            return res.redirect(config().paths.subdir + '/ghost/signin/' + redirect);
-        }
-        next();
-    },
-
-    // ## AuthApi Middleware
-    // Authenticate a request to the API by responding with a 401 and json error details
-    authAPI: function (req, res, next) {
-        if (!req.user) {
-            res.json(401, { error: 'Please sign in' });
-            return;
-        }
-
         next();
     },
 
