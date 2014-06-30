@@ -56,6 +56,9 @@ var ValidationEngine = Ember.Mixin.create({
         if (Ember.isArray(errors)) {
             // get validation error messages
             message = errors.mapBy('message').join('<br />');
+        } else if (errors instanceof Error) {
+            // we got some kind of error in Ember
+            message += ': ' + errors.message;
         } else if (typeof errors === 'object') {
             // Get messages from server response
             message += ': ' + getRequestErrorMessage(errors);
