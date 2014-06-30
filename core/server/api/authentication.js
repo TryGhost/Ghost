@@ -31,14 +31,14 @@ authentication = {
             } else {
                 return when.reject(new errors.BadRequestError('No email provided.'));
             }
-            
+
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
 
                 return dataProvider.User.generateResetToken(email, expires, dbHash).then(function (resetToken) {
                     var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
                         siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
-                        resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + resetToken + '/',
+                        resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/ember/reset/' + resetToken + '/',
                         resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
                         payload = {
                             mail: [{
