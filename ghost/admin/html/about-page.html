@@ -1,0 +1,171 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Ghost Admin</title>
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1, minimal-ui">
+
+    <meta http-equiv="cleartype" content="on">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Ghost">
+
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <meta name="application-name" content="Ghost">
+    <meta name="msapplication-TileColor" content="#ffffff">
+
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700">
+    <link rel="stylesheet" href="http://127.0.0.1:2368/ghost/ember/css/ghost-ui.min.css?v=7337a9283c" />
+</head>
+<body class="ember-application settings" data-ember-extension="1">
+
+<div id="ember411" class="ember-view">
+    <header id="global-header" class="navbar">
+    <a class="ghost-logo" href="/" title="/" data-bindattr-1="1" data-off-canvas="left">
+        <span class="hidden">Ghost</span>
+    </a>
+    <nav id="global-nav" role="navigation">
+        <ul id="main-menu">
+            <li id="ember475" class="ember-view content"><a id="ember479" class="ember-view" href="/ghost/ember/">Content</a></li>
+            <li id="ember496" class="ember-view editor"><a id="ember497" class="ember-view" href="/ghost/ember/editor/">New Post</a></li>
+            <li id="ember515" class="ember-view settings active"><a id="ember516" class="ember-view active" href="/ghost/ember/settings/">Settings</a></li>
+
+            <li id="usermenu" class="usermenu subnav">
+                <a id="ember535" class="ember-view dropdown">
+                    <img class="avatar" src="/content/images/2014/Jun/me-bike-1.jpg" data-bindattr-2="2" alt="Avatar">
+                    <span class="name">Paul Davis</span>
+                </a>
+                <ul id="ember546" class="ember-view ghost-popover fade-in overlay">
+                        <li class="usermenu-profile"><a id="ember548" class="ember-view" href="/ghost/ember/settings/user/">Your Profile</a></li>
+                        <li class="divider"></li>
+                        <li class="usermenu-help"><a href="http://support.ghost.org/">Help / Support</a></li>
+                        <li class="divider"></li>
+                        <li class="usermenu-signout"><a id="ember556" class="ember-view" href="/ghost/ember/signout/">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+<main role="main" id="main">
+    <aside id="ember573" class="ember-view notifications">
+</aside>
+
+    <div id="ember428" class="ember-view wrapper">
+    <aside class="settings-sidebar" role="complementary">
+    <header>
+        <h1 class="title">Settings</h1>
+    </header>
+    <nav class="settings-menu">
+        <ul>
+            <li id="ember595" class="ember-view about active">
+            <a id="ember596" class="ember-view active" href="/ghost/ember/settings/about/">About Ghost</a>
+            </li>
+
+            <li id="ember597" class="ember-view general">
+            <a id="ember598" class="ember-view" href="/ghost/ember/settings/general/">General</a>
+            </li>
+
+            <li id="ember607" class="ember-view users">
+            <a id="ember608" class="ember-view" href="/ghost/ember/settings/user/">User</a>
+            </li>
+        </ul>
+    </nav>
+</aside>
+
+<section class="settings-content active">
+    <header class="fade-in">
+    <button class="button-back">Back</button>
+    <h2 class="title">About</h2>
+</header>
+
+<section class="content settings-about fade-in">
+    
+    <section class="about-ghost-intro">
+        <h1>
+            <span class="ghost_logo">
+                <span class="hidden">Ghost</span>
+            </span>
+            <!-- Get the version number from the currently running install -->
+            <span class="version blue">v0.4.2</span>
+        </h1>
+        <p>A free, open, simple publishing platform</p>
+
+        <div class="about-environment-help clearfix">
+            <div class="about-environment">
+                <p>
+                    <!-- Get the latest version number (and then compare) -->
+                    <b>Version:</b> 0.4.2 (That latest version!)<br>
+                    <!-- Get details like environment, database & mail -->
+                    <b>Environment:</b> Production<br>
+                    <b>Database:</b> SQLite3 <br>
+                    <b>Mail:</b> Native
+                </p>
+            </div>
+            <div class="about-help">
+                <a href="http://docs.ghost.org" class="button-dark">User Documentation</a>
+                <a href="https://ghost.org/forum/" class="button-dark">Get Help With Ghost</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-credits">
+        <h1>The People Who Made it Possible</h1>
+    
+        <!--
+            List the top 20 contributors from the release currently installed & running,
+            looking at both the Ghost & Ghost-UI repos
+
+            This should be able to be hard-coded into each release
+        -->
+        <ul class="top-contributors clearfix">
+            <li><a href="https://github.com/ErisDS"><img src="https://avatars.githubusercontent.com/u/101513?" title="ErisDS" alt="ErisDS"></a></li>
+            <li><a href="https://github.com/JohnONolan"><img src="https://avatars.githubusercontent.com/u/120485?" title="JohnONolan" alt="JohnONolan"></a></li>
+            <li><a href="https://github.com/matthojo"><img src="https://avatars.githubusercontent.com/u/367517?" title="matthojo" alt="matthojo"></a></li>
+            <li><a href="https://github.com/jgable"><img src="https://avatars.githubusercontent.com/u/164497?" title="jgable" alt="jgable"></a></li>
+            <li><a href="https://github.com/sebgie"><img src="https://avatars.githubusercontent.com/u/539213?" title="sebgie" alt="sebgie"></a></li>
+            <li><a href="https://github.com/halfdan"><img src="https://avatars.githubusercontent.com/u/176576?" title="halfdan" alt="halfdan"></a></li>
+            <li><a href="https://github.com/javorszky"><img src="https://avatars.githubusercontent.com/u/1196299?" title="javorszky" alt="javorszky"></a></li>
+            <li><a href="https://github.com/jaswilli"><img src="https://avatars.githubusercontent.com/u/214142?" title="jaswilli" alt="jaswilli"></a></li>
+            <li><a href="https://github.com/hswolff"><img src="https://avatars.githubusercontent.com/u/322576?" title="hswolff" alt="hswolff"></a></li>
+            <li><a href="https://github.com/cobbspur"><img src="https://avatars.githubusercontent.com/u/4405395?" title="cobbspur" alt="cobbspur"></a></li>
+            <li><a href="https://github.com/tgriesser"><img src="https://avatars.githubusercontent.com/u/154748?" title="tgriesser" alt="tgriesser"></a></li>
+            <li><a href="https://github.com/gotdibbs"><img src="https://avatars.githubusercontent.com/u/1540648?" title="gotdibbs" alt="gotdibbs"></a></li>
+            <li><a href="https://github.com/novaugust"><img src="https://avatars.githubusercontent.com/u/1207005?" title="novaugust" alt="novaugust"></a></li>
+            <li><a href="https://github.com/darvelo"><img src="https://avatars.githubusercontent.com/u/523169?" title="darvelo" alt="darvelo"></a></li>
+            <li><a href="https://github.com/ricardobeat"><img src="https://avatars.githubusercontent.com/u/97396?" title="ricardobeat" alt="ricardobeat"></a></li>
+            <li><a href="https://github.com/jamesbloomer"><img src="https://avatars.githubusercontent.com/u/1221713?" title="jamesbloomer" alt="jamesbloomer"></a></li>
+            <li><a href="https://github.com/cgiffard"><img src="https://avatars.githubusercontent.com/u/453993?" title="cgiffard" alt="cgiffard"></a></li>
+            <li><a href="https://github.com/jgillich"><img src="https://avatars.githubusercontent.com/u/347965?" title="jgillich" alt="jgillich"></a></li>
+            <li><a href="https://github.com/shindakun"><img src="https://avatars.githubusercontent.com/u/319128?" title="shindakun" alt="shindakun"></a></li>
+            <li><a href="https://github.com/PaulAdamDavis"><img src="https://avatars.githubusercontent.com/u/390392?" title="PaulAdamDavis" alt="PaulAdamDavis"></a></li>
+        </ul>
+
+        <p class="about-contributors-info">Ghost is built by an incredible group of contributors from all over the world. Here are just a few of the people who helped create the version you’re using right now.</p>
+
+        <a href="https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md" class="about-get-involved button-save large">Find out how you can get involved</a>
+
+        <p class="about-copyright">
+            Copyright 2013 - 2014 Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.<br>
+            <a href="https://ghost.org/">Ghost</a> is a trademark of the <a href="https://ghost.org/about/">Ghost Foundation</a>.
+        </p>
+    </section>
+
+</section>
+
+</section>
+
+</main>
+
+</div>
+
+</body>
+</html>
