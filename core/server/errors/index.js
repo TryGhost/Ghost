@@ -200,7 +200,7 @@ errors = {
         }
 
         // Are we admin? If so, don't worry about the user template
-        if ((res.isAdmin && req.session && req.session.user) || userErrorTemplateExists === true) {
+        if ((res.isAdmin && req.user && req.user.id) || userErrorTemplateExists === true) {
             return renderErrorInt();
         }
 
@@ -209,7 +209,7 @@ errors = {
     },
 
     error404: function (req, res, next) {
-        var message = res.isAdmin && req.session.user ? "No Ghost Found" : "Page Not Found";
+        var message = res.isAdmin && req.user ? "No Ghost Found" : "Page Not Found";
 
         // do not cache 404 error
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});

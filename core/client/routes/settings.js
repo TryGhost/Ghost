@@ -1,8 +1,7 @@
 import styleBody from 'ghost/mixins/style-body';
-import AuthenticatedRoute from 'ghost/routes/authenticated';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SettingsRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+var SettingsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, styleBody, loadingIndicator, {
     classNames: ['settings']
 });
 
