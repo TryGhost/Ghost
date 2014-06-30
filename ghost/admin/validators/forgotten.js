@@ -1,5 +1,5 @@
 var ForgotValidator = Ember.Object.create({
-    validate: function (model) {
+    check: function (model) {
         var data = model.getProperties('email'),
             validationErrors = [];
 

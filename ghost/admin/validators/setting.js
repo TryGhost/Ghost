@@ -1,5 +1,5 @@
 var SettingValidator = Ember.Object.create({
-    validate: function (model) {
+    check: function (model) {
         var validationErrors = [],
             title = model.get('title'),
             description = model.get('description'),
