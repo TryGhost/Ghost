@@ -509,11 +509,12 @@ var path           = require('path'),
                             'bower_components/showdown/src/showdown.js',
                             'bower_components/moment/moment.js',
                             'bower_components/keymaster/keymaster.js',
-
                             'bower_components/jquery-ui/ui/jquery-ui.js',
                             'bower_components/jquery-file-upload/js/jquery.fileupload.js',
                             'bower_components/fastclick/lib/fastclick.js',
                             'bower_components/nprogress/nprogress.js',
+                            'bower_components/ember-simple-auth/ember-simple-auth.js',
+                            'bower_components/ember-simple-auth/ember-simple-auth-oauth2.js',
 
                             'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                             'core/shared/lib/showdown/extensions/ghostgfm.js',

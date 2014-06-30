@@ -2,7 +2,7 @@
 // Test that signout works correctly
 
 /*globals CasperTest, casper */
-CasperTest.begin('Ghost signout works correctly', 4, function suite(test) {
+CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
     CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
     CasperTest.Routines.signin.run(test);
@@ -31,9 +31,4 @@ CasperTest.begin('Ghost signout works correctly', 4, function suite(test) {
 
     casper.captureScreenshot('user-menu-logout-clicked.png');
 
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification :(');
-    });
 }, true);

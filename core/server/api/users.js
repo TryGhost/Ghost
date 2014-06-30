@@ -126,7 +126,7 @@ users = {
                 });
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
+            return when.reject(new errors.NoPermissionError('You do not have permission to remove the user.'));
         });
     },
 

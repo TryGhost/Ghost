@@ -61,7 +61,11 @@
         "unidecode": "0.1.3",
         "validator": "3.4.0",
         "when": "3.2.3",
-        "xml": "0.0.12"
+        "xml": "0.0.12",
+        "passport": "0.2.0",
+        "oauth2orize": "1.0.1",
+        "passport-http-bearer": "1.0.1",
+        "passport-oauth2-client-password": "0.1.1"
     },
     "optionalDependencies": {
         "mysql": "2.1.1"

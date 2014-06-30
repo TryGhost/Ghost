@@ -1,7 +1,6 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var PostsIndexRoute = AuthenticatedRoute.extend(loadingIndicator, {
+var PostsIndexRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
     // redirect to first post subroute unless no posts exist
     beforeModel: function () {
         var self = this;
