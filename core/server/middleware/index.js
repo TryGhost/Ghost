@@ -136,28 +136,13 @@ function updateActiveTheme(req, res, next) {
     });
 }
 
-// Redirect to signup if no user exists
-// TODO Remove this when 
-function redirectToSignup(req, res, next) {
-    /*jslint unparam:true*/
-
-    api.users.doesUserExist().then(function (exists) {
-        if (!exists) {
-            return res.redirect(config().paths.subdir + '/ghost/signup/');
-        }
-        next();
-    }).otherwise(function (err) {
-        return next(new Error(err));
-    });
-}
-
 // Redirect to setup if no user exists
 function redirectToSetup(req, res, next) {
     /*jslint unparam:true*/
 
     api.users.doesUserExist().then(function (exists) {
-        if (!exists && !req.path.match(/\/ghost\/ember\/setup\//)) {
-            return res.redirect(config().paths.subdir + '/ghost/ember/setup/');
+        if (!exists && !req.path.match(/\/ghost\/setup\//)) {
+            return res.redirect(config().paths.subdir + '/ghost/setup/');
         }
         next();
     }).otherwise(function (err) {
@@ -278,8 +263,7 @@ module.exports = function (server) {
     expressServer.use(decideContext);
 
     // Admin only config
-    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/clientold/assets'), {maxAge: ONE_YEAR_MS})));
-    expressServer.use(subdir + '/ghost/ember', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
+    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
@@ -339,5 +323,4 @@ module.exports = function (server) {
 // Export middleware functions directly
 module.exports.middleware = middleware;
 // Expose middleware functions in this file as well
-module.exports.middleware.redirectToSignup = redirectToSignup;
 module.exports.middleware.redirectToSetup = redirectToSetup;

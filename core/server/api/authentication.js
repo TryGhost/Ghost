@@ -38,7 +38,7 @@ authentication = {
                 return dataProvider.User.generateResetToken(email, expires, dbHash).then(function (resetToken) {
                     var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
                         siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
-                        resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/ember/reset/' + resetToken + '/',
+                        resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + resetToken + '/',
                         resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
                         payload = {
                             mail: [{

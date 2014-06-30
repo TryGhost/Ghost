@@ -6,65 +6,25 @@ var config        = require('../config'),
     errors        = require('../errors'),
     storage       = require('../storage'),
     updateCheck   = require('../update-check'),
-    adminNavbar,
-    adminControllers,
-    loginSecurity = [];
-
-adminNavbar = {
-    content: {
-        name: 'Content',
-        navClass: 'content',
-        key: 'admin.navbar.content',
-        path: '/'
-    },
-    add: {
-        name: 'New Post',
-        navClass: 'editor',
-        key: 'admin.navbar.editor',
-        path: '/editor/'
-    },
-    settings: {
-        name: 'Settings',
-        navClass: 'settings',
-        key: 'admin.navbar.settings',
-        path: '/settings/'
-    }
-};
-
-
-// TODO: make this a util or helper
-function setSelected(list, name) {
-    _.each(list, function (item, key) {
-        item.selected = key === name;
-    });
-    return list;
-}
+    adminControllers;
 
 adminControllers = {
+    // Route: index
+    // Path: /ghost/
+    // Method: GET
     'index': function (req, res) {
-
         /*jslint unparam:true*/
         var userData,
-            // config we need on the frontend
+        // config we need on the frontend
             frontConfig = {
                 apps: config().apps,
                 fileStorage: config().fileStorage
             };
 
-        res.render('default-ember', {
-            user: userData,
-            config: JSON.stringify(frontConfig)
-        });
-    },
-    // Route: index
-    // Path: /ghost/
-    // Method: GET
-    'indexold': function (req, res) {
-        /*jslint unparam:true*/
         function renderIndex() {
-            res.render('content', {
-                bodyClass: 'manage',
-                adminNav: setSelected(adminNavbar, 'content')
+            res.render('default', {
+                user: userData,
+                config: JSON.stringify(frontConfig)
             });
         }
 
@@ -73,90 +33,6 @@ adminControllers = {
             when(renderIndex())
             // an error here should just get logged
         ).otherwise(errors.logError);
-    },
-    'content': function (req, res) {
-        /*jslint unparam:true*/
-        res.render('content', {
-            bodyClass: 'manage',
-            adminNav: setSelected(adminNavbar, 'content')
-        });
-    },
-    // Route: editor
-    // Path: /ghost/editor(/:id)?(/:action)?/
-    // Method: GET
-    'editor': function (req, res) {
-        if (req.params.id && req.params.action) {
-            if (req.params.action !== 'view') {
-                return errors.error404(req, res);
-            }
-
-            api.posts.read({ id: req.params.id }).then(function (result) {
-                return config.urlForPost(api.settings, result.posts[0]).then(function (url) {
-                    return res.redirect(url);
-                });
-            }, function () {
-                return errors.error404(req, res);
-            });
-
-        } else if (req.params.id !== undefined) {
-            res.render('editor', {
-                bodyClass: 'editor',
-                adminNav: setSelected(adminNavbar, 'content')
-            });
-        } else {
-            res.render('editor', {
-                bodyClass: 'editor',
-                adminNav: setSelected(adminNavbar, 'add')
-            });
-        }
-    },
-    // Route: settings
-    // path: /ghost/settings/(*/)?
-    // Method: GET
-    'settings': function (req, res, next) {
-        // TODO: Centralise list/enumeration of settings panes, so we don't run into trouble in future.
-        var allowedSections = ['', 'general', 'user', 'apps'],
-            section = req.url.replace(/(^\/ghost\/settings[\/]*|\/$)/ig, '');
-
-        if (allowedSections.indexOf(section) < 0) {
-            return next();
-        }
-
-        res.render('settings', {
-            bodyClass: 'settings',
-            adminNav: setSelected(adminNavbar, 'settings')
-        });
-    },
-    // Route: debug
-    // path: /ghost/debug/
-    // Method: GET
-    'debug': {
-        index: function (req, res) {
-            /*jslint unparam:true*/
-            res.render('debug', {
-                bodyClass: 'settings',
-                adminNav: setSelected(adminNavbar, 'settings')
-            });
-        },
-        // frontend route for downloading a file
-        exportContent: function (req, res) {
-            api.db.exportContent({context: {user: req.user.id}}).then(function (exportData) {
-                // send a file to the client
-                res.set('Content-Disposition', 'attachment; filename="GhostData.json"');
-                res.json(exportData);
-            }).otherwise(function (err) {
-                var notification = {
-                    type: 'error',
-                    message: 'Your export file could not be generated. Error: ' + err.message
-                };
-
-                errors.logError(err, 'admin.js', "Your export file could not be generated.");
-
-                return api.notifications.add({ notifications: [notification]}).then(function () {
-                    res.redirect(config().paths.subdir + '/ghost/debug');
-                });
-            });
-        }
     },
     // Route: upload
     // Path: /ghost/upload/
@@ -181,122 +57,9 @@ adminControllers = {
                 return res.send(500, e.message);
             });
     },
-    // Route: signout
-    // Path: /ghost/signout/
-    // Method: GET
-    'signout': function (req, res) {
 
-        var notification = {
-            type: 'success',
-            message: 'You were successfully signed out',
-            status: 'passive'
-        };
-
-        return api.notifications.add({ notifications: [notification] }).then(function () {
-            res.redirect(config().paths.subdir + '/ghost/signin/');
-        });
-    },
-    // Route: doSignout
-    // Path: /ghost/signout/
-    // Method: POST
-    'doSignout': function (req, res) {
-        req.session.destroy();
-
-        var statusCode,
-            redirectUrl,
-            errorMessage,
-            notification = {
-            type: 'success',
-            message: 'You were successfully signed out.',
-            status: 'passive'
-        };
-
-        if (_.isUndefined(req.session)) {
-            statusCode = 200;
-            redirectUrl = config().paths.subdir + '/ghost/signin/';
-        } else {
-            notification.type = 'error';
-            notification.message = 'Unable to sign out.';
-
-            statusCode = 500;
-            errorMessage = 'There was a problem logging out. Please try again.';
-        }
-
-        return api.notifications.add({ notifications: [notification] }).then(function () {
-            res.json(statusCode, {error: errorMessage, redirect: redirectUrl});
-        });
-
-    },
-    // Route: signin
-    // Path: /ghost/signin/
-    // Method: GET
-    'signin': function (req, res) {
-        /*jslint unparam:true*/
-        res.render('login', {
-            bodyClass: 'ghost-login',
-            hideNavbar: true,
-            adminNav: setSelected(adminNavbar, 'login')
-        });
-    },
-    // Route: doSignin
-    // Path: /ghost/signin/
-    // Method: POST
-    'doSignin': function (req, res) {
-        var currentTime = process.hrtime()[0],
-            remoteAddress = req.connection.remoteAddress,
-            denied = '';
-        loginSecurity = _.filter(loginSecurity, function (ipTime) {
-            return (ipTime.time + 2 > currentTime);
-        });
-        denied = _.find(loginSecurity, function (ipTime) {
-            return (ipTime.ip === remoteAddress);
-        });
-
-        if (!denied) {
-            loginSecurity.push({ip: remoteAddress, time: currentTime});
-            api.users.check({email: req.body.email, pw: req.body.password}).then(function (user) {
-                // Carry over the csrf secret
-                var existingSecret = req.session.csrfSecret;
-
-                req.session.regenerate(function (err) {
-                    if (!err) {
-                        req.session.csrfSecret = existingSecret;
-
-                        req.session.user = user.id;
-                        req.session.userData = user.attributes;
-
-                        var redirect = config().paths.subdir + '/ghost/';
-                        if (req.body.redirect) {
-                            redirect += decodeURIComponent(req.body.redirect);
-                        }
-                        // If this IP address successfully logs in we
-                        // can remove it from the array of failed login attempts.
-                        loginSecurity = _.reject(loginSecurity, function (ipTime) {
-                            return ipTime.ip === remoteAddress;
-                        });
-                        res.json(200, {redirect: redirect, userData: req.session.userData});
-                    }
-                });
-            }, function (error) {
-                res.json(401, {error: error.message});
-            });
-        } else {
-            res.json(401, {error: 'Slow down, there are way too many login attempts!'});
-        }
-    },
-    // Route: signup
-    // Path: /ghost/signup/
-    // Method: GET
-    'signup': function (req, res) {
-        /*jslint unparam:true*/
-        res.render('signup', {
-            bodyClass: 'ghost-signup',
-            hideNavbar: true,
-            adminNav: setSelected(adminNavbar, 'login')
-        });
-    },
     // Route: doSignup
-    // Path: /ghost/signup/
+    // Path: /ghost/setup/
     // Method: POST
     'doSignup': function (req, res) {
         var name = req.body.name,
@@ -308,7 +71,7 @@ adminControllers = {
                 email: email,
                 password: password
             }];
-        
+
         api.users.register({users: users}).then(function () {
             var settings = [];
 
@@ -355,117 +118,6 @@ adminControllers = {
             });
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
-        });
-    },
-    // Route: forgotten
-    // Path: /ghost/forgotten/
-    // Method: GET
-    'forgotten': function (req, res) {
-        /*jslint unparam:true*/
-        res.render('forgotten', {
-            bodyClass: 'ghost-forgotten',
-            hideNavbar: true,
-            adminNav: setSelected(adminNavbar, 'login')
-        });
-    },
-    // TODO: remove when old admin is removed, functionality lives now in api/authentication
-    // Route: doForgotten
-    // Path: /ghost/forgotten/
-    // Method: POST
-    'doForgotten': function (req, res) {
-        var email = req.body.email;
-
-        api.users.generateResetToken(email).then(function (token) {
-            var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
-                siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
-                resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
-                resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
-                payload = {
-                    mail: [{
-                        message: {
-                            to: email,
-                            subject: 'Reset Password',
-                            html: '<p><strong>Hello!</strong></p>' +
-                                     '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
-                                     '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
-                                     '<p>Ghost</p>'
-                        },
-                        options: {}
-                    }]
-                };
-
-            return api.mail.send(payload);
-        }).then(function success() {
-            // TODO: note that this function takes a response as an
-            // argument but jshint complains of it not being used
-            var notification = {
-                type: 'success',
-                message: 'Check your email for further instructions',
-                status: 'passive'
-            };
-
-            return api.notifications.add({ notifications: [notification] }).then(function () {
-                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
-            });
-
-        }, function failure(error) {
-            // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
-            if (error && error.message === 'EmptyResponse') {
-                error.message = "Invalid email address";
-            }
-
-            res.json(401, {error: error.message});
-        });
-    },
-    // Route: reset
-    // Path: /ghost/reset/:token
-    // Method: GET
-    'reset': function (req, res) {
-        // Validate the request token
-        var token = req.params.token;
-
-        api.users.validateToken(token).then(function () {
-            // Render the reset form
-            res.render('reset', {
-                bodyClass: 'ghost-reset',
-                hideNavbar: true,
-                adminNav: setSelected(adminNavbar, 'reset')
-            });
-        }).otherwise(function (err) {
-            // Redirect to forgotten if invalid token
-            var notification = {
-                type: 'error',
-                message: 'Invalid or expired token'
-            };
-
-            errors.logError(err, 'admin.js', "Please check the provided token for validity and expiration.");
-
-            return api.notifications.add({ notifications: [notification] }).then(function () {
-                res.redirect(config().paths.subdir + '/ghost/forgotten');
-            });
-        });
-    },
-    // TODO: remove when old admin is removed, functionality lives now in api/authentication
-    // Route: doReset
-    // Path: /ghost/reset/:token
-    // Method: POST
-    'doReset': function (req, res) {
-        var token = req.params.token,
-            newPassword = req.param('newpassword'),
-            ne2Password = req.param('ne2password');
-
-        api.users.resetPassword(token, newPassword, ne2Password).then(function () {
-            var notification = {
-                type: 'success',
-                message: 'Password changed successfully.',
-                status: 'passive'
-            };
-
-            return api.notifications.add({ notifications: [notification] }).then(function () {
-                res.json(200, {redirect: config().paths.subdir + '/ghost/signin/'});
-            });
-        }).otherwise(function (err) {
-            res.json(401, {error: err.message});
         });
     }
 };
