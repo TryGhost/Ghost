@@ -92,7 +92,7 @@ var PostsController = Ember.ArrayController.extend({
 
         if (response) {
             // Get message from response
-            message += ': ' + getRequestErrorMessage(response);
+            message += ': ' + getRequestErrorMessage(response, true);
         } else {
             message += '.';
         }
