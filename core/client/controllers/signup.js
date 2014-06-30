@@ -26,17 +26,17 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                         'X-CSRF-Token': self.get('csrf')
                     },
                     data: self.getProperties('name', 'email', 'password')
-                }).then(function (resp) {
-                    self.toggleProperty('submitting');
-                    if (resp && resp.userData) {
-                        self.store.pushPayload({ users: [resp.userData]});
-                        self.store.find('user', resp.userData.id).then(function (user) {
+                }).then(function () {
+                    self.get('session').authenticate('ember-simple-auth-authenticator:oauth2-password-grant', {
+                        identification: self.get('email'),
+                        password: self.get('password')
+                    }).then(function () {
+                        self.store.find('user', 'me').then(function (user) {
                             self.send('signedIn', user);
-                            self.transitionToRoute('posts');
+                            self.notifications.clear();
+                            self.transitionToRoute(Ember.SimpleAuth.routeAfterAuthentication);
                         });
-                    } else {
-                        self.transitionToRoute('signin');
-                    }
+                    });
                 }, function (resp) {
                     self.toggleProperty('submitting');
                     self.notifications.showAPIError(resp);
