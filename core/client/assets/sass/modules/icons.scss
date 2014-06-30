@@ -111,6 +111,7 @@ $i:                 \e018;
 
 // Icons
 $i-ghost:           \e000;
+$i-ghost-logo:      \e600;
 $i-chevron-down:    \e001;
 $i-users:           \e002;
 $i-tag:             \e003;
@@ -140,6 +141,7 @@ $i-error:           \e01a;
 $i-comments:        \e01b;
 $i-close:           \e01c;
 $i-chevron:         \e01d;
+$i-chevron-left:    \e11d;
 $i-calendar:        \e01e;
 $i-archive:         \e01f;
 $i-services:        \e020;
@@ -204,6 +206,9 @@ $i-code:            \e03e;
 
 .icon-ghost:before {
     content: '#{$i-ghost}';
+}
+.icon-ghost-logo:before {
+    content: '#{$i-ghost-logo}';
 }
 .icon-chevron-down:before {
     content: '#{$i-chevron-down}';
@@ -291,6 +296,9 @@ $i-code:            \e03e;
 }
 .icon-chevron:before {
     content: '#{$i-chevron}';
+}
+.icon-chevron-left:before {
+    content: '#{$i-chevron-left}';
 }
 .icon-calendar:before {
     content: '#{$i-calendar}';

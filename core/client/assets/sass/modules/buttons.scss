@@ -101,6 +101,19 @@ input[type="button"] {
     }
 }
 
+.button-dark {
+    @extend %btn;
+    color: #fff;
+    font-weight: normal;
+    background: #A1ADB3;
+    box-shadow: none;
+    border-color: #A1ADB3;
+    &:hover {
+        border-color: darken(#A1ADB3, 10%);
+        background: darken(#A1ADB3, 10%);
+    }
+}
+
 // Button for save/next/continue/confirm actions
 .button-save,
 button[type="submit"],
