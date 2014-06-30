@@ -14,7 +14,7 @@ var supertest     = require('supertest'),
 
 describe('Slug API', function () {
     var user = testUtils.DataGenerator.forModel.users[0],
-        csrfToken = '';
+        accesstoken = '';
 
     before(function (done) {
         var app = express();
@@ -31,42 +31,18 @@ describe('Slug API', function () {
                     return testUtils.insertDefaultFixtures();
                 })
                 .then(function () {
-                    request.get('/ghost/signin/')
+                    request.post('/ghost/api/v0.1/authentication/token/')
+                        .send({ grant_type: "password", username: user.email, password: user.password, client_id: "ghost-admin"})
+                        .expect('Content-Type', /json/)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
-
-                            var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
-                            pattern_meta.should.exist;
-                            csrfToken = res.text.match(pattern_meta)[1];
-
-                            process.nextTick(function() {
-                                request.post('/ghost/signin/')
-                                    .set('X-CSRF-Token', csrfToken)
-                                    .send({email: user.email, password: user.password})
-                                    .expect(200)
-                                    .end(function (err, res) {
-                                        if (err) {
-                                            return done(err);
-                                        }
-
-
-                                        request.saveCookies(res);
-                                        request.get('/ghost/')
-                                            .expect(200)
-                                            .end(function (err, res) {
-                                                if (err) {
-                                                    return done(err);
-                                                }
-
-                                                csrfToken = res.text.match(pattern_meta)[1];
-                                                done();
-                                            });
-                                    });
-
-                            });
+                            var jsonResponse = res.body;
+                            testUtils.API.checkResponse(jsonResponse, 'accesstoken');
+                            accesstoken = jsonResponse.access_token;
+                            return done();
                         });
                 }).catch(done);
         }).catch(function (e) {
@@ -81,6 +57,8 @@ describe('Slug API', function () {
 
     it('should be able to get a post slug', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/post/a post title/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -88,7 +66,6 @@ describe('Slug API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.slugs.should.exist;
@@ -102,6 +79,8 @@ describe('Slug API', function () {
 
     it('should be able to get a tag slug', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/post/atag/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -109,7 +88,6 @@ describe('Slug API', function () {
                 }
                 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.slugs.should.exist;
@@ -123,6 +101,8 @@ describe('Slug API', function () {
 
     it('should be able to get a user slug', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/user/user name/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -130,7 +110,6 @@ describe('Slug API', function () {
                 }
                 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.slugs.should.exist;
@@ -144,6 +123,8 @@ describe('Slug API', function () {
 
     it('should be able to get an app slug', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/app/cool app/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -151,7 +132,6 @@ describe('Slug API', function () {
                 }
                 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.slugs.should.exist;
@@ -165,13 +145,14 @@ describe('Slug API', function () {
 
     it('should not be able to get a slug for an unknown type', function (done) {
         request.get(testUtils.API.getApiQuery('slugs/unknown/who knows/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(400)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                
-                res.should.be.json;
+
                 var jsonResponse = res.body;
                 jsonResponse.should.not.exist;
 

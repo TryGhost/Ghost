@@ -188,7 +188,7 @@ http = function (apiMethod) {
         var object = req.body,
             options = _.extend({}, req.files, req.query, req.params, {
                 context: {
-                    user: (req.session && req.session.user) ? req.session.user : null
+                    user: (req.user && req.user.id) ? req.user.id : null
                 }
             });
 

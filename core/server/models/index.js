@@ -14,6 +14,9 @@ module.exports = {
     App: require('./app').App,
     AppField: require('./appField').AppField,
     AppSetting: require('./appSetting').AppSetting,
+    Client: require('./client').Client,
+    Accesstoken: require('./accesstoken').Accesstoken,
+    Refreshtoken: require('./refreshtoken').Refreshtoken,
 
     init: function () {
         return migrations.init();

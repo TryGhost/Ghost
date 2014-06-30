@@ -51,10 +51,6 @@ adminControllers = {
                 fileStorage: config().fileStorage
             };
 
-        if (req.session && req.session.userData) {
-            userData = JSON.stringify(req.session.userData);
-        }
-
         res.render('default-ember', {
             user: userData,
             config: JSON.stringify(frontConfig)
@@ -144,7 +140,7 @@ adminControllers = {
         },
         // frontend route for downloading a file
         exportContent: function (req, res) {
-            api.db.exportContent({context: {user: req.session.user}}).then(function (exportData) {
+            api.db.exportContent({context: {user: req.user.id}}).then(function (exportData) {
                 // send a file to the client
                 res.set('Content-Disposition', 'attachment; filename="GhostData.json"');
                 res.json(exportData);
@@ -189,7 +185,6 @@ adminControllers = {
     // Path: /ghost/signout/
     // Method: GET
     'signout': function (req, res) {
-        req.session.destroy();
 
         var notification = {
             type: 'success',
@@ -303,7 +298,7 @@ adminControllers = {
     // Route: doSignup
     // Path: /ghost/signup/
     // Method: POST
-    'doSignup': function (req, res, next) {
+    'doSignup': function (req, res) {
         var name = req.body.name,
             email = req.body.email,
             password = req.body.password,
@@ -314,9 +309,8 @@ adminControllers = {
                 password: password
             }];
         
-        api.users.register({users: users}).then(function (response) {
-            var user = response.users[0],
-                settings = [];
+        api.users.register({users: users}).then(function () {
+            var settings = [];
 
             settings.push({key: 'email', value: email});
 
@@ -345,8 +339,7 @@ adminControllers = {
                             message: message,
                             options: {}
                         }]
-                    },
-                    existingSecret;
+                    };
 
                 api.mail.send(payload).otherwise(function (error) {
                     errors.logError(
@@ -355,26 +348,10 @@ adminControllers = {
                         "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
                     );
                 });
-
-                // Carry over the csrf secret
-                existingSecret = req.session.csrfSecret;
-                req.session.regenerate(function (err) {
-                    if (err) {
-                        return next(err);
-                    }
-
-                    req.session.csrfSecret = existingSecret;
-
-                    if (req.session.user === undefined) {
-                        req.session.user = user.id;
-                        req.session.userData = user;
-                    }
-
-                    res.json(200, {
-                        redirect: config().paths.subdir + '/ghost/',
-                        userData: req.session.userData
-                    });
+                res.json(200, {
+                    redirect: config().paths.subdir + '/ghost/'
                 });
+
             });
         }).otherwise(function (error) {
             res.json(401, {error: error.message});
