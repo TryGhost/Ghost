@@ -45,6 +45,9 @@ var EditorEditRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixi
         controller.set('scratch', model.get('markdown'));
         // used to check if anything has changed in the editor
         controller.set('previousTagNames', model.get('tags').mapBy('name'));
+
+        // attach model-related listeners created in editor-route-base
+        this.attachModelHooks(controller, model);
     },
 
     actions: {
@@ -72,6 +75,9 @@ var EditorEditRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixi
 
             // since the transition is now certain to complete..
             window.onbeforeunload = null;
+
+            // remove model-related listeners created in editor-route-base
+            this.detachModelHooks(controller, model);
         }
     }
 });
