@@ -230,13 +230,13 @@ User = ghostBookshelf.Model.extend({
     },
 
     // Finds the user by email, and checks the password
-    check: function (_userdata) {
+    check: function (object) {
         var self = this,
             s;
 
-        return this.getByEmail(_userdata.email).then(function (user) {
+        return this.getByEmail(object.email).then(function (user) {
             if (user.get('status') !== 'locked') {
-                return nodefn.call(bcrypt.compare, _userdata.pw, user.get('password')).then(function (matched) {
+                return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
                         return when(self.setWarning(user)).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';

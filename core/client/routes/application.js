@@ -1,11 +1,25 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import mobileUtils from 'ghost/utils/mobile-utils';
 
-var ApplicationRoute = Ember.Route.extend(ShortcutsRoute, {
+var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+
     shortcuts: {
         'esc': 'closePopups'
     },
+    beforeModel: function () {
+        var self = this;
+        if (this.get('session').isAuthenticated) {
+            this.store.find('user', 'me').then(function (user) {
+                // Update the user on all routes and controllers
+                self.container.unregister('user:current');
+                self.container.register('user:current', user, { instantiate: false });
 
+                self.container.injection('route', 'user', 'user:current');
+                self.container.injection('controller', 'user', 'user:current');
+
+            });
+        }
+    },
     mobileInteractions: function () {
         var responsiveAction = mobileUtils.responsiveAction;
 

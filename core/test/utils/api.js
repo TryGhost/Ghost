@@ -20,7 +20,8 @@ var url = require('url'),
             'created_at', 'created_by',  'updated_at', 'updated_by'],
         notification: ['type', 'message', 'status', 'id', 'dismissable', 'location'],
         slugs: ['slugs'],
-        slug: ['slug']
+        slug: ['slug'],
+        accesstoken: ['access_token', 'refresh_token', 'expires_in', 'token_type']
     };
 
 function getApiQuery(route) {

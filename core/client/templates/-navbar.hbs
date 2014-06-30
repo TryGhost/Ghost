@@ -22,7 +22,7 @@
                         <li class="divider"></li>
                         <li class="usermenu-help"><a href="http://support.ghost.org/">Help / Support</a></li>
                         <li class="divider"></li>
-                        <li class="usermenu-signout">{{#link-to 'signout'}}Sign Out{{/link-to}}</li>
+                        <li class="usermenu-signout"><a {{ action 'invalidateSession' }}>Sign Out</a></li>
                 {{/gh-popover}}
             </li>
         </ul>

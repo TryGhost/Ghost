@@ -3,10 +3,8 @@
 // the testable custom middleware functions in middleware.js
 
 var api         = require('../api'),
-    BSStore     = require('../bookshelf-session'),
     bodyParser  = require('body-parser'),
     config      = require('../config'),
-    cookieParser = require('cookie-parser'),
     errors      = require('../errors'),
     express     = require('express'),
     favicon     = require('static-favicon'),
@@ -17,12 +15,14 @@ var api         = require('../api'),
     packageInfo = require('../../../package.json'),
     path        = require('path'),
     routes      = require('../routes'),
-    session     = require('express-session'),
     slashes     = require('connect-slashes'),
     storage     = require('../storage'),
     url         = require('url'),
-    when        = require('when'),
     _           = require('lodash'),
+    passport    = require('passport'),
+    oauth       = require('./oauth'),
+    oauth2orize = require('oauth2orize'),
+    authStrategies = require('./authStrategies'),
 
     expressServer,
     ONE_HOUR_S  = 60 * 60,
@@ -42,39 +42,7 @@ function ghostLocals(req, res, next) {
     // relative path from the URL, not including subdir
     res.locals.relativeUrl = req.path.replace(config().paths.subdir, '');
 
-    if (res.isAdmin) {
-        res.locals.csrfToken = req.csrfToken();
-        when.all([
-            api.users.read({id: req.session.user}, {context: {user: req.session.user}}),
-            api.notifications.browse()
-        ]).then(function (values) {
-            var currentUser = values[0].users[0],
-                notifications = values[1].notifications;
-
-            _.extend(res.locals,  {
-                currentUser: {
-                    name: currentUser.name,
-                    email: currentUser.email,
-                    image: currentUser.image
-                },
-                messages: notifications
-            });
-            next();
-        }).otherwise(function () {
-            // Only show passive notifications
-            // ToDo: Remove once ember handles passive notifications.
-            api.notifications.browse().then(function (notifications) {
-                _.extend(res.locals, {
-                    messages: _.reject(notifications.notifications, function (notification) {
-                        return notification.status !== 'passive';
-                    })
-                });
-                next();
-            });
-        });
-    } else {
-        next();
-    }
+    next();
 }
 
 function initThemeData(secure) {
@@ -268,15 +236,20 @@ function robots() {
     };
 }
 
-module.exports = function (server, dbHash) {
+module.exports = function (server) {
     var logging = config().logging,
         subdir = config().paths.subdir,
         corePath = config().paths.corePath,
-        cookie;
+        oauthServer = oauth2orize.createServer();
+
+    // silence JSHint without disabling unused check for the whole file
+    authStrategies = authStrategies;
 
     // Cache express server instance
     expressServer = server;
     middleware.cacheServer(expressServer);
+    middleware.cacheOauthServer(oauthServer);
+    oauth.init(oauthServer);
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
@@ -327,26 +300,7 @@ module.exports = function (server, dbHash) {
     expressServer.use(bodyParser.json());
     expressServer.use(bodyParser.urlencoded());
 
-    // ### Sessions
-    // we need the trailing slash in the cookie path. Session handling *must* be after the slash handling
-    cookie = {
-        path: subdir + '/ghost/',
-        maxAge: 12 * ONE_HOUR_MS
-    };
-
-    // if SSL is forced, add secure flag to cookie
-    // parameter is true, since cookie is used with admin only
-    if (isSSLrequired(true)) {
-        cookie.secure = true;
-    }
-
-    expressServer.use(cookieParser());
-    expressServer.use(session({
-        store: new BSStore(),
-        proxy: true,
-        secret: dbHash,
-        cookie: cookie
-    }));
+    expressServer.use(passport.initialize());
 
     // ### Caching
     expressServer.use(middleware.cacheControl('public'));
@@ -354,11 +308,8 @@ module.exports = function (server, dbHash) {
     expressServer.use(subdir + '/ghost/', middleware.cacheControl('private'));
 
 
-    // enable authentication; has to be done before CSRF handling
+    // enable authentication
     expressServer.use(middleware.authenticate);
-
-    // enable express csrf protection
-    expressServer.use(middleware.conditionalCSRF);
 
     // local data
     expressServer.use(ghostLocals);

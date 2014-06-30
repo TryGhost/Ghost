@@ -1,8 +1,7 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
-var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute, {
+var PostsPostRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
