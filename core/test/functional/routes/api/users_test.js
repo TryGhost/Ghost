@@ -12,14 +12,13 @@ var supertest     = require('supertest'),
 
 describe('User API', function () {
     var user = testUtils.DataGenerator.forModel.users[0],
-        csrfToken = '';
+        accesstoken = '';
 
     before(function (done) {
         var app = express();
 
         ghost({app: app}).then(function (_httpServer) {
             httpServer = _httpServer;
-            // request = supertest(app);
             request = supertest.agent(app);
 
             testUtils.clearData()
@@ -30,42 +29,18 @@ describe('User API', function () {
                     return testUtils.insertDefaultFixtures();
                 })
                 .then(function () {
-
-                    request.get('/ghost/signin/')
+                    request.post('/ghost/api/v0.1/authentication/token/')
+                        .send({ grant_type: "password", username: user.email, password: user.password, client_id: "ghost-admin"})
+                        .expect('Content-Type', /json/)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
-
-                            var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
-                            pattern_meta.should.exist;
-                            csrfToken = res.text.match(pattern_meta)[1];
-
-                            process.nextTick(function () {
-                                request.post('/ghost/signin/')
-                                    .set('X-CSRF-Token', csrfToken)
-                                    .send({email: user.email, password: user.password})
-                                    .expect(200)
-                                    .end(function (err, res) {
-                                        if (err) {
-                                            return done(err);
-                                        }
-
-                                        request.saveCookies(res);
-                                        request.get('/ghost/')
-                                            .expect(200)
-                                            .end(function (err, res) {
-                                                if (err) {
-                                                    return done(err);
-                                                }
-                                                csrfToken = res.text.match(pattern_meta)[1];
-                                                done();
-                                            });
-                                    });
-
-                            });
-
+                            var jsonResponse = res.body;
+                            testUtils.API.checkResponse(jsonResponse, 'accesstoken');
+                            accesstoken = jsonResponse.access_token;
+                            return done();
                         });
                 }).catch(done);
         }).catch(function (e) {
@@ -80,6 +55,8 @@ describe('User API', function () {
 
     it('can retrieve all users', function (done) {
         request.get(testUtils.API.getApiQuery('users/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -87,7 +64,6 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.users.should.exist;
                 testUtils.API.checkResponse(jsonResponse, 'users');
@@ -100,6 +76,8 @@ describe('User API', function () {
 
     it('can retrieve a user', function (done) {
         request.get(testUtils.API.getApiQuery('users/me/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -107,7 +85,6 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.users.should.exist;
                 testUtils.API.checkResponse(jsonResponse, 'users');
@@ -120,6 +97,8 @@ describe('User API', function () {
 
     it('can\'t retrieve non existent user', function (done) {
         request.get(testUtils.API.getApiQuery('users/99/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .expect(404)
             .end(function (err, res) {
                 if (err) {
@@ -127,7 +106,6 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json;
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.errors.should.exist;
@@ -138,6 +116,8 @@ describe('User API', function () {
 
     it('can edit a user', function (done) {
         request.get(testUtils.API.getApiQuery('users/me/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -152,8 +132,9 @@ describe('User API', function () {
                 dataToSend = { users: [{website: changedValue}]};
 
                 request.put(testUtils.API.getApiQuery('users/me/'))
-                    .set('X-CSRF-Token', csrfToken)
+                    .set('Authorization', 'Bearer ' + accesstoken)
                     .send(dataToSend)
+                    .expect('Content-Type', /json/)
                     .expect(200)
                     .end(function (err, res) {
                         if (err) {
@@ -162,7 +143,6 @@ describe('User API', function () {
 
                         var putBody = res.body;
                         res.headers['x-cache-invalidate'].should.eql('/*');
-                        res.should.be.json;
                         putBody.users[0].should.exist;
                         putBody.users[0].website.should.eql(changedValue);
                         putBody.users[0].email.should.eql(jsonResponse.users[0].email);
@@ -172,8 +152,10 @@ describe('User API', function () {
             });
     });
 
-    it('can\'t edit a user with invalid CSRF token', function (done) {
+    it('can\'t edit a user with invalid accesstoken', function (done) {
         request.get(testUtils.API.getApiQuery('users/me/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -185,9 +167,9 @@ describe('User API', function () {
                 jsonResponse.users[0].website = changedValue;
 
                 request.put(testUtils.API.getApiQuery('users/me/'))
-                    .set('X-CSRF-Token', 'invalid-token')
+                    .set('Authorization', 'Bearer ' + 'invalidtoken')
                     .send(jsonResponse)
-                    .expect(403)
+                    .expect(401)
                     .end(function (err, res) {
                         if (err) {
                             return done(err);

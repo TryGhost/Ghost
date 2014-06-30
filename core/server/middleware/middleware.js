@@ -9,8 +9,10 @@ var _           = require('lodash'),
     config      = require('../config'),
     path        = require('path'),
     api         = require('../api'),
+    passport    = require('passport'),
 
     expressServer,
+    oauthServer,
     ONE_HOUR_MS = 60 * 60 * 1000,
     ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS;
 
@@ -22,6 +24,10 @@ function isBlackListedFileType(file) {
 
 function cacheServer(server) {
     expressServer = server;
+}
+
+function cacheOauthServer(server) {
+    oauthServer = server;
 }
 
 var middleware = {
@@ -48,10 +54,32 @@ var middleware = {
         });
 
         if (res.isAdmin) {
-            if (subPath.indexOf('/ghost/api/') === 0 && path.indexOf('/ghost/api/v0.1/authentication/passwordreset/') !== 0) {
-                return middleware.authAPI(req, res, next);
-            }
+            if (subPath.indexOf('/ghost/api/') === 0
+                && path.indexOf('/ghost/api/v0.1/authentication/token') !== 0
+                && path.indexOf('/ghost/api/v0.1/authentication/passwordreset/') !== 0) {
 
+                return passport.authenticate('bearer', { session: false, failWithError: true },
+                    function (err, user, info) {
+                        if (err) {
+                            return next(err); // will generate a 500 error
+                        }
+                        // Generate a JSON response reflecting authentication status
+                        if (! user) {
+                            var msg = {
+                                type: 'error',
+                                message: 'Please Sign In',
+                                status: 'passive'
+                            };
+                            res.status(401);
+                            return res.send(msg);
+                        }
+                        // TODO: figure out, why user & authInfo is lost
+                        req.authInfo = info;
+                        req.user = user;
+                        return next(null, user, info);
+                    }
+                )(req, res, next);
+            }
             if (noAuthNeeded.indexOf(subPath) < 0 && subPath.indexOf('/ghost/api/') !== 0) {
                 return middleware.auth(req, res, next);
             }
@@ -63,7 +91,7 @@ var middleware = {
     // Authenticate a request by redirecting to login if not logged in.
     // We strip /ghost/ out of the redirect parameter for neatness
     auth: function (req, res, next) {
-        if (!req.session.user) {
+        if (!req.user) {
             var subPath = req.path.substring(config().paths.subdir.length),
                 reqPath = subPath.replace(/^\/ghost\/?/gi, ''),
                 redirect = '';
@@ -84,7 +112,7 @@ var middleware = {
     // ## AuthApi Middleware
     // Authenticate a request to the API by responding with a 401 and json error details
     authAPI: function (req, res, next) {
-        if (!req.session.user) {
+        if (!req.user) {
             res.json(401, { error: 'Please sign in' });
             return;
         }
@@ -95,7 +123,7 @@ var middleware = {
     // Check if we're logged in, and if so, redirect people back to dashboard
     // Login and signup forms in particular
     redirectToDashboard: function (req, res, next) {
-        if (req.session && req.session.user) {
+        if (req.user && req.user.id) {
             return res.redirect(config().paths.subdir + '/ghost/');
         }
 
@@ -183,8 +211,24 @@ var middleware = {
         next();
     },
 
+    // work around to handle missing client_secret
+    // oauth2orize needs it, but untrusted clients don't have it
+    addClientSecret: function (req, res, next) {
+        if (!req.body.client_secret) {
+            req.body.client_secret = 'not_available';
+        }
+        next();
+    },
+    authenticateClient: function (req, res, next) {
+        return passport.authenticate(['oauth2-client-password'], { session: false })(req, res, next);
+    },
+    generateAccessToken: function (req, res, next) {
+        return oauthServer.token()(req, res, next);
+    },
+
     busboy: busboy
 };
 
 module.exports = middleware;
 module.exports.cacheServer = cacheServer;
+module.exports.cacheOauthServer = cacheOauthServer;

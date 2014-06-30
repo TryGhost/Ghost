@@ -86,11 +86,6 @@ var db = {
             app_id: {type: 'integer', nullable: false},
             permission_id: {type: 'integer', nullable: false}
         },
-        sessions: {
-            id: {type: 'string', nullable: false, primary: true},
-            expires: {type: 'bigInteger', nullable: false},
-            sess: {type: 'string', maxlength: 4096, nullable: false}
-        },
         settings: {
             id: {type: 'increments', nullable: false, primary: true},
             uuid: {type: 'string', maxlength: 36, nullable: false, validations: {'isUUID': true}},
@@ -157,6 +152,31 @@ var db = {
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},
             updated_by: {type: 'integer', nullable: true}
+        },
+        clients: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            name: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            secret: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            created_at: {type: 'dateTime', nullable: false},
+            created_by: {type: 'integer', nullable: false},
+            updated_at: {type: 'dateTime', nullable: true},
+            updated_by: {type: 'integer', nullable: true}
+        },
+        accesstokens: {
+            id: {type: 'increments', nullable: false, primary: true},
+            token: {type: 'string', nullable: false, unique: true},
+            user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
+            client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
+            expires: {type: 'bigInteger', nullable: false}
+        },
+        refreshtokens: {
+            id: {type: 'increments', nullable: false, primary: true},
+            token: {type: 'string', nullable: false, unique: true},
+            user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
+            client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
+            expires: {type: 'bigInteger', nullable: false}
         }
     };
 

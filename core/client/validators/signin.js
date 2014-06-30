@@ -1,9 +1,9 @@
 var SigninValidator = Ember.Object.create({
     validate: function (model) {
-        var data = model.getProperties('email', 'password'),
+        var data = model.getProperties('identification', 'password'),
             validationErrors = [];
 
-        if (!validator.isEmail(data.email)) {
+        if (!validator.isEmail(data.identification)) {
             validationErrors.push('Invalid Email');
         }
 
