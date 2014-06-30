@@ -22,8 +22,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             return this.get('model').save().then(function () {
                 self.notifications.showSuccess('Successfully converted to ' + (val ? 'static page' : 'post'));
 
-                return self.get('page');
             }).catch(function (errors) {
+                self.toggleProperty('page');
                 self.notifications.showErrors(errors);
                 return Ember.RSVP.reject(errors);
             });
