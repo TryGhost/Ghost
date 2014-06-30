@@ -1,4 +1,4 @@
-/*global CodeMirror*/
+/*global CodeMirror, device*/
 import mobileUtils from 'ghost/utils/mobile-utils';
 import createTouchEditor from 'ghost/assets/lib/touch-editor';
 
@@ -24,7 +24,9 @@ setupMobileCodeMirror = function setupMobileCodeMirror() {
 };
 
 init = function init() {
-    if (mobileUtils.hasTouchScreen()) {
+    //Codemirror does not function on mobile devices,
+    // nor on any iDevice.
+    if (device.mobile() || (device.tablet() && device.ios())) {
         $('body').addClass('touch-editor');
 
         // make editor tabs touch-to-toggle in portrait mode
