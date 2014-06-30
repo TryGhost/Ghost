@@ -161,6 +161,9 @@
     }
 
     // Add the icons for specific menu items
+    .about a {
+        @include icon($i-ghost);
+    }
     .general a {
         @include icon($i-settings);
     }
