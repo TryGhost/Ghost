@@ -13,6 +13,9 @@ var EditorNewRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
 
         // used to check if anything has changed in the editor
         controller.set('previousTagNames', Ember.A());
+
+        // attach model-related listeners created in editor-route-base
+        this.attachModelHooks(controller, model);
     },
 
     actions: {
@@ -45,6 +48,9 @@ var EditorNewRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
 
             // since the transition is now certain to complete..
             window.onbeforeunload = null;
+
+            // remove model-related listeners created in editor-route-base
+            this.detachModelHooks(controller, model);
         }
     }
 });
