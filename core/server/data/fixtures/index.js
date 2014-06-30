@@ -4,6 +4,7 @@ var sequence    = require('when/sequence'),
     Tag         = require('../../models/tag').Tag,
     Role        = require('../../models/role').Role,
     Permission  = require('../../models/permission').Permission,
+    Client      = require('../../models/client').Client,
     Permissions = require('../../models/permission').Permissions,
 
     populateFixtures,
@@ -145,6 +146,13 @@ var fixtures = {
             "action_type":      "edit",
             "object_type":      "theme"
         }
+    ],
+    client003: [
+        {
+            "name":             "Ghost Admin",
+            "slug":             "ghost-admin",
+            "secret":           "not_available"
+        },
     ]
 };
 
@@ -170,6 +178,10 @@ populateFixtures = function () {
 
     _.each(fixtures.permissions003, function (permission) {
         ops.push(function () {return Permission.add(permission, {user: 1}); });
+    });
+
+    _.each(fixtures.client003, function (client) {
+        ops.push(function () {return Client.add(client, {user: 1}); });
     });
 
     // add the tag to the post
@@ -244,6 +256,10 @@ updateFixtures = function () {
 
     _.each(fixtures.permissions003, function (permission) {
         ops.push(function () {return Permission.add(permission, {user: 1}); });
+    });
+
+    _.each(fixtures.client003, function (client) {
+        ops.push(function () {return Client.add(client, {user: 1}); });
     });
 
     relations.push(function () {

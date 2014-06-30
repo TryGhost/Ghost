@@ -40,11 +40,11 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
         password: password
     },
     user = {
-        email: email,
+        identification: email,
         password: password
     },
     falseUser = {
-        email: email,
+        identification: email,
         password: 'letmethrough'
     },
     testPost = {

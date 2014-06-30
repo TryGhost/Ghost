@@ -20,8 +20,6 @@ var User = DS.Model.extend({
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
 
-    isSignedIn: Ember.computed.bool('id'),
-
     validationErrors: function () {
         var validationErrors = [];
 

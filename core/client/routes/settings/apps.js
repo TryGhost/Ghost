@@ -1,6 +1,4 @@
-import AuthenticatedRoute from 'ghost/routes/authenticated';
-
-var AppsRoute = AuthenticatedRoute.extend({
+var AppsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, {
     beforeModel: function () {
         if (!this.get('config.apps')) {
             this.transitionTo('settings.general');
