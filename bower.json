@@ -4,6 +4,7 @@
     "backbone": "1.0.0",
     "codemirror": "4.0.1",
     "Countable": "2.0.2",
+    "device": "matthewhudson/device.js#5347a275b66020a0d4dfe9aad81a488f8cce448d",
     "ember": "1.5.0",
     "ember-data": "~1.0.0-beta.8",
     "ember-load-initializers": "git://github.com/stefanpenner/ember-load-initializers.git#0.0.1",
