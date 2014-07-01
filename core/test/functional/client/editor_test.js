@@ -354,7 +354,7 @@ CasperTest.begin('Post settings menu', 31, function suite(test) {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
     });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
@@ -368,7 +368,7 @@ CasperTest.begin('Post settings menu', 31, function suite(test) {
         test.assertNotVisible('.notification-success', 'success notification should not still exist');
     });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
