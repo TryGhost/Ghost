@@ -59,7 +59,7 @@ describe('Notifications API', function () {
             should.exist(result.notifications);
 
             notification = result.notifications[0];
-            notification.dismissable.should.be.true;
+            notification.dismissible.should.be.true;
             should.exist(notification.location);
             notification.location.should.equal('bottom');
 
@@ -85,7 +85,7 @@ describe('Notifications API', function () {
             notification.id.should.not.equal(99);
             should.exist(notification.status);
             notification.status.should.equal('persistent')
-            
+
             done();
         }).catch(done);
     });
