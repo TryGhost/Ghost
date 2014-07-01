@@ -5,7 +5,7 @@
 CasperTest.begin('Ghost editor functions correctly', 19, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
         test.assertExists('.entry-markdown', 'Ghost editor is present');
         test.assertExists('.entry-preview', 'Ghost preview is present');
     });
@@ -42,7 +42,7 @@ CasperTest.begin('Ghost editor functions correctly', 19, function suite(test) {
     casper.thenClick('.js-publish-button');
 
     casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assertUrlMatch(/ghost\/ember\/editor\/\d+\/$/, 'got an id on our URL');
+        test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
         test.assertEvalEquals(function () {
             return document.querySelector('#entry-title').value;
         }, testPost.title, 'Title is correct');
@@ -118,7 +118,7 @@ CasperTest.begin('Ghost editor functions correctly', 19, function suite(test) {
 CasperTest.begin('Markdown in editor works', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testImage() {
@@ -141,7 +141,7 @@ CasperTest.begin('Markdown in editor works', 4, function suite(test) {
 CasperTest.begin('Image Uploads', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     // Test standard image upload modal
@@ -169,7 +169,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
     // Test image source location
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     var testFileLocation = 'test/file/location';
@@ -192,7 +192,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
     // Test image url source location
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function () {
@@ -218,7 +218,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
 CasperTest.begin('Tag editor', 7, function suite(test) {
 casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
     test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-    test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+    test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
 });
 
     var tagName = 'someTagName';
@@ -243,10 +243,10 @@ casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
     });
 });
 
-CasperTest.begin('Post settings menu', 30, function suite(test) {
+CasperTest.begin('Post settings menu', 31, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function () {
@@ -282,8 +282,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        // TODO: Uncomment when the post save notifications are correct #2850
-        // test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
         casper.click('.notification-success a.close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
@@ -401,7 +400,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
         casper.thenClick('#modal-container .js-button-accept');
     });
 
-    casper.waitForUrl(/ghost\/ember\/\d+\/$/, function onSuccess() {
+    casper.waitForUrl(/ghost\/\d+\/$/, function onSuccess() {
         test.assert(true, 'clicking the delete post button should bring us to the content page');
     });
 });
@@ -409,7 +408,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
 CasperTest.begin('Publish menu - new post', 11, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     // ... check default option status, label, class
@@ -455,7 +454,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     // Create a post, save it and test refreshed editor
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function createTestPost() {
@@ -471,7 +470,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     casper.thenClick('.js-publish-button');
 
     casper.waitForSelector('.notification-success', function checkPostWasCreated() {
-        test.assertUrlMatch(/ghost\/ember\/editor\/\d+\/$/, 'got an id on our URL');
+        test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     });
 
     // ... check option status, label, class now that we're *saved* as 'draft'
@@ -505,7 +504,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     casper.thenClick('.js-publish-button');
 
     casper.waitForSelector('.notification-success', function checkPostWasCreated() {
-        test.assertUrlMatch(/ghost\/ember\/editor\/\d+\/$/, 'got an id on our URL');
+        test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     });
 
     // ... check option status, label, class for saved as 'published'
@@ -553,7 +552,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
 CasperTest.begin('Markdown help modal', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
     // open markdown help modal

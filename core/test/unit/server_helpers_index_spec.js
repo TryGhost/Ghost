@@ -1375,11 +1375,9 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/ghost/scripts/vendor.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/helpers.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/templates.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/models.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/views.js?v=abc"></script>'
+                '<script src="/ghost/scripts/vendor-ember.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/templates-ember.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
             );
 
             overrideConfig({
@@ -1390,11 +1388,9 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/blog/ghost/scripts/vendor.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/helpers.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/templates.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/models.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/views.js?v=abc"></script>'
+                '<script src="/blog/ghost/scripts/vendor-ember.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/templates-ember.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
             );
         });
 
@@ -1404,7 +1400,11 @@ describe('Core Helpers', function () {
 
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
-            String(rendered).should.equal('<script src="/ghost/scripts/ghost.min.js?v=abc"></script>');
+            String(rendered).should.equal(
+                '<script src="/ghost/scripts/vendor-ember.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/templates-ember.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+            );
 
             overrideConfig({
                 paths: {'subdir': '/blog'}
@@ -1413,7 +1413,11 @@ describe('Core Helpers', function () {
             // with subdirectory
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
-            String(rendered).should.equal('<script src="/blog/ghost/scripts/ghost.min.js?v=abc"></script>');
+            String(rendered).should.equal(
+                '<script src="/blog/ghost/scripts/vendor-ember.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/templates-ember.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+            );
         });
     });
 

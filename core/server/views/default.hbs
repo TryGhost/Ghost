@@ -33,23 +33,15 @@
     <link rel="stylesheet" href="{{asset "css/ghost-ui.min.css" ghost="true"}}" />
 </head>
 <body class="{{bodyClass}}{{update_notification classOnly="true"}}">
-    {{#unless hideNavbar}}
-        {{> navbar}}
-    {{/unless}}
-
-    <main role="main" id="main">
-        {{update_notification}}
-
-        <aside id="notifications" class="notifications">
-            {{> notifications}}
-        </aside>
-
-        {{{body}}}
-    </main>
-
-    <div id="modal-container"></div>
-    <div class="modal-background fade"></div>
 
     {{{ghost_script_tags}}}
+
+    <script>
+    window.ENV = {
+        {{#user}}user: {{{this}}},{{/user}}
+        config: {{{config}}}
+    };
+    window.App = require('ghost/app')['default'].create(window.ENV);
+    </script>
 </body>
 </html>

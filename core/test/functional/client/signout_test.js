@@ -9,7 +9,7 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
 
     casper.thenOpenAndWaitForPageLoad('root', function then() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/ember\/\d+\/$/, 'Landed on the correct URL without signing in');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL without signing in');
     });
 
     casper.thenClick('#usermenu a').waitFor(function checkOpaque() {

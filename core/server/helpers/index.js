@@ -163,21 +163,17 @@ coreHelpers.url = function (options) {
 // *Usage example:*
 // `{{asset "css/screen.css"}}`
 // `{{asset "css/screen.css" ghost="true"}}`
-// `{{asset "css/screen.css" ember="true"}}`
 // Returns the path to the specified asset. The ghost
 // flag outputs the asset path for the Ghost admin
 coreHelpers.asset = function (context, options) {
     var output = '',
-        isAdmin = options && options.hash && options.hash.ghost,
-        isEmberAdmin = options && options.hash && options.hash.ember;
+        isAdmin = options && options.hash && options.hash.ghost;
 
     output += config().paths.subdir + '/';
 
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
             output += 'ghost/';
-        } else if (isEmberAdmin) {
-            output += 'ghost/ember/';
         } else {
             output += 'assets/';
         }
@@ -350,19 +346,6 @@ coreHelpers.apps = function (context, options) {
 };
 
 coreHelpers.ghost_script_tags = function () {
-    var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
-
-    scriptList = _.map(scriptList, function (fileName) {
-        return scriptTemplate({
-            source: config().paths.subdir + '/ghost/scripts/' + fileName,
-            version: coreHelpers.assetHash
-        });
-    });
-
-    return scriptList.join('');
-};
-
-coreHelpers.ember_script_tags = function () {
     var scriptList = scriptFiles.ember;
 
     scriptList = _.map(scriptList, function (fileName) {
@@ -825,18 +808,12 @@ registerHelpers = function (adminHbs, assetHash) {
 
 
     // Register admin helpers
-    registerAdminHelper('asset', coreHelpers.asset);
-
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
 
-    registerAdminHelper('ember_script_tags', coreHelpers.ember_script_tags);
+    registerAdminHelper('asset', coreHelpers.asset);
 
-    registerAdminHelper('file_storage', coreHelpers.file_storage);
-
-    registerAdminHelper('apps', coreHelpers.apps);
-
-    registerAdminHelper('admin_url', coreHelpers.admin_url);
-
+    // TODO: Make sure this works #3160
+    // we probably don't need this code for it, but it needs to work still
     registerAsyncAdminHelper('update_notification', coreHelpers.update_notification);
 };
 

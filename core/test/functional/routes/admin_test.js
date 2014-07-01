@@ -108,7 +108,7 @@ describe('Admin Routing', function () {
                 .end(doEndNoAuth(done));
         });
     });
-    
+
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('Require HTTPS - no redirect', function() {
         var forkedGhost, request;
@@ -125,13 +125,13 @@ describe('Admin Routing', function () {
                 }).then(done)
                 .catch(done);
         });
-        
+
         after(function (done) {
             if (forkedGhost) {
                 forkedGhost.kill(done);
             }
         });
-        
+
         it('should block admin access over non-HTTPS', function(done) {
             request.get('/ghost/')
                 .expect(403)
@@ -139,12 +139,12 @@ describe('Admin Routing', function () {
         });
 
         it('should allow admin access over HTTPS', function(done) {
-            request.get('/ghost/signup/')
+            request.get('/ghost/setup/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
                 .end(doEnd(done));
         });
-    });    
+    });
 
     describe('Require HTTPS - redirect', function() {
         var forkedGhost, request;
@@ -161,13 +161,13 @@ describe('Admin Routing', function () {
                 }).then(done)
                 .catch(done);
         });
-        
+
         after(function (done) {
             if (forkedGhost) {
                 forkedGhost.kill(done);
             }
         });
-        
+
         it('should redirect admin access over non-HTTPS', function(done) {
             request.get('/ghost/')
                 .expect('Location', /^https:\/\/localhost\/ghost\//)
@@ -176,34 +176,33 @@ describe('Admin Routing', function () {
         });
 
         it('should allow admin access over HTTPS', function(done) {
-            request.get('/ghost/signup/')
+            request.get('/ghost/setup/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
                 .end(done);
         });
-    });    
+    });
 
-    describe('Ghost Admin Signup', function () {
+    describe('Ghost Admin Setup', function () {
 
-        // TODO: needs new test for Ember
-        // it('should redirect from /ghost/ to /ghost/signin/ when no user', function (done) {
-        //     request.get('/ghost/')
-        //         .expect('Location', /ghost\/signin/)
-        //         .expect('Cache-Control', cacheRules['private'])
-        //         .expect(302)
-        //         .end(doEnd(done));
-        // });
+        it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
+             request.get('/ghost/')
+                 .expect('Location', /ghost\/setup/)
+                 .expect('Cache-Control', cacheRules['private'])
+                 .expect(302)
+                 .end(doEnd(done));
+        });
 
-        it('should redirect from /ghost/signin/ to /ghost/signup/ when no user', function (done) {
+        it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
             request.get('/ghost/signin/')
-                .expect('Location', /ghost\/signup/)
+                .expect('Location', /ghost\/setup/)
                 .expect('Cache-Control', cacheRules['private'])
                 .expect(302)
                 .end(doEnd(done));
         });
 
-        it('should respond with html for /ghost/signup/', function (done) {
-            request.get('/ghost/signup/')
+        it('should respond with html for /ghost/setup/', function (done) {
+            request.get('/ghost/setup/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', cacheRules['private'])
                 .expect(200)
@@ -232,16 +231,16 @@ describe('Admin Routing', function () {
 
     });
 
-    describe('Ghost Admin Forgot Password', function () {
+    // TODO: new test for Ember where user is added
+//     describe('Ghost Admin Forgot Password', function () {
+        // it('should respond with html for /ghost/forgotten/', function (done) {
+        //     request.get('/ghost/forgotten/')
+        //         .expect('Content-Type', /html/)
+        //         .expect('Cache-Control', cacheRules['private'])
+        //         .expect(200)
+        //         .end(doEnd(done));
+        // });
 
-        it('should respond with html for /ghost/forgotten/', function (done) {
-            request.get('/ghost/forgotten/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['private'])
-                .expect(200)
-                .end(doEnd(done));
-        });
-        // TODO: new test for Ember
         // it('should respond 404 for /ghost/reset/', function (done) {
         //     request.get('/ghost/reset/')
         //         .expect('Cache-Control', cacheRules['private'])
@@ -250,15 +249,15 @@ describe('Admin Routing', function () {
         //         .end(doEnd(done));
         // });
 
-        it('should redirect /ghost/reset/*/', function (done) {
-            request.get('/ghost/reset/athing/')
-                .expect('Location', /ghost\/forgotten/)
-                .expect('Cache-Control', cacheRules['private'])
-                .expect(302)
-                .end(doEnd(done));
-        });
-    });
-});
+        // it('should redirect /ghost/reset/*/', function (done) {
+        //     request.get('/ghost/reset/athing/')
+        //        .expect('Location', /ghost\/forgotten/)
+        //        .expect('Cache-Control', cacheRules['private'])
+        //        .expect(302)
+        //        .end(doEnd(done));
+        // });
+//    });
+//});
 
 // TODO: not working anymore, needs new test for Ember
 // describe('Authenticated Admin Routing', function () {
@@ -344,4 +343,4 @@ describe('Admin Routing', function () {
 //                 });
 //         });
 //     });
-// });
+});
