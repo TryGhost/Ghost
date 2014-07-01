@@ -384,37 +384,37 @@ var path           = require('path'),
             // concatenate multiple JS files into a single file ready for use
             concat: {
                 'dev': {
-                    files: {
-                        'core/built/scripts/vendor-ember.js': [
-                            'bower_components/loader.js/loader.js',
-                            'bower_components/jquery/dist/jquery.js',
-                            'bower_components/lodash/dist/lodash.js',
-                            'bower_components/handlebars/handlebars.js',
-                            'bower_components/ember/ember.js',
-                            'bower_components/ember-data/ember-data.js',
-                            'bower_components/ember-resolver/dist/ember-resolver.js',
-                            'bower_components/ic-ajax/dist/globals/main.js',
-                            'bower_components/ember-load-initializers/ember-load-initializers.js',
-                            'bower_components/validator-js/validator.js',
-                            'bower_components/codemirror/lib/codemirror.js',
-                            'bower_components/codemirror/addon/mode/overlay.js',
-                            'bower_components/codemirror/mode/markdown/markdown.js',
-                            'bower_components/codemirror/mode/gfm/gfm.js',
-                            'bower_components/showdown/src/showdown.js',
-                            'bower_components/moment/moment.js',
-                            'bower_components/keymaster/keymaster.js',
-                            'bower_components/device/lib/device.js',
-                            'bower_components/jquery-ui/ui/jquery-ui.js',
-                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
-                            'bower_components/fastclick/lib/fastclick.js',
-                            'bower_components/nprogress/nprogress.js',
-                            'bower_components/ember-simple-auth/ember-simple-auth.js',
-                            'bower_components/ember-simple-auth/ember-simple-auth-oauth2.js',
+                    nonull: true,
+                    dest: 'core/built/scripts/vendor-ember.js',
+                    src: [
+                        'bower_components/loader.js/loader.js',
+                        'bower_components/jquery/dist/jquery.js',
+                        'bower_components/lodash/dist/lodash.js',
+                        'bower_components/handlebars/handlebars.js',
+                        'bower_components/ember/ember.js',
+                        'bower_components/ember-data/ember-data.js',
+                        'bower_components/ember-resolver/dist/ember-resolver.js',
+                        'bower_components/ic-ajax/dist/globals/main.js',
+                        'bower_components/ember-load-initializers/ember-load-initializers.js',
+                        'bower_components/validator-js/validator.js',
+                        'bower_components/codemirror/lib/codemirror.js',
+                        'bower_components/codemirror/addon/mode/overlay.js',
+                        'bower_components/codemirror/mode/markdown/markdown.js',
+                        'bower_components/codemirror/mode/gfm/gfm.js',
+                        'bower_components/showdown/src/showdown.js',
+                        'bower_components/moment/moment.js',
+                        'bower_components/keymaster/keymaster.js',
+                        'bower_components/device/lib/device.js',
+                        'bower_components/jquery-ui/ui/jquery-ui.js',
+                        'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+                        'bower_components/fastclick/lib/fastclick.js',
+                        'bower_components/nprogress/nprogress.js',
+                        'bower_components/ember-simple-auth/ember-simple-auth.js',
+                        'bower_components/ember-simple-auth/ember-simple-auth-oauth2.js',
 
-                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                            'core/shared/lib/showdown/extensions/ghostgfm.js',
-                        ]
-                    }
+                        'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                    ]
                 }
             },
 
@@ -553,14 +553,24 @@ var path           = require('path'),
         // ### Validate
         // **Main testing task**
         //
-        // `grunt validate` will lint and test your local Ghost codebase.
+        // `grunt validate` will build, lint and test your local Ghost codebase.
         //
         // `grunt validate` is one of the most important and useful grunt tasks that we have available to use. It
-        // manages the setup and running of jshint as well as the 4 test suites. See the individual sub tasks below
-        // for details of each of the test suites.
+        // manages the build of your environment and then calls `grunt test`
         //
-        // `grunt validate` is called by `npm test`.
+        // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code',
+            ['init', 'test']);
+
+        // ### Test
+        // **Main testing task**
+        //
+        // `grunt test` will lint and test your pre-built local Ghost codebase.
+        //
+        // `grunt test` runs jshint as well as the 4 test suites. See the individual sub tasks below for details of
+        // each of the test suites.
+        //
+        grunt.registerTask('test', 'Run tests and lint code',
             ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
         // ### Unit Tests *(sub task)*
