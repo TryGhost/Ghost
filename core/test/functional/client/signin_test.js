@@ -146,6 +146,35 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     });
 }, true);
 
+CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.login-box', function then() {
+        this.fillAndSave('#login', user);
+    });
+
+    casper.wait(2000);
+
+    casper.waitForResource(/posts/, function testForDashboard() {
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
+        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.manage', 'We\'re now on content');
+    }, function onTimeOut() {
+        test.fail('Failed to signin');
+    });
+
+    casper.thenOpenAndWaitForPageLoad('signin-authenticated', function testTitleAndUrl() {
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
+        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.manage', 'We\'re now on content');
+    }, function onTimeOut() {
+        test.fail('Failed to redirect');
+    });
+}, true);
+
 // TODO: please uncomment when the validation problem is fixed (https://github.com/TryGhost/Ghost/issues/3120)
 // CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
 //     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {

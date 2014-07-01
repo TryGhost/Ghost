@@ -3,6 +3,11 @@ import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-login'],
+    beforeModel: function () {
+        if (this.get('session').isAuthenticated) {
+            this.transitionTo(Ember.SimpleAuth.routeAfterAuthentication);
+        }
+    },
     actions: {
         sessionAuthenticationFailed: function (error) {
             this.notifications.showError(error.message);
