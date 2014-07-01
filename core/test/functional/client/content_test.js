@@ -101,7 +101,7 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
     });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
     casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
         test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
@@ -310,7 +310,7 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
         test.assert(true, 'post settings should be visible after clicking post-settings icon');
     });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
@@ -324,7 +324,7 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
         test.assertNotVisible('.notification-success', 'success notification should not still exist');
     });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page');
+    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
