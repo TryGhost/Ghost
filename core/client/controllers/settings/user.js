@@ -22,9 +22,8 @@ var SettingsUserController = Ember.Controller.extend({
     actions: {
         save: function () {
             var self = this;
-            
-            // @TODO This should call closePassive() to only close passive notifications
-            self.notifications.closeAll();
+
+            self.notifications.closePassive();
 
             alert('@TODO: Saving user...');
 

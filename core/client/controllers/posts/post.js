@@ -7,9 +7,8 @@ var PostController = Ember.ObjectController.extend({
             var featured = this.toggleProperty('featured'),
                 self = this;
 
-            // @TODO This should call closePassive() to only close passive notifications
-            self.notifications.closeAll();
-            
+            self.notifications.closePassive();
+
             this.get('model').save().then(function () {
                 self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
             }).catch(function (errors) {
