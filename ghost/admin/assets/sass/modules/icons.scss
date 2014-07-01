@@ -184,7 +184,7 @@ $i-code:            \e03e;
 [class*=icon-] {
     &:before {
         // Base
-        font-family: "Icons";
+        font-family: "GhostIcons";
         font-weight: normal;
         font-style: normal;
         vertical-align: -7%;
@@ -195,7 +195,7 @@ $i-code:            \e03e;
     }
 
     &:hover {
-        text-decoration:none;
+        text-decoration: none;
     }
 }
 

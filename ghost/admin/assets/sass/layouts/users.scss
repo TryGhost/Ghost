@@ -117,6 +117,21 @@
 
     }
 
+    .user-actions-cog {
+        margin-right: 6px;
+    }
+
+    .user-actions-menu {
+        top: 49px;
+        right: 69px;
+        width: 145px;
+        .delete {
+            &:hover {
+                background: $red;
+            }
+        }
+    }
+
     .user-role {
         padding: 2px 8px;
         float: right;
@@ -163,8 +178,8 @@
 
     .edit-cover-image {
         position: absolute;
-        right: 40px;
-        bottom: 38px;
+        right: 35px;
+        bottom: 32px;
         background: rgba(0,0,0,0.3);
         border-radius: 0;
         color: rgba(255,255,255,0.8);
@@ -184,9 +199,16 @@
         }
     }
 
+    .user-image + .form-group {
+        margin-top: 155px;
+        @media (min-width: 551px) {
+            margin-top: 43px;
+        }
+    }
+
     .user-profile {
         position: relative;
-        top: -100px;
+        top: -110px;
         z-index: 1;
 
         fieldset {
@@ -200,13 +222,13 @@
 
     fieldset.user-details-top {
 
-        @media (max-width: 500px) {
+        @media (max-width: 550px) {
             margin-bottom: 10px;
         }
 
-        @media (min-width: 501px) {
+        @media (min-width: 551px) {
             margin-bottom: 0;
-            padding: 10px 0 0 0;
+            padding: 0;
             p {
                 color: #fff;
             }
@@ -216,26 +238,27 @@
     .user-image {
         display: block;
         position: relative;
-        width: 120px;
-        height: 120px;
+        width: 126px;
+        height: 126px;
         float: left;
-        margin-left: 40px;
+        margin-left: 34px;
         margin-right: 20px;
         text-align: center;
         border-radius: 100%;
         overflow: hidden;
-        border: 5px solid #fff;
+        padding: 3px;
+        // border: 5px solid #fff;
         background: #fff;
         z-index: 2;
 
-        @media (max-width: 500px) {
+        @media (max-width: 550px) {
             margin-left: -10px;
         }
 
         .img {
             display: block;
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             background-size: cover;
             background-position: center center;
             border-radius: 100%;
@@ -249,20 +272,25 @@
     }
 
     .edit-user-image {
-        @include position(absolute, 0px 0px 0px 0px);
+        @include position(absolute, 3px 3px 3px 3px);
         border-radius: 100%;
         background: rgba(0,0,0,0.5);
         opacity: 0;
         color: #fff;
-        line-height: 105px;
+        line-height: 120px;
         text-transform: uppercase;
         text-decoration: none;
         @include transition(opacity 0.3s ease);
     }
 
-    @media (min-width: 501px) {
+    @media (min-width: 551px) {
+        label[for='user-name'] {
+            visibility: hidden;
+        }
         #user-name {
             border-color: #fff;
+            font-size: 1.5rem;
+            padding: 3px 12px;
         }
     }
 
@@ -272,3 +300,34 @@
     }
 
 } // .settings
+
+@media (max-width: 800px) {
+    .users-back {
+        display: none;
+    }
+}
+
+@media (max-width: 650px) {
+    .page-actions .user-actions-cog {
+        padding: 7px 0;
+        min-height: 30px;
+        .icon-settings {
+            margin-left: 8px;
+            margin-right: 8px;
+        }
+    }
+    .settings .user-actions-menu {
+        top: 43px;
+        right: 66px;
+    }
+    .settings-content .user-settings-header {
+        height: 0;
+        padding: 0;
+        margin: 0;
+        border-bottom: 0;
+    }
+    .user-settings-header .title,
+    .settings-content .settings-user:before {
+        display: none;
+    }
+}

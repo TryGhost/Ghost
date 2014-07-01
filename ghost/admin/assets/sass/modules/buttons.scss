@@ -87,6 +87,27 @@
 
 }
 
+// Buttons that has an icon
+[class*='button'] {
+    &[class*='has-icon'] {
+        padding-left: 0;
+        [class*='icon-'] {
+             margin-left: 11px;
+            margin-right: 4px;
+            &:before {
+                font-size: 0.9rem;
+            }
+        }
+    }
+    &.only-has-icon {
+        padding-right: 0;
+        [class*='icon-'] {
+            margin-right: 11px;
+        }
+    }
+}
+
+
 // This is the default button style
 .button,
 button,
