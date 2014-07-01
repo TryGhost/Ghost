@@ -42,8 +42,6 @@ var path           = require('path'),
         var cfg = {
             // #### Common paths used by tasks
             paths: {
-                // adminAssets: './core/client/', ?? who knows...
-                adminOldAssets: './core/clientold/assets',
                 build: buildDirectory,
                 releaseBuild: path.join(buildDirectory, 'release'),
                 dist: distDirectory,
@@ -58,28 +56,17 @@ var path           = require('path'),
             // Watch files and livereload in the browser during development.
             // See the [grunt dev](#live%20reload) task for how this is used.
             watch: {
-                handlebars: {
-                    files: ['core/clientold/tpl/**/*.hbs'],
-                    tasks: ['handlebars']
-                },
                 shared: {
                     files: ['core/shared/**/*.js'],
-                    tasks: ['concat:dev', 'concat:dev-ember']
+                    tasks: ['concat:dev']
                 },
-                'handlebars-ember': {
+                'emberTemplates': {
                     files: ['core/client/**/*.hbs'],
                     tasks: ['emberTemplates:dev']
                 },
                 ember: {
                     files: ['core/client/**/*.js'],
                     tasks: ['clean:tmp', 'transpile', 'concat_sourcemap']
-                },
-                concat: {
-                    files: [
-                        'core/clientold/*.js',
-                        'core/clientold/**/*.js'
-                    ],
-                    tasks: ['concat']
                 },
                 'ghost-ui': {
                     files: [
@@ -225,7 +212,6 @@ var path           = require('path'),
                 }
             },
 
-
             // ### grunt-shell
             // Command line tools where it's easier to run a command directly than configure a grunt plugin
             shell: {
@@ -253,23 +239,6 @@ var path           = require('path'),
                 }
             },
 
-            // ### grunt-contrib-handlebars
-            // Compile handlebars templates into a JST file for the admin client (old)
-            handlebars: {
-                core: {
-                    options: {
-                        namespace: 'JST',
-                        processName: function (filename) {
-                            filename = filename.replace('core/clientold/tpl/', '');
-                            return filename.replace('.hbs', '');
-                        }
-                    },
-                    files: {
-                        'core/clientold/tpl/hbs-tpl.js': 'core/clientold/tpl/**/*.hbs'
-                    }
-                }
-            },
-
             // ### grunt-ember-templates
             // Compiles handlebar templates for ember
             emberTemplates: {
@@ -278,11 +247,13 @@ var path           = require('path'),
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
-                            return grunt.config.process("define('ghost/") + name + "', ['exports'], function(__exports__){ __exports__['default'] = " + template + "; });";
+                            return grunt.config.process('define(\'ghost/') +
+                                name + '\', [\'exports\'], function(__exports__){ __exports__[\'default\'] = ' +
+                                template + '; });';
                         }
                     },
                     files: {
-                        "core/built/scripts/templates-ember.js": "core/client/templates/**/*.hbs"
+                        'core/built/scripts/templates-ember.js': 'core/client/templates/**/*.hbs'
                     }
                 }
             },
@@ -362,11 +333,6 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
-                    }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/clientold/assets/',
-                        expand: true
                     }]
                 },
                 prod: {
@@ -380,11 +346,6 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
-                    }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/clientold/assets/',
-                        expand: true
                     }]
                 },
                 release: {
@@ -397,11 +358,6 @@ var path           = require('path'),
                         cwd: 'bower_components/ghost-ui/dist/',
                         src: ['**'],
                         dest: 'core/client/assets/',
-                        expand: true
-                    }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/clientold/assets/',
                         expand: true
                     }, {
                         expand: true,
@@ -427,69 +383,7 @@ var path           = require('path'),
             // ### grunt-contrib-concat
             // concatenate multiple JS files into a single file ready for use
             concat: {
-                dev: {
-                    files: {
-                        'core/built/scripts/vendor.js': [
-                            'bower_components/jquery/dist/jquery.js',
-                            'bower_components/jquery-ui/ui/jquery-ui.js',
-                            'core/clientold/assets/lib/jquery-utils.js',
-                            'core/clientold/assets/lib/uploader.js',
-
-                            'bower_components/lodash/dist/lodash.underscore.js',
-                            'bower_components/backbone/backbone.js',
-                            'bower_components/handlebars/handlebars.runtime.js',
-                            'bower_components/moment/moment.js',
-                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
-                            'bower_components/codemirror/lib/codemirror.js',
-                            'bower_components/codemirror/addon/mode/overlay.js',
-                            'bower_components/codemirror/mode/markdown/markdown.js',
-                            'bower_components/codemirror/mode/gfm/gfm.js',
-                            'bower_components/showdown/src/showdown.js',
-                            'bower_components/validator-js/validator.js',
-
-                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                            'core/shared/lib/showdown/extensions/ghostgfm.js',
-
-                            // TODO: Remove or replace
-                            'core/clientold/assets/vendor/shortcuts.js',
-                            'core/clientold/assets/vendor/to-title-case.js',
-
-                            'bower_components/Countable/Countable.js',
-                            'bower_components/fastclick/lib/fastclick.js',
-                            'bower_components/nprogress/nprogress.js'
-                        ],
-
-                        'core/built/scripts/helpers.js': [
-                            'core/clientold/init.js',
-
-                            'core/clientold/mobile-interactions.js',
-                            'core/clientold/toggle.js',
-                            'core/clientold/markdown-actions.js',
-                            'core/clientold/helpers/index.js',
-                            'core/clientold/assets/lib/editor/index.js',
-                            'core/clientold/assets/lib/editor/markerManager.js',
-                            'core/clientold/assets/lib/editor/uploadManager.js',
-                            'core/clientold/assets/lib/editor/markdownEditor.js',
-                            'core/clientold/assets/lib/editor/htmlPreview.js',
-                            'core/clientold/assets/lib/editor/scrollHandler.js',
-                            'core/clientold/assets/lib/editor/mobileCodeMirror.js'
-                        ],
-
-                        'core/built/scripts/templates.js': [
-                            'core/clientold/tpl/hbs-tpl.js'
-                        ],
-
-                        'core/built/scripts/models.js': [
-                            'core/clientold/models/**/*.js'
-                        ],
-
-                        'core/built/scripts/views.js': [
-                            'core/clientold/views/**/*.js',
-                            'core/clientold/router.js'
-                        ]
-                    }
-                },
-                'dev-ember': {
+                'dev': {
                     files: {
                         'core/built/scripts/vendor-ember.js': [
                             'bower_components/loader.js/loader.js',
@@ -521,62 +415,6 @@ var path           = require('path'),
                             'core/shared/lib/showdown/extensions/ghostgfm.js',
                         ]
                     }
-                },
-                prod: {
-                    files: {
-                        'core/built/scripts/ghost.js': [
-                            'bower_components/jquery/dist/jquery.js',
-                            'bower_components/jquery-ui/ui/jquery-ui.js',
-                            'core/clientold/assets/lib/jquery-utils.js',
-                            'core/clientold/assets/lib/uploader.js',
-
-                            'bower_components/lodash/dist/lodash.underscore.js',
-                            'bower_components/backbone/backbone.js',
-                            'bower_components/handlebars/handlebars.runtime.js',
-                            'bower_components/moment/moment.js',
-                            'bower_components/jquery-file-upload/js/jquery.fileupload.js',
-                            'bower_components/codemirror/lib/codemirror.js',
-                            'bower_components/codemirror/addon/mode/overlay.js',
-                            'bower_components/codemirror/mode/markdown/markdown.js',
-                            'bower_components/codemirror/mode/gfm/gfm.js',
-                            'bower_components/showdown/src/showdown.js',
-                            'bower_components/validator-js/validator.js',
-
-                            'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                            'core/shared/lib/showdown/extensions/ghostgfm.js',
-
-                            // TODO: Remove or replace
-                            'core/clientold/assets/vendor/shortcuts.js',
-                            'core/clientold/assets/vendor/to-title-case.js',
-
-                            'bower_components/Countable/Countable.js',
-                            'bower_components/fastclick/lib/fastclick.js',
-                            'bower_components/nprogress/nprogress.js',
-
-                            'core/clientold/init.js',
-
-                            'core/clientold/mobile-interactions.js',
-                            'core/clientold/toggle.js',
-                            'core/clientold/markdown-actions.js',
-                            'core/clientold/helpers/index.js',
-
-                            'core/clientold/assets/lib/editor/index.js',
-                            'core/clientold/assets/lib/editor/markerManager.js',
-                            'core/clientold/assets/lib/editor/uploadManager.js',
-                            'core/clientold/assets/lib/editor/markdownEditor.js',
-                            'core/clientold/assets/lib/editor/htmlPreview.js',
-                            'core/clientold/assets/lib/editor/scrollHandler.js',
-                            'core/clientold/assets/lib/editor/mobileCodeMirror.js',
-
-                            'core/clientold/tpl/hbs-tpl.js',
-
-                            'core/clientold/models/**/*.js',
-
-                            'core/clientold/views/**/*.js',
-
-                            'core/clientold/router.js'
-                        ]
-                    }
                 }
             },
 
@@ -585,7 +423,6 @@ var path           = require('path'),
             uglify: {
                 prod: {
                     files: {
-                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js',
                         'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
                     }
                 }
@@ -593,10 +430,10 @@ var path           = require('path'),
 
             // ### grunt-update-submodules
             // Grunt task to update git submodules
-            "update_submodules": {
+            'update_submodules': {
                 default: {
                     options: {
-                        params: "--init"
+                        params: '--init'
                     }
                 }
             }
@@ -612,7 +449,7 @@ var path           = require('path'),
         // This really ought to be refactored into a separate grunt task module
         grunt.registerTask('spawnCasperJS', function (target) {
 
-            target = _.contains(['client', 'clientold', 'frontend'], target) ? target + '/' : undefined;
+            target = _.contains(['client', 'frontend'], target) ? target + '/' : undefined;
 
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
@@ -809,7 +646,7 @@ var path           = require('path'),
         // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
         // including buttons and other important interactions in the admin UI.
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
-            ['clean:test', 'emberBuild', 'setTestEnv', 'loadConfig', 'copy:dev', 'express:test', 'spawnCasperJS', 'express:test:stop']
+            ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'spawnCasperJS', 'express:test:stop']
         );
 
         // ### Coverage
@@ -882,15 +719,15 @@ var path           = require('path'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['handlebars', 'concat', 'uglify', 'copy:prod', 'master-warn']);
+            ['concat', 'uglify', 'copy:prod', 'master-warn']);
 
         // ### Default asset build
         // `grunt` - default grunt task
         //
-        // Compiles handlebars templates, concatenates javascript files for the admin UI into a handful of files instead
+        // Compiles concatenates javascript files for the admin UI into a handful of files instead
         // of many files, and makes sure the bower dependencies are in the right place.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['handlebars', 'concat', 'copy:dev', 'emberBuild']);
+            ['concat', 'copy:dev', 'emberBuild']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -904,7 +741,7 @@ var path           = require('path'),
         //
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['handlebars', 'concat', 'copy:dev', 'emberBuild', 'express:dev', 'watch']);
+           ['concat', 'copy:dev', 'emberBuild', 'express:dev', 'watch']);
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
@@ -913,11 +750,11 @@ var path           = require('path'),
         // either environment, and packages all the files up into a zip.
         grunt.registerTask('release',
             'Release task - creates a final built zip\n' +
-            ' - Do our standard build steps (handlebars, etc)\n' +
+            ' - Do our standard build steps \n' +
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['shell:bower', 'update_submodules', 'handlebars', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
+            ['shell:bower', 'update_submodules', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration

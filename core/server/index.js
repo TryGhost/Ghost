@@ -77,8 +77,7 @@ function builtFilesExist() {
     var deferreds = [],
         location = config().paths.builtScriptPath,
 
-        fileNames = process.env.NODE_ENV === 'production' ?
-                helpers.scriptFiles.production : helpers.scriptFiles.development;
+        fileNames = helpers.scriptFiles.ember;
 
     function checkExist(fileName) {
         var deferred = when.defer(),
@@ -256,7 +255,7 @@ function init(server) {
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        server.set('admin view engine', adminHbs.express3({partialsDir: config().paths.adminViews + 'partials'}));
+        server.set('admin view engine', adminHbs.express3({}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
