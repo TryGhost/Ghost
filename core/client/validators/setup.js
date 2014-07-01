@@ -1,5 +1,5 @@
 var SetupValidator = Ember.Object.create({
-    validate: function (model) {
+    check: function (model) {
         var data = model.getProperties('blogTitle', 'name', 'email', 'password'),
             validationErrors = [];
 
@@ -8,7 +8,7 @@ var SetupValidator = Ember.Object.create({
                 message: 'Please enter a blog title.'
             });
         }
-        
+
         if (!validator.isLength(data.name || '', 1)) {
             validationErrors.push({
                 message: 'Please enter a name.'
