@@ -1,9 +1,12 @@
 /*global alert */
-var SettingsUserController = Ember.Controller.extend({
+var SettingsUserController = Ember.ObjectController.extend({
+
+    user: Ember.computed.alias('model'),
+
     coverDefault: '/shared/img/user-cover.png',
     cover: function () {
         // @TODO: add {{asset}} subdir path
-        var cover = this.user.get('cover');
+        var cover = this.get('user.cover');
         if (typeof cover !== 'string') {
             cover = this.get('coverDefault');
         }
@@ -16,35 +19,36 @@ var SettingsUserController = Ember.Controller.extend({
 
     image: function () {
         // @TODO: add {{asset}} subdir path
-        return 'background-image: url(' + this.user.getWithDefault('image', '/shared/img/user-image.png') + ')';
+        return 'background-image: url(' + this.getWithDefault('user.image', '/shared/img/user-image.png') + ')';
     }.property('user.image'),
 
     actions: {
         save: function () {
-            var self = this;
+            var user = this.get('user'),
+                self = this;
 
             self.notifications.closePassive();
 
             alert('@TODO: Saving user...');
 
-            if (this.user.validate().get('isValid')) {
-                this.user.save().then(function (response) {
-
+            if (user.validate().get('isValid')) {
+                user.save().then(function (response) {
                     alert('Done saving' + JSON.stringify(response));
                 }, function () {
                     alert('Error saving.');
                 });
             } else {
-                alert('Errors found! ' + JSON.stringify(this.user.get('errors')));
+                alert('Errors found! ' + JSON.stringify(user.get('errors')));
             }
         },
 
         password: function () {
             alert('@TODO: Changing password...');
-            var passwordProperties = this.getProperties('password', 'newPassword', 'ne2Password');
+            var user = this.get('user'),
+                passwordProperties = this.getProperties('password', 'newPassword', 'ne2Password');
 
-            if (this.user.validatePassword(passwordProperties).get('passwordIsValid')) {
-                this.user.saveNewPassword(passwordProperties).then(function () {
+            if (user.validatePassword(passwordProperties).get('passwordIsValid')) {
+                user.saveNewPassword(passwordProperties).then(function () {
                     alert('Success!');
                     // Clear properties from view
                     this.setProperties({
@@ -56,7 +60,7 @@ var SettingsUserController = Ember.Controller.extend({
                     alert('Errors ' + JSON.stringify(errors));
                 });
             } else {
-                alert('Errors found! ' + JSON.stringify(this.user.get('passwordErrors')));
+                alert('Errors found! ' + JSON.stringify(user.get('passwordErrors')));
             }
         }
     }
