@@ -29,7 +29,7 @@ persistent_directories:
 config_files:
   -
     path: 'config.js'
-    content: "
+    content: |
       var path = require('path'),
           config;
 
@@ -70,7 +70,6 @@ config_files:
 
       // Export config
       module.exports = config;
-    "
 
 commands:
   -
