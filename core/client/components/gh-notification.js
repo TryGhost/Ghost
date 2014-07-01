@@ -13,7 +13,7 @@ var NotificationComponent = Ember.Component.extend({
     actions: {
         closeNotification: function () {
             var self = this;
-            self.notifications.removeObject(self.get('message'));
+            self.notifications.closeNotification(self.get('message'));
         }
     }
 });

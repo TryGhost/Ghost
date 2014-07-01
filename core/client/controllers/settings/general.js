@@ -30,8 +30,7 @@ var SettingsGeneralController = Ember.ObjectController.extend({
         save: function () {
             var self = this;
 
-            // @TODO This should call closePassive() to only close passive notifications
-            self.notifications.closeAll();
+            self.notifications.closePassive();
 
             return this.get('model').save().then(function (model) {
                 self.notifications.showSuccess('Settings successfully saved.');

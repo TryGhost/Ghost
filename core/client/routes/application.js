@@ -33,6 +33,12 @@ var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
         });
     }.on('init'),
 
+    setupController: function () {
+        Ember.run.next(this, function () {
+            this.send('loadServerNotifications');
+        });
+    },
+
     actions: {
         closePopups: function () {
             this.get('popover').closePopovers();
@@ -51,6 +57,8 @@ var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
 
             this.set('user', user);
             this.set('controller.user', user);
+
+            this.send('loadServerNotifications', true);
         },
 
         signedOut: function () {
@@ -88,6 +96,17 @@ var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
                 outlet: 'modal',
                 parentView: 'application'
             });
+        },
+
+        loadServerNotifications: function (isDelayed) {
+            var self = this;
+            if (this.session.isAuthenticated) {
+                this.store.findAll('notification').then(function (serverNotifications) {
+                    serverNotifications.forEach(function (notification) {
+                        self.notifications.handleNotification(notification, isDelayed);
+                    });
+                });
+            }
         },
 
         handleErrors: function (errors) {
