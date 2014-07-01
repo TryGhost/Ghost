@@ -143,7 +143,7 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
     });
-    
+
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function() {
         var forkedGhost, request;
@@ -159,13 +159,13 @@ describe('Frontend Routing', function () {
                     request = request(configTestHttps.url.replace(/\/$/, ''));
                 }).then(done).catch(done);
         });
-        
+
         after(function (done) {
             if (forkedGhost) {
                 forkedGhost.kill(done);
             }
         });
-        
+
         it('should set links to url over non-HTTPS', function(done) {
             request.get('/')
                 .expect(200)
@@ -407,7 +407,7 @@ describe('Frontend Routing', function () {
         });
 
         it('should retrieve built assets', function (done) {
-            request.get('/ghost/scripts/vendor.js')
+            request.get('/ghost/scripts/vendor-ember.js')
                 .expect('Cache-Control', cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
