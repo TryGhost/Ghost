@@ -87,6 +87,11 @@ screens = {
        url: 'ghost/signin/',
        selector: '.button-save'
    },
+   'signin-authenticated': {
+       url: 'ghost/signin/',
+       //signin with authenticated user redirects to posts
+       selector: '#main-menu .content.active'
+   },
    'signout': {
        url: 'ghost/signout/',
        linkSelector: '#user-menu li.usermenu-signout a',
