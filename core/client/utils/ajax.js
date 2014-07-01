@@ -6,7 +6,7 @@ var ajax = window.ajax = function () {
 
 // Used in API request fail handlers to parse a standard api error
 // response json for the message to display
-var getRequestErrorMessage = function (request) {
+var getRequestErrorMessage = function (request, performConcat) {
     var message,
         msgDetail;
 
@@ -26,7 +26,7 @@ var getRequestErrorMessage = function (request) {
 
                 message = request.responseJSON.errors.map(function (errorItem) {
                     return errorItem.message;
-                }).join('<br />');
+                });
             } else {
                 message =  request.responseJSON.error || 'Unknown Error';
             }
@@ -34,6 +34,15 @@ var getRequestErrorMessage = function (request) {
             msgDetail = request.status ? request.status + ' - ' + request.statusText : 'Server was not available';
             message = 'The server returned an error (' + msgDetail + ').';
         }
+    }
+
+    if (performConcat && Ember.isArray(message)) {
+        message = message.join('<br />');
+    }
+
+    // return an array of errors by default
+    if (!performConcat && typeof message === 'string') {
+        message = [message];
     }
 
     return message;
