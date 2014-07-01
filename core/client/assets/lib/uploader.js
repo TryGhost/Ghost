@@ -64,9 +64,6 @@ UploadUi = function ($dropzone, settings) {
 
             $dropzone.find('.js-fileupload').fileupload().fileupload('option', {
                 url: Ghost.subdir + '/ghost/upload/',
-                headers: {
-                    'X-CSRF-Token': $('meta[name=\'csrf-param\']').attr('content')
-                },
                 add: function (e, data) {
                     /*jshint unused:false*/
                     $('.js-button-accept').prop('disabled', true);

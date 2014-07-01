@@ -16,9 +16,6 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
 
             ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
                 type: 'POST',
-                headers: {
-                    'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
-                },
                 data: formData,
                 dataType: 'json',
                 cache: false,
@@ -50,10 +47,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
             var self = this;
 
             ic.ajax.request(this.get('ghostPaths').apiUrl('mail', 'test'), {
-                type: 'POST',
-                headers: {
-                    'X-CSRF-Token': $('meta[name="csrf-param"]').attr('content')
-                }
+                type: 'POST'
             }).then(function () {
                 self.notifications.showSuccess('Check your email for the test message:');
             }).catch(function (response) {
