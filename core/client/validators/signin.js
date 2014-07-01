@@ -1,5 +1,5 @@
 var SigninValidator = Ember.Object.create({
-    validate: function (model) {
+    check: function (model) {
         var data = model.getProperties('identification', 'password'),
             validationErrors = [];
 

@@ -1,5 +1,5 @@
 var PostValidator = Ember.Object.create({
-    validate: function (model) {
+    check: function (model) {
         var validationErrors = [],
 
             title = model.get('title');
