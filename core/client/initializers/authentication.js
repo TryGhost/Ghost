@@ -4,6 +4,11 @@ var AuthenticationInitializer = {
     after: 'registerTrailingLocationHistory',
 
     initialize: function (container, application) {
+        Ember.SimpleAuth.Session.reopen({
+            user: function () {
+                return container.lookup('store:main').find('user', 'me');
+            }.property()
+        });
         Ember.SimpleAuth.Authenticators.OAuth2.reopen({
             serverTokenEndpoint: '/ghost/api/v0.1/authentication/token',
             refreshAccessTokens: true,
