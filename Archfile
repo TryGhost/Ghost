@@ -19,7 +19,7 @@ shared_databases:
 
 environment_variables:
   -
-    key: 'NODE_PATH '
+    key: 'NODE_PATH'
     value: '/app/node_modules'
 
 persistent_directories:
@@ -30,9 +30,6 @@ config_files:
   -
     path: 'config.js'
     content: "
-      // # Ghost Configuration
-      // Setup your Ghost install for various environments
-
       var path = require('path'),
           config;
 
@@ -74,3 +71,9 @@ config_files:
       // Export config
       module.exports = config;
     "
+
+commands:
+  -
+    event: 'build'
+    command: 'npm install --userconfig /app/.npmrc --production'
+    success_exit_code: 0
