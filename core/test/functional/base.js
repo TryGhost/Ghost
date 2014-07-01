@@ -105,6 +105,10 @@ screens = {
    'setup': {
        url: 'ghost/setup/',
        selector: '.button-add'
+   },
+   'setup-authenticated': {
+       url: 'ghost/setup/',
+       selector: '#main-menu .content.active'
    }
 };
 
