@@ -23,9 +23,6 @@ var SetupController = Ember.ObjectController.extend(ValidationEngine, {
                 ajax({
                     url: self.get('ghostPaths').adminUrl('setup'),
                     type: 'POST',
-                    headers: {
-                        'X-CSRF-Token': self.get('csrf')
-                    },
                     data: self.getProperties('blogTitle', 'name', 'email', 'password')
                 }).then(function () {
                     self.get('session').authenticate('ember-simple-auth-authenticator:oauth2-password-grant', {
