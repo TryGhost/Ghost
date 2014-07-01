@@ -121,6 +121,16 @@
 
         }
 
+        @media (max-width: 1000px) {
+            &:not(.active) {
+                .markdown-help {
+                    &:hover:before {
+                        color: #fff;
+                    }
+                }
+            }
+        }
+
         // Give the tab with the .active class the highest z-index
         &.active {
             z-index: 200;
