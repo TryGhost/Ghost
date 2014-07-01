@@ -27,11 +27,8 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                         identification: self.get('email'),
                         password: self.get('password')
                     }).then(function () {
-                        self.store.find('user', 'me').then(function (user) {
-                            self.send('signedIn', user);
-                            self.notifications.clear();
-                            self.transitionToRoute(Ember.SimpleAuth.routeAfterAuthentication);
-                        });
+                        self.send('signedIn');
+                        self.transitionToRoute(Ember.SimpleAuth.routeAfterAuthentication);
                     });
                 }, function (resp) {
                     self.toggleProperty('submitting');
