@@ -19,7 +19,7 @@
    ========================================================================== */
 
 @font-face {
-    font-family: 'Icons';
+    font-family: 'GhostIcons';
     src:url('../fonts/icons.eot');
     src:url('../fonts/icons.eot?#iefix') format('embedded-opentype'),
         url('../fonts/icons.woff') format('woff'),
@@ -37,7 +37,7 @@
 @mixin icon($char, $size: '', $color: '') {
     &:before {
         // Base
-        font-family: "Icons";
+        font-family: "GhostIcons";
         font-weight: normal;
         font-style: normal;
         vertical-align: -7%;
@@ -69,7 +69,7 @@
 @mixin icon-after($char, $size: '', $color: '') {
     &:after {
         // Base
-        font-family: "Icons";
+        font-family: "GhostIcons";
         font-weight: normal;
         font-style: normal;
         vertical-align: -7%;
