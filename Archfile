@@ -1,87 +1,76 @@
-# Specify the platform which should be used for this application.
-# The options for this can be found on the platforms page in the documentation.
-platform: 'ruby-2.1.0'
-
-settings:
-  # Set that static files should be served by the Viaduct proxy
-  serve_static_files: true
-  # Set the document root for static file serving
-  document_root: 'public'
-  # Set whether or not inactive processes should be put to sleep
-  sleep_inactive_processes: false
+platform: 'nodejs-0.10'
 
 processes:
-  # This is an array containing all the process types which should
-  # be configured for the application.
   -
-    # The name of the process type
     name: 'web'
-    # The amount of memory which should be allocated. 
-    # Should be any of standard, large or xlarge.
     memory: 'standard'
-    # Set the command which should be executed
-    command: 'bundle exec rackup -p $PORT'
-    # Set the number of times this process should run
+    command: 'NODE_ENV=production node index.js'
     quantity: 1
-    # Set whether or not this process should receive traffic from the proxies
     public: true
-    # Set the length of time which should be waited before forcefully
-    # killing a process which has been requested to be stopped (in seconds)
     kill_after: 3600
-    # Set the method of determining if the process has started or not
     start_monitor:
-      # Set the module to use
-      # Should be one of none, httpcheck, timer or log_string
       module: 'httpcheck'
-      # Set the string to look for (only applicable to log_string module)
-      string: 'Successfully started'
-      # Set the length of time to wait (only applicable to timer module)
       timer: 30
 
 shared_databases:
-  # This is an array containing the shared databases which should be
-  # created for this application.
   -
-    # Set the type of database to be create
-    # Should be one of mysql or postgres.
     type: 'mysql'
-    # Set the label to be associated with this database
     label: 'Primary DB'
 
 environment_variables:
-  # This is an array containing the environment variables which are needed
-  # for this application.
   -
-    key: 'EXAMPLE_VARIABLE'
-    value: 'Bananas'
+    key: 'NODE_PATH '
+    value: '/app/node_modules'
 
 persistent_directories:
-  # This is an array containing the writable/persistent directories which 
-  # are needed for this application.
   - 
-    path: 'app/uploads'
-
-commands:
-  # This is an array of commands which are used to build or start
-  # the application.
-  -
-    # The event on which the command should be executed
-    # Should be one of build, firstrun or deploy.     
-    event: 'build'
-    # Set the command to execute
-    command: 'bundle install --deployment'
-    # Set the exit code to expect on success
-    success_exit_code: 0
+    path: 'content/images'
 
 config_files:
-  # This is an array of config files which are needed for the application.
   -
-    path: 'config/database.yml'
-    content: "Content in here"
+    path: 'config.js'
+    content: "
+      // # Ghost Configuration
+      // Setup your Ghost install for various environments
 
-build_cache:
-  # This is an array of directories which should be cached across builds.
-  -
-    path: '.bundle'
-  - 
-    path: 'vendor/bundle'
+      var path = require('path'),
+          config;
+
+      config = {
+
+          production: {
+              url: 'http://' + process.env.VDT_APP + '.vdtapp.com',
+             mail: {
+                 transport: 'SMTP',
+                 options: {
+                   host: process.env.VDT_SMTP_HOST,
+                   auth: {
+                     user: process.env.VDT_SMTP_USERNAME, // Super secret username
+                     pass: process.env.VDT_SMTP_PASSWORD  // Super secret password
+                    }
+                 }
+              },
+              database: {
+                  client: 'mysql',
+                  connection: {
+                  host: process.env.VDT_SDB1_HOST,
+                  user: process.env.VDT_SDB1_USER,
+                  password: process.env.VDT_SDB1_PASS,
+                  database: process.env.VDT_SDB1_NAME,
+                  charset: 'utf8'
+                  },
+                  debug: false
+              },
+              server: {
+                  // Host to be passed to node's `net.Server#listen()`
+                  host: process.env.VDT_IP || '127.0.0.1',
+                  // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
+                  port: process.env.PORT || '5000'
+              }
+          }
+          
+      };
+
+      // Export config
+      module.exports = config;
+    "
