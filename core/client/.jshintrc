@@ -30,6 +30,7 @@
         "validator": true,
         "ic": true,
         "_": true,
-        "NProgress": true
+        "NProgress": true,
+        "moment": true
     }
 }
