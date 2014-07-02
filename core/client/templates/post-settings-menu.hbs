@@ -22,8 +22,8 @@
                     <label class="label" for="static-page">Static Page</label>
                 </td>
                 <td class="post-setting-item">
-                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=isStaticPage}}
-                    <label class="checkbox" for="static-page"></label>
+                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
+                    <label class="checkbox" for="static-page" {{action 'togglePage' bubbles="false"}}></label>
                 </td>
             </tr>
         </tbody>
