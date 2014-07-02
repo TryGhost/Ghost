@@ -11,7 +11,6 @@ var EditorNewController = Ember.ObjectController.extend(EditorControllerMixin, {
                 if (model.get('id')) {
                     self.transitionToRoute('editor.edit', model);
                 }
-                return model;
             });
         }
     }
