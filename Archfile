@@ -74,5 +74,17 @@ config_files:
 commands:
   -
     event: 'build'
-    command: 'npm install --userconfig /app/.npmrc --production'
+    command: 'npm install -g grunt-cli'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'npm install'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'grunt init --force'
+    success_exit_code: 0
+  -
+    event: 'build'
+    command: 'grunt prod'
     success_exit_code: 0
