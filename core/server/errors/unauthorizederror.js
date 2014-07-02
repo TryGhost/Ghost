@@ -9,7 +9,7 @@ function UnauthorizedError(message) {
 }
 
 UnauthorizedError.prototype = Object.create(Error.prototype);
-UnauthorizedError.prototype.name = "UnauthorizedError";
+UnauthorizedError.prototype.name = 'UnauthorizedError';
 
 
 module.exports = UnauthorizedError;
