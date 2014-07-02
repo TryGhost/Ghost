@@ -9,7 +9,7 @@ function NoPermissionError(message) {
 }
 
 NoPermissionError.prototype = Object.create(Error.prototype);
-NoPermissionError.prototype.name = "NoPermissionError";
+NoPermissionError.prototype.name = 'NoPermissionError';
 
 
 module.exports = NoPermissionError;

@@ -9,7 +9,7 @@ function BadRequestError(message) {
 }
 
 BadRequestError.prototype = Object.create(Error.prototype);
-BadRequestError.prototype.name = "BadRequestError";
+BadRequestError.prototype.name = 'BadRequestError';
 
 
 module.exports = BadRequestError;

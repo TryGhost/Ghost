@@ -150,15 +150,6 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can\'t add second', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[1];
-
-            return UserModel.add(userData, {user: 1}).then(done, function (failure) {
-                failure.message.should.eql('A user is already registered. Only one user for now!');
-                done();
-            }).catch(done);
-        });
-
         it('can findAll', function (done) {
 
             UserModel.findAll().then(function (results) {
