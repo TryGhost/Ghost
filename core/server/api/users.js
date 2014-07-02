@@ -7,9 +7,12 @@ var when            = require('when'),
     canThis         = require('../permissions').canThis,
     errors          = require('../errors'),
     utils           = require('./utils'),
+    globalUtils     = require('../utils'),
+    config          = require('../config'),
+    mail            = require('./mail'),
 
     docName         = 'users',
-    ONE_DAY         = 86400000,
+    ONE_DAY         = 60 * 60 * 24 * 1000,
     users;
 
 
@@ -127,6 +130,80 @@ users = {
             });
         }, function () {
             return when.reject(new errors.NoPermissionError('You do not have permission to remove the user.'));
+        });
+    },
+
+    /**
+     * ### Invite user
+     * @param {User} object the user to create
+     * @returns {Promise(User}} Newly created user
+     */
+    invite: function invite(object, options) {
+        var newUser,
+            user;
+
+        return canThis(options.context).add.user().then(function () {
+            return utils.checkObject(object, docName).then(function (checkedUserData) {
+                newUser = checkedUserData.users[0];
+
+                if (newUser.email) {
+                    newUser.name = object.users[0].email.substring(0, newUser.email.indexOf("@"));
+                    newUser.password = globalUtils.uid(50);
+                    newUser.status = 'invited';
+                    // TODO: match user role with db and enforce permissions
+                    newUser.role = 3;
+                } else {
+                    return when.reject(new errors.BadRequestError('No email provided.'));
+                }
+            }).then(function () {
+                return dataProvider.User.getByEmail(newUser.email);
+            }).then(function (foundUser) {
+                if (!foundUser) {
+                    return dataProvider.User.add(newUser, options);
+                } else {
+                    // only invitations for already invited users are resent
+                    if (foundUser.toJSON().status === 'invited') {
+                        return foundUser;
+                    } else {
+                        return when.reject(new errors.BadRequestError('User is already registered.'));
+                    }
+                }
+            }).then(function (invitedUser) {
+                user = invitedUser.toJSON();
+                return settings.read({context: {internal: true}, key: 'dbHash'});
+            }).then(function (response) {
+                var expires = Date.now() + (14 * ONE_DAY),
+                    dbHash = response.settings[0].value;
+                return dataProvider.User.generateResetToken(user.email, expires, dbHash);
+            }).then(function (resetToken) {
+                var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
+                    siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
+                    resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/signup/' + resetToken + '/',
+                    resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
+                    payload = {
+                        mail: [{
+                            message: {
+                                to: user.email,
+                                subject: 'Invitation',
+                                html: '<p><strong>Hello!</strong></p>' +
+                                    '<p>You have been invited to ' + siteLink + '.</p>' +
+                                    '<p>Please follow the link to sign up and publish your ideas:<br><br>' + resetLink + '</p>' +
+                                    '<p>Ghost</p>'
+                            },
+                            options: {}
+                        }]
+                    };
+                return mail.send(payload);
+            }).then(function () {
+                return when.resolve({users: [user]});
+            }).otherwise(function (error) {
+                if (error && error.type === 'EmailError') {
+                    error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
+                }
+                return when.reject(error);
+            });
+        }, function () {
+            return when.reject(new errors.NoPermissionError('You do not have permission to add a users.'));
         });
     },
 

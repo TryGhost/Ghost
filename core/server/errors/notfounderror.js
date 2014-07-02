@@ -9,7 +9,7 @@ function NotFoundError(message) {
 }
 
 NotFoundError.prototype = Object.create(Error.prototype);
-NotFoundError.prototype.name = "NotFoundError";
+NotFoundError.prototype.name = 'NotFoundError';
 
 
 module.exports = NotFoundError;
