@@ -7,13 +7,12 @@ var PostController = Ember.ObjectController.extend({
             var featured = this.toggleProperty('featured'),
                 self = this;
 
-            self.notifications.closePassive();
-
             this.get('model').save().then(function () {
+                self.notifications.closePassive();
                 self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
             }).catch(function (errors) {
+                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
-                return Ember.RSVP.reject(errors);
             });
         }
     }
