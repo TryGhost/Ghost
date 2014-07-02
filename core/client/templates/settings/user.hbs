@@ -1,9 +1,28 @@
-<header class="fade-in">
-    <button class="button-back">Back</button>
+<header class="fade-in user-settings-header">
+
     <h2 class="title">Your Profile</h2>
-    <section class="page-actions">
-        <button class="button-save" {{action "save"}}>Save</button>
-    </section>
+
+    <div class="settings-header-inner">
+        <button class="button-back">Back</button>    
+    
+        {{!-- <section class="page-actions page-actions-alt">
+            <button class="button has-icon users-back"><i class="icon-chevron-left"></i>Users</button>
+        </section> --}}
+
+        <section class="page-actions">
+                    
+            {{!-- {{#gh-popover-button popoverName="user-actions-menu" tagName="a" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
+                <i class="icon-settings"></i>
+                <span class="hidden">User Settings</span>
+            {{/gh-popover-button}}
+            {{#gh-popover name="user-actions-menu" classNames="user-actions-menu menu-drop-right"}}
+                {{render "user-actions-menu" model}}
+            {{/gh-popover}} --}}
+
+            <button class="button-save" {{action "save"}}>Save</button>
+        </section>
+    </div>
+
 </header>
 
 <section class="content settings-user no-padding fade-in">
@@ -24,8 +43,8 @@
             </figure>
 
             <div class="form-group">
-                <label for="user-name" class="hidden">Full Name</label>
-                {{input value=user.name id="user-name" placeholder="Full Name" autocorrect="off"}}
+                <label for="user-name">Full Name</label>
+                {{input value=user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off"}}
                 <p>Use your real name so people can recognise you</p>
             </div>
 
@@ -33,11 +52,26 @@
 
         <fieldset class="user-details-bottom">
 
+            {{!-- <div class="form-group">
+                <label for="user-slug">Slug</label>
+                {{input value=user.slug id="user-slug" placeholder="Slug" autocorrect="off"}}
+                <p>http://blog-url.com/user/{{user.slug}}</p>
+            </div> --}}
+
             <div class="form-group">
                 <label for="user-email">Email</label>
                 {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off"}}
                 <p>Used for notifications</p>
             </div>
+
+            {{!-- <div class="form-group">
+                <label for="user-role">Role</label>
+                <select id="user-role">
+                    <option value="#">Author</option>
+                    <option value="#">Admin</option>
+                </select>
+                <p>What permissions should this user have?</p>
+            </div> --}}
 
             <div class="form-group">
                 <label for="user-location">Location</label>
