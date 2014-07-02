@@ -116,7 +116,6 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
     add: function (data, options) {
-
         var self = this,
             // Clone the _user so we don't expose the hashed password unnecessarily
             userData = this.filterData(data);
@@ -130,11 +129,6 @@ User = ghostBookshelf.Model.extend({
          */
         return validatePasswordLength(userData.password).then(function () {
             return self.forge().fetch();
-        }).then(function (user) {
-            // Check if user exists
-            if (user) {
-                return when.reject(new Error('A user is already registered. Only one user for now!'));
-            }
         }).then(function () {
             // Generate a new password hash
             return generatePasswordHash(data.password);
@@ -150,31 +144,16 @@ User = ghostBookshelf.Model.extend({
 
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
-            // Add this user to the admin role (assumes admin = role_id: 1)
-            return userData.roles().attach(1);
+            if (!data.role) {
+                // TODO: needs change when owner role is introduced and setup is changed
+                data.role = 1;
+            }
+            return userData.roles().attach(data.role);
         }).then(function (addedUserRole) {
             /*jshint unused:false*/
             // find and return the added user
             return self.findOne({id: userData.id}, options);
         });
-
-        /**
-         * Temporarily replacing the function below with another one that checks
-         * whether there's anyone registered at all. This is due to #138
-         * @author  javorszky
-         */
-
-        // return this.forge({email: userData.email}).fetch().then(function (user) {
-        //     if (user !== null) {
-        //         return when.reject(new Error('A user with that email address already exists.'));
-        //     }
-        //     return nodefn.call(bcrypt.hash, _user.password, null, null).then(function (hash) {
-        //         userData.password = hash;
-        //         ghostBookshelf.Model.add.call(UserRole, userRoles);
-        //         return ghostBookshelf.Model.add.call(User, userData);
-        //     }, errors.logAndThrowError);
-        // }, errors.logAndThrowError);
-
     },
 
     permissable: function (userModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
@@ -233,8 +212,11 @@ User = ghostBookshelf.Model.extend({
     check: function (object) {
         var self = this,
             s;
-
         return this.getByEmail(object.email).then(function (user) {
+            if (!user || user.get('status') === 'invited') {
+                return when.reject(new Error('NotFound'));
+            }
+
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
@@ -296,6 +278,10 @@ User = ghostBookshelf.Model.extend({
 
     generateResetToken: function (email, expires, dbHash) {
         return this.getByEmail(email).then(function (foundUser) {
+            if (!foundUser) {
+                return when.reject(new Error('NotFound'));
+            }
+
             var hash = crypto.createHash('sha256'),
                 text = "";
 
@@ -398,8 +384,8 @@ User = ghostBookshelf.Model.extend({
 
     gravatarLookup: function (userData) {
         var gravatarUrl = '//www.gravatar.com/avatar/' +
-                            crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
-                            "?d=404",
+                crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
+                "?d=404",
             checkPromise = when.defer();
 
         http.get('http:' + gravatarUrl, function (res) {
@@ -427,12 +413,9 @@ User = ghostBookshelf.Model.extend({
             var userWithEmail = users.find(function (user) {
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });
-
             if (userWithEmail) {
                 return when.resolve(userWithEmail);
             }
-
-            return when.reject(new Error('NotFound'));
         });
     }
 });

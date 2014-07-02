@@ -22,6 +22,7 @@ apiRoutes = function (middleware) {
     router.get('/ghost/api/v0.1/users/:id/', api.http(api.users.read));
     router.put('/ghost/api/v0.1/users/password/', api.http(api.users.changePassword));
     router.put('/ghost/api/v0.1/users/:id/', api.http(api.users.edit));
+    router.post('/ghost/api/v0.1/users/', api.http(api.users.invite));
     router['delete']('/ghost/api/v0.1/users/:id/', api.http(api.users.destroy));
 
     // ## Tags

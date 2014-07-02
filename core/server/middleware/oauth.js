@@ -1,43 +1,9 @@
 var oauth2orize = require('oauth2orize'),
-    models  = require('../models'),
+    models      = require('../models'),
+    utils       = require('../utils'),
 
     oauth;
 
-
-/**
- * Return a random int, used by `utils.uid()`
- *
- * @param {Number} min
- * @param {Number} max
- * @return {Number}
- * @api private
- */
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/**
- * Return a unique identifier with the given `len`.
- *
- *     utils.uid(10);
- *     // => "FDaS435D2z"
- *
- * @param {Number} len
- * @return {String}
- * @api private
- */
-function uid(len) {
-    var buf = [],
-        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-        charlen = chars.length,
-        i;
-
-    for (i = 1; i < len; i = i + 1) {
-        buf.push(chars[getRandomInt(0, charlen - 1)]);
-    }
-
-    return buf.join('');
-}
 
 oauth = {
 
@@ -65,8 +31,8 @@ oauth = {
                 return models.User.check({email: username, password: password}).then(function (user) {
 
                     //Everything validated, return the access- and refreshtoken
-                    var accessToken = uid(256),
-                        refreshToken = uid(256),
+                    var accessToken = utils.uid(256),
+                        refreshToken = utils.uid(256),
                         accessExpires = Date.now() + 3600 * 1000,
                         refreshExpires = Date.now() + 3600 * 24 * 1000;
 
@@ -95,7 +61,7 @@ oauth = {
                     return done(null, false);
                 } else {
                     var token = model.toJSON(),
-                        accessToken = uid(256),
+                        accessToken = utils.uid(256),
                         accessExpires = Date.now() + 3600 * 1000;
 
                     if (token.expires > Date.now()) {
