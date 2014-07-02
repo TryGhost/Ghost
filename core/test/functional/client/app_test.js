@@ -54,7 +54,7 @@ CasperTest.begin('Admin navigation bar is correct', 27, function suite(test) {
         test.assertExists('#usermenu li.usermenu-profile a', 'Profile menu item exists');
         test.assertSelectorHasText('#usermenu li.usermenu-profile a', 'Your Profile',
             'Profile menu item has correct text');
-        test.assertEquals(profileHref, '/ghost/settings/user/', 'Profile href is correct');
+        test.assertEquals(profileHref, '/ghost/settings/users/' + newUser.slug + '/', 'Profile href is correct');
 
         test.assertExists('#usermenu li.usermenu-help a', 'Help menu item exists');
         test.assertSelectorHasText('#usermenu li.usermenu-help a', 'Help / Support', 'Help menu item has correct text');
