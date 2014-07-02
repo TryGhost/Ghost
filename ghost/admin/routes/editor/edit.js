@@ -10,8 +10,8 @@ var EditorEditRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixi
 
         postId = Number(params.post_id);
 
-        if (!Number.isInteger(postId) || !Number.isFinite(postId) || postId <= 0) {
-            this.transitionTo('error404', 'editor/' + params.post_id);
+        if (!_.isNumber(postId) || !_.isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
+            return this.transitionTo('error404', 'editor/' + params.post_id);
         }
 
         post = this.store.getById('post', postId);
