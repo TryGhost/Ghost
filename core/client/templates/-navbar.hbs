@@ -10,12 +10,12 @@
 
             <li id="usermenu" class="usermenu subnav">
                 {{#gh-popover-button popoverName="user-menu" tagName="a" href="#" classNames="dropdown"}}
-                    {{#if user.image}}
-                    <img class="avatar" {{bind-attr src="user.image"}} alt="Avatar" />
+                    {{#if session.user.image}}
+                    <img class="avatar" {{bind-attr src="session.user.image"}} alt="Avatar" />
                     {{else}}
                     <img class="avatar" src="/shared/img/user-image.png" alt="Avatar" />
                     {{/if}}
-                    <span class="name">{{user.name}}</span>
+                    <span class="name">{{session.user.name}}</span>
                 {{/gh-popover-button}}
                 {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
                         <li class="usermenu-profile">{{#link-to "settings.user"}}Your Profile{{/link-to}}</li>
