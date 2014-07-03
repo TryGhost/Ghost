@@ -5,11 +5,13 @@
  *
  * Labels
  * Form Wrapper
- * Form Group
+ * Form Groups
  * Fieldsets
  * Legends
  * Input, textarea & select
  * Checkboxes
+ * Radio Buttons
+ * Select
  */
 
 
@@ -17,25 +19,11 @@
    Labels
    ========================================================================== */
 
-.label {
-   display: inline-block;
-   position: absolute;
-   top: 0.5em;
-   left: 0;
-   width: 120px;
-   font-weight: bold;
-   color: $brown;
-   text-align: right;
-
-   @media (max-width: 550px) {
-       display: block;
-       position: relative;
-       top: auto;
-       left: auto;
-       width: auto;
-       margin-bottom: 5px;
-       text-align: left;
-   }
+%label {
+    display: block;
+    color: $darkgrey;
+    font-size: 1em;
+    font-weight: normal;
 }
 
 
@@ -46,33 +34,103 @@
 form {
 
     label {
-        @extend .label;
-    }
-
-    p {
-        max-width: 400px;
-        color: darken($brown, 5%);
-        font-size: 1em;
-        margin: 0;
+        @extend %label;
     }
 
 } // form
 
 
 /* ==========================================================================
-   Form Group
+   Form Groups
    ========================================================================== */
 
 .form-group {
     position: relative;
-    margin: 1.5em 0;
-    padding-left: 140px;
+    margin-bottom: 1.6em;
+    width: 100%;
+    max-width: 500px;
+    p {
+        margin: 2px 0 0 0;
+        color: #B3B2A8;
+    }
+
+    label + input,
+    label + .gh-select {
+        margin-top: 1px;
+    }
 
     @media (max-width: 550px) {
-        padding-left: 0;
+        max-width: 100%;
     }
+
 } // .form-group
 
+// If the from group has an icon...
+.form-group[class*='icon-'] {
+    #{$all-text-inputs} {
+        padding-left: 32px;
+    }
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 11px;
+        font-size: 0.9em;
+        margin-top: calc(-0.45em - 1px);
+    }
+} // .thing[class*='icon-']
+
+// Wrapper for <select> elements
+.form-group.for-select {
+    &[class*="icon-"] {
+        .gh-select {
+            &:before {
+                left: 32px;
+            }
+        }
+    }
+} // .form-group.for-select
+
+// Wrapper for input[type="checkbox"] elements
+.form-group.for-checkbox {
+    @include clearfix;
+
+    label:first-child {
+        display: block;
+        padding-bottom: 4px;
+    }
+
+    .checkbox,
+    p {
+        float: left;
+    }
+
+    p {
+        margin-top: 0;
+        margin-left: 4px;
+    }
+} // .form-group.for-checkbox
+
+// Wrapper for input[type="radio"] elements
+.form-group.for-radio {
+    @include clearfix;
+
+    label:first-child {
+        display: block;
+        padding-bottom: 4px;
+    }
+
+    .gh-radio-wrapper {
+        @include clearfix;
+        span {
+            float: left;
+        }
+    }
+
+    span:not(.gh-radio) {
+        margin-top: 0;
+        margin-left: 4px;
+    }
+} // .form-group.for-radio
 
 /* ==========================================================================
    Fieldsets
@@ -93,7 +151,7 @@ legend {
     display: block;
     width: 100%;
     margin: 2em 0;
-    border-bottom:$lightbrown 1px solid;
+    border-bottom: $lightbrown 1px solid;
     font-size: 1.2em;
     line-height: 2.0em;
     color: $brown;
@@ -104,71 +162,30 @@ legend {
    Input, textarea & select
    ========================================================================== */
 
-input,
+#{$all-text-inputs},
 textarea,
-select {
-    width: 280px;
-    padding: 5px 7px;
-    margin: 0;
-    outline: 0;
-    font-size: 1.1em;
-    line-height: 1.4em;
-    background: #fff;
-    border: darken($lightbrown, 5%) 1px solid;
-    border-radius: $rounded;
-    @include transition(border-color 0.15s ease-in-out);
-
-    @media (max-width: 550px) {
-        width: 100%;
-    }
-}
-
-textarea {
+.gh-select {
+    display: block;
+    padding: 8px 10px;
     width: 100%;
-    max-width: 340px;
-    min-width: 250px;
-    height: auto;
-    min-height: 6.5em;
+    border: 1px solid #E0DFD7;
+    border-radius: $rounded;
+
+    font-size: 1.1em;
+    font-weight: normal;
+    color: $darkgrey;
+
+    @include transition(border-color, 0.15s linear);
+
 }
 
-input,
-select,
-textarea {
-    margin-bottom: 5px;
+#{$all-text-inputs-focus},
+textarea:focus {
+    border-color: $brown;
+    outline: 0;
+    outline-width: 0;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="search"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
-input[type="number"],
-input[type="date"],
-input[type="month"],
-input[type="week"],
-input[type="time"],
-input[type="datetime"],
-input[type="datetime-local"],
-textarea,
-select {
-    &:focus {
-        border: $brown 1px solid;
-        background: #fff;
-        outline: none;
-        outline-width: 0;
-    }
-}
-
-select {
-    width: 270px;
-    height: 30px;
-    line-height: 30px;
-
-    @media (max-width: 550px) {
-        width: 100%;
-    }
-}
 // 'vanilla' CSS hack to specifically target Firefox
 @-moz-document url-prefix() {
     select {
@@ -176,9 +193,23 @@ select {
     }
 }
 
+input[type="number"] {
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        padding-right: 6px;
+    }
+}
+
 
 /* =============================================================================
    Checkboxes
+   ---
+   <div class="form-group for-checkbox">
+       <label for="permalinks">Dated Permalinks</label>
+       <input id="permalinks" type="checkbox" name="general[permalinks]">
+       <label class="checkbox" for="permalinks"></label>
+       <p>Include the date in your post URLs</p>
+   </div>
    ============================================================================= */
 
 // Hide the default checkbox
@@ -197,9 +228,9 @@ input[type="checkbox"] {
         position: absolute;
         width: 10px;
         height: 6px;
-        top: 5px;
-        left: 4px;
-        border: 3px solid #fff;
+        top: 6px;
+        left: 5px;
+        border: 2px solid #fff;
         border-top: none;
         border-right: none;
         @include transform(rotate(-45deg));
@@ -210,23 +241,15 @@ input[type="checkbox"] {
     &:after {
         content: '';
         display: inline-block;
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         margin-right: 5px;
         background: lighten($lightbrown, 5%);
         border-radius: $rounded;
         border: darken($lightbrown, 5%) 1px solid;
         @include transition(all 0.2s ease);
     }
-
-    // The paragraph after the .checkbox
-    & + p {
-        display: inline-block;
-        line-height: 28px;
-        position: relative;
-        bottom: -2px;
-    }
-}
+} // .checkbox
 
 // Colour the checkbox correctly when checked
 input[type='checkbox'] {
@@ -262,3 +285,120 @@ input[type='checkbox'] {
     } // &:active
 
 } // input[type='checkbox']
+
+
+/* =============================================================================
+   Radio Buttons
+   ---
+   <div class="form-group for-radio">
+       <label>The Option Title</label>
+       <label class="gh-radio-wrapper">
+           <input name="testing" type="radio" value="yes">
+           <span class="gh-radio"></span>
+           <span>Yes</span>
+       </label>
+       <label class="gh-radio-wrapper">
+           <input name="testing" type="radio" value="no">
+           <span class="gh-radio"></span>
+           <span>No</span>
+       </label>
+       <p>What does this thing mean?</p>
+   </div>
+   ============================================================================= */
+
+// Hide the default checkbox
+input[type="radio"] {
+    @include position(absolute, 0 0 0 -9999px);
+}
+
+// Turn the label element into a fake checkbox
+.gh-radio {
+    position: relative;
+    width: auto;
+
+    // Create a circle, hidden by default
+    &:before {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: 5px;
+        left: 5px;
+        opacity: 0;
+        border-radius: 100%;
+        background: $green;
+    }
+
+    // The background for the faux radio
+    &:after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        background: lighten($lightbrown, 5%);
+        border-radius: 100%;
+        border: $lightbrown 1px solid;
+        @include transition(all 0.2s ease);
+    }
+} // .gh-radio
+
+input[type='radio'] {
+
+    // When radio is checked, show the tick
+    &:checked + .gh-radio:before {
+        opacity: 1;
+    }
+
+    &:focus {
+        & + .gh-radio {
+            &:after {
+                border: $brown 1px solid;
+            }
+        }
+    } // &:focus
+
+} // input[type='radio']
+
+
+/* =============================================================================
+   Select Component
+   ---
+   <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+       {{view Ember.Select
+           id="activeTheme"
+           name="general[activeTheme]"
+           content=themes
+           optionValuePath="content.name"
+           optionLabelPath="content.label"
+           value=activeTheme
+           selection=selectedTheme}}
+   </span>
+   ============================================================================= */
+
+.gh-select {
+
+    height: 37px;
+    position: relative;
+
+    &:before {
+        content: attr(data-select-text);
+        @include position(absolute, 0 null null 10px);
+        font-size: 1.1rem;
+        font-weight: normal;
+        color: $darkgrey;
+        line-height: 35px;
+        pointer-events: none;
+    }
+
+    select {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+}
