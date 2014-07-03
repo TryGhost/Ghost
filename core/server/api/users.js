@@ -96,6 +96,7 @@ users = {
      * @param {{context}} options
      * @returns {Promise(User}} Newly created user
      */
+    // TODO: remove and rename invite to add when setup is implemented
     add: function add(object, options) {
         options = options || {};
 
@@ -213,14 +214,10 @@ users = {
      * @param {User} object the user to create
      * @returns {Promise(User}} Newly created user
      */
-    // TODO: create a proper API end point and use JSON API format
+    // TODO: remove when setup is implemented
     register: function register(object) {
         // TODO: if we want to prevent users from being created with the signup form this is the right place to do it
         return users.add(object, {context: {internal: true}});
-    },
-
-    check: function check(object) {
-        return dataProvider.User.check(object);
     },
 
     /**

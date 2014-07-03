@@ -50,8 +50,7 @@ var middleware = {
 
         if (res.isAdmin) {
             if (subPath.indexOf('/ghost/api/') === 0
-                && path.indexOf('/ghost/api/v0.1/authentication/token') !== 0
-                && path.indexOf('/ghost/api/v0.1/authentication/passwordreset/') !== 0) {
+                && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
 
                 return passport.authenticate('bearer', { session: false, failWithError: true },
                     function (err, user, info) {
