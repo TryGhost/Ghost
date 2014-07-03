@@ -6,20 +6,6 @@ var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
     shortcuts: {
         'esc': 'closePopups'
     },
-    beforeModel: function () {
-        var self = this;
-        if (this.get('session').isAuthenticated) {
-            this.store.find('user', 'me').then(function (user) {
-                // Update the user on all routes and controllers
-                self.container.unregister('user:current');
-                self.container.register('user:current', user, { instantiate: false });
-
-                self.container.injection('route', 'user', 'user:current');
-                self.container.injection('controller', 'user', 'user:current');
-
-            });
-        }
-    },
     mobileInteractions: function () {
         var responsiveAction = mobileUtils.responsiveAction;
 
@@ -47,30 +33,8 @@ var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
             this.send('closeModal');
         },
 
-        signedIn: function (user) {
-            // Update the user on all routes and controllers
-            this.container.unregister('user:current');
-            this.container.register('user:current', user, { instantiate: false });
-
-            this.container.injection('route', 'user', 'user:current');
-            this.container.injection('controller', 'user', 'user:current');
-
-            this.set('user', user);
-            this.set('controller.user', user);
-
+        signedIn: function () {
             this.send('loadServerNotifications', true);
-        },
-
-        signedOut: function () {
-            // Nullify the user on all routes and controllers
-            this.container.unregister('user:current');
-            this.container.register('user:current', null, { instantiate: false });
-
-            this.container.injection('route', 'user', 'user:current');
-            this.container.injection('controller', 'user', 'user:current');
-
-            this.set('user', null);
-            this.set('controller.user', null);
         },
 
         openModal: function (modalName, model, type) {
