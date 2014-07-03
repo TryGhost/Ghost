@@ -367,11 +367,12 @@
 
     .description-container,
     .bio-container {
-        max-width: 510px;
+        textarea {
+            min-height: 115px;
+        }
     }
 
     .word-count {
-        margin-right: 30px;
         float: right;
         font-weight: bold;
         color: darken($brown, 5%);
@@ -382,9 +383,6 @@
             max-width: 100%;
             + p {
                 max-width: 100%;
-                .word-count {
-                    margin-right: 0;
-                }
             }
         }
     }

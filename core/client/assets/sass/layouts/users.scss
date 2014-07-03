@@ -202,7 +202,9 @@
     .user-image + .form-group {
         margin-top: 155px;
         @media (min-width: 551px) {
-            margin-top: 43px;
+            margin-top: 0;
+            top: -110px;
+            left: 40px;
         }
     }
 
@@ -210,6 +212,7 @@
         position: relative;
         top: -110px;
         z-index: 1;
+        padding-left: 143px;
 
         fieldset {
             padding: 0 40px;
@@ -250,6 +253,8 @@
         // border: 5px solid #fff;
         background: #fff;
         z-index: 2;
+
+        margin-left: -104px;
 
         @media (max-width: 550px) {
             margin-left: -10px;
@@ -296,7 +301,7 @@
 
     .user-details-bottom {
         padding: 0 40px;
-        margin: -30px 0 0 0;
+        margin: -104px 0 0 0;
     }
 
 } // .settings
