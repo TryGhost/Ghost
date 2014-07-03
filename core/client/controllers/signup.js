@@ -5,6 +5,7 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
     name: null,
     email: null,
     password: null,
+    token: null,
     submitting: false,
 
     // ValidationEngine settings
@@ -12,16 +13,25 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
 
     actions: {
         signup: function () {
-            var self = this;
+            var self = this,
+                data = self.getProperties('name', 'email', 'password', 'token');
 
             self.notifications.closePassive();
 
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
-                    url: self.get('ghostPaths').adminUrl('signup'),
+                    url: self.get('ghostPaths').apiUrl('authentication', 'invitation'),
                     type: 'POST',
-                    data: self.getProperties('name', 'email', 'password')
+                    dataType: 'json',
+                    data: {
+                        invitation: [{
+                            name: data.name,
+                            email: data.email,
+                            password: data.password,
+                            token: data.token
+                        }]
+                    }
                 }).then(function () {
                     self.get('session').authenticate('ember-simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),

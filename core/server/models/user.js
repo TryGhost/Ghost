@@ -216,7 +216,6 @@ User = ghostBookshelf.Model.extend({
             if (!user || user.get('status') === 'invited') {
                 return when.reject(new Error('NotFound'));
             }
-
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
@@ -376,9 +375,7 @@ User = ghostBookshelf.Model.extend({
             var foundUser = results[0],
                 passwordHash = results[1];
 
-            foundUser.save({password: passwordHash, status: 'active'});
-
-            return foundUser;
+            return foundUser.save({password: passwordHash, status: 'active'});
         });
     },
 
