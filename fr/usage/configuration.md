@@ -23,8 +23,6 @@ Pour configurer votre URL d'accès à Ghost, les paramètres de messagerie ou le
 
 ## À propos des environnements <a id="environments"></a>
 
-Node.js, and therefore Ghost, has the concept of environments built in. Environments allow you to create different configurations for different modes in which you might want to run Ghost. By default Ghost has two built-in modes: **development** and **production**.
-
 Node.js, et donc Ghost, a concept d'environnements intégré. Les environnements permettent de créer différentes configurations pour différents modes dans lesquels vous pourriez vouloir exécuter Ghost. Par défaut Ghost a deux modes intégrés: **développement** et **production** .
 
 Il ya quelques différences, subtiles entre les deux modes ou environnements. Essentiellement **développement**  est orientée vers le développement, et en particulier le débogage de Ghost. Par contre la "production" est destiné à être utilisé lorsque vous exécutez Ghost pour une utilisation publique. Les différences comprennent des choses comme ce que l'exploitation des logs et l'affichage des messages d'erreur, et aussi bien la concatenation et la minification des ressources  statiques. Dans le mode  **production**, vous aurez juste un fichier JavaScript contenant tout le code pour l'administrateur, dans le mode **développement** vous en aurez plusieurs.
@@ -37,11 +35,10 @@ Afin de configurer Ghost pour qu'il s'exécute dans différents environnements, 
 
 `NODE_ENV=production node index.js`
 
-Ou vous utilisé normalement **forever**:
+Ou vous utilisez **forever**:
 
 `NODE_ENV=production forever start index.js`
 
-Or if you're used to using `npm start` you could use the slightly easier to remember:
 Ou si vous êtes habitué à utiliser `npm start` vous pouvez utiliser une commande un peu plus facile à retenir:
 
 `npm start --production`
