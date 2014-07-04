@@ -49,7 +49,7 @@ Settings = ghostBookshelf.Model.extend({
 
     validate: function () {
         var self = this;
-        return when(validation.validateSchema(self.tableName, self.toJSON())).then(function () {
+        return validation.validateSchema(self.tableName, self.toJSON()).then(function () {
             return validation.validateSettings(getDefaultSettings(), self);
         });
     },
