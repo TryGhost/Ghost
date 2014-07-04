@@ -56,6 +56,9 @@ apiRoutes = function (middleware) {
     // ## Authentication
     router.post('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.generateResetToken));
     router.put('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.resetPassword));
+
+    router.post('/ghost/api/v0.1/authentication/invitation', api.http(api.authentication.acceptInvitation));
+
     router.post('/ghost/api/v0.1/authentication/token',
         middleware.addClientSecret,
         middleware.authenticateClient,
