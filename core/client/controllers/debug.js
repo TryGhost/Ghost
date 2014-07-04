@@ -24,7 +24,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
             }).then(function () {
                 self.notifications.showSuccess('Import successful.');
             }).catch(function (response) {
-                self.notifications.showErrors(response);
+                self.notifications.showAPIError(response);
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
                 self.trigger('reset');
