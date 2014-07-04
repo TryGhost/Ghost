@@ -91,6 +91,38 @@ authentication = {
                 return when.reject(new errors.UnauthorizedError(error.message));
             });
         });
+    },
+
+    /**
+     * ### Accept Invitation
+     * @param {User} object the user to create
+     * @returns {Promise(User}} Newly created user
+     */
+    acceptInvitation: function acceptInvitation(object) {
+        var resetToken,
+            newPassword,
+            ne2Password,
+            name,
+            email;
+
+        return utils.checkObject(object, 'invitation').then(function (checkedInvitation) {
+            resetToken = checkedInvitation.invitation[0].token;
+            newPassword = checkedInvitation.invitation[0].password;
+            ne2Password = checkedInvitation.invitation[0].password;
+            email = checkedInvitation.invitation[0].email;
+            name = checkedInvitation.invitation[0].name;
+
+            return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
+                var dbHash = response.settings[0].value;
+                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+            }).then(function (user) {
+                return dataProvider.User.edit({name: name, email: email}, {id: user.id});
+            }).then(function () {
+                return when.resolve({invitation: [{message: 'Invitation accepted.'}]});
+            }).otherwise(function (error) {
+                return when.reject(new errors.UnauthorizedError(error.message));
+            });
+        });
     }
 };
 
