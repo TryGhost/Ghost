@@ -1,4 +1,5 @@
 import ValidationEngine from 'ghost/mixins/validation-engine';
+import boundOneWay from 'ghost/utils/bound-one-way';
 
 var Post = DS.Model.extend(ValidationEngine, {
     validationType: 'post',
@@ -23,7 +24,7 @@ var Post = DS.Model.extend(ValidationEngine, {
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
     tags: DS.hasMany('tag', { embedded: 'always' }),
-
+    titleScratch: boundOneWay('title'),
     //## Computed post properties
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),

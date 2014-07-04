@@ -10,7 +10,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         // when creating a new post we want to observe the title
         // to generate the post's slug
         if (this.get('isNew')) {
-            this.addObserver('title', this, 'titleObserver');
+            this.addObserver('titleScratch', this, 'titleObserver');
         }
     },
     /**
@@ -36,13 +36,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Requests slug from title
     generateSlugPlaceholder: function () {
         var self = this,
-            title = this.get('title');
+            title = this.get('titleScratch');
+        
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
             self.set('slugPlaceholder', slug);
         });
     },
     titleObserver: function () {
-        if (this.get('isNew') && this.get('model').changedAttributes().hasOwnProperty('title')) {
+        if (this.get('isNew')) {
             Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
         }
     },
@@ -60,7 +61,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             return value;
         }
         //The title will stand in until the actual slug has been generated
-        return this.get('title');
+        return this.get('titleScratch');
     }.property(),
 
     showErrors: function (errors) {
@@ -97,7 +98,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         updateSlug: function (newSlug) {
             var slug = this.get('slug'),
                 self = this;
-
+            
             newSlug = newSlug || slug;
 
             newSlug = newSlug.trim();
@@ -134,8 +135,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 self.set('slug', serverSlug);
 
-                if (self.hasObserverFor('title')) {
-                    self.removeObserver('title', self, 'titleObserver');
+                if (self.hasObserverFor('titleScratch')) {
+                    self.removeObserver('titleScratch', self, 'titleObserver');
                 }
 
                 // If this is a new post.  Don't save the model.  Defer the save

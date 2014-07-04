@@ -192,8 +192,10 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             // ensure an incomplete tag is finalised before save
             this.get('controllers.post-tags-input').send('addNewTag');
 
+            // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
+            this.set('title', this.get('titleScratch'));
             this.set('status', status);
 
             return this.get('model').save().then(function (model) {
