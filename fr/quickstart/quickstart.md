@@ -2,29 +2,32 @@
 lang: fr
 layout: quickstart
 meta_title: Ghost Quickstart
-heading: Ghost Quickstart
-subheading: Get up and running with Ghost.
+heading: Démarrage rapide de Ghost
+subheading: Configurer et demarrer Ghost.
 chapter: quickstart
 section: quickstart
 ---
 
-# Overview <a id="overview"></a>
+# Vue d'ensemble <a id="overview"></a>
 
-The Quickstart Guide to getting Ghost up and running is aimed at those of you who are already familiar with [Node](http://nodejs.org), or something similar like ruby on rails. If you're new in town, we recommend taking a look at the more in depth [Installation Guide](/installation.html).
+Le guide de démarrage rapide pour configurer et demarrer Ghost est destiné à ceux d'entre vous qui sont déjà familiers avec [Node](http://nodejs.org), ou quelque chose de similaire comme Ruby on Rails. Si vous êtes novice, nous vous recommandons de jeter un oeil sur le [guide d'installation](/installation.html) plus détaillé.
 
-## Get Ghost running locally <a id="ghost-local"></a>
 
-Ghost requires node `0.10.*` (the latest stable version).
+## Lancer Ghost localement <a id="ghost-local"></a>
 
-If you haven't already got it, head over to <http://nodejs.org> and download the latest version of Node.js. The installer will set up both Node and Node's excellent package manager, npm.
+Ghost requiert node `0,10. *` (La dernière version stable).
 
-For users on Linux, rather than installing from the .tar.gz archive, you may want to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+Si vous ne l'avez pas encore, allez sur <http://nodejs.org> et télécharger la dernière version de Node.js. Le programme d'installation mettra en place Node et son excellent gestionnaire de package de Node, npm.
 
-Download the latest version of Ghost from [Ghost.org/download/](https://ghost.org/download/). Unpack the archive to a folder where you'd like to run Ghost - anywhere will do!
+Pour les utilisateurs sous Linux, plutôt que d'installer de l'archive tar.gz., Vous pouvez [installer à partir d'un gestionnaire de package](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+
+Télécharger la dernière version de Ghost à partir [Ghost.org/download/](https://ghost.org/download/). Décompressez l'archive dans un dossier où vous souhaitez exécuter Ghost - n'importe où il lefera!
 
 Fire up your terminal (mac/linux) or command prompt (windows) and navigate to the root directory of your unpacked Ghost archive (where package.json lives).
 
-To install Ghost, run `npm install --production`
+Lancez votre terminal (Mac/Linux) ou invite de commande (Windows) et accédez au répertoire racine où vous avez décompressé votre archive  Ghost (où se trouve le package.json).
+
+Pour installer Ghost, exécutez `npm install --production`
 
 <!--<h2 id="customise">Customise & Configure Ghost</h2>
 
