@@ -171,16 +171,30 @@
         textarea {
             border: 0;
             width: 100%;
-            height: calc(100% - 45px);
+            min-height: auto;
+            height: 100%;
             max-width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 10px 20px 50px 20px;
             position: absolute;
             top: 0;
             right: 0;
             bottom: 0;
             left: 0;
             -webkit-overflow-scrolling: touch;
+
+            @media (max-width: 600px) {
+                padding: 10px;
+            }
+            @media (min-width: 601px) and (max-width: 1000px) {
+                padding: 15px;
+            }
+            @media (min-width: 1001px) {
+                top: 40px;
+            }
+            @media (max-height: 560px) {
+                height: calc(100% - 40px);
+            }
 
             &:focus {
                 outline: 0;
