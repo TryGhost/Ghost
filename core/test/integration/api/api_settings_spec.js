@@ -64,6 +64,16 @@ describe('Settings API', function () {
         }).catch(getErrorDetails(done));
     });
 
+    it('uses Date objects for dateTime fields', function (done) {
+        return callApiWithContext(defaultContext, 'browse', {}).then(function (results) {
+            should.exist(results);
+
+            results.settings[0].created_at.should.be.an.instanceof(Date);
+
+            done();
+        }).catch(getErrorDetails(done));
+    });
+
     it('can browse', function (done) {
         return callApiWithContext(defaultContext, 'browse', {}).then(function (results) {
             should.exist(results);

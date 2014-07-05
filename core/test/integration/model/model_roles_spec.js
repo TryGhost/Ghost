@@ -42,6 +42,7 @@ describe('Role Model', function () {
     it('can findOne', function (done) {
         RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
+            foundRole.get('created_at').should.be.an.instanceof(Date);
 
             done();
         }).catch(done);

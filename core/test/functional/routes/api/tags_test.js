@@ -71,6 +71,8 @@ describe('Tag API', function () {
                 jsonResponse.tags.should.exist;
                 jsonResponse.tags.should.have.length(6);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true;
+
                 done();
             });
     });
