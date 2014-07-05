@@ -30,6 +30,7 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
     url = 'http://' + host + (noPort ? '/' : ':' + port + '/'),
     newUser = {
         name: 'Test User',
+        slug: 'test-user',
         email: email,
         password: password
     },

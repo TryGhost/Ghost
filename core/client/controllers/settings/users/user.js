@@ -3,7 +3,10 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     user: Ember.computed.alias('model'),
 
+    email: Ember.computed.readOnly('user.email'),
+
     coverDefault: '/shared/img/user-cover.png',
+
     cover: function () {
         // @TODO: add {{asset}} subdir path
         var cover = this.get('user.cover');
@@ -19,10 +22,31 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     image: function () {
         // @TODO: add {{asset}} subdir path
-        return 'background-image: url(' + this.getWithDefault('user.image', '/shared/img/user-image.png') + ')';
+        return  'background-image: url(' + this.getWithDefault('user.image', '/shared/img/user-image.png') + ')';
     }.property('user.image'),
 
+    imageUrl: function () {
+        // @TODO: add {{asset}} subdir path
+        return  this.getWithDefault('user.image', '/shared/img/user-image.png');
+    }.property('user.image'),
+
+    last_login: function () {
+        return moment(this.get('user.last_login')).fromNow();
+    }.property('user.last_login'),
+
+    created_at: function () {
+        return moment(this.get('user.created_at')).fromNow();
+    }.property('user.created_at'),
+
     actions: {
+        revoke: function () {
+            alert('@TODO: revoke users invitation');
+        },
+
+        resend: function () {
+            alert('@TODO: resend users invitation');
+        },
+
         save: function () {
             var user = this.get('user'),
                 self = this;

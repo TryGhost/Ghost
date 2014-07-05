@@ -30,7 +30,9 @@ Router.map(function () {
     });
     this.resource('settings', function () {
         this.route('general');
-        this.route('user');
+        this.resource('settings.users', { path: '/users' }, function () {
+            this.route('user', { path: '/:slug' });
+        });
         this.route('apps');
     });
     this.route('debug');
