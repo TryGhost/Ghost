@@ -13,6 +13,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     },
+    //Changes in the PSM are too minor to warrant NProgress firing
+    saveOptions: {disableNProgress: true},
     /**
      * The placeholder is the published date of the post,
      * or the current date if the pubdate has not been set.
@@ -83,8 +85,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             if (this.get('isNew')) {
                 return;
             }
-
-            return this.get('model').save().then(function () {
+            
+            return this.get('model').save(this.get('saveOptions')).then(function () {
                 self.showSuccess('Successfully converted to ' + (value ? 'static page' : 'post'));
                 return value;
             }).catch(function (errors) {
@@ -145,8 +147,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                     return;
                 }
 
-                // Save post model properties excluding any changes to the post body
-                return self.get('model').save();
+                return self.get('model').save(self.get('saveOptions'));
             }).then(function () {
                 self.showSuccess('Permalink successfully changed to <strong>' +
                     self.get('slug') + '</strong>.');
@@ -204,7 +205,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save().then(function () {
+            this.get('model').save(this.get('saveOptions')).then(function () {
                 self.showSuccess('Publish date successfully changed to <strong>' +
                     formatDate(self.get('published_at')) + '</strong>.');
             }).catch(function (errors) {
