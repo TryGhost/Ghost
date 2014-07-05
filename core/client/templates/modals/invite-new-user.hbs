@@ -1,0 +1,17 @@
+{{#gh-modal-dialog action="closeModal" showClose=true type="action" animation="fade"
+    title="Invite a New User" confirm=confirm class="invite-new-user" }}
+
+        <fieldset>
+            <div class="form-group">
+                <label for="new-user-email"">Email Address</label>
+                {{input class="email" id="new-user-email" type="email" placeholder="Email Address" name="email" autofocus="autofocus"
+                autocapitalize="off" autocorrect="off" value=email }}
+            </div>
+            <div class="form-group">
+                <label for="new-user-role">Role</label>
+                {{view Ember.Select content=roles id="new-user-role" optionValuePath="content.id" optionLabelPath="content.name" name="role"
+                value=role}}
+            </div>
+        </fieldset>
+
+{{/gh-modal-dialog}}
