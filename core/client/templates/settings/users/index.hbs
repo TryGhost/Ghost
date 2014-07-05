@@ -1,0 +1,63 @@
+<header class="fade-in">
+    <button class="button-back">Back</button>
+    <h2 class="title">Users</h2>
+    <section class="page-actions">
+        <a class="button-add" href="#" {{action "addUser"}} >New&nbsp;User</a>
+    </section>
+</header>
+
+<section class="content fade-in settings-users">
+    <section class="object-list">
+
+        <h4 class="object-list-title">Invited users</h4>
+
+        {{#each invitedUsers itemController="settings/users/user"}}
+            <div class="object-list-item">
+                <span class="object-list-item-icon icon-mail">ic</span>
+
+                <div class="object-list-item-body">
+                    <span class="name">{{email}}</span><br>
+                    <span class="description">Invitation sent: {{created_at}}</span>
+                </div>
+                <aside class="object-list-item-aside">
+                    <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>
+                    <a class="object-list-action" href="#" {{action "resend"}}>Resend</a>
+                </aside>
+            </div>
+        {{else}}
+            <div class="object-list-item">
+                No invited users.
+            </div>
+        {{/each}}
+
+
+    </section>
+
+    <section class="object-list">
+
+        <h4 class="object-list-title">Active users</h4>
+
+
+        {{#each activeUsers itemController="settings/users/user"}}
+            <div class="object-list-item">
+                <img class="object-list-item-figure"
+                     src="{{unbound imageUrl}}"
+                     alt="Photo of {{unbound name}}" />
+
+                <div class="object-list-item-body">
+                    {{#link-to 'settings.users.user' slug class="ember-view name" }}
+                        {{user.name}}
+                    {{/link-to}}
+                    <br>
+                    <span class="description">Last seen: {{unbound last_login}}</span>
+                </div>
+                <!-- @TODO: replace these with real access level once API and data model are updated -->
+                <aside class="object-list-item-aside">
+                    <span class="role-label editor">Editor</span>
+                    <span class="role-label owner">Owner</span>
+                </aside>
+            </div>
+        {{/each}}
+
+    </section>
+</section>
