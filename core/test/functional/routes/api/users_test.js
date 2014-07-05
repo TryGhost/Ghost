@@ -53,6 +53,31 @@ describe('User API', function () {
         httpServer.close();
     });
 
+    it('returns dates in ISO 8601 format', function (done) {
+        request.get(testUtils.API.getApiQuery('users/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+                jsonResponse.users.should.exist;
+                testUtils.API.checkResponse(jsonResponse, 'users');
+
+                jsonResponse.users.should.have.length(1);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true;
+                testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true;
+                testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true;
+
+                done();
+            });
+    });
+
     it('can retrieve all users', function (done) {
         request.get(testUtils.API.getApiQuery('users/'))
             .set('Authorization', 'Bearer ' + accesstoken)

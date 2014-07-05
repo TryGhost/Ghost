@@ -43,6 +43,7 @@ describe('Permission Model', function () {
     it('can findOne', function (done) {
         PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
+            foundPermission.get('created_at').should.be.an.instanceof(Date);
 
             done();
         }).catch(done);

@@ -83,9 +83,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Base prototype properties will go here
     // Fix problems with dates
     fixDates: function (attrs) {
+        var self = this;
+
         _.each(attrs, function (value, key) {
-            if (key.substr(-3) === '_at' && value !== null) {
-                attrs[key] = moment(attrs[key]).toDate();
+            if (value !== null && schema.tables[self.tableName][key].type === 'dateTime') {
+                // convert dateTime value into a native javascript Date object
+                attrs[key] = moment(value).toDate();
             }
         });
 
