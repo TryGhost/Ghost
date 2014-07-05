@@ -1,18 +1,9 @@
-/*global alert */
 var UsersIndexController = Ember.ArrayController.extend({
-    activeUsers: function () {
-        return this.content.filterBy('status', 'active');
-    }.property('model'),
+    users: Ember.computed.alias('model'),
 
-    invitedUsers: function () {
-        return this.content.filterBy('status', 'invited');
-    }.property('model'),
+    activeUsers: Ember.computed.filterBy('users', 'status', 'active'),
 
-    actions: {
-        addUser: function () {
-            alert('@TODO: needs to show the "add user" modal - see issue #3079 on GitHub');
-        }
-    }
+    invitedUsers: Ember.computed.filterBy('users', 'status', 'invited')
 });
 
 export default UsersIndexController;
