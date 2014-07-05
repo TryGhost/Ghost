@@ -56,7 +56,7 @@ Have a bug or a feature request? Please first read the [issue guidelines](https:
 
 ## Documentation
 
-The documentation, included in this repo in the root directory, is built with [Jekyll](http://jekyllrb.com) and publicly hosted on GitHub Pages at <http://ui.ghost.org>. The docs may also be run locally.
+The documentation, included in this repo in the root directory, is built with [Jekyll](http://jekyllrb.com).
 
 ### Running Documentation Locally
 
