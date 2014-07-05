@@ -6,7 +6,7 @@
 // These classes relate to elements which only appear when a given tab is loaded.
 // These are used to check that a switch to a tab is complete, or that we are on the right tab.
 var generalTabDetector = '.settings-content form#settings-general',
-    userTabDetector = '.settings-content form.user-profile';
+    usersTabDetector = '.settings-content .settings-users';
 
 CasperTest.begin('Settings screen is correct', 17, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
@@ -30,11 +30,11 @@ CasperTest.begin('Settings screen is correct', 17, function suite(test) {
 
     casper.then(function testSwitchingTabs() {
         casper.thenClick('.settings-menu .users a');
-        casper.waitForSelector(userTabDetector, function then () {
+        casper.waitForSelector(usersTabDetector, function then () {
             // assert that the right menu item is active
             test.assertExists('.settings-menu .users.active', 'User tab is active');
             test.assertDoesntExist('.settings-menu .general.active', 'General tab is not active');
-        }, casper.failOnTimeout(test, 'waitForSelector `userTabDetector` timed out'));
+        }, casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
 
         casper.thenClick('.settings-menu .general a');
         casper.waitForSelector(generalTabDetector, function then () {
