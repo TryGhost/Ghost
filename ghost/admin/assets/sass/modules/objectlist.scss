@@ -37,7 +37,7 @@
     &:hover {
         background: lighten($lightbrown, 5%);
     }
-    &:last-child:hover {
+    &:last-of-type:hover {
         box-shadow: inset 0px -1px 0px $lightbrown;
     }
 
@@ -98,6 +98,10 @@
 .object-list-item-aside {
     .object-list-action + .object-list-action {
         margin-left: 20px;
+    }
+    .role-label {
+        float: left;
+        margin-top: -1px;
     }
     .role-label + .role-label {
         margin-left: 5px;
