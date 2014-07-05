@@ -3,6 +3,7 @@ var testUtils = require('../../utils'),
     should    = require('should'),
 
     permissions   = require('../../../server/permissions'),
+    UserModel = require('../../../server/models').User;
 
     // Stuff we are testing
     UsersAPI      = require('../../../server/api/users');
@@ -62,6 +63,20 @@ describe('Users API', function () {
             }).catch(done);
         });
 
+        it('dateTime fields are returned as Date objects', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            UserModel.check({ email: userData.email, password: userData.password }).then(function (user) {
+                return UsersAPI.read({ id: user.id });
+            }).then(function (results) {
+                results.users[0].created_at.should.be.an.instanceof(Date);
+                results.users[0].updated_at.should.be.an.instanceof(Date);
+                results.users[0].last_login.should.be.an.instanceof(Date);
+
+                done();
+            }).catch(done);
+        });
+
         it('admin can browse', function (done) {
             UsersAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
@@ -71,6 +86,7 @@ describe('Users API', function () {
                 testUtils.API.checkResponse(results.users[0], 'user');
                 testUtils.API.checkResponse(results.users[1], 'user');
                 testUtils.API.checkResponse(results.users[2], 'user');
+
                 done();
             }).catch(done);
         });
@@ -115,6 +131,9 @@ describe('Users API', function () {
                 testUtils.API.checkResponse(results, 'users');
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user');
+
+                results.users[0].created_at.should.be.a.Date;
+
                 done();
             }).catch(done);
         });
@@ -156,7 +175,7 @@ describe('Users API', function () {
                 response.users.should.have.length(1);
                 testUtils.API.checkResponse(response.users[0], 'user');
                 response.users[0].name.should.equal('Joe Blogger');
-
+                response.users[0].updated_at.should.be.a.Date;
                 done();
             }).catch(done);
         });
