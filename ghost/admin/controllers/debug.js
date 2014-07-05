@@ -2,7 +2,8 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
 
     exportPath: function () {
-        return this.get('ghostPaths').apiUrl('db');
+        return this.get('ghostPaths').apiUrl('db') +
+            '?access_token=' + this.get('session.access_token');
     }.property(),
 
     actions: {
