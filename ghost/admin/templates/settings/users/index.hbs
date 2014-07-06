@@ -7,47 +7,46 @@
 </header>
 
 <section class="content fade-in settings-users">
-    <section class="object-list">
 
-        <h4 class="object-list-title">Invited users</h4>
+    {{#if invitedUsers}}
 
-        {{#each invitedUsers itemController="settings/users/user"}}
-            <div class="object-list-item">
-                <span class="object-list-item-icon icon-mail">ic</span>
+        <section class="object-list">
 
-                <div class="object-list-item-body">
-                    <span class="name">{{email}}</span><br>
-                    <span class="description">Invitation sent: {{created_at}}</span>
+            <h4 class="object-list-title">Invited users</h4>
+
+            {{#each invitedUsers itemController="settings/users/user"}}
+                <div class="object-list-item">
+                    <span class="object-list-item-icon icon-mail">ic</span>
+
+                    <div class="object-list-item-body">
+                        <span class="name">{{email}}</span><br>
+                        <span class="description">Invitation sent: {{created_at}}</span>
+                    </div>
+                    <aside class="object-list-item-aside">
+                        <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>
+                        <a class="object-list-action" href="#" {{action "resend"}}>Resend</a>
+                    </aside>
                 </div>
-                <aside class="object-list-item-aside">
-                    <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                    <a class="object-list-action" href="#" {{action "resend"}}>Resend</a>
-                </aside>
-            </div>
-        {{else}}
-            <div class="object-list-item">
-                No invited users.
-            </div>
-        {{/each}}
+            {{/each}}
 
+        </section>
 
-    </section>
+    {{/if}}
 
     <section class="object-list">
 
         <h4 class="object-list-title">Active users</h4>
 
-
         {{#each activeUsers itemController="settings/users/user"}}
-            <div class="object-list-item">
+            {{#link-to 'settings.users.user' slug class="object-list-item" }}
                 <img class="object-list-item-figure"
                      src="{{unbound imageUrl}}"
                      alt="Photo of {{unbound name}}" />
 
                 <div class="object-list-item-body">
-                    {{#link-to 'settings.users.user' slug class="ember-view name" }}
+                    <span class="name">
                         {{user.name}}
-                    {{/link-to}}
+                    </span>
                     <br>
                     <span class="description">Last seen: {{unbound last_login}}</span>
                 </div>
@@ -56,7 +55,7 @@
                     <span class="role-label editor">Editor</span>
                     <span class="role-label owner">Owner</span>
                 </aside>
-            </div>
+            {{/link-to}}
         {{/each}}
 
     </section>
