@@ -23,6 +23,12 @@
     z-index: 1040;
     @include transition(all 0.15s linear 0s);
     @include transform(translateZ(0));
+
+    // @include display(flex);
+    // @include align-items(center);
+    // @include justify-content(center);
+    // @include flex-direction(column);
+
 }
 
 .fade {
@@ -89,7 +95,7 @@
 
 .modal-content {
     position: relative;
-    padding: 20px;
+    padding: 18px;
     background-clip: padding-box;
     background-color: #FFFFFF;
     border-radius: $rounded;
@@ -97,39 +103,38 @@
 
     .close {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 19px;
+        right: 19px;
         width: 16px;
-        min-height: 16px;
         padding: 0;
         margin: 0;
         border: none;
         z-index: 9999;
 
-        @include icon($i-x, 1em, $midgrey);
-        @include transition(opacity 0.3s linear);
-
-        &:hover {
-            color: $darkgrey;
+        @include icon($i-close, 1.4rem, $midgrey) {
+            @include transition(color 0.3s linear);
+        };
+        &:hover:before {
+            color: $grey;
         }
     }
 }
 .modal-header {
     position: relative;
-    padding: 20px;
-    border-bottom: 1px solid $lightbrown;
+    // padding: 20px;
+    // border-bottom: 1px solid $lightbrown;
 
     h1 {
         display: inline-block;
         margin: 0;
-        font-size: 1.5em;
-        font-weight: bold;
+        font-size: 1.85em;
+        font-weight: 100;
     }
 }
 
 .modal-body {
     position: relative;
-    min-height: 100px;
+    // min-height: 100px;
     overflow-y: auto;
 }
 
