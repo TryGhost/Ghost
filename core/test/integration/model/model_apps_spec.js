@@ -55,6 +55,8 @@ describe('App Model', function () {
         AppModel.findOne({id: 1}).then(function (foundApp) {
             should.exist(foundApp);
 
+            foundApp.get('created_at').should.be.an.instanceof(Date);
+
             done();
         }).catch(done);
     });

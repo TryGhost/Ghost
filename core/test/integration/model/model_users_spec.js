@@ -150,6 +150,30 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('converts fetched dateTime fields to Date objects', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            UserModel.check({ email: userData.email, password: userData.password }).then(function (user) {
+                return UserModel.findOne({ id: user.id });
+            }).then(function (user) {
+                var last_login,
+                    created_at,
+                    updated_at;
+
+                should.exist(user);
+
+                last_login = user.get('last_login');
+                created_at = user.get('created_at');
+                updated_at = user.get('updated_at');
+
+                last_login.should.be.an.instanceof(Date);
+                created_at.should.be.an.instanceof(Date);
+                updated_at.should.be.an.instanceof(Date);
+
+                done();
+            }).catch(done);
+        });
+
         it('can findAll', function (done) {
 
             UserModel.findAll().then(function (results) {

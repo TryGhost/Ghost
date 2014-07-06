@@ -54,6 +54,8 @@ describe('App Fields Model', function () {
         AppFieldsModel.findOne({id: 1}).then(function (foundAppField) {
             should.exist(foundAppField);
 
+            foundAppField.get('created_at').should.be.an.instanceof(Date);
+
             done();
         }).catch(done);
     });

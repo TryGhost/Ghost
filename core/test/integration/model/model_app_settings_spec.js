@@ -54,6 +54,8 @@ describe('App Setting Model', function () {
         AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
             should.exist(foundAppSetting);
 
+            foundAppSetting.get('created_at').should.be.an.instanceof(Date);
+
             done();
         }).catch(done);
     });

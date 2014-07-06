@@ -66,6 +66,7 @@ describe('Settings Model', function () {
                 should.exist(found);
 
                 found.get('value').should.equal(firstSetting.attributes.value);
+                found.get('created_at').should.be.an.instanceof(Date);
 
                 done();
 

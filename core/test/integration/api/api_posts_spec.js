@@ -58,6 +58,8 @@ describe('Post API', function () {
 
             post = found.posts[0];
 
+            post.created_at.should.be.an.instanceof(Date);
+
             should.exist(post.tags);
             post.tags.length.should.be.above(0);
             testUtils.API.checkResponse(post.tags[0], 'tag');
