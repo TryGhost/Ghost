@@ -1,13 +1,13 @@
 <header class="fade-in user-settings-header">
 
-    <h2 class="title">Your Profile</h2>
+    <h2 class="hidden">Your Profile</h2>
 
     <div class="settings-header-inner">
         <button class="button-back">Back</button>    
     
-        {{!-- <section class="page-actions page-actions-alt">
-            <button class="button has-icon users-back"><i class="icon-chevron-left"></i>Users</button>
-        </section> --}}
+        <section class="page-actions page-actions-alt">
+            {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
+        </section>
 
         <section class="page-actions">
                     
@@ -29,7 +29,6 @@
 
     <header class="user-profile-header">
         <img id="user-cover" class="cover-image" {{bind-attr src=cover title=coverTitle}} />
-
         <a class="edit-cover-image js-modal-cover button" {{action "openModal" "upload" user "cover"}}>Change Cover</a>
     </header>
 
@@ -64,12 +63,19 @@
                 <p>Used for notifications</p>
             </div>
 
+            {{!-- The correct markup for select boxes. Needs changing to the correct data --}}
             {{!-- <div class="form-group">
                 <label for="user-role">Role</label>
-                <select id="user-role">
-                    <option value="#">Author</option>
-                    <option value="#">Admin</option>
-                </select>
+                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+                   {{view Ember.Select
+                       id="activeTheme"
+                       name="general[activeTheme]"
+                       content=themes
+                       optionValuePath="content.name"
+                       optionLabelPath="content.label"
+                       value=activeTheme
+                       selection=selectedTheme}}
+               </span>
                 <p>What permissions should this user have?</p>
             </div> --}}
 
