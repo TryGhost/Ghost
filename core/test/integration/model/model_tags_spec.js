@@ -31,6 +31,17 @@ describe('Tag Model', function () {
         }).catch(done);
     });
 
+    it('uses Date objects for dateTime fields', function (done) {
+        TagModel.add(testUtils.DataGenerator.forModel.tags[0], { user: 1 }).then(function (tag) {
+            return TagModel.findOne({ id: tag.id });
+        }).then(function (tag) {
+            should.exist(tag);
+            tag.get('created_at').should.be.an.instanceof(Date);
+
+            done();
+        }).catch(done);
+    });
+
     describe('a Post', function () {
         var PostModel = Models.Post;
 

@@ -42,6 +42,7 @@ describe('Post Model', function () {
         firstPost.tags.should.be.an.Array;
         firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
         firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
+        firstPost.created_at.should.be.an.instanceof(Date);
         firstPost.created_by.should.be.an.Object;
         firstPost.updated_by.should.be.an.Object;
         firstPost.published_by.should.be.an.Object;

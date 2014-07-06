@@ -1,4 +1,5 @@
 var url = require('url'),
+    moment= require('moment'),
     ApiRouteBase = '/ghost/api/v0.1/',
     host = 'localhost',
     port = '2369',
@@ -55,11 +56,16 @@ function checkResponse(jsonResponse, objectType) {
     checkResponseValue(jsonResponse, expectedProperties[objectType]);
 }
 
+function isISO8601(date) {
+    return moment(date).parsingFlags().iso;
+}
+
 module.exports = {
     getApiURL: getApiURL,
     getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
     checkResponse: checkResponse,
-    checkResponseValue: checkResponseValue
+    checkResponseValue: checkResponseValue,
+    isISO8601: isISO8601
 };
