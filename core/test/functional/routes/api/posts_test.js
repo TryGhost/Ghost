@@ -193,6 +193,7 @@ describe('Post API', function () {
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     jsonResponse.posts[0].author.should.be.a.Number;
+                    testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true;
                     jsonResponse.posts[0].created_by.should.be.a.Number;
                     jsonResponse.posts[0].tags[0].should.be.a.Number;
                     done();
@@ -406,6 +407,8 @@ describe('Post API', function () {
                                     updatedPost.posts.should.exist;
                                     updatedPost.posts.length.should.be.above(0);
                                     updatedPost.posts[0].title.should.eql(newTitle);
+                                    testUtils.API.isISO8601(updatedPost.posts[0].created_at).should.be.true;
+                                    testUtils.API.isISO8601(updatedPost.posts[0].updated_at).should.be.true;
                                     testUtils.API.checkResponse(updatedPost.posts[0], 'post');
 
                                     updatedPost.posts[0].tags.should.exist;

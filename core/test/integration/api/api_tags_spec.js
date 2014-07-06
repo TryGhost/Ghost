@@ -36,6 +36,8 @@ describe('Tags API', function () {
             should.exist(results.tags);
             results.tags.length.should.be.above(0);
             testUtils.API.checkResponse(results.tags[0], 'tag');
+            results.tags[0].created_at.should.be.an.instanceof(Date);
+
             done();
         }).catch(done);
     });

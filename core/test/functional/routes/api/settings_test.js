@@ -93,6 +93,7 @@ describe('Settings API', function () {
 
                 testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id','uuid','key','value','type','created_at','created_by','updated_at','updated_by']);
                 jsonResponse.settings[0].key.should.eql('title');
+                testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true;
                 done();
             });
     });
