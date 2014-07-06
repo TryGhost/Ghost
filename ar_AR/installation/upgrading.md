@@ -1,113 +1,123 @@
 ---
+<div dir="RTL">
 lang: ar_AR
-layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+layout: تنصيب
+
+meta_title: كيفية تثبيت ڨوست على الخادم الخاص بك - دليل ڨوست
+
+meta_description: كل ما تحتاجه للحصول على منصة التدوين ڨوست وتشغيلها على البيئة المحلية أو عن بعد
+
+heading: تثبيت ڨوست &amp; بدء العمل
+
+subheading: الخطوات الأولى لإنشاء مدونتك للمرة الأولى.
+
 permalink: /ar_AR/installation/upgrading/
-chapter: installation
-section: upgrading
-prev_section: deploy
-next_section: troubleshooting
+
+chapter: تنصيب
+
+section: الترقية
+
+prev_section: نشر
+
+next_section: مشاكل و حلول
 ---
 
-# Upgrading Ghost <a id="upgrade"></a>
+# ترقية قوست <a id="upgrade"></a>
 
-Upgrading Ghost is super straightforward.
+ترقية قوست سهلة و غير معقدة
 
-There is a couple of different ways you might want to go about it. The following describes what needs to happen, and then covers the process step-by-step for both doing it [point-and-click style](#how-to) and via a [command line](#cli), so that you are free to choose the method you are most comfortable with.
+هناك طرق كثيرة و مختلفة لتختار بينها .  فيما يلي وصف لما يجب أن يحدث, ووصف للعملية خطوة بخطوة عن طريق  [point-and-click style](#how-to) و عن طريق [سطر اللأوامر](#cli), و لك حرية الإختيار .
 
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
+<p class="note"><strong>نسخ إحتياطي!</strong> دائماً إجراء نسخة احتياطية قبل الترقية.إقرأ أولا  <a href="#backing-up">خطوات أخذ نسخة إحطياطية</a> </p>
 
-## Overview
+## نظرة عامة
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/folder-structure.png" style="float:left" />
 
-Ghost, once installed, has a folder structure similar to that shown on the left. There are two main directories <code class="path">content</code> and <code class="path">core</code>, plus some files in the root.
+بمجرد تثبيت قوست بنية المجلد مماثلة للصورة الموجودة على اليسار. هناك مجلدين رئيسيين <code class="path">content</code> and <code class="path">core</code>,مع بعض الملفات في مسار الجذر root
 
-Upgrading Ghost is matter of replacing the old files with the new files, re-running `npm install` to update the <code class="path">node_modules</code> folder and then restarting Ghost to make it all take affect.
+ترقية قوست هي مسألة استبدال الملفات القديمة مع ملفات جديدة, أكتب من جديد في سطر الأوامر `npm install`لترقية <code class="path">node_modules</code>  ثم أعد تشغيل قوست لتنتهي الترقية.
 
-Remember, by default Ghost stores all your custom data, themes, images, etc in the <code class="path">content</code> directory, so take care to keep this safe! Replace only the files in <code class="path">core</code> and the root, and all will be fine.
+إفتراضيا قوست يحفض صورك و القوالب و الاعدادات الخاصة في مسار<code class="path">content</code> , يجب حفظه في أمان! إستبدل فقط الملفات في مجلد <code class="path">core</code> و root, و كل شيئ سيكون جيد.
 
-## Backing Up <a id="backing-up"></a>
+## النسخ الاحتياطي
+ <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
-*   To backup all the data from your database, log into your Ghost install and go to <code class="path">/ghost/debug/</code>. Press the export button to download a JSON file containing all of your data. Job done
-*   To back up your custom themes and images, you need to take a copy of the files inside of <code class="path">content/themes</code> and <code class="path">content/images</code>
+*   لحفظ جميع البيانات من قاعدة البيانات, أدخل إلى مجلد تثبيت قوست و إذهب إلى المسار التالي <code class="path">/ghost/debug/</code>. إضغط على export لتحميل ملفJSON يحتوي عل كل البيانات .
+*   لعمل نسخة احتياطية من الصور و القالب الخاص بك, يجب عليك أخذ نسخة من الملفات الموجودة في <code class="path">content/themes</code> و <code class="path">content/images</code>
 
-<p class="note"><strong>Note:</strong> You can, if you like, take a copy of your database from <code class="path">content/data</code> but <strong>be warned</strong> you should not do this whilst Ghost is running. Please stop it first.</p>
-
-
-## How to Upgrade <a id="how-to"></a>
-
-How to upgrade on your local machine
-
-<p class="warn"><strong>WARNING:</strong> Do <strong>NOT</strong> copy and paste the entire Ghost folder over the top of an existing installation on mac. Do <strong>NOT</strong> choose <kbd>REPLACE</kbd> if uploading with Transmit or other FTP software, choose <strong>MERGE</strong>.</p>
-
-*   Download the latest version of Ghost from [Ghost.org](http://ghost.org/download/)
-*   Extract the zip file to a temporary location
-*   Copy all of the root level files from the latest version. This includes: index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.
-*   Next, delete the old <code class="path">core</code> directory completely, and then put the new <code class="path">core</code> directory in its place.
-*   For releases which include update to Casper (the default theme), delete the old <code class="path">content/themes/casper</code> directory and put the new one its place
-*   Run `npm install --production`
-*   Finally, Restart Ghost so that the changes take effect
-
-## Command line only <a id="cli"></a>
-
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
-
-### Command line only on mac <a id="cli-mac"></a>
-
-The screencast below shows the steps for upgrading Ghost where the zip file has been downloaded to <code class="path">~/Downloads</code> and Ghost is installed in <code class="path">~/ghost</code> <span class="note">**Note:** `~` means the user's home directory on mac and linux</span>
-
-![Upgrade ghost](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
-
-The steps in the screencast are:
-
-*   <code class="path">cd ~/Downloads</code> - change directory to the Downloads directory where the latest version of Ghost has been saved
-*   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - unzip ghost into the folder <code class="path">ghost-0.4.0</code>
-*   <code class="path">cd ghost-0.4.0</code> - change directory into the <code class="path">ghost-0.4.0</code> directory
-*   `ls` - show all the files and folders inside this directory
-*   `cp *.js *.json *.md LICENSE ~/ghost` - copy all .md .js .txt and .json files from this location to <code class="path">~/ghost</code>
-*   `rm -rf ~/ghost/core` - delete the old <code class="path">core</code> directory
-*   `cp -R core ~/ghost` - copy the <code class="path">core</code> directory and all of its contents to <code class="path">~/ghost</code>
-*   `cp -R content/themes/casper ~/ghost/content/themes` - copy the <code class="path">casper</code> directory and all of its contents to <code class="path">~/ghost/content/themes</code>
-*   `cd ~/ghost` - change directory to the <code class="path">~/ghost</code> directory
-*   `npm install --production` - install Ghost
-*   `npm start` - start Ghost
-
-### Command line only on linux servers <a id="cli-server"></a>
-
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Fetch the zip file with `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Delete the old core directory from your install
-*   Unzip the archive with `unzip -uo ghost-0.4.*.zip -d path-to-your-ghost-install`
-*   Run `npm install --production` to get any new dependencies
-*   Finally, restart Ghost so that the changes will take effect
-
-**Additionally**, [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) also has instructions for upgrading Ghost on linux servers.
-
-### How to update a DigitalOcean Droplet <a id="digitalocean"></a>
-
-<p class="note"><strong>Back-it-up!</strong> Always perform a backup before upgrading. Read the <a href="#backing-up">backup instructions</a> first!</p>
-
-*   First you'll need to find out the URL of the latest Ghost version. It should be something like `http://ghost.org/zip/ghost-latest.zip`.
-*   Once you've got the URL for the latest version, in your Droplet console type `cd /var/www/` to change directory to where the Ghost codebase lives.
-*   Next, type `wget http://ghost.org/zip/ghost-latest.zip` (or whatever the URL for the latest Ghost version is).
-*   Remove the old core directory, `rm -rf ghost/core`
-*   Unzip the archive with `unzip -uo ghost-latest.zip -d ghost`
-*   Make sure all of the files have the right permissions with `chown -R ghost:ghost ghost/*`
-*   Change into the <code class="path">ghost</code> directory with `cd ghost`
-*   Run `npm install --production` to get any new dependencies
-*   Finally, restart Ghost so that the changes take effect using `service ghost restart` (this can take a little while)
+<p class="note"><strong>ملاحظة:</strong> يمكنك، إذا أردت، أخذ نسخة من قاعدة البيانات الخاصة بك من<code class="path">content/data</code> لكن <strong>كن حذرا</strong> لا تفعل ذالك و قوست يشتغل يجب أولا وقفه.</p>
 
 
-## How to upgrade Node.js to the latest version <a id="upgrading-node"></a>
+## كيفية الترقية <a id="how-to"></a>
 
-If you originally installed Node.js from the [Node.js](nodejs.org) website, you can upgrade Node.js to the latest version by downloading and running the latest installer. This will replace your current version with the new version.
+كيفية ترقية على الجهاز المحلي
 
-If you are on Ubuntu, or another linux distribution which uses `apt-get`, the command to upgrade node is the same as to install: `sudo apt-get install nodejs`.
+<p class="warn"><strong>تحذير:</strong> لا <strong>تقم</strong>  بنسخ ولصق  مجلد قوست كامل على الجزء العلوي من مجلد التثبيت الموجود على ماك. لا <strong></strong> تختار <kbd> استبدال</kbd> إذا كان التحميل ببرنامج FTP, اختر  <strong>دمج</strong>.</p>
 
-You do **not** need to restart the server or Ghost.
+*   قم بتنزيل آخر إصدار من قوست من هذا الرابط [Ghost.org](http://ghost.org/download/)
+*   قم باستخراج الملف المضعوط إلى مسار مؤقت
+*   نسخ كافة الملفات الموجودة في مسار root   من الاصدار الجديد بما فيها : index.js, package.json, Gruntfile.js, config.example.js, the license and readme files.
+*   التالي, قم بحذف ملف  <code class="path">core</code> , ثم استبدله بالملف الجيد <code class="path">core</code>  في مكانه.
+*   في الاصدارات التي تحتوي على ترقية للقالب الافتراضي , إحذف القديم الموجود في مسار <code class="path">content/themes/casper</code> و استبدله بالجديد
+*   أكتب `npm install --production`
+*   أخيرا, إعادة تشغيل قوست لتصبح التغييرات سارية المفعول
+## سطر الأوامر فقط <a id="cli"></a>
+
+<p class="note"><strong>نسخة إحتياطية!</strong> إجراء نسخة احتياطية دائما قبل الترقية. إقرأ <a href="#backing-up">تعليمات النسخ الاحتياطي</a> أوّلا!</p>
+
+### سطر الأوامر فقط في ماك <a id="cli-mac"></a>
+
+الصورة التالية تبين خطوات ترقية قوست و قد تم تحميل الملف المضغوط في المسار التالي  <code class="path">~/Downloads</code> ومسار تثبيت قوست <code class="path">~/ghost</code> <span class="note">**ملاحظة:** `~` يعني المسار الرئيسي للمستخدم 
+على لينكس وماك</span>
+
+![ترقية قوست](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/mac-update.gif)
+
+الخطوات المبينة في الصورة
+
+*   <code class="path">cd ~/Downloads</code> - تغيير المسار إلى إلى مسار التحميل حيث تم حفظ أحدث نسخة من قوست
+*   `unzip ghost-0.4.0.zip -d ghost-0.4.0` - إستخراج قوست في ملف<code class="path">ghost-0.4.0</code>
+*   <code class="path">cd ghost-0.4.0</code> - تغيير المسار إلى مسار<code class="path">ghost-0.4.0</code> 
+*   `ls` - تظهر كافة الملفات والمجلدات داخل هذا المسار
+*   `cp *.js *.json *.md LICENSE ~/ghost` - نسخ  .md .js .txt and .json كل الملفات من هذا المسار <code class="path">~/ghost</code>
+*   `rm -rf ~/ghost/core` - حذف  <code class="path">core</code>القديم 
+*   `cp -R core ~/ghost` - نسخ مسار <code class="path">core</code> إلى  <code class="path">~/ghost</code>
+*   `cp -R content/themes/casper ~/ghost/content/themes` - نسخ مسار <code class="path">casper</code>إلى <code class="path">~/ghost/content/themes</code>
+*   `cd ~/ghost` - تغيير المسار إلى مسار <code class="path">~/ghost</code> 
+*   `npm install --production` - تنصيب قوست
+*   `npm start` - تشغييل قوست
+
+### سطر الأوامر على سرفر لينكس فقط <a id="cli-server"></a>
+
+*   أولا يجب أن تجد رابط آخر إصدار من قوست. سيكون الرابط مثل هذا `http://ghost.org/zip/ghost-latest.zip`.
+*   إحضار الملف المضغوط بامر  `wget http://ghost.org/zip/ghost-latest.zip` (أو مهما كان رابط قوست).
+*   حذف ملف  core القديم من مسار التنصيب
+*   فك ضغط الملف  `unzip -uo ghost-0.4.*.zip -d path-to-your-ghost-install`
+*   أكتب `npm install --production` لتثبيت أي تحديث جديد
+*   أخيرا, قم بإعادة تشغيل قوست
+
+**ملاحظة**: [howtoinstallghost.com](http://www.howtoinstallghost.com/how-to-update-ghost/) فيه أيظا كيفية ترقية قوست في سرفر لينكس.
+
+### كيفية ترقية DigitalOcean دروبلات <a id="digitalocean"></a>
+
+<p class="note"><strong>نسخة إحتياطية!</strong>دائما قم بحفظ نسخة إحتياطية قبل القيام بعملية الترقية. إطلع على <a href="#backing-up">backup instructions</a> أولا!</p>
+
+*   أولا يجب أن تجد رابط آخر إصدار من قوست. سيكون الرابط مثل هذا `http://ghost.org/zip/ghost-latest.zip`.
+*   في سطر الاوامر في دروبلات أكتب  `cd /var/www/` لتغير المسار.
+*   التالي, أكتب `wget http://ghost.org/zip/ghost-latest.zip` (أو مهما كان رابط قوست).
+*   حذف مسار  coreالقديم , `rm -rf ghost/core`
+*   فك ضغط الملف `unzip -uo ghost-latest.zip -d ghost`
+*   تأكد من أن جميع الملفات لديها الصلاحيات المطلوبة`chown -R ghost:ghost ghost/*`
+*   إذهب إلى مسار  <code class="path">ghost</code> بكتابة  `cd ghost`
+*   أكتب `npm install --production` لتحميل أي تحديث جديد
+*   أخيرا, قم بإعادة تشغيل قوست عن طريق كتابة using `service ghost restart` (ستأخذ بعض الوقت)
+
+
+## كيفية ترقية Node.js إلى آخر إصدار <a id="upgrading-node"></a>
+
+إذا نصبت  Node.js من الموقع الرسمي [Node.js](nodejs.org), يمكنك ترقية  Node.js إلى آخر إصدار بتحميل البرنامج و تنصيبه. هذا سيغيير الاصدار القديم الى الاصدار الجديد
+إذا كنت في اوبونتو, أو توزيعة لينكس اخرا تستعمل `apt-get`,نفس الامر للتنصيب و الترقية: `sudo apt-get install nodejs`.
+
+لايوجد داعي لاعادة تشغيل السرفر أو قوست

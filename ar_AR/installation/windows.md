@@ -1,45 +1,56 @@
 ---
+<div dir="RTL">
 lang: ar_AR
-layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+
+layout: تنصيب
+
+meta_title:كيفية تثبيت ڨوست على الخادم الخاص بك - دليل ڨوست
+
+meta_description: كل ما تحتاجه للحصول على منصة التدوين ڨوست وتشغيلها على البيئة المحلية أو عن بعد
+
+heading: تثبيت ڨوست &amp; بدء العمل
+
+subheading: الخطوات الأولى لإنشاء مدونتك للمرة الأولى.
+
 permalink: /ar_AR/installation/windows/
-chapter: installation
-section: windows
-prev_section: mac
-next_section: linux
+
+chapter: تنصيب
+
+section: وندوز
+
+prev_section: ماك
+
+next_section: لينكس
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# التنصيب في بيئة وندوز <a id="install-windows"></a>
 
-### Install Node
+### تنصيب Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   في موقع [http://nodejs.org](http://nodejs.org)إضغط على install, سيتم تحميل ملف  '.msi' 
+*   إضغط على الملف الذي تم تحميله لتنصيبه, سيتم نتصيب   Node و npm.
+*   عند النهاية ستظهر رسالة انه تم تنصيب Node.js بنجاح.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+إذا ظهرت مشكلة يمكنك مشاهدة كامل عملية التنصيب هنا [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
 
-### Download & Extract Ghost
+### تحميل و فك  ملف قوست
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   سجل الدحول إلى صفحة قوست [http://ghost.org](http://ghost.org), و إضغط على 'Download Ghost Source Code'.
+*   في صفحة التحميل, إغط على رابك التحميل لتحصل على آخر إصدار
+*   انقر على السهم بجانب الملف الذي تم تنزيله حديثا، واختيار "عرض في المجلد'.
+*   عندما يفتح المجلد، انقر بزر الماوس الأيمن على ملف المضغوط واختيار "استخراج كل الملفات '.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+ذا ظهرت مشكلة يمكنك مشاهدة كامل العملية هنا [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
 
-### Install and Run Ghost
+### تنصيب و تشغيل قوست
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   في قائمة ابدأ الخاصة بك, أوجد 'Node.js' ثم آختر 'Node.js Command Prompt'
+*   في سطر الاومر Node command prompt,يجب تغيير المسار إلى مسار فك ضغط قوست. أكتب: `cd Downloads/ghost-#.#.#` (استبدال تجزئات مع إصدار قوست الذي قمت بتحميله).
+*  التالي, في سطر الأوامر اكتب `npm install --production` <span class="note">لا تنسى الشرطات</span>
+*   عندما ينتهي تنصيب npm , أكتب `npm start` لبدء تشغيل قوست في وضع التطوير
+*   في المتصفح, إذهب إلى  <codeإ class="path">127.0.0.1:2368</code> لمشاهدة قوست مباشر
+*   غيّر الرابط إلى<code class="path">127.0.0.1:2368/ghost</code> و أنشي حساب المسوول للدحول إلى صفحة أدميين.
+*   إطلع على [usage docs](/usage) للمرحلة القادمة
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
 

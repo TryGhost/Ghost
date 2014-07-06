@@ -26,31 +26,31 @@ next_section: وندوز
 
 # التنصيب على الماك <a id="install-mac"></a>
 
-لتنصيب Node.js و ڨوست on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+لتنصيب Node.js و ڨوست في جهاز الماك خاصتك عليك أولا فتح الطرفية Terminal. فقط افتح spotlight و أكتب "Terminal".
 
-### Install Node
+### تثبيت Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   في صفحة [http://nodejs.org](http://nodejs.org) اضغط على وصلة التحميل الخاصة بماك سيتم تحميل ملف '.pkg'.
+*   بعد فتح الملف الذي حملته سيتم تنصيب  node و npm.
+*  من خلال النقر على ملف التثبيت، أدخل كلمة السر والضغط على 'تثبيت البرنامج'.
+*    عند الانتهاء من التنصيب انتقل الى نافذة الطرفية المفتوحة و أكتب`echo $PATH`    للتثبت من أن  '/usr/local/bin/' هو المسار الصحيح 
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="ملاحظة"><strong>Note:</strong> أذا '/usr/local/bin' لم تظهر في المسار المطلوب $PATH, أنظر في قسم <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path"> مشاكل و حلول </a>  لتجد كيف تضيفه</p>
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+إذا واجهتك مشكلة يمكنك مشاهدة كامل العملية [كامل عملية التنصيب](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
 
-### Install and Run Ghost
+### تنصيب و تشغيل ڨوست
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   الدخول على [http://ghost.org](http://ghost.org), و بعد ذالك انقر على 'Download Ghost Source Code'.
+*   في صفحة التحميل, أنقر على زر تحميل آخر اصدارفي شكل أرشيف .
+*   انقر على السهم بجانب الملف الذي تم تنزيله حديثا، واختيار "عرض في المستكشف".
+*   في المستكشف، انقر نقرا مزدوجا على الملف المضغوط لفكه.
+*   التالي,أسحب المجلد'ghost-#.#.#'  الذي تم استخراجه و اسحبه الى شريط العلامات في نافذة الطرفية المفتوحة و هذا سيفتح طرفية جديدة في المكان الصحيح .
+*   في الطرفية الجديدة اكتب `npm install --production` 
+*   عندما ينتهي تنصيب npm, أكتب `npm start` لتبدأ قوست في بيئة التطوير
+*   في المتصفح انتقل الى <code class="path">127.0.0.1:2368</code> لرؤية مدونتك الجديدة
+*   غيّر العنوان الى <code class="path">127.0.0.1:2368/ghost</code> أنشاء المستخدم المشرف admin لكي تدخل الى صفحة الدخول
+*   أنظر في  [دليل الاستعمال](/usage) لمتابعة المرحلة التالية 
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
 
