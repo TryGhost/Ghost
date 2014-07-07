@@ -3,11 +3,11 @@
 
     <div class="settings-header-inner">
         <button class="button-back">Back</button>
-        
+
         <section class="page-actions">
             <button class="button-save" {{action "save"}}>Save</button>
         </section>
-    </div>    
+    </div>
 </header>
 
 <section class="content settings-general fade-in">
@@ -62,22 +62,25 @@
                 <p>How many posts should be displayed on each page</p>
             </div>
 
-            <div class="form-group">
+            <div class="form-group for-checkbox">
                 <label for="permalinks">Dated Permalinks</label>
                 {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
                 <label class="checkbox" for="permalinks"></label>
                 <p>Include the date in your post URLs</p>
             </div>
 
-            <div class="form-group">
+            <div class="form-group for-select">
                 <label for="activeTheme">Theme</label>
-                {{view Ember.Select
-                        id="activeTheme"
-                        name="general[activeTheme]"
-                        content=themes
-                        optionValuePath="content.name"
-                        optionLabelPath="content.label"
-                        value=activeTheme}}
+                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+                   {{view Ember.Select
+                       id="activeTheme"
+                       name="general[activeTheme]"
+                       content=themes
+                       optionValuePath="content.name"
+                       optionLabelPath="content.label"
+                       value=activeTheme
+                       selection=selectedTheme}}
+               </span>
                 <p>Select a theme for your blog</p>
             </div>
 
