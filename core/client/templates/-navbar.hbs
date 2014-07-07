@@ -4,9 +4,9 @@
     </a>
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
-            {{gh-activating-list-item route="posts" title="Content" classNames="content"}}
-            {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor"}}
-            {{gh-activating-list-item route="settings" title="Settings" classNames="settings"}}
+            {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
+            {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor js-close-sidebar"}}
+            {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
 
             <li id="usermenu" class="usermenu subnav">
                 {{#gh-popover-button popoverName="user-menu" tagName="a" href="#" classNames="dropdown"}}
