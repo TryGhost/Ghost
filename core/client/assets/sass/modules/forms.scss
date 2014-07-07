@@ -391,6 +391,12 @@ input[type='radio'] {
         pointer-events: none;
     }
 
+    @include icon-after($i-chevron-down, 0.85em, $midbrown) {
+        @include position(absolute, 50% 0.8em null null);
+        position: absolute;
+        margin-top: -0.5em;
+    };
+
     select {
         opacity: 0;
         position: absolute;
