@@ -11,7 +11,7 @@ var User = DS.Model.extend({
     location: DS.attr('string'),
     accessibility: DS.attr('string'),
     status: DS.attr('string'),
-    language: DS.attr('string'),
+    language: DS.attr('string', {defaultValue: 'en_US'}),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
     last_login: DS.attr('moment-date'),
