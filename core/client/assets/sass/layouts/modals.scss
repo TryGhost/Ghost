@@ -1,6 +1,9 @@
 .invite-new-user {
     .modal-body {
         @include clearfix;
+        fieldset {
+            margin: 1em 0 0 0;
+        }
     }
     .form-group {
 
