@@ -39,7 +39,7 @@ responsiveAction = function responsiveAction(event, mediaCondition, cb) {
     cb();
 };
 
-export { hasTouchScreen, smallScreen };
+export { hasTouchScreen, smallScreen, responsiveAction };
 export default {
     hasTouchScreen: hasTouchScreen,
     smallScreen: smallScreen,
