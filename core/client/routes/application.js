@@ -1,23 +1,10 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import mobileUtils from 'ghost/utils/mobile-utils';
 
 var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
 
     shortcuts: {
         'esc': 'closePopups'
     },
-    mobileInteractions: function () {
-        var responsiveAction = mobileUtils.responsiveAction;
-
-        Ember.run.scheduleOnce('afterRender', document, function () {
-            // ### Toggle the sidebar menu
-            $('[data-off-canvas]').on('click', function (event) {
-                responsiveAction(event, '(max-width: 650px)', function () {
-                    $('body').toggleClass('off-canvas');
-                });
-            });
-        });
-    }.on('init'),
 
     setupController: function () {
         Ember.run.next(this, function () {
