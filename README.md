@@ -20,14 +20,14 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 
 For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
+1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**.
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
    **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers) here.**
 1. Create a new directory where you would like to run the code, and un-zip the package to that location.
-1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are)
+1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are).
 1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
-1. To start ghost, run `npm start`
-1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
+1. To start ghost, run `npm start`.
+1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in.
 
 Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
@@ -56,7 +56,7 @@ If you want to use [Ghost as a NPM module there is a Wiki entry](https://github.
 
 ### Upgrading to The Latest Version
 
-Upgrade instructions are in the [Ghost Guide](http://docs.ghost.org/installation/upgrading/)
+Upgrade instructions are in the [Ghost Guide](http://docs.ghost.org/installation/upgrading/).
 
 ### Logging in For The First Time
 
@@ -69,7 +69,7 @@ Keep track of Ghost development and Ghost community activity.
 
 * Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](http://facebook.com/tryghostapp) and [Google+](https://plus.google.com/114465948129362706086).
 * Read and subscribe to the [The Official Ghost Blog](http://blog.ghost.org).
-* Join in discussions on the [Ghost Forum](http://ghost.org/forum/)
+* Join in discussions on the [Ghost Forum](http://ghost.org/forum/).
 * Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel. We have a public meeting every Tuesday at 5:30pm London time.
 
 
