@@ -22,7 +22,10 @@ var url = require('url'),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
         slugs: ['slugs'],
         slug: ['slug'],
-        accesstoken: ['access_token', 'refresh_token', 'expires_in', 'token_type']
+        accesstoken: ['access_token', 'refresh_token', 'expires_in', 'token_type'],
+        role: ['id', 'uuid', 'name', 'description', 'created_at', 'created_by', 'updated_at', 'updated_by'],
+        permission: ['id', 'uuid', 'name', 'object_type', 'action_type', 'object_id', 'created_at', 'created_by',
+            'updated_at', 'updated_by']
     };
 
 function getApiQuery(route) {
@@ -52,8 +55,11 @@ function checkResponseValue(jsonResponse, properties) {
     }
 }
 
-function checkResponse(jsonResponse, objectType) {
-    checkResponseValue(jsonResponse, expectedProperties[objectType]);
+function checkResponse(jsonResponse, objectType, additionalProperties) {
+    var checkProperties = expectedProperties[objectType];
+    checkProperties = additionalProperties ? checkProperties.concat(additionalProperties) : checkProperties;
+
+    checkResponseValue(jsonResponse, checkProperties);
 }
 
 function isISO8601(date) {
