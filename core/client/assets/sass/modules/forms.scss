@@ -179,6 +179,14 @@ textarea,
 
 }
 
+textarea {
+    width: 100%;
+    max-width: 500px;
+    min-width: 250px;
+    height: auto;
+    min-height: 6.5em;
+}
+
 #{$all-text-inputs-focus},
 textarea:focus {
     border-color: $brown;
