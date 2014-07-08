@@ -142,7 +142,7 @@ describe('Permissions', function () {
                     return testUser.permissions().attach(testPermission);
                 });
             }).then(function () {
-                return UserProvider.findOne({id: 1}, { withRelated: ['permissions']});
+                return UserProvider.findOne({id: 1}, { include: ['permissions']});
             }).then(function (updatedUser) {
                 should.exist(updatedUser);
 

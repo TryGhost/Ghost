@@ -39,7 +39,7 @@ User = ghostBookshelf.Model.extend({
     tableName: 'users',
 
     saving: function (newPage, attr, options) {
-          /*jshint unused:false*/
+        /*jshint unused:false*/
 
         var self = this;
         // disabling sanitization until we can implement a better version
@@ -94,8 +94,9 @@ User = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['withRelated'],
+                findAll: ['withRelated'],
                 add: ['user'],
-                edit: ['user']
+                edit: ['user', 'withRelated']
             };
 
         if (validOptions[methodName]) {
@@ -103,6 +104,42 @@ User = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    /**
+     * ### Find All
+     *
+     * @param options
+     * @returns {*}
+     */
+    findAll:  function (options) {
+        options = options || {};
+        options.withRelated = _.union([ 'roles' ], options.include);
+        return ghostBookshelf.Model.findAll.call(this, options);
+    },
+
+    /**
+     * ### Find One
+     * @extends ghostBookshelf.Model.findOne to include roles
+     * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
+     */
+    findOne: function (data, options) {
+        options = options || {};
+        options.withRelated = _.union([ 'roles' ], options.include);
+
+        return ghostBookshelf.Model.findOne.call(this, data, options);
+    },
+
+    /**
+     * ### Edit
+     * @extends ghostBookshelf.Model.edit to handle returning the full object
+     * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
+     */
+    edit: function (data, options) {
+        options = options || {};
+        options.withRelated = _.union([ 'roles' ], options.include);
+
+        return ghostBookshelf.Model.edit.call(this, data, options);
     },
 
     /**
@@ -121,6 +158,7 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data);
 
         options = this.filterOptions(options, 'add');
+        options.withRelated = _.union([ 'roles' ], options.include);
 
         /**
          * This only allows one user to be added to the database, otherwise fails.

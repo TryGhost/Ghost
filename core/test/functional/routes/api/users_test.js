@@ -68,7 +68,7 @@ describe('User API', function () {
                 testUtils.API.checkResponse(jsonResponse, 'users');
 
                 jsonResponse.users.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
 
                 testUtils.API.isISO8601(jsonResponse.users[0].last_login).should.be.true;
                 testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true;
@@ -94,7 +94,7 @@ describe('User API', function () {
                 testUtils.API.checkResponse(jsonResponse, 'users');
 
                 jsonResponse.users.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
                 done();
             });
     });
@@ -115,7 +115,53 @@ describe('User API', function () {
                 testUtils.API.checkResponse(jsonResponse, 'users');
 
                 jsonResponse.users.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
+                done();
+            });
+    });
+
+    it('can retrieve a user with role', function (done) {
+        request.get(testUtils.API.getApiQuery('users/me/?include=roles'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                jsonResponse.users.should.exist;
+                testUtils.API.checkResponse(jsonResponse, 'users');
+
+                jsonResponse.users.should.have.length(1);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
+                testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role');
+                done();
+            });
+    });
+
+    it('can retrieve a user with role and permissions', function (done) {
+        request.get(testUtils.API.getApiQuery('users/me/?include=roles,roles.permissions'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                jsonResponse.users.should.exist;
+                testUtils.API.checkResponse(jsonResponse, 'users');
+
+                jsonResponse.users.should.have.length(1);
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
+                testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
+                testUtils.API.checkResponse(jsonResponse.users[0].roles[0].permissions[0], 'permission');
+
                 done();
             });
     });
@@ -152,7 +198,7 @@ describe('User API', function () {
                     changedValue = 'joe-bloggs.ghost.org',
                     dataToSend;
                 jsonResponse.users[0].should.exist;
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
 
                 dataToSend = { users: [{website: changedValue}]};
 
@@ -171,7 +217,7 @@ describe('User API', function () {
                         putBody.users[0].should.exist;
                         putBody.users[0].website.should.eql(changedValue);
                         putBody.users[0].email.should.eql(jsonResponse.users[0].email);
-                        testUtils.API.checkResponse(putBody.users[0], 'user');
+                        testUtils.API.checkResponse(putBody.users[0], 'user', ['roles']);
                         done();
                     });
             });
