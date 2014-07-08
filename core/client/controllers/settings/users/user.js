@@ -40,11 +40,28 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     actions: {
         revoke: function () {
-            alert('@TODO: revoke users invitation');
+            var self = this,
+                email = this.get('email');
+
+            this.get('model').destroyRecord().then(function () {
+                var notificationText = 'Invitation revoked. (' + email + ')';
+                self.notifications.showSuccess(notificationText, false);
+            }).catch(function (error) {
+                self.notifications.closePassive();
+                self.notifications.showAPIError(error);
+            });
         },
 
         resend: function () {
-            alert('@TODO: resend users invitation');
+            var self = this;
+
+            this.get('model').resendInvite().then(function () {
+                var notificationText = 'Invitation resent! (' + self.get('email') + ')';
+                self.notifications.showSuccess(notificationText, false);
+            }).catch(function (error) {
+                self.notifications.closePassive();
+                self.notifications.showAPIError(error);
+            });
         },
 
         save: function () {
