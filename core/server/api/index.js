@@ -49,10 +49,10 @@ init = function () {
  * @return {Promise(String)} Resolves to header string
  */
 cacheInvalidationHeader = function (req, result) {
-    var parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
+    var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
-        endpoint = parsedUrl[4],
-        id = parsedUrl[5],
+        endpoint = parsedUrl[0],
+        id = parsedUrl[1],
         cacheInvalidate,
         jsonResult = result.toJSON ? result.toJSON() : result,
         post,
@@ -104,16 +104,15 @@ locationHeader = function (req, result) {
         location,
         post,
         notification,
-        parsedUrl = req._parsedUrl.pathname.replace(/\/$/, '').split('/'),
-        endpoint = parsedUrl[4];
+        endpoint = req._parsedUrl.pathname;
 
     if (req.method === 'POST') {
         if (result.hasOwnProperty('posts')) {
             post = result.posts[0];
             location = apiRoot + '/posts/' + post.id + '/?status=' + post.status;
-        } else if (endpoint === 'notifications') {
+        } else if (endpoint === '/notifications/') {
             notification = result.notifications;
-            location = apiRoot + '/notifications/' + notification[0].id;
+            location = apiRoot + endpoint + notification[0].id;
         }
     }
 
