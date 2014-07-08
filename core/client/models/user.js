@@ -57,6 +57,18 @@ var User = DS.Model.extend({
         });
     },
 
+    resendInvite: function () {
+        var userData = {};
+
+        userData.email = this.get('email');
+
+        return ic.ajax.request(this.get('ghostPaths').apiUrl('users'), {
+            type: 'POST',
+            data: JSON.stringify({users: [userData]}),
+            contentType: 'application/json'
+        });
+    },
+
     passwordValidationErrors: function (password) {
         var validationErrors = [];
 
