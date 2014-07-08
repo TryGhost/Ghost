@@ -13,7 +13,16 @@ var when            = require('when'),
 
     docName         = 'users',
     ONE_DAY         = 60 * 60 * 24 * 1000,
+    // TODO: implement created_by, updated_by
+    allowedIncludes = ['permissions', 'roles', 'roles.permissions'],
     users;
+
+// ## Helpers
+function prepareInclude(include) {
+    include = _.intersection(include.split(','), allowedIncludes);
+    return include;
+}
+
 
 
 /**
@@ -32,6 +41,9 @@ users = {
     browse: function browse(options) {
         options = options || {};
         return canThis(options.context).browse.user().then(function () {
+            if (options.include) {
+                options.include = prepareInclude(options.include);
+            }
             return dataProvider.User.findAll(options).then(function (result) {
                 return { users: result.toJSON() };
             });
@@ -50,6 +62,10 @@ users = {
             data = _.pick(options, attrs);
 
         options = _.omit(options, attrs);
+
+        if (options.include) {
+            options.include = prepareInclude(options.include);
+        }
 
         if (data.id === 'me' && options.context && options.context.user) {
             data.id = options.context.user;
@@ -78,6 +94,10 @@ users = {
         return canThis(options.context).edit.user(options.id).then(function () {
             return utils.checkObject(object, docName).then(function (checkedUserData) {
 
+                if (options.include) {
+                    options.include = prepareInclude(options.include);
+                }
+
                 return dataProvider.User.edit(checkedUserData.users[0], options);
             }).then(function (result) {
                 if (result) {
@@ -103,6 +123,10 @@ users = {
         return canThis(options.context).add.user().then(function () {
             return utils.checkObject(object, docName).then(function (checkedUserData) {
                 // if the user is created by users.register(), use id: 1 as the creator for now
+                if (options.include) {
+                    options.include = prepareInclude(options.include);
+                }
+
                 if (options.context.internal) {
                     options.context.user = 1;
                 }
@@ -145,6 +169,10 @@ users = {
 
         return canThis(options.context).add.user().then(function () {
             return utils.checkObject(object, docName).then(function (checkedUserData) {
+                if (options.include) {
+                    options.include = prepareInclude(options.include);
+                }
+
                 newUser = checkedUserData.users[0];
 
                 if (newUser.email) {

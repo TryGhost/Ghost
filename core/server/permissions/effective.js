@@ -6,7 +6,7 @@ var _ = require('lodash'),
 
 var effective = {
     user: function (id) {
-        return User.findOne({id: id}, { withRelated: ['permissions', 'roles.permissions'] })
+        return User.findOne({id: id}, { include: ['permissions', 'roles.permissions'] })
             .then(function (foundUser) {
                 var seenPerms = {},
                     rolePerms = _.map(foundUser.related('roles').models, function (role) {
