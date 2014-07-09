@@ -3,11 +3,7 @@ var Notification = DS.Model.extend({
     location: DS.attr('string'),
     status: DS.attr('string'),
     type: DS.attr('string'),
-    message: DS.attr('string'),
-
-    typeClass: function () {
-        return 'notification-' + this.get('type');
-    }.property('type')
+    message: DS.attr('string')
 });
 
 export default Notification;

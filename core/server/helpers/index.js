@@ -11,7 +11,6 @@ var downsize        = require('downsize'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,
-    updateCheck     = require('../update-check'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     linkTemplate    = _.template('<a href="<%= url %>"><%= text %></a>'),
@@ -700,28 +699,6 @@ coreHelpers.admin_url = function (options) {
     return config.urlFor(context, absolute);
 };
 
-coreHelpers.update_notification = function (options) {
-    var output = '';
-
-    if (config().updateCheck === false || !this.currentUser) {
-        return when(output);
-    }
-
-    return updateCheck.showUpdateNotification().then(function (result) {
-        if (result) {
-            if (options && options.hash && options.hash.classOnly) {
-                output = ' update-available';
-            } else {
-                output = '<div class="notification-success">' +
-                    'A new version of Ghost is available! Hot damn. ' +
-                    '<a href="http://ghost.org/download">Upgrade now</a></div>';
-            }
-        }
-
-        return output;
-    });
-};
-
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
@@ -749,12 +726,6 @@ function registerAsyncThemeHelper(name, fn) {
 function registerAdminHelper(name, fn) {
     coreHelpers.adminHbs.registerHelper(name, fn);
 }
-
-// Register an async handlebars helper for admin
-function registerAsyncAdminHelper(name, fn) {
-    registerAsyncHelper(coreHelpers.adminHbs, name, fn);
-}
-
 
 registerHelpers = function (adminHbs, assetHash) {
 
@@ -811,10 +782,6 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
 
     registerAdminHelper('asset', coreHelpers.asset);
-
-    // TODO: Make sure this works #3160
-    // we probably don't need this code for it, but it needs to work still
-    registerAsyncAdminHelper('update_notification', coreHelpers.update_notification);
 };
 
 module.exports = coreHelpers;
