@@ -1,46 +1,71 @@
 // # API routes
 var express     = require('express'),
     api         = require('../api'),
-    apiRoutes;
+    apiRoutes,
+    resources;
+
+resources = {
+    posts: function (router) {
+        router.get('/posts', api.http(api.posts.browse));
+        router.post('/posts', api.http(api.posts.add));
+        router.get('/posts/:id', api.http(api.posts.read));
+        router.get('/posts/slug/:slug', api.http(api.posts.read));
+        router.put('/posts/:id', api.http(api.posts.edit));
+        router.del('/posts/:id', api.http(api.posts.destroy));
+    }
+};
 
 apiRoutes = function (middleware) {
     var router = express.Router();
+    // alias delete with del
+    router.del = router.delete;
 
     // ## Posts
-    router.get('/ghost/api/v0.1/posts', api.http(api.posts.browse));
-    router.post('/ghost/api/v0.1/posts', api.http(api.posts.add));
-    router.get('/ghost/api/v0.1/posts/:id(\\d+)', api.http(api.posts.read));
-    router.get('/ghost/api/v0.1/posts/:slug([a-z-]+)', api.http(api.posts.read));
-    router.put('/ghost/api/v0.1/posts/:id', api.http(api.posts.edit));
-    router['delete']('/ghost/api/v0.1/posts/:id', api.http(api.posts.destroy));
+    router.get('/posts', api.http(api.posts.browse));
+    router.post('/posts', api.http(api.posts.add));
+    router.get('/posts/:id', api.http(api.posts.read));
+    router.get('/posts/slug/:slug', api.http(api.posts.read));
+    router.put('/posts/:id', api.http(api.posts.edit));
+    router.del('/posts/:id', api.http(api.posts.destroy));
+
     // ## Settings
-    router.get('/ghost/api/v0.1/settings/', api.http(api.settings.browse));
-    router.get('/ghost/api/v0.1/settings/:key/', api.http(api.settings.read));
-    router.put('/ghost/api/v0.1/settings/', api.http(api.settings.edit));
+    router.get('/settings', api.http(api.settings.browse));
+    router.get('/settings/:key', api.http(api.settings.read));
+    router.put('/settings', api.http(api.settings.edit));
+
     // ## Users
-    router.get('/ghost/api/v0.1/users/', api.http(api.users.browse));
-    router.get('/ghost/api/v0.1/users/:id/', api.http(api.users.read));
-    router.put('/ghost/api/v0.1/users/password/', api.http(api.users.changePassword));
-    router.put('/ghost/api/v0.1/users/:id/', api.http(api.users.edit));
-    router.post('/ghost/api/v0.1/users/', api.http(api.users.invite));
-    router['delete']('/ghost/api/v0.1/users/:id/', api.http(api.users.destroy));
+    router.get('/users', api.http(api.users.browse));
+    router.get('/users/:id', api.http(api.users.read));
+    router.get('/users/slug/:slug', api.http(api.users.read));
+    router.get('/users/email/:email', api.http(api.users.read));
+    router.put('/users/password', api.http(api.users.changePassword));
+    router.put('/users/:id', api.http(api.users.edit));
+    router.post('/users', api.http(api.users.invite));
+    router.del('/users/:id', api.http(api.users.destroy));
 
     // ## Tags
-    router.get('/ghost/api/v0.1/tags/', api.http(api.tags.browse));
+    router.get('/tags', api.http(api.tags.browse));
+
+    // ## Slugs
+    router.get('/slugs/:type/:name', api.http(api.slugs.generate));
+
     // ## Themes
-    router.get('/ghost/api/v0.1/themes/', api.http(api.themes.browse));
-    router.put('/ghost/api/v0.1/themes/:name', api.http(api.themes.edit));
+    router.get('/themes', api.http(api.themes.browse));
+    router.put('/themes/:name', api.http(api.themes.edit));
+
     // ## Notifications
-    router.get('/ghost/api/v0.1/notifications/', api.http(api.notifications.browse));
-    router.post('/ghost/api/v0.1/notifications/', api.http(api.notifications.add));
-    router['delete']('/ghost/api/v0.1/notifications/:id', api.http(api.notifications.destroy));
+    router.get('/notifications', api.http(api.notifications.browse));
+    router.post('/notifications', api.http(api.notifications.add));
+    router.del('/notifications/:id', api.http(api.notifications.destroy));
+
     // ## DB
-    router.get('/ghost/api/v0.1/db/', api.http(api.db.exportContent));
-    router.post('/ghost/api/v0.1/db/', middleware.busboy, api.http(api.db.importContent));
-    router['delete']('/ghost/api/v0.1/db/', api.http(api.db.deleteAllContent));
+    router.get('/db', api.http(api.db.exportContent));
+    router.post('/db', middleware.busboy, api.http(api.db.importContent));
+    router.del('/db', api.http(api.db.deleteAllContent));
+
     // ## Mail
-    router.post('/ghost/api/v0.1/mail', api.http(api.mail.send));
-    router.post('/ghost/api/v0.1/mail/test', function (req, res) {
+    router.post('/mail', api.http(api.mail.send));
+    router.post('/mail/test', function (req, res) {
         api.settings.read('email').then(function (result) {
             // attach the to: address to the request body so that it is available
             // to the http api handler
@@ -51,15 +76,13 @@ apiRoutes = function (middleware) {
             api.http(api.mail.sendTest)(req, res);
         });
     });
-    // ## Slugs
-    router.get('/ghost/api/v0.1/slugs/:type/:name', api.http(api.slugs.generate));
+
+
     // ## Authentication
-    router.post('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.generateResetToken));
-    router.put('/ghost/api/v0.1/authentication/passwordreset', api.http(api.authentication.resetPassword));
-
-    router.post('/ghost/api/v0.1/authentication/invitation', api.http(api.authentication.acceptInvitation));
-
-    router.post('/ghost/api/v0.1/authentication/token',
+    router.post('/authentication/passwordreset', api.http(api.authentication.generateResetToken));
+    router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
+    router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
+    router.post('/authentication/token',
         middleware.addClientSecret,
         middleware.authenticateClient,
         middleware.generateAccessToken
