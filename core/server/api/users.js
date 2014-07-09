@@ -58,7 +58,7 @@ users = {
      * @returns {Promise(User)} User
      */
     read: function read(options) {
-        var attrs = ['id'],
+        var attrs = ['id', 'slug', 'email'],
             data = _.pick(options, attrs);
 
         options = _.omit(options, attrs);
@@ -250,7 +250,7 @@ users = {
 
     /**
      * ### Change Password
-     * @param {password} object 
+     * @param {password} object
      * @param {{context}} options
      * @returns {Promise(password}} success message
      */
