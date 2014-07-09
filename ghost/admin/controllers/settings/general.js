@@ -24,7 +24,7 @@ var SettingsGeneralController = Ember.ObjectController.extend({
 
             return themes;
         }, []);
-    }.property('availableThemes').readOnly(),
+    }.property().readOnly(),
 
     actions: {
         save: function () {
