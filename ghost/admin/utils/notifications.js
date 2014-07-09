@@ -6,11 +6,23 @@ var Notifications = Ember.ArrayProxy.extend({
     timeout: 3000,
 
     pushObject: function (object) {
-        object.typeClass = 'notification-' + object.type;
-        // This should be somewhere else.
-        if (object.type === 'success') {
-            object.typeClass = object.typeClass + ' notification-passive';
+        // object can be either a DS.Model or a plain JS object, so when working with
+        // it, we need to handle both cases.
+
+        // make sure notifications have all the necessary properties set.
+        if (typeof object.toJSON === 'function') {
+            // working with a DS.Model
+
+            if (object.get('location') === '') {
+                object.set('location', 'bottom');
+            }
         }
+        else {
+            if (!object.location) {
+                object.location = 'bottom';
+            }
+        }
+
         this._super(object);
     },
     handleNotification: function (message, delayed) {
