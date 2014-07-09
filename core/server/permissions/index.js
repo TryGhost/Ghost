@@ -103,10 +103,14 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                         // TODO: String vs Int comparison possibility here?
                         return modelId === permObjId;
                     };
-
                 // Check user permissions for matching action, object and id.
                 if (!_.isEmpty(userPermissions)) {
-                    hasUserPermission = _.any(userPermissions, checkPermission);
+                    // TODO: using 'Owner' is a bit hacky.
+                    if (userPermissions === 'Owner') {
+                        hasUserPermission = true;
+                    } else {
+                        hasUserPermission = _.any(userPermissions, checkPermission);
+                    }
                 }
 
                 // Check app permissions if they were passed
