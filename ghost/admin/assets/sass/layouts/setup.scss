@@ -87,7 +87,7 @@
     }
 
     label {
-        width: 90px;
+        // width: 90px;
         color: $lightgrey;
         font-weight: 300;
 
@@ -96,25 +96,25 @@
         }
     }
 
-    .form-group {
-        padding-left: 110px;
+    // .form-group {
+    //     padding-left: 110px;
 
-        @media (max-width: 550px) {
-            padding-left: 0;
-        }
-    }
+    //     @media (max-width: 550px) {
+    //         padding-left: 0;
+    //     }
+    // }
 
     input {
-        width: 300px;
+        // width: 300px;
         padding: 7px;
         border: none;
         color: #fff;
         background: lighten($darkgrey, 10%);
         @include transition(background ease 0.25s);
 
-        @media (max-width: 550px) {
-            width: 100%;
-        }
+        // @media (max-width: 550px) {
+        //     width: 100%;
+        // }
 
         &:focus {
             border:none;
