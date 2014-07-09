@@ -48,9 +48,19 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
-        var self = this;
-        return validation.validateSchema(self.tableName, self.toJSON()).then(function () {
+        var self = this,
+            setting = this.toJSON();
+
+        return validation.validateSchema(self.tableName, setting).then(function () {
             return validation.validateSettings(getDefaultSettings(), self);
+        }).then(function () {
+            var themeName = setting.value || '';
+
+            if (setting.key !== 'activeTheme') {
+                return when.resolve();
+            }
+
+            return validation.validateActiveTheme(themeName);
         });
     },
 

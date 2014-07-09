@@ -3,10 +3,15 @@ var schema    = require('../schema').tables,
     validator = require('validator'),
     when      = require('when'),
     errors    = require('../../errors'),
+    config    = require('../../config'),
+    requireTree = require('../../require-tree').readAll,
 
     validateSchema,
     validateSettings,
-    validate;
+    validateActiveTheme,
+    validate,
+
+    availableThemes;
 
 // Provide a few custom validators
 //
@@ -89,6 +94,27 @@ validateSettings = function (defaultSettings, model) {
     return when.resolve();
 };
 
+// A Promise that will resolve to an object with a property for each installed theme.
+// This is necessary because certain configuration data is only available while Ghost
+// is running and at times the validations are used when it's not (e.g. tests)
+availableThemes = requireTree(config().paths.themePath);
+
+validateActiveTheme = function (themeName) {
+    // If Ghost is running and its availableThemes collection exists
+    // give it priority.
+    if (Object.keys(config().paths.availableThemes).length > 0) {
+        availableThemes = when(config().paths.availableThemes);
+    }
+
+    return availableThemes.then(function (themes) {
+        if (!themes.hasOwnProperty(themeName)) {
+            return when.reject(new errors.ValidationError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme'));
+        }
+
+        return when.resolve();
+    });
+};
+
 // Validate default settings using the validator module.
 // Each validation's key is a method name and its value is an array of options
 //
@@ -134,5 +160,6 @@ validate = function (value, key, validations) {
 
 module.exports = {
     validateSchema: validateSchema,
-    validateSettings: validateSettings
+    validateSettings: validateSettings,
+    validateActiveTheme: validateActiveTheme
 };
