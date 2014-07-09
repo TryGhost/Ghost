@@ -1,19 +1,7 @@
 // # API routes
 var express     = require('express'),
     api         = require('../api'),
-    apiRoutes,
-    resources;
-
-resources = {
-    posts: function (router) {
-        router.get('/posts', api.http(api.posts.browse));
-        router.post('/posts', api.http(api.posts.add));
-        router.get('/posts/:id', api.http(api.posts.read));
-        router.get('/posts/slug/:slug', api.http(api.posts.read));
-        router.put('/posts/:id', api.http(api.posts.edit));
-        router.del('/posts/:id', api.http(api.posts.destroy));
-    }
-};
+    apiRoutes;
 
 apiRoutes = function (middleware) {
     var router = express.Router();
