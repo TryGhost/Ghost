@@ -87,15 +87,15 @@ describe('Themes API', function () {
         _.extend(configStub, config);
         ThemeAPI.__set__('config', configStub);
 
-        ThemeAPI.edit({themes: [{uuid: 'rasper', active: true }]}, {context: {user: 1}}).then(function (result) {
+        ThemeAPI.edit({themes: [{uuid: 'casper', active: true }]}, {context: {user: 1}}).then(function (result) {
             should.exist(result);
             should.exist(result.themes);
             result.themes.length.should.be.above(0);
             testUtils.API.checkResponse(result.themes[0], 'theme');
-            result.themes[0].uuid.should.equal('rasper');
+            result.themes[0].uuid.should.equal('casper');
             done();
         }).catch(function (error) {
             done(new Error(JSON.stringify(error)));
         }).catch(done);
-    })
+    });
 });
