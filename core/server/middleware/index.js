@@ -288,7 +288,6 @@ module.exports = function (server) {
 
     // ### Caching
     expressServer.use(middleware.cacheControl('public'));
-    expressServer.use(subdir + '/api/', middleware.cacheControl('private'));
     expressServer.use(subdir + '/ghost/', middleware.cacheControl('private'));
 
 
@@ -304,7 +303,7 @@ module.exports = function (server) {
 
     // ### Routing
     // Set up API routes
-    expressServer.use(subdir, routes.api(middleware));
+    expressServer.use(subdir + routes.apiBaseUri, routes.api(middleware));
 
     // Set up Admin routes
     expressServer.use(subdir, routes.admin(middleware));

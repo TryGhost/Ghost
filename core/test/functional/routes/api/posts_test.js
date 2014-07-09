@@ -201,7 +201,7 @@ describe('Post API', function () {
         });
 
         it('can retrieve a post by slug', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/welcome-to-ghost/'))
+            request.get(testUtils.API.getApiQuery('posts/slug/welcome-to-ghost/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .end(function (err, res) {
@@ -542,7 +542,7 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            
+
                             var unpublishedPost = res.body;
                             // Unpublishing a post should send x-cache-invalidate headers
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
