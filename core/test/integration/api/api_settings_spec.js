@@ -208,4 +208,17 @@ describe('Settings API', function () {
             done();
         }).catch(done);
     });
+
+    it('does not allow an active theme which is not installed', function (done) {
+        return callApiWithContext(defaultContext, 'edit', 'activeTheme', { settings: [{ key: 'activeTheme', value: 'rasper' }] })
+            .then(function (response) {
+                done(new Error('Allowed to set an active theme which is not installed'));
+            }).catch(function (err) {
+                should.exist(err);
+
+                err.type.should.eql('ValidationError');
+
+                done();
+            }).catch(done);
+    });
 });
