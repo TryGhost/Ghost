@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, testPost, newUser */
 
-CasperTest.begin('Content screen is correct', 20, function suite(test) {
+CasperTest.begin('Content screen is correct', 21, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
@@ -32,10 +32,9 @@ CasperTest.begin('Content screen is correct', 20, function suite(test) {
         test.assertSelectorHasText(
             '.content-preview header .status', 'Written', 'preview header contains "Written" when post is a draft'
         );
-        // TODO: Broken while setup doen't take over Owner user, please uncomment when fixed
-        // test.assertSelectorHasText(
-        //     '.content-preview header .author', newUser.name, 'preview header contains author name'
-        // );
+        test.assertSelectorHasText(
+            '.content-preview header .author', newUser.name, 'preview header contains author name'
+        );
     });
 
     casper.then(function testEditPostButton() {
@@ -67,7 +66,7 @@ CasperTest.begin('Content screen is correct', 20, function suite(test) {
     });
 });
 
-CasperTest.begin('Content list shows correct post status', 6, function testStaticPageStatus(test) {
+CasperTest.begin('Content list shows correct post status', 7, function testStaticPageStatus(test) {
     CasperTest.Routines.createTestPost.run(true);
 
     // Begin test
@@ -90,10 +89,9 @@ CasperTest.begin('Content list shows correct post status', 6, function testStati
         test.assertSelectorHasText(
             '.content-preview header .status', 'Published', 'preview header contains "Published" when post is published'
         );
-        // TODO: Broken while setup doen't take over Owner user, please uncomment when fixed
-        // test.assertSelectorHasText(
-        //     '.content-preview header .author', newUser.name, 'preview header contains author name'
-        // );
+        test.assertSelectorHasText(
+            '.content-preview header .author', newUser.name, 'preview header contains author name'
+        );
     });
 
     // Change post to static page
