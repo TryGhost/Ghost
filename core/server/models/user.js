@@ -96,7 +96,8 @@ User = ghostBookshelf.Model.extend({
                 findOne: ['withRelated'],
                 findAll: ['withRelated'],
                 add: ['user'],
-                edit: ['user', 'withRelated']
+                setup: ['user', 'id'],
+                edit: ['user', 'withRelated', 'id']
             };
 
         if (validOptions[methodName]) {
@@ -160,11 +161,6 @@ User = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union([ 'roles' ], options.include);
 
-        /**
-         * This only allows one user to be added to the database, otherwise fails.
-         * @param {object} user
-         * @author javorszky
-         */
         return validatePasswordLength(userData.password).then(function () {
             return self.forge().fetch();
         }).then(function () {
@@ -191,6 +187,31 @@ User = ghostBookshelf.Model.extend({
             /*jshint unused:false*/
             // find and return the added user
             return self.findOne({id: userData.id}, options);
+        });
+    },
+
+    setup: function (data, options) {
+        var self = this,
+            // Clone the _user so we don't expose the hashed password unnecessarily
+            userData = this.filterData(data);
+        options = this.filterOptions(options, 'setup');
+        options.withRelated = _.union([ 'roles' ], options.include);
+        return validatePasswordLength(userData.password).then(function () {
+            // Generate a new password hash
+            return generatePasswordHash(data.password);
+        }).then(function (hash) {
+            // Assign the hashed password
+            userData.password = hash;
+            // LookupGravatar
+            return self.gravatarLookup(userData);
+        }).then(function (userWithGravatar) {
+            userData = userWithGravatar;
+            // Generate a new slug
+            return ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options);
+        }).then(function (slug) {
+            // Assign slug and save the updated user
+            userData.slug = slug;
+            return self.edit.call(self, userData, options);
         });
     },
 

@@ -242,10 +242,23 @@ users = {
      * @param {User} object the user to create
      * @returns {Promise(User}} Newly created user
      */
-    // TODO: remove when setup is implemented
+    // TODO: update when setup is moved
     register: function register(object) {
-        // TODO: if we want to prevent users from being created with the signup form this is the right place to do it
-        return users.add(object, {context: {internal: true}});
+        var newUser;
+
+        return utils.checkObject(object, docName).then(function (checkedUserData) {
+            newUser = checkedUserData.users[0];
+            return dataProvider.User.findAll();
+        }).then(function (users) {
+            if (users.length > 0) {
+                return dataProvider.User.setup(newUser, {id: 1});
+            } else {
+                // TODO: needs to pass owner role when role endpoint is finished!
+                return dataProvider.User.add(newUser);
+            }
+        }).then(function (user) {
+            return { users: [user.toJSON()]};
+        });
     },
 
     /**
