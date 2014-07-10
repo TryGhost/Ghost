@@ -1,6 +1,6 @@
 // # Ghost bootloader
 // Orchestrates the loading of Ghost
-// When run from command line.
+// When run from command line. Test
 
 var ghost = require('./core'),
     errors = require('./core/server/errors');
