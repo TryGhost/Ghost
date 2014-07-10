@@ -1,4 +1,4 @@
-var config        = require('../../server/config'),
+var knex          = require('../../server/models/base').knex,
     when          = require('when'),
     sequence      = require('when/sequence'),
     nodefn        = require('when/node'),
@@ -20,7 +20,6 @@ function clearData() {
 }
 
 function insertPosts() {
-    var knex = config().database.knex;
     // ToDo: Get rid of pyramid of doom
     return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
         return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
@@ -47,17 +46,15 @@ function insertMorePosts(max) {
         }
     }
 
-    return sequence(_.times(posts.length, function (index) {
+    return sequence(_.times(posts.length, function(index) {
         return function() {
-            return config().database.knex('posts').insert(posts[index]);
-        };
+            return knex('posts').insert(posts[index]);
+        }
     }));
 }
 
 function insertMorePostsTags(max) {
     max = max || 50;
-
-    var knex = config().database.knex;
 
     return when.all([
         // PostgreSQL can return results in any order
@@ -89,8 +86,7 @@ function insertMorePostsTags(max) {
 }
 
 function insertDefaultUser() {
-    var user,
-        knex = config().database.knex;
+    var user;
 
     user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
@@ -101,8 +97,7 @@ function insertDefaultUser() {
 
 function insertEditorUser() {
     var users = [],
-        userRoles = [],
-        knex = config().database.knex;
+        userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
     userRoles.push(DataGenerator.forKnex.createUserRole(2, 2));
@@ -115,8 +110,7 @@ function insertEditorUser() {
 
 function insertAuthorUser() {
     var users = [],
-        userRoles = [],
-        knex = config().database.knex;
+        userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
     userRoles.push(DataGenerator.forKnex.createUserRole(3, 3));
@@ -128,8 +122,7 @@ function insertAuthorUser() {
 }
 
 function insertDefaultApp() {
-    var apps = [],
-        knex = config().database.knex;
+    var apps = [];
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
 
@@ -145,16 +138,13 @@ function insertDefaultApp() {
 }
 
 function insertApps() {
-    var knex = config().database.knex;
     return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
         return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
     });
 }
 
 function insertAppWithSettings() {
-    var apps = [],
-        app_settings = [],
-        knex = config().database.knex;
+    var apps = [], app_settings = [];
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
     app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[0]));
@@ -172,9 +162,7 @@ function insertAppWithSettings() {
         });
 }
 function insertAppWithFields() {
-    var apps = [],
-        app_fields = [],
-        knex = config().database.knex;
+    var apps = [], app_fields = [];
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
     app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[0]));
