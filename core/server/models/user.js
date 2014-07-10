@@ -251,7 +251,7 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             s;
         return this.getByEmail(object.email).then(function (user) {
-            if (!user || user.get('status') === 'invited') {
+            if (!user || user.get('status') === 'invited' || user.get('status') === 'inactive') {
                 return when.reject(new Error('NotFound'));
             }
             if (user.get('status') !== 'locked') {
