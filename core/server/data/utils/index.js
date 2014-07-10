@@ -2,9 +2,8 @@ var _       = require('lodash'),
     when    = require('when'),
     config  = require('../../config'),
     schema  = require('../schema').tables,
-    sqlite3 = require('./sqlite3'),
-    mysql   = require('./mysql'),
-    pgsql   = require('./pgsql');
+    clients = require('./clients');
+
 
 function addTableColumn(tablename, table, columnname) {
     var column;
@@ -74,49 +73,43 @@ function deleteTable(table) {
 function getTables() {
     var client = config().database.client;
 
-    if (client === 'sqlite3') {
-        return sqlite3.getTables();
+    if (_.contains(_.keys(clients), client)) {
+        return clients[client].getTables();
     }
-    if (client === 'mysql') {
-        return mysql.getTables();
-    }
-    if (client === 'pg') {
-        return pgsql.getTables();
-    }
-    return when.reject("No support for database client " + client);
+
+    return when.reject('No support for database client ' + client);
 }
 
 function getIndexes(table) {
     var client = config().database.client;
 
-    if (client === 'sqlite3') {
-        return sqlite3.getIndexes(table);
+    if (_.contains(_.keys(clients), client)) {
+        return clients[client].getIndexes(table);
     }
-    if (client === 'mysql') {
-        return mysql.getIndexes(table);
-    }
-    if (client === 'pg') {
-        return pgsql.getIndexes(table);
-    }
-    return when.reject("No support for database client " + client);
+
+    return when.reject('No support for database client ' + client);
 }
 
 function getColumns(table) {
     var client = config().database.client;
 
-    if (client === 'sqlite3') {
-        return sqlite3.getColumns(table);
+    if (_.contains(_.keys(clients), client)) {
+        return clients[client].getColumns(table);
     }
+
+    return when.reject('No support for database client ' + client);
+}
+
+function checkTables() {
+    var client = config().database.client;
+
     if (client === 'mysql') {
-        return mysql.getColumns(table);
+        return clients[client].checkPostTable();
     }
-    if (client === 'pg') {
-        return pgsql.getColumns(table);
-    }
-    return when.reject("No support for database client " + client);
 }
 
 module.exports = {
+    checkTables: checkTables,
     createTable: createTable,
     deleteTable: deleteTable,
     getTables: getTables,
