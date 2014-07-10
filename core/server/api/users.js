@@ -296,12 +296,18 @@ users = {
         });
     },
 
+    // TODO: move to authentication endpoint with issue #3136
     doesUserExist: function doesUserExist() {
         return dataProvider.User.findAll().then(function (users) {
-            if (users.length === 0) {
-                return false;
+            if (users.length > 0) {
+                var activeUsers = _.remove(users.toJSON(), function (user) {
+                    return user.status !== 'inactive';
+                });
+                if (activeUsers.length > 0) {
+                    return true;
+                }
             }
-            return true;
+            return false;
         });
     }
 };
