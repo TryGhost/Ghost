@@ -1,5 +1,7 @@
 # [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost)
 
+[ ![Codeship Status for briandela/Ghost](https://codeship.io/projects/96e2e4c0-eaa9-0131-c845-220fc9a0138f/status)](https://codeship.io/projects/26404)
+
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
 Visit the project's website at <http://ghost.org> &bull; docs on <http://docs.ghost.org>.
