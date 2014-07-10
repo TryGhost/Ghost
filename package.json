@@ -88,7 +88,7 @@
         "grunt-es6-module-transpiler": "~0.6.0",
         "grunt-express-server": "~0.4.11",
         "grunt-mocha-cli": "~1.4.0",
-        "grunt-shell": "~0.6.1",
+        "grunt-shell": "~0.7.0",
         "grunt-update-submodules": "~0.4.0",
         "matchdep": "~0.3.0",
         "mocha": "~1.15.1",
