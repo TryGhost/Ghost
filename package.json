@@ -33,7 +33,7 @@
     "dependencies": {
         "bcryptjs": "0.7.10",
         "body-parser": "1.0.2",
-        "bookshelf": "0.7.1",
+        "bookshelf": "0.7.6",
         "busboy": "0.0.12",
         "colors": "0.6.2",
         "compression": "^1.0.2",
@@ -46,7 +46,7 @@
         "express-hbs": "0.7.10",
         "express-session": "1.0.4",
         "fs-extra": "0.8.1",
-        "knex": "0.6.12",
+        "knex": "0.6.21",
         "lodash": "2.4.1",
         "moment": "2.4.0",
         "morgan": "1.0.0",
