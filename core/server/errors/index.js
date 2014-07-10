@@ -49,6 +49,17 @@ errors = {
         return when.reject(err);
     },
 
+    logInfo: function (component, info) {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
+
+            var msg = [component.cyan + ':'.cyan, info.cyan];
+
+            console.info.apply(console, msg);
+        }
+    },
+
     logWarn: function (warn, context, help) {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
