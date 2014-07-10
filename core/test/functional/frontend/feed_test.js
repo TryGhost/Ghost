@@ -2,7 +2,7 @@
  * Tests if RSS exists and is working
  */
 /*globals url, CasperTest, casper */
-CasperTest.begin('Ensure that RSS is available', 10, function suite(test) {
+CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getPageContent(),
@@ -24,13 +24,12 @@ CasperTest.begin('Ensure that RSS is available', 10, function suite(test) {
         test.assert(content.indexOf(postStart) >= 0, 'Feed should contain start of welcome post content.');
         test.assert(content.indexOf(postEnd) >= 0, 'Feed should contain end of welcome post content.');
         test.assert(content.indexOf(postLink) >= 0, 'Feed should have link to the welcome post.');
-        // TODO: Broken while setup doen't take over Owner user, please uncomment when fixed
-        // test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
+        test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
         test.assert(content.indexOf('</rss>') >= 0, 'Feed should contain </rss>');
     });
 }, false);
 
-CasperTest.begin('Ensure that author element is not included. Only dc:creator', 2, function suite(test) {
+CasperTest.begin('Ensure that author element is not included. Only dc:creator', 3, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getPageContent(),
@@ -39,8 +38,7 @@ CasperTest.begin('Ensure that author element is not included. Only dc:creator', 
 
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assert(content.indexOf(author) < 0, 'Author element should not be included');
-        // TODO: Broken while setup doen't take over Owner user, please uncomment when fixed
-        // test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
+        test.assert(content.indexOf(postCreator) >= 0, 'Welcome post should have Test User as the creator.');
     });
 }, false);
 
