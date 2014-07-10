@@ -61,7 +61,7 @@ adminControllers = {
     // Route: doSignup
     // Path: /ghost/setup/
     // Method: POST
-    'doSignup': function (req, res) {
+    'doSetup': function (req, res) {
         var name = req.body.name,
             email = req.body.email,
             password = req.body.password,
@@ -69,7 +69,8 @@ adminControllers = {
             users = [{
                 name: name,
                 email: email,
-                password: password
+                password: password,
+                status: 'active'
             }];
 
         api.users.register({users: users}).then(function () {
