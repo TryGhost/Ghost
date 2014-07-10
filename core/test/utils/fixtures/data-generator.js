@@ -204,6 +204,7 @@ DataGenerator.forKnex = (function () {
     function createUser(overrides) {
         return _.defaults(overrides, {
             uuid: uuid.v4(),
+            status: 'active',
             created_by: 1,
             created_at: new Date()
         });

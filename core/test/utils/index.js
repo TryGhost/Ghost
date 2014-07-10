@@ -88,16 +88,14 @@ function insertMorePostsTags(max) {
 }
 
 function insertDefaultUser() {
-    var users = [],
-        userRoles = [];
+    var user,
+        userRoles;
 
-    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(1, 1));
+    user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+
     return knex('users')
-        .insert(users)
-        .then(function () {
-            return knex('roles_users').insert(userRoles);
-        });
+        .where('id', '=', '1')
+        .update(user);
 }
 
 function insertEditorUser() {
