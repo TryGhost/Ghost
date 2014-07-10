@@ -1,11 +1,13 @@
 var sequence    = require('when/sequence'),
     _           = require('lodash'),
+    utils       = require('../../utils'),
     Post        = require('../../models/post').Post,
     Tag         = require('../../models/tag').Tag,
     Role        = require('../../models/role').Role,
     Permission  = require('../../models/permission').Permission,
     Client      = require('../../models/client').Client,
     Permissions = require('../../models/permission').Permissions,
+    User        = require('../../models/user').User,
 
     populateFixtures,
     updateFixtures;
@@ -153,6 +155,20 @@ var fixtures = {
             "slug":             "ghost-admin",
             "secret":           "not_available"
         },
+    ],
+    roles003: [
+        {
+            "name":             "Owner",
+            "description":      "Owners"
+        }
+    ],
+    users003: [
+        {
+            "name":             "Owner",
+            "email":            "ghost@ghost.org",
+            "status":           "inactive",
+            "password":         utils.uid(50),
+        }
     ]
 };
 
@@ -169,6 +185,10 @@ populateFixtures = function () {
     });
 
     _.each(fixtures.roles, function (role) {
+        ops.push(function () {return Role.add(role, {user: 1}); });
+    });
+
+    _.each(fixtures.roles003, function (role) {
         ops.push(function () {return Role.add(role, {user: 1}); });
     });
 
@@ -246,13 +266,20 @@ populateFixtures = function () {
     });
 
     return sequence(ops).then(function () {
-        sequence(relations);
+        return sequence(relations);
+    }).then(function () {
+        return Role.findOne({name: 'Owner'});
+    }).then(function (ownerRole) {
+        var user = fixtures.users003[0];
+        user.role = ownerRole.id;
+        return User.add(fixtures.users003[0], {user: 1});
     });
 };
 
 updateFixtures = function () {
     var ops = [],
-        relations = [];
+        relations = [],
+        adminUser;
 
     _.each(fixtures.permissions003, function (permission) {
         ops.push(function () {return Permission.add(permission, {user: 1}); });
@@ -260,6 +287,10 @@ updateFixtures = function () {
 
     _.each(fixtures.client003, function (client) {
         ops.push(function () {return Client.add(client, {user: 1}); });
+    });
+
+    _.each(fixtures.roles003, function (role) {
+        ops.push(function () {return Role.add(role, {user: 1}); });
     });
 
     relations.push(function () {
@@ -322,7 +353,16 @@ updateFixtures = function () {
     });
 
     return sequence(ops).then(function () {
-        sequence(relations);
+        return sequence(relations);
+    }).then(function () {
+        return User.forge({id: 1}).fetch();
+    }).then(function (user) {
+        adminUser = user;
+        return Role.findOne({name: 'Owner'});
+    }).then(function (ownerRole) {
+        if (adminUser) {
+            return adminUser.roles().updatePivot({role_id: ownerRole.id});
+        }
     });
 };
 
