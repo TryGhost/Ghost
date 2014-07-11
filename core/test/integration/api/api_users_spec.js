@@ -7,6 +7,7 @@ var testUtils = require('../../utils'),
 
     // Stuff we are testing
     UsersAPI      = require('../../../server/api/users');
+    AuthAPI      = require('../../../server/api/authentication');
 
 describe('Users API', function () {
 
@@ -32,7 +33,7 @@ describe('Users API', function () {
         });
 
         it('can add with internal user', function (done) {
-            UsersAPI.register({ users: [{
+            AuthAPI.setup({ setup: [{
                 'name': 'Hello World',
                 'email': 'hello@world.com',
                 'password': 'password'

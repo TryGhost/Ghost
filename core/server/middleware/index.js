@@ -140,8 +140,8 @@ function updateActiveTheme(req, res, next) {
 function redirectToSetup(req, res, next) {
     /*jslint unparam:true*/
 
-    api.users.doesUserExist().then(function (exists) {
-        if (!exists && !req.path.match(/\/ghost\/setup\//)) {
+    api.authentication.isSetup().then(function (exists) {
+        if (!exists.setup[0].status && !req.path.match(/\/ghost\/setup\//)) {
             return res.redirect(config().paths.subdir + '/ghost/setup/');
         }
         next();

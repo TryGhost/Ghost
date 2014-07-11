@@ -28,7 +28,7 @@ apiRoutes = function (middleware) {
     router.get('/users/email/:email', api.http(api.users.read));
     router.put('/users/password', api.http(api.users.changePassword));
     router.put('/users/:id', api.http(api.users.edit));
-    router.post('/users', api.http(api.users.invite));
+    router.post('/users', api.http(api.users.add));
     router.del('/users/:id', api.http(api.users.destroy));
 
     // ## Tags
@@ -70,6 +70,8 @@ apiRoutes = function (middleware) {
     router.post('/authentication/passwordreset', api.http(api.authentication.generateResetToken));
     router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
+    router.post('/authentication/setup', api.http(api.authentication.setup));
+    router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
         middleware.addClientSecret,
         middleware.authenticateClient,

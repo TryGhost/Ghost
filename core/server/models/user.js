@@ -192,10 +192,11 @@ User = ghostBookshelf.Model.extend({
 
     setup: function (data, options) {
         var self = this,
-            // Clone the _user so we don't expose the hashed password unnecessarily
             userData = this.filterData(data);
+
         options = this.filterOptions(options, 'setup');
         options.withRelated = _.union([ 'roles' ], options.include);
+
         return validatePasswordLength(userData.password).then(function () {
             // Generate a new password hash
             return generatePasswordHash(data.password);
