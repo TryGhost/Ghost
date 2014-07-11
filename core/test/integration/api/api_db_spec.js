@@ -43,13 +43,13 @@ describe('DB API', function () {
             result.db.should.be.instanceof(Array);
             result.db.should.be.empty;
         }).then(function () {
-            TagsAPI.browse().then(function (results) {
+            return TagsAPI.browse().then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.equal(0);
             });
         }).then(function () {
-            PostAPI.browse().then(function (results) {
+            return PostAPI.browse().then(function (results) {
                 should.exist(results);
                 results.posts.length.should.equal(0);
                 done();

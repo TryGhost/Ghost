@@ -1,4 +1,5 @@
-var sequence    = require('when/sequence'),
+var when        = require('when'),
+    sequence    = require('when/sequence'),
     _           = require('lodash'),
     utils       = require('../../utils'),
     Post        = require('../../models/post').Post,
@@ -206,26 +207,30 @@ populateFixtures = function () {
 
     // add the tag to the post
     relations.push(function () {
-        Post.forge({id: 1}).fetch({withRelated: ['tags']}).then(function (post) {
-            post.tags().attach([1]);
+        return Post.forge({id: 1}).fetch({withRelated: ['tags']}).then(function (post) {
+            return post.tags().attach([1]);
         });
     });
 
     //grant permissions to roles
     relations.push(function () {
+        var relationOps = [],
+            relationOp;
+
         // admins gets all permissions
-        Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var admin_perm = _.map(perms.toJSON(), function (perm) {
                     return perm.id;
                 });
                 return role.permissions().attach(_.compact(admin_perm));
             });
         });
+        relationOps.push(relationOp);
 
         // editor gets access to posts, users and settings.browse, settings.read
-        Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var editor_perm = _.map(perms.toJSON(), function (perm) {
                     if (perm.object_type === 'post' || perm.object_type === 'user' || perm.object_type === 'slug') {
                         return perm.id;
@@ -239,10 +244,11 @@ populateFixtures = function () {
                 return role.permissions().attach(_.compact(editor_perm));
             });
         });
+        relationOps.push(relationOp);
 
         // author gets access to post.add, slug.generate, settings.browse, settings.read, users.browse and users.read
-        Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var author_perm = _.map(perms.toJSON(), function (perm) {
                     if (perm.object_type === 'post' && perm.action_type === 'add') {
                         return perm.id;
@@ -263,6 +269,9 @@ populateFixtures = function () {
                 return role.permissions().attach(_.compact(author_perm));
             });
         });
+        relationOps.push(relationOp);
+
+        return when.all(relationOps);
     });
 
     return sequence(ops).then(function () {
@@ -294,9 +303,12 @@ updateFixtures = function () {
     });
 
     relations.push(function () {
+        var relationOps = [],
+            relationOp;
+
         // admin gets all new permissions
-        Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Administrator'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var admin_perm = _.map(perms.toJSON(), function (perm) {
                     var result  = fixtures.permissions003.filter(function (object) {
                         return object.object_type === perm.object_type && object.action_type === perm.action_type;
@@ -309,10 +321,11 @@ updateFixtures = function () {
                 return role.permissions().attach(_.compact(admin_perm));
             });
         });
+        relationOps.push(relationOp);
 
         // editor gets access to posts, users and settings.browse, settings.read
-        Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Editor'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var editor_perm = _.map(perms.toJSON(), function (perm) {
                     if (perm.object_type === 'post' || perm.object_type === 'user') {
                         return perm.id;
@@ -326,10 +339,11 @@ updateFixtures = function () {
                 return role.permissions().attach(_.compact(editor_perm));
             });
         });
+        relationOps.push(relationOp);
 
         // author gets access to post.add, post.slug, settings.browse, settings.read, users.browse and users.read
-        Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
-            Permissions.forge().fetch().then(function (perms) {
+        relationOp = Role.forge({name: 'Author'}).fetch({withRelated: ['permissions']}).then(function (role) {
+            return Permissions.forge().fetch().then(function (perms) {
                 var author_perm = _.map(perms.toJSON(), function (perm) {
                     if (perm.object_type === 'post' && perm.action_type === 'add') {
                         return perm.id;
@@ -350,6 +364,9 @@ updateFixtures = function () {
                 return role.permissions().attach(_.compact(author_perm));
             });
         });
+        relationOps.push(relationOp);
+
+        return when.all(relationOps);
     });
 
     return sequence(ops).then(function () {
