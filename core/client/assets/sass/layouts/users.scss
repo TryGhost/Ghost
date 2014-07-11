@@ -179,7 +179,9 @@
     .edit-cover-image {
         position: absolute;
         right: 35px;
-        bottom: 32px;
+        bottom: 34px;
+        min-height: 34px;
+        height: 34px;
         background: rgba(0,0,0,0.3);
         border-radius: 0;
         color: rgba(255,255,255,0.8);
@@ -201,10 +203,18 @@
 
     .user-image + .form-group {
         margin-top: 155px;
-        @media (min-width: 551px) {
+        max-width: 500px;
+        @media (min-width: 651px) and (max-width: 1000px) {
+            width: calc(100% - 201px);
+        }
+        @media (min-width: 651px) {
+            min-width: 285px;
             margin-top: 0;
             top: -110px;
             left: 40px;
+        }
+        @media (min-width: 1001px) {
+            width: calc(100% - 221px);
         }
     }
 
@@ -212,7 +222,9 @@
         position: relative;
         top: -110px;
         z-index: 1;
-        padding-left: 143px;
+        @media (min-width: 651px) {
+            padding-left: 143px;
+        }
 
         fieldset {
             padding: 0 40px;
@@ -225,16 +237,25 @@
 
     fieldset.user-details-top {
 
-        @media (max-width: 550px) {
+        @media (max-width: 650px) {
             margin-bottom: 10px;
         }
 
-        @media (min-width: 551px) {
+        @media (min-width: 651px) {
             margin-bottom: 0;
             padding: 0;
             p {
                 color: #fff;
             }
+        }
+
+    }
+
+    @media (max-width: 550px) {
+        fieldset.user-details-top,
+        fieldset.user-details-bottom {
+            padding-left: 15px;
+            padding-right: 15px;
         }
     }
 
@@ -257,7 +278,11 @@
         margin-left: -104px;
 
         @media (max-width: 550px) {
-            margin-left: -10px;
+            margin-left: 0px;
+        }
+
+        @media (min-width: 551px) and (max-width: 650px) {
+            margin-left: 20px;
         }
 
         .img {
@@ -288,7 +313,7 @@
         @include transition(opacity 0.3s ease);
     }
 
-    @media (min-width: 551px) {
+    @media (min-width: 651px) {
         label[for='user-name'] {
             visibility: hidden;
         }
@@ -301,7 +326,9 @@
 
     .user-details-bottom {
         padding: 0 40px;
-        margin: -104px 0 0 0;
+        @media (min-width: 651px) {
+            margin: -104px 0 0 0;
+        }
     }
 
 } // .settings
