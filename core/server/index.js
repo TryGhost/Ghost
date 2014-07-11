@@ -16,6 +16,7 @@ var crypto      = require('crypto'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
     middleware  = require('./middleware'),
+    migrations  = require('./data/migration'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
@@ -214,6 +215,12 @@ function init(server) {
     return builtFilesExist().then(function () {
         // Initialise the models
         return models.init();
+    }).then(function () {
+        // Initialize migrations
+        return migrations.init();
+    }).then(function () {
+        // Populate any missing default settings
+        return models.Settings.populateDefaults();
     }).then(function () {
         // Initialize the settings cache
         return api.init();

@@ -1,8 +1,8 @@
-var _    = require('lodash'),
-    knex = require('../../models/base').knex;
+var _       = require('lodash'),
+    config  = require('../../config');
 
 function getTables() {
-    return knex.raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'").then(function (response) {
+    return config().database.knex.raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'").then(function (response) {
         return _.flatten(_.pluck(response.rows, 'table_name'));
     });
 }
@@ -13,7 +13,7 @@ function getIndexes(table) {
         + " WHERE t.oid = ix.indrelid and i.oid = ix.indexrelid and"
         + " a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relname = '" + table + "'";
 
-    return knex.raw(selectIndexes).then(function (response) {
+    return config().database.knex.raw(selectIndexes).then(function (response) {
         return _.flatten(_.pluck(response.rows, 'index_name'));
     });
 }
@@ -21,7 +21,7 @@ function getIndexes(table) {
 function getColumns(table) {
     var selectIndexes = "SELECT column_name FROM information_schema.columns WHERE table_name = '" + table + "'";
 
-    return knex.raw(selectIndexes).then(function (response) {
+    return config().database.knex.raw(selectIndexes).then(function (response) {
         return _.flatten(_.pluck(response.rows, 'column_name'));
     });
 }

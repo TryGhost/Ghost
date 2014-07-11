@@ -9,10 +9,7 @@ var testUtils   = require('../utils'),
     // Stuff we are testing
     permissions = require('../../server/permissions'),
     effectivePerms = require('../../server/permissions/effective'),
-    Models = require('../../server/models'),
-    UserProvider = Models.User,
-    PermissionsProvider = Models.Permission,
-    PostProvider = Models.Post;
+    Models = require('../../server/models');
 
 describe('Permissions', function () {
 
@@ -63,7 +60,7 @@ describe('Permissions', function () {
                 object_type: obj
             };
 
-            return PermissionsProvider.add(newPerm, {user: 1});
+            return Models.Permission.add(newPerm, {user: 1});
         },
         createTestPermissions = function () {
             var createActions = _.map(testPerms, function (testPerm) {
@@ -102,7 +99,7 @@ describe('Permissions', function () {
         it('can add user to role', function (done) {
             var existingUserRoles;
 
-            UserProvider.findOne({id: 1}, { withRelated: ['roles'] }).then(function (foundUser) {
+            Models.User.findOne({id: 1}, { withRelated: ['roles'] }).then(function (foundUser) {
                 var testRole = new Models.Role({
                     name: 'testrole1',
                     description: 'testrole1 description'
@@ -118,7 +115,7 @@ describe('Permissions', function () {
                     return foundUser.roles().attach(testRole);
                 });
             }).then(function () {
-                return UserProvider.findOne({id: 1}, { withRelated: ['roles'] });
+                return Models.User.findOne({id: 1}, { withRelated: ['roles'] });
             }).then(function (updatedUser) {
                 should.exist(updatedUser);
 
@@ -129,7 +126,7 @@ describe('Permissions', function () {
         });
 
         it('can add user permissions', function (done) {
-            UserProvider.findOne({id: 1}, { withRelated: ['permissions']}).then(function (testUser) {
+            Models.User.findOne({id: 1}, { withRelated: ['permissions']}).then(function (testUser) {
                 var testPermission = new Models.Permission({
                     name: 'test edit posts',
                     action_type: 'edit',
@@ -142,7 +139,7 @@ describe('Permissions', function () {
                     return testUser.permissions().attach(testPermission);
                 });
             }).then(function () {
-                return UserProvider.findOne({id: 1}, { include: ['permissions']});
+                return Models.User.findOne({id: 1}, { include: ['permissions']});
             }).then(function (updatedUser) {
                 should.exist(updatedUser);
 
@@ -210,7 +207,7 @@ describe('Permissions', function () {
             createTestPermissions()
                 .then(permissions.init)
                 .then(function () {
-                    return UserProvider.findOne({id: 1});
+                    return Models.User.findOne({id: 1});
                 })
                 .then(function (foundUser) {
                     var canThisResult = permissions.canThis(foundUser);
@@ -233,7 +230,7 @@ describe('Permissions', function () {
             createTestPermissions()
                 .then(permissions.init)
                 .then(function () {
-                    return UserProvider.findOne({id: 1});
+                    return Models.User.findOne({id: 1});
                 })
                 .then(function (foundUser) {
                     var newPerm = new Models.Permission({
@@ -247,7 +244,7 @@ describe('Permissions', function () {
                     });
                 })
                 .then(function () {
-                    return UserProvider.findOne({id: 1}, { withRelated: ['permissions']});
+                    return Models.User.findOne({id: 1}, { withRelated: ['permissions']});
                 })
                 .then(function (updatedUser) {
 
@@ -266,13 +263,13 @@ describe('Permissions', function () {
 
         it('can use permissable function on Model to allow something', function (done) {
             var testUser,
-                permissableStub = sandbox.stub(PostProvider, 'permissable', function () {
+                permissableStub = sandbox.stub(Models.Post, 'permissable', function () {
                     return when.resolve();
                 });
 
             testUtils.insertAuthorUser()
                 .then(function () {
-                    return UserProvider.findAll();
+                    return Models.User.findAll();
                 })
                 .then(function (foundUser) {
                     testUser = foundUser.models[1];
@@ -295,13 +292,13 @@ describe('Permissions', function () {
 
         it('can use permissable function on Model to forbid something', function (done) {
             var testUser,
-                permissableStub = sandbox.stub(PostProvider, 'permissable', function () {
+                permissableStub = sandbox.stub(Models.Post, 'permissable', function () {
                     return when.reject();
                 });
 
             testUtils.insertAuthorUser()
                 .then(function () {
-                    return UserProvider.findAll();
+                    return Models.User.findAll();
                 })
                 .then(function (foundUser) {
                     testUser = foundUser.models[1];
@@ -345,10 +342,10 @@ describe('Permissions', function () {
 
         it('does not allow an app to edit a post without permission', function (done) {
             // Change the author of the post so the author override doesn't affect the test
-            PostProvider.edit({'author_id': 2}, {id: 1})
+            Models.Post.edit({'author_id': 2}, {id: 1})
                 .then(function (updatedPost) {
                     // Add user permissions
-                    return UserProvider.findOne({id: 1})
+                    return Models.User.findOne({id: 1})
                         .then(function (foundUser) {
                             var newPerm = new Models.Permission({
                                 name: 'app test edit post',

@@ -1,8 +1,8 @@
-var _    = require('lodash'),
-    knex = require('../../models/base').knex;
+var _       = require('lodash'),
+    config  = require('../../config');
 
 function getTables() {
-    return knex.raw("select * from sqlite_master where type = 'table'").then(function (response) {
+    return config().database.knex.raw("select * from sqlite_master where type = 'table'").then(function (response) {
         return _.reject(_.pluck(response, 'tbl_name'), function (name) {
             return name === 'sqlite_sequence';
         });
@@ -10,14 +10,14 @@ function getTables() {
 }
 
 function getIndexes(table) {
-    return knex.raw("pragma index_list('" + table + "')").then(function (response) {
+    return config().database.knex.raw("pragma index_list('" + table + "')").then(function (response) {
 
         return _.flatten(_.pluck(response, 'name'));
     });
 }
 
 function getColumns(table) {
-    return knex.raw("pragma table_info('" + table + "')").then(function (response) {
+    return config().database.knex.raw("pragma table_info('" + table + "')").then(function (response) {
         return _.flatten(_.pluck(response, 'name'));
     });
 }
