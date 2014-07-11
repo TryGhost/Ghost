@@ -1,4 +1,8 @@
-var User = DS.Model.extend({
+import ValidationEngine from 'ghost/mixins/validation-engine';
+
+var User = DS.Model.extend(ValidationEngine, {
+    validationType: 'user',
+
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     slug: DS.attr('string'),
@@ -19,35 +23,6 @@ var User = DS.Model.extend({
     created_by: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
-
-    validationErrors: function () {
-        var validationErrors = [];
-
-        if (!validator.isLength(this.get('name'), 0, 150)) {
-            validationErrors.push({message: 'Name is too long'});
-        }
-
-        if (!validator.isLength(this.get('bio'), 0, 200)) {
-            validationErrors.push({message: 'Bio is too long'});
-        }
-
-        if (!validator.isEmail(this.get('email'))) {
-            validationErrors.push({message: 'Please supply a valid email address'});
-        }
-
-        if (!validator.isLength(this.get('location'), 0, 150)) {
-            validationErrors.push({message: 'Location is too long'});
-        }
-
-        if (!validator.isURL(this.get('website'), { protocols: ['http', 'https'], require_protocol: true }) ||
-            !validator.isLength(this.get('website'), 0, 2000)) {
-            validationErrors.push({message: 'Please use a valid url'});
-        }
-
-        return validationErrors;
-    }.property('name', 'bio', 'email', 'location', 'website'),
-
-    isValid: Ember.computed.empty('validationErrors.[]'),
 
     saveNewPassword: function (password) {
         var url = this.get('ghostPaths').adminUrl('changepw');
@@ -81,10 +56,7 @@ var User = DS.Model.extend({
         }
 
         return validationErrors;
-    },
-
-
-
+    }
 
 });
 
