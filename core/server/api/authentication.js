@@ -1,4 +1,5 @@
-var dataProvider     = require('../models'),
+var _                = require('lodash'),
+    dataProvider     = require('../models'),
     settings         = require('./settings'),
     mail             = require('./mail'),
     utils            = require('./utils'),
@@ -122,6 +123,84 @@ authentication = {
             }).otherwise(function (error) {
                 return when.reject(new errors.UnauthorizedError(error.message));
             });
+        });
+    },
+
+    isSetup: function () {
+        return dataProvider.User.findOne({status: 'active'}).then(function (user) {
+            if (user) {
+                return when.resolve({ setup: [{status: true}]});
+            } else {
+                return when.resolve({ setup: [{status: false}]});
+            }
+        });
+    },
+
+    setup: function (object) {
+        var setupUser;
+
+        return utils.checkObject(object, 'setup').then(function (checkedSetupData) {
+            setupUser = {
+                name: checkedSetupData.setup[0].name,
+                email: checkedSetupData.setup[0].email,
+                password: checkedSetupData.setup[0].password,
+                blogTitle: checkedSetupData.setup[0].blogTitle,
+                status: 'active'
+            };
+            return dataProvider.User.findAll();
+        }).then(function (users) {
+            if (users.length > 0) {
+                return dataProvider.User.setup(setupUser, {id: 1});
+            } else {
+                // TODO: needs to pass owner role when role endpoint is finished!
+                return dataProvider.User.add(setupUser);
+            }
+        }).then(function (user) {
+            var userSettings = [];
+
+            userSettings.push({key: 'email', value: setupUser.email});
+
+            // Handles the additional values set by the setup screen.
+            if (!_.isEmpty(setupUser.blogTitle)) {
+                userSettings.push({key: 'title', value: setupUser.blogTitle});
+                userSettings.push({key: 'description', value: 'Thoughts, stories and ideas by ' + setupUser.name});
+            }
+            setupUser = user.toJSON();
+            return settings.edit({settings: userSettings}, {context: {user: 1}});
+        }).then(function () {
+            var message = {
+                    to: setupUser.email,
+                    subject: 'Your New Ghost Blog',
+                    html: '<p><strong>Hello!</strong></p>' +
+                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
+                          '<p>You can log in to your admin account with the following details:</p>' +
+                          '<p> Email Address: ' + setupUser.email + '<br>' +
+                          'Password: The password you chose when you signed up</p>' +
+                          '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
+                          '<p>xoxo</p>' +
+                          '<p>Team Ghost<br>' +
+                          '<a href="https://ghost.org">https://ghost.org</a></p>'
+                },
+                payload = {
+                    mail: [{
+                        message: message,
+                        options: {}
+                    }]
+                };
+
+            return mail.send(payload).otherwise(function (error) {
+                errors.logError(
+                    error.message,
+                    "Unable to send welcome email, your blog will continue to function.",
+                    "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
+                );
+            });
+        }).then(function () {
+            return when.resolve({ users: [setupUser]});
+        }).otherwise(function (error) {
+            console.log('error');
+            console.log(error);
+            return when.reject(new errors.UnauthorizedError(error.message));
         });
     }
 };
