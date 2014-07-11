@@ -5,7 +5,7 @@ var testUtils = require('../../utils'),
 
     // Stuff we are testing
     Models = require('../../../server/models'),
-    knex = require('../../../server/models/base').knex;
+    config = require('../../../server/config');
 
 describe('Settings Model', function () {
 
@@ -178,7 +178,7 @@ describe('Settings Model', function () {
     describe('populating defaults from settings.json', function (done) {
 
         beforeEach(function (done) {
-            knex('settings').truncate().then(function () {
+            config().database.knex('settings').truncate().then(function () {
                 done();
             });
         });

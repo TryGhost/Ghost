@@ -7,12 +7,14 @@ var path          = require('path'),
     when          = require('when'),
     url           = require('url'),
     _             = require('lodash'),
+    knex          = require('knex'),
     requireTree   = require('../require-tree').readAll,
     theme         = require('./theme'),
     configUrl     = require('./url'),
     ghostConfig   = {},
     appRoot       = path.resolve(__dirname, '../../../'),
-    corePath      = path.resolve(appRoot, 'core/');
+    corePath      = path.resolve(appRoot, 'core/'),
+    knexInstance;
 
 // Are we using sockets? Custom socket or the default?
 function getSocket() {
@@ -51,7 +53,14 @@ function updateConfig(config) {
     // Otherwise default to default content path location
     contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
 
+    if (!knexInstance && ghostConfig.database) {
+        knexInstance = knex(ghostConfig.database);
+    }
+
     _.merge(ghostConfig, {
+        database: {
+            knex: knexInstance
+        },
         paths: {
             'appRoot':          appRoot,
             'subdir':           subdir,
