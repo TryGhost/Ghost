@@ -186,7 +186,7 @@ function insertAppWithFields() {
 
 function insertDefaultFixtures() {
     return insertDefaultUser().then(function () {
-        return insertPosts()
+        return insertPosts();
     }).then(function () {
         return insertApps();
     });
