@@ -102,7 +102,7 @@
     }
 
     &.notification-passive:hover {
-        @include animation(fade-in 0.2s linear);
+        @include animation(fade-in-snap 0.2s linear);
     }
 }
 
