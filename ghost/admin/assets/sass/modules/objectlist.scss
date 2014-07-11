@@ -34,17 +34,16 @@
     border-top: 1px solid $lightbrown;
     min-height: 68px;
 
+} // .object-list-item
+
+a.object-list-item {
+    text-decoration: none;
     &:hover {
         background: lighten($lightbrown, 5%);
     }
     &:last-of-type:hover {
         box-shadow: inset 0px -1px 0px $lightbrown;
     }
-
-} // .object-list-item
-
-a.object-list-item {
-    text-decoration: none;
 }
 
 .object-list-item-icon {
