@@ -1,5 +1,4 @@
-var migrations = require('../data/migration'),
-    _          = require('lodash'),
+var _          = require('lodash'),
     when   = require('when');
 
 module.exports = {
@@ -7,6 +6,7 @@ module.exports = {
     User: require('./user').User,
     Role: require('./role').Role,
     Permission: require('./permission').Permission,
+    Permissions: require('./permission').Permissions,
     Settings: require('./settings').Settings,
     Tag: require('./tag').Tag,
     Base: require('./base'),
@@ -19,7 +19,7 @@ module.exports = {
     Refreshtoken: require('./refreshtoken').Refreshtoken,
 
     init: function () {
-        return migrations.init();
+        return true;
     },
     // ### deleteAllContent
     // Delete all content from the database (posts, tags, tags_posts)

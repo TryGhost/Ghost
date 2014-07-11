@@ -1,8 +1,8 @@
-var _    = require('lodash'),
-    knex = require('../../models/base').knex;
+var _       = require('lodash'),
+    config  = require('../../config');
 
 function getTables() {
-    return knex.raw('show tables').then(function (response) {
+    return config().database.knex.raw('show tables').then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             return _.values(entry);
         }));
@@ -10,13 +10,13 @@ function getTables() {
 }
 
 function getIndexes(table) {
-    return knex.raw('SHOW INDEXES from ' + table).then(function (response) {
+    return config().database.knex.raw('SHOW INDEXES from ' + table).then(function (response) {
         return _.flatten(_.pluck(response[0], 'Key_name'));
     });
 }
 
 function getColumns(table) {
-    return knex.raw('SHOW COLUMNS FROM ' + table).then(function (response) {
+    return config().database.knex.raw('SHOW COLUMNS FROM ' + table).then(function (response) {
         return _.flatten(_.pluck(response[0], 'Field'));
     });
 }

@@ -4,12 +4,10 @@ var _               = require('lodash'),
     fs              = require('fs'),
     nodefn          = require('when/node'),
     errors          = require('../../errors'),
-    client          = require('../../models/base').client,
-    knex            = require('../../models/base').knex,
     sequence        = require('when/sequence'),
 
     versioning      = require('../versioning'),
-    Settings        = require('../../models/settings').Settings,
+    models          = require('../../models'),
     fixtures        = require('../fixtures'),
     schema          = require('../schema').tables,
     dataExport      = require('../export'),
@@ -143,7 +141,7 @@ migrateUpFreshDb = function () {
         // Load the fixtures
         return fixtures.populateFixtures().then(function () {
             // Initialise the default settings
-            return Settings.populateDefaults();
+            return models.Settings.populateDefaults();
         });
     });
 };
@@ -151,8 +149,10 @@ migrateUpFreshDb = function () {
 // This function changes the type of posts.html and posts.markdown columns to mediumtext. Due to
 // a wrong datatype in schema.js some installations using mysql could have been created using the
 // data type text instead of mediumtext.
-// For details see: https://github.com/TryGhost/Ghost/issues/1947 
+// For details see: https://github.com/TryGhost/Ghost/issues/1947
 function checkMySQLPostTable() {
+    var knex = config().database.knex;
+
     return knex.raw("SHOW FIELDS FROM posts where Field ='html' OR Field = 'markdown'").then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
@@ -178,6 +178,7 @@ migrateUp = function () {
     var deleteCommands,
         addCommands,
         oldTables,
+        client = config().database.client,
         addColumns = [],
         modifyUniCommands = [],
         commands = [];

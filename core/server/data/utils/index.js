@@ -1,8 +1,7 @@
 var _       = require('lodash'),
     when    = require('when'),
-    knex    = require('../../models/base').knex,
+    config  = require('../../config'),
     schema  = require('../schema').tables,
-    client  = require('../../models/base').client,
     sqlite3 = require('./sqlite3'),
     mysql   = require('./mysql'),
     pgsql   = require('./pgsql');
@@ -42,25 +41,25 @@ function addTableColumn(tablename, table, columnname) {
 }
 
 function addColumn(table, column) {
-    return knex.schema.table(table, function (t) {
+    return config().database.knex.schema.table(table, function (t) {
         addTableColumn(table, t, column);
     });
 }
 
 function addUnique(table, column) {
-    return knex.schema.table(table, function (table) {
+    return config().database.knex.schema.table(table, function (table) {
         table.unique(column);
     });
 }
 
 function dropUnique(table, column) {
-    return knex.schema.table(table, function (table) {
+    return config().database.knex.schema.table(table, function (table) {
         table.dropUnique(column);
     });
 }
 
 function createTable(table) {
-    return knex.schema.createTable(table, function (t) {
+    return config().database.knex.schema.createTable(table, function (t) {
         var columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (column) {
             return addTableColumn(table, t, column);
@@ -69,10 +68,12 @@ function createTable(table) {
 }
 
 function deleteTable(table) {
-    return knex.schema.dropTableIfExists(table);
+    return config().database.knex.schema.dropTableIfExists(table);
 }
 
 function getTables() {
+    var client = config().database.client;
+
     if (client === 'sqlite3') {
         return sqlite3.getTables();
     }
@@ -86,6 +87,8 @@ function getTables() {
 }
 
 function getIndexes(table) {
+    var client = config().database.client;
+
     if (client === 'sqlite3') {
         return sqlite3.getIndexes(table);
     }
@@ -99,6 +102,8 @@ function getIndexes(table) {
 }
 
 function getColumns(table) {
+    var client = config().database.client;
+
     if (client === 'sqlite3') {
         return sqlite3.getColumns(table);
     }

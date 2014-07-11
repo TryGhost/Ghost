@@ -6,7 +6,6 @@ var knex          = require('../../server/models/base').knex,
     fs            = require('fs-extra'),
     path          = require('path'),
     migration     = require("../../server/data/migration/"),
-    Settings      = require('../../server/models/settings').Settings,
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
     fork          = require('./fork');
@@ -33,7 +32,6 @@ function insertMorePosts(max) {
     var lang,
         status,
         posts = [],
-        promises = [],
         i, j, k = 0;
 
     max = max || 50;
@@ -88,8 +86,7 @@ function insertMorePostsTags(max) {
 }
 
 function insertDefaultUser() {
-    var user,
-        userRoles;
+    var user;
 
     user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
@@ -173,9 +170,10 @@ function insertAppWithFields() {
 
     return knex('apps').insert(apps, 'id')
         .then(function (results) {
-            var appId = results[0];
+            var appId = results[0],
+                i;
 
-            for (var i = 0; i < app_fields.length; i++) {
+            for (i = 0; i < app_fields.length; i++) {
                 app_fields[i].app_id = appId;
             }
 
@@ -228,6 +226,6 @@ module.exports = {
 
     DataGenerator: DataGenerator,
     API: API,
-    
+
     fork: fork
 };

@@ -2,13 +2,7 @@ var when        = require('when'),
     sequence    = require('when/sequence'),
     _           = require('lodash'),
     utils       = require('../../utils'),
-    Post        = require('../../models/post').Post,
-    Tag         = require('../../models/tag').Tag,
-    Role        = require('../../models/role').Role,
-    Permission  = require('../../models/permission').Permission,
-    Client      = require('../../models/client').Client,
-    Permissions = require('../../models/permission').Permissions,
-    User        = require('../../models/user').User,
+    models      = require('../../models'),
 
     populateFixtures,
     updateFixtures;
@@ -175,7 +169,15 @@ var fixtures = {
 
 populateFixtures = function () {
     var ops = [],
-        relations = [];
+        relations = [],
+
+        Post = models.Post,
+        Tag = models.Tag,
+        Role = models.Role,
+        Permission = models.Permission,
+        Permissions = models.Permissions,
+        Client = models.Client,
+        User = models.User;
 
     _.each(fixtures.posts, function (post) {
         ops.push(function () {return Post.add(post, {user: 1}); });
@@ -288,7 +290,12 @@ populateFixtures = function () {
 updateFixtures = function () {
     var ops = [],
         relations = [],
-        adminUser;
+        adminUser,
+        Role = models.Role,
+        Permission = models.Permission,
+        Permissions = models.Permissions,
+        Client = models.Client,
+        User = models.User;
 
     _.each(fixtures.permissions003, function (permission) {
         ops.push(function () {return Permission.add(permission, {user: 1}); });
