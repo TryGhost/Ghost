@@ -6,7 +6,9 @@ var NotificationComponent = Ember.Component.extend({
 
         self.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
             /* jshint unused: false */
-            self.notifications.removeObject(self.get('message'));
+            if (event.originalEvent.animationName === 'fade-out') {
+                self.notifications.removeObject(self.get('message'));
+            }
         });
     },
 
