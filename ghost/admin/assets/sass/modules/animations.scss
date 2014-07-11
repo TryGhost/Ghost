@@ -43,6 +43,12 @@
     animation: fade-in 0.5s;
 }
 
+@include keyframes(fade-in-snap) {
+    to {
+        opacity: 1;
+    }
+}
+
 /* ==========================================================================
    Fade Out
    TODO: Make the fadeIn keyframe name hyphenated, not camelCase
