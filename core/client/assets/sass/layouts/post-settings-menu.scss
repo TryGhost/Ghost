@@ -104,6 +104,7 @@
             @include position(absolute, 50% 0.8em null null);
             position: absolute;
             margin-top: -(0.85em / 2);
+            pointer-events: none;
         };
 
         select {

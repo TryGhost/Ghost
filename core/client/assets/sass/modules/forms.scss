@@ -403,6 +403,7 @@ input[type='radio'] {
         @include position(absolute, 50% 0.8em null null);
         position: absolute;
         margin-top: -0.5em;
+        pointer-events: none;
     };
 
     select {
