@@ -13,16 +13,24 @@ var SetupController = Ember.ObjectController.extend(ValidationEngine, {
 
     actions: {
         setup: function () {
-            var self = this;
+            var self = this,
+                data = self.getProperties('blogTitle', 'name', 'email', 'password');
 
             self.notifications.closePassive();
 
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
-                    url: self.get('ghostPaths').adminUrl('setup'),
+                    url: self.get('ghostPaths').apiUrl('authentication', 'setup'),
                     type: 'POST',
-                    data: self.getProperties('blogTitle', 'name', 'email', 'password')
+                    data: {
+                        setup: [{
+                            name: data.name,
+                            email: data.email,
+                            password: data.password,
+                            blogTitle: data.blogTitle
+                        }]
+                    }
                 }).then(function () {
                     self.get('session').authenticate('ember-simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),

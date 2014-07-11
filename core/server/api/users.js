@@ -111,37 +111,6 @@ users = {
     },
 
     /**
-     * ### Add
-     * @param {User} object the user to create
-     * @param {{context}} options
-     * @returns {Promise(User}} Newly created user
-     */
-    // TODO: remove and rename invite to add when setup is implemented
-    add: function add(object, options) {
-        options = options || {};
-
-        return canThis(options.context).add.user().then(function () {
-            return utils.checkObject(object, docName).then(function (checkedUserData) {
-                // if the user is created by users.register(), use id: 1 as the creator for now
-                if (options.include) {
-                    options.include = prepareInclude(options.include);
-                }
-
-                if (options.context.internal) {
-                    options.context.user = 1;
-                }
-
-                return dataProvider.User.add(checkedUserData.users[0], options);
-            }).then(function (result) {
-                if (result) {
-                    return { users: [result.toJSON()]};
-                }
-            });
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to add a users.'));
-        });
-    },
-    /**
      * ### Destroy
      * @param {{id, context}} options
      * @returns {Promise(User)}
@@ -159,11 +128,12 @@ users = {
     },
 
     /**
-     * ### Invite user
+     * ### Add user
+     * The newly added user is invited to join the blog via email.
      * @param {User} object the user to create
      * @returns {Promise(User}} Newly created user
      */
-    invite: function invite(object, options) {
+    add: function add(object, options) {
         var newUser,
             user;
 
@@ -237,31 +207,6 @@ users = {
     },
 
     /**
-     * ### Register
-     * Allow to register a user using the API without beeing authenticated in. Needed to set up the first user.
-     * @param {User} object the user to create
-     * @returns {Promise(User}} Newly created user
-     */
-    // TODO: update when setup is moved
-    register: function register(object) {
-        var newUser;
-
-        return utils.checkObject(object, docName).then(function (checkedUserData) {
-            newUser = checkedUserData.users[0];
-            return dataProvider.User.findAll();
-        }).then(function (users) {
-            if (users.length > 0) {
-                return dataProvider.User.setup(newUser, {id: 1});
-            } else {
-                // TODO: needs to pass owner role when role endpoint is finished!
-                return dataProvider.User.add(newUser);
-            }
-        }).then(function (user) {
-            return { users: [user.toJSON()]};
-        });
-    },
-
-    /**
      * ### Change Password
      * @param {password} object
      * @param {{context}} options
@@ -284,45 +229,6 @@ users = {
         });
     },
 
-    // TODO: remove when old admin is removed, functionality lives now in api/authentication
-    generateResetToken: function generateResetToken(email) {
-        var expires = Date.now() + ONE_DAY;
-        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
-            var dbHash = response.settings[0].value;
-            return dataProvider.User.generateResetToken(email, expires, dbHash);
-        });
-    },
-
-    // TODO: remove when old admin is removed -> not needed anymore
-    validateToken: function validateToken(token) {
-        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
-            var dbHash = response.settings[0].value;
-            return dataProvider.User.validateToken(token, dbHash);
-        });
-    },
-
-    // TODO: remove when old admin is removed, functionality lives now in api/authentication
-    resetPassword: function resetPassword(token, newPassword, ne2Password) {
-        return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
-            var dbHash = response.settings[0].value;
-            return dataProvider.User.resetPassword(token, newPassword, ne2Password, dbHash);
-        });
-    },
-
-    // TODO: move to authentication endpoint with issue #3136
-    doesUserExist: function doesUserExist() {
-        return dataProvider.User.findAll().then(function (users) {
-            if (users.length > 0) {
-                var activeUsers = _.remove(users.toJSON(), function (user) {
-                    return user.status !== 'inactive';
-                });
-                if (activeUsers.length > 0) {
-                    return true;
-                }
-            }
-            return false;
-        });
-    }
 };
 
 module.exports = users;
