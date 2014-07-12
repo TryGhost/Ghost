@@ -23,7 +23,7 @@
     display: block;
     color: $darkgrey;
     font-size: 1em;
-    font-weight: normal;
+    font-weight: bold;
 }
 
 
@@ -50,13 +50,12 @@ form {
     width: 100%;
     max-width: 500px;
     p {
-        margin: 2px 0 0 0;
+        margin: 4px 0 0 0;
         color: #B3B2A8;
     }
 
-    label + input,
-    label + .gh-select {
-        margin-top: 1px;
+    label {
+        margin-bottom: 4px;
     }
 
     @media (max-width: 550px) {
@@ -93,11 +92,6 @@ form {
 // Wrapper for input[type="checkbox"] elements
 .form-group.for-checkbox {
     @include clearfix;
-
-    label:first-child {
-        display: block;
-        padding-bottom: 4px;
-    }
 
     .checkbox,
     p {
