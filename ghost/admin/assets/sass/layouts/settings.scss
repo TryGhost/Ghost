@@ -339,6 +339,16 @@
                 width: 26px;
                 border-right: rgba(0,0,0,0.07) 1px solid;
             };
+            @media (max-width: 650px) {
+                height: 30px;
+                min-height: 30px;
+                padding: 7px 10px 7px 40px;
+                &:before {
+                    padding-top: 7px;
+                    left: 6px;
+                    width: 24px;
+                }
+            }
         }
     } // > header
 
