@@ -219,7 +219,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 bower: {
-                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower install'),
+                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower --allow-root install'),
                     options: {
                         stdout: true
                     }
