@@ -322,6 +322,7 @@
         .button-add {
             position: relative;
             padding-left: 50px;
+            border: rgba(0,0,0,0.07) 1px solid;
             @include icon($i-add, 1.4em, rgba(255,255,255,0.6)) {
                 position: absolute;
                 top: 0;
@@ -329,7 +330,7 @@
                 left: 9px;
                 bottom: 0;
                 width: 26px;
-                border-right: darken($green, 8%) 1px solid;
+                border-right: rgba(0,0,0,0.07) 1px solid;
             };
         }
     } // > header
