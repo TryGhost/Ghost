@@ -26,7 +26,8 @@ nav {
             color: $brown;
             border-bottom: $lightbrown 1px solid;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: $darkgrey;
                 background: $lightbrown;
                 text-decoration: none;

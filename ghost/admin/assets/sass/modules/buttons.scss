@@ -36,7 +36,8 @@
     @include transition(background 0.3s ease, border-color 0.3s ease);
 
     &:hover,
-    &.hover {
+    &.hover,
+    &:focus {
         will-change: border-color, background;
         border-color: transparent;
         background: #f8f8f8;
@@ -116,7 +117,8 @@ input[type="button"] {
     font-weight: normal;
     background: #eee;
     box-shadow: none;
-    &:hover {
+    &:hover,
+    &:focus {
         border-color: rgba(0,0,0,0.1);
     }
 }
@@ -128,7 +130,8 @@ input[type="button"] {
     background: #A1ADB3;
     box-shadow: none;
     border-color: #A1ADB3;
-    &:hover {
+    &:hover,
+    &:focus {
         border-color: darken(#A1ADB3, 10%);
         background: darken(#A1ADB3, 10%);
     }
@@ -141,7 +144,8 @@ input[type="submit"] {
     @extend %btn;
     background: $blue;
     box-shadow: none;
-    &:hover {
+    &:hover,
+    &:focus {
         background: darken($blue, 10%);
     }
 }
@@ -152,7 +156,8 @@ button[type="submit"].button-add,
 input[type="submit"].button-add {
     @extend %btn;
     background: $green;
-    &:hover {
+    &:hover,
+    &:focus {
         background: darken($green, 8%);
     }
 }
@@ -164,7 +169,8 @@ input[type="reset"] {
     @extend %btn;
     background: $red;
     box-shadow: none;
-    &:hover {
+    &:hover,
+    &:focus {
         background: darken($red, 10%);
     }
 }
@@ -173,7 +179,8 @@ input[type="reset"] {
 .button-alt {
     @extend %btn;
     background: lighten($darkgrey, 10%);
-    &:hover {
+    &:hover,
+    &:focus {
         background: $darkgrey;
     }
     &[class*='icon-']:before {
@@ -185,7 +192,8 @@ input[type="reset"] {
 .button-info {
     @extend %btn;
     background: #A1ADB3;
-    &:hover {
+    &:hover,
+    &:focus {
         background: lighten(#A1ADB3, 10%);
     }
 }
@@ -196,7 +204,8 @@ input[type="reset"] {
     color: $blue;
     background: transparent;
     border: none;
-    &:hover {
+    &:hover,
+    &:focus {
         background: transparent;
         text-decoration: underline;
     }
@@ -231,7 +240,8 @@ input[type="reset"] {
         @include transition(border-color 0.3s ease);
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
         color: #fff;
         background: darken($blue, 10%);
         border-color: darken($blue, 10%);
@@ -304,7 +314,8 @@ input[type="reset"] {
         }
 
         // Spin the arrow on hover and while menu is open
-        &:hover {
+        &:hover,
+        &:focus {
             will-change: box-shadow, background;
             box-shadow: none;
             background: #f8f8f8;
@@ -315,7 +326,8 @@ input[type="reset"] {
         }
 
         // If it has a class of "up" spin it an extra 180degress to point up
-        &.up:hover {
+        &.up:hover,
+        &.up:focus {
             @include icon($i-chevron-down) {
                 margin-top:-4px;
                 @include transform(rotate(540deg));
@@ -332,7 +344,8 @@ input[type="reset"] {
     @extend %splitbtn;
     .options {
         color:#777;
-        &:hover {
+        &:hover,
+        &:focus {
             box-shadow:
                 rgba(0,0,0,0.07) 0 1px 0 inset,
                 rgba(0,0,0,0.07) -1px 0 0 inset,
@@ -346,7 +359,9 @@ input[type="reset"] {
     @extend %splitbtn;
     .options {
         background: darken($blue, 5%);
-        &:hover, &.active {
+        &:hover,
+        &.active,
+        &:focus {
             background: darken($blue, 10%);
         }
     }
@@ -357,7 +372,8 @@ input[type="reset"] {
     @extend %splitbtn;
     .options {
         background: darken($green, 6%);
-        &:hover {
+        &:hover,
+        &:focus {
             background: darken($green, 8%);
         }
     }
@@ -368,7 +384,8 @@ input[type="reset"] {
     @extend %splitbtn;
     .options {
         background: darken($red, 6%);
-        &:hover {
+        &:hover,
+        &:focus {
             background: darken($red, 10%);
         }
     }
@@ -379,7 +396,8 @@ input[type="reset"] {
     @extend %splitbtn;
     .options {
         background: lighten($darkgrey, 4%);
-        &:hover {
+        &:hover,
+        &:focus {
             background: $darkgrey;
         }
     }

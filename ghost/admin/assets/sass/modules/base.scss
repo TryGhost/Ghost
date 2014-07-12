@@ -8,6 +8,7 @@
  * Box Sizing
  * Text Selection
  * Colour Classes
+ * Focus Styles
  */
 
 /* ==========================================================================
@@ -57,4 +58,16 @@
     .#{nth($colour, 1)} {
         color: nth($colour, 2);
     }
+}
+
+
+/* ==========================================================================
+   Focus Styles
+   ---
+   These are applied globally, to everything except images
+   ========================================================================== */
+
+*:not(img):focus {
+    outline: 0;
+    outline-width: 0;
 }

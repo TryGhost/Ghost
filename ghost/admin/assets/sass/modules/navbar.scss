@@ -24,12 +24,14 @@
     color: lighten($grey, 10%);
     @include box-sizing(border-box);
 
-    &:hover {
+    &:hover,
+    &:focus {
         text-decoration: none;
     }
 }
 
-.ghost-logo:hover {
+.ghost-logo:hover,
+.ghost-logo:focus {
     color: $lightgrey;
     background: darken($darkgrey, 2%);
 }
@@ -75,6 +77,7 @@
             }
 
             a:hover,
+            a:focus,
             &.active a {
                 color: $lightgrey;
                 text-decoration: none;
@@ -174,7 +177,8 @@
             a {
                 color: $lightgrey;
 
-                &:hover {
+                &:hover,
+                &:focus {
                     background: darken($darkgrey, 10%);
                     @include transition(none);
                     box-shadow: none;
@@ -286,6 +290,7 @@
             border-bottom: $grey 1px solid;
 
             a:hover,
+            a:focus,
             &.active a {
                 box-shadow: none;
             }
@@ -329,7 +334,8 @@
                 @include transition(left 0.3s ease 0s);
             }
             > a {
-                &:hover {
+                &:hover,
+                &:focus {
                     background: inherit;
                 }
                 &.active {
@@ -354,7 +360,8 @@
                 a {
                     background: darken($grey, 3%);
 
-                    &:hover {
+                    &:hover,
+                    &:focus {
                         background: darken($grey, 8%);
                     }
                     &:before {
