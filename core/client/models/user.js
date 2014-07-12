@@ -23,6 +23,7 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     created_by: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
+    roles: DS.attr(),
 
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');

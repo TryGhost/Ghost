@@ -132,6 +132,125 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
+     * #### findPage
+     * Find results by page - returns an object containing the
+     * information about the request (page, limit), along with the
+     * info needed for pagination (pages, total).
+     *
+     * **response:**
+     *
+     *     {
+     *         users: [
+     *         {...}, {...}, {...}
+     *     ],
+     *     page: __,
+     *     limit: __,
+     *     pages: __,
+     *     total: __
+     *     }
+     *
+     * @params {Object} options
+     */
+    findPage: function (options) {
+        options = options || {};
+
+        var userCollection = Users.forge(),
+            userQuery;
+
+        if (options.limit) {
+            options.limit = parseInt(options.limit) || 15;
+        }
+
+        options = this.filterOptions(options, 'findPage');
+
+        // Set default settings for options
+        _.defaults(options, {
+            page: 1, // pagination page
+            limit: 15,
+            //staticPages: false, // include static pages
+            //status: 'published',
+            where: {'status': 'active'}
+        });
+
+        // If there are where conditionals specified, add those
+        // to the query.
+        if (options.where) {
+            userCollection.query('where', options.where);
+        }
+
+        // Add related objects
+        options.withRelated = _.union([ 'roles' ], options.include);
+
+        userQuery = userCollection
+            .query('limit', options.limit)
+            .query('offset', options.limit * (options.page - 1))
+            .query('orderBy', 'last_login', 'DESC')
+            .query('orderBy', 'name', 'ASC')
+            .query('orderBy', 'created_at', 'DESC')
+            .fetch(_.omit(options, 'page', 'limit'));
+
+        return when(userQuery)
+
+            // Fetch pagination information
+            .then(function () {
+                var qb,
+                    tableName = _.result(userCollection, 'tableName'),
+                    idAttribute = _.result(userCollection, 'idAttribute');
+
+                // After we're done, we need to figure out what
+                // the limits are for the pagination values.
+                qb = ghostBookshelf.knex(tableName);
+
+                if (options.where) {
+                    qb.where(options.where);
+                }
+
+                return qb.count(tableName + '.' + idAttribute + ' as aggregate');
+            })
+
+            // Format response of data
+            .then(function (resp) {
+                var totalUsers = parseInt(resp[0].aggregate, 10),
+                    calcPages = Math.ceil(totalUsers / options.limit),
+                    pagination = {},
+                    meta = {},
+                    data = {};
+
+                pagination.page = parseInt(options.page, 10);
+                pagination.limit = options.limit;
+                pagination.pages = calcPages === 0 ? 1 : calcPages;
+                pagination.total = totalUsers;
+                pagination.next = null;
+                pagination.prev = null;
+
+                // Pass include to each model so that toJSON works correctly
+                if (options.include) {
+                    _.each(userCollection.models, function (item) {
+                        item.include = options.include;
+                    });
+                }
+
+                data.users = userCollection.toJSON();
+                data.meta = meta;
+                meta.pagination = pagination;
+
+                if (pagination.pages > 1) {
+                    if (pagination.page === 1) {
+                        pagination.next = pagination.page + 1;
+                    } else if (pagination.page === pagination.pages) {
+                        pagination.prev = pagination.page - 1;
+                    } else {
+                        pagination.next = pagination.page + 1;
+                        pagination.prev = pagination.page - 1;
+                    }
+                }
+
+                return data;
+            })
+            .catch(errors.logAndThrowError);
+    },
+
+    /**
      * ### Find One
      * @extends ghostBookshelf.Model.findOne to include roles
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
