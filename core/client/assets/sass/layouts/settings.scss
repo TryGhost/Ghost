@@ -94,7 +94,9 @@
     bottom: 0;
     right: -1px;
     overflow: auto;
-    @media (max-width: 800px) { right: 0; };
+    @media (max-width: 800px) {
+        right: 0;
+    };
 
     // Create placeholder the same height as the floating header
     // to push content down by the same amount
@@ -122,7 +124,10 @@
             border-bottom: none;
             @media (max-width: 1000px) { padding-left: 15px; }
             @media (max-width: 800px) {
-                @include icon-after($i-chevron) {float: right;margin-top: 5px;};
+                @include icon-after($i-chevron) {
+                    float: right;
+                    margin-top: 5px;
+                };
             }
         }
 
@@ -148,7 +153,9 @@
                     color: $darkgrey;
                     font-weight: bold;
                     background: #fff;
-
+                    &:focus {
+                        background: $lightbrown;
+                    }
                 }
 
             }

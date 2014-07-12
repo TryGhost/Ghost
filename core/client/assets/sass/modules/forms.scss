@@ -171,6 +171,10 @@ textarea,
 
     @include transition(border-color, 0.15s linear);
 
+    &:focus {
+        border-color: $brown;
+    }
+
 }
 
 textarea {
@@ -179,13 +183,6 @@ textarea {
     min-width: 250px;
     height: auto;
     min-height: 6.5em;
-}
-
-#{$all-text-inputs-focus},
-textarea:focus {
-    border-color: $brown;
-    outline: 0;
-    outline-width: 0;
 }
 
 // 'vanilla' CSS hack to specifically target Firefox
