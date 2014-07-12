@@ -556,7 +556,7 @@ body.zen {
         pointer-events: none;
 
         @media (max-width: 400px) {
-            right: 165px;
+            right: 200px;
         }
     }
 
@@ -578,8 +578,7 @@ body.zen {
 
         @media (max-width: 400px) {
             display: block;
-            width: 115px;
-            max-width: inherit;
+            max-width: calc(100% - 230px);
             padding-bottom: 0;
         }
     }
@@ -603,12 +602,23 @@ body.zen {
 
     input[type="text"].tag-input {
         display: inline-block;
-        padding: 0;
         vertical-align: top;
         color: $lightgrey;
         font-weight: 300;
         background: transparent;
         border: none;
+
+        width: 150px;
+        margin-top: -8px;
+        line-height: 1;
+        padding: 9px;
+
+        @media (max-width: 400px) {
+            position: absolute;
+            top: 11px;
+            right: 170px;
+            width: 20px;
+        }
 
         &:focus {
             outline: none;
