@@ -227,9 +227,6 @@
         max-height: 400px;
     }
 
-    display: none;
-    &.active {display: block;}
-
     // TODO: Header could really be more specific (class)
     > header {
         position: relative;
