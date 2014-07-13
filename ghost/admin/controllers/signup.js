@@ -21,7 +21,7 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
-                    url: self.get('ghostPaths').apiUrl('authentication', 'invitation'),
+                    url: self.get('ghostPaths.url').api('authentication', 'invitation'),
                     type: 'POST',
                     dataType: 'json',
                     data: {

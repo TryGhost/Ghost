@@ -9,25 +9,37 @@ var makeRoute = function (root, args) {
     return route;
 };
 
+
 function ghostPaths() {
     var path = window.location.pathname,
-        subdir = path.substr(0, path.search('/ghost/'));
+        subdir = path.substr(0, path.search('/ghost/')),
+        adminRoot = subdir + '/ghost',
+        apiRoot = subdir + '/ghost/api/v0.1';
+
+    function assetUrl(src) {
+        return subdir + src;
+    }
 
     return {
         subdir: subdir,
         blogRoot: subdir + '/',
-        adminRoot: subdir + '/ghost',
-        apiRoot: subdir + '/ghost/api/v0.1',
-        userImage: subdir + '/assets/img/user-image.png',
-        errorImageSrc: subdir + '/ghost/img/404-ghost@2x.png',
-        errorImageSrcSet: subdir + '/ghost/img/404-ghost.png 1x, ' + subdir + '/ghost/img/404-ghost@2x.png 2x',
+        adminRoot: adminRoot,
+        apiRoot: apiRoot,
+        userImage: assetUrl('/assets/img/user-image.png'),
+        errorImageSrc: assetUrl('/ghost/img/404-ghost@2x.png'),
+        errorImageSrcSet: assetUrl('/ghost/img/404-ghost.png') + ' 1x, ' +
+            assetUrl('/ghost/img/404-ghost@2x.png') + ' 2x',
 
-        adminUrl: function () {
-            return makeRoute(this.adminRoot, arguments);
-        },
+        url: {
+            admin: function () {
+                return makeRoute(adminRoot, arguments);
+            },
 
-        apiUrl: function () {
-            return makeRoute(this.apiRoot, arguments);
+            api: function () {
+                return makeRoute(apiRoot, arguments);
+            },
+
+            asset: assetUrl
         }
     };
 }
