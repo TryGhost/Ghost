@@ -1,12 +1,10 @@
-import mobileUtils from 'ghost/utils/mobile-utils';
+import {responsiveAction} from 'ghost/utils/mobile';
 
 var PostsView = Ember.View.extend({
     classNames: ['content-view-container'],
     tagName: 'section',
 
     mobileInteractions: function () {
-        var responsiveAction = mobileUtils.responsiveAction;
-
         Ember.run.scheduleOnce('afterRender', this, function () {
             // ### Show content preview when swiping left on content list
             $('.manage').on('click', '.content-list ol li', function (event) {
