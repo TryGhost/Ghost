@@ -36,6 +36,6 @@ Sessions = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    Session: Session,
-    Sessions: Sessions
+    Session: ghostBookshelf.model('Session', Session),
+    Sessions: ghostBookshelf.collection('Sessions', Sessions)
 };
