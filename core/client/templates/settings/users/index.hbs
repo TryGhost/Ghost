@@ -1,13 +1,12 @@
-<header class="fade-in">
-    <button class="button-back">Back</button>
+<header>
+    {{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
     <h2 class="title">Users</h2>
     <section class="page-actions">
         <a class="button-add" href="" {{action "openModal" "invite-new-user" this}} >New&nbsp;User</a>
     </section>
 </header>
 
-<section class="content fade-in settings-users">
-
+<section class="content settings-users">
     {{#if invitedUsers}}
 
         <section class="object-list">
