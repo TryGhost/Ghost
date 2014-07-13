@@ -6,7 +6,6 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     slug: DS.attr('string'),
-    password: DS.attr('string'),
     email: DS.attr('string'),
     image: DS.attr('string'),
     cover: DS.attr('string'),
@@ -24,11 +23,17 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
 
-    saveNewPassword: function (password) {
-        var url = this.get('ghostPaths').adminUrl('changepw');
+    saveNewPassword: function () {
+        var url = this.get('ghostPaths.url').api('users', 'password');
         return ic.ajax.request(url, {
-            type: 'POST',
-            data: password
+            type: 'PUT',
+            data: {
+                password: [{
+                    'oldPassword': this.get('password'),
+                    'newPassword': this.get('newPassword'),
+                    'ne2Password': this.get('ne2Password')
+                }]
+            }
         });
     },
 
@@ -37,26 +42,28 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
 
         userData.email = this.get('email');
 
-        return ic.ajax.request(this.get('ghostPaths').apiUrl('users'), {
+        return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
             type: 'POST',
             data: JSON.stringify({users: [userData]}),
             contentType: 'application/json'
         });
     },
 
-    passwordValidationErrors: function (password) {
+    passwordValidationErrors: function () {
         var validationErrors = [];
 
-        if (!validator.equals(password.newPassword, password.ne2Password)) {
-            validationErrors.push('Your new passwords do not match');
+        if (!validator.equals(this.get('newPassword'), this.get('ne2Password'))) {
+            validationErrors.push({message: 'Your new passwords do not match'});
         }
 
-        if (!validator.isLength(password.newPassword, 8)) {
-            validationErrors.push('Your password is not long enough. It must be at least 8 characters long.');
+        if (!validator.isLength(this.get('newPassword'), 8)) {
+            validationErrors.push({message: 'Your password is not long enough. It must be at least 8 characters long.'});
         }
 
         return validationErrors;
-    }
+    }.property('password', 'newPassword', 'ne2Password'),
+
+    isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]')
 
 });
 

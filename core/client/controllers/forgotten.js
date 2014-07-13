@@ -17,7 +17,7 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
-                    url: self.get('ghostPaths').apiUrl('authentication', 'passwordreset'),
+                    url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
                     type: 'POST',
                     data: {
                         passwordreset: [{

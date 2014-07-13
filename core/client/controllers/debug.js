@@ -2,7 +2,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
 
     exportPath: function () {
-        return this.get('ghostPaths').apiUrl('db') +
+        return this.get('ghostPaths.url').api('db') +
             '?access_token=' + this.get('session.access_token');
     }.property(),
 
@@ -15,7 +15,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
 
             formData.append('importfile', file);
 
-            ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
+            ic.ajax.request(this.get('ghostPaths.url').api('db'), {
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -35,7 +35,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
         exportData: function () {
             var self = this;
 
-            ic.ajax.request(this.get('ghostPaths').apiUrl('db'), {
+            ic.ajax.request(this.get('ghostPaths.url').api('db'), {
                 type: 'GET'
             }).then(function () {
                 self.notifications.showSuccess('Data exported successfully.');
@@ -47,7 +47,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
         sendTestEmail: function () {
             var self = this;
 
-            ic.ajax.request(this.get('ghostPaths').apiUrl('mail', 'test'), {
+            ic.ajax.request(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
                 self.notifications.showSuccess('Check your email for the test message:');

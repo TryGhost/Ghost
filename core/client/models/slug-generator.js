@@ -12,7 +12,7 @@ var SlugGenerator = Ember.Object.extend({
             return Ember.RSVP.resolve('');
         }
 
-        url = this.get('ghostPaths').apiUrl('slugs', 'post', encodeURIComponent(textToSlugify));
+        url = this.get('ghostPaths.url').api('slugs', 'post', encodeURIComponent(textToSlugify));
 
         return ic.ajax.request(url, {
             type: 'GET'
