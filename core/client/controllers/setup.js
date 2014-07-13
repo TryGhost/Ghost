@@ -21,7 +21,7 @@ var SetupController = Ember.ObjectController.extend(ValidationEngine, {
             this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 ajax({
-                    url: self.get('ghostPaths').apiUrl('authentication', 'setup'),
+                    url: self.get('ghostPaths.url').api('authentication', 'setup'),
                     type: 'POST',
                     data: {
                         setup: [{
