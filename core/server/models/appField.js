@@ -1,5 +1,4 @@
 var ghostBookshelf = require('./base'),
-    Post = require('./post').Post,
     AppField,
     AppFields;
 
@@ -7,7 +6,7 @@ AppField = ghostBookshelf.Model.extend({
     tableName: 'app_fields',
 
     post: function () {
-        return this.morphOne(Post, 'relatable');
+        return this.morphOne('Post', 'relatable');
     }
 });
 
@@ -16,6 +15,6 @@ AppFields = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    AppField: AppField,
-    AppFields: AppFields
+    AppField: ghostBookshelf.model('AppField', AppField),
+    AppFields: ghostBookshelf.collection('AppFields', AppFields)
 };
