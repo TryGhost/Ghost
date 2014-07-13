@@ -6,9 +6,7 @@ var _              = require('lodash'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
-    AppField       = require('./appField').AppField,
-    User           = require('./user').User,
-    Tag            = require('./tag').Tag,
+    Tag           = require('./tag').Tag,
     Tags           = require('./tag').Tags,
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
@@ -169,19 +167,19 @@ Post = ghostBookshelf.Model.extend({
 
     // Relations
     author_id: function () {
-        return this.belongsTo(User, 'author_id');
+        return this.belongsTo('User', 'author_id');
     },
 
     created_by: function () {
-        return this.belongsTo(User, 'created_by');
+        return this.belongsTo('User', 'created_by');
     },
 
     updated_by: function () {
-        return this.belongsTo(User, 'updated_by');
+        return this.belongsTo('User', 'updated_by');
     },
 
     published_by: function () {
-        return this.belongsTo(User, 'published_by');
+        return this.belongsTo('User', 'published_by');
     },
 
     tags: function () {
@@ -189,7 +187,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     fields: function () {
-        return this.morphMany(AppField, 'relatable');
+        return this.morphMany('AppField', 'relatable');
     },
 
     toJSON: function (options) {
@@ -536,12 +534,10 @@ Post = ghostBookshelf.Model.extend({
 });
 
 Posts = ghostBookshelf.Collection.extend({
-
     model: Post
-
 });
 
 module.exports = {
-    Post: Post,
-    Posts: Posts
+    Post: ghostBookshelf.model('Post', Post),
+    Posts: ghostBookshelf.collection('Posts', Posts)
 };
