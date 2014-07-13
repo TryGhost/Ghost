@@ -8,7 +8,7 @@
 var generalTabDetector = '.settings-content form#settings-general',
     usersTabDetector = '.settings-content .settings-users';
 
-CasperTest.begin('Settings screen is correct', 17, function suite(test) {
+CasperTest.begin('Settings screen is correct', 16, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
@@ -18,29 +18,28 @@ CasperTest.begin('Settings screen is correct', 17, function suite(test) {
         test.assertExists('.wrapper', 'Settings main view is present');
         test.assertExists('.settings-sidebar', 'Settings sidebar view is present');
         test.assertExists('.settings-menu', 'Settings menu is present');
-        test.assertExists('.settings-menu .general', 'General tab is present');
-        test.assertExists('.settings-menu .users', 'Users tab is present');
-        test.assertNotExists('.settings-menu .apps', 'Apps is present');
+        test.assertExists('.settings-menu .general a', 'General link is present');
+        test.assertExists('.settings-menu .users a', 'Users link is present');
+        test.assertNotExists('.settings-menu .apps a', 'Apps link is present');
         test.assertExists('.wrapper', 'Settings main view is present');
         test.assertExists('.settings-content', 'Settings content view is present');
-        test.assertExists('.settings-menu .general.active', 'General tab is marked active');
         test.assertExists(generalTabDetector, 'Form is present');
-        test.assertSelectorHasText('.settings-content.active h2.title', 'General', 'Title is general');
+        test.assertSelectorHasText('.settings-content h2.title', 'General', 'Title is "General"');
     });
 
     casper.then(function testSwitchingTabs() {
         casper.thenClick('.settings-menu .users a');
         casper.waitForSelector(usersTabDetector, function then () {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu .users.active', 'User tab is active');
-            test.assertDoesntExist('.settings-menu .general.active', 'General tab is not active');
+            test.assertExists('.settings-menu .users.active a', 'Users link is active');
+            test.assertDoesntExist('.settings-menu .general.active a', 'General link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
 
         casper.thenClick('.settings-menu .general a');
         casper.waitForSelector(generalTabDetector, function then () {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu .general.active', 'General tab is active');
-            test.assertDoesntExist('.settings-menu .users.active', 'User tab is not active');
+            test.assertExists('.settings-menu .general.active a', 'General link is active');
+            test.assertDoesntExist('.settings-menu .users.active a', 'User link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
 });
