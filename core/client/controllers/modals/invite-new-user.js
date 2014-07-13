@@ -24,18 +24,22 @@ var InviteNewUserController = Ember.Controller.extend({
                 self = this,
                 newUser;
 
+            this.notifications.closePassive();
+
             newUser = this.store.createRecord('user', {
-                'email': email,
-                'role': role_id
+                email: email,
+                role: role_id,
+                status: 'invited'
             });
 
             newUser.save().then(function () {
                 var notificationText = 'Invitation sent! (' + email + ')';
 
                 self.notifications.showSuccess(notificationText, false);
-            }).fail(function (error) {
+            }).catch(function (errors) {
+                newUser.deleteRecord();
                 self.notifications.closePassive();
-                self.notifications.showAPIError(error);
+                self.notifications.showErrors(errors);
             });
 
             this.set('email', null);
