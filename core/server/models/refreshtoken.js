@@ -1,6 +1,4 @@
 var ghostBookshelf = require('./base'),
-    User           = require('./user'),
-    Client         = require('./client'),
 
     Refreshtoken,
     Refreshtokens;
@@ -10,11 +8,11 @@ Refreshtoken = ghostBookshelf.Model.extend({
     tableName: 'refreshtokens',
 
     user: function () {
-        return this.belongsTo(User);
+        return this.belongsTo('User');
     },
 
     client: function () {
-        return this.belongsTo(Client);
+        return this.belongsTo('Client');
     },
 
     // override for base function since we don't have
@@ -48,6 +46,6 @@ Refreshtokens = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    Refreshtoken: Refreshtoken,
-    Refreshtokens: Refreshtokens
+    Refreshtoken: ghostBookshelf.model('Refreshtoken', Refreshtoken),
+    Refreshtokens: ghostBookshelf.collection('Refreshtokens', Refreshtokens)
 };
