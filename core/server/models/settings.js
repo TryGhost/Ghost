@@ -177,5 +177,5 @@ Settings = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    Settings: Settings
+    Settings: ghostBookshelf.model('Settings', Settings)
 };

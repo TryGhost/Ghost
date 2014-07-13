@@ -1,7 +1,4 @@
 var ghostBookshelf = require('./base'),
-    User           = require('./user').User,
-    Role           = require('./role').Role,
-    App            = require('./app').App,
 
     Permission,
     Permissions;
@@ -11,15 +8,15 @@ Permission = ghostBookshelf.Model.extend({
     tableName: 'permissions',
 
     roles: function () {
-        return this.belongsToMany(Role);
+        return this.belongsToMany('Role');
     },
 
     users: function () {
-        return this.belongsToMany(User);
+        return this.belongsToMany('User');
     },
 
     apps: function () {
-        return this.belongsToMany(App);
+        return this.belongsToMany('App');
     }
 }, {
     /**
@@ -41,7 +38,7 @@ Permission = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
+    }
 });
 
 Permissions = ghostBookshelf.Collection.extend({
@@ -49,6 +46,6 @@ Permissions = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    Permission: Permission,
-    Permissions: Permissions
+    Permission: ghostBookshelf.model('Permission', Permission),
+    Permissions: ghostBookshelf.collection('Permissions', Permissions)
 };
