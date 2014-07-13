@@ -3,10 +3,7 @@ var _              = require('lodash'),
     errors         = require('../errors'),
     nodefn         = require('when/node'),
     bcrypt         = require('bcryptjs'),
-    Posts          = require('./post').Posts,
     ghostBookshelf = require('./base'),
-    Role           = require('./role').Role,
-    Permission     = require('./permission').Permission,
     http           = require('http'),
     crypto         = require('crypto'),
     validator      = require('validator'),
@@ -70,15 +67,15 @@ User = ghostBookshelf.Model.extend({
     },
 
     posts: function () {
-        return this.hasMany(Posts, 'created_by');
+        return this.hasMany('Posts', 'created_by');
     },
 
     roles: function () {
-        return this.belongsToMany(Role);
+        return this.belongsToMany('Role');
     },
 
     permissions: function () {
-        return this.belongsToMany(Permission);
+        return this.belongsToMany('Permission');
     }
 
 }, {
@@ -482,6 +479,6 @@ Users = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    User: User,
-    Users: Users
+    User: ghostBookshelf.model('User', User),
+    Users: ghostBookshelf.collection('Users', Users)
 };

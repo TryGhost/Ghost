@@ -1,6 +1,4 @@
 var ghostBookshelf = require('./base'),
-    User           = require('./user'),
-    Client         = require('./client'),
 
     Accesstoken,
     Accesstokens;
@@ -10,11 +8,11 @@ Accesstoken = ghostBookshelf.Model.extend({
     tableName: 'accesstokens',
 
     user: function () {
-        return this.belongsTo(User);
+        return this.belongsTo('User');
     },
 
     client: function () {
-        return this.belongsTo(Client);
+        return this.belongsTo('Client');
     },
 
     // override for base function since we don't have
@@ -48,6 +46,6 @@ Accesstokens = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    Accesstoken: Accesstoken,
-    Accesstokens: Accesstokens
+    Accesstoken: ghostBookshelf.model('Accesstoken', Accesstoken),
+    Accesstokens: ghostBookshelf.collection('Accesstokens', Accesstokens)
 };

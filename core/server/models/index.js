@@ -1,7 +1,8 @@
-var _          = require('lodash'),
-    when   = require('when');
+var _      = require('lodash'),
+    when   = require('when'),
+    models;
 
-module.exports = {
+models = {
     Post: require('./post').Post,
     User: require('./user').User,
     Role: require('./role').Role,
@@ -39,3 +40,5 @@ module.exports = {
         });
     }
 };
+
+module.exports = models;

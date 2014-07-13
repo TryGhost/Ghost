@@ -1,5 +1,4 @@
 var ghostBookshelf = require('./base'),
-    App = require('./app'),
     AppSetting,
     AppSettings;
 
@@ -7,7 +6,7 @@ AppSetting = ghostBookshelf.Model.extend({
     tableName: 'app_settings',
 
     app: function () {
-        return this.belongsTo(App);
+        return this.belongsTo('App');
     }
 });
 
@@ -16,6 +15,6 @@ AppSettings = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
-    AppSetting: AppSetting,
-    AppSettings: AppSettings
+    AppSetting: ghostBookshelf.model('AppSetting', AppSetting),
+    AppSettings: ghostBookshelf.collection('AppSettings', AppSettings)
 };
