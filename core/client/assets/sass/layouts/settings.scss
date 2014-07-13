@@ -139,7 +139,7 @@
         }
 
         &.active {
-            @media (min-width: 1001px) {
+            @media (min-width: 801px) {
                 // only apply active styles on larger devices
 
                 margin-right: 0;
