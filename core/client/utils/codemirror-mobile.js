@@ -1,5 +1,4 @@
-/*global CodeMirror, device*/
-import mobileUtils from 'ghost/utils/mobile-utils';
+/*global CodeMirror, device, FastClick*/
 import createTouchEditor from 'ghost/assets/lib/touch-editor';
 
 var setupMobileCodeMirror,
@@ -36,7 +35,10 @@ init = function init() {
         });
 
         Ember.touchEditor = true;
-        mobileUtils.initFastClick();
+        //initialize FastClick to remove touch delays
+        Ember.run.scheduleOnce('afterRender', null, function () {
+            FastClick.attach(document.body);
+        });
         TouchEditor = createTouchEditor();
         setupMobileCodeMirror();
     }

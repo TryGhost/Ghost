@@ -1,4 +1,4 @@
-import {responsiveAction} from 'ghost/utils/mobile-utils';
+import {responsiveAction} from 'ghost/utils/mobile';
 
 var ApplicationView = Ember.View.extend({
 
