@@ -4,7 +4,7 @@ var _          = require('lodash'),
     config     = require('../../config'),
     utils      = require('../utils'),
 
-    excludedTables = ['sessions'],
+    excludedTables = [],
     exporter;
 
 exporter = function () {

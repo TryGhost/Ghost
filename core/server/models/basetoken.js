@@ -1,11 +1,16 @@
 var ghostBookshelf = require('./base'),
 
-    Session,
-    Sessions;
+    Basetoken;
 
-Session = ghostBookshelf.Model.extend({
+Basetoken = ghostBookshelf.Model.extend({
 
-    tableName: 'sessions',
+    user: function () {
+        return this.belongsTo('User');
+    },
+
+    client: function () {
+        return this.belongsTo('Client');
+    },
 
     // override for base function since we don't have
     // a created_by field for sessions
@@ -22,20 +27,15 @@ Session = ghostBookshelf.Model.extend({
     }
 
 }, {
-    destroyAll:  function (options) {
+    destroyAllExpired:  function (options) {
         options = this.filterOptions(options, 'destroyAll');
-        return ghostBookshelf.Collection.forge([], {model: this}).fetch()
+        return ghostBookshelf.Collection.forge([], {model: this})
+            .query('where', 'expires', '<', Date.now())
+            .fetch()
             .then(function (collection) {
                 collection.invokeThen('destroy', options);
             });
     }
 });
 
-Sessions = ghostBookshelf.Collection.extend({
-    model: Session
-});
-
-module.exports = {
-    Session: ghostBookshelf.model('Session', Session),
-    Sessions: ghostBookshelf.collection('Sessions', Sessions)
-};
+module.exports = Basetoken;

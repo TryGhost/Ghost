@@ -1,3 +1,6 @@
+var utils,
+    getRandomInt;
+
 /**
  * Return a random int, used by `utils.uid()`
  *
@@ -6,11 +9,11 @@
  * @return {Number}
  * @api private
  */
-function getRandomInt(min, max) {
+getRandomInt = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
-var utils = {
+utils = {
     /**
      * Return a unique identifier with the given `len`.
      *
