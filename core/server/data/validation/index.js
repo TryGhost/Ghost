@@ -23,6 +23,10 @@ validator.extend('notContains', function (str, badString) {
     return !_.contains(str, badString);
 });
 
+validator.extend('isEmptyOrURL', function (str) {
+    return (_.isEmpty(str) || validator.isURL(str, { protocols: ['http', 'https'], require_protocol: true }));
+});
+
 // Validation validation against schema attributes
 // values are checked against the validation objects
 // form schema.js
@@ -119,7 +123,7 @@ validateActiveTheme = function (themeName) {
 // Each validation's key is a method name and its value is an array of options
 //
 // eg:
-//      validations: { isUrl: true, isLength: [20, 40] }
+//      validations: { isURL: true, isLength: [20, 40] }
 //
 // will validate that a setting's length is a URL between 20 and 40 chars.
 //

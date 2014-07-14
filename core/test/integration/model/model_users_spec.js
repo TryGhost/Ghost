@@ -215,10 +215,10 @@ describe('User Model', function run() {
                 user.id.should.equal(firstUser);
                 should.equal(user.website, null);
 
-                return UserModel.edit({website: 'some.newurl.com'}, {id: firstUser});
+                return UserModel.edit({website: 'http://some.newurl.com'}, {id: firstUser});
             }).then(function (edited) {
                 should.exist(edited);
-                edited.attributes.website.should.equal('some.newurl.com');
+                edited.attributes.website.should.equal('http://some.newurl.com');
 
                 done();
 

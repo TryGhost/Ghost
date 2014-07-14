@@ -31,7 +31,7 @@ var db = {
             image: {type: 'text', maxlength: 2000, nullable: true},
             cover: {type: 'text', maxlength: 2000, nullable: true},
             bio: {type: 'string', maxlength: 200, nullable: true},
-            website: {type: 'text', maxlength: 2000, nullable: true, validations: {'isURL': true}},
+            website: {type: 'text', maxlength: 2000, nullable: true, validations: {'isEmptyOrURL': true}},
             location: {type: 'text', maxlength: 65535, nullable: true},
             accessibility: {type: 'text', maxlength: 65535, nullable: true},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'active'},

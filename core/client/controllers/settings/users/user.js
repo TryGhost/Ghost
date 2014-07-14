@@ -33,11 +33,11 @@ var SettingsUserController = Ember.ObjectController.extend({
     }.property('user.image'),
 
     last_login: function () {
-        return moment(this.get('user.last_login')).fromNow();
+        return this.get('user.last_login').fromNow();
     }.property('user.last_login'),
 
     created_at: function () {
-        return moment(this.get('user.created_at')).fromNow();
+        return this.get('user.created_at').fromNow();
     }.property('user.created_at'),
 
     actions: {
@@ -70,19 +70,13 @@ var SettingsUserController = Ember.ObjectController.extend({
             var user = this.get('user'),
                 self = this;
 
-            self.notifications.closePassive();
+            user.save({ format: false }).then(function (model) {
+                self.notifications.closePassive();
+                self.notifications.showSuccess('Settings successfully saved.');
 
-            user.validate({format: false}).then(function () {
-                user.save().then(function (model) {
-                    self.notifications.closePassive();
-                    self.notifications.showSuccess('Settings successfully saved.');
-
-                    return model;
-                }).catch(function (errors) {
-                    self.notifications.closePassive();
-                    self.notifications.showErrors(errors);
-                });
-            }, function (errors) {
+                return model;
+            }).catch(function (errors) {
+                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
         },
