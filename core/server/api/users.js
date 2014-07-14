@@ -161,7 +161,7 @@ users = {
                     return dataProvider.User.add(newUser, options);
                 } else {
                     // only invitations for already invited users are resent
-                    if (foundUser.toJSON().status === 'invited') {
+                    if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
                         return foundUser;
                     } else {
                         return when.reject(new errors.BadRequestError('User is already registered.'));
@@ -192,12 +192,21 @@ users = {
                             options: {}
                         }]
                     };
-                return mail.send(payload);
+                return mail.send(payload).then(function () {
+                    // If status was invited-pending and sending the invitation succeeded, set status to invited.
+                    if (user.status === 'invited-pending') {
+                        return dataProvider.User.edit({status: 'invited'}, {id: user.id});
+                    }
+                });
             }).then(function () {
                 return when.resolve({users: [user]});
             }).otherwise(function (error) {
                 if (error && error.type === 'EmailError') {
                     error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
+                    // If sending the invitation failed, set status to invited-pending
+                    return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function () {
+                        return when.reject(error);
+                    });
                 }
                 return when.reject(error);
             });

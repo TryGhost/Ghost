@@ -198,8 +198,6 @@ authentication = {
         }).then(function () {
             return when.resolve({ users: [setupUser]});
         }).otherwise(function (error) {
-            console.log('error');
-            console.log(error);
             return when.reject(new errors.UnauthorizedError(error.message));
         });
     }
