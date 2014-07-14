@@ -250,24 +250,24 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
     });
 
     casper.then(function () {
-        test.assertExists('#publish-bar a.post-settings', 'icon toggle should exist');
+        test.assertExists('#publish-bar button.post-settings', 'icon toggle should exist');
         test.assertNotVisible('#publish-bar .post-settings-menu', 'popup menu should not be visible at startup');
         test.assertExists('.post-settings-menu input#url', 'url field exists');
         test.assertExists('.post-settings-menu input.post-setting-date', 'publication date field exists');
         test.assertExists('.post-settings-menu input.post-setting-static-page', 'static page checkbox field exists');
-        test.assertExists('.post-settings-menu a.delete', 'delete post button exists');
+        test.assertExists('.post-settings-menu button.delete', 'delete post button exists');
     });
 
-    casper.thenClick('#publish-bar a.post-settings');
+    casper.thenClick('#publish-bar button.post-settings');
 
     casper.waitUntilVisible('#publish-bar .post-settings-menu', function onSuccess() {
         test.assert(true, 'popup menu should be visible after clicking post-settings icon');
         test.assertNotVisible(
-            '.post-settings-menu a.delete', 'delete post button shouldn\'t be visible on unsaved drafts'
+            '.post-settings-menu button.delete', 'delete post button shouldn\'t be visible on unsaved drafts'
         );
     });
 
-    casper.thenClick('#publish-bar a.post-settings');
+    casper.thenClick('#publish-bar button.post-settings');
 
     casper.waitWhileVisible('#publish-bar .post-settings-menu', function onSuccess() {
         test.assert(true, 'popup menu should not be visible after clicking post-settings icon');
@@ -290,13 +290,13 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
 
     casper.waitWhileSelector('.notification-success');
 
-    casper.thenClick('#publish-bar a.post-settings');
+    casper.thenClick('#publish-bar button.post-settings');
 
     casper.waitUntilVisible('#publish-bar .post-settings-menu', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
     });
 
-    casper.waitUntilVisible('.post-settings-menu a.delete', function onSuccess() {
+    casper.waitUntilVisible('.post-settings-menu button.delete', function onSuccess() {
         test.assert(true, 'delete post button should be visible for saved drafts');
     });
 
@@ -306,7 +306,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
             '#url': 'new-url-editor'
         }, false);
 
-        this.click('#publish-bar a.post-settings');
+        this.click('#publish-bar button.post-settings');
     });
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
@@ -323,7 +323,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
     });
 
     // Test change pub date
-    casper.thenClick('#publish-bar a.post-settings');
+    casper.thenClick('#publish-bar button.post-settings');
 
     casper.waitUntilVisible('#publish-bar .post-settings-menu .post-setting-date', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
@@ -334,10 +334,10 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
             '.post-setting-date': '10 May 14 @ 00:17'
         }, false);
 
-        this.click('#publish-bar a.post-settings');
+        this.click('#publish-bar button.post-settings');
     });
 
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+   casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
         test.assert(400 > resource.status);
     });
 
@@ -379,7 +379,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
 
 
     // Test Delete Post Modal
-    casper.thenClick('.post-settings-menu a.delete');
+    casper.thenClick('.post-settings-menu button.delete');
 
     casper.waitUntilVisible('#modal-container', function onSuccess() {
         test.assert(true, 'delete post modal is visible after clicking delete');
@@ -395,8 +395,8 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
         test.assert(true, 'clicking cancel should close the delete post modal');
     });
 
-    casper.thenClick('#publish-bar a.post-settings');
-    casper.thenClick('.post-settings-menu a.delete');
+    casper.thenClick('#publish-bar button.post-settings');
+    casper.thenClick('.post-settings-menu button.delete');
     casper.waitUntilVisible('#modal-container', function onSuccess() {
         casper.thenClick('#modal-container .js-button-accept');
     });
