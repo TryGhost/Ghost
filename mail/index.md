@@ -73,10 +73,25 @@ You can reuse your settings for both your development and production environment
 
 ### Amazon SES <a id="ses"></a>
 
-You can sign up for an Amazon Simple Email Service account over at <http://aws.amazon.com/ses/>. Once you finish signing up, you'll be given an access key and a secret.
+You can sign up for an Amazon Simple Email Service account over at <http://aws.amazon.com/ses/>. Once you finish signing up, you'll be given an SMTP user name and password.
 
-Open Ghost's <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and add your Amazon credentials to your mail settings as shown below:
+Open Ghost's <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and add your Amazon SMTP credentials to your mail settings as shown below:
+```
+mail: {
+    transport: 'SMTP',
+    host: 'YOU-SES-SERVER-NAME',
+        options: {
+            port: 465,
+            service: 'SES',
+            auth: {
+                user: 'YOUR-SES-ACCESS-KEY-ID',
+                pass: 'YOUR-SES-SECRET-ACCESS-KEY'
+            }
+        }
+}
+```
 
+Another way to configure mail is using your AWS access keys, like this:
 ```
 mail: {
     transport: 'SES',
@@ -86,6 +101,7 @@ mail: {
     }
 }
 ```
+The <a href="https://gist.github.com/neilstuartcraig/7025554">first option</a>) is safer as stated on <a href="http://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html">AWS Reference guide</a>
 
 ### Gmail <a id="gmail"></a>
 
