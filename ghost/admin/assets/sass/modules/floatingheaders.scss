@@ -25,7 +25,7 @@
     //Transparent gradient to make bg fade out as it goes out the top.
     @include linear-gradient(top, white 0%, white 25%, rgba(255,255,255,0.9) 100%, $fallback: transparent);
 
-    button,
+    // button,
     .button {
         display: inline-block;
         font-size: 10px;
@@ -60,7 +60,8 @@
         font-size: 0.85em;
     }
 
-    a {
+    a,
+    button {
         color: $brown;
         &:hover {
             color: $darkgrey;

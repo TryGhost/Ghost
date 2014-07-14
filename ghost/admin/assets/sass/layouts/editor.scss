@@ -464,7 +464,7 @@ body.zen {
         right: -3px;
     }
 
-    button {
+    .button-save {
         min-height: 30px;
         height: 30px;
         line-height: 12px;
@@ -473,15 +473,12 @@ body.zen {
         border-top: rgba(255,255,255,0.4) 1px solid;
     }
 
-    .button-link {
-        border-top: none;
-    }
-
     .options {
         width: 30px;
         min-height: 30px;
         height: 30px;
         margin-top: 5px;
+        border-top: rgba(255,255,255,0.4) 1px solid;
     }
 
     .splitbutton-save,

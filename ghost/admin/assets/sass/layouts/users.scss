@@ -271,7 +271,6 @@
         border-radius: 100%;
         overflow: hidden;
         padding: 3px;
-        // border: 5px solid #fff;
         background: #fff;
         z-index: 2;
 
@@ -304,6 +303,7 @@
     .edit-user-image {
         @include position(absolute, 3px 3px 3px 3px);
         border-radius: 100%;
+        width: calc(100% - 6px);
         background: rgba(0,0,0,0.5);
         opacity: 0;
         color: #fff;
