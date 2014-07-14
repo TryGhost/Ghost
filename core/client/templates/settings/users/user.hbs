@@ -3,14 +3,15 @@
     <h2 class="hidden">Your Profile</h2>
 
     <div class="settings-header-inner">
-        <button class="button-back">Back</button>    
-    
+
+        <button class="button-back">Back</button>
+
         <section class="page-actions page-actions-alt">
             {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
         </section>
 
         <section class="page-actions">
-                    
+
             {{!-- {{#gh-popover-button popoverName="user-actions-menu" tagName="a" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
                 <i class="icon-settings"></i>
                 <span class="hidden">User Settings</span>
@@ -108,17 +109,17 @@
 
             <div class="form-group">
                 <label for="user-password-old">Old Password</label>
-                {{input value=password type="password" id="user-password-old"}}
+                {{input value=user.password type="password" id="user-password-old"}}
             </div>
 
             <div class="form-group">
                 <label for="user-password-new">New Password</label>
-                {{input value=newPassword type="password" id="user-password-new"}}
+                {{input value=user.newPassword type="password" id="user-password-new"}}
             </div>
 
             <div class="form-group">
                 <label for="user-new-password-verification">Verify Password</label>
-                {{input value=ne2Password type="password" id="user-new-password-verification"}}
+                {{input value=user.ne2Password type="password" id="user-new-password-verification"}}
             </div>
             <div class="form-group">
                 <button type="button" class="button-delete button-change-password" {{action "password"}}>Change Password</button>
