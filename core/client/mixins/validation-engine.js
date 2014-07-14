@@ -121,14 +121,14 @@ var ValidationEngine = Ember.Mixin.create({
     * This allows us to run validation before actually trying to save the model to the server.
     * You can supply options to be passed into the `validate` method, since the ED `save` method takes no options.
     */
-    save: function (validationOpts) {
+    save: function (options) {
         var self = this,
             // this is a hack, but needed for async _super calls.
             // ref: https://github.com/emberjs/ember.js/pull/4301
             _super = this.__nextSuper;
 
-        validationOpts = validationOpts || {};
-        validationOpts.wasSave = true;
+        options = options || {};
+        options.wasSave = true;
 
         // model.destroyRecord() calls model.save() behind the scenes.
         // in that case, we don't need validation checks or error propagation,
@@ -139,14 +139,14 @@ var ValidationEngine = Ember.Mixin.create({
 
         // If validation fails, reject with validation errors.
         // If save to the server fails, reject with server response.
-        return this.validate(validationOpts).then(function () {
-            return _super.call(self);
+        return this.validate(options).then(function () {
+            return _super.call(self, options);
         }).catch(function (result) {
             // server save failed - validate() would have given back an array
             if (! Ember.isArray(result)) {
-                if (validationOpts.format !== false) {
+                if (options.format !== false) {
                     // concatenate all errors into an array with a single object: [{ message: 'concatted message' }]
-                    result = formatErrors(result, validationOpts);
+                    result = formatErrors(result, options);
                 } else {
                     // return the array of errors from the server
                     result = getRequestErrorMessage(result);
