@@ -1,0 +1,110 @@
+{
+    "permissions": {
+        "post": [
+            {
+                "name": "Edit posts",
+                "action_type": "edit"
+            },
+            {
+                "name": "Remove posts",
+                "action_type": "remove"
+            },
+            {
+                "name": "Create posts",
+                "action_type": "create"
+            }
+        ],
+        "slug": [
+            {
+                "name": "Generate post slug",
+                "action_type": "generate"
+            },
+            {
+                "name": "Generate tag slug",
+                "action_type": "generate"
+            }
+        ],
+        "db": [
+            {
+                "name": "Export database",
+                "action_type": "exportContent"
+            },
+            {
+                "name": "Import database",
+                "action_type": "importContent"
+            },
+            {
+                "name": "Delete all content",
+                "action_type": "deleteAllContent"
+            }
+        ],
+        "user": [
+            {
+                "name": "Browse users",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read users",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit users",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add users",
+                "action_type": "add"
+            },
+            {
+                "name": "Remove users",
+                "action_type": "remove"
+            }
+        ],
+        "setting": [
+            {
+                "name": "Browse settings",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read settings",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit settings",
+                "action_type": "edit"
+            }
+        ],
+        "theme": [
+            {
+                "name": "Browse themes",
+                "action_type": "browse"
+            },
+            {
+                "name": "Edit themes",
+                "action_type": "edit"
+            }
+        ]
+    },
+    "permissions_roles": {
+        "Administrator": {
+            "post": "all",
+            "slug": "all",
+            "db": "all",
+            "user": "all",
+            "setting": "all",
+            "theme": "all"
+        },
+        "Editor": {
+            "post": "all",
+            "slug": "all",
+            "user": "all",
+            "setting": ["browse", "read"]
+        },
+        "Author": {
+            "post": ["add"],
+            "slug": "all",
+            "user": ["browse", "read"],
+            "setting": ["browse", "read"]
+        }
+    }
+}
