@@ -233,7 +233,7 @@ users = {
             return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
                 return when.resolve({password: [{message: 'Password changed successfully.'}]});
             }).otherwise(function (error) {
-                return when.reject(new errors.UnauthorizedError(error.message));
+                return when.reject(new errors.ValidationError(error.message));
             });
         });
     },

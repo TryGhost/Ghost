@@ -1,14 +1,18 @@
-/*global alert */
 var SettingsUserController = Ember.ObjectController.extend({
 
     user: Ember.computed.alias('model'),
 
     email: Ember.computed.readOnly('user.email'),
 
-    coverDefault: '/shared/img/user-cover.png',
+    coverDefault: function () {
+        return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
+    }.property('ghostPaths'),
+
+    userDefault: function () {
+        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+    }.property('ghostPaths'),
 
     cover: function () {
-        // @TODO: add {{asset}} subdir path
         var cover = this.get('user.cover');
         if (typeof cover !== 'string') {
             cover = this.get('coverDefault');
@@ -21,13 +25,11 @@ var SettingsUserController = Ember.ObjectController.extend({
     }.property('user.name'),
 
     image: function () {
-        // @TODO: add {{asset}} subdir path
-        return  'background-image: url(' + this.getWithDefault('user.image', '/shared/img/user-image.png') + ')';
-    }.property('user.image'),
+        return  'background-image: url(' + this.get('imageUrl') + ')';
+    }.property('imageUrl'),
 
     imageUrl: function () {
-        // @TODO: add {{asset}} subdir path
-        return  this.getWithDefault('user.image', '/shared/img/user-image.png');
+        return this.get('user.image') || this.get('userDefault');
     }.property('user.image'),
 
     last_login: function () {
@@ -70,38 +72,45 @@ var SettingsUserController = Ember.ObjectController.extend({
 
             self.notifications.closePassive();
 
-            alert('@TODO: Saving user...');
+            user.validate({format: false}).then(function () {
+                user.save().then(function (model) {
+                    self.notifications.closePassive();
+                    self.notifications.showSuccess('Settings successfully saved.');
 
-            if (user.validate().get('isValid')) {
-                user.save().then(function (response) {
-                    alert('Done saving' + JSON.stringify(response));
-                }, function () {
-                    alert('Error saving.');
+                    return model;
+                }).catch(function (errors) {
+                    self.notifications.closePassive();
+                    self.notifications.showErrors(errors);
                 });
-            } else {
-                alert('Errors found! ' + JSON.stringify(user.get('errors')));
-            }
+            }, function (errors) {
+                self.notifications.showErrors(errors);
+            });
         },
 
         password: function () {
-            alert('@TODO: Changing password...');
             var user = this.get('user'),
-                passwordProperties = this.getProperties('password', 'newPassword', 'ne2Password');
+                self = this;
 
-            if (user.validatePassword(passwordProperties).get('passwordIsValid')) {
-                user.saveNewPassword(passwordProperties).then(function () {
-                    alert('Success!');
+            if (user.get('isPasswordValid')) {
+                user.saveNewPassword().then(function (model) {
+
                     // Clear properties from view
-                    this.setProperties({
+                    user.setProperties({
                         'password': '',
-                        'newpassword': '',
-                        'ne2password': ''
+                        'newPassword': '',
+                        'ne2Password': ''
                     });
-                }.bind(this), function (errors) {
-                    alert('Errors ' + JSON.stringify(errors));
+
+                    self.notifications.closePassive();
+                    self.notifications.showSuccess('Password updated.');
+
+                    return model;
+                }).catch(function (errors) {
+                    self.notifications.closePassive();
+                    self.notifications.showAPIError(errors);
                 });
             } else {
-                alert('Errors found! ' + JSON.stringify(user.get('passwordErrors')));
+                self.notifications.showErrors(user.get('passwordValidationErrors'));
             }
         }
     }
