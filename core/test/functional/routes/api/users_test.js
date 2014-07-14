@@ -306,7 +306,7 @@ describe('User API', function () {
                     }
 
                     var jsonResponse = res.body,
-                        changedValue = 'joe-bloggs.ghost.org',
+                        changedValue = 'http://joe-bloggs.ghost.org',
                         dataToSend;
                     jsonResponse.users[0].should.exist;
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);

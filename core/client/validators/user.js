@@ -34,7 +34,6 @@ var UserValidator = Ember.Object.create({
                 location = model.get('location'),
                 website = model.get('website');
 
-
             if (!validator.isLength(name, 0, 150)) {
                 validationErrors.push({ message: 'Name is too long' });
             }
@@ -51,10 +50,14 @@ var UserValidator = Ember.Object.create({
                 validationErrors.push({ message: 'Location is too long' });
             }
 
-            if (!validator.isURL(website, { protocols: ['http', 'https'], require_protocol: true }) ||
-                !validator.isLength(website, 0, 2000)) {
-                validationErrors.push({ message: 'Please use a valid url' });
+            if (!_.isEmpty(website) &&
+                (!validator.isURL(website, { protocols: ['http', 'https'], require_protocol: true }) ||
+                !validator.isLength(website, 0, 2000))) {
+
+                validationErrors.push({ message: 'Website is not a valid url' });
             }
+
+            return validationErrors;
         }
     }
 });
