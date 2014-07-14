@@ -12,22 +12,12 @@ adminRoutes = function (middleware) {
         subdir = config().paths.subdir;
 
     // ### Admin routes
-    router.get('^/logout/', function redirect(req, res) {
+    router.get(/^\/(logout|signout)\/$/, function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
-    router.get('^/signout/', function redirect(req, res) {
-        /*jslint unparam:true*/
-        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
-        res.redirect(301, subdir + '/ghost/signout/');
-    });
-    router.get('^/signin/', function redirect(req, res) {
-        /*jslint unparam:true*/
-        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
-        res.redirect(301, subdir + '/ghost/signin/');
-    });
-    router.get('^/signup/', function redirect(req, res) {
+    router.get(/^\/signup\/$/, function redirect(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signup/');
@@ -36,7 +26,7 @@ adminRoutes = function (middleware) {
     router.post('/ghost/upload/', middleware.busboy, admin.upload);
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {
+    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function (req, res) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });

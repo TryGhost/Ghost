@@ -25,6 +25,8 @@ var api         = require('../api'),
     authStrategies = require('./authStrategies'),
 
     expressServer,
+    setupMiddleware,
+
     ONE_HOUR_S  = 60 * 60,
     ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
     ONE_HOUR_MS = ONE_HOUR_S * 1000,
@@ -221,7 +223,7 @@ function robots() {
     };
 }
 
-module.exports = function (server) {
+setupMiddleware = function (server) {
     var logging = config().logging,
         subdir = config().paths.subdir,
         corePath = config().paths.corePath,
@@ -319,6 +321,7 @@ module.exports = function (server) {
     expressServer.use(errors.error500);
 };
 
+module.exports = setupMiddleware;
 // Export middleware functions directly
 module.exports.middleware = middleware;
 // Expose middleware functions in this file as well

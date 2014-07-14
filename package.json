@@ -40,7 +40,6 @@
         "cookie-parser": "1.0.1",
         "connect": "3.0.0-rc.1",
         "connect-slashes": "1.2.0",
-        "csurf": "1.1.0",
         "downsize": "0.0.5",
         "express": "4.1.1",
         "express-hbs": "0.7.10",
