@@ -3,7 +3,6 @@
 // middleware_spec.js
 
 var _           = require('lodash'),
-    csrf        = require('csurf'),
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
@@ -78,16 +77,6 @@ var middleware = {
         next();
     },
 
-    // Check if we're logged in, and if so, redirect people back to dashboard
-    // Login and signup forms in particular
-    redirectToDashboard: function (req, res, next) {
-        if (req.user && req.user.id) {
-            return res.redirect(config().paths.subdir + '/ghost/');
-        }
-
-        next();
-    },
-
     // While we're here, let's clean up on aisle 5
     // That being ghost.notifications, and let's remove the passives from there
     // plus the local messages, as they have already been added at this point
@@ -158,15 +147,6 @@ var middleware = {
 
             express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_YEAR_MS})(req, res, next);
         });
-    },
-
-    conditionalCSRF: function (req, res, next) {
-        // CSRF is needed for admin only
-        if (res.isAdmin) {
-            csrf()(req, res, next);
-            return;
-        }
-        next();
     },
 
     // work around to handle missing client_secret

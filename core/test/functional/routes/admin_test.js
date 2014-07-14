@@ -92,14 +92,6 @@ describe('Admin Routing', function () {
                 .end(doEndNoAuth(done));
         });
 
-        it('should redirect /signin/ to /ghost/signin/', function (done) {
-            request.get('/signin/')
-                .expect('Location', '/ghost/signin/')
-                .expect('Cache-Control', cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
         it('should redirect /signup/ to /ghost/signup/', function (done) {
             request.get('/signup/')
                 .expect('Location', '/ghost/signup/')
@@ -107,6 +99,24 @@ describe('Admin Routing', function () {
                 .expect(301)
                 .end(doEndNoAuth(done));
         });
+
+        // Admin aliases
+        it('should redirect /signin/ to /ghost/', function (done) {
+            request.get('/signin/')
+                .expect('Location', '/ghost/')
+                .expect('Cache-Control', cacheRules.public)
+                .expect(302)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /admin/ to /ghost/', function (done) {
+            request.get('/admin/')
+                .expect('Location', '/ghost/')
+                .expect('Cache-Control', cacheRules.public)
+                .expect(302)
+                .end(doEndNoAuth(done));
+        });
+        // there are more of these... but we get the point
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
@@ -184,7 +194,6 @@ describe('Admin Routing', function () {
     });
 
     describe('Ghost Admin Setup', function () {
-
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
              request.get('/ghost/')
                  .expect('Location', /ghost\/setup/)
@@ -230,39 +239,51 @@ describe('Admin Routing', function () {
 //        });
 
     });
-
-    // TODO: new test for Ember where user is added
-//     describe('Ghost Admin Forgot Password', function () {
-        // it('should respond with html for /ghost/forgotten/', function (done) {
-        //     request.get('/ghost/forgotten/')
-        //         .expect('Content-Type', /html/)
-        //         .expect('Cache-Control', cacheRules['private'])
-        //         .expect(200)
-        //         .end(doEnd(done));
-        // });
-
-        // it('should respond 404 for /ghost/reset/', function (done) {
-        //     request.get('/ghost/reset/')
-        //         .expect('Cache-Control', cacheRules['private'])
-        //         .expect(404)
-        //         .expect(/Page Not Found/)
-        //         .end(doEnd(done));
-        // });
-
-        // it('should redirect /ghost/reset/*/', function (done) {
-        //     request.get('/ghost/reset/athing/')
-        //        .expect('Location', /ghost\/forgotten/)
-        //        .expect('Cache-Control', cacheRules['private'])
-        //        .expect(302)
-        //        .end(doEnd(done));
-        // });
+//
+//    describe('Ghost Admin Forgot Password', function () {
+//        before(function (done) {
+//            // Create a user / do setup etc
+//            testUtils.clearData()
+//                .then(function () {
+//                    return testUtils.initData();
+//                })
+//                .then(function () {
+//                    return testUtils.insertDefaultFixtures();
+//                }).then(function () {
+//                    done();
+//                })
+//                .catch(done);
+//        });
+//
+//        it('should respond with html for /ghost/forgotten/', function (done) {
+//            request.get('/ghost/forgotten/')
+//                .expect('Content-Type', /html/)
+//                .expect('Cache-Control', cacheRules['private'])
+//                .expect(200)
+//                .end(doEnd(done));
+//        });
+//
+//        it('should respond 404 for /ghost/reset/', function (done) {
+//            request.get('/ghost/reset/')
+//                .expect('Cache-Control', cacheRules['private'])
+//                .expect(404)
+//                .expect(/Page Not Found/)
+//                .end(doEnd(done));
+//        });
+//
+//        it('should redirect /ghost/reset/*/', function (done) {
+//            request.get('/ghost/reset/athing/')
+//                .expect('Location', /ghost\/forgotten/)
+//                .expect('Cache-Control', cacheRules['private'])
+//                .expect(302)
+//                .end(doEnd(done));
+//        });
 //    });
 //});
 
 // TODO: not working anymore, needs new test for Ember
 // describe('Authenticated Admin Routing', function () {
-//     var user = testUtils.DataGenerator.forModel.users[0],
-//         csrfToken = '';
+//     var user = testUtils.DataGenerator.forModel.users[0];
 
 //     before(function (done) {
 //         var app = express();
@@ -287,13 +308,9 @@ describe('Admin Routing', function () {
 //                                 return done(err);
 //                             }
 
-//                             var pattern_meta = /<meta.*?name="csrf-param".*?content="(.*?)".*?>/i;
-//                             pattern_meta.should.exist;
-//                             csrfToken = res.text.match(pattern_meta)[1];
 
 //                             process.nextTick(function() {
 //                                 request.post('/ghost/signin/')
-//                                     .set('X-CSRF-Token', csrfToken)
 //                                     .send({email: user.email, password: user.password})
 //                                     .expect(200)
 //                                     .end(function (err, res) {
@@ -309,7 +326,6 @@ describe('Admin Routing', function () {
 //                                                     return done(err);
 //                                                 }
 
-//                                                 csrfToken = res.text.match(pattern_meta)[1];
 //                                                 done();
 //                                             });
 //                                     });

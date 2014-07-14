@@ -11,7 +11,6 @@ models = {
     Settings: require('./settings').Settings,
     Tag: require('./tag').Tag,
     Base: require('./base'),
-    Session: require('./session').Session,
     App: require('./app').App,
     AppField: require('./appField').AppField,
     AppSetting: require('./appSetting').AppSetting,
