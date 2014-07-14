@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "0.10"
+sudo: false
 env:
   - DB=sqlite3 NODE_ENV=testing
   - DB=mysql NODE_ENV=testing-mysql
