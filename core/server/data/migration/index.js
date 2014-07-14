@@ -46,7 +46,7 @@ function getAddCommands(oldTables, newTables) {
 function addColumnCommands(table, columns) {
     var columnKeys = _.keys(schema[table]),
         addColumns = _.difference(columnKeys, columns);
-    
+
     return _.map(addColumns, function (column) {
         return function () {
             utils.addColumn(table, column);
@@ -90,7 +90,7 @@ init = function () {
         if (databaseVersion < defaultVersion) {
             // 2. The database exists but is out of date
             // Migrate to latest version
-            return self.migrateUp().then(function () {
+            return self.migrateUp(databaseVersion, defaultVersion).then(function () {
                 // Finally update the databases current version
                 return versioning.setDatabaseVersion();
             });
@@ -139,7 +139,7 @@ migrateUpFreshDb = function () {
 
     return sequence(tables).then(function () {
         // Load the fixtures
-        return fixtures.populateFixtures().then(function () {
+        return fixtures.populate().then(function () {
             // Initialise the default settings
             return models.Settings.populateDefaults();
         });
@@ -174,7 +174,7 @@ function backupDatabase() {
 }
 
 // Migrate from a specific version to the latest
-migrateUp = function () {
+migrateUp = function (fromVersion, toVersion) {
     var deleteCommands,
         addCommands,
         oldTables,
@@ -236,7 +236,7 @@ migrateUp = function () {
         }
         return;
     }).then(function () {
-        return fixtures.updateFixtures();
+        return fixtures.update(fromVersion, toVersion);
     });
 };
 
