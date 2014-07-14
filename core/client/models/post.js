@@ -1,7 +1,8 @@
 import ValidationEngine from 'ghost/mixins/validation-engine';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Post = DS.Model.extend(ValidationEngine, {
+var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     validationType: 'post',
 
     uuid: DS.attr('string'),
