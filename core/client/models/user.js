@@ -3,6 +3,7 @@ import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
 var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     validationType: 'user',
+
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     slug: DS.attr('string'),
