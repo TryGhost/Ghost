@@ -5,6 +5,7 @@ sudo: false
 cache:
   directories:
     - node_modules
+    - bower_components
 env:
   - DB=sqlite3 NODE_ENV=testing
   - DB=mysql NODE_ENV=testing-mysql
