@@ -42,8 +42,8 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
     });
 
     casper.then(function testPostSettingsMenu() {
-        test.assertExists('.content-preview a.post-settings', 'post settings button exists');
-        this.click('.content-preview a.post-settings');
+        test.assertExists('.content-preview button.post-settings', 'post settings button exists');
+        this.click('.content-preview button.post-settings');
     });
 
     casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
@@ -52,7 +52,7 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
 
     casper.then(function postSettingsMenuItems() {
         test.assertExists('.post-settings-menu .post-setting-static-page', 'post settings static page exists');
-        test.assertExists('.post-settings-menu a.delete', 'post settings delete this post exists');
+        test.assertExists('.post-settings-menu button.delete', 'post settings delete this post exists');
     });
 
     casper.then(function testActiveItem() {
@@ -95,7 +95,7 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
     });
 
     // Change post to static page
-    casper.thenClick('a.post-settings');
+    casper.thenClick('button.post-settings');
 
     casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
@@ -121,9 +121,9 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
     });
 
     // Open post settings menu
-    casper.thenClick('.content-preview a.post-settings');
+    casper.thenClick('.content-preview button.post-settings');
     casper.waitForOpaque('.content-preview .post-settings-menu.open');
-    casper.thenClick('.post-settings-menu a.delete');
+    casper.thenClick('.post-settings-menu button.delete');
 
     casper.waitUntilVisible('#modal-container', function onSuccess() {
         test.assertSelectorHasText(
@@ -139,8 +139,8 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
     });
 
     // Test delete
-    casper.thenClick('.content-preview a.post-settings');
-    casper.thenClick('.post-settings-menu a.delete');
+    casper.thenClick('.content-preview button.post-settings');
+    casper.thenClick('.post-settings-menu button.delete');
 
     casper.waitForSelector('#modal-container .modal-content', function onSuccess() {
         test.assertExists('.modal-content .js-button-accept', 'delete button exists');
@@ -220,7 +220,7 @@ CasperTest.begin('Post url can be changed', 5, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
-    casper.thenClick('a.post-settings');
+    casper.thenClick('button.post-settings');
 
     casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
@@ -232,7 +232,7 @@ CasperTest.begin('Post url can be changed', 5, function suite(test) {
             '#url': 'new-url'
         }, false);
 
-        this.click('a.post-settings');
+        this.click('button.post-settings');
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
@@ -258,7 +258,7 @@ CasperTest.begin('Post published date can be changed', 5, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
-    casper.thenClick('a.post-settings');
+    casper.thenClick('button.post-settings');
 
     casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
@@ -270,7 +270,7 @@ CasperTest.begin('Post published date can be changed', 5, function suite(test) {
             '.post-setting-date': '22 May 14 @ 23:39'
         }, false);
 
-        this.click('a.post-settings');
+        this.click('button.post-settings');
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
@@ -296,7 +296,7 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
-    casper.thenClick('.content-preview a.post-settings');
+    casper.thenClick('.content-preview button.post-settings');
 
     casper.waitForOpaque('.content-preview .post-settings-menu.open', function onSuccess() {
         test.assert(true, 'post settings should be visible after clicking post-settings icon');

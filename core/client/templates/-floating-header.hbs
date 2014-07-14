@@ -1,8 +1,8 @@
 <header class="floatingheader">
     <button class="button-back" href="#">Back</button>
-    <a {{bind-attr class="featured:featured:unfeatured"}} href="#" title="Feature this post" {{action "toggleFeatured"}}>
+    <button {{bind-attr class="featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
-    </a>
+    </button>
     <small>
         <span class="status">{{#if isPublished}}Published{{else}}Written{{/if}}</span>
         <span class="normal">by</span>
@@ -12,7 +12,7 @@
         {{#link-to "editor.edit" this class="post-edit" title="Edit Post"}}
             <span class="hidden">Edit Post</span>
         {{/link-to}}
-        {{#gh-popover-button popoverName="post-settings-menu" tagName="a" classNames="post-settings" title="Post Settings"}}
+        {{#gh-popover-button popoverName="post-settings-menu" classNames="post-settings" title="Post Settings"}}
             <span class="hidden">Post Settings</span>
         {{/gh-popover-button}}
         {{#gh-popover name="post-settings-menu" classNames="post-settings-menu menu-drop-right"}}
