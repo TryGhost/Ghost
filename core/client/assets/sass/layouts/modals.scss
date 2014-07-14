@@ -39,3 +39,9 @@
     }
 
 }
+
+.modal-footer {
+    .reject-button-class {
+        @extend .button;
+    }
+}

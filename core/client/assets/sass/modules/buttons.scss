@@ -3,9 +3,22 @@
  *
  * Table of Contents
  *
+ * Button Reset
  * Buttons
  * Split Buttons
  */
+
+
+ /* ==========================================================================
+   Button Reset
+   ========================================================================== */
+
+button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    @include transition(all 0.15s ease-in-out);
+}
 
 
  /* ==========================================================================
@@ -17,8 +30,6 @@
     width: auto;
     display: inline-block;
     padding: 0.9em 1.37em;
-
-    cursor: pointer;
 
     text-decoration: none;
     color: #fff;
@@ -109,9 +120,9 @@
 
 
 // This is the default button style
-.button,
-button,
-input[type="button"] {
+.button {
+// button,
+// input[type="button"] {
     @extend %btn;
     color:#777;
     font-weight: normal;
@@ -138,9 +149,9 @@ input[type="button"] {
 }
 
 // Button for save/next/continue/confirm actions
-.button-save,
-button[type="submit"],
-input[type="submit"] {
+.button-save {
+// button[type="submit"],
+// input[type="submit"] {
     @extend %btn;
     background: $blue;
     box-shadow: none;
@@ -151,9 +162,9 @@ input[type="submit"] {
 }
 
 // Button for actions which add stuff
-.button-add,
-button[type="submit"].button-add,
-input[type="submit"].button-add {
+.button-add {
+// button[type="submit"].button-add,
+// input[type="submit"].button-add {
     @extend %btn;
     background: $green;
     &:hover,
@@ -163,9 +174,9 @@ input[type="submit"].button-add {
 }
 
 // Button for deleting/removing stuff
-.button-delete,
-button[type="reset"],
-input[type="reset"] {
+.button-delete {
+// button[type="reset"],
+// input[type="reset"] {
     @extend %btn;
     background: $red;
     box-shadow: none;

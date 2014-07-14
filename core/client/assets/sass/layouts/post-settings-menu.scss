@@ -18,7 +18,6 @@
     @include transition;
     position: relative;
     top: 1px;
-    cursor: pointer;
 
     &:hover,
     &.active {
@@ -160,7 +159,8 @@
     .delete {
         display: block;
         padding: 10px 15px;
-        cursor: pointer;
+        width: 100%;
+        text-align: left;
         @include icon($i-trash) {
             position: relative;
             top: -1px;
