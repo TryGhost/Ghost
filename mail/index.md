@@ -104,7 +104,7 @@ mail: {
 }
 ```
 
-The <a href="https://gist.github.com/neilstuartcraig/7025554">first option</a>) is safer as stated on <a href="http://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html">AWS Reference guide</a>
+The <a href="https://gist.github.com/neilstuartcraig/7025554">first option</a> is safer as stated on <a href="http://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html">AWS Reference guide</a>
 
 ### Gmail <a id="gmail"></a>
 
