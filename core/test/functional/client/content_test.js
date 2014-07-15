@@ -9,7 +9,7 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -71,7 +71,7 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -116,7 +116,7 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -162,18 +162,18 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
 //    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+//        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
 //        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
 //    });
 //});
 
-CasperTest.begin('Posts can be marked as featured', 10, function suite(test) {
+CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -184,45 +184,39 @@ CasperTest.begin('Posts can be marked as featured', 10, function suite(test) {
         test.assert(false, 'The first post can\'t be marked as featured');
     });
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-message', 'Post successfully marked as featured.');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification :(');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function (resource) {
+        test.assert(400 > resource.status);
     });
 
     casper.waitForSelector('.content-list-content li.featured:first-of-type', function () {
         test.assertExists('.content-preview .featured', 'preview pane gets featured class');
         test.assertExists('.content-list-content li.featured:first-of-type', 'content list got a featured star');
-        this.click('.notification-success .close');
     }, function onTimeout() {
         test.assert(false, 'No featured star appeared in the left pane');
     });
 
     // Mark as not featured
-    casper.waitWhileSelector('.notification-success', function waitForNoSuccess() {
-        this.click('.content-preview .featured');
-    }, function onTimeout() {
-        test.assert(false, 'Success notification wont go away:(');
+    casper.thenClick('.content-preview .featured');
+
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
+        test.assert(400 > resource.status);
     });
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-message', 'Post successfully marked as not featured.');
-        test.assertDoesntExist('.content-preview .featured');
+    casper.then(function untoggledFeaturedTest() {
+        test.assertDoesntExist('.content-preview .featured', 'Untoggled featured.');
         test.assertDoesntExist('.content-list-content li.featured:first-of-type');
     }, function onTimeout() {
-        test.assert(false, 'Success notification wont go away:(');
+        test.assert(false, 'Couldn\'t unfeature post.');
     });
 });
 
-CasperTest.begin('Post url can be changed', 7, function suite(test) {
+CasperTest.begin('Post url can be changed', 5, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -241,27 +235,26 @@ CasperTest.begin('Post url can be changed', 7, function suite(test) {
         this.click('a.post-settings');
     });
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-message', 'Permalink successfully changed to new-url.');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
     });
 
-    casper.waitWhileSelector('.notification-success', function () {
-        test.assert(true, 'notification cleared.');
-        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    casper.then(function checkValueMatches() {
+        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        var slugVal = this.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-slug');
+        });
+        test.assertEqual(slugVal, 'new-url');
     });
 });
 
-CasperTest.begin('Post published date can be changed', 7, function suite(test) {
+CasperTest.begin('Post published date can be changed', 5, function suite(test) {
     // Create a sample post
-      CasperTest.Routines.createTestPost.run(false);
+    CasperTest.Routines.createTestPost.run(false);
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -280,17 +273,16 @@ CasperTest.begin('Post published date can be changed', 7, function suite(test) {
         this.click('a.post-settings');
     });
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-message', 'Publish date successfully changed to 22 May 14 @ 23:39.');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
     });
 
-    casper.waitWhileSelector('.notification-success', function () {
-        test.assert(true, 'notification cleared.');
-        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    casper.then(function checkValueMatches() {
+        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        var dateVal = this.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-date');
+        });
+        test.assertEqual(dateVal, '22 May 14 @ 23:39');
     });
 });
 
@@ -300,7 +292,7 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -312,24 +304,22 @@ CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
 
     casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
+        test.assert(400 > resource.status);
     });
-
-    casper.waitWhileSelector('.notification-success', function () {
-        test.assert(true, 'notification cleared.');
-        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    //Reload the page so the html can update to have the checked attribute
+    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
+        test.assertExists('.post-setting-static-page[checked=checked]', 'can turn on static page');
     });
 
     casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
+        test.assert(400 > resource.status);
+    });
+
+    //Reload so html can be updated to not have the checked attribute
+    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
+        test.assertDoesntExist('.post-setting-static-page[checked=checked]', 'can turn off static page');
     });
 });
