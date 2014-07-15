@@ -8,18 +8,27 @@
 var when        = require('when'),
     sequence    = require('when/sequence'),
     _           = require('lodash'),
+    errors      = require('../../errors'),
     utils       = require('../../utils'),
     models      = require('../../models'),
     fixtures    = require('./fixtures'),
     permissions = require('./permissions'),
 
-    populate,
-    update,
+    // Private
+    logInfo,
     to003,
     fetchAdmin,
     convertAdminToOwner,
-    createOwner;
+    createOwner,
 
+    // Public
+    populate,
+    update;
+
+
+logInfo = function logInfo(message) {
+    errors.logInfo('Fixtures', message);
+};
 
 /**
  * Fetch Admin
@@ -77,6 +86,8 @@ populate = function () {
         Tag = models.Tag,
         Role = models.Role,
         Client = models.Client;
+
+    logInfo('Populating fixtures');
 
     _.each(fixtures.posts, function (post) {
         ops.push(function () { return Post.add(post); });
@@ -154,6 +165,7 @@ to003 = function () {
 };
 
 update = function (fromVersion, toVersion) {
+    logInfo('Updating fixtures');
     if (fromVersion < '003' && toVersion >= '003') {
         return to003();
     }
