@@ -2,13 +2,12 @@
 var testUtils = require('../../utils'),
     should = require('should'),
     when = require('when'),
-    _ = require('lodash'),
-    errors = require('../../../server/errors'),
     sinon = require('sinon'),
     uuid = require('node-uuid'),
 
     // Stuff we are testing
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    context = {context: {user: 1}};
 
 
 describe('User Model', function run() {
@@ -39,7 +38,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData, {user: 1}).then(function (createdUser) {
+            UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
@@ -55,7 +54,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData, {user: 1}).then(function (createdUser) {
+            UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.email.should.eql(userData.email, "email address correct");
@@ -71,7 +70,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData, {user: 1}).then(function (createdUser) {
+            UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
@@ -86,7 +85,7 @@ describe('User Model', function run() {
                     return when.resolve(userData);
                 });
 
-            UserModel.add(userData, {user: 1}).then(function (createdUser) {
+            UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
@@ -99,7 +98,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 email = testUtils.DataGenerator.forModel.users[2].email;
 
-            UserModel.add(userData, {user: 1}).then(function () {
+            UserModel.add(userData, context).then(function () {
                 // Test same case
                 return UserModel.getByEmail(email).then(function (user) {
                     should.exist(user);

@@ -3,7 +3,8 @@ var testUtils = require('../../utils'),
     should = require('should'),
 
     // Stuff we are testing
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    context = {context: {user: 1}};
 
 describe('Role Model', function () {
 
@@ -52,7 +53,7 @@ describe('Role Model', function () {
         RoleModel.findOne({id: 1}).then(function (foundRole) {
             should.exist(foundRole);
 
-            return foundRole.set({name: 'updated'}).save();
+            return foundRole.set({name: 'updated'}).save(null, context);
         }).then(function () {
             return RoleModel.findOne({id: 1});
         }).then(function (updatedRole) {
@@ -70,7 +71,7 @@ describe('Role Model', function () {
             description: 'test1 description'
         };
 
-        RoleModel.add(newRole, {user: 1}).then(function (createdRole) {
+        RoleModel.add(newRole, context).then(function (createdRole) {
             should.exist(createdRole);
 
             createdRole.attributes.name.should.equal(newRole.name);
