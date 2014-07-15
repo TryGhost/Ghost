@@ -43,8 +43,8 @@ describe('Permissions', function () {
             { act: 'add', obj: 'post' },
             { act: 'add', obj: 'user' },
             { act: 'add', obj: 'page' },
-            { act: 'remove', obj: 'post' },
-            { act: 'remove', obj: 'user' }
+            { act: 'destroy', obj: 'post' },
+            { act: 'destroy', obj: 'user' }
         ],
         currTestPermId = 1,
 
@@ -397,7 +397,7 @@ describe('Permissions', function () {
                     done();
                 })
                 .catch(function () {
-                    done(new Error('Allowed an edit of post 1'));
+                    done(new Error('Did not allow an edit of post 1'));
                 });
         });
 

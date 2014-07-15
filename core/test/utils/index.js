@@ -5,7 +5,7 @@ var knex          = require('../../server/models/base').knex,
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
-    migration     = require("../../server/data/migration/"),
+    migration     = require('../../server/data/migration/'),
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
     fork          = require('./fork');
@@ -126,14 +126,25 @@ function insertDefaultApp() {
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
 
-    return knex('apps')
-        .insert(apps)
-        .then(function () {
-            return knex('permissions_apps')
-                .insert({
-                    app_id: 1,
-                    permission_id: 1
-                });
+    return knex('permissions')
+        .select('id')
+        .where('object_type', 'post')
+        .andWhere('action_type', 'edit')
+        .then(function (result) {
+            var permission_id = result[0].id;
+            if (permission_id) {
+                return knex('apps')
+                    .insert(apps)
+                    .then(function () {
+                        return knex('permissions_apps')
+                            .insert({
+                                app_id: 1,
+                                permission_id: permission_id
+                            });
+                    });
+            }
+
+            throw new Error('Permissions not created');
         });
 }
 
