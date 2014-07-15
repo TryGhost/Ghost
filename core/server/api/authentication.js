@@ -166,7 +166,7 @@ authentication = {
                 userSettings.push({key: 'description', value: 'Thoughts, stories and ideas by ' + setupUser.name});
             }
             setupUser = user.toJSON();
-            return settings.edit({settings: userSettings}, {context: {user: 1}});
+            return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
         }).then(function () {
             var message = {
                     to: setupUser.email,

@@ -135,6 +135,7 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     populateDefault: function (key) {
+
         if (!getDefaultSettings()[key]) {
             return when.reject(new errors.NotFoundError('Unable to find default setting: ' + key));
         }
@@ -142,6 +143,7 @@ Settings = ghostBookshelf.Model.extend({
         // TOOD: databaseVersion and currentVersion special cases?
 
         this.findOne({ key: key }).then(function (foundSetting) {
+
             if (foundSetting) {
                 return foundSetting;
             }
