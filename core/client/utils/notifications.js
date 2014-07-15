@@ -68,6 +68,7 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, delayed);
     },
+    // @Todo this function isn't referenced anywhere. Should it be removed?
     showWarn: function (message, delayed) {
         this.handleNotification({
             type: 'warn',
@@ -87,7 +88,7 @@ var Notifications = Ember.ArrayProxy.extend({
 
         if (notification instanceof Notification) {
             notification.deleteRecord();
-            notification.save().then(function () {
+            notification.save().finally(function () {
                 self.removeObject(notification);
             });
         } else {
