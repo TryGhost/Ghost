@@ -1,11 +1,9 @@
-<header class="fade-in user-settings-header">
+<header class="user-settings-header">
 
     <h2 class="hidden">Your Profile</h2>
 
     <div class="settings-header-inner">
-
-        <button class="button-back">Back</button>
-
+	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
         <section class="page-actions page-actions-alt">
             {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
         </section>
@@ -26,7 +24,7 @@
 
 </header>
 
-<section class="content settings-user no-padding fade-in">
+<section class="content settings-user no-padding">
 
     <header class="user-profile-header">
         <img id="user-cover" class="cover-image" {{bind-attr src=cover title=coverTitle}} />

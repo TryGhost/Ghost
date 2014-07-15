@@ -4,23 +4,13 @@
     </header>
     <nav class="settings-menu">
         <ul>
-            {{#view "item-view" tagName="li" class="general"}}
-            {{#link-to "settings.general"}}General{{/link-to}}
-            {{/view}}
-
-            {{#view "item-view" tagName="li" class="users"}}
-            {{#link-to "settings.users"}}Users{{/link-to}}
-            {{/view}}
-
+	    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+	    {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
             {{#if showApps}}
-            {{#view "item-view" tagName="li" class="apps"}}
-            {{#link-to "settings.apps"}}Apps{{/link-to}}
-            {{/view}}
+	    {{gh-activating-list-item route="settings.apps" title="Apps" classNames="apps"}}
             {{/if}}
         </ul>
     </nav>
 </aside>
 
-<section class="settings-content active">
-    {{outlet}}
-</section>
+{{outlet}}
