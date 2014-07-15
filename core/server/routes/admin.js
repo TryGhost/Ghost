@@ -33,8 +33,6 @@ adminRoutes = function (middleware) {
         res.redirect(301, subdir + '/ghost/signup/');
     });
 
-    router.post('/ghost/upload/', middleware.busboy, admin.upload);
-
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin)\/?)$/, function (req, res) {
         /*jslint unparam:true*/

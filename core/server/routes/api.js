@@ -78,6 +78,8 @@ apiRoutes = function (middleware) {
         middleware.generateAccessToken
     );
 
+    // ## Uploads
+    router.post('/uploads', middleware.busboy, api.http(api.uploads.add));
 
     return router;
 };
