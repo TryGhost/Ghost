@@ -18,6 +18,7 @@ var _              = require('lodash'),
     users          = require('./users'),
     slugs          = require('./slugs'),
     authentication = require('./authentication'),
+    uploads        = require('./upload'),
 
     http,
     formatHttpErrors,
@@ -255,7 +256,8 @@ module.exports = {
     themes: themes,
     users: users,
     slugs: slugs,
-    authentication: authentication
+    authentication: authentication,
+    uploads: uploads
 };
 
 /**
