@@ -3,17 +3,23 @@
 var when        = require('when'),
     sequence    = require('when/sequence'),
     _           = require('lodash'),
-
+    errors      = require('../../../errors'),
     models      = require('../../../models'),
     fixtures    = require('./permissions'),
 
-    populate,
-    to003,
-
+    // private
+    logInfo,
     addAllPermissions,
     addAllRolesPermissions,
-    addRolesPermissionsForRole;
+    addRolesPermissionsForRole,
 
+    // public
+    populate,
+    to003;
+
+logInfo = function logInfo(message) {
+    errors.logInfo('Permissions Fixtures', message);
+};
 
 addRolesPermissionsForRole = function (roleName) {
     var fixturesForRole = fixtures.permissions_roles[roleName],
