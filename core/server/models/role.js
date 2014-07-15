@@ -1,4 +1,7 @@
-var ghostBookshelf = require('./base'),
+var _              = require('lodash'),
+    errors         = require('../errors'),
+    ghostBookshelf = require('./base'),
+    when           = require('when'),
 
     Role,
     Roles;
@@ -34,6 +37,47 @@ Role = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+
+    permissable: function (roleModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+        var self = this,
+            checkAgainst = [],
+            origArgs;
+
+        // If we passed in an id instead of a model, get the model
+        // then check the permissions
+        if (_.isNumber(roleModelOrId) || _.isString(roleModelOrId)) {
+            // Grab the original args without the first one
+            origArgs = _.toArray(arguments).slice(1);
+            // Get the actual post model
+            return this.findOne({id: roleModelOrId, status: 'all'}).then(function (foundRoleModel) {
+                // Build up the original args but substitute with actual model
+                var newArgs = [foundRoleModel].concat(origArgs);
+
+                return self.permissable.apply(self, newArgs);
+            }, errors.logAndThrowError);
+        }
+
+        switch (loadedPermissions.user) {
+            case 'Owner':
+            case 'Administrator':
+                checkAgainst = ['Administrator', 'Editor', 'Author'];
+                break;
+            case 'Editor':
+                checkAgainst = ['Editor', 'Author'];
+        }
+
+        // If we have a role passed into here
+        if (roleModelOrId && !_.contains(checkAgainst, roleModelOrId.get('name'))) {
+            // Role not in the list of permissible roles
+            hasUserPermission = false;
+        }
+
+        if (hasUserPermission && hasAppPermission) {
+            return when.resolve();
+        }
+        return when.reject();
     }
 });
 
