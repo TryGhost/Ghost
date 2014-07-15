@@ -1,8 +1,8 @@
-<header class="fade-in">
+<header>
     <h2 class="title">General</h2>
 
     <div class="settings-header-inner">
-        <button class="button-back">Back</button>
+	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
 
         <section class="page-actions">
             <button class="button-save" {{action "save"}}>Save</button>
@@ -10,7 +10,7 @@
     </div>
 </header>
 
-<section class="content settings-general fade-in">
+<section class="content settings-general">
     <form id="settings-general" novalidate="novalidate">
         <fieldset>
 
