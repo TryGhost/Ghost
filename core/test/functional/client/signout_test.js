@@ -3,7 +3,6 @@
 
 /*globals CasperTest, casper */
 CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
     CasperTest.Routines.signin.run(test);
 

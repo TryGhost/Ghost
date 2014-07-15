@@ -3,13 +3,13 @@ var SetupValidator = Ember.Object.create({
         var data = model.getProperties('blogTitle', 'name', 'email', 'password'),
             validationErrors = [];
 
-        if (!validator.isLength(data.blogTitle || '', 1)) {
+        if (!validator.isLength(data.blogTitle, 1)) {
             validationErrors.push({
                 message: 'Please enter a blog title.'
             });
         }
 
-        if (!validator.isLength(data.name || '', 1)) {
+        if (!validator.isLength(data.name, 1)) {
             validationErrors.push({
                 message: 'Please enter a name.'
             });
@@ -21,9 +21,9 @@ var SetupValidator = Ember.Object.create({
             });
         }
 
-        if (!validator.isLength(data.password || '', 1)) {
+        if (!validator.isLength(data.password, 8)) {
             validationErrors.push({
-                message: 'Please enter a password.'
+                message: 'Password must be at least 8 characters long.'
             });
         }
 
