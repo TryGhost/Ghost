@@ -215,7 +215,6 @@
     background: #fff;
 
     @media (max-width: 800px) {
-        display: none;
         width: 100%;
         left: 100%;
         right: -100%;
@@ -321,6 +320,9 @@
         }
         &.page-actions-alt {
             left: 40px;
+            @media (max-width: 1000px) {
+                left: 15px;
+            }
         }
 
         .button-add {
