@@ -81,15 +81,6 @@ describe('Local File System Storage', function () {
         }).catch(done);
     });
 
-    it('should not leave temporary file when uploading', function (done) {
-        localfilesystem.save(image).then(function (url) {
-            /*jshint unused:false*/
-            fs.unlink.calledOnce.should.be.true;
-            fs.unlink.args[0][0].should.equal('tmp/123456.jpg');
-            done();
-        }).catch(done);
-    });
-
     it('can upload two different images with the same name without overwriting the first', function (done) {
         // Sun Sep 08 2013 10:57
         this.clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
