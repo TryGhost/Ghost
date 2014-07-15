@@ -77,19 +77,16 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     },
     actions: {
         togglePage: function () {
-            var value = this.toggleProperty('page'),
-                self = this;
+            var self = this;
 
+            this.toggleProperty('page');
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
             if (this.get('isNew')) {
                 return;
             }
-            
-            return this.get('model').save(this.get('saveOptions')).then(function () {
-                self.showSuccess('Successfully converted to ' + (value ? 'static page' : 'post'));
-                return value;
-            }).catch(function (errors) {
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
@@ -205,10 +202,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).then(function () {
-                self.showSuccess('Publish date successfully changed to <strong>' +
-                    formatDate(self.get('published_at')) + '</strong>.');
-            }).catch(function (errors) {
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
