@@ -111,7 +111,6 @@ var PostTagsInputView = Ember.View.extend({
 
     tagView: Ember.View.extend({
         tagName: 'span',
-        template: Ember.Handlebars.compile('{{view.tag.name}}'),
         classNames: 'tag',
 
         tag: null,
@@ -124,7 +123,6 @@ var PostTagsInputView = Ember.View.extend({
 
     suggestionView: Ember.View.extend({
         tagName: 'li',
-        template: Ember.Handlebars.compile('<a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>'),
         classNameBindings: 'suggestion.selected',
 
         suggestion: null,
