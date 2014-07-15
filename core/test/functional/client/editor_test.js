@@ -243,7 +243,7 @@ casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
     });
 });
 
-CasperTest.begin('Post settings menu', 31, function suite(test) {
+CasperTest.begin('Post settings menu', 30, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
@@ -337,45 +337,46 @@ CasperTest.begin('Post settings menu', 31, function suite(test) {
         this.click('#publish-bar a.post-settings');
     });
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Publish date successfully changed to 10 May 14 @ 00:17.');
-        casper.thenClick('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
     });
 
-    casper.waitWhileSelector('.notification-success');
-
-    // Test Static Page conversion
-    casper.thenClick('#publish-bar a.post-settings');
-
-    casper.waitUntilVisible('#publish-bar .post-settings-menu', function onSuccess() {
-        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
+    casper.then(function checkValueMatches() {
+        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        var dateVal = this.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-date');
+        });
+        test.assertEqual(dateVal, '10 May 14 @ 00:17');
     });
-
+    
+    // Test static page toggling
     casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
     });
-
-    casper.waitWhileSelector('.notification-success', function () {
-        test.assert(true, 'notification cleared.');
-        test.assertNotVisible('.notification-success', 'success notification should not still exist');
+    
+    casper.then(function staticPageIsCheckedTest() {
+        var checked = casper.evaluate(function evalCheckedProp() {
+            return document.querySelector('.post-setting-static-page').checked
+        });
+        test.assert(checked, 'Turned post into static page.');
     });
-
+    
     casper.thenClick('.post-settings-menu .post-setting-static-page + label');
 
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        casper.click('.notification-success a.close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
     });
+    
+    casper.then(function staticPageIsCheckedTest() {
+        var checked = casper.evaluate(function evalCheckedProp() {
+            return document.querySelector('.post-setting-static-page').checked
+        });
+        test.assert(!checked, 'Turned page into post.');
+    });
+        
+
 
     // Test Delete Post Modal
     casper.thenClick('.post-settings-menu a.delete');

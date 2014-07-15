@@ -4,13 +4,11 @@ var PostController = Ember.ObjectController.extend({
 
     actions: {
         toggleFeatured: function () {
-            var featured = this.toggleProperty('featured'),
+            var options = {disableNProgress: true},
                 self = this;
 
-            this.get('model').save().then(function () {
-                self.notifications.closePassive();
-                self.notifications.showSuccess('Post successfully marked as ' + (featured ? 'featured' : 'not featured') + '.');
-            }).catch(function (errors) {
+            this.toggleProperty('featured');
+            this.get('model').save(options).catch(function (errors) {
                 self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
