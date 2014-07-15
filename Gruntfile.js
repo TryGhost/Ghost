@@ -449,7 +449,7 @@ var path           = require('path'),
         // This really ought to be refactored into a separate grunt task module
         grunt.registerTask('spawnCasperJS', function (target) {
 
-            target = _.contains(['client', 'frontend'], target) ? target + '/' : undefined;
+            target = _.contains(['client', 'frontend', 'setup'], target) ? target + '/' : undefined;
 
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
@@ -550,6 +550,22 @@ var path           = require('path'),
             });
         });
 
+        // #### Reset Database to "New" state *(Utility Task)*
+        // Drops all database tables and then runs the migration process to put the database
+        // in a "new" state.
+        grunt.registerTask('cleanDatabase', function () {
+            var done = this.async(),
+                migration = require('./core/server/data/migration');
+
+            migration.reset().then(function () {
+                return migration.init();
+            }).then(function () {
+                done();
+            }).catch(function (err) {
+                grunt.fail.fatal(err.stack);
+            });
+        });
+
         // ### Validate
         // **Main testing task**
         //
@@ -637,6 +653,16 @@ var path           = require('path'),
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
             ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
 
+        // ### Functional tests for the setup process
+        // `grunt test-functional-setup will run just the functional tests for the setup page.
+        //
+        // Setup only works with a brand new database, so it needs to run isolated from the rest of
+        // the functional tests.
+        grunt.registerTask('test-functional-setup', 'Run functional tests for setup',
+            ['clean:test', 'setTestEnv', 'loadConfig', 'cleanDatabase', 'express:test',
+            'spawnCasperJS:setup', 'express:test:stop']
+        );
+
         // ### Functional tests *(sub task)*
         // `grunt test-functional` will run just the functional tests
         //
@@ -656,7 +682,8 @@ var path           = require('path'),
         // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
         // including buttons and other important interactions in the admin UI.
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'express:test', 'spawnCasperJS', 'express:test:stop']
+            ['clean:test', 'setTestEnv', 'loadConfig', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop',
+            'test-functional-setup']
         );
 
         // ### Coverage
