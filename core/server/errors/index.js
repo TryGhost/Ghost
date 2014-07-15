@@ -83,14 +83,18 @@ errors = {
     },
 
     logError: function (err, context, help) {
+        if (_.isArray(err)) {
+            _.each(err, function (e) {
+                errors.logError(e);
+            });
+            return;
+        }
+
         var stack = err ? err.stack : null,
             msgs;
 
-        if (err) {
-            err = err.message || err || 'An unknown error occurred.';
-        } else {
-            err = 'An unknown error occurred.';
-        }
+        err = _.isString(err) ? err : (_.isObject(err) ? err.message : 'An unknown error occurred.');
+
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
@@ -128,6 +132,12 @@ errors = {
         this.logError(err, context, help);
 
         this.throwError(err, context, help);
+    },
+
+    logAndRejectError: function (err, context, help) {
+        this.logError(err, context, help);
+
+        this.rejectError(err, context, help);
     },
 
     logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {

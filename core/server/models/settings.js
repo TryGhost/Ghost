@@ -5,6 +5,7 @@ var Settings,
     errors         = require('../errors'),
     when           = require('when'),
     validation     = require('../data/validation'),
+    internal       = {context: {internal: true}},
 
     defaultSettings;
 
@@ -75,28 +76,6 @@ Settings = ghostBookshelf.Model.extend({
     }
 
 }, {
-    /**
-    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-    * @param {String} methodName The name of the method to check valid options for.
-    * @return {Array} Keys allowed in the `options` hash of the model's method.
-    */
-    permittedOptions: function (methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
-
-            // whitelists for the `options` hash argument on methods, by method name.
-            // these are the only options that can be passed to Bookshelf / Knex.
-            validOptions = {
-                add: ['user'],
-                edit: ['user']
-            };
-
-        if (validOptions[methodName]) {
-            options = options.concat(validOptions[methodName]);
-        }
-
-        return options;
-    },
-
     findOne: function (options) {
         // Allow for just passing the key instead of attributes
         if (!_.isObject(options)) {
@@ -151,7 +130,7 @@ Settings = ghostBookshelf.Model.extend({
             var defaultSetting = _.clone(getDefaultSettings()[key]);
             defaultSetting.value = defaultSetting.defaultValue;
 
-            return Settings.forge(defaultSetting).save(null, {user: 1});
+            return Settings.forge(defaultSetting).save(null, internal);
         });
     },
 
@@ -168,7 +147,7 @@ Settings = ghostBookshelf.Model.extend({
                 }
                 if (isMissingFromDB) {
                     defaultSetting.value = defaultSetting.defaultValue;
-                    insertOperations.push(Settings.forge(defaultSetting).save(null, {user: 1}));
+                    insertOperations.push(Settings.forge(defaultSetting).save(null, internal));
                 }
             });
 

@@ -1,11 +1,11 @@
-/*globals describe, before, beforeEach, afterEach, it*/
+/*globals describe, before, beforeEach, afterEach, after, it*/
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require("lodash"),
 
     // Stuff we are testing
     Models = require('../../../server/models'),
-    config = require('../../../server/config');
+    config = require('../../../server/config'),
+    context = {context: {user: 1}};
 
 describe('Settings Model', function () {
 
@@ -81,7 +81,7 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                return SettingsModel.edit({key: "description", value: "new value"});
+                return SettingsModel.edit({key: 'description', value: 'new value'}, context);
 
             }).then(function (edited) {
 
@@ -110,10 +110,10 @@ describe('Settings Model', function () {
 
                 results.length.should.be.above(0);
 
-                model1 = {key: "description", value: "another new value"};
-                model2 = {key: "title", value: "new title"};
+                model1 = {key: 'description', value: 'another new value'};
+                model2 = {key: 'title', value: 'new title'};
 
-                return SettingsModel.edit([model1, model2]);
+                return SettingsModel.edit([model1, model2], context);
 
             }).then(function (edited) {
 
@@ -142,13 +142,13 @@ describe('Settings Model', function () {
                 value: 'Test Content 1'
             };
 
-            SettingsModel.add(newSetting, {user: 1}).then(function (createdSetting) {
+            SettingsModel.add(newSetting, context).then(function (createdSetting) {
 
                 should.exist(createdSetting);
                 createdSetting.has('uuid').should.equal(true);
-                createdSetting.attributes.key.should.equal(newSetting.key, "key is correct");
-                createdSetting.attributes.value.should.equal(newSetting.value, "value is correct");
-                createdSetting.attributes.type.should.equal("core");
+                createdSetting.attributes.key.should.equal(newSetting.key, 'key is correct');
+                createdSetting.attributes.value.should.equal(newSetting.value, 'value is correct');
+                createdSetting.attributes.type.should.equal('core');
 
                 done();
             }).catch(done);
@@ -175,7 +175,7 @@ describe('Settings Model', function () {
         });
     });
 
-    describe('populating defaults from settings.json', function (done) {
+    describe('populating defaults from settings.json', function () {
 
         beforeEach(function (done) {
             config().database.knex('settings').truncate().then(function () {
@@ -202,7 +202,7 @@ describe('Settings Model', function () {
         });
 
         it('doesn\'t overwrite any existing settings', function (done) {
-            SettingsModel.add({key: 'description', value: 'Adam\'s Blog'}, {user: 1}).then(function () {
+            SettingsModel.add({key: 'description', value: 'Adam\'s Blog'}, context).then(function () {
                 return SettingsModel.populateDefaults();
             }).then(function () {
                 return SettingsModel.findOne('description');

@@ -5,11 +5,13 @@ var testUtils   = require('../utils'),
     sinon       = require('sinon'),
     when        = require('when'),
     _           = require('lodash'),
+    Models = require('../../server/models'),
 
     // Stuff we are testing
     permissions = require('../../server/permissions'),
     effectivePerms = require('../../server/permissions/effective'),
-    Models = require('../../server/models');
+    context = {context: {user: 1}};
+
 
 describe('Permissions', function () {
 
@@ -60,7 +62,7 @@ describe('Permissions', function () {
                 object_type: obj
             };
 
-            return Models.Permission.add(newPerm, {user: 1});
+            return Models.Permission.add(newPerm, context);
         },
         createTestPermissions = function () {
             var createActions = _.map(testPerms, function (testPerm) {
@@ -111,7 +113,7 @@ describe('Permissions', function () {
 
                 existingUserRoles = foundUser.related('roles').length;
 
-                return testRole.save(null, {user: 1}).then(function () {
+                return testRole.save(null, context).then(function () {
                     return foundUser.roles().attach(testRole);
                 });
             }).then(function () {
@@ -135,7 +137,7 @@ describe('Permissions', function () {
 
                 testUser.related('permissions').length.should.equal(0);
 
-                return testPermission.save(null, {user: 1}).then(function () {
+                return testPermission.save(null, context).then(function () {
                     return testUser.permissions().attach(testPermission);
                 });
             }).then(function () {
@@ -155,7 +157,7 @@ describe('Permissions', function () {
                 description: 'test2 description'
             });
 
-            testRole.save(null, {user: 1})
+            testRole.save(null, context)
                 .then(function () {
                     return testRole.load('permissions');
                 })
@@ -168,7 +170,7 @@ describe('Permissions', function () {
 
                     testRole.related('permissions').length.should.equal(0);
 
-                    return rolePermission.save(null, {user: 1}).then(function () {
+                    return rolePermission.save(null, context).then(function () {
                         return testRole.permissions().attach(rolePermission);
                     });
                 })
@@ -239,7 +241,7 @@ describe('Permissions', function () {
                         object_type: 'post'
                     });
 
-                    return newPerm.save(null, {user: 1}).then(function () {
+                    return newPerm.save(null, context).then(function () {
                         return foundUser.permissions().attach(newPerm);
                     });
                 })
@@ -342,7 +344,7 @@ describe('Permissions', function () {
 
         it('does not allow an app to edit a post without permission', function (done) {
             // Change the author of the post so the author override doesn't affect the test
-            Models.Post.edit({'author_id': 2}, {id: 1})
+            Models.Post.edit({'author_id': 2}, _.extend(context, {id: 1}))
                 .then(function (updatedPost) {
                     // Add user permissions
                     return Models.User.findOne({id: 1})
@@ -353,7 +355,7 @@ describe('Permissions', function () {
                                 object_type: 'post'
                             });
 
-                            return newPerm.save(null, {user: 1}).then(function () {
+                            return newPerm.save(null, context).then(function () {
                                 return foundUser.permissions().attach(newPerm).then(function () {
                                     return when.all([updatedPost, foundUser]);
                                 });
