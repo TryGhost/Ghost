@@ -5,9 +5,7 @@ var ghostBookshelf = require('./base'),
 
 
 Client = ghostBookshelf.Model.extend({
-
     tableName: 'clients'
-
 });
 
 Clients = ghostBookshelf.Collection.extend({

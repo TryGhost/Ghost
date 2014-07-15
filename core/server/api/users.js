@@ -23,8 +23,6 @@ function prepareInclude(include) {
     return include;
 }
 
-
-
 /**
  * ## Posts API Methods
  *
@@ -146,7 +144,7 @@ users = {
                 newUser = checkedUserData.users[0];
 
                 if (newUser.email) {
-                    newUser.name = object.users[0].email.substring(0, newUser.email.indexOf("@"));
+                    newUser.name = object.users[0].email.substring(0, newUser.email.indexOf('@'));
                     newUser.password = globalUtils.uid(50);
                     newUser.status = 'invited';
                     // TODO: match user role with db and enforce permissions

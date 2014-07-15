@@ -1,11 +1,12 @@
-/*globals describe, before, beforeEach, afterEach, it*/
+/*globals describe, before, beforeEach, afterEach, after, it*/
 var testUtils = require('../../utils'),
     sequence  = require('when/sequence'),
     should    = require('should'),
-    _         = require("lodash"),
+    _         = require('lodash'),
 
     // Stuff we are testing
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    context = {context: {user: 1}};
 
 describe('App Model', function () {
 
@@ -64,7 +65,7 @@ describe('App Model', function () {
         AppModel.findOne({id: 1}).then(function (foundApp) {
             should.exist(foundApp);
 
-            return foundApp.set({name: 'New App'}).save();
+            return foundApp.set({name: 'New App'}).save(null, context);
         }).then(function () {
             return AppModel.findOne({id: 1});
         }).then(function (updatedApp) {
@@ -79,7 +80,7 @@ describe('App Model', function () {
     it('can add', function (done) {
         var newApp = testUtils.DataGenerator.forKnex.createApp(testUtils.DataGenerator.Content.apps[1]);
 
-        AppModel.add(newApp).then(function (createdApp) {
+        AppModel.add(newApp, context).then(function (createdApp) {
             should.exist(createdApp);
 
             createdApp.attributes.name.should.equal(newApp.name);
@@ -115,7 +116,7 @@ describe('App Model', function () {
                     name: 'Kudos ' + i,
                     version: '0.0.1',
                     status: 'installed'
-                }, {user: 1});
+                }, context);
             };
         })).then(function (createdApps) {
             // Should have created 12 apps

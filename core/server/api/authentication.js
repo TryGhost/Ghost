@@ -146,7 +146,8 @@ authentication = {
     },
 
     setup: function (object) {
-        var setupUser;
+        var setupUser,
+            internal = {context: {internal: true}};
 
         return utils.checkObject(object, 'setup').then(function (checkedSetupData) {
             setupUser = {
@@ -156,13 +157,14 @@ authentication = {
                 blogTitle: checkedSetupData.setup[0].blogTitle,
                 status: 'active'
             };
-            return dataProvider.User.findAll();
-        }).then(function (users) {
-            if (users.length > 0) {
-                return dataProvider.User.setup(setupUser, {id: 1});
+
+            return dataProvider.User.findOne({role: 'Owner'});
+        }).then(function (ownerUser) {
+            if (ownerUser) {
+                return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));
             } else {
                 // TODO: needs to pass owner role when role endpoint is finished!
-                return dataProvider.User.add(setupUser);
+                return dataProvider.User.add(setupUser, internal);
             }
         }).then(function (user) {
             var userSettings = [];

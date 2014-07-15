@@ -1,10 +1,10 @@
 /*globals describe, it, before, beforeEach, afterEach */
 var testUtils = require('../../utils'),
     should = require('should'),
-    errors = require('../../../server/errors'),
 
     // Stuff we are testing
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    context = {context: {user: 1}};
 
 describe('Permission Model', function () {
 
@@ -53,13 +53,13 @@ describe('Permission Model', function () {
         PermissionModel.findOne({id: 1}).then(function (foundPermission) {
             should.exist(foundPermission);
 
-            return foundPermission.set({name: "updated"}).save();
+            return foundPermission.set({name: 'updated'}).save(null, context);
         }).then(function () {
             return PermissionModel.findOne({id: 1});
         }).then(function (updatedPermission) {
             should.exist(updatedPermission);
 
-            updatedPermission.get("name").should.equal("updated");
+            updatedPermission.get('name').should.equal('updated');
 
             done();
         }).catch(done);
@@ -72,7 +72,7 @@ describe('Permission Model', function () {
             action_type: 'test'
         };
 
-        PermissionModel.add(newPerm, {user: 1}).then(function (createdPerm) {
+        PermissionModel.add(newPerm, context).then(function (createdPerm) {
             should.exist(createdPerm);
 
             createdPerm.attributes.name.should.equal(newPerm.name);

@@ -56,13 +56,13 @@ addAllRolesPermissions = function () {
 };
 
 
-addAllPermissions = function () {
+addAllPermissions = function (options) {
     var ops = [];
     _.each(fixtures.permissions, function (permissions, object_type) {
         _.each(permissions, function (permission) {
             ops.push(function () {
                 permission.object_type = object_type;
-                return models.Permission.add(permission);
+                return models.Permission.add(permission, options);
             });
         });
     });
@@ -71,11 +71,10 @@ addAllPermissions = function () {
 };
 
 // ## Populate
-populate = function () {
+populate = function (options) {
     logInfo('Populating permissions');
-
     // ### Ensure all permissions are added
-    return addAllPermissions().then(function () {
+    return addAllPermissions(options).then(function () {
     // ### Ensure all roles_permissions are added
         return addAllRolesPermissions();
     });
@@ -84,7 +83,7 @@ populate = function () {
 // ## Update
 // Update permissions to 003
 // Need to rename old permissions, and then add all of the missing ones
-to003 = function () {
+to003 = function (options) {
     var ops = [];
 
     logInfo('Upgrading permissions');
@@ -102,7 +101,7 @@ to003 = function () {
 
     // Now we can perfom the normal populate
     return when.all(ops).then(function () {
-        return populate();
+        return populate(options);
     });
 };
 
