@@ -62,12 +62,8 @@ init = function () {
     // 4. The database has not yet been created
     return versioning.getDatabaseVersion().then(function (databaseVersion) {
         var defaultVersion = versioning.getDefaultDatabaseVersion();
-        if (databaseVersion === defaultVersion) {
-            // 1. The database exists and is up-to-date
-            logInfo('Up to date at version ' + databaseVersion);
-            return when.resolve();
-        }
-        if (databaseVersion < defaultVersion) {
+
+        if (databaseVersion < defaultVersion || process.env.FORCE_MIGRATION) {
             // 2. The database exists but is out of date
             // Migrate to latest version
             logInfo('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
@@ -76,6 +72,13 @@ init = function () {
                 return versioning.setDatabaseVersion();
             });
         }
+
+        if (databaseVersion === defaultVersion) {
+            // 1. The database exists and is up-to-date
+            logInfo('Up to date at version ' + databaseVersion);
+            return when.resolve();
+        }
+
         if (databaseVersion > defaultVersion) {
             // 3. The database exists but the currentVersion setting does not or cannot be understood
             // In this case we don't understand the version because it is too high
