@@ -270,15 +270,16 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             s;
         return this.getByEmail(object.email).then(function (user) {
-            if (!user || user.get('status') === 'invited' || user.get('status') === 'inactive') {
-                return when.reject(new Error('NotFound'));
+            if (!user || user.get('status') === 'invited' || user.get('status') === 'invited-pending'
+                    || user.get('status') === 'inactive') {
+                return when.reject(new errors.NotFoundError('NotFound'));
             }
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
                         return when(self.setWarning(user)).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                            return when.reject(new Error('Your password is incorrect.<br>' +
+                            return when.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
                                 remaining + ' attempt' + s + ' remaining!'));
                         });
                     }
@@ -288,7 +289,7 @@ User = ghostBookshelf.Model.extend({
                     });
                 }, errors.logAndThrowError);
             }
-            return when.reject(new Error('Your account is locked due to too many ' +
+            return when.reject(new errors.NoPermissionError('Your account is locked due to too many ' +
                 'login attempts. Please reset your password to log in again by clicking ' +
                 'the "Forgotten password?" link!'));
 
