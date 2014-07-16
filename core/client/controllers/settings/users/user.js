@@ -33,11 +33,16 @@ var SettingsUserController = Ember.ObjectController.extend({
     }.property('user.image'),
 
     last_login: function () {
-        return this.get('user.last_login').fromNow();
+        var lastLogin = this.get('user.last_login');
+
+        return lastLogin ? lastLogin.fromNow() : '';
+
     }.property('user.last_login'),
 
     created_at: function () {
-        return this.get('user.created_at').fromNow();
+        var createdAt = this.get('user.created_at');
+
+        return createdAt ? createdAt.fromNow() : '';
     }.property('user.created_at'),
 
     actions: {
@@ -108,7 +113,6 @@ var SettingsUserController = Ember.ObjectController.extend({
             }
         }
     }
-
 });
 
 export default SettingsUserController;
