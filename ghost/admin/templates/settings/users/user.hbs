@@ -3,7 +3,7 @@
     <h2 class="hidden">Your Profile</h2>
 
     <div class="settings-header-inner">
-	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
+        {{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
         <section class="page-actions page-actions-alt">
             {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
         </section>
@@ -31,7 +31,7 @@
         <button class="edit-cover-image js-modal-cover button" {{action "openModal" "upload" user "cover"}}>Change Cover</button>
     </header>
 
-    <form class="user-profile" novalidate="novalidate">
+    <form class="user-profile" novalidate="novalidate" autocomplete="off">
 
         <fieldset class="user-details-top">
 
@@ -58,7 +58,7 @@
 
             <div class="form-group">
                 <label for="user-email">Email</label>
-                {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off"}}
+                {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
                 <p>Used for notifications</p>
             </div>
 
@@ -86,7 +86,7 @@
 
             <div class="form-group">
                 <label for="user-website">Website</label>
-                {{input type="url" value=user.website id="user-website" autocapitalize="off" autocorrect="off"}}
+                {{input type="url" value=user.website id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off"}}
                 <p>Have a website or blog other than this one? Link it!</p>
             </div>
 
