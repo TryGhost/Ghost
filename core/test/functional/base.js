@@ -91,7 +91,7 @@ screens = {
    'signin-authenticated': {
        url: 'ghost/signin/',
        //signin with authenticated user redirects to posts
-       selector: '#main-menu .content.active'
+       selector: '#main-menu .content .active'
    },
    'signout': {
        url: 'ghost/signout/',
@@ -109,7 +109,7 @@ screens = {
    },
    'setup-authenticated': {
        url: 'ghost/setup/',
-       selector: '#main-menu .content.active'
+       selector: '#main-menu .content a.active'
    }
 };
 
@@ -386,9 +386,9 @@ CasperTest.Routines = (function () {
                 var errorText = casper.evaluate(function () {
                     return document.querySelector('.notification-error').innerText;
                 });
-                casper.echoConcise('It appears as though a user is already registered. Error text: ' + errorText);
+                casper.echoConcise('Setup failed. Error text: ' + errorText);
             }, function onTimeout() {
-                casper.echoConcise('It appears as though a user was not already registered.');
+                casper.echoConcise('Setup completed.');
             }, 2000);
 
             casper.captureScreenshot('setting_up3.png');
