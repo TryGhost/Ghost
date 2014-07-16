@@ -16,13 +16,13 @@
         <h3>Stack Trace</h3>
         <p><strong>{{message}}</strong></p>
         <ul class="error-stack-list">
-            {{#foreach stack}}
+            {{#each stack}}
                 <li>
                     at
                     {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
                     <span class="error-stack-file">({{at}})</span>
                 </li>
-            {{/foreach}}
+            {{/each}}
         </ul>
     </section>
 {{/if}}
