@@ -82,53 +82,29 @@
         }
     }
 
-    .author-select-wrapper {
-
-        display: inline-block;
-        position: relative;
+    .gh-select {
         height: 36px;
-        width: 100%;
-
-        &:before {
-            content: attr(data-select-text);
-            @include position(absolute, 0 0 0 0);
-            font-size: 1.1em;
+        &:after {
             color: $lightgrey;
-            line-height: 36px;
-            text-indent: 10px;
-        }
-
-        // This is the &:after element
-        @include icon-after($i-chevron-down, 0.85em, $lightgrey) {
-            @include position(absolute, 50% 0.8em null null);
-            position: absolute;
             margin-top: -(0.85em / 2);
-            pointer-events: none;
-        };
-
+        }
         select {
-            opacity: 0;
-            width: 100%;
-            margin-bottom: 0;
+            border: 0;
+            background: transparent;
+            border-radius: 0;
+            color: $lightgrey;
             height: 36px;
+            &:focus {
+                background: $grey;
+            }
         }
-
-        &:hover {
-            background: $grey;
-        }
-
         @media (max-width: 550px) {
             &,
-            &:before,
             select {
                 height: 41px;
             }
-            &:before {
-                line-height: 41px;
-            }
         }
-
-    } // .author-select-wrapper
+    }
 
     .checkbox {
         position: relative;
@@ -152,9 +128,9 @@
         }
     } // input[type='checkbox']
 
-    .select-wrapper {
-        width: calc(100% - 10px);
-    }
+    // .select-wrapper {
+    //     width: calc(100% - 10px);
+    // }
 
     .delete {
         display: block;
@@ -169,6 +145,7 @@
 
         &:hover {
             background: $red;
+            color: #fff;
         }
     } // .delete
 
