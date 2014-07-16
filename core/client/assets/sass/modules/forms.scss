@@ -158,7 +158,7 @@ legend {
 
 #{$all-text-inputs},
 textarea,
-.gh-select {
+select {
     display: block;
     padding: 8px 10px;
     width: 100%;
@@ -363,7 +363,7 @@ input[type='radio'] {
 /* =============================================================================
    Select Component
    ---
-   <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+   <span class="gh-select">
        {{view Ember.Select
            id="activeTheme"
            name="general[activeTheme]"
@@ -376,19 +376,11 @@ input[type='radio'] {
    ============================================================================= */
 
 .gh-select {
-
-    height: 37px;
     position: relative;
-
-    &:before {
-        content: attr(data-select-text);
-        @include position(absolute, 0 null null 10px);
-        font-size: 1.1rem;
-        font-weight: normal;
-        color: $darkgrey;
-        line-height: 35px;
-        pointer-events: none;
-    }
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
 
     @include icon-after($i-chevron-down, 0.85em, $midbrown) {
         @include position(absolute, 50% 0.8em null null);
@@ -398,13 +390,33 @@ input[type='radio'] {
     };
 
     select {
-        opacity: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-        border: 0;
-        width: 100%;
-        height: 100%;
-    }
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: window;
+        text-indent: 0.01px;
+        text-overflow: "";
+        background: #fff;
+        outline: none;
+        padding: 8px 10px;
+        line-height: normal;
 
-}
+        // This hides native gh-select button arrow in IE
+        &::-ms-expand {
+            display: none;
+        }
+
+        // Hover style - Not used, but works
+        &:hover {}
+
+        // Focus style
+        &:focus {
+          outline: none;
+        }
+
+        // This hides focus around selected option in FF
+        &:-moz-focusring {
+          color: transparent;
+          text-shadow: 0 0 0 #000;
+        }
+    } // select
+} // .gh-select
