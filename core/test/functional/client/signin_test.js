@@ -3,38 +3,8 @@
 
 /*globals CasperTest, casper, url, newUser, user, falseUser */
 
-// TODO fix signup vs setup testing
-CasperTest.begin('Ensure a User is Registered', 3, function suite(test) {
-   casper.thenOpenAndWaitForPageLoad('setup', function checkUrl() {
-       test.assertUrlMatch(/ghost\/setup\/$/, 'Landed on the correct URL');
-   });
-
-   casper.waitForOpaque('.setup-box',
-       function then() {
-           this.fillAndAdd('#setup', newSetup);
-       },
-       function onTimeout() {
-           test.fail('Set up form didn\'t fade in.');
-       });
-
-   casper.captureScreenshot('login_register_test.png');
-
-   casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-       test.assertSelectorHasText('.notification-error', 'already registered');
-       // If the previous assert succeeds, then we should skip the next check and just pass.
-       casper.echoConcise('Already registered!');
-       casper.captureScreenshot('already_registered.png');
-   }, function onTimeout() {
-       test.assertUrlMatch(/ghost\/\d+\/$/, 'If we\'re not already registered, we should be logged in.');
-       casper.echoConcise('Successfully registered.');
-   }, 2000);
-
-   casper.thenOpenAndWaitForPageLoad('signout', function then() {
-       test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page.');
-   });
-}, true);
-
 CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
+    CasperTest.Routines.signout.run(test);
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'We should be presented with the signin page.');
@@ -48,21 +18,20 @@ CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
             test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
         });
     });
-}, true);
+});
 
 // Note, this test applies to a global redirect, which sends us to the standard admin.
 // Once Ember becomes the standard admin, this test should still pass.
 CasperTest.begin('Redirects login to signin', 2, function suite(test) {
+    CasperTest.Routines.signout.run(test);
     casper.start(url + 'ghost/login/', function testRedirect(response) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
-}, true);
+});
 
 
 CasperTest.begin('Can\'t spam it', 4, function suite(test) {
-    // init user to prevent redirect to setup
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
@@ -97,11 +66,9 @@ CasperTest.begin('Can\'t spam it', 4, function suite(test) {
     // This test causes the spam notification
     // add a wait to ensure future tests don't get tripped up by this.
     casper.wait(2000);
-}, true);
+});
 
 CasperTest.begin('Login limit is in place', 4, function suite(test) {
-    // init user to prevent redirect to setup
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -130,11 +97,9 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
     // This test used login, add a wait to
     // ensure future tests don't get tripped up by this.
     casper.wait(2000);
-}, true);
+});
 
 CasperTest.begin('Can login to Ghost', 5, function suite(test) {
-    // init user
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -155,11 +120,9 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
-}, true);
+});
 
 CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
-    // init user
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -188,12 +151,10 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });
-}, true);
+});
 
 
 CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
-    // init user to prevent redirect to setup
-    CasperTest.Routines.setup.run(test);
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -217,4 +178,4 @@ CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
         test.fail('Email validation error did not appear');
     }, 2000);
 
-}, true);
+});
