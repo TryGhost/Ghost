@@ -10,6 +10,7 @@ var assert   = require('assert'),
 
 // Stuff we are testing
     api      = require('../../server/api'),
+    config   = rewire('../../server/config'),
     frontend = rewire('../../server/controllers/frontend');
 
 // To stop jshint complaining
@@ -88,10 +89,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 0}, route: {path: '/page/:page/'}};
@@ -104,10 +103,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 1}, route: {path: '/page/:page/'}};
@@ -131,10 +128,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 4}, route: {path: '/page/:page/'}};
@@ -217,7 +212,7 @@ describe('Frontend Controller', function () {
                 }]
             }));
 
-            frontend.__set__('config',  sandbox.stub().returns({
+            frontend.__set__('config', {
                 'paths': {
                     'subdir': '',
                     'availableThemes': {
@@ -230,7 +225,7 @@ describe('Frontend Controller', function () {
                         }
                     }
                 }
-            }));
+            });
         });
 
         describe('custom tag template', function () {
@@ -317,10 +312,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to base tag page if page number is 0 with subdirectory', function () {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 0, slug: 'pumpkin'}};
@@ -333,10 +326,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to base tag page if page number is 1 with subdirectory', function () {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 1, slug: 'pumpkin'}};
@@ -360,10 +351,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            frontend.__set__('config', function() {
-                return {
-                    paths: {subdir: '/blog'}
-                };
+            frontend.__set__('config', {
+                paths: {subdir: '/blog'}
             });
 
             var req = {params: {page: 4, slug: 'pumpkin'}};
@@ -435,7 +424,7 @@ describe('Frontend Controller', function () {
                 }]
             }));
 
-            frontend.__set__('config',  sandbox.stub().returns({
+            frontend.__set__('config', {
                 'paths': {
                     'subdir': '',
                     'availableThemes': {
@@ -449,7 +438,7 @@ describe('Frontend Controller', function () {
                         }
                     }
                 }
-            }));
+            });
         });
 
         describe('static pages', function () {
@@ -895,13 +884,10 @@ describe('Frontend Controller', function () {
     describe('rss redirects', function () {
         var res,
             apiUsersStub,
-            overwriteConfig = function(newConfig) {
+            configUpdate  = config.__get__('updateConfig'),
+            overwriteConfig = function (newConfig) {
                 var existingConfig = frontend.__get__('config');
-                var newConfigModule = function() {
-                    return newConfig;
-                };
-                newConfigModule.urlFor = existingConfig.urlFor;
-                frontend.__set__('config', newConfigModule);
+                configUpdate(_.extend(existingConfig, newConfig));
             };
 
         beforeEach(function () {
@@ -995,6 +981,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big', function (done) {
+            overwriteConfig({paths: {subdir: ''}});
+
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 
             frontend.rss(req, res, done).then(function () {

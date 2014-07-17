@@ -176,7 +176,7 @@ users = {
                     dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(user.email, expires, dbHash);
             }).then(function (resetToken) {
-                var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
+                var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
                     siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
                     resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/signup/' + resetToken + '/',
                     resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',

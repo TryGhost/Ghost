@@ -21,7 +21,7 @@ var bookshelf  = require('bookshelf'),
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
-ghostBookshelf = bookshelf(config().database.knex);
+ghostBookshelf = bookshelf(config.database.knex);
 // Load the registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 

@@ -9,7 +9,7 @@ var frontend    = require('../controllers/frontend'),
 
 frontendRoutes = function () {
     var router = express.Router(),
-        subdir = config().paths.subdir;
+        subdir = config.paths.subdir;
 
     // ### Frontend routes
     router.get('/rss/', frontend.rss);

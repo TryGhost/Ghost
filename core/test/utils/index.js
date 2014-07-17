@@ -1,5 +1,4 @@
-var knex          = require('../../server/models/base').knex,
-    when          = require('when'),
+var when          = require('when'),
     sequence      = require('when/sequence'),
     nodefn        = require('when/node'),
     _             = require('lodash'),
@@ -9,6 +8,7 @@ var knex          = require('../../server/models/base').knex,
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
     fork          = require('./fork'),
+    config        = require('../../server/config'),
 
     teardown;
 
@@ -22,6 +22,7 @@ function clearData() {
 }
 
 function insertPosts() {
+    var knex = config.database.knex;
     // ToDo: Get rid of pyramid of doom
     return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
         return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
@@ -34,7 +35,8 @@ function insertMorePosts(max) {
     var lang,
         status,
         posts = [],
-        i, j, k = 0;
+        i, j, k = 0,
+        knex = config.database.knex;
 
     max = max || 50;
 
@@ -57,6 +59,7 @@ function insertMorePosts(max) {
 
 function insertMorePostsTags(max) {
     max = max || 50;
+    var knex = config.database.knex;
 
     return when.all([
         // PostgreSQL can return results in any order
@@ -79,8 +82,8 @@ function insertMorePostsTags(max) {
             promises.push(DataGenerator.forKnex.createPostsTags(posts[i], injectionTagId));
         }
 
-        return sequence(_.times(promises.length, function(index) {
-            return function() {
+        return sequence(_.times(promises.length, function (index) {
+            return function () {
                 return knex('posts_tags').insert(promises[index]);
             };
         }));
@@ -88,7 +91,8 @@ function insertMorePostsTags(max) {
 }
 
 function insertDefaultUser() {
-    var user;
+    var user,
+        knex = config.database.knex;
 
     user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
@@ -99,7 +103,8 @@ function insertDefaultUser() {
 
 function insertAdminUser() {
     var users = [],
-        userRoles = [];
+        userRoles = [],
+        knex = config.database.knex;
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
     userRoles.push(DataGenerator.forKnex.createUserRole(2, 2));
@@ -112,7 +117,8 @@ function insertAdminUser() {
 
 function insertEditorUser() {
     var users = [],
-        userRoles = [];
+        userRoles = [],
+        knex = config.database.knex;
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
     userRoles.push(DataGenerator.forKnex.createUserRole(3, 2));
@@ -125,7 +131,8 @@ function insertEditorUser() {
 
 function insertAuthorUser() {
     var users = [],
-        userRoles = [];
+        userRoles = [],
+        knex = config.database.knex;
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[3]));
     userRoles.push(DataGenerator.forKnex.createUserRole(4, 3));
@@ -137,7 +144,8 @@ function insertAuthorUser() {
 }
 
 function insertDefaultApp() {
-    var apps = [];
+    var apps = [],
+        knex = config.database.knex;
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
 
@@ -164,13 +172,16 @@ function insertDefaultApp() {
 }
 
 function insertApps() {
+    var knex = config.database.knex;
     return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
         return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
     });
 }
 
 function insertAppWithSettings() {
-    var apps = [], app_settings = [];
+    var apps = [],
+        app_settings = [],
+        knex = config.database.knex;
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
     app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[0]));
@@ -178,9 +189,9 @@ function insertAppWithSettings() {
 
     return knex('apps').insert(apps, 'id')
         .then(function (results) {
-            var appId = results[0];
+            var appId = results[0], i;
 
-            for (var i = 0; i < app_settings.length; i++) {
+            for (i = 0; i < app_settings.length; i++) {
                 app_settings[i].app_id = appId;
             }
 
@@ -188,7 +199,9 @@ function insertAppWithSettings() {
         });
 }
 function insertAppWithFields() {
-    var apps = [], app_fields = [];
+    var apps = [],
+        app_fields = [],
+        knex = config.database.knex;
 
     apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
     app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[0]));

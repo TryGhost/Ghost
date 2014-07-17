@@ -11,7 +11,6 @@ var path           = require('path'),
     _              = require('lodash'),
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
-    bootstrap      = require('./core/bootstrap'),
 
     // ## Build File Patterns
     // A list of files and patterns to include when creating a release zip.
@@ -160,7 +159,9 @@ var path           = require('path'),
 
                 // #### All Unit tests
                 unit: {
-                    src: ['core/test/unit/**/*_spec.js']
+                    src: [
+                        'core/test/unit/**/*_spec.js'
+                    ]
                 },
 
                 // ##### Groups of unit tests
@@ -208,7 +209,9 @@ var path           = require('path'),
 
                 // #### All Route tests
                 routes: {
-                    src: ['core/test/functional/routes/**/*_test.js']
+                    src: [
+                        'core/test/functional/routes/**/*_test.js'
+                    ]
                 }
             },
 
@@ -537,12 +540,13 @@ var path           = require('path'),
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
             });
 
-        // #### Load Config *(Utility Task)*
+        // #### Ensure Config *(Utility Task)*
         // Make sure that we have a `config.js` file when running tests
         // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
         // `config.example.js` which is copied and renamed to `config.js` by the bootstrap process
-        grunt.registerTask('loadConfig', function () {
-            var done = this.async();
+        grunt.registerTask('ensureConfig', function () {
+            var bootstrap = require('./core/bootstrap'),
+                done = this.async();
             bootstrap().then(function () {
                 done();
             }).catch(function (err) {
@@ -607,7 +611,7 @@ var path           = require('path'),
         // Unit tests do **not** touch the database.
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:unit']);
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:unit']);
 
         // ### Integration tests *(sub task)*
         // `grunt test-integration` will run just the integration tests
@@ -636,7 +640,7 @@ var path           = require('path'),
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:integration']);
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:integration']);
 
         // ### Route tests *(sub task)*
         // `grunt test-routes` will run just the route tests
@@ -657,7 +661,7 @@ var path           = require('path'),
         // are working as expected, including checking the headers and status codes received. It is very easy and
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'mochacli:routes']);
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:routes']);
 
         // ### Functional tests for the setup process
         // `grunt test-functional-setup will run just the functional tests for the setup page.
@@ -665,7 +669,7 @@ var path           = require('path'),
         // Setup only works with a brand new database, so it needs to run isolated from the rest of
         // the functional tests.
         grunt.registerTask('test-functional-setup', 'Run functional tests for setup',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'cleanDatabase', 'express:test',
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'cleanDatabase', 'express:test',
             'spawnCasperJS:setup', 'express:test:stop']
         );
 
@@ -688,7 +692,7 @@ var path           = require('path'),
         // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
         // including buttons and other important interactions in the admin UI.
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop',
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop',
             'test-functional-setup']
         );
 
@@ -702,7 +706,7 @@ var path           = require('path'),
         //
         // Key areas for coverage are: helpers and theme elements, apps / GDK, the api and model layers.
         grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report',
-            ['clean:test', 'setTestEnv', 'loadConfig', 'shell:coverage']);
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'shell:coverage']);
 
 
         // ## Building assets

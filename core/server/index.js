@@ -41,7 +41,7 @@ function doFirstRun() {
         '</strong>environment.',
 
         'Your URL is set to',
-        '<strong>' + config().url + '</strong>.',
+        '<strong>' + config.url + '</strong>.',
         'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
     ];
 
@@ -76,7 +76,7 @@ function initDbHashAndFirstRun() {
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config().paths.builtScriptPath,
+        location = config.paths.builtScriptPath,
 
         fileNames = helpers.scriptFiles.ember;
 
@@ -127,7 +127,7 @@ function ghostStartMessages() {
         console.log(
             "Ghost is running...".green,
             "\nYour blog is now available on",
-            config().url,
+            config.url,
             "\nCtrl+C to shut down".grey
         );
 
@@ -143,9 +143,9 @@ function ghostStartMessages() {
         console.log(
             ("Ghost is running in " + process.env.NODE_ENV + "...").green,
             "\nListening on",
-                config.getSocket() || config().server.host + ':' + config().server.port,
+                config.getSocket() || config.server.host + ':' + config.server.port,
             "\nUrl configured as:",
-            config().url,
+            config.url,
             "\nCtrl+C to shut down".grey
         );
         // ensure that Ghost exits correctly on Ctrl+C
@@ -231,7 +231,7 @@ function init(server) {
     }).then(function () {
         // We must pass the api.settings object
         // into this method due to circular dependencies.
-        return config.theme.update(api.settings, config().url);
+        return config.theme.update(api.settings, config.url);
     }).then(function () {
         return when.join(
             // Check for or initialise a dbHash.
@@ -253,7 +253,7 @@ function init(server) {
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         // enabled gzip compression by default
-        if (config().server.compress !== false) {
+        if (config.server.compress !== false) {
             server.use(compress());
         }
 
@@ -271,11 +271,11 @@ function init(server) {
         middleware(server, dbHash);
 
         // Log all theme errors and warnings
-        _.each(config().paths.availableThemes._messages.errors, function (error) {
+        _.each(config.paths.availableThemes._messages.errors, function (error) {
             errors.logError(error.message, error.context, error.help);
         });
 
-        _.each(config().paths.availableThemes._messages.warns, function (warn) {
+        _.each(config.paths.availableThemes._messages.warns, function (warn) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 
@@ -295,8 +295,8 @@ function init(server) {
 
         } else {
             httpServer = server.listen(
-                config().server.port,
-                config().server.host
+                config.server.port,
+                config.server.host
             );
         }
 
