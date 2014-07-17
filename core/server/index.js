@@ -78,7 +78,8 @@ function builtFilesExist() {
     var deferreds = [],
         location = config().paths.builtScriptPath,
 
-        fileNames = helpers.scriptFiles.ember;
+        fileNames = process.env.NODE_ENV === 'production' ?
+            helpers.scriptFiles.production : helpers.scriptFiles.development;
 
     function checkExist(fileName) {
         var deferred = when.defer(),

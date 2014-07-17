@@ -22,26 +22,19 @@ var downsize        = require('downsize'),
 
     scriptFiles = {
         production: [
-            'ghost.min.js'
+            'vendor.min.js',
+            'ghost.min.js',
         ],
         development: [
-            'vendor.js',
-            'helpers.js',
-            'templates.js',
-            'models.js',
-            'views.js'
-        ],
-        ember: [
-            'vendor-ember.js',
-            'templates-ember.js',
-            'ghost-dev-ember.js'
+            'vendor-dev.js',
+            'templates-dev.js',
+            'ghost-dev.js'
         ]
     };
 
 if (!isProduction) {
     hbs.handlebars.logger.level = 0;
 }
-
 
  // [ description]
  //
@@ -370,7 +363,7 @@ coreHelpers.apps = function (context, options) {
 };
 
 coreHelpers.ghost_script_tags = function () {
-    var scriptList = scriptFiles.ember;
+    var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
     scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
