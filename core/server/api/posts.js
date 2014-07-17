@@ -141,7 +141,7 @@ posts = {
     add: function add(object, options) {
         options = options || {};
 
-        return canThis(options.context).create.post().then(function () {
+        return canThis(options.context).add.post().then(function () {
             return utils.checkObject(object, docName).then(function (checkedPostData) {
                 if (options.include) {
                     options.include = prepareInclude(options.include);
@@ -172,7 +172,7 @@ posts = {
      * @return {Promise(Post)} Deleted Post
      */
     destroy: function destroy(options) {
-        return canThis(options.context).remove.post(options.id).then(function () {
+        return canThis(options.context).destroy.post(options.id).then(function () {
             var readOptions = _.extend({}, options, {status: 'all'});
             return posts.read(readOptions).then(function (result) {
                 return dataProvider.Post.destroy(options).then(function () {
