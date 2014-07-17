@@ -3,18 +3,29 @@
 var fs              = require('fs-extra'),
     path            = require('path'),
     should          = require('should'),
-    config          = require('../../server/config'),
     sinon           = require('sinon'),
-    localfilesystem = require('../../server/storage/localfilesystem');
+    rewire          = require('rewire'),
+    _               = require('lodash'),
+    config          = rewire('../../server/config'),
+    configUpdate    = config.__get__('updateConfig'),
+    localfilesystem = rewire('../../server/storage/localfilesystem');
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Local File System Storage', function () {
 
-    var image;
+    var image,
+        overrideConfig = function (newConfig) {
+            var existingConfig = localfilesystem.__get__('config'),
+                updatedConfig = _.extend(existingConfig, newConfig);
+            configUpdate(updatedConfig);
+            localfilesystem.__set__('config', updatedConfig);
+        };
 
     beforeEach(function () {
+        overrideConfig(config);
+
         sinon.stub(fs, 'mkdirs').yields();
         sinon.stub(fs, 'copy').yields();
         sinon.stub(fs, 'exists').yields(false);
@@ -121,17 +132,17 @@ describe('Local File System Storage', function () {
     });
 
     describe('when a custom content path is used', function () {
-        var origContentPath = config().paths.contentPath;
-        var origImagesPath = config().paths.imagesPath;
+        var origContentPath = config.paths.contentPath;
+        var origImagesPath = config.paths.imagesPath;
 
         beforeEach(function () {
-            config().paths.contentPath = config().paths.appRoot + '/var/ghostcms';
-            config().paths.imagesPath = config().paths.appRoot + '/var/ghostcms/' + config().paths.imagesRelPath;
+            config.paths.contentPath = config.paths.appRoot + '/var/ghostcms';
+            config.paths.imagesPath = config.paths.appRoot + '/var/ghostcms/' + config.paths.imagesRelPath;
         });
 
         afterEach(function () {
-            config().paths.contentPath = origContentPath;
-            config().paths.imagesPath = origImagesPath;
+            config.paths.contentPath = origContentPath;
+            config.paths.imagesPath = origImagesPath;
         });
 
         it('should send the correct path to image', function (done) {

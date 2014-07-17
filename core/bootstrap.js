@@ -11,8 +11,8 @@ var fs      = require('fs'),
     errors  = require('./server/errors'),
     config  = require('./server/config'),
 
-    appRoot = config().paths.appRoot,
-    configExample = config().paths.configExample,
+    appRoot = config.paths.appRoot,
+    configExample = config.paths.configExample,
     configFile;
 
 function readConfigFile(envVal) {
@@ -122,7 +122,7 @@ function loadConfig(configFilePath) {
 
     // Allow config file path to be taken from, in order of importance:
     // environment process, passed in value, default location
-    configFile = process.env.GHOST_CONFIG || configFilePath || config().paths.config;
+    configFile = process.env.GHOST_CONFIG || configFilePath || config.paths.config;
 
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */

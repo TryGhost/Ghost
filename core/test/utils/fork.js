@@ -36,8 +36,8 @@ function findFreePort(port) {
 // passing to forkGhost() method
 function forkConfig() {
     // require caches values, and we want to read it fresh from the file
-    delete require.cache[config().paths.config];
-    return _.cloneDeep(require(config().paths.config)[process.env.NODE_ENV]);
+    delete require.cache[config.paths.config];
+    return _.cloneDeep(require(config.paths.config)[process.env.NODE_ENV]);
 }
 
 // Creates a new fork of Ghost process with a given config
@@ -51,7 +51,7 @@ function forkGhost(newConfig, envName) {
             newConfig.server.port = port;
             newConfig.url = url.format(_.extend(url.parse(newConfig.url), {port: port, host: null}));
             
-            var newConfigFile = path.join(config().paths.appRoot, 'config.test' + port + '.js');
+            var newConfigFile = path.join(config.paths.appRoot, 'config.test' + port + '.js');
             fs.writeFile(newConfigFile, 'module.exports = {' + envName + ': ' + JSON.stringify(newConfig) + '}', function(err) {
                 if (err) throw err;
                 
@@ -59,7 +59,7 @@ function forkGhost(newConfig, envName) {
                 var env = _.clone(process.env);
                 env['GHOST_CONFIG'] = newConfigFile;
                 env['NODE_ENV'] = envName;
-                var child = cp.fork(path.join(config().paths.appRoot, 'index.js'), {env: env});
+                var child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
                 
                 var pingTries = 0;
                 var pingCheck;

@@ -15,7 +15,7 @@ function GhostMailer(opts) {
 GhostMailer.prototype.init = function () {
     var self = this;
     self.state = {};
-    if (config().mail && config().mail.transport) {
+    if (config.mail && config.mail.transport) {
         this.createTransport();
         return when.resolve();
     }
@@ -53,17 +53,17 @@ GhostMailer.prototype.detectSendmail = function () {
 };
 
 GhostMailer.prototype.createTransport = function () {
-    this.transport = nodemailer.createTransport(config().mail.transport, _.clone(config().mail.options) || {});
+    this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options) || {});
 };
 
 
 GhostMailer.prototype.fromAddress = function () {
-    var from = config().mail && config().mail.fromaddress,
+    var from = config.mail && config.mail.fromaddress,
         domain;
 
     if (!from) {
         // Extract the domain name from url set in config.js
-        domain = config().url.match(new RegExp("^https?://([^/:?#]+)(?:[/:?#]|$)", "i"));
+        domain = config.url.match(new RegExp("^https?://([^/:?#]+)(?:[/:?#]|$)", "i"));
         domain = domain && domain[1];
 
         // Default to ghost@[blog.url]

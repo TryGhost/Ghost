@@ -11,7 +11,7 @@ var _       = require('lodash'),
 
 
 doRaw = function doRaw(query, fn) {
-    return config().database.knex.raw(query).then(function (response) {
+    return config.database.knex.raw(query).then(function (response) {
         return fn(response);
     });
 };

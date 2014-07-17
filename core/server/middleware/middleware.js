@@ -43,7 +43,7 @@ var middleware = {
 
         // SubPath is the url path starting after any default subdirectories
         // it is stripped of anything after the two levels `/ghost/.*?/` as the reset link has an argument
-        path = req.path.substring(config().paths.subdir.length);
+        path = req.path.substring(config.paths.subdir.length);
         /*jslint regexp:true, unparam:true*/
         subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
             return a;
@@ -130,7 +130,7 @@ var middleware = {
         api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
             var activeTheme = response.settings[0];
 
-            express['static'](path.join(config().paths.themePath, activeTheme.value), {maxAge: ONE_YEAR_MS})(req, res, next);
+            express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: ONE_YEAR_MS})(req, res, next);
         });
     },
 

@@ -14,8 +14,7 @@ var should          = require('should'),
     fakeConfig,
     fakeSettings,
     fakeSendmail,
-    sandbox = sinon.sandbox.create(),
-    config;
+    sandbox = sinon.sandbox.create();
 
 // Mock SMTP config
 SMTP = {
@@ -39,9 +38,11 @@ SENDMAIL = {
 
 describe('Mail', function () {
     var overrideConfig = function (newConfig) {
-        mailer.__set__('config',  sandbox.stub().returns(
-            _.extend({}, defaultConfig, newConfig)
-        ));
+        var config = rewire('../../server/config'),
+            configUpdate = config.__get__('updateConfig'),
+            existingConfig = mailer.__get__('config');
+
+        configUpdate(_.extend(existingConfig, newConfig));
     };
 
     beforeEach(function () {
@@ -53,7 +54,7 @@ describe('Mail', function () {
         };
         fakeSendmail = '/fake/bin/sendmail';
 
-        config = sinon.stub().returns(fakeConfig);
+        overrideConfig(fakeConfig);
 
         sandbox.stub(mailer, 'isWindows', function () {
             return false;

@@ -215,24 +215,22 @@ describe('Error handling', function () {
 
         before(function () {
             originalConfig = errors.__get__('config');
-            errors.__set__('config', function () {
-                return {
-                    'paths': {
-                        'themePath': '/content/themes',
-                        'availableThemes': {
-                            'casper': {
-                                'assets': null,
-                                'default.hbs': '/content/themes/casper/default.hbs',
-                                'index.hbs': '/content/themes/casper/index.hbs',
-                                'page.hbs': '/content/themes/casper/page.hbs',
-                                'tag.hbs': '/content/themes/casper/tag.hbs'
-                            },
-                            'theme-with-error': {
-                                'error.hbs':''
-                            }
+            errors.__set__('config', {
+                'paths': {
+                    'themePath': '/content/themes',
+                    'availableThemes': {
+                        'casper': {
+                            'assets': null,
+                            'default.hbs': '/content/themes/casper/default.hbs',
+                            'index.hbs': '/content/themes/casper/index.hbs',
+                            'page.hbs': '/content/themes/casper/page.hbs',
+                            'tag.hbs': '/content/themes/casper/tag.hbs'
+                        },
+                        'theme-with-error': {
+                            'error.hbs': ''
                         }
                     }
-                };
+                }
             });
             errors.updateActiveTheme('casper');
         });
