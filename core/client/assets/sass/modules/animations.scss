@@ -37,10 +37,10 @@
     }
 }
 .fade-in {
-    -o-animation: fade-in 0.5s;
-    -moz-animation: fade-in 0.5s;
-    -webkit-animation: fade-in 0.5s;
-    animation: fade-in 0.5s;
+    -o-animation: fade-in 1s;
+    -moz-animation: fade-in 1s;
+    -webkit-animation: fade-in 1s;
+    animation: fade-in 1s;
 }
 
 @include keyframes(fade-in-snap) {
