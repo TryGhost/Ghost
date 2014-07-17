@@ -11,7 +11,7 @@
    Object List
    ========================================================================== */
 
-.object-list + .object-list {
+.object-list:not(:first-of-type) {
     margin-top: 34px;
 }
 
@@ -24,12 +24,18 @@
 
 .object-list-item {
 
-    @include display(flex);
-    @include justify-content(start);
-    @include align-items(center);
+    @media (max-width: 500px) {
+        display: block;
+        padding: 15px 0;
+        @include clearfix;
+    }
 
-    padding-left: 15px;
-    padding-right: 15px;
+    @media (min-width: 501px) {
+        @include display(flex);
+        @include justify-content(start);
+        @include align-items(center);
+        padding: 0 15px;
+    }
 
     border-top: 1px solid $lightbrown;
     min-height: 68px;
@@ -75,6 +81,14 @@ a.object-list-item {
     border: 1px solid #979797;
 } // .object-list-item-figure
 
+.object-list-item-icon,
+.object-list-item-figure {
+    @media (max-width: 500px) {
+        float: left;
+        margin-right: 15px;
+    }
+}
+
 .object-list-item-body {
 
     @include flex(1);
@@ -82,6 +96,10 @@ a.object-list-item {
 
     padding-left: 15px;
     line-height: 1;
+
+    @media (max-width: 500px) {
+        margin-top: 3px;
+    }
 
     .name {
         display: inline-block;
@@ -99,8 +117,16 @@ a.object-list-item {
 } // .object-list-item-body
 
 .object-list-item-aside {
-    .object-list-action + .object-list-action {
+    @media (max-width: 500px) {
+        float: left;
+        width: 100%;
+        margin-top: 15px;
+    }
+    .object-list-action:not(:first-of-type) {
         margin-left: 20px;
+        @media (min-width: 501px) {
+            margin-left: 50px;
+        }
     }
     .role-label {
         float: left;

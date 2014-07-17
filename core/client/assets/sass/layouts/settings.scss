@@ -275,7 +275,8 @@
                 top: 5px;
                 left: 14px;
                 min-height: 0;
-                height: 30px;
+                padding-top: 8px;
+                padding-bottom: 8px;
                 display: block;
 
                 &:before {
@@ -341,11 +342,11 @@
             @media (max-width: 650px) {
                 height: 30px;
                 min-height: 30px;
-                padding: 7px 10px 7px 40px;
+                padding: 6px 10px 8px 40px;
                 &:before {
                     padding-top: 7px;
-                    left: 6px;
-                    width: 24px;
+                    left: 8px;
+                    width: 22px;
                 }
             }
         }
@@ -366,8 +367,7 @@
         &:before {
             display: block;
             content: "";
-            height: 77px; //30px + 17px title + 30px
-            @media (max-height: 600px) { display: none; }
+            height: 87px;
         }
 
         &.no-padding {
@@ -376,6 +376,7 @@
 
         @media (max-width: 1000px) {
             padding-left: 15px;
+            padding-right: 15px;
         }
         @media (max-width: 550px) {
             padding: 0 15px 40px;
