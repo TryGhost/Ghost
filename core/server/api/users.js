@@ -116,7 +116,7 @@ users = {
      * @returns {Promise(User)}
      */
     destroy: function destroy(options) {
-        return canThis(options.context).remove.user(options.id).then(function () {
+        return canThis(options.context).destroy.user(options.id).then(function () {
             return users.read(options).then(function (result) {
                 return dataProvider.User.destroy(options).then(function () {
                     return result;

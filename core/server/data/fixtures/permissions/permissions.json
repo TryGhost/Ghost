@@ -1,29 +1,5 @@
 {
     "permissions": {
-        "post": [
-            {
-                "name": "Edit posts",
-                "action_type": "edit"
-            },
-            {
-                "name": "Remove posts",
-                "action_type": "remove"
-            },
-            {
-                "name": "Create posts",
-                "action_type": "create"
-            }
-        ],
-        "slug": [
-            {
-                "name": "Generate post slug",
-                "action_type": "generate"
-            },
-            {
-                "name": "Generate tag slug",
-                "action_type": "generate"
-            }
-        ],
         "db": [
             {
                 "name": "Export database",
@@ -36,6 +12,100 @@
             {
                 "name": "Delete all content",
                 "action_type": "deleteAllContent"
+            }
+        ],
+        "mail": [
+            {
+                "name": "Send mail",
+                "action_type": "send"
+            }
+        ],
+        "notification": [
+            {
+                "name": "Browse notifications",
+                "action_type": "browse"
+            },
+            {
+                "name": "Add notifications",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete notifications",
+                "action_type": "destroy"
+            }
+        ],
+        "post": [
+            {
+                "name": "Browse posts",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read posts",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit posts",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add posts",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete posts",
+                "action_type": "destroy"
+            }
+        ],
+        "setting": [
+            {
+                "name": "Browse settings",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read settings",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit settings",
+                "action_type": "edit"
+            }
+        ],
+        "slug": [
+            {
+                "name": "Generate slugs",
+                "action_type": "generate"
+            }
+        ],
+        "tag": [
+            {
+                "name": "Browse tags",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read tags",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit tags",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add tags",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete tags",
+                "action_type": "destroy"
+            }
+        ],
+        "theme": [
+            {
+                "name": "Browse themes",
+                "action_type": "browse"
+            },
+            {
+                "name": "Edit themes",
+                "action_type": "edit"
             }
         ],
         "user": [
@@ -56,55 +126,37 @@
                 "action_type": "add"
             },
             {
-                "name": "Remove users",
-                "action_type": "remove"
-            }
-        ],
-        "setting": [
-            {
-                "name": "Browse settings",
-                "action_type": "browse"
-            },
-            {
-                "name": "Read settings",
-                "action_type": "read"
-            },
-            {
-                "name": "Edit settings",
-                "action_type": "edit"
-            }
-        ],
-        "theme": [
-            {
-                "name": "Browse themes",
-                "action_type": "browse"
-            },
-            {
-                "name": "Edit themes",
-                "action_type": "edit"
+                "name": "Delete users",
+                "action_type": "destroy"
             }
         ]
     },
     "permissions_roles": {
         "Administrator": {
-            "post": "all",
-            "slug": "all",
             "db": "all",
-            "user": "all",
+            "mail": "all",
+            "notification": "all",
+            "post": "all",
             "setting": "all",
-            "theme": "all"
+            "slug": "all",
+            "tag": "all",
+            "theme": "all",
+            "user": "all"
         },
         "Editor": {
             "post": "all",
+            "setting": ["browse", "read"],
             "slug": "all",
-            "user": "all",
-            "setting": ["browse", "read"]
+            "tag": "all",
+            "user": "all"
+
         },
         "Author": {
-            "post": ["add"],
+            "post": ["browse", "read", "add"],
+            "setting": ["browse", "read"],
             "slug": "all",
-            "user": ["browse", "read"],
-            "setting": ["browse", "read"]
+            "tag": ["browse", "read", "add"],
+            "user": ["browse", "read"]
         }
     }
 }
