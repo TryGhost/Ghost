@@ -95,7 +95,7 @@
         @include transition(background ease 0.25s);
 
         @media (max-width: 630px) {
-            width:264px;
+            width: 264px;
             @include transition(none);
         }
 
@@ -115,13 +115,10 @@
             z-index: 100;
         }
         margin-right: 3px;
-        border-radius: 2px 0 0 2px;
-
         @media (max-width: 630px) {
             margin-right: 0;
-            border-radius: 2px;
-        }
 
+        }
         .email {
             padding-left: 28px;
             border-radius: 2px 0 0 2px;
@@ -136,18 +133,33 @@
             left: 11px;
             z-index: 100;
         }
-        border-radius: 0 2px 2px 0;
-
-        @media (max-width: 630px) {
-            border-radius: 2px;
-        }
-
         .password {
             padding-left: 28px;
             border-radius: 0 2px 2px 0;
         }
-
     }
+
+    @media (min-width: 631px) {
+        .email-wrap,
+        .email-wrap .email {
+            border-radius: 2px 0 0 2px;
+        }
+        .password-wrap,
+        .password-wrap .password {
+            border-radius: 0 2px 2px 0;
+        }
+    }
+
+    @media (max-width: 630px) {
+        .email-wrap,
+        .email-wrap .email,
+        .password-wrap,
+        .password-wrap .password {
+            border-radius: 2px;
+        }
+    }
+
+
 
     button {
         width: 85px;

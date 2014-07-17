@@ -23,12 +23,6 @@
     z-index: 1040;
     @include transition(all 0.15s linear 0s);
     @include transform(translateZ(0));
-
-    // @include display(flex);
-    // @include align-items(center);
-    // @include justify-content(center);
-    // @include flex-direction(column);
-
 }
 
 .fade {
@@ -121,8 +115,6 @@
 }
 .modal-header {
     position: relative;
-    // padding: 20px;
-    // border-bottom: 1px solid $lightbrown;
 
     h1 {
         display: inline-block;
@@ -134,12 +126,14 @@
 
 .modal-body {
     position: relative;
-    // min-height: 100px;
     overflow-y: auto;
 }
 
 .modal-footer {
     margin-top: 20px;
+    .reject-button-class {
+        @extend .button;
+    }
 }
 
 .modal-style-wide {

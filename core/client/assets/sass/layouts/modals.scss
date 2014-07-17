@@ -21,21 +21,17 @@
             width: 60%;
         }
         &:nth-of-type(2) {
-            float: right;
+            float: left;
             width: 35%;
+            margin-left: 5%;
         }
 
-        input,
-        select {
-            margin-top: 1px;
+        input {
             width: 100%;
         }
 
-        .gh-select {
-            padding-right: 1px;
-        }
-
     } // .form-group
+
     .button-add {
         width: 100%;
         padding: 0.85rem 1.9rem;
@@ -43,10 +39,4 @@
         line-height: 16px;
     }
 
-}
-
-.modal-footer {
-    .reject-button-class {
-        @extend .button;
-    }
-}
+} // .invite-new-user
