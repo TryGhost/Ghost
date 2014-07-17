@@ -1,14 +1,14 @@
 /*
- * Setup screen styles
+ * Ghost Setup Screen
  *
- * Table of Contents
+ * These styles cover /ghost/setup/ which is the first screen that appears
+ * when a new instance of Ghost is setup and run.
  *
- * Setup Ghost for The First Time
  */
 
 
 /* ==========================================================================
-   Setup Ghost for The First Time
+   Main Styles
    ========================================================================== */
 
 .ghost-setup {
@@ -25,6 +25,7 @@
         }
     }
 
+    // Chrome auto-fill style
     input:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
     }
@@ -54,6 +55,7 @@
     }
 }
 
+// The wrapper to center the form in all ways
 .setup-box {
     display: table;
     max-width: 500px;
@@ -62,6 +64,7 @@
     padding: 0;
 }
 
+// The form itself with the dark background
 .setup-form {
     max-width: 530px;
     padding: 40px;
