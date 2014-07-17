@@ -4,7 +4,12 @@ var EditorNewRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
     classNames: ['editor'],
 
     model: function () {
-        return this.store.createRecord('post');
+        var self = this;
+        return this.get('session.user').then(function (user) {
+            return self.store.createRecord('post', {
+                author: user
+            });
+        });
     },
 
     setupController: function (controller, model) {
