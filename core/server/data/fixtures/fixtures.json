@@ -51,7 +51,7 @@
         }
     ],
 
-    "client": [
+    "clients": [
         {
             "name":             "Ghost Admin",
             "slug":             "ghost-admin",
