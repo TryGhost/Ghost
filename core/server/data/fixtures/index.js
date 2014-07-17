@@ -27,7 +27,7 @@ var when        = require('when'),
 
 
 logInfo = function logInfo(message) {
-    errors.logInfo('Fixtures', message);
+    errors.logInfo('Migrations', message);
 };
 
 /**
@@ -58,6 +58,7 @@ convertAdminToOwner = function () {
         return models.Role.findOne({name: 'Owner'});
     }).then(function (ownerRole) {
         if (adminUser) {
+            logInfo('Converting admin to owner');
             return adminUser.roles().updatePivot({role_id: ownerRole.id});
         }
     });
@@ -75,6 +76,7 @@ createOwner = function () {
         user.role = ownerRole.id;
         user.password = utils.uid(50);
 
+        logInfo('Creating owner');
         return models.User.add(user);
     });
 };
@@ -101,7 +103,7 @@ populate = function () {
         ops.push(function () { return Role.add(role); });
     });
 
-    _.each(fixtures.client, function (client) {
+    _.each(fixtures.clients, function (client) {
         ops.push(function () { return Client.add(client); });
     });
 
@@ -138,9 +140,10 @@ to003 = function () {
         Client = models.Client;
 
     // Add the client fixture if missing
-    upgradeOp = Client.findOne({secret: fixtures.client[0].secret}).then(function (client) {
+    upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
         if (!client) {
-            _.each(fixtures.client, function (client) {
+            logInfo('Adding client fixture');
+            _.each(fixtures.clients, function (client) {
                 return Client.add(client);
             });
         }
@@ -150,6 +153,7 @@ to003 = function () {
     // Add the owner role if missing
     upgradeOp = Role.findOne({name: fixtures.roles[3].name}).then(function (owner) {
         if (!owner) {
+            logInfo('Adding owner role fixture');
             _.each(fixtures.roles.slice(3), function (role) {
                 return Role.add(role);
             });
@@ -166,7 +170,9 @@ to003 = function () {
 
 update = function (fromVersion, toVersion) {
     logInfo('Updating fixtures');
-    if (fromVersion < '003' && toVersion >= '003') {
+    // Are we migrating to, or past 003?
+    if ((fromVersion < '003' && toVersion >= '003') ||
+        fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
         return to003();
     }
 };
