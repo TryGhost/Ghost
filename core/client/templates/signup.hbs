@@ -1,14 +1,28 @@
-<section class="signup-box js-signup-box fade-in">
-    <form id="signup" class="signup-form" method="post" novalidate="novalidate">
-        <div class="name-wrap">
-            {{input class="name" type="text" placeholder="Full Name" name="name" autofocus="autofocus" autocorrect="off" value=name }}
-        </div>
-        <div class="email-wrap">
-            {{input class="email" type="email" placeholder="Email Address" name="email" autocapitalize="off" autocorrect="off" value=email }}
-        </div>
-        <div class="password-wrap">
-            {{input class="password" type="password" placeholder="Password" name="password" value=password }}
-        </div>
-        <button class="button-save" type="submit" {{action "signup"}} {{bind-attr disabled=submitting}}>Sign Up</button>
-    </form>
+<section class="setup-box js-signup-box fade-in">
+    <div class="vertical">
+        <form id="signup" class="setup-form" method="post" novalidate="novalidate">
+            <header>
+                <h1>Welcome to Ghost</h1>
+                <h2>Create your account to start publishing</h2>
+            </header>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                {{input type="text" name="name" autofocus="autofocus" autocorrect="off" value=name }}
+                <p>The name that you will sign your posts with</p>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                {{input type="email" name="email" autofocus="autofocus" autocorrect="off" value=email }}
+                <p>Used for important notifications</p>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=password }}
+                <p>Must be at least 8 characters</p>
+            </div>
+            <footer>
+                <button class="button-add large" {{action "signup"}} {{bind-attr disabled=submitting}}>Create Account</button>
+            </footer>
+        </form>
+    </div>
 </section>
