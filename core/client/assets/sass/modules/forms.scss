@@ -158,6 +158,7 @@ legend {
 
 #{$all-text-inputs},
 textarea,
+.gh-select,
 select {
     display: block;
     padding: 8px 10px;
@@ -165,7 +166,7 @@ select {
     border: 1px solid #E0DFD7;
     border-radius: $rounded;
 
-    font-size: 1.1em;
+    font-size: 1.1rem;
     font-weight: normal;
     color: $darkgrey;
 
@@ -183,13 +184,6 @@ textarea {
     min-width: 250px;
     height: auto;
     min-height: 6.5em;
-}
-
-// 'vanilla' CSS hack to specifically target Firefox
-@-moz-document url-prefix() {
-    select {
-        height: auto;
-    }
 }
 
 input[type="number"] {
@@ -381,10 +375,11 @@ input[type='radio'] {
     overflow: hidden;
     width: 100%;
     max-width: 100%;
+    padding: 0;
+    border-width: 0;
 
     @include icon-after($i-chevron-down, 0.85em, $midbrown) {
         @include position(absolute, 50% 0.8em null null);
-        position: absolute;
         margin-top: -0.5em;
         pointer-events: none;
     };
@@ -420,3 +415,13 @@ input[type='radio'] {
         }
     } // select
 } // .gh-select
+
+// Firefox-specific size fixes
+@-moz-document url-prefix() {
+    .gh-select {
+        border-width: 1px;
+        select {
+            padding: 7px 10px 7px 8px;
+        }
+    }
+} // @-moz-document
