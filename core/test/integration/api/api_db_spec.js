@@ -36,6 +36,7 @@ describe('DB API', function () {
     });
 
     it('delete all content', function (done) {
+        var options = {context: {user: 1}};
         permissions.init().then(function () {
             return dbAPI.deleteAllContent({context: {user: 1}});
         }).then(function (result) {
@@ -43,13 +44,13 @@ describe('DB API', function () {
             result.db.should.be.instanceof(Array);
             result.db.should.be.empty;
         }).then(function () {
-            return TagsAPI.browse().then(function (results) {
+            return TagsAPI.browse(options).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.equal(0);
             });
         }).then(function () {
-            return PostAPI.browse().then(function (results) {
+            return PostAPI.browse(options).then(function (results) {
                 should.exist(results);
                 results.posts.length.should.equal(0);
                 done();
@@ -102,17 +103,17 @@ describe('DB API', function () {
     it('import content is denied', function (done) {
         permissions.init().then(function () {
             return dbAPI.importContent({context: {user: 2}});
-        }).then(function (result){
+        }).then(function (result) {
             done(new Error("Import content is not denied for editor."));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.importContent({context: {user: 3}});
-        }).then(function (result){
+        }).then(function (result) {
             done(new Error("Import content is not denied for author."));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.importContent();
-        }).then(function (result){
+        }).then(function (result) {
             done(new Error("Import content is not denied without authentication."));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');

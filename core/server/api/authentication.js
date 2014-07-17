@@ -55,7 +55,7 @@ authentication = {
                         }]
                     };
 
-                return mail.send(payload);
+                return mail.send(payload, {context: {internal: true}});
             }).then(function () {
                 return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
             }).otherwise(function (error) {
@@ -197,7 +197,7 @@ authentication = {
                     }]
                 };
 
-            return mail.send(payload).otherwise(function (error) {
+            return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
                 errors.logError(
                     error.message,
                     "Unable to send welcome email, your blog will continue to function.",
