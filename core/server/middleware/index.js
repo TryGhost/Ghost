@@ -299,10 +299,6 @@ setupMiddleware = function (server) {
     // local data
     expressServer.use(ghostLocals);
 
-    // So on every request we actually clean out redundant passive notifications from the server side
-    // ToDo: Remove when ember handles passive notifications.
-    expressServer.use(middleware.cleanNotifications);
-
     // ### Routing
     // Set up API routes
     expressServer.use(subdir + routes.apiBaseUri, routes.api(middleware));
