@@ -168,7 +168,7 @@ var middleware = {
             return (logTime.ip === remoteAddress);
         });
 
-        if (!denied) {
+        if (!denied || expressServer.get('disableLoginLimiter') === true) {
             loginSecurity.push({ip: remoteAddress, time: currentTime});
             next();
         } else {
