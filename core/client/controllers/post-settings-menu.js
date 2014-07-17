@@ -13,6 +13,33 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     },
+    selectedAuthor: Ember.computed.oneWay('author'),
+    changeAuthor: function () {
+        var author = this.get('author'),
+            selectedAuthor = this.get('selectedAuthor'),
+            model = this.get('model'),
+            self = this;
+        //return if nothing changed
+        if (selectedAuthor.get('id') === author.get('id')) {
+            return;
+        }
+        model.set('author', selectedAuthor);
+        model.save(this.get('saveOptions')).catch(function (errors) {
+            self.showErrors(errors);
+            self.set('selectedAuthor', author);
+            model.rollback();
+        });
+    }.observes('selectedAuthor'),
+    authors: function () {
+        //Loaded asynchronously, so must use promise proxies.
+        var deferred = {};
+        deferred.promise = this.store.find('user').then(function (users) {
+            return users.rejectBy('id', 'me');
+        });
+        return Ember.ArrayProxy
+            .extend(Ember.PromiseProxyMixin)
+            .create(deferred);
+    }.property(),
     //Changes in the PSM are too minor to warrant NProgress firing
     saveOptions: {disableNProgress: true},
     /**
@@ -39,7 +66,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     generateSlugPlaceholder: function () {
         var self = this,
             title = this.get('titleScratch');
-        
+
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
             self.set('slugPlaceholder', slug);
         });
@@ -97,7 +124,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         updateSlug: function (newSlug) {
             var slug = this.get('slug'),
                 self = this;
-            
+
             newSlug = newSlug || slug;
 
             newSlug = newSlug.trim();
