@@ -16,6 +16,7 @@ describe('Notifications API', function () {
 
     before(function (done) {
         var app = express();
+            app.set('disableLoginLimiter', true);
 
         ghost({app: app}).then(function (_httpServer) {
             httpServer = _httpServer;
