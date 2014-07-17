@@ -73,6 +73,7 @@ apiRoutes = function (middleware) {
     router.post('/authentication/setup', api.http(api.authentication.setup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
+        middleware.spamPrevention,
         middleware.addClientSecret,
         middleware.authenticateClient,
         middleware.generateAccessToken
