@@ -9,7 +9,7 @@ var admin       = require('../controllers/admin'),
 
 adminRoutes = function (middleware) {
     var router = express.Router(),
-        subdir = config().paths.subdir;
+        subdir = config.paths.subdir;
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirect(req, res) {

@@ -49,7 +49,7 @@ function updateCheckError(error) {
 function updateCheckData() {
     var data = {},
         ops = [],
-        mailConfig = config().mail;
+        mailConfig = config.mail;
 
     ops.push(api.settings.read(_.extend(internal, {key: 'dbHash'})).otherwise(errors.rejectError));
     ops.push(api.settings.read(_.extend(internal, {key: 'activeTheme'})).otherwise(errors.rejectError));
@@ -71,7 +71,7 @@ function updateCheckData() {
     data.ghost_version   = currentVersion;
     data.node_version    = process.versions.node;
     data.env             = process.env.NODE_ENV;
-    data.database_type   = config().database.client;
+    data.database_type   = config.database.client;
     data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
 
     return when.settle(ops).then(function (descriptors) {
@@ -81,7 +81,7 @@ function updateCheckData() {
             posts            = descriptors[3].value,
             users            = descriptors[4].value,
             npm              = descriptors[5].value,
-            blogUrl          = url.parse(config().url),
+            blogUrl          = url.parse(config.url),
             blogId           = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');
@@ -175,7 +175,7 @@ function updateCheck() {
     // 1. updateCheck is defined as false in config.js
     // 2. we've already done a check this session
     // 3. we're not in production or development mode
-    if (config().updateCheck === false || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+    if (config.updateCheck === false || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         // No update check
         deferred.resolve();
     } else {

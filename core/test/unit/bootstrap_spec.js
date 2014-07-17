@@ -35,7 +35,7 @@ describe('Bootstrap', function () {
         // the test infrastructure is setup so that there is always config present,
         // but we want to overwrite the test to actually load config.example.js, so that any local changes
         // don't break the tests
-        bootstrap.__set__('configFile',  path.join(config().paths.appRoot, 'config.example.js'));
+        bootstrap.__set__('configFile',  path.join(config.paths.appRoot, 'config.example.js'));
 
         bootstrap().then(function (config) {
             config.url.should.equal(defaultConfig.url);
@@ -49,7 +49,7 @@ describe('Bootstrap', function () {
     });
 
     it('uses the passed in config file location', function (done) {
-        bootstrap(path.join(config().paths.appRoot, 'config.example.js')).then(function (config) {
+        bootstrap(path.join(config.paths.appRoot, 'config.example.js')).then(function (config) {
             config.url.should.equal(defaultConfig.url);
             config.database.client.should.equal(defaultConfig.database.client);
             config.database.connection.should.eql(defaultConfig.database.connection);

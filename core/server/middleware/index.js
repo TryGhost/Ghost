@@ -42,17 +42,17 @@ function ghostLocals(req, res, next) {
     res.locals = res.locals || {};
     res.locals.version = packageInfo.version;
     // relative path from the URL, not including subdir
-    res.locals.relativeUrl = req.path.replace(config().paths.subdir, '');
+    res.locals.relativeUrl = req.path.replace(config.paths.subdir, '');
 
     next();
 }
 
 function initThemeData(secure) {
     var themeConfig = config.theme();
-    if (secure && config().urlSSL) {
+    if (secure && config.urlSSL) {
         // For secure requests override .url property with the SSL version
         themeConfig = _.clone(themeConfig);
-        themeConfig.url = config().urlSSL.replace(/\/$/, '');
+        themeConfig.url = config.urlSSL.replace(/\/$/, '');
     }
     return themeConfig;
 }
@@ -61,13 +61,13 @@ function initThemeData(secure) {
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
     var hbsOptions,
-        themePartials = path.join(config().paths.themePath, activeTheme, 'partials');
+        themePartials = path.join(config.paths.themePath, activeTheme, 'partials');
 
     // clear the view cache
     expressServer.cache = {};
 
     // set view engine
-    hbsOptions = { partialsDir: [ config().paths.helperTemplates ] };
+    hbsOptions = { partialsDir: [ config.paths.helperTemplates ] };
 
     fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it
@@ -89,18 +89,18 @@ function activateTheme(activeTheme) {
 // Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
 function decideContext(req, res, next) {
-    res.isAdmin = req.url.lastIndexOf(config().paths.subdir + '/ghost/', 0) === 0;
+    res.isAdmin = req.url.lastIndexOf(config.paths.subdir + '/ghost/', 0) === 0;
 
     if (res.isAdmin) {
         expressServer.enable('admin');
         expressServer.engine('hbs', expressServer.get('admin view engine'));
-        expressServer.set('views', config().paths.adminViews);
+        expressServer.set('views', config.paths.adminViews);
     } else {
         expressServer.disable('admin');
         var themeData = initThemeData(req.secure);
         hbs.updateTemplateOptions({ data: {blog: themeData} });
         expressServer.engine('hbs', expressServer.get('theme view engine'));
-        expressServer.set('views', path.join(config().paths.themePath, expressServer.get('activeTheme')));
+        expressServer.set('views', path.join(config.paths.themePath, expressServer.get('activeTheme')));
     }
 
     // Pass 'secure' flag to the view engine
@@ -120,7 +120,7 @@ function updateActiveTheme(req, res, next) {
         // Check if the theme changed
         if (activeTheme.value !== expressServer.get('activeTheme')) {
             // Change theme
-            if (!config().paths.availableThemes.hasOwnProperty(activeTheme.value)) {
+            if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
                     return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
@@ -144,7 +144,7 @@ function redirectToSetup(req, res, next) {
 
     api.authentication.isSetup().then(function (exists) {
         if (!exists.setup[0].status && !req.path.match(/\/ghost\/setup\//)) {
-            return res.redirect(config().paths.subdir + '/ghost/setup/');
+            return res.redirect(config.paths.subdir + '/ghost/setup/');
         }
         next();
     }).otherwise(function (err) {
@@ -153,8 +153,8 @@ function redirectToSetup(req, res, next) {
 }
 
 function isSSLrequired(isAdmin) {
-    var forceSSL = url.parse(config().url).protocol === 'https:' ? true : false,
-        forceAdminSSL = (isAdmin && config().forceAdminSSL);
+    var forceSSL = url.parse(config.url).protocol === 'https:' ? true : false,
+        forceAdminSSL = (isAdmin && config.forceAdminSSL);
     if (forceSSL || forceAdminSSL) {
         return true;
     }
@@ -166,7 +166,7 @@ function isSSLrequired(isAdmin) {
 function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin)) {
         if (!req.secure) {
-            var forceAdminSSL = config().forceAdminSSL,
+            var forceAdminSSL = config.forceAdminSSL,
                 redirectUrl;
 
             // Check if forceAdminSSL: { redirect: false } is set, which means
@@ -175,7 +175,7 @@ function checkSSL(req, res, next) {
                 return res.send(403);
             }
 
-            redirectUrl = url.parse(config().urlSSL || config().url);
+            redirectUrl = url.parse(config.urlSSL || config.url);
             return res.redirect(301, url.format({
                 protocol: 'https:',
                 hostname: redirectUrl.hostname,
@@ -192,7 +192,7 @@ function checkSSL(req, res, next) {
 // Handle requests to robots.txt and cache file
 function robots() {
     var content, // file cache
-        filePath = path.join(config().paths.corePath, '/shared/robots.txt');
+        filePath = path.join(config.paths.corePath, '/shared/robots.txt');
 
     return function robots(req, res, next) {
         if ('/robots.txt' === req.url) {
@@ -224,9 +224,9 @@ function robots() {
 }
 
 setupMiddleware = function (server) {
-    var logging = config().logging,
-        subdir = config().paths.subdir,
-        corePath = config().paths.corePath,
+    var logging = config.logging,
+        subdir = config.paths.subdir,
+        corePath = config.paths.corePath,
         oauthServer = oauth2orize.createServer();
 
     // silence JSHint without disabling unused check for the whole file
