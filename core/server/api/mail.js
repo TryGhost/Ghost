@@ -2,6 +2,7 @@
 // API for sending Mail
 var when       = require('when'),
     config     = require('../config'),
+    canThis    = require('../permissions').canThis,
     errors     = require('../errors'),
     mail;
 
@@ -21,23 +22,27 @@ mail = {
      * @param {Mail} object details of the email to send
      * @returns {Promise}
      */
-    send: function (object) {
+    send: function (object, options) {
         var mailer = require('../mail');
 
-        // TODO: permissions
-        return mailer.send(object.mail[0].message)
-            .then(function (data) {
-                delete object.mail[0].options;
-                // Sendmail returns extra details we don't need and that don't convert to JSON
-                delete object.mail[0].message.transport;
-                object.mail[0].status = {
-                    message: data.message
-                };
-                return object;
-            })
-            .otherwise(function (error) {
-                return when.reject(new errors.EmailError(error.message));
-            });
+        return canThis(options.context).send.mail().then(function () {
+            return mailer.send(object.mail[0].message)
+                .then(function (data) {
+                    delete object.mail[0].options;
+                    // Sendmail returns extra details we don't need and that don't convert to JSON
+                    delete object.mail[0].message.transport;
+                    object.mail[0].status = {
+                        message: data.message
+                    };
+                    return object;
+                })
+                .otherwise(function (error) {
+                    return when.reject(new errors.EmailError(error.message));
+                });
+
+        }, function () {
+            return when.reject(new errors.NoPermissionError('You do not have permission to send mail.'));
+        });
     },
 
     /**
@@ -48,7 +53,7 @@ mail = {
      * @param {Object} required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: function (object) {
+    sendTest: function (object, options) {
         var html = '<p><strong>Hello there!</strong></p>' +
             '<p>Excellent!' +
             ' You\'ve successfully setup your email config for your Ghost blog over on ' + config().url + '</p>' +
@@ -65,7 +70,7 @@ mail = {
                 }
             }]};
 
-        return mail.send(payload);
+        return mail.send(payload, options);
     }
 };
 

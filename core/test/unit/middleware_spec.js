@@ -39,44 +39,6 @@ describe('Middleware', function () {
     //     });
     // });
 
-    describe('cleanNotifications', function () {
-
-        beforeEach(function (done) {
-            api.notifications.add({ notifications: [{
-                id: 0,
-                status: 'passive',
-                message: 'passive-one'
-            }] }).then(function () {
-                return api.notifications.add({ notifications: [{
-                    id: 1,
-                    status: 'passive',
-                    message: 'passive-two'
-                }] });
-            }).then(function () {
-                return api.notifications.add({ notifications: [{
-                    id: 2,
-                    status: 'aggressive',
-                    message: 'aggressive'
-                }] });
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
-
-        it('should clean all passive messages', function (done) {
-            middleware.cleanNotifications(null, null, function () {
-                api.notifications.browse().then(function (notifications) {
-                    should(notifications.notifications.length).eql(1);
-                    var passiveMsgs = _.filter(notifications.notifications, function (notification) {
-                        return notification.status === 'passive';
-                    });
-                    assert.equal(passiveMsgs.length, 0);
-                    done();
-                }).catch(done);
-            });
-        });
-    });
-
     describe('cacheControl', function () {
         var res;
 

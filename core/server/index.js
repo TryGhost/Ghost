@@ -48,7 +48,7 @@ function doFirstRun() {
     return api.notifications.add({ notifications: [{
         type: 'info',
         message: firstRunMessage.join(' ')
-    }] });
+    }] }, {context: {internal: true}});
 }
 
 function initDbHashAndFirstRun() {
@@ -176,7 +176,7 @@ function initNotifications() {
                 "It is recommended that you explicitly configure an e-mail service,",
                 "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
             ].join(' ')
-        }] });
+        }] }, {context: {internal: true}});
     }
     if (mailer.state && mailer.state.emailDisabled) {
         api.notifications.add({ notifications: [{
@@ -185,7 +185,7 @@ function initNotifications() {
                 "Ghost is currently unable to send e-mail.",
                 "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
             ].join(' ')
-        }] });
+        }] }, {context: {internal: true}});
     }
 }
 

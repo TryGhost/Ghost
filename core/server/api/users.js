@@ -192,7 +192,7 @@ users = {
                             options: {}
                         }]
                     };
-                return mail.send(payload).then(function () {
+                return mail.send(payload, {context: {internal: true}}).then(function () {
                     // If status was invited-pending and sending the invitation succeeded, set status to invited.
                     if (user.status === 'invited-pending') {
                         return dataProvider.User.edit({status: 'invited'}, {id: user.id});
@@ -211,7 +211,7 @@ users = {
                 return when.reject(error);
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to add a users.'));
+            return when.reject(new errors.NoPermissionError('You do not have permission to add a user.'));
         });
     },
 
