@@ -66,7 +66,7 @@ var path           = require('path'),
                 },
                 ember: {
                     files: ['core/client/**/*.js'],
-                    tasks: ['clean:tmp', 'transpile', 'concat_sourcemap']
+                    tasks: ['clean:tmp', 'transpile', 'concat_sourcemap:dev']
                 },
                 'ghost-ui': {
                     files: [
@@ -253,9 +253,24 @@ var path           = require('path'),
                         }
                     },
                     files: {
-                        'core/built/scripts/templates-ember.js': 'core/client/templates/**/*.hbs'
+                        'core/built/scripts/templates-dev.js': 'core/client/templates/**/*.hbs'
                     }
-                }
+                },
+
+                prod: {
+                    options: {
+                        templateBasePath: /core\/client\//,
+                        templateFileExtensions: /\.hbs/,
+                        templateRegistration: function (name, template) {
+                            return grunt.config.process('define(\'ghost/') +
+                                name + '\', [\'exports\'], function(__exports__){ __exports__[\'default\'] = ' +
+                                template + '; });';
+                        }
+                    },
+                    files: {
+                        'core/built/scripts/templates.js': 'core/client/templates/**/*.hbs'
+                    }
+                },
             },
 
             // ### grunt-es6-module-transpiler
@@ -269,18 +284,26 @@ var path           = require('path'),
                     files: [{
                         expand: true,
                         cwd: 'core/client/',
-                        src: ['**/*.js', '!loader.js'],
+                        src: ['**/*.js', '!loader.js', '!config-*.js'],
                         dest: '.tmp/ember-transpiled/'
                     }]
                 }
             },
 
-            // ### grunt-es6-module-transpiler
-            // Compiles Ember es6 modules
+            // ### grunt-concat-sourcemap
+            // Concatenates transpiled ember app
             concat_sourcemap: {
-                client: {
+                dev: {
                     src: ['.tmp/ember-transpiled/**/*.js', 'core/client/loader.js'],
-                    dest: 'core/built/scripts/ghost-dev-ember.js',
+                    dest: 'core/built/scripts/ghost-dev.js',
+                    options: {
+                        sourcesContent: true
+                    }
+                },
+                prod: {
+                    src: ['.tmp/ember-transpiled/**/*.js', 'core/built/scripts/templates.js',
+                    'core/client/loader.js'],
+                    dest: 'core/built/scripts/ghost.js',
                     options: {
                         sourcesContent: true
                     }
@@ -333,6 +356,9 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
+                    }, {
+                        src: 'core/client/config-dev.js',
+                        dest: 'core/client/config.js'
                     }]
                 },
                 prod: {
@@ -346,6 +372,9 @@ var path           = require('path'),
                         src: ['**'],
                         dest: 'core/client/assets/',
                         expand: true
+                    }, {
+                        src: 'core/client/config-prod.js',
+                        dest: 'core/client/config.js'
                     }]
                 },
                 release: {
@@ -385,7 +414,7 @@ var path           = require('path'),
             concat: {
                 'dev': {
                     nonull: true,
-                    dest: 'core/built/scripts/vendor-ember.js',
+                    dest: 'core/built/scripts/vendor-dev.js',
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
@@ -415,6 +444,40 @@ var path           = require('path'),
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js'
                     ]
+                },
+
+                'prod': {
+                    nonull: true,
+                    dest: 'core/built/scripts/vendor.js',
+                    src: [
+                        'bower_components/loader.js/loader.js',
+                        'bower_components/jquery/dist/jquery.js',
+                        'bower_components/lodash/dist/lodash.js',
+                        'bower_components/handlebars/handlebars.runtime.js',
+                        'bower_components/ember/ember.prod.js',
+                        'bower_components/ember-data/ember-data.prod.js',
+                        'bower_components/ember-resolver/dist/ember-resolver.js',
+                        'bower_components/ic-ajax/dist/globals/main.js',
+                        'bower_components/ember-load-initializers/ember-load-initializers.js',
+                        'bower_components/validator-js/validator.js',
+                        'bower_components/codemirror/lib/codemirror.js',
+                        'bower_components/codemirror/addon/mode/overlay.js',
+                        'bower_components/codemirror/mode/markdown/markdown.js',
+                        'bower_components/codemirror/mode/gfm/gfm.js',
+                        'bower_components/showdown/src/showdown.js',
+                        'bower_components/moment/moment.js',
+                        'bower_components/keymaster/keymaster.js',
+                        'bower_components/device/lib/device.js',
+                        'bower_components/jquery-ui/ui/jquery-ui.js',
+                        'bower_components/jquery-file-upload/js/jquery.fileupload.js',
+                        'bower_components/fastclick/lib/fastclick.js',
+                        'bower_components/nprogress/nprogress.js',
+                        'bower_components/ember-simple-auth/ember-simple-auth.js',
+                        'bower_components/ember-simple-auth/ember-simple-auth-oauth2.js',
+
+                        'core/shared/lib/showdown/extensions/ghostimagepreview.js',
+                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                    ]
                 }
             },
 
@@ -422,8 +485,13 @@ var path           = require('path'),
             // Minify concatenated javascript files ready for production
             uglify: {
                 prod: {
+                    options: {
+                        sourceMap: true,
+                    },
                     files: {
-                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
+                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js',
+                        'core/built/scripts/vendor.min.js': 'core/built/scripts/vendor.js',
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
                     }
                 }
             },
@@ -739,9 +807,13 @@ var path           = require('path'),
 
         // ### Ember Build *(Utility Task)*
         // All tasks related to building the Ember client code including transpiling ES6 modules and building templates
-        grunt.registerTask('emberBuild', 'Build Ember JS & templates for development',
-            ['clean:tmp', 'emberTemplates:dev', 'transpile', 'concat_sourcemap']);
+        grunt.registerTask('emberBuildDev', 'Build Ember JS & templates for development',
+            ['clean:tmp', 'emberTemplates:dev', 'transpile', 'concat_sourcemap:dev']);
 
+        // ### Ember Build *(Utility Task)*
+        // All tasks related to building the Ember client code including transpiling ES6 modules and building templates
+        grunt.registerTask('emberBuildProd', 'Build Ember JS & templates for production',
+            ['clean:tmp', 'emberTemplates:prod', 'transpile', 'concat_sourcemap:prod']);
 
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
@@ -762,7 +834,7 @@ var path           = require('path'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['concat', 'uglify', 'copy:prod', 'master-warn']);
+            ['concat:prod', 'copy:prod', 'emberBuildProd', 'uglify', 'master-warn']);
 
         // ### Default asset build
         // `grunt` - default grunt task
@@ -770,7 +842,7 @@ var path           = require('path'),
         // Compiles concatenates javascript files for the admin UI into a handful of files instead
         // of many files, and makes sure the bower dependencies are in the right place.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['concat', 'copy:dev', 'emberBuild']);
+            ['concat:dev', 'copy:dev', 'emberBuildDev']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -784,7 +856,7 @@ var path           = require('path'),
         //
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['concat', 'copy:dev', 'emberBuild', 'express:dev', 'watch']);
+           ['concat:dev', 'copy:dev', 'emberBuildDev', 'express:dev', 'watch']);
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
@@ -797,7 +869,8 @@ var path           = require('path'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['shell:bower', 'update_submodules', 'concat', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
+            ['shell:bower', 'update_submodules', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify',
+            'clean:release', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration
