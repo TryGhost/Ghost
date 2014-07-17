@@ -24,35 +24,6 @@
             top: 0;
         }
     }
-
-    // Chrome auto-fill style
-    input:-webkit-autofill {
-        -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
-    }
-
-    h1 {
-        margin: 0;
-        font-weight: 200;
-        font-size: 26px;
-        color: $lightgrey;
-
-        @media (max-width: 550px) {
-            font-size: 20px;
-        }
-    }
-
-    h2 {
-        margin: 6px 0 0 0;
-        padding: 0;
-        border: none;
-        font-weight: 200;
-        font-size: 16px;
-        color: $midgrey;
-
-        @media (max-width: 550px) {
-            font-size: 14px;
-        }
-    }
 }
 
 // The wrapper to center the form in all ways
@@ -77,17 +48,7 @@
     }
 
     header {
-        margin-bottom: 35px;
-        @media (max-width: 550px) {
-            margin-bottom: 35px;
-        }
-    }
-
-    footer {
-        margin: 30px 0 5px 0;
-        @media (max-width: 550px) {
-            margin-top: 35px;
-        }
+        margin-bottom: 30px;
     }
 
     label {
@@ -126,10 +87,43 @@
         }
     }
 
+    // Chrome auto-fill style
+    input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
+    }
+
+    h1 {
+        margin: 0;
+        font-weight: 200;
+        font-size: 26px;
+        color: $lightgrey;
+
+        @media (max-width: 550px) {
+            font-size: 20px;
+        }
+    }
+
+    h2 {
+        margin: 6px 0 0 0;
+        padding: 0;
+        border: none;
+        font-weight: 200;
+        font-size: 16px;
+        color: $midgrey;
+
+        @media (max-width: 550px) {
+            font-size: 14px;
+        }
+    }
+
     p {
         font-size: 12px;
         line-height: 1.4em;
         color: $midgrey;
+    }
+
+    footer {
+        margin: 30px 0 5px 0;
     }
 
     .button-add {
