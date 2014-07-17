@@ -3,38 +3,8 @@
 
 /*globals CasperTest, casper, url, newUser, user, falseUser */
 
-// TODO fix signup vs setup testing
-//CasperTest.begin('Ensure a User is Registered', 3, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('signup', function checkUrl() {
-//        test.assertUrlMatch(/ghost\/signup\/$/, 'Landed on the correct URL');
-//    });
-//
-//    casper.waitForOpaque('.signup-box',
-//        function then() {
-//            this.fillAndSave('#signup', newUser);
-//        },
-//        function onTimeout() {
-//            test.fail('Sign up form didn\'t fade in.');
-//        });
-//
-//    casper.captureScreenshot('login_register_test.png');
-//
-//    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//        test.assertSelectorHasText('.notification-error', 'already registered');
-//        // If the previous assert succeeds, then we should skip the next check and just pass.
-//        casper.echoConcise('Already registered!');
-//        casper.captureScreenshot('already_registered.png');
-//    }, function onTimeout() {
-//        test.assertUrlMatch(/ghost\/\d+\/$/, 'If we\'re not already registered, we should be logged in.');
-//        casper.echoConcise('Successfully registered.');
-//    }, 2000);
-//
-//    casper.thenOpenAndWaitForPageLoad('signout', function then() {
-//        test.assertUrlMatch(/ghost\/signin/, 'We got redirected to signin page.');
-//    });
-//}, true);
-
 CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
+    CasperTest.Routines.signout.run(test);
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'We should be presented with the signin page.');
@@ -48,84 +18,90 @@ CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
             test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
         });
     });
-}, true);
+});
 
 // Note, this test applies to a global redirect, which sends us to the standard admin.
 // Once Ember becomes the standard admin, this test should still pass.
 CasperTest.begin('Redirects login to signin', 2, function suite(test) {
+    CasperTest.Routines.signout.run(test);
     casper.start(url + 'ghost/login/', function testRedirect(response) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
-}, true);
-
-// TODO: please uncomment when the spam prevention bug is fixed (https://github.com/TryGhost/Ghost/issues/3128)
-// CasperTest.begin('Can\'t spam it', 4, function suite(test) {
-//     casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
-//         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
-//     });
-
-//     casper.waitForOpaque('.login-box',
-//         function then() {
-//             this.fillAndSave('#login', falseUser);
-//         },
-//         function onTimeout() {
-//             test.fail('Sign in form didn\'t fade in.');
-//         });
+});
 
 
-//     casper.captureScreenshot('login_spam_test.png');
+CasperTest.begin('Can\'t spam it', 4, function suite(test) {
+    CasperTest.Routines.signout.run(test);
 
-//     casper.waitForText('attempts remaining!', function then() {
-//         this.fillAndSave('#login', falseUser);
-//     });
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
 
-//     casper.captureScreenshot('login_spam_test2.png');
+    casper.waitForOpaque('.login-box',
+        function then() {
+            this.fillAndSave('#login', falseUser);
+        },
+        function onTimeout() {
+            test.fail('Sign in form didn\'t fade in.');
+        });
 
-//     casper.waitForText('Slow down, there are way too many login attempts!', function onSuccess() {
-//         test.assert(true, 'Spamming the login did result in an error notification');
-//         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
-//     }, function onTimeout() {
-//         test.assert(false, 'Spamming the login did not result in an error notification');
-//     });
 
-//     // This test causes the spam notification
-//     // add a wait to ensure future tests don't get tripped up by this.
-//     casper.wait(2000);
-// }, true);
+    casper.captureScreenshot('login_spam_test.png');
 
-// TODO: please uncomment when the spam prevention bug is fixed (https://github.com/TryGhost/Ghost/issues/3128)
-// CasperTest.begin('Login limit is in place', 4, function suite(test) {
-//     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-//         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
-//     });
+    casper.waitForText('attempts remaining!', function then() {
+        this.fillAndSave('#login', falseUser);
+    });
 
-//     casper.waitForOpaque('.login-box',
-//         function then() {
-//             this.fillAndSave('#login', falseUser);
-//         },
-//         function onTimeout() {
-//             test.fail('Sign in form didn\'t fade in.');
-//         });
+    casper.captureScreenshot('login_spam_test2.png');
 
-//     casper.wait(2100, function doneWait() {
-//         this.fillAndSave('#login', falseUser);
-//     });
+    casper.waitForText('Slow down, there are way too many login attempts!', function onSuccess() {
+        test.assert(true, 'Spamming the login did result in an error notification');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'Spamming the login did not result in an error notification');
+    });
 
-//     casper.waitForText('remaining', function onSuccess() {
-//         test.assert(true, 'The login limit is in place.');
-//         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
-//     }, function onTimeout() {
-//         test.assert(false, 'We did not trip the login limit.');
-//     });
-//     // This test used login, add a wait to
-//     // ensure future tests don't get tripped up by this.
-//     casper.wait(2000);
-// }, true);
+    // This test causes the spam notification
+    // add a wait to ensure future tests don't get tripped up by this.
+    casper.wait(2000);
+});
+
+CasperTest.begin('Login limit is in place', 4, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.login-box',
+        function then() {
+            this.fillAndSave('#login', falseUser);
+        },
+        function onTimeout() {
+            test.fail('Sign in form didn\'t fade in.');
+        });
+
+    casper.wait(2100, function doneWait() {
+        this.fillAndSave('#login', falseUser);
+    });
+
+    casper.waitForText('remaining', function onSuccess() {
+        test.assert(true, 'The login limit is in place.');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    }, function onTimeout() {
+        test.assert(false, 'We did not trip the login limit.');
+    });
+    // This test used login, add a wait to
+    // ensure future tests don't get tripped up by this.
+    casper.wait(2000);
+});
 
 CasperTest.begin('Can login to Ghost', 5, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
@@ -144,9 +120,11 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
-}, true);
+});
 
 CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
@@ -173,29 +151,31 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });
-}, true);
+});
 
-// TODO: please uncomment when the validation problem is fixed (https://github.com/TryGhost/Ghost/issues/3120)
-// CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
-//     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-//         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
-//     });
 
-//     casper.waitForOpaque('.js-login-box',
-//         function then() {
-//             this.fillAndSave('form.login-form', {
-//                 'email': 'notanemail'
-//             });
-//         },
-//         function onTimeout() {
-//             test.fail('Login form didn\'t fade in.');
-//         });
+CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
+    CasperTest.Routines.signout.run(test);
 
-//     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-//         test.assertSelectorHasText('.notification-error', 'Invalid Email');
-//     }, function onTimeout() {
-//         test.fail('Email validation error did not appear');
-//     }, 2000);
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
 
-// }, true);
+    casper.waitForOpaque('.js-login-box',
+        function then() {
+            this.fillAndSave('form.login-form', {
+                'identification': 'notanemail'
+            });
+        },
+        function onTimeout() {
+            test.fail('Login form didn\'t fade in.');
+        });
+
+    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+        test.assertSelectorHasText('.notification-error', 'Invalid Email');
+    }, function onTimeout() {
+        test.fail('Email validation error did not appear');
+    }, 2000);
+
+});

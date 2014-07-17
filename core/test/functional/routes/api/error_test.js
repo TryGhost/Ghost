@@ -41,7 +41,7 @@ describe('Unauthorized', function () {
     });
 
 
-    describe('Unauthorized', function () {
+    describe('Unauthorized API', function () {
         it('can\'t retrieve posts', function (done) {
             request.get(testUtils.API.getApiQuery('posts/'))
                 .expect(401)

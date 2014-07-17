@@ -127,8 +127,17 @@ authentication = {
     },
 
     isSetup: function () {
-        return dataProvider.User.findOne({status: 'active'}).then(function (user) {
-            if (user) {
+
+        return dataProvider.User.query(function (qb) {
+                qb.where('status', '=', 'active')
+                    .orWhere('status', '=', 'warn-1')
+                    .orWhere('status', '=', 'warn-2')
+                    .orWhere('status', '=', 'warn-3')
+                    .orWhere('status', '=', 'warn-4')
+                    .orWhere('status', '=', 'locked');
+            }).fetch().then(function (users) {
+
+            if (users) {
                 return when.resolve({ setup: [{status: true}]});
             } else {
                 return when.resolve({ setup: [{status: false}]});
