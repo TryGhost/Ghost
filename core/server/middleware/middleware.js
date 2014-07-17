@@ -9,11 +9,13 @@ var _           = require('lodash'),
     path        = require('path'),
     api         = require('../api'),
     passport    = require('passport'),
+    errors      = require('../errors'),
 
     expressServer,
     oauthServer,
     ONE_HOUR_MS = 60 * 60 * 1000,
-    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS;
+    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS,
+    loginSecurity = [];
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
@@ -149,6 +151,31 @@ var middleware = {
         });
     },
 
+    // ### Spam prevention Middleware
+    // limit signin requests to one every two seconds
+    spamPrevention: function (req, res, next) {
+        var currentTime = process.hrtime()[0],
+            remoteAddress = req.connection.remoteAddress,
+            denied = '';
+
+        // filter for IPs that tried to login in the last 2 sec
+        loginSecurity = _.filter(loginSecurity, function (logTime) {
+            return (logTime.time + 2 > currentTime);
+        });
+
+        // check if IP tried to login in the last 2 sec
+        denied = _.find(loginSecurity, function (logTime) {
+            return (logTime.ip === remoteAddress);
+        });
+
+        if (!denied || expressServer.get('disableLoginLimiter') === true) {
+            loginSecurity.push({ip: remoteAddress, time: currentTime});
+            next();
+        } else {
+            return next(new errors.UnauthorizedError('Slow down, there are way too many login attempts!'));
+        }
+    },
+
     // work around to handle missing client_secret
     // oauth2orize needs it, but untrusted clients don't have it
     addClientSecret: function (req, res, next) {
@@ -157,9 +184,15 @@ var middleware = {
         }
         next();
     },
+
+    // ### Authenticate Client Middleware
+    // authenticate client that is asking for an access token
     authenticateClient: function (req, res, next) {
         return passport.authenticate(['oauth2-client-password'], { session: false })(req, res, next);
     },
+
+    // ### Generate access token Middleware
+    // register the oauth2orize middleware for password and refresh token grants
     generateAccessToken: function (req, res, next) {
         return oauthServer.token()(req, res, next);
     },
