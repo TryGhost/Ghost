@@ -41,7 +41,7 @@
     }
 
     h2 {
-        margin: 10px 0 0 0;
+        margin: 6px 0 0 0;
         padding: 0;
         border: none;
         font-weight: 200;
@@ -67,20 +67,21 @@
     padding: 40px;
     color: lighten($midgrey, 15%);
     background: darken($darkgrey, 5%);
+    border-radius: 2px;
 
     @media (max-width: 400px) {
         padding: 15px;
     }
 
     header {
-        margin-bottom: 45px;
+        margin-bottom: 35px;
         @media (max-width: 550px) {
             margin-bottom: 35px;
         }
     }
 
     footer {
-        margin: 40px 0 5px 0;
+        margin: 30px 0 5px 0;
         @media (max-width: 550px) {
             margin-top: 35px;
         }
