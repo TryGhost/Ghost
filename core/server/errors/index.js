@@ -245,15 +245,7 @@ errors = {
             }
             errors.renderErrorPage(err.status || 500, err, req, res, next);
         } else {
-            // generate a valid JSON response
-            var statusCode = 500,
-                errorContent = {};
-
-            statusCode = err.code || 500;
-
-            errorContent.message = _.isString(err) ? err : (_.isObject(err) ? err.message : 'Unknown Error');
-            errorContent.type = err.type || 'InternalServerError';
-            res.json(statusCode, errorContent);
+            res.send(err.status || 500, err);
         }
     }
 };

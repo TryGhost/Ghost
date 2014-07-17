@@ -43,8 +43,8 @@ oauth = {
                     }).catch(function () {
                         return done(null, false);
                     });
-                }).catch(function (error) {
-                    return done(error);
+                }).catch(function () {
+                    return done(null, false);
                 });
             });
         }));
