@@ -22,6 +22,8 @@ core/server/data/export/exported*
 .jshintrc
 *.iml
 config.js
+core/client/config-dev.js
+core/client/config-prod.js
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
