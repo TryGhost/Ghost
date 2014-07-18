@@ -26,7 +26,15 @@ authentication = {
         var expires = Date.now() + ONE_DAY,
             email;
 
-        return utils.checkObject(object, 'passwordreset').then(function (checkedPasswordReset) {
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (!setup) {
+                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+            }
+
+            return utils.checkObject(object, 'passwordreset');
+        }).then(function (checkedPasswordReset) {
             if (checkedPasswordReset.passwordreset[0].email) {
                 email = checkedPasswordReset.passwordreset[0].email;
             } else {
@@ -63,6 +71,7 @@ authentication = {
                 if (error && error.message === 'NotFound') {
                     error = new errors.UnauthorizedError('Invalid email address');
                 }
+
                 return when.reject(error);
             });
         });
@@ -78,7 +87,16 @@ authentication = {
         var resetToken,
             newPassword,
             ne2Password;
-        return utils.checkObject(object, 'passwordreset').then(function (checkedPasswordReset) {
+
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (!setup) {
+                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+            }
+
+            return utils.checkObject(object, 'passwordreset');
+        }).then(function (checkedPasswordReset) {
             resetToken = checkedPasswordReset.passwordreset[0].token;
             newPassword = checkedPasswordReset.passwordreset[0].newPassword;
             ne2Password = checkedPasswordReset.passwordreset[0].ne2Password;
@@ -106,7 +124,15 @@ authentication = {
             name,
             email;
 
-        return utils.checkObject(object, 'invitation').then(function (checkedInvitation) {
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (!setup) {
+                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+            }
+
+            return utils.checkObject(object, 'invitation');
+        }).then(function (checkedInvitation) {
             resetToken = checkedInvitation.invitation[0].token;
             newPassword = checkedInvitation.invitation[0].password;
             ne2Password = checkedInvitation.invitation[0].password;
@@ -127,7 +153,6 @@ authentication = {
     },
 
     isSetup: function () {
-
         return dataProvider.User.query(function (qb) {
                 qb.where('status', '=', 'active')
                     .orWhere('status', '=', 'warn-1')
@@ -149,7 +174,15 @@ authentication = {
         var setupUser,
             internal = {context: {internal: true}};
 
-        return utils.checkObject(object, 'setup').then(function (checkedSetupData) {
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (setup) {
+                return when.reject(new errors.NoPermissionError('Setup has already been completed.'));
+            }
+
+            return utils.checkObject(object, 'setup');
+        }).then(function (checkedSetupData) {
             setupUser = {
                 name: checkedSetupData.setup[0].name,
                 email: checkedSetupData.setup[0].email,
@@ -208,8 +241,6 @@ authentication = {
             });
         }).then(function () {
             return when.resolve({ users: [setupUser]});
-        }).otherwise(function (error) {
-            return when.reject(new errors.UnauthorizedError(error.message));
         });
     }
 };
