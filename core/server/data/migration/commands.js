@@ -44,7 +44,7 @@ addColumnCommands = function addColumnCommands(table, columns) {
     return _.map(addColumns, function (column) {
         return function () {
             logInfo('Adding column: ' + table + '.' + column);
-            utils.addColumn(table, column);
+            return utils.addColumn(table, column);
         };
     });
 };
