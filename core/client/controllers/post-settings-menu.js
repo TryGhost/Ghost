@@ -45,7 +45,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         });
     },
     titleObserver: function () {
-        if (this.get('isNew')) {
+        if (this.get('isNew') && !this.get('title')) {
             Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
         }
     },
