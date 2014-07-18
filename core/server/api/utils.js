@@ -18,6 +18,15 @@ utils = {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return when.reject(new errors.BadRequestError('No root key (\'' + docName + '\') provided.'));
         }
+
+        // convert author property to author_id to match the name in the database
+        // TODO: rename object in database
+        if (docName === 'posts') {
+            if (object.posts[0].hasOwnProperty('author')) {
+                object.posts[0].author_id = object.posts[0].author;
+                delete object.posts[0].author;
+            }
+        }
         return when.resolve(object);
     }
 };
