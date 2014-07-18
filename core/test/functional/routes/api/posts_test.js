@@ -438,9 +438,11 @@ describe('Post API', function () {
                     }
 
                     var jsonResponse = res.body,
-                        changedValue = 'My new Title';
+                        changedTitle = 'My new Title',
+                        changedAuthor = 2;
                     jsonResponse.posts[0].should.exist;
-                    jsonResponse.posts[0].title = changedValue;
+                    jsonResponse.posts[0].title = changedTitle;
+                    jsonResponse.posts[0].author = changedAuthor;
 
                     request.put(testUtils.API.getApiQuery('posts/1/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
@@ -455,7 +457,8 @@ describe('Post API', function () {
                             var putBody = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             putBody.should.exist;
-                            putBody.posts[0].title.should.eql(changedValue);
+                            putBody.posts[0].title.should.eql(changedTitle);
+                            putBody.posts[0].author.should.eql(changedAuthor);
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
