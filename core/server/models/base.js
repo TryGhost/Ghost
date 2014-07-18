@@ -15,6 +15,7 @@ var bookshelf  = require('bookshelf'),
     sanitize   = require('validator').sanitize,
     schema     = require('../data/schema'),
     validation = require('../data/validation'),
+    errors     = require('../errors'),
 
     ghostBookshelf;
 
@@ -64,20 +65,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     creating: function (newObj, attr, options) {
-        var user = options.context && options.context.user ? options.context.user : 1;
         if (!this.get('created_by')) {
-            this.set('created_by', user);
+            this.set('created_by', this.contextUser(options));
         }
     },
 
     saving: function (newObj, attr, options) {
-        var user = options.context && options.context.user ? options.context.user : 1;
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
         this._updatedAttributes = newObj.previousAttributes();
 
-        this.set('updated_by', user);
+        this.set('updated_by', this.contextUser(options));
     },
 
     // Base prototype properties will go here
@@ -99,12 +98,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     fixBools: function (attrs) {
         var self = this;
         _.each(attrs, function (value, key) {
-            if (schema.tables[self.tableName][key].type === "bool") {
+            if (schema.tables[self.tableName][key].type === 'bool') {
                 attrs[key] = value ? true : false;
             }
         });
 
         return attrs;
+    },
+
+    // Get the user from the options object
+    contextUser: function (options) {
+        // Default to context user
+        if (options.context && options.context.user) {
+            return options.context.user;
+        // Other wise use the internal override
+        } else if (options.context && options.context.internal) {
+            return 1;
+        } else {
+            errors.logAndThrowError(new Error('missing context'));
+        }
     },
 
     // format date before writing to DB, bools work
@@ -174,7 +186,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function () {
         // terms to whitelist for all methods.
-        return ['include', 'transacting'];
+        return ['context', 'include', 'transacting'];
     },
 
     /**

@@ -42,8 +42,7 @@ Post = ghostBookshelf.Model.extend({
         /*jshint unused:false*/
         var self = this,
             tagsToCheck,
-            i,
-            user = options.context && options.context.user ? options.context.user : 1;
+            i;
 
         options = options || {};
         // keep tags for 'saved' event and deduplicate upper/lowercase tags
@@ -73,7 +72,7 @@ Post = ghostBookshelf.Model.extend({
                 this.set('published_at', new Date());
             }
             // This will need to go elsewhere in the API layer.
-            this.set('published_by', user);
+            this.set('published_by', this.contextUser(options));
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
@@ -91,11 +90,9 @@ Post = ghostBookshelf.Model.extend({
         /*jshint unused:false*/
         options = options || {};
 
-        var user = options.context && options.context.user ? options.context.user : 1;
-
         // set any dynamic default properties
         if (!this.get('author_id')) {
-            this.set('author_id', user);
+            this.set('author_id', this.contextUser(options));
         }
 
         ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
@@ -213,10 +210,9 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findAll: ['withRelated'],
-                findOne: ['user', 'importing', 'withRelated'],
+                findOne: ['importing', 'withRelated'],
                 findPage: ['page', 'limit', 'status', 'staticPages'],
-                add: ['user', 'importing'],
-                edit: ['user']
+                add: ['importing']
             };
 
         if (validOptions[methodName]) {

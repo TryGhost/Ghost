@@ -17,9 +17,9 @@ var when        = require('when'),
     // Private
     logInfo,
     to003,
-    fetchAdmin,
     convertAdminToOwner,
     createOwner,
+    options = {context: {internal: true}},
 
     // Public
     populate,
@@ -31,21 +31,6 @@ logInfo = function logInfo(message) {
 };
 
 /**
- * Fetch Admin
- * Find the user with the admin role, who can be upgraded to an owner.
- * @returns {Promise|*}
- */
-fetchAdmin = function () {
-    return models.User.forge().fetch({
-        withRelated: [{
-            'roles': function (qb) {
-                qb.where('name', 'Administrator');
-            }
-        }]
-    });
-};
-
-/**
  * Convert admin to Owner
  * Changes an admin user to have the owner role
  * @returns {Promise|*}
@@ -53,7 +38,7 @@ fetchAdmin = function () {
 convertAdminToOwner = function () {
     var adminUser;
 
-    return fetchAdmin().then(function (user) {
+    return models.User.findOne({role: 'Administrator'}).then(function (user) {
         adminUser = user;
         return models.Role.findOne({name: 'Owner'});
     }).then(function (ownerRole) {
@@ -77,7 +62,7 @@ createOwner = function () {
         user.password = utils.uid(50);
 
         logInfo('Creating owner');
-        return models.User.add(user);
+        return models.User.add(user, options);
     });
 };
 
@@ -92,36 +77,38 @@ populate = function () {
     logInfo('Populating fixtures');
 
     _.each(fixtures.posts, function (post) {
-        ops.push(function () { return Post.add(post); });
+        ops.push(Post.add(post, options));
     });
 
     _.each(fixtures.tags, function (tag) {
-        ops.push(function () { return Tag.add(tag); });
+        ops.push(Tag.add(tag, options));
     });
 
     _.each(fixtures.roles, function (role) {
-        ops.push(function () { return Role.add(role); });
+        ops.push(Role.add(role, options));
     });
 
     _.each(fixtures.clients, function (client) {
-        ops.push(function () { return Client.add(client); });
+        ops.push(Client.add(client, options));
     });
 
     // add the tag to the post
     relations.push(function () {
-        return Post.forge({slug: fixtures.posts[0].slug}).fetch({withRelated: ['tags']}).then(function (post) {
+        return Post.forge({slug: fixtures.posts[0].slug}).fetch().then(function (post) {
             return Tag.forge({slug: fixtures.tags[0].slug}).fetch().then(function (tag) {
-                return post.tags().attach(tag);
+                return post.related('tags').attach(tag.id);
             });
         });
     });
 
-    return sequence(ops).then(function () {
+    return when.all(ops).then(function () {
         return sequence(relations);
     }).then(function () {
-        return permissions.populate();
+        return permissions.populate(options);
     }).then(function () {
         return createOwner();
+    }).catch(function (errs) {
+        errors.logError(errs);
     });
 };
 
@@ -139,12 +126,14 @@ to003 = function () {
         Role = models.Role,
         Client = models.Client;
 
+    logInfo('Upgrading fixtures');
+
     // Add the client fixture if missing
     upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
         if (!client) {
             logInfo('Adding client fixture');
             _.each(fixtures.clients, function (client) {
-                return Client.add(client);
+                return Client.add(client, options);
             });
         }
     });
@@ -155,14 +144,14 @@ to003 = function () {
         if (!owner) {
             logInfo('Adding owner role fixture');
             _.each(fixtures.roles.slice(3), function (role) {
-                return Role.add(role);
+                return Role.add(role, options);
             });
         }
     });
     ops.push(upgradeOp);
 
     return when.all(ops).then(function () {
-        return permissions.to003();
+        return permissions.to003(options);
     }).then(function () {
         return convertAdminToOwner();
     });

@@ -159,7 +159,7 @@ describe('Notifications API', function () {
             NotificationsAPI.add({ notifications: [msg] }, {context: {internal: true}}).then(function (result) {
                 var notification = result.notifications[0];
 
-                NotificationsAPI.destroy({ id: notification.id, context: {user: 1}}).then(function (result) {
+                NotificationsAPI.destroy({id: notification.id, context: {user: 1}}).then(function (result) {
                     should.exist(result);
                     should.exist(result.notifications);
                     result.notifications[0].id.should.equal(notification.id);

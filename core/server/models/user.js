@@ -58,6 +58,22 @@ User = ghostBookshelf.Model.extend({
         }
     },
 
+    // Get the user from the options object
+    contextUser: function (options) {
+        // Default to context user
+        if (options.context && options.context.user) {
+            return options.context.user;
+            // Other wise use the internal override
+        } else if (options.context && options.context.internal) {
+            return 1;
+            // This is the user object, so try using this user's id
+        } else if (this.get('id')) {
+            return this.get('id');
+        } else {
+            errors.logAndThrowError(new Error('missing context'));
+        }
+    },
+
     toJSON: function (options) {
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         // remove password hash for security reasons
@@ -92,9 +108,8 @@ User = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['withRelated'],
                 findAll: ['withRelated'],
-                add: ['user'],
-                setup: ['user', 'id'],
-                edit: ['user', 'withRelated', 'id']
+                setup: ['id'],
+                edit: ['withRelated', 'id']
             };
 
         if (validOptions[methodName]) {
@@ -124,6 +139,16 @@ User = ghostBookshelf.Model.extend({
     findOne: function (data, options) {
         options = options || {};
         options.withRelated = _.union([ 'roles' ], options.include);
+
+        // Support finding by role
+        if (data.role) {
+            options.withRelated = [{
+                'roles': function (qb) {
+                    qb.where('name', data.role);
+                }
+            }];
+            delete data.role;
+        }
 
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },
@@ -340,7 +365,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             var hash = crypto.createHash('sha256'),
-                text = "";
+                text = '';
 
             // Token:
             // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
