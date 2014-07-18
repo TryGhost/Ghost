@@ -38,7 +38,7 @@ describe('DB API', function () {
     it('delete all content', function (done) {
         var options = {context: {user: 1}};
         permissions.init().then(function () {
-            return dbAPI.deleteAllContent({context: {user: 1}});
+            return dbAPI.deleteAllContent(options);
         }).then(function (result) {
             should.exist(result.db);
             result.db.should.be.instanceof(Array);
