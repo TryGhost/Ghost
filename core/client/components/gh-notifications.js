@@ -14,7 +14,11 @@ var NotificationsComponent = Ember.Component.extend({
             notification.get('location') : notification.location;
 
         return this.get('location') === displayLocation;
-    })
+    }),
+
+    messageCountObserver: function () {
+        this.sendAction('notify', this.get('messages').length);
+    }.observes('messages.[]')
 });
 
 export default NotificationsComponent;
