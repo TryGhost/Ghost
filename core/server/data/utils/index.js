@@ -6,36 +6,38 @@ var _       = require('lodash'),
 
 
 function addTableColumn(tablename, table, columnname) {
-    var column;
+    var column,
+        columnSpec = schema[tablename][columnname];
+
     // creation distinguishes between text with fieldtype, string with maxlength and all others
-    if (schema[tablename][columnname].type === 'text' && schema[tablename][columnname].hasOwnProperty('fieldtype')) {
-        column = table[schema[tablename][columnname].type](columnname, schema[tablename][columnname].fieldtype);
-    } else if (schema[tablename][columnname].type === 'string' && schema[tablename][columnname].hasOwnProperty('maxlength')) {
-        column = table[schema[tablename][columnname].type](columnname, schema[tablename][columnname].maxlength);
+    if (columnSpec.type === 'text' && columnSpec.hasOwnProperty('fieldtype')) {
+        column = table[columnSpec.type](columnname, columnSpec.fieldtype);
+    } else if (columnSpec.type === 'string' && columnSpec.hasOwnProperty('maxlength')) {
+        column = table[columnSpec.type](columnname, columnSpec.maxlength);
     } else {
-        column = table[schema[tablename][columnname].type](columnname);
+        column = table[columnSpec.type](columnname);
     }
 
-    if (schema[tablename][columnname].hasOwnProperty('nullable') && schema[tablename][columnname].nullable === true) {
+    if (columnSpec.hasOwnProperty('nullable') && columnSpec.nullable === true) {
         column.nullable();
     } else {
         column.notNullable();
     }
-    if (schema[tablename][columnname].hasOwnProperty('primary') && schema[tablename][columnname].primary === true) {
+    if (columnSpec.hasOwnProperty('primary') && columnSpec.primary === true) {
         column.primary();
     }
-    if (schema[tablename][columnname].hasOwnProperty('unique') && schema[tablename][columnname].unique) {
+    if (columnSpec.hasOwnProperty('unique') && columnSpec.unique) {
         column.unique();
     }
-    if (schema[tablename][columnname].hasOwnProperty('unsigned') && schema[tablename][columnname].unsigned) {
+    if (columnSpec.hasOwnProperty('unsigned') && columnSpec.unsigned) {
         column.unsigned();
     }
-    if (schema[tablename][columnname].hasOwnProperty('references')) {
+    if (columnSpec.hasOwnProperty('references')) {
         //check if table exists?
-        column.references(schema[tablename][columnname].references);
+        column.references(columnSpec.references);
     }
-    if (schema[tablename][columnname].hasOwnProperty('defaultTo')) {
-        column.defaultTo(schema[tablename][columnname].defaultTo);
+    if (columnSpec.hasOwnProperty('defaultTo')) {
+        column.defaultTo(columnSpec.defaultTo);
     }
 }
 

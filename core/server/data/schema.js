@@ -103,6 +103,8 @@ var db = {
             name: {type: 'string', maxlength: 150, nullable: false},
             slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
             description: {type: 'string', maxlength: 200, nullable: true},
+            image: {type: 'text', maxlength: 2000, nullable: true},
+            hidden: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[0, 1, false, true]]}},
             parent_id: {type: 'integer', nullable: true},
             meta_title: {type: 'string', maxlength: 150, nullable: true},
             meta_description: {type: 'string', maxlength: 200, nullable: true},
@@ -148,7 +150,7 @@ var db = {
             app_id: {type: 'integer', nullable: false, unsigned: true, references: 'apps.id'},
             relatable_id: {type: 'integer', nullable: false, unsigned: true},
             relatable_type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'posts'},
-            active: {type: 'bool', nullable: false, defaultTo: true, validations: {'isIn': [[false, true]]}},
+            active: {type: 'bool', nullable: false, defaultTo: true, validations: {'isIn': [[0, 1, false, true]]}},
             created_at: {type: 'dateTime', nullable: false},
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},
@@ -187,8 +189,8 @@ function isPost(jsonData) {
 }
 
 function isTag(jsonData) {
-    return jsonData.hasOwnProperty('name') && jsonData.hasOwnProperty('slug')
-        && jsonData.hasOwnProperty('description') && jsonData.hasOwnProperty('parent_id');
+    return jsonData.hasOwnProperty('name') && jsonData.hasOwnProperty('slug') &&
+        jsonData.hasOwnProperty('description') && jsonData.hasOwnProperty('parent_id');
 }
 
 module.exports.tables = db;
