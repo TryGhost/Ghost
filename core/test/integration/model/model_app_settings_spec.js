@@ -1,10 +1,10 @@
-/*globals describe, before, beforeEach, afterEach, it*/
+/*globals describe, before, beforeEach, afterEach, after, it*/
 var testUtils = require('../../utils'),
     should = require('should'),
-    _ = require("lodash"),
 
     // Stuff we are testing
-    Models = require('../../../server/models');
+    Models = require('../../../server/models'),
+    context = {context: {user: 1}};
 
 describe('App Setting Model', function () {
 
@@ -63,13 +63,13 @@ describe('App Setting Model', function () {
         AppSettingModel.findOne({id: 1}).then(function (foundAppSetting) {
             should.exist(foundAppSetting);
 
-            return foundAppSetting.set({value: "350"}).save();
+            return foundAppSetting.set({value: '350'}).save(null, context);
         }).then(function () {
             return AppSettingModel.findOne({id: 1});
         }).then(function (updatedAppSetting) {
             should.exist(updatedAppSetting);
 
-            updatedAppSetting.get("value").should.equal("350");
+            updatedAppSetting.get('value').should.equal('350');
 
             done();
         }).catch(done);
