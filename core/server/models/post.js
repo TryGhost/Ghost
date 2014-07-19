@@ -180,7 +180,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     tags: function () {
-        return this.belongsToMany(Tag);
+        return this.belongsToMany('Tag');
     },
 
     fields: function () {
