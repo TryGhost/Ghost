@@ -37,7 +37,12 @@ var InviteNewUserController = Ember.Controller.extend({
 
                 self.notifications.showSuccess(notificationText, false);
             }).catch(function (errors) {
-                newUser.deleteRecord();
+                if (errors[0].message.indexOf('Email Error:') === -1) {
+                    newUser.deleteRecord();
+                } else {
+                    newUser.set('status', 'invited-pending');
+                }
+
                 self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
