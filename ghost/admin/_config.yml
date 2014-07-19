@@ -1,25 +1,21 @@
 # Dependencies
-markdown:           rdiscount
-highlighter:        pygments
+markdown:           kramdown
+highlighter:        rouge
 
 # Permalinks
 permalink:          pretty
 
 # Server
-source:             ./docs
-destination:        ./_gh_pages
+source:             docs
+destination:        _gh_pages
 host:               0.0.0.0
-port:               9008
+port:               9001
 baseurl:            /
 url:                http://localhost:9001
 encoding:           UTF-8
 
-exclude:
-    - "jade"
-    - "vendor"
-
 # Custom vars
-current_version:    0.1.0
+current_version:    2.0.0
 repo:               https://github.com/TryGhost/Ghost-UI
 
 download:

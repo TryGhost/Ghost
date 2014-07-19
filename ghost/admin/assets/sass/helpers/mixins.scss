@@ -1,60 +1,7 @@
-/*
- * Mixins
- *
- * Table of Contents
- *
- * Baseline
- * Gradients
- */
-
-
-/* ==========================================================================
-   Baseline
-   ========================================================================== */
+//
+// Styles
+// --------------------------------------------------
 
 @mixin baseline {
     margin: 1.6em 0;
-}
-
-
-/* ==========================================================================
-   Gradients
-   ========================================================================== */
-
-@mixin gradient($color1: #aaa, $color2: none) {
-
-    @if $color2 == 'none' {
-        background-color: lighten($color1, 10%);
-        background-image: -webkit-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:    -moz-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:     -ms-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:         linear-gradient(bottom, $color1, lighten($color1, 10%));
-    } @else {
-        background-color: $color2;
-        background-image: -webkit-linear-gradient(bottom, $color1, $color2);
-        background-image:    -moz-linear-gradient(bottom, $color1, $color2);
-        background-image:     -ms-linear-gradient(bottom, $color1, $color2);
-        background-image:         linear-gradient(to top, $color1, $color2);
-    }
-
-}
-
-// The same as the above, but with the colours reversed.
-
-@mixin inversegradient($color1: #aaa, $color2: none) {
-
-    @if $color2 == 'none' {
-        background-color: $color1;
-        background-image: -webkit-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:    -moz-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:     -ms-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:         linear-gradient(bottom, lighten($color1, 10%), $color1);
-    } @else {
-        background-color: $color1;
-        background-image: -webkit-linear-gradient(bottom, $color2, $color1);
-        background-image:    -moz-linear-gradient(bottom, $color2, $color1);
-        background-image:     -ms-linear-gradient(bottom, $color2, $color1);
-        background-image:         linear-gradient(to top, $color2, $color1);
-    }
-
 }
