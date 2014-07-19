@@ -1,0 +1,61 @@
+//
+// Global Navigation
+// --------------------------------------------------
+
+// The main wrapper, sets position and bg colour.
+.globalnav {
+    height: 60px;
+    @include position(fixed, 0px 0px auto 0px);
+    z-index: 9999;
+    background: $darkgrey;
+    box-shadow: 0 0 2px rgba(6,8,8,0.15)
+}
+
+.nav-item {
+    position: relative;
+    display: block;
+    float: left;
+    color: #fff;
+}
+
+.nav-label {
+    height: 34px;
+    line-height: 34px;
+    margin-top: 13px;
+    padding: 0 10px;
+    border-radius: 4px;
+    @include transition(background 0.4s);
+}
+
+.nav-item:hover .nav-label {
+    background: darken($darkgrey, 2%);
+}
+
+.ghost-logo {
+    @include icon($i-ghost, 16px) { line-height: 0; }
+    display: inline-block;
+    float: left;
+    height: 60px;
+    width: 60px;
+    padding: 22px;
+    color: lighten($grey, 20%);
+}
+.ghost-logo:hover,
+.ghost-logo:focus {
+    color: $lightgrey;
+}
+
+.user-item {
+    float: right;
+
+    .image {
+        display: inline-block;
+
+        img {
+            display: block;
+            width: 32px;
+            height: 32px;
+            border-radius: 100%;
+        }
+    }
+}

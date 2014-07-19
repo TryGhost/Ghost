@@ -5,6 +5,7 @@
 @import "_bourbon"; // via Bower http://bourbon.io/
 @import "helpers/variables";
 @import "helpers/mixins";
+@import "helpers/icons";
 
 
 //
@@ -18,12 +19,13 @@
 // Patterns - Re-usable styles
 // --------------------------------------------------
 
-
+@import "patterns/global";
 
 //
 // Components - User interface objects
 // --------------------------------------------------
 
+@import "components/navigation";
 
 
 //
