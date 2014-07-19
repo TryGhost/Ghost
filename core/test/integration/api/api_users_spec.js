@@ -39,7 +39,7 @@ describe('Users API', function () {
                 'password': 'password'
             }]}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                results.users.should.exist;
                 should.exist(results.users);
                 results.users.should.have.length(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
@@ -129,7 +129,7 @@ describe('Users API', function () {
         it('admin can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 1}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                results.users.should.exist;
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
 
@@ -142,7 +142,7 @@ describe('Users API', function () {
         it('editor can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 2}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                results.users.should.exist;
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -152,7 +152,7 @@ describe('Users API', function () {
         it('author can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 3}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                results.users.should.exist;
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -162,7 +162,7 @@ describe('Users API', function () {
         it('no-auth can read', function (done) {
             UsersAPI.read({id: 1}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                results.users.should.exist;
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -172,7 +172,7 @@ describe('Users API', function () {
         it('admin can edit', function (done) {
             UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 1}}).then(function (response) {
                 should.exist(response);
-                testUtils.API.checkResponse(response, 'users');
+                response.users.should.exist;
                 response.users.should.have.length(1);
                 testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                 response.users[0].name.should.equal('Joe Blogger');
@@ -184,7 +184,7 @@ describe('Users API', function () {
         it('editor can edit', function (done) {
             UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 2}}).then(function (response) {
                 should.exist(response);
-                testUtils.API.checkResponse(response, 'users');
+                response.users.should.exist;
                 response.users.should.have.length(1);
                 testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                 response.users[0].name.should.eql('Joe Blogger');
@@ -204,7 +204,7 @@ describe('Users API', function () {
                 return UsersAPI.edit({users: [{name: 'Timothy Bogendath'}]}, {id: 3, context: {user: 3}})
                     .then(function (response) {
                         should.exist(response);
-                        testUtils.API.checkResponse(response, 'users');
+                        response.users.should.exist;
                         response.users.should.have.length(1);
                         testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                         response.users[0].name.should.eql('Timothy Bogendath');
