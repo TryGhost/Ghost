@@ -46,59 +46,59 @@ describe('Tag Model', function () {
     describe('a Post', function () {
         var PostModel = Models.Post;
 
-//        it('can add a tag', function (done) {
-//            var newPost = testUtils.DataGenerator.forModel.posts[0],
-//                newTag = testUtils.DataGenerator.forModel.tags[0],
-//                createdPostID;
-//
-//            when.all([
-//                PostModel.add(newPost, context),
-//                TagModel.add(newTag, context)
-//            ]).then(function (models) {
-//                var createdPost = models[0],
-//                    createdTag = models[1];
-//
-//                createdPostID = createdPost.id;
-//                return createdPost.tags().attach(createdTag);
-//            }).then(function () {
-//                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
-//            }).then(function (postWithTag) {
-//                postWithTag.related('tags').length.should.equal(1);
-//                done();
-//            }).catch(done);
-//
-//        });
-//
-//        it('can remove a tag', function (done) {
-//            // The majority of this test is ripped from above, which is obviously a Bad Thing.
-//            // Would be nice to find a way to seed data with relations for cases like this,
-//            // because there are more DB hits than needed
-//            var newPost = testUtils.DataGenerator.forModel.posts[0],
-//                newTag = testUtils.DataGenerator.forModel.tags[0],
-//                createdTagID,
-//                createdPostID;
-//
-//            when.all([
-//                PostModel.add(newPost, context),
-//                TagModel.add(newTag, context)
-//            ]).then(function (models) {
-//                var createdPost = models[0],
-//                    createdTag = models[1];
-//
-//                createdPostID = createdPost.id;
-//                createdTagID = createdTag.id;
-//                return createdPost.tags().attach(createdTag);
-//            }).then(function () {
-//                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
-//            }).then(function (postWithTag) {
-//                return postWithTag.tags().detach(createdTagID);
-//            }).then(function () {
-//                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
-//            }).then(function (postWithoutTag) {
-//                postWithoutTag.related('tags').length.should.equal(0);
-//                done();
-//            }).catch(done);
-//        });
+        it('can add a tag', function (done) {
+            var newPost = testUtils.DataGenerator.forModel.posts[0],
+                newTag = testUtils.DataGenerator.forModel.tags[0],
+                createdPostID;
+
+            when.all([
+                PostModel.add(newPost, context),
+                TagModel.add(newTag, context)
+            ]).then(function (models) {
+                var createdPost = models[0],
+                    createdTag = models[1];
+
+                createdPostID = createdPost.id;
+                return createdPost.tags().attach(createdTag);
+            }).then(function () {
+                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
+            }).then(function (postWithTag) {
+                postWithTag.related('tags').length.should.equal(1);
+                done();
+            }).catch(done);
+
+        });
+
+        it('can remove a tag', function (done) {
+            // The majority of this test is ripped from above, which is obviously a Bad Thing.
+            // Would be nice to find a way to seed data with relations for cases like this,
+            // because there are more DB hits than needed
+            var newPost = testUtils.DataGenerator.forModel.posts[0],
+                newTag = testUtils.DataGenerator.forModel.tags[0],
+                createdTagID,
+                createdPostID;
+
+            when.all([
+                PostModel.add(newPost, context),
+                TagModel.add(newTag, context)
+            ]).then(function (models) {
+                var createdPost = models[0],
+                    createdTag = models[1];
+
+                createdPostID = createdPost.id;
+                createdTagID = createdTag.id;
+                return createdPost.tags().attach(createdTag);
+            }).then(function () {
+                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
+            }).then(function (postWithTag) {
+                return postWithTag.tags().detach(createdTagID);
+            }).then(function () {
+                return PostModel.findOne({id: createdPostID, status: 'all'}, { withRelated: ['tags']});
+            }).then(function (postWithoutTag) {
+                postWithoutTag.related('tags').length.should.equal(0);
+                done();
+            }).catch(done);
+        });
 
         describe('setting tags from an array on update', function () {
             // When a Post is updated, iterate through the existing tags, and detach any that have since been removed.
