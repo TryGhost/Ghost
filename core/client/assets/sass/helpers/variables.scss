@@ -1,34 +1,6 @@
-/*
- * Variables used in Ghost-UI
- *
- * Table of Contents
- *
- * Misc Default Values
- * Pixel Densities
- * Colours
- * Typography
- */
-
-
-/* ==========================================================================
-   Misc Default Values
-   ========================================================================== */
-
-$rounded: 2px;
-$shadow: rgba(0,0,0,0.05) 0 1px 5px;
-$default-transition-duration: 0.3s;
-
-
-/* ==========================================================================
-   Pixel Densities
-   ========================================================================== */
-
-$at2x: 2 device-pixel-ratio;
-
-
-/* ==========================================================================
-   Colours
-   ========================================================================== */
+//
+// Colours
+// --------------------------------------------------
 
 $darkgrey: #242628;
 $grey: #35393b;
@@ -56,11 +28,15 @@ $list-colours:
     ('green' $green);
 
 
-/* ==========================================================================
-   Typography
-   ========================================================================== */
+//
+// Styles
+// --------------------------------------------------
+
+$rounded: 2px;
+$shadow: rgba(0,0,0,0.05) 0 1px 5px;
+$default-transition-duration: 0.3s;
 
 $font-family: 'Open Sans', sans-serif;
-$font-family-sans: $font-family;
-$font-family-serif: serif;
 $font-family-mono: Inconsolata, monospace;
+
+$at2x: 2 device-pixel-ratio;

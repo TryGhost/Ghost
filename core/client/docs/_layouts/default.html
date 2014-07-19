@@ -1,30 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>{{ page.title }}</title>
-    
-    <link rel="stylesheet" href="/dist/css/ghost-ui.min.css">
-
-    <!-- Fonts -->
-    <!-- <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" /> -->
-
+    <!-- Meta, title, CSS, favicons, etc. -->
+    {% include head.html %}
 </head>
 <body>
+<a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
 
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li>
-                <a href="/css/">CSS</a>
-                <ul>
-                    <li><a href="/css/buttons/">Buttons</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+<!-- Docs master nav -->
+{% include nav/global.html %}
 
+<!-- Docs page -->
+<main id="gh-main" role="main">
     {{content}}
-    
+</main>
+
+{% include foot.html %}
 </body>
 </html>

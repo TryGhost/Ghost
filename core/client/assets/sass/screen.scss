@@ -1,68 +1,32 @@
-/*
- * Ground Zero - This is where it begins.
- * Every Sass file is imported here
- *
- * Table of Contents
- *
- * Variables & Mixin Libraries
- * Libraries
- * Modules
- * Layouts
- */
-
-
-/* ==========================================================================
-   Variables & Mixins
-   ========================================================================== */
+//
+// Helpers - Variables and mixins
+// --------------------------------------------------
 
 @import "_bourbon"; // via Bower http://bourbon.io/
 @import "helpers/variables";
 @import "helpers/mixins";
 
 
-/* ==========================================================================
-   Libraries
-   ========================================================================== */
+//
+// Libraries - 3rd party dependencies
+// --------------------------------------------------
 
 @import "normalize"; // via Bower
 
 
-/* ==========================================================================
-   Modules
-   ========================================================================== */
-
-@import "modules/base";
-@import "modules/layout";
-@import "modules/utility";
-@import "modules/animations";
-@import "modules/icons";
-@import "modules/buttons";
-@import "modules/typography";
-@import "modules/tables";
-@import "modules/forms";
-@import "modules/floatingheaders";
-@import "modules/modals";
-@import "modules/dropdowns";
-@import "modules/notifications";
-@import "modules/objectlist";
-@import "modules/rolelables";
-@import "modules/uploader";
-@import "modules/navbar";
-@import "modules/navs";
-@import "modules/nprogress";
+//
+// Patterns - Re-usable styles
+// --------------------------------------------------
 
 
-/* ==========================================================================
-   Layouts
-   ========================================================================== */
 
-@import "layouts/auth";
-@import "layouts/about";
-@import "layouts/content";
-@import "layouts/editor";
-@import "layouts/errors";
-@import "layouts/modals";
-@import "layouts/post-settings-menu";
-@import "layouts/settings";
-@import "layouts/setup";
-@import "layouts/users";
+//
+// Components - User interface objects
+// --------------------------------------------------
+
+
+
+//
+// Layouts - Individual application screens
+// --------------------------------------------------
+
