@@ -19,9 +19,12 @@ var _              = require('lodash'),
     slugs          = require('./slugs'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
+    dataExport     = require('../data/export'),
+    errors         = require('../errors'),
 
     http,
     formatHttpErrors,
+    addHeaders,
     cacheInvalidationHeader,
     locationHeader,
     contentDispositionHeader,
@@ -135,9 +138,9 @@ locationHeader = function (req, result) {
  * @return {string}
  */
 contentDispositionHeader = function () {
-    // replace ':' with '_' for OS that don't support it
-    var now = (new Date()).toJSON().replace(/:/g, '_');
-    return 'Attachment; filename="ghost-' + now + '.json"';
+    return dataExport.fileName().then(function (filename) {
+        return 'Attachment; filename="' + filename + '"';
+    });
 };
 
 
@@ -172,6 +175,51 @@ formatHttpErrors = function (error) {
     return {errors: errors, statusCode: statusCode};
 };
 
+
+addHeaders = function (apiMethod, req, res, result) {
+    var ops = [],
+        cacheInvalidation,
+        location,
+        contentDisposition;
+
+    cacheInvalidation = cacheInvalidationHeader(req, result)
+        .then(function addCacheHeader(header) {
+            if (header) {
+                res.set({'X-Cache-Invalidate': header});
+            }
+        });
+
+    ops.push(cacheInvalidation);
+
+    if (req.method === 'POST') {
+        location = locationHeader(req, result)
+            .then(function addLocationHeader(header) {
+                if (header) {
+                    res.set({'Location': header});
+                    // The location header indicates that a new object was created.
+                    // In this case the status code should be 201 Created
+                    res.status(201);
+                }
+            });
+        ops.push(location);
+    }
+
+    if (apiMethod === db.exportContent) {
+        contentDisposition = contentDispositionHeader()
+            .then(function addContentDispositionHeader(header) {
+                // Add Content-Disposition Header
+                if (apiMethod === db.exportContent) {
+                    res.set({
+                        'Content-Disposition': header
+                    });
+                }
+            });
+        ops.push(contentDisposition);
+    }
+
+    return when.all(ops);
+};
+
 /**
  * ### HTTP
  *
@@ -186,6 +234,7 @@ http = function (apiMethod) {
     return function (req, res) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
+            response,
             options = _.extend({}, req.files, req.query, req.params, {
                 context: {
                     user: (req.user && req.user.id) ? req.user.id : null
@@ -202,35 +251,16 @@ http = function (apiMethod) {
         return apiMethod(object, options)
             // Handle adding headers
             .then(function onSuccess(result) {
+                response = result;
                 // Add X-Cache-Invalidate header
-                return cacheInvalidationHeader(req, result)
-                    .then(function addCacheHeader(header) {
-                        if (header) {
-                            res.set({'X-Cache-Invalidate': header});
-                        }
-
-                        // Add Location header
-                        return locationHeader(req, result);
-                    }).then(function addLocationHeader(header) {
-                        if (header) {
-                            res.set({'Location': header});
-                            // The location header indicates that a new object was created.
-                            // In this case the status code should be 201 Created
-                            res.status(201);
-                        }
-
-                        // Add Content-Disposition Header
-                        if (apiMethod === db.exportContent) {
-                            res.set({
-                                'Content-Disposition': contentDispositionHeader()
-                            });
-                        }
-
-                        // #### Success
-                        // Send a properly formatting HTTP response containing the data with correct headers
-                        res.json(result || {});
-                    });
+                return addHeaders(apiMethod, req, res, result);
+            }).then(function () {
+                // #### Success
+                // Send a properly formatting HTTP response containing the data with correct headers
+                console.log(response);
+                res.json(response || {});
             }).catch(function onError(error) {
+                errors.logError(error);
                 // #### Error
                 var httpErrors = formatHttpErrors(error);
                 // Send a properly formatted HTTP response containing the errors
