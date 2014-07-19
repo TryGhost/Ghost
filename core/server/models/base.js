@@ -11,7 +11,7 @@ var bookshelf  = require('bookshelf'),
     _          = require('lodash'),
     uuid       = require('node-uuid'),
     config     = require('../config'),
-    unidecode  = require('unidecode'),
+    utils      = require('../utils'),
     sanitize   = require('validator').sanitize,
     schema     = require('../data/schema'),
     validation = require('../data/validation'),
@@ -343,19 +343,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
         };
 
-        slug = base.trim();
-
-        // Remove non ascii characters
-        slug = unidecode(slug);
-
-        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        slug = slug.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
-            // Replace dots and spaces with a dash
-            .replace(/(\s|\.)/g, '-')
-            // Convert 2 or more dashes into a single dash
-            .replace(/-+/g, '-')
-            // Make the whole thing lowercase
-            .toLowerCase();
+        slug = utils.safeString(base);
 
         // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
