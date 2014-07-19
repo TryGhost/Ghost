@@ -234,7 +234,7 @@ users = {
                 return when.reject(new errors.ValidationError(error.message));
             });
         });
-    },
+    }
 
 };
 
