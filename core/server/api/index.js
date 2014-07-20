@@ -257,7 +257,6 @@ http = function (apiMethod) {
             }).then(function () {
                 // #### Success
                 // Send a properly formatting HTTP response containing the data with correct headers
-                console.log(response);
                 res.json(response || {});
             }).catch(function onError(error) {
                 errors.logError(error);
