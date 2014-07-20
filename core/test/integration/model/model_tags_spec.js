@@ -346,10 +346,7 @@ describe('Tag Model', function () {
                     postWithTag.related('tags').length.should.equal(1);
                     done();
                 }).catch(done);
-
             });
         });
-
     });
-
 });
