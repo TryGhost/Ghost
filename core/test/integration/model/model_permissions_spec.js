@@ -37,7 +37,7 @@ describe('Permission Model', function () {
             foundPermissions.models.length.should.be.above(0);
 
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can findOne', function (done) {

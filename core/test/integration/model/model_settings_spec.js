@@ -212,5 +212,4 @@ describe('Settings Model', function () {
             }).catch(done);
         });
     });
-
 });
