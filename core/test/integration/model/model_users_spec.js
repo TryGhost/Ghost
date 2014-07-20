@@ -22,7 +22,7 @@ describe('User Model', function run() {
     afterEach(function (done) {
         testUtils.clearData().then(function () {
             done();
-        }, done);
+        }).catch(done);
     });
 
     describe('Registration', function runRegistration() {
@@ -392,5 +392,4 @@ describe('User Model', function run() {
             });
         });
     });
-
 });
