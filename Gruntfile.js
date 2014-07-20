@@ -624,6 +624,12 @@ var path           = require('path'),
         // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
         // Integration tests are different to the unit tests because they make requests to the database.
         //
+        // If you need to run an individual integration test file you can do so, providing you have mocha installed
+        // globally, by using a command in the form (replace path to api_tags_spec.js with the test file you want to
+        // run):
+        //
+        // NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/integration/api/api_tags_spec.js`
+        //
         // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
         // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases
         // don't cause bugs. At present, pg often fails and is not officially supported.
