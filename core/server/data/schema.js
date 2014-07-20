@@ -193,8 +193,14 @@ function isTag(jsonData) {
         jsonData.hasOwnProperty('description') && jsonData.hasOwnProperty('parent');
 }
 
+function isUser(jsonData) {
+    return jsonData.hasOwnProperty('bio') && jsonData.hasOwnProperty('website') &&
+        jsonData.hasOwnProperty('status') && jsonData.hasOwnProperty('location');
+}
+
 module.exports.tables = db;
 module.exports.checks = {
     isPost: isPost,
-    isTag: isTag
+    isTag: isTag,
+    isUser: isUser
 };
