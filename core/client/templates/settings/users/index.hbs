@@ -19,7 +19,11 @@
 
                     <div class="object-list-item-body">
                         <span class="name">{{email}}</span><br>
-                        <span class="description">Invitation sent: {{created_at}}</span>
+                            {{#if pending}}
+                                <span class="red">Invitation not sent - please try again</span>
+                            {{else}}
+                                <span class="description">Invitation sent: {{created_at}}</span>
+                            {{/if}}
                     </div>
                     <aside class="object-list-item-aside">
                         <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>

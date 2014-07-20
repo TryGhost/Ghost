@@ -64,8 +64,14 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
         return validationErrors;
     }.property('password', 'newPassword', 'ne2Password'),
 
-    isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]')
-
+    isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
+    active: function () {
+        return _.contains(['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'], this.get('status'));
+    }.property('status'),
+    invited: function () {
+        return _.contains(['invited', 'invited-pending'], this.get('status'));
+    }.property('status'),
+    pending: Ember.computed.equal('status', 'invited-pending').property('status')
 });
 
 export default User;
