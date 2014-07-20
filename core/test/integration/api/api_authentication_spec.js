@@ -58,8 +58,8 @@ describe('Authentication API', function () {
                 AuthAPI.setup({ setup: [setupData] }).then(function (result) {
                     should.exist(result);
                     should.exist(result.users);
+                    should.not.exist(result.meta);
                     result.users.should.have.length(1);
-                    testUtils.API.checkResponse(result, 'users');
                     testUtils.API.checkResponse(result.users[0], 'user', ['roles']);
 
                     var newUser = result.users[0];

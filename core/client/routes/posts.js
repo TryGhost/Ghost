@@ -1,6 +1,7 @@
 import styleBody from 'ghost/mixins/style-body';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
+import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
 var paginationSettings = {
     status: 'all',
@@ -9,7 +10,7 @@ var paginationSettings = {
     page: 1
 };
 
-var PostsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, {
+var PostsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
     classNames: ['manage'],
 
     model: function () {
@@ -22,7 +23,7 @@ var PostsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, Sh
 
     setupController: function (controller, model) {
         this._super(controller, model);
-        controller.set('paginationSettings', paginationSettings);
+        this.setupPagination(paginationSettings);
     },
 
     shortcuts: {
