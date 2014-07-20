@@ -42,9 +42,7 @@ users = {
             if (options.include) {
                 options.include = prepareInclude(options.include);
             }
-            return dataProvider.User.findAll(options).then(function (result) {
-                return { users: result.toJSON() };
-            });
+            return dataProvider.User.findPage(options);
         }, function () {
             return when.reject(new errors.NoPermissionError('You do not have permission to browse users.'));
         });
@@ -67,6 +65,12 @@ users = {
 
         if (data.id === 'me' && options.context && options.context.user) {
             data.id = options.context.user;
+
+            //always include the the role when getting info about currently authenticated user
+            options.include = options.include || [];
+            if (options.include.indexOf('roles') === -1) {
+                options.include.push('roles');
+            }
         }
 
         return dataProvider.User.findOne(data, options).then(function (result) {

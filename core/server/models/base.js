@@ -186,7 +186,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function () {
         // terms to whitelist for all methods.
-        return ['context', 'include', 'transacting'];
+        return ['context', 'include', 'transacting', 'limit', 'page', 'where'];
     },
 
     /**
@@ -214,7 +214,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return filteredOptions;
     },
 
-     // ## Model Data Functions
+    // ## Model Data Functions
 
     /**
      * ### Find All
@@ -299,7 +299,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
-    * ### Generate Slug
+     * ### Generate Slug
      * Create a string to act as the permalink for an object.
      * @param {ghostBookshelf.Model} Model Model type to generate a slug for
      * @param {String} base The string for which to generate a slug, usually a title or name

@@ -6,7 +6,7 @@
     </section>
 </header>
 
-<section class="content settings-users">
+{{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
     {{#if invitedUsers}}
 
         <section class="object-list invited-users">
@@ -51,11 +51,13 @@
                 </div>
                 <!-- @TODO: replace these with real access level once API and data model are updated -->
                 <aside class="object-list-item-aside">
-                    <span class="role-label editor">Editor</span>
-                    <span class="role-label owner">Owner</span>
+                    {{#each roles}}
+                        <span class="role-label owner">{{name}}</span>
+                    {{/each}}
+
                 </aside>
             {{/link-to}}
         {{/each}}
 
     </section>
-</section>
+{{/view}}

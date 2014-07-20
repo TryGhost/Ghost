@@ -12,6 +12,8 @@ var SettingsUserController = Ember.ObjectController.extend({
         return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }.property('ghostPaths'),
 
+    roles: Ember.computed.readOnly('user.roles'),
+
     cover: function () {
         var cover = this.get('user.cover');
         if (typeof cover !== 'string') {
