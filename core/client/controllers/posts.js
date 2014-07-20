@@ -1,6 +1,6 @@
-import { getRequestErrorMessage } from 'ghost/utils/ajax';
+import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
-var PostsController = Ember.ArrayController.extend({
+var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     // this will cause the list to re-sort when any of these properties change on any of the models
     sortProperties: ['status', 'published_at', 'updated_at'],
 
@@ -66,64 +66,11 @@ var PostsController = Ember.ArrayController.extend({
         return statusResult;
     },
 
-    // set from PostsRoute
-    paginationSettings: null,
-
-    // holds the next page to load during infinite scroll
-    nextPage: null,
-
-    // indicates whether we're currently loading the next page
-    isLoading: null,
-
     init: function () {
-        this._super();
+        //let the PaginationControllerMixin know what type of model we will be paginating
+        //this is necesariy because we do not have access to the model inside the Controller::init method
+        this._super({'modelType': 'post'});
 
-        var metadata = this.store.metadataFor('post');
-        this.set('nextPage', metadata.pagination.next);
-    },
-
-    /**
-     * Takes an ajax response, concatenates any error messages, then generates an error notification.
-     * @param {jqXHR} response The jQuery ajax reponse object.
-     * @return
-     */
-    reportLoadError: function (response) {
-        var message = 'A problem was encountered while loading more posts';
-
-        if (response) {
-            // Get message from response
-            message += ': ' + getRequestErrorMessage(response, true);
-        } else {
-            message += '.';
-        }
-
-        this.notifications.showError(message);
-    },
-
-    actions: {
-        /**
-        * Loads the next paginated page of posts into the ember-data store. Will cause the posts list UI to update.
-        * @return
-        */
-        loadNextPage: function () {
-            var self = this,
-                store = this.get('store'),
-                nextPage = this.get('nextPage'),
-                paginationSettings = this.get('paginationSettings');
-
-            if (nextPage) {
-                this.set('isLoading', true);
-                this.set('paginationSettings.page', nextPage);
-                store.find('post', paginationSettings).then(function () {
-                    var metadata = store.metadataFor('post');
-
-                    self.set('nextPage', metadata.pagination.next);
-                    self.set('isLoading', false);
-                }, function (response) {
-                    self.reportLoadError(response);
-                });
-            }
-        }
     }
 });
 
