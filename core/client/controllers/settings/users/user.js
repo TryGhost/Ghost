@@ -63,6 +63,7 @@ var SettingsUserController = Ember.ObjectController.extend({
             var self = this;
 
             this.get('model').resendInvite().then(function () {
+                self.get('model').set('status', 'invited');
                 var notificationText = 'Invitation resent! (' + self.get('email') + ')';
                 self.notifications.showSuccess(notificationText, false);
             }).catch(function (error) {
