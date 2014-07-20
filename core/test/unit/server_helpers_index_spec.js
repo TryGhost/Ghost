@@ -576,7 +576,7 @@ describe('Core Helpers', function () {
 
         it('should return the slug with a prefixed /tag/ if the context is a tag', function (done) {
             helpers.url.call({
-                name: 'the tag', slug: 'the-tag', description: null, parent_id: null
+                name: 'the tag', slug: 'the-tag', description: null, parent: null
             }).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('/tag/the-tag/');
