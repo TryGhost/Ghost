@@ -1,19 +1,53 @@
 /*globals describe, before, beforeEach, afterEach, it */
-/*jshint expr:true*/
-var testUtils   = require('../../utils'),
-    should      = require('should'),
+var testUtils = require('../../utils'),
+    should    = require('should'),
+
+    permissions   = require('../../../server/permissions'),
+    UserModel = require('../../../server/models').User;
 
     // Stuff we are testing
-    permissions = require('../../../server/permissions'),
-    UserModel   = require('../../../server/models').User,
-    UsersAPI    = require('../../../server/api/users');
+    UsersAPI      = require('../../../server/api/users');
+    AuthAPI      = require('../../../server/api/authentication');
 
 describe('Users API', function () {
-     // Keep the DB clean
-    before(testUtils.teardown);
-    afterEach(testUtils.teardown);
 
-    should.exist(UsersAPI);
+    before(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }).catch(done);
+    });
+
+    afterEach(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }).catch(done);
+    });
+
+    describe('No User', function () {
+        beforeEach(function (done) {
+            testUtils.initData().then(function () {
+                return permissions.init();
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        it('can add with internal user', function (done) {
+            AuthAPI.setup({ setup: [{
+                'name': 'Hello World',
+                'email': 'hello@world.com',
+                'password': 'password'
+            }]}).then(function (results) {
+                should.exist(results);
+                should.not.exist(results.meta);
+                should.exist(results.users);
+                results.users.should.have.length(1);
+                testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
+                results.users[0].name.should.equal('Hello World');
+                done();
+            }).catch(done);
+        });
+    });
 
     describe('With Users', function () {
         beforeEach(function (done) {
@@ -95,7 +129,8 @@ describe('Users API', function () {
         it('admin can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 1}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                should.not.exist(results.meta);
+                should.exist(results.users);
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
 
@@ -108,7 +143,8 @@ describe('Users API', function () {
         it('editor can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 2}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                should.not.exist(results.meta);
+                should.exist(results.users);
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -118,7 +154,8 @@ describe('Users API', function () {
         it('author can read', function (done) {
             UsersAPI.read({id: 1, context: {user: 3}}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                should.not.exist(results.meta);
+                should.exist(results.users);
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -128,7 +165,8 @@ describe('Users API', function () {
         it('no-auth can read', function (done) {
             UsersAPI.read({id: 1}).then(function (results) {
                 should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
+                should.not.exist(results.meta);
+                should.exist(results.users);
                 results.users[0].id.should.eql(1);
                 testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
                 done();
@@ -138,7 +176,8 @@ describe('Users API', function () {
         it('admin can edit', function (done) {
             UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 1}}).then(function (response) {
                 should.exist(response);
-                testUtils.API.checkResponse(response, 'users');
+                should.not.exist(response.meta);
+                should.exist(response.users);
                 response.users.should.have.length(1);
                 testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                 response.users[0].name.should.equal('Joe Blogger');
@@ -150,7 +189,8 @@ describe('Users API', function () {
         it('editor can edit', function (done) {
             UsersAPI.edit({users: [{name: 'Joe Blogger'}]}, {id: 1, context: {user: 2}}).then(function (response) {
                 should.exist(response);
-                testUtils.API.checkResponse(response, 'users');
+                should.not.exist(response.meta);
+                should.exist(response.users);
                 response.users.should.have.length(1);
                 testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                 response.users[0].name.should.eql('Joe Blogger');
@@ -170,7 +210,8 @@ describe('Users API', function () {
                 return UsersAPI.edit({users: [{name: 'Timothy Bogendath'}]}, {id: 3, context: {user: 3}})
                     .then(function (response) {
                         should.exist(response);
-                        testUtils.API.checkResponse(response, 'users');
+                        should.not.exist(response.meta);
+                        should.exist(response.users);
                         response.users.should.have.length(1);
                         testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
                         response.users[0].name.should.eql('Timothy Bogendath');

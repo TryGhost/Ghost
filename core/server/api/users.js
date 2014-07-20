@@ -42,9 +42,7 @@ users = {
             if (options.include) {
                 options.include = prepareInclude(options.include);
             }
-            return dataProvider.User.findAll(options).then(function (result) {
-                return { users: result.toJSON() };
-            });
+            return dataProvider.User.findPage(options);
         }, function () {
             return when.reject(new errors.NoPermissionError('You do not have permission to browse users.'));
         });

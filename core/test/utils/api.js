@@ -6,7 +6,7 @@ var url = require('url'),
     schema = 'http://',
     expectedProperties = {
         posts: ['posts', 'meta'],
-        users: ['users'],
+        users: ['users', 'meta'],
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',
