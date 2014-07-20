@@ -6,7 +6,7 @@
     </section>
 </header>
 
-<section class="content settings-users">
+{{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
     {{#if invitedUsers}}
 
         <section class="object-list invited-users">
@@ -62,4 +62,4 @@
         {{/each}}
 
     </section>
-</section>
+{{/view}}
