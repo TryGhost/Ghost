@@ -6,8 +6,9 @@ var _              = require('lodash'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
-    Tag           = require('./tag').Tag,
+    Tag            = require('./tag').Tag,
     Tags           = require('./tag').Tags,
+    User           = require('./user').User,
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
 
@@ -278,7 +279,8 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         var postCollection = Posts.forge(),
-            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false;
+            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
+            authorInstance = options.author !== undefined ? User.forge({slug: options.author}) : false;
 
         if (options.limit) {
             options.limit = parseInt(options.limit) || 15;
@@ -329,7 +331,14 @@ Post = ghostBookshelf.Model.extend({
             return false;
         }
 
-        return when(fetchTagQuery())
+        function fetchAuthorQuery() {
+            if (authorInstance) {
+                return authorInstance.fetch();
+            }
+            return false;
+        }
+
+        return when.join(fetchTagQuery(), fetchAuthorQuery())
 
             // Set the limit & offset for the query, fetching
             // with the opts (to specify any eager relations, etc.)
@@ -343,6 +352,11 @@ Post = ghostBookshelf.Model.extend({
                     postCollection
                         .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
                         .query('where', 'posts_tags.tag_id', '=', tagInstance.id);
+                }
+
+                if (authorInstance) {
+                    postCollection
+                        .query('where', 'author_id', '=', authorInstance.id);
                 }
                 return postCollection
                     .query('limit', options.limit)
@@ -370,6 +384,9 @@ Post = ghostBookshelf.Model.extend({
                 if (tagInstance) {
                     qb.join('posts_tags', 'posts_tags.post_id', '=', 'posts.id');
                     qb.where('posts_tags.tag_id', '=', tagInstance.id);
+                }
+                if (authorInstance) {
+                    qb.where('author_id', '=', authorInstance.id);
                 }
 
                 return qb.count(tableName + '.' + idAttribute + ' as aggregate');
@@ -416,6 +433,13 @@ Post = ghostBookshelf.Model.extend({
                     meta.filters = {};
                     if (!tagInstance.isNew()) {
                         meta.filters.tags = [tagInstance.toJSON()];
+                    }
+                }
+
+                if (authorInstance) {
+                    meta.filters = {};
+                    if (!authorInstance.isNew()) {
+                        meta.filters.author = authorInstance.toJSON();
                     }
                 }
 

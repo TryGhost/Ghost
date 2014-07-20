@@ -20,11 +20,19 @@ frontendRoutes = function () {
         res.redirect(301, subdir + '/rss/');
     });
 
-
+    // Tags
     router.get('/tag/:slug/rss/', frontend.rss);
     router.get('/tag/:slug/rss/:page/', frontend.rss);
     router.get('/tag/:slug/page/:page/', frontend.tag);
     router.get('/tag/:slug/', frontend.tag);
+
+    // Authors
+    router.get('/author/:slug/rss/', frontend.rss);
+    router.get('/author/:slug/rss/:page/', frontend.rss);
+    router.get('/author/:slug/page/:page/', frontend.author);
+    router.get('/author/:slug/', frontend.author);
+
+    // Default
     router.get('/page/:page/', frontend.homepage);
     router.get('/', frontend.homepage);
     router.get('*', frontend.single);
