@@ -5,7 +5,6 @@ import loadingIndicator from 'ghost/mixins/loading-indicator';
 var paginationSettings = {
     status: 'all',
     staticPages: 'all',
-    include: 'tags',
     page: 1
 };
 

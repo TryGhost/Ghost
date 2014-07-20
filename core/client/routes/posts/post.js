@@ -24,7 +24,6 @@ var PostsPostRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
             id: params.post_id,
             status: 'all',
             staticPages: 'all',
-            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 
