@@ -102,7 +102,7 @@ function urlPathForPost(post, permalinks) {
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure,
-        knownObjects = ['post', 'tag', 'user'],
+        knownObjects = ['post', 'tag', 'author'],
 
     // this will become really big
     knownPaths = {
@@ -130,6 +130,9 @@ function urlFor(context, data, absolute) {
         } else if (context === 'tag' && data.tag) {
             urlPath = '/tag/' + data.tag.slug + '/';
             secure = data.tag.secure;
+        } else if (context === 'author' && data.author) {
+            urlPath = '/author/' + data.author.slug + '/';
+            secure = data.author.secure;
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {

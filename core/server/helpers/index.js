@@ -154,6 +154,11 @@ coreHelpers.url = function (options) {
         return when(config.urlFor('tag', {tag: this}, absolute));
     }
 
+    if (schema.isUser(this)) {
+        return when(config.urlFor('author', {author: this}, absolute));
+    }
+
+
     return when(config.urlFor(this, absolute));
 };
 
@@ -200,9 +205,26 @@ coreHelpers.asset = function (context, options) {
 // Returns the full name of the author of a given post, or a blank string
 // if the author could not be determined.
 //
-coreHelpers.author = function (context, options) {
+coreHelpers.author = function (options) {
+    options = options || {};
+    options.hash = options.hash || {};
+
     /*jshint unused:false*/
-    return this.author ? this.author.name : '';
+    var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
+        output = '';
+
+    if (this.author && this.author.name) {
+        if (autolink) {
+            output = linkTemplate({
+                url: config.urlFor('author', {author: this.author}),
+                text: _.escape(this.author.name)
+            });
+        } else {
+            output = _.escape(this.author.name);
+        }
+    }
+
+    return new hbs.handlebars.SafeString(output);
 };
 
 // ### Tags Helper
@@ -217,10 +239,13 @@ coreHelpers.author = function (context, options) {
 // Note that the standard {{#each tags}} implementation is unaffected by this helper
 // and can be used for more complex templates.
 coreHelpers.tags = function (options) {
-    var autolink = _.isString(options.hash.autolink) && options.hash.autolink === "false" ? false : true,
-        separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
-        prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
-        suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
+    options = options || {};
+    options.hash = options.hash || {};
+
+    var autolink = options.hash && _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
+        separator = options.hash && _.isString(options.hash.separator) ? options.hash.separator : ', ',
+        prefix = options.hash && _.isString(options.hash.prefix) ? options.hash.prefix : '',
+        suffix = options.hash && _.isString(options.hash.suffix) ? options.hash.suffix : '',
         output = '';
 
     function createTagList(tags) {
@@ -481,7 +506,7 @@ coreHelpers.ghost_foot = function (options) {
 
 coreHelpers.meta_title = function (options) {
     /*jshint unused:false*/
-    var title = "",
+    var title = '',
         blog;
 
     if (_.isString(this.relativeUrl)) {
@@ -496,7 +521,7 @@ coreHelpers.meta_title = function (options) {
     }
 
     return filters.doFilter('meta_title', title).then(function (title) {
-        title = title || "";
+        title = title || '';
         return title.trim();
     });
 };
@@ -516,7 +541,7 @@ coreHelpers.meta_description = function (options) {
     }
 
     return filters.doFilter('meta_description', description).then(function (description) {
-        description = description || "";
+        description = description || '';
         return description.trim();
     });
 };
@@ -554,7 +579,7 @@ coreHelpers.foreach = function (context, options) {
         j = 0,
         columns = options.hash.columns,
         key,
-        ret = "",
+        ret = '',
         data;
 
     if (options.data) {
@@ -639,7 +664,7 @@ coreHelpers.has = function (options) {
     }
 
     if (!tagList) {
-        errors.logWarn("Invalid or no attribute given to has helper");
+        errors.logWarn('Invalid or no attribute given to has helper');
         return;
     }
 
@@ -707,7 +732,7 @@ function registerAsyncHelper(hbs, name, fn) {
         when.resolve(fn.call(this, options)).then(function (result) {
             cb(result);
         }).otherwise(function (err) {
-            errors.logAndThrowError(err, "registerAsyncThemeHelper: " + name);
+            errors.logAndThrowError(err, 'registerAsyncThemeHelper: ' + name);
         });
     });
 }
