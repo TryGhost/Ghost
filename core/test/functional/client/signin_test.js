@@ -18,7 +18,7 @@ CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
             test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
         });
     });
-});
+}, true);
 
 // Note, this test applies to a global redirect, which sends us to the standard admin.
 // Once Ember becomes the standard admin, this test should still pass.
@@ -28,8 +28,7 @@ CasperTest.begin('Redirects login to signin', 2, function suite(test) {
         test.assertEqual(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
-});
-
+}, true);
 
 CasperTest.begin('Can\'t spam it', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
@@ -66,7 +65,7 @@ CasperTest.begin('Can\'t spam it', 4, function suite(test) {
     // This test causes the spam notification
     // add a wait to ensure future tests don't get tripped up by this.
     casper.wait(2000);
-});
+}, true);
 
 CasperTest.begin('Login limit is in place', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
@@ -97,7 +96,7 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
     // This test used login, add a wait to
     // ensure future tests don't get tripped up by this.
     casper.wait(2000);
-});
+}, true);
 
 CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     CasperTest.Routines.signout.run(test);
@@ -120,7 +119,7 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
-});
+}, true);
 
 CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
     CasperTest.Routines.signout.run(test);
@@ -151,7 +150,7 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });
-});
+}, true);
 
 
 CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
@@ -177,5 +176,4 @@ CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
     }, function onTimeout() {
         test.fail('Email validation error did not appear');
     }, 2000);
-
-});
+}, true);
