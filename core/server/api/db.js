@@ -75,7 +75,7 @@ db = {
             ext = path.extname(options.importfile.name).toLowerCase();
             filepath = options.importfile.path;
 
-            return when(isValidFile(options.importfile)).then(function (result) {
+            return when(isValidFile(type, ext)).then(function (result) {
                 if (!result) {
                     return when.reject(new errors.UnsupportedMediaTypeError('Please select a .json file to import.'));
                 }
