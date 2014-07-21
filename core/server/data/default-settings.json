@@ -40,7 +40,7 @@
             }
         },
         "postsPerPage": {
-            "defaultValue": "6",
+            "defaultValue": "5",
             "validations": {
                 "isNull": false,
                 "isInt": true,
