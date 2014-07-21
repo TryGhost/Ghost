@@ -1,20 +1,16 @@
-/*globals describe, before, beforeEach, afterEach, after, it*/
-var testUtils = require('../../utils'),
-    should = require('should'),
+/*globals describe, before, beforeEach, afterEach, it*/
+/*jshint expr:true*/
+var testUtils       = require('../../utils'),
+    should          = require('should'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    context = {context: {user: 1}};
+    AppFieldsModel  = require('../../../server/models').AppField,
+    context         = {context: {user: 1}};
 
 describe('App Fields Model', function () {
-
-    var AppFieldsModel = Models.AppField;
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -26,17 +22,7 @@ describe('App Fields Model', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    after(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(AppFieldsModel);
 
     it('can findAll', function (done) {
         AppFieldsModel.findAll().then(function (results) {

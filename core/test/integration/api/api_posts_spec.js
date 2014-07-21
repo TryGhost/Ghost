@@ -1,18 +1,16 @@
  /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should    = require('should'),
+ /*jshint expr:true*/
+var testUtils     = require('../../utils'),
+    should        = require('should'),
 
     // Stuff we are testing
-    DataGenerator = require('../../utils/fixtures/data-generator'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -24,11 +22,7 @@ describe('Post API', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(PostAPI);
 
     it('can browse', function (done) {
         PostAPI.browse().then(function (results) {

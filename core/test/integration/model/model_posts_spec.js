@@ -1,23 +1,19 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils     = require('../../utils'),
-    should        = require('should'),
-    _             = require('lodash'),
-    sequence      = require('when/sequence'),
+/*jshint expr:true*/
+var testUtils       = require('../../utils'),
+    should          = require('should'),
+    sequence        = require('when/sequence'),
+    _               = require('lodash'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    DataGenerator = testUtils.DataGenerator,
-    context = {context: {user: 1}};
+    PostModel       = require('../../../server/models').Post,
+    DataGenerator   = testUtils.DataGenerator,
+    context         = {context: {user: 1}};
 
 describe('Post Model', function () {
-
-    var PostModel = Models.Post;
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -29,11 +25,7 @@ describe('Post Model', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(PostModel);
 
     function checkFirstPostData(firstPost) {
         should.not.exist(firstPost.author_id);

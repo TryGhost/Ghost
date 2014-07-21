@@ -1,19 +1,17 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should    = require('should'),
+/*jshint expr:true*/
+var testUtils        = require('../../utils'),
+    should           = require('should'),
 
     // Stuff we are testing
-    permissions     = require('../../../server/permissions'),
-    DataGenerator    = require('../../utils/fixtures/data-generator'),
+    permissions      = require('../../../server/permissions'),
     NotificationsAPI = require('../../../server/api/notifications');
 
 describe('Notifications API', function () {
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -26,11 +24,7 @@ describe('Notifications API', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(NotificationsAPI);
 
     it('can add, adds defaults (internal)', function (done) {
         var msg = {
@@ -102,7 +96,7 @@ describe('Notifications API', function () {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
             message: 'This is an error' // A string. Should fit in one line.
         };
-        NotificationsAPI.add({ notifications: [msg] }, {context: {internal: true}}).then(function (notification) {
+        NotificationsAPI.add({ notifications: [msg] }, {context: {internal: true}}).then(function () {
             NotificationsAPI.browse({context: {internal: true}}).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -118,7 +112,7 @@ describe('Notifications API', function () {
                 type: 'error', // this can be 'error', 'success', 'warn' and 'info'
                 message: 'This is an error' // A string. Should fit in one line.
             };
-            NotificationsAPI.add({ notifications: [msg] }, {context: {internal: true}}).then(function (notification) {
+            NotificationsAPI.add({ notifications: [msg] }, {context: {internal: true}}).then(function () {
                 NotificationsAPI.browse({context: {user: 1}}).then(function (results) {
                     should.exist(results);
                     should.exist(results.notifications);

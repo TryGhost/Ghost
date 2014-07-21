@@ -1,29 +1,22 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-var testUtils = require('../../utils'),
-    should = require('should'),
-    when = require('when'),
-    sinon = require('sinon'),
-    uuid = require('node-uuid'),
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
+    when        = require('when'),
+    sinon       = require('sinon'),
+    uuid        = require('node-uuid'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    context = {context: {user: 1}};
+    UserModel   = require('../../../server/models').User,
+    context     = {context: {user: 1}};
 
 
 describe('User Model', function run() {
-    var UserModel = Models.User;
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(UserModel);
 
     describe('Registration', function runRegistration() {
         beforeEach(function (done) {
@@ -41,8 +34,8 @@ describe('User Model', function run() {
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, "password was hashed");
-                createdUser.attributes.email.should.eql(userData.email, "email address correct");
+                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 gravatarStub.restore();
                 done();
             }).catch(done);
@@ -57,7 +50,7 @@ describe('User Model', function run() {
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.email.should.eql(userData.email, "email address correct");
+                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 gravatarStub.restore();
                 done();
             }).catch(done);
@@ -73,7 +66,9 @@ describe('User Model', function run() {
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.image.should.eql('http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found');
+                createdUser.attributes.image.should.eql(
+                    'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found'
+                );
                 gravatarStub.restore();
                 done();
             }).catch(done);
@@ -346,12 +341,12 @@ describe('User Model', function run() {
             }).then(function (token) {
                 return UserModel.validateToken(token, dbHash);
             }).then(function () {
-                throw new Error("Allowed expired token");
+                throw new Error('Allowed expired token');
             }).catch(function (err) {
 
                 should.exist(err);
 
-                err.message.should.equal("Expired token");
+                err.message.should.equal('Expired token');
 
                 done();
             });
@@ -381,12 +376,12 @@ describe('User Model', function run() {
                 return UserModel.validateToken(fakeToken, dbHash);
 
             }).then(function () {
-                throw new Error("allowed invalid token");
+                throw new Error('allowed invalid token');
             }).catch(function (err) {
 
                 should.exist(err);
 
-                err.message.should.equal("Invalid token");
+                err.message.should.equal('Invalid token');
 
                 done();
             });
