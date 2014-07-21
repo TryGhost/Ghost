@@ -1,5 +1,4 @@
-var config        = require('../config'),
-    _             = require('lodash'),
+var _             = require('lodash'),
     when          = require('when'),
     api           = require('../api'),
     errors        = require('../errors'),
@@ -12,18 +11,9 @@ adminControllers = {
     // Method: GET
     'index': function (req, res) {
         /*jslint unparam:true*/
-        var userData,
-        // config we need on the frontend
-            frontConfig = {
-                apps: config().apps,
-                fileStorage: config().fileStorage
-            };
 
         function renderIndex() {
-            res.render('default', {
-                user: userData,
-                config: JSON.stringify(frontConfig)
-            });
+            res.render('default');
         }
 
         updateCheck().then(function () {

@@ -269,7 +269,7 @@ var path           = require('path'),
                     files: [{
                         expand: true,
                         cwd: 'core/client/',
-                        src: ['**/*.js'],
+                        src: ['**/*.js', '!loader.js'],
                         dest: '.tmp/ember-transpiled/'
                     }]
                 }
@@ -279,7 +279,7 @@ var path           = require('path'),
             // Compiles Ember es6 modules
             concat_sourcemap: {
                 client: {
-                    src: ['.tmp/ember-transpiled/**/*.js'],
+                    src: ['.tmp/ember-transpiled/**/*.js', 'core/client/loader.js'],
                     dest: 'core/built/scripts/ghost-dev-ember.js',
                     options: {
                         sourcesContent: true
