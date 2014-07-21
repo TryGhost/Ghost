@@ -2,7 +2,9 @@ var _       = require('lodash'),
     when    = require('when'),
     config  = require('../../config'),
     schema  = require('../schema').tables,
-    clients = require('./clients');
+    clients = require('./clients'),
+
+    dbConfig;
 
 
 function addTableColumn(tablename, table, columnname) {
@@ -42,25 +44,29 @@ function addTableColumn(tablename, table, columnname) {
 }
 
 function addColumn(table, column) {
-    return config().database.knex.schema.table(table, function (t) {
+    dbConfig = dbConfig || config().database;
+    return dbConfig.knex.schema.table(table, function (t) {
         addTableColumn(table, t, column);
     });
 }
 
 function addUnique(table, column) {
-    return config().database.knex.schema.table(table, function (table) {
+    dbConfig = dbConfig || config().database;
+    return dbConfig.knex.schema.table(table, function (table) {
         table.unique(column);
     });
 }
 
 function dropUnique(table, column) {
-    return config().database.knex.schema.table(table, function (table) {
+    dbConfig = dbConfig || config().database;
+    return dbConfig.knex.schema.table(table, function (table) {
         table.dropUnique(column);
     });
 }
 
 function createTable(table) {
-    return config().database.knex.schema.createTable(table, function (t) {
+    dbConfig = dbConfig || config().database;
+    return dbConfig.knex.schema.createTable(table, function (t) {
         var columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (column) {
             return addTableColumn(table, t, column);
@@ -69,11 +75,13 @@ function createTable(table) {
 }
 
 function deleteTable(table) {
-    return config().database.knex.schema.dropTableIfExists(table);
+    dbConfig = dbConfig || config().database;
+    return dbConfig.knex.schema.dropTableIfExists(table);
 }
 
 function getTables() {
-    var client = config().database.client;
+    dbConfig = dbConfig || config().database;
+    var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getTables();
@@ -83,7 +91,8 @@ function getTables() {
 }
 
 function getIndexes(table) {
-    var client = config().database.client;
+    dbConfig = dbConfig || config().database;
+    var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getIndexes(table);
@@ -93,7 +102,8 @@ function getIndexes(table) {
 }
 
 function getColumns(table) {
-    var client = config().database.client;
+    dbConfig = dbConfig || config().database;
+    var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getColumns(table);
@@ -103,7 +113,8 @@ function getColumns(table) {
 }
 
 function checkTables() {
-    var client = config().database.client;
+    dbConfig = dbConfig || config().database;
+    var client = dbConfig.client;
 
     if (client === 'mysql') {
         return clients[client].checkPostTable();
