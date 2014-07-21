@@ -6,7 +6,9 @@
         <ul id="main-menu" >
             {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
             {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor js-close-sidebar"}}
-            {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
+            {{#unless session.user.isAuthor}}
+              {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
+            {{/unless}}
 
             <li id="usermenu" class="usermenu subnav">
                 {{#gh-popover-button popoverName="user-menu" tagName="a" href="#" classNames="dropdown"}}
