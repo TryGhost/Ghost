@@ -53,10 +53,10 @@
                     <br>
                     <span class="description">Last seen: {{unbound last_login}}</span>
                 </div>
-                <!-- @TODO: replace these with real access level once API and data model are updated -->
                 <aside class="object-list-item-aside">
-                    <span class="role-label editor">Editor</span>
-                    <span class="role-label owner">Owner</span>
+                    {{#each roles}}
+                       <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
+                    {{/each}}
                 </aside>
             {{/link-to}}
         {{/each}}
