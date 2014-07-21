@@ -14,7 +14,7 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     cover: function () {
         var cover = this.get('user.cover');
-        if (typeof cover !== 'string') {
+        if (Ember.isBlank(cover)) {
             cover = this.get('coverDefault');
         }
         return cover;
