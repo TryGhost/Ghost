@@ -1,40 +1,26 @@
 /*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var testUtils   = require('../utils'),
+var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
     when        = require('when'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    versioning  = require('../../server/data/versioning'),
-    exporter    = require('../../server/data/export');
+    versioning  = require('../../server/data/versioning/index'),
+    exporter    = require('../../server/data/export/index'),
+    sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
 
-    should.exist(exporter);
-
-    var sandbox;
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    beforeEach(function (done) {
-        sandbox = sinon.sandbox.create();
-        testUtils.initData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    afterEach(function (done) {
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
+    afterEach(function () {
         sandbox.restore();
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
     });
+    beforeEach(testUtils.setup('default'));
+
+    should.exist(exporter);
 
     it('exports data', function (done) {
         // Stub migrations to return 000 as the current database version

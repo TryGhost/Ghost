@@ -1,14 +1,16 @@
-/*globals describe, before, beforeEach, afterEach, after, it */
-var should         = require('should'),
-    rewire         = require('rewire'),
-    _              = require('lodash'),
-    packageInfo    = require('../../../package'),
-    ghost          = require('../../../core'),
-    config         = rewire('../../../core/server/config'),
-    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
-    permissions    = require('../../server/permissions'),
-    testUtils      = require('../utils'),
-    updateCheck    = rewire('../../server/update-check');
+/*globals describe, before, beforeEach, afterEach, after, it*/
+/*jshint expr:true*/
+var testUtils       = require('../utils'),
+    should          = require('should'),
+    rewire          = require('rewire'),
+    _               = require('lodash'),
+
+    // Stuff we are testing
+    packageInfo     = require('../../../package'),
+    ghost           = require('../../../core'),
+    config          = rewire('../../../core/server/config'),
+    defaultConfig   = require('../../../config.example')[process.env.NODE_ENV],
+    updateCheck     = rewire('../../server/update-check');
 
 describe('Update Check', function () {
     var environmentsOrig;
@@ -33,22 +35,7 @@ describe('Update Check', function () {
         updateCheck.__set__('allowedCheckEnvironments', environmentsOrig);
     });
 
-    beforeEach(function (done) {
-        testUtils.initData().then(function () {
-            return testUtils.insertDefaultFixtures();
-        }).then(function () {
-            return testUtils.insertEditorUser();
-        }).then(function () {
-            return testUtils.insertAuthorUser();
-        }).then(function () {
-            return permissions.init();
-        }).then(function () {
-            done();
-        }).catch(function (err) {
-            console.log('Update Check beforeEach error', err);
-            throw new Error(err);
-        });
-    });
+    beforeEach(testUtils.setup('owner', 'posts'));
 
     afterEach(testUtils.teardown);
 

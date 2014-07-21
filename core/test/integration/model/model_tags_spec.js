@@ -9,19 +9,13 @@ var testUtils   = require('../../utils'),
     Models      = require('../../../server/models'),
     TagModel    = Models.Tag,
     PostModel   = Models.Post,
-    context     = {context: {user: 1}};
+    context     = testUtils.context.admin;
 
 describe('Tag Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup());
 
     should.exist(TagModel);
 
@@ -141,7 +135,7 @@ describe('Tag Model', function () {
 
                     return TagModel.findAll();
                 }).then(function (tagsFromDB) {
-                    tagsFromDB.length.should.eql(seededTagNames.length + 1);
+                    tagsFromDB.length.should.eql(seededTagNames.length);
 
                     done();
                 }).catch(done);
@@ -198,7 +192,7 @@ describe('Tag Model', function () {
 
                     // make sure it hasn't just added a new tag with the same name
                     // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(4);
+                    Math.max.apply(Math, tagIds).should.eql(3);
 
                     done();
                 }).catch(done);
@@ -284,7 +278,7 @@ describe('Tag Model', function () {
 
                     // make sure it hasn't just added a new tag with the same name
                     // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(4);
+                    Math.max.apply(Math, tagIds).should.eql(3);
 
                     done();
                 }).catch(done);
@@ -323,7 +317,7 @@ describe('Tag Model', function () {
 
                     // make sure it hasn't just added a new tag with the same name
                     // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(5);
+                    Math.max.apply(Math, tagIds).should.eql(4);
 
                     done();
                 }).catch(done);

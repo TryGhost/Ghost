@@ -5,22 +5,13 @@ var testUtils       = require('../../utils'),
 
     // Stuff we are testing
     AppFieldsModel  = require('../../../server/models').AppField,
-    context         = {context: {user: 1}};
+    context         = testUtils.context.admin;
 
 describe('App Fields Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertApps();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('app_field'));
 
     should.exist(AppFieldsModel);
 

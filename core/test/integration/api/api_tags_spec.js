@@ -4,35 +4,18 @@ var testUtils   = require('../../utils'),
     should      = require('should'),
 
     // Stuff we are testing
-    permissions = require('../../../server/permissions'),
     TagAPI      = require('../../../server/api/tags');
 
 describe('Tags API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            }).then(function () {
-                return testUtils.insertAdminUser();
-            }).then(function () {
-                return testUtils.insertEditorUser();
-            }).then(function () {
-                return testUtils.insertAuthorUser();
-            }).then(function () {
-                return permissions.init();
-            }).then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('users:roles', 'tag', 'perms:tag', 'perms:init'));
 
     should.exist(TagAPI);
 
     it('can browse (internal)', function (done) {
-        TagAPI.browse({context: {internal: true}}).then(function (results) {
+        TagAPI.browse(testUtils.context.internal).then(function (results) {
             should.exist(results);
             should.exist(results.tags);
             results.tags.length.should.be.above(0);
@@ -56,7 +39,7 @@ describe('Tags API', function () {
     });
 
     it('can browse (admin)', function (done) {
-        TagAPI.browse({context: {user: 2}}).then(function (results) {
+        TagAPI.browse(testUtils.context.admin).then(function (results) {
             should.exist(results);
             should.exist(results.tags);
             results.tags.length.should.be.above(0);
@@ -68,7 +51,7 @@ describe('Tags API', function () {
     });
 
     it('can browse (editor)', function (done) {
-        TagAPI.browse({context: {user: 3}}).then(function (results) {
+        TagAPI.browse(testUtils.context.editor).then(function (results) {
             should.exist(results);
             should.exist(results.tags);
             results.tags.length.should.be.above(0);
@@ -80,7 +63,7 @@ describe('Tags API', function () {
     });
 
     it('can browse (author)', function (done) {
-        TagAPI.browse({context: {user: 4}}).then(function (results) {
+        TagAPI.browse(testUtils.context.author).then(function (results) {
             should.exist(results);
             should.exist(results.tags);
             results.tags.length.should.be.above(0);

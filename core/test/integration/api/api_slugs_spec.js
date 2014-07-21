@@ -3,7 +3,6 @@
 var testUtils   = require('../../utils'),
     should      = require('should'),
 
-    permissions = require('../../../server/permissions'),
     SlugAPI     = require('../../../server/api/slugs');
 
 describe('Slug API', function () {
@@ -11,15 +10,7 @@ describe('Slug API', function () {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
 
-    beforeEach(function (done) {
-        testUtils.initData().then(function () {
-            return testUtils.insertDefaultFixtures();
-        }).then(function () {
-            return permissions.init();
-        }).then(function () {
-            done();
-        }).catch(done);
-    });
+    beforeEach(testUtils.setup('users:roles', 'perms:slug', 'perms:init'));
 
     should.exist(SlugAPI);
 

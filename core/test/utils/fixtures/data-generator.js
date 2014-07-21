@@ -103,6 +103,78 @@ DataGenerator.Content = {
         }
     ],
 
+    permissions: [
+        {
+            name: 'Browse posts',
+            action_type: 'browse',
+            object_type: 'post'
+        },
+        {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'post'
+        },
+        {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'tag'
+        },
+        {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'user'
+        },
+        {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'page'
+        },
+        {
+            name: 'test',
+            action_type: 'add',
+            object_type: 'post'
+        },
+        {
+            name: 'test',
+            action_type: 'add',
+            object_type: 'user'
+        },
+        {
+            name: 'test',
+            action_type: 'add',
+            object_type: 'page'
+        },
+        {
+            name: 'test',
+            action_type: 'destroy',
+            object_type: 'post'
+        },
+        {
+            name: 'test',
+            action_type: 'destroy',
+            object_type: 'user'
+        }
+    ],
+
+    roles: [
+        {
+            "name":             "Administrator",
+            "description":      "Administrators"
+        },
+        {
+            "name":             "Editor",
+            "description":      "Editors"
+        },
+        {
+            "name":             "Author",
+            "description":      "Authors"
+        },
+        {
+            "name":             "Owner",
+            "description":      "Blog Owner"
+        }
+    ],
+
     apps: [
         {
             name: 'Kudos',
@@ -157,7 +229,21 @@ DataGenerator.forKnex = (function () {
         tags,
         posts_tags,
         apps,
-        app_fields;
+        app_fields,
+        roles,
+        users,
+        roles_users;
+
+    function createBasic(overrides) {
+        return _.defaults(overrides, {
+            uuid: uuid.v4(),
+            created_by: 1,
+            created_at: new Date(),
+            updated_by: 1,
+            updated_at: new Date()
+        });
+    }
+
 
     function createPost(overrides) {
         return _.defaults(overrides, {
@@ -193,16 +279,6 @@ DataGenerator.forKnex = (function () {
         });
     }
 
-    function createTag(overrides) {
-        return _.defaults(overrides, {
-            uuid: uuid.v4(),
-            updated_at: new Date(),
-            updated_by: 1,
-            created_at: new Date(),
-            created_by: 1
-        });
-    }
-
     function createUser(overrides) {
         return _.defaults(overrides, {
             uuid: uuid.v4(),
@@ -221,26 +297,11 @@ DataGenerator.forKnex = (function () {
         });
     }
 
-    function createUserRole(userId, roleId) {
-        return {
-            role_id: roleId,
-            user_id: userId
-        };
-    }
-
     function createPostsTags(postId, tagId) {
         return {
             post_id: postId,
             tag_id: tagId
         };
-    }
-
-    function createApp(overrides) {
-        return _.defaults(overrides, {
-            uuid: uuid.v4(),
-            created_by: 1,
-            created_at: new Date()
-        });
     }
 
     function createAppField(overrides) {
@@ -258,6 +319,7 @@ DataGenerator.forKnex = (function () {
     function createAppSetting(overrides) {
         return _.defaults(overrides, {
             uuid: uuid.v4(),
+            app_id: 1,
             created_by: 1,
             created_at: new Date()
         });
@@ -274,26 +336,47 @@ DataGenerator.forKnex = (function () {
     ];
 
     tags = [
-        createTag(DataGenerator.Content.tags[0]),
-        createTag(DataGenerator.Content.tags[1]),
-        createTag(DataGenerator.Content.tags[2]),
-        createTag(DataGenerator.Content.tags[3]),
-        createTag(DataGenerator.Content.tags[4])
+        createBasic(DataGenerator.Content.tags[0]),
+        createBasic(DataGenerator.Content.tags[1]),
+        createBasic(DataGenerator.Content.tags[2]),
+        createBasic(DataGenerator.Content.tags[3]),
+        createBasic(DataGenerator.Content.tags[4])
+    ];
+
+    roles = [
+        createBasic(DataGenerator.Content.roles[0]),
+        createBasic(DataGenerator.Content.roles[1]),
+        createBasic(DataGenerator.Content.roles[2]),
+        createBasic(DataGenerator.Content.roles[3]),
+    ];
+
+    users = [
+        createUser(DataGenerator.Content.users[0]),
+        createUser(DataGenerator.Content.users[1]),
+        createUser(DataGenerator.Content.users[2]),
+        createUser(DataGenerator.Content.users[3]),
+    ];
+
+    roles_users = [
+        { user_id: 1, role_id: 4},
+        { user_id: 2, role_id: 1},
+        { user_id: 3, role_id: 2},
+        { user_id: 4, role_id: 3}
     ];
 
     posts_tags = [
+        { post_id: 1, tag_id: 1 },
+        { post_id: 1, tag_id: 2 },
+        { post_id: 2, tag_id: 1 },
         { post_id: 2, tag_id: 2 },
-        { post_id: 2, tag_id: 3 },
-        { post_id: 3, tag_id: 2 },
         { post_id: 3, tag_id: 3 },
-        { post_id: 4, tag_id: 4 },
-        { post_id: 5, tag_id: 5 }
+        { post_id: 4, tag_id: 4 }
     ];
 
     apps = [
-        createApp(DataGenerator.Content.apps[0]),
-        createApp(DataGenerator.Content.apps[1]),
-        createApp(DataGenerator.Content.apps[2])
+        createBasic(DataGenerator.Content.apps[0]),
+        createBasic(DataGenerator.Content.apps[1]),
+        createBasic(DataGenerator.Content.apps[2])
     ];
 
     app_fields = [
@@ -304,12 +387,14 @@ DataGenerator.forKnex = (function () {
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
-        createTag: createTag,
+        createTag: createBasic,
         createUser: createUser,
         createGenericUser: createGenericUser,
-        createUserRole: createUserRole,
+        createBasic: createBasic,
+        createRole: createBasic,
+        createPermission: createBasic,
         createPostsTags: createPostsTags,
-        createApp: createApp,
+        createApp: createBasic,
         createAppField: createAppField,
         createAppSetting: createAppSetting,
 
@@ -317,7 +402,10 @@ DataGenerator.forKnex = (function () {
         tags: tags,
         posts_tags: posts_tags,
         apps: apps,
-        app_fields: app_fields
+        app_fields: app_fields,
+        roles: roles,
+        users: users,
+        roles_users: roles_users
     };
 
 }());
