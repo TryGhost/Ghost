@@ -5,22 +5,13 @@ var testUtils       = require('../../utils'),
 
     // Stuff we are testing
     AppSettingModel = require('../../../server/models').AppSetting,
-    context         = {context: {user: 1}};
+    context         = testUtils.context.admin;
 
 describe('App Setting Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertAppWithSettings();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('app_setting'));
 
     should.exist(AppSettingModel);
 

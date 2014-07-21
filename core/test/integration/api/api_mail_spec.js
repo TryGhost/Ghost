@@ -4,7 +4,6 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
-    permissions     = require('../../../server/permissions'),
     MailAPI         = require('../../../server/api/mail'),
     mailData = {
         mail: [{
@@ -21,24 +20,12 @@ describe('Mail API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.clearData()
-            .then(function () {
-                return testUtils.initData();
-            }).then(function () {
-                return testUtils.insertDefaultFixtures();
-            }).then(function () {
-                return permissions.init();
-            }).then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('perms:mail', 'perms:init'));
 
     should.exist(MailAPI);
 
-    it('return correct failure message', function (done) {
-        MailAPI.send(mailData, {context: {internal: true}}).then(function (response) {
+    it('return correct failure message (internal)', function (done) {
+        MailAPI.send(mailData, testUtils.context.internal).then(function (response) {
             /*jshint unused:false */
             done();
         }).catch(function (error) {

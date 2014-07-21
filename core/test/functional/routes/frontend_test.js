@@ -227,8 +227,8 @@ describe('Frontend Routing', function () {
         // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
         // we then insert with max 11 which ensures we have 16 published posts
         before(function (done) {
-            testUtils.insertPosts().then(function () {
-                return testUtils.insertMorePosts(11);
+            testUtils.fixtures.insertPosts().then(function () {
+                return testUtils.fixtures.insertMorePosts(11);
             }).then(function () {
                 done();
             }).catch(done);
@@ -437,11 +437,11 @@ describe('Frontend Routing', function () {
                 return testUtils.initData();
             }).then(function () {
 
-                return testUtils.insertPosts();
+                return testUtils.fixtures.insertPosts();
             }).then(function () {
-                return testUtils.insertMorePosts(22);
+                return testUtils.fixtures.insertMorePosts(22);
             }).then(function () {
-                return testUtils.insertMorePostsTags(22);
+                return testUtils.fixtures.insertMorePostsTags(22);
             }).then(function () {
                 done();
             }).catch(done);

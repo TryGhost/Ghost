@@ -6,18 +6,13 @@ var testUtils       = require('../../utils'),
     // Stuff we are testing
     SettingsModel   = require('../../../server/models').Settings,
     config          = require('../../../server/config'),
-    context         = {context: {user: 1}};
+    context         = testUtils.context.admin;
 
 describe('Settings Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData().then(function () {
-            done();
-        }).catch(done);
-    });
+    beforeEach(testUtils.setup('settings'));
 
     should.exist(SettingsModel);
 
