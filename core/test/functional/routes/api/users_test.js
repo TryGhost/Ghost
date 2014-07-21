@@ -117,7 +117,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -138,7 +138,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -159,7 +159,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -180,7 +180,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -201,7 +201,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -223,7 +223,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
@@ -247,7 +247,7 @@ describe('User API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.users.should.exist;
-                    testUtils.API.checkResponse(jsonResponse, 'users');
+                    should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
