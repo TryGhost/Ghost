@@ -1,22 +1,16 @@
 /*globals describe, it, before, beforeEach, afterEach */
-var testUtils = require('../../utils'),
-    should = require('should'),
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    context = {context: {user: 1}};
+    RoleModel   = require('../../../server/models').Role,
+    context     = {context: {user: 1}};
 
 describe('Role Model', function () {
-
-    var RoleModel = Models.Role;
-
-    should.exist(RoleModel);
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
@@ -24,11 +18,7 @@ describe('Role Model', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(RoleModel);
 
     it('can findAll', function (done) {
         RoleModel.findAll().then(function (foundRoles) {

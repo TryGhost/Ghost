@@ -18,7 +18,10 @@ describe('Update Check', function () {
             return testUtils.clearData();
         }).then(function () {
             done();
-        }).catch(done);
+        }).catch(function (err) {
+            console.log('Update Check before error', err);
+            throw new Error(err);
+        });
     });
 
     after(function () {
@@ -36,14 +39,13 @@ describe('Update Check', function () {
             return permissions.init();
         }).then(function () {
             done();
-        }).catch(done);
+        }).catch(function (err) {
+            console.log('Update Check beforeEach error', err);
+            throw new Error(err);
+        });
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    afterEach(testUtils.teardown);
 
     it('should report the correct data', function (done) {
         var updateCheckData = updateCheck.__get__('updateCheckData');

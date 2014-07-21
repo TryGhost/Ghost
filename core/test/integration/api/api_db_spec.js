@@ -1,21 +1,18 @@
 /*globals describe, before, beforeEach, afterEach, it */
+/*jshint expr:true*/
 var testUtils = require('../../utils'),
     should    = require('should'),
 
     // Stuff we are testing
     permissions   = require('../../../server/permissions'),
-    DataGenerator = require('../../utils/fixtures/data-generator'),
     dbAPI         = require('../../../server/api/db'),
     TagsAPI       = require('../../../server/api/tags'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('DB API', function () {
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
@@ -29,11 +26,7 @@ describe('DB API', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(dbAPI);
 
     it('delete all content', function (done) {
         var options = {context: {user: 1}};
@@ -62,17 +55,17 @@ describe('DB API', function () {
         permissions.init().then(function () {
             return dbAPI.deleteAllContent({context: {user: 2}});
         }).then(function (){
-            done(new Error("Delete all content is not denied for editor."));
+            done(new Error('Delete all content is not denied for editor.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent({context: {user: 3}});
         }).then(function (){
-            done(new Error("Delete all content is not denied for author."));
+            done(new Error('Delete all content is not denied for author.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent();
         }).then(function (){
-            done(new Error("Delete all content is not denied without authentication."));
+            done(new Error('Delete all content is not denied without authentication.'));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
@@ -83,17 +76,17 @@ describe('DB API', function () {
         permissions.init().then(function () {
             return dbAPI.exportContent({context: {user: 2}});
         }).then(function (){
-            done(new Error("Export content is not denied for editor."));
+            done(new Error('Export content is not denied for editor.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent({context: {user: 3}});
         }).then(function (){
-            done(new Error("Export content is not denied for author."));
+            done(new Error('Export content is not denied for author.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent();
         }).then(function (){
-            done(new Error("Export content is not denied without authentication."));
+            done(new Error('Export content is not denied without authentication.'));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
@@ -103,18 +96,18 @@ describe('DB API', function () {
     it('import content is denied', function (done) {
         permissions.init().then(function () {
             return dbAPI.importContent({context: {user: 2}});
-        }).then(function (result) {
-            done(new Error("Import content is not denied for editor."));
+        }).then(function () {
+            done(new Error('Import content is not denied for editor.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.importContent({context: {user: 3}});
-        }).then(function (result) {
-            done(new Error("Import content is not denied for author."));
+        }).then(function () {
+            done(new Error('Import content is not denied for author.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.importContent();
-        }).then(function (result) {
-            done(new Error("Import content is not denied without authentication."));
+        }).then(function () {
+            done(new Error('Import content is not denied without authentication.'));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
             done();
