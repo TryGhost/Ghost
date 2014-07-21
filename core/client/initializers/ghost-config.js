@@ -2,7 +2,10 @@ var ConfigInitializer = {
     name: 'config',
 
     initialize: function (container, application) {
-        application.register('ghost:config', application.get('config'), {instantiate: false});
+        var apps = $('body').data('apps'),
+            fileStorage = $('body').data('filestorage');
+
+        application.register('ghost:config', {apps: apps, fileStorage: fileStorage}, {instantiate: false});
 
         application.inject('route', 'config', 'ghost:config');
         application.inject('controller', 'config', 'ghost:config');
