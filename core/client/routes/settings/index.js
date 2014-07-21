@@ -1,9 +1,6 @@
 import {mobileQuery} from 'ghost/utils/mobile';
 
 var SettingsIndexRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, {
-    activate: function () {
-        this._super();
-    },
     // redirect to general tab, unless on a mobile phone
     beforeModel: function () {
         if (!mobileQuery.matches) {
