@@ -223,12 +223,12 @@ describe('Frontend Routing', function () {
 
     describe('Archive pages', function () {
 
-        // Add enough posts to trigger pages for both the archive (6 pp) and rss (15 pp)
+        // Add enough posts to trigger pages for both the archive (5 pp) and rss (15 pp)
         // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
         // we then insert with max 11 which ensures we have 16 published posts
         before(function (done) {
             testUtils.insertPosts().then(function () {
-                return testUtils.insertMorePosts(11);
+                return testUtils.insertMorePosts(9);
             }).then(function () {
                 done();
             }).catch(done);
@@ -277,6 +277,13 @@ describe('Frontend Routing', function () {
     });
 
     describe('RSS pages', function () {
+        before(function (done) {
+            testUtils.insertPosts().then(function () {
+                return testUtils.insertMorePosts(2);
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
         it('should redirect without slash', function (done) {
             request.get('/rss/2')
                 .expect('Location', '/rss/2/')
