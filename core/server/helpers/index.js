@@ -782,6 +782,10 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
 
     registerAdminHelper('asset', coreHelpers.asset);
+
+    registerAdminHelper('apps', coreHelpers.apps);
+
+    registerAdminHelper('file_storage', coreHelpers.file_storage);
 };
 
 module.exports = coreHelpers;
