@@ -14,7 +14,7 @@ var effective = {
                     user = foundUser.toJSON();
 
                 // TODO: using 'Owner' as return value is a bit hacky.
-                if (user.roles[0] && user.roles[0].name === 'Owner') {
+                if (_.find(user.roles, { 'name': 'Owner' })) {
                     return 'Owner';
                 }
 
