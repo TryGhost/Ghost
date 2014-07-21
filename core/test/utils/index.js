@@ -97,7 +97,7 @@ function insertDefaultUser() {
         .update(user);
 }
 
-function insertEditorUser() {
+function insertAdminUser() {
     var users = [],
         userRoles = [];
 
@@ -110,12 +110,25 @@ function insertEditorUser() {
         });
 }
 
-function insertAuthorUser() {
+function insertEditorUser() {
     var users = [],
         userRoles = [];
 
     users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(3, 3));
+    userRoles.push(DataGenerator.forKnex.createUserRole(3, 2));
+    return knex('users')
+        .insert(users)
+        .then(function () {
+            return knex('roles_users').insert(userRoles);
+        });
+}
+
+function insertAuthorUser() {
+    var users = [],
+        userRoles = [];
+
+    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[3]));
+    userRoles.push(DataGenerator.forKnex.createUserRole(4, 3));
     return knex('users')
         .insert(users)
         .then(function () {
@@ -236,6 +249,7 @@ module.exports = {
     insertMorePosts: insertMorePosts,
     insertMorePostsTags: insertMorePostsTags,
     insertDefaultUser: insertDefaultUser,
+    insertAdminUser: insertAdminUser,
     insertEditorUser: insertEditorUser,
     insertAuthorUser: insertAuthorUser,
     insertDefaultApp: insertDefaultApp,
