@@ -6,7 +6,6 @@ import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 var paginationSettings = {
     status: 'all',
     staticPages: 'all',
-    include: 'tags',
     page: 1
 };
 

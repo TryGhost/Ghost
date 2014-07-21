@@ -1,7 +1,5 @@
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-// export default DS.FixtureAdapter.extend({});
-
 var ApplicationAdapter = DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
