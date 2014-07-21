@@ -24,7 +24,6 @@ var EditorEditRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixi
             id: params.post_id,
             status: 'all',
             staticPages: 'all',
-            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 

@@ -8,7 +8,6 @@ var PostsIndexRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixi
         return this.store.find('post', {
             status: 'all',
             staticPages: 'all',
-            include: 'tags'
         }).then(function (records) {
             var post = records.get('firstObject');
 
