@@ -1,46 +1,22 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should    = require('should'),
-    _         = require('lodash'),
+/*jshint expr:true*/
+var testUtils           = require('../../utils'),
+    should              = require('should'),
+    _                   = require('lodash'),
 
     // Stuff we are testing
-    permissions   = require('../../../server/permissions'),
-    DataGenerator    = require('../../utils/fixtures/data-generator'),
-    SettingsAPI      = require('../../../server/api/settings');
+    permissions         = require('../../../server/permissions'),
+    SettingsAPI         = require('../../../server/api/settings'),
+    defaultContext      = {user: 1},
+    internalContext     = {internal: true},
+    callApiWithContext,
+    getErrorDetails;
 
 describe('Settings API', function () {
 
-    var defaultContext = {
-            user: 1
-        },
-        internalContext = {
-            internal: true
-        },
-        callApiWithContext = function (context, method) {
-            var args = _.toArray(arguments),
-                options = args[args.length - 1];
-
-            if (_.isObject(options)) {
-                options.context = _.clone(context);
-            }
-
-            return SettingsAPI[method].apply({}, args.slice(2));
-        },
-        getErrorDetails = function (done) {
-            return function (err) {
-                if (err instanceof Error) {
-                    return done(err);
-                }
-
-                done(new Error(err.message));
-            };
-        };
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -58,11 +34,27 @@ describe('Settings API', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(getErrorDetails(done));
-    });
+    should.exist(SettingsAPI);
+
+    callApiWithContext = function (context, method) {
+        var args = _.toArray(arguments),
+            options = args[args.length - 1];
+
+        if (_.isObject(options)) {
+            options.context = _.clone(context);
+        }
+
+        return SettingsAPI[method].apply({}, args.slice(2));
+    };
+    getErrorDetails = function (done) {
+        return function (err) {
+            if (err instanceof Error) {
+                return done(err);
+            }
+
+            done(new Error(err.message));
+        };
+    };
 
     it('uses Date objects for dateTime fields', function (done) {
         return callApiWithContext(defaultContext, 'browse', {}).then(function (results) {
@@ -129,7 +121,7 @@ describe('Settings API', function () {
     });
 
     it('cannot read core settings if not an internal request', function (done) {
-        return callApiWithContext(defaultContext, 'read',  {key: 'databaseVersion'}).then(function (response) {
+        return callApiWithContext(defaultContext, 'read',  {key: 'databaseVersion'}).then(function () {
             done(new Error('Allowed to read databaseVersion with external request'));
         }).catch(function (error) {
             should.exist(error);
@@ -210,15 +202,16 @@ describe('Settings API', function () {
     });
 
     it('does not allow an active theme which is not installed', function (done) {
-        return callApiWithContext(defaultContext, 'edit', 'activeTheme', { settings: [{ key: 'activeTheme', value: 'rasper' }] })
-            .then(function (response) {
-                done(new Error('Allowed to set an active theme which is not installed'));
-            }).catch(function (err) {
-                should.exist(err);
+        return callApiWithContext(defaultContext, 'edit', 'activeTheme', {
+            settings: [{ key: 'activeTheme', value: 'rasper' }]
+        }).then(function () {
+            done(new Error('Allowed to set an active theme which is not installed'));
+        }).catch(function (err) {
+            should.exist(err);
 
-                err.type.should.eql('ValidationError');
+            err.type.should.eql('ValidationError');
 
-                done();
-            }).catch(done);
+            done();
+        }).catch(done);
     });
 });

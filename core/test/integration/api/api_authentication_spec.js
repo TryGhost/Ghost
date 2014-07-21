@@ -1,31 +1,31 @@
-var testUtils = require('../../utils'),
-    should = require('should'),
-    when = require('when'),
-    rewire = require('rewire'),
-    mail = rewire('../../../server/api/mail'),
-    permissions = require('../../../server/permissions'),
-    settings = require('../../../server/api/settings'),
+/*globals describe, before, beforeEach, afterEach, it */
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
+    when        = require('when'),
+    rewire      = require('rewire'),
 
-    authentication = require('../../../server/api/authentication');
+    // Stuff we are testing
+    mail        = rewire('../../../server/api/mail'),
+    settings    = require('../../../server/api/settings'),
+    permissions = require('../../../server/permissions'),
+    AuthAPI     = require('../../../server/api/authentication');
 
 describe('Authentication API', function () {
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(AuthAPI);
 
     describe('Setup', function () {
 
         describe('Not completed', function () {
 
             beforeEach(function (done) {
-                testUtils.clearData().then(function () {
-                    return testUtils.initData().then(function () {
-                        return permissions.init().then(function () {
-                            return settings.updateSettingsCache();
-                        });
+                testUtils.initData().then(function () {
+                    return permissions.init().then(function () {
+                        return settings.updateSettingsCache();
                     });
                 }).then(function () {
                     done();
@@ -33,7 +33,7 @@ describe('Authentication API', function () {
             });
 
             it('should report that setup has not been completed', function (done) {
-                authentication.isSetup().then(function (result) {
+                AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.false;
 
@@ -55,8 +55,12 @@ describe('Authentication API', function () {
                     return when.resolve();
                 });
 
-                authentication.setup({ setup: [setupData] }).then(function (result) {
+                AuthAPI.setup({ setup: [setupData] }).then(function (result) {
                     should.exist(result);
+                    should.exist(result.users);
+                    result.users.should.have.length(1);
+                    testUtils.API.checkResponse(result, 'users');
+                    testUtils.API.checkResponse(result.users[0], 'user', ['roles']);
 
                     var newUser = result.users[0];
 
@@ -74,12 +78,10 @@ describe('Authentication API', function () {
         describe('Completed', function () {
 
             beforeEach(function (done) {
-                testUtils.clearData().then(function () {
-                    return testUtils.initData().then(function () {
-                        return testUtils.insertDefaultFixtures().then(function () {
-                            return permissions.init().then(function () {
-                                return settings.updateSettingsCache();
-                            });
+                testUtils.initData().then(function () {
+                    return testUtils.insertDefaultFixtures().then(function () {
+                        return permissions.init().then(function () {
+                            return settings.updateSettingsCache();
                         });
                     });
                 }).then(function () {
@@ -88,7 +90,7 @@ describe('Authentication API', function () {
             });
 
             it('should report that setup has been completed', function (done) {
-                authentication.isSetup().then(function (result) {
+                AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
                     result.setup[0].status.should.be.true;
 
@@ -104,7 +106,7 @@ describe('Authentication API', function () {
                     title: 'a test blog'
                 };
 
-                authentication.setup({ setup: [setupData] }).then(function (result) {
+                AuthAPI.setup({ setup: [setupData] }).then(function () {
                     done(new Error('Setup was able to be run'));
                 }).catch(function (err) {
                     should.exist(err);
@@ -123,11 +125,9 @@ describe('Authentication API', function () {
         describe('Setup not completed', function () {
 
             beforeEach(function (done) {
-                testUtils.clearData().then(function () {
-                    return testUtils.initData().then(function () {
-                        return permissions.init().then(function () {
-                            return settings.updateSettingsCache();
-                        });
+                return testUtils.initData().then(function () {
+                    return permissions.init().then(function () {
+                        return settings.updateSettingsCache();
                     });
                 }).then(function () {
                     done();
@@ -135,7 +135,7 @@ describe('Authentication API', function () {
             });
 
             it('should not allow an invitation to be accepted', function (done) {
-                authentication.acceptInvitation().then(function () {
+                AuthAPI.acceptInvitation().then(function () {
                     done(new Error('Invitation was allowed to be accepted'));
                 }).catch(function (err) {
                     should.exist(err);
@@ -148,7 +148,7 @@ describe('Authentication API', function () {
             });
 
             it('should not generate a password reset token', function (done) {
-                authentication.generateResetToken().then(function () {
+                AuthAPI.generateResetToken().then(function () {
                     done(new Error('Reset token was generated'));
                 }).catch(function (err) {
                     should.exist(err);
@@ -161,7 +161,7 @@ describe('Authentication API', function () {
             });
 
             it('should not allow a password reset', function (done) {
-                authentication.resetPassword().then(function () {
+                AuthAPI.resetPassword().then(function () {
                     done(new Error('Password was reset'));
                 }).catch(function (err) {
                     should.exist(err);

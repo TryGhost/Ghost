@@ -1,25 +1,28 @@
 /*globals describe, before, beforeEach, afterEach, it */
+/*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
     permissions     = require('../../../server/permissions'),
-    MailAPI         = require('../../../server/api/mail');
-
+    MailAPI         = require('../../../server/api/mail'),
+    mailData = {
+        mail: [{
+            message: {
+                to: 'joe@example.com',
+                subject: 'testemail',
+                html: '<p>This</p>'
+            },
+            options: {}
+        }]
+    };
 
 describe('Mail API', function () {
-    var mailData = {
-            mail: [{
-                message: {
-                    to: 'joe@example.com',
-                    subject: 'testemail',
-                    html: '<p>This</p>'
-                },
-                options: {}
-            }]
-        };
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
-    before(function (done) {
+    beforeEach(function (done) {
         testUtils.clearData()
             .then(function () {
                 return testUtils.initData();
@@ -32,13 +35,7 @@ describe('Mail API', function () {
             }).catch(done);
     });
 
-
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
+    should.exist(MailAPI);
 
     it('return correct failure message', function (done) {
         MailAPI.send(mailData, {context: {internal: true}}).then(function (response) {

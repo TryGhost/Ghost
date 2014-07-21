@@ -1,16 +1,15 @@
-var testUtils = require('../../utils'),
-    should    = require('should'),
+/*globals describe, before, beforeEach, afterEach, it */
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
 
     permissions = require('../../../server/permissions'),
-    slugAPI     = require('../../../server/api/slugs');
+    SlugAPI     = require('../../../server/api/slugs');
 
 describe('Slug API', function () {
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
@@ -22,14 +21,10 @@ describe('Slug API', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(SlugAPI);
 
     it('can generate post slug', function (done) {
-        slugAPI.generate({ context: { user: 1 }, type: 'post', name: 'A fancy Title' })
+        SlugAPI.generate({ context: { user: 1 }, type: 'post', name: 'A fancy Title' })
         .then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'slugs');
@@ -41,7 +36,7 @@ describe('Slug API', function () {
     });
 
     it('can generate tag slug', function (done) {
-        slugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'A fancy Title' })
+        SlugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'A fancy Title' })
         .then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'slugs');
@@ -53,7 +48,7 @@ describe('Slug API', function () {
     });
 
     it('can generate user slug', function (done) {
-        slugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'user name' })
+        SlugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'user name' })
         .then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'slugs');
@@ -65,7 +60,7 @@ describe('Slug API', function () {
     });
 
     it('can generate app slug', function (done) {
-        slugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'app name' })
+        SlugAPI.generate({ context: { user: 1 }, type: 'tag', name: 'app name' })
         .then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'slugs');
@@ -77,7 +72,7 @@ describe('Slug API', function () {
     });
 
     it('rejects unknown types', function (done) {
-        slugAPI.generate({ context: { user: 1 }, type: 'unknown type', name: 'A fancy Title' })
+        SlugAPI.generate({ context: { user: 1 }, type: 'unknown type', name: 'A fancy Title' })
         .then(function () {
             done(new Error('Generate a slug for an unknown type is not rejected.'));
         }).catch(function (error) {

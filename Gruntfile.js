@@ -628,7 +628,7 @@ var path           = require('path'),
         // globally, by using a command in the form (replace path to api_tags_spec.js with the test file you want to
         // run):
         //
-        // NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/integration/api/api_tags_spec.js`
+        // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/integration/api/api_tags_spec.js`
         //
         // Their purpose is to test that both the api and models behave as expected when the database layer is involved.
         // These tests are run against sqlite3, mysql and pg on travis and ensure that differences between the databases

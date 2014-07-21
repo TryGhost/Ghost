@@ -1,121 +1,121 @@
 /*globals describe, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var fs      = require('fs-extra'),
-    should  = require('should'),
-    sinon   = require('sinon'),
-    when    = require('when'),
-    storage = require('../../../server/storage'),
+var fs          = require('fs-extra'),
+    should      = require('should'),
+    sinon       = require('sinon'),
+    when        = require('when'),
+    storage     = require('../../../server/storage'),
 
     // Stuff we are testing
-    UploadAPI = require('../../../server/api/upload');
+    UploadAPI   = require('../../../server/api/upload'),
+    store;
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Upload API', function () {
-    describe('upload', function () {
+    // Doesn't test the DB
 
-        var req, res, store;
+    afterEach(function () {
+        storage.get_storage.restore();
+        fs.unlink.restore();
+    });
 
-        beforeEach(function () {
-            store = sinon.stub();
-            store.save = sinon.stub().returns(when('URL'));
-            store.exists = sinon.stub().returns(when(true));
-            store.destroy = sinon.stub().returns(when());
-            sinon.stub(storage, 'get_storage').returns(store);
-            sinon.stub(fs, 'unlink').yields();
-        });
+    beforeEach(function () {
+        store = sinon.stub();
+        store.save = sinon.stub().returns(when('URL'));
+        store.exists = sinon.stub().returns(when(true));
+        store.destroy = sinon.stub().returns(when());
+        sinon.stub(storage, 'get_storage').returns(store);
+        sinon.stub(fs, 'unlink').yields();
+    });
 
-        afterEach(function () {
-            storage.get_storage.restore();
-            fs.unlink.restore();
-        });
+    should.exist(UploadAPI);
 
-        describe('can not upload invalid file', function () {
-            it('should return 415 for invalid file type', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.FILE',
-                    type: 'application/octet-stream',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function () {
-                        done(new Error('Upload suceeded with invalid file.'));
-                    }, function (result) {
-                        result.code.should.equal(415);
-                        result.type.should.equal('UnsupportedMediaTypeError');
-                        done();
-                });
-            });
-        });
-
-        describe('can not upload file with valid extension but invalid type', function () {
-            it('should return 415 for invalid file type', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.jpg',
-                    type: 'application/octet-stream',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function () {
-                        done(new Error('Upload suceeded with invalid file.'));
-                    }, function (result) {
-                        result.code.should.equal(415);
-                        result.type.should.equal('UnsupportedMediaTypeError');
-                        done();
-                });
-            });
-        });
-
-        describe('valid file', function () {
-            it('can upload jpg', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.jpg',
-                    type: 'image/jpeg',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
-                    result.should.equal('URL');
+    describe('invalid file', function () {
+        it('should return 415 for invalid file type', function (done) {
+            var uploadimage = {
+                name: 'INVALID.FILE',
+                type: 'application/octet-stream',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function () {
+                    done(new Error('Upload suceeded with invalid file.'));
+                }, function (result) {
+                    result.code.should.equal(415);
+                    result.type.should.equal('UnsupportedMediaTypeError');
                     done();
-                });
-
             });
+        });
+    });
 
-            it('cannot upload jpg with incorrect extension', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.xjpg',
-                    type: 'image/jpeg',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
-                        done(new Error('Upload suceeded with invalid file.'));
-                    }, function (result) {
-                        result.code.should.equal(415);
-                        result.type.should.equal('UnsupportedMediaTypeError');
-                        done();
-                });
-            });
-
-            it('can upload png', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.png',
-                    type: 'image/png',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
-                    result.should.equal('URL');
+    describe('valid extension but invalid type', function () {
+        it('should return 415 for invalid file type', function (done) {
+            var uploadimage = {
+                name: 'INVALID.jpg',
+                type: 'application/octet-stream',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function () {
+                    done(new Error('Upload suceeded with invalid file.'));
+                }, function (result) {
+                    result.code.should.equal(415);
+                    result.type.should.equal('UnsupportedMediaTypeError');
                     done();
-                });
+            });
+        });
+    });
+
+    describe('valid file', function () {
+        it('can upload jpg', function (done) {
+            var uploadimage = {
+                name: 'INVALID.jpg',
+                type: 'image/jpeg',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
+                result.should.equal('URL');
+                done();
             });
 
-            it('can upload gif', function (done) {
-                var uploadimage = {
-                    name: 'INVALID.gif',
-                    type: 'image/gif',
-                    path: '/tmp/TMPFILEID'
-                };
-                UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
-                    result.should.equal('URL');
+        });
+
+        it('cannot upload jpg with incorrect extension', function (done) {
+            var uploadimage = {
+                name: 'INVALID.xjpg',
+                type: 'image/jpeg',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function () {
+                    done(new Error('Upload suceeded with invalid file.'));
+                }, function (result) {
+                    result.code.should.equal(415);
+                    result.type.should.equal('UnsupportedMediaTypeError');
                     done();
-                });
+            });
+        });
+
+        it('can upload png', function (done) {
+            var uploadimage = {
+                name: 'INVALID.png',
+                type: 'image/png',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
+                result.should.equal('URL');
+                done();
+            });
+        });
+
+        it('can upload gif', function (done) {
+            var uploadimage = {
+                name: 'INVALID.gif',
+                type: 'image/gif',
+                path: '/tmp/TMPFILEID'
+            };
+            UploadAPI.add({uploadimage: uploadimage}).then(function (result) {
+                result.should.equal('URL');
+                done();
             });
         });
     });

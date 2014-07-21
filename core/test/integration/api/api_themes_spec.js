@@ -1,4 +1,5 @@
 /*globals describe, before, beforeEach, afterEach, it */
+/*jshint expr:true*/
 var _             = require('lodash'),
     testUtils     = require('../../utils'),
     rewire        = require('rewire'),
@@ -8,7 +9,7 @@ var _             = require('lodash'),
 
     // Stuff we are testing
     permissions   = require('../../../server/permissions'),
-    SettingsAPI      = require('../../../server/api/settings'),
+    SettingsAPI   = require('../../../server/api/settings'),
     ThemeAPI      = rewire('../../../server/api/themes');
 
 describe('Themes API', function () {
@@ -16,8 +17,11 @@ describe('Themes API', function () {
         sandbox,
         settingsReadStub;
 
-    before(function (done) {
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(function (done) {
         testUtils.clearData().then(function () {
+            sandbox.restore();
             done();
         }).catch(done);
     });
@@ -56,12 +60,7 @@ describe('Themes API', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            sandbox.restore();
-            done();
-        }).catch(done);
-    });
+    should.exist(ThemeAPI);
 
     it('can browse', function (done) {
         var config;

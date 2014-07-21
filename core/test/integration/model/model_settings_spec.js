@@ -1,21 +1,17 @@
-/*globals describe, before, beforeEach, afterEach, after, it*/
-var testUtils = require('../../utils'),
-    should = require('should'),
+/*globals describe, before, beforeEach, afterEach, it*/
+/*jshint expr:true*/
+var testUtils       = require('../../utils'),
+    should          = require('should'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    config = require('../../../server/config'),
-    context = {context: {user: 1}};
+    SettingsModel   = require('../../../server/models').Settings,
+    config          = require('../../../server/config'),
+    context         = {context: {user: 1}};
 
 describe('Settings Model', function () {
-
-    var SettingsModel = Models.Settings;
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
@@ -23,17 +19,7 @@ describe('Settings Model', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    after(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(SettingsModel);
 
     describe('API', function () {
 

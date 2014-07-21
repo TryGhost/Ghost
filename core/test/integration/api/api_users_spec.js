@@ -1,53 +1,19 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should    = require('should'),
-
-    permissions   = require('../../../server/permissions'),
-    UserModel = require('../../../server/models').User;
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
 
     // Stuff we are testing
-    UsersAPI      = require('../../../server/api/users');
-    AuthAPI      = require('../../../server/api/authentication');
+    permissions = require('../../../server/permissions'),
+    UserModel   = require('../../../server/models').User,
+    UsersAPI    = require('../../../server/api/users');
 
 describe('Users API', function () {
+     // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
-    describe('No User', function () {
-        beforeEach(function (done) {
-            testUtils.initData().then(function () {
-                return permissions.init();
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
-
-        it('can add with internal user', function (done) {
-            AuthAPI.setup({ setup: [{
-                'name': 'Hello World',
-                'email': 'hello@world.com',
-                'password': 'password'
-            }]}).then(function (results) {
-                should.exist(results);
-                testUtils.API.checkResponse(results, 'users');
-                should.exist(results.users);
-                results.users.should.have.length(1);
-                testUtils.API.checkResponse(results.users[0], 'user', ['roles']);
-                results.users[0].name.should.equal('Hello World');
-                done();
-            }).catch(done);
-        });
-    });
+    should.exist(UsersAPI);
 
     describe('With Users', function () {
         beforeEach(function (done) {

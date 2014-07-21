@@ -1,23 +1,20 @@
 /*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    _ = require("lodash"),
-    when = require('when'),
-    sequence = require('when/sequence'),
-    should = require('should'),
+/*jshint expr:true*/
+var testUtils   = require('../../utils'),
+    should      = require('should'),
+    when        = require('when'),
+    _           = require('lodash'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    context = {context: {user: 1}};
+    Models      = require('../../../server/models'),
+    TagModel    = Models.Tag,
+    PostModel   = Models.Post,
+    context     = {context: {user: 1}};
 
 describe('Tag Model', function () {
-
-    var TagModel = Models.Tag;
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData()
@@ -26,11 +23,7 @@ describe('Tag Model', function () {
             }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(TagModel);
 
     it('uses Date objects for dateTime fields', function (done) {
         TagModel.add(testUtils.DataGenerator.forModel.tags[0], context).then(function (tag) {
@@ -44,7 +37,6 @@ describe('Tag Model', function () {
     });
 
     describe('a Post', function () {
-        var PostModel = Models.Post;
 
         it('can add a tag', function (done) {
             var newPost = testUtils.DataGenerator.forModel.posts[0],
@@ -118,7 +110,7 @@ describe('Tag Model', function () {
                         attachOperations;
 
                     attachOperations = [];
-                    for (var i = 1; i < models.length; i++) {
+                    for (var i = 1; i < models.length; i += 1) {
                         attachOperations.push(postModel.tags().attach(models[i]));
                     }
 

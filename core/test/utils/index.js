@@ -8,7 +8,9 @@ var knex          = require('../../server/models/base').knex,
     migration     = require('../../server/data/migration/'),
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
-    fork          = require('./fork');
+    fork          = require('./fork'),
+
+    teardown;
 
 function initData() {
     return migration.init();
@@ -49,7 +51,7 @@ function insertMorePosts(max) {
     return sequence(_.times(posts.length, function(index) {
         return function() {
             return knex('posts').insert(posts[index]);
-        }
+        };
     }));
 }
 
@@ -218,7 +220,15 @@ function loadExportFixture(filename) {
     });
 }
 
+teardown = function (done) {
+    migration.reset().then(function () {
+        done();
+    }).catch(done);
+};
+
 module.exports = {
+    teardown: teardown,
+
     initData: initData,
     clearData: clearData,
     insertDefaultFixtures: insertDefaultFixtures,

@@ -1,22 +1,16 @@
 /*globals describe, it, before, beforeEach, afterEach */
-var testUtils = require('../../utils'),
-    should = require('should'),
+/*jshint expr:true*/
+var testUtils       = require('../../utils'),
+    should          = require('should'),
 
     // Stuff we are testing
-    Models = require('../../../server/models'),
-    context = {context: {user: 1}};
+    PermissionModel = require('../../../server/models').Permission,
+    context         = {context: {user: 1}};
 
 describe('Permission Model', function () {
-
-    var PermissionModel = Models.Permission;
-
-    should.exist(PermissionModel);
-
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
 
     beforeEach(function (done) {
         testUtils.initData().then(function () {
@@ -24,11 +18,7 @@ describe('Permission Model', function () {
         }).catch(done);
     });
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    should.exist(PermissionModel);
 
     it('can findAll', function (done) {
         PermissionModel.findAll().then(function (foundPermissions) {
