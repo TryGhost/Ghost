@@ -24,7 +24,8 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
         casper.fillAndAdd('#setup', { 'blog-title': 'ghost', name: 'slimer', email: email, password: password });
     });
 
-    casper.wait(2000);
+    // This can take quite a long time
+    casper.wait(5000);
 
     casper.waitForResource(/\d+/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
@@ -32,7 +33,7 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
         test.assertExists('.manage', 'We\'re now on content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
-    });
+    }, 20000);
 }, true);
 
 CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
