@@ -4,11 +4,19 @@
     </header>
     <nav class="settings-menu">
         <ul>
-	    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
-	    {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
-            {{#if showApps}}
-	    {{gh-activating-list-item route="settings.apps" title="Apps" classNames="apps"}}
-            {{/if}}
+            {{#unless session.user.isAuthor}}
+                {{#unless session.user.isEditor}}
+                    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+                {{/unless}}
+
+                {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
+
+                {{#if showApps}}
+                    {{#unless session.user.isEditor}}
+                        {{gh-activating-list-item route="settings.apps" title="Apps" classNames="apps"}}
+                    {{/unless}}
+                {{/if}}
+            {{/unless}}
         </ul>
     </nav>
 </aside>
