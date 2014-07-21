@@ -5,248 +5,357 @@ var when          = require('when'),
     fs            = require('fs-extra'),
     path          = require('path'),
     migration     = require('../../server/data/migration/'),
+    settings      = require('../../server/models').Settings,
+    SettingsAPI   = require('../../server/api/settings'),
+    permissions   = require('../../server/permissions'),
+    permsFixtures = require('../../server/data/fixtures/permissions/permissions.json'),
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
     fork          = require('./fork'),
     config        = require('../../server/config'),
 
-    teardown;
+    fixtures,
+    getFixtureOps,
+    toDoList,
+    postsInserted = 0,
 
-function initData() {
-    return migration.init();
-}
+    teardown,
+    setup,
+    doAuth,
 
-function clearData() {
-    // we must always try to delete all tables
-    return migration.reset();
-}
+    initData,
+    clearData;
 
-function insertPosts() {
-    var knex = config.database.knex;
-    // ToDo: Get rid of pyramid of doom
-    return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
-        return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
-            return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
-        });
-    }));
-}
 
-function insertMorePosts(max) {
-    var lang,
-        status,
-        posts = [],
-        i, j, k = 0,
-        knex = config.database.knex;
+/** TEST FIXTURES **/
+fixtures = {
+    insertPosts: function insertPosts() {
+        var knex = config.database.knex;
+        // ToDo: Get rid of pyramid of doom
+        return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
+            return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
+                return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
+            });
+        }));
+    },
 
-    max = max || 50;
+    insertMorePosts: function insertMorePosts(max) {
+        var lang,
+            status,
+            posts = [],
+            i, j, k = postsInserted,
+            knex = config.database.knex;
 
-    for (i = 0; i < 2; i += 1) {
-        lang = i % 2 ? 'en' : 'fr';
-        posts.push(DataGenerator.forKnex.createGenericPost(k++, null, lang));
+        max = max || 50;
 
-        for (j = 0; j < max; j += 1) {
-            status = j % 2 ? 'draft' : 'published';
-            posts.push(DataGenerator.forKnex.createGenericPost(k++, status, lang));
-        }
-    }
+        for (i = 0; i < 2; i += 1) {
+            lang = i % 2 ? 'en' : 'fr';
+            posts.push(DataGenerator.forKnex.createGenericPost(k++, null, lang));
 
-    return sequence(_.times(posts.length, function(index) {
-        return function() {
-            return knex('posts').insert(posts[index]);
-        };
-    }));
-}
-
-function insertMorePostsTags(max) {
-    max = max || 50;
-    var knex = config.database.knex;
-
-    return when.all([
-        // PostgreSQL can return results in any order
-        knex('posts').orderBy('id', 'asc').select('id'),
-        knex('tags').select('id', 'name')
-    ]).then(function (results) {
-        var posts = _.pluck(results[0], 'id'),
-            injectionTagId = _.chain(results[1])
-                              .where({name: 'injection'})
-                              .pluck('id')
-                              .value()[0],
-            promises = [],
-            i;
-
-        if (max > posts.length) {
-            throw new Error('Trying to add more posts_tags than the number of posts.');
+            for (j = 0; j < max; j += 1) {
+                status = j % 2 ? 'draft' : 'published';
+                posts.push(DataGenerator.forKnex.createGenericPost(k++, status, lang));
+            }
         }
 
-        for (i = 0; i < max; i += 1) {
-            promises.push(DataGenerator.forKnex.createPostsTags(posts[i], injectionTagId));
-        }
+        // Keep track so we can run this function again safely
+        postsInserted = k;
 
-        return sequence(_.times(promises.length, function (index) {
+        return sequence(_.times(posts.length, function (index) {
             return function () {
-                return knex('posts_tags').insert(promises[index]);
+                return knex('posts').insert(posts[index]);
             };
         }));
-    });
-}
+    },
 
-function insertDefaultUser() {
-    var user,
-        knex = config.database.knex;
+    insertMorePostsTags: function insertMorePostsTags(max) {
+        max = max || 50;
 
-    user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+        var knex = config.database.knex;
 
-    return knex('users')
-        .where('id', '=', '1')
-        .update(user);
-}
-
-function insertAdminUser() {
-    var users = [],
-        userRoles = [],
-        knex = config.database.knex;
-
-    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[1]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(2, 2));
-    return knex('users')
-        .insert(users)
-        .then(function () {
-            return knex('roles_users').insert(userRoles);
-        });
-}
-
-function insertEditorUser() {
-    var users = [],
-        userRoles = [],
-        knex = config.database.knex;
-
-    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[2]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(3, 2));
-    return knex('users')
-        .insert(users)
-        .then(function () {
-            return knex('roles_users').insert(userRoles);
-        });
-}
-
-function insertAuthorUser() {
-    var users = [],
-        userRoles = [],
-        knex = config.database.knex;
-
-    users.push(DataGenerator.forKnex.createUser(DataGenerator.Content.users[3]));
-    userRoles.push(DataGenerator.forKnex.createUserRole(4, 3));
-    return knex('users')
-        .insert(users)
-        .then(function () {
-            return knex('roles_users').insert(userRoles);
-        });
-}
-
-function insertDefaultApp() {
-    var apps = [],
-        knex = config.database.knex;
-
-    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
-
-    return knex('permissions')
-        .select('id')
-        .where('object_type', 'post')
-        .andWhere('action_type', 'edit')
-        .then(function (result) {
-            var permission_id = result[0].id;
-            if (permission_id) {
-                return knex('apps')
-                    .insert(apps)
-                    .then(function () {
-                        return knex('permissions_apps')
-                            .insert({
-                                app_id: 1,
-                                permission_id: permission_id
-                            });
-                    });
-            }
-
-            throw new Error('Permissions not created');
-        });
-}
-
-function insertApps() {
-    var knex = config.database.knex;
-    return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
-        return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
-    });
-}
-
-function insertAppWithSettings() {
-    var apps = [],
-        app_settings = [],
-        knex = config.database.knex;
-
-    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
-    app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[0]));
-    app_settings.push(DataGenerator.forKnex.createAppSetting(DataGenerator.Content.app_settings[1]));
-
-    return knex('apps').insert(apps, 'id')
-        .then(function (results) {
-            var appId = results[0], i;
-
-            for (i = 0; i < app_settings.length; i++) {
-                app_settings[i].app_id = appId;
-            }
-
-            return knex('app_settings').insert(app_settings);
-        });
-}
-function insertAppWithFields() {
-    var apps = [],
-        app_fields = [],
-        knex = config.database.knex;
-
-    apps.push(DataGenerator.forKnex.createApp(DataGenerator.Content.apps[0]));
-    app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[0]));
-    app_fields.push(DataGenerator.forKnex.createAppField(DataGenerator.Content.app_fields[1]));
-
-    return knex('apps').insert(apps, 'id')
-        .then(function (results) {
-            var appId = results[0],
+        return when.all([
+            // PostgreSQL can return results in any order
+            knex('posts').orderBy('id', 'asc').select('id'),
+            knex('tags').select('id', 'name')
+        ]).then(function (results) {
+            var posts = _.pluck(results[0], 'id'),
+                injectionTagId = _.chain(results[1])
+                    .where({name: 'injection'})
+                    .pluck('id')
+                    .value()[0],
+                promises = [],
                 i;
 
-            for (i = 0; i < app_fields.length; i++) {
-                app_fields[i].app_id = appId;
+            if (max > posts.length) {
+                throw new Error('Trying to add more posts_tags than the number of posts.');
             }
 
-            return knex('app_fields').insert(app_fields);
+            for (i = 0; i < max; i += 1) {
+                promises.push(DataGenerator.forKnex.createPostsTags(posts[i], injectionTagId));
+            }
+
+            return sequence(_.times(promises.length, function (index) {
+                return function () {
+                    return knex('posts_tags').insert(promises[index]);
+                };
+            }));
         });
-}
+    },
 
+    initOwnerUser: function initOwnerUser() {
+        var user = DataGenerator.Content.users[0],
+            knex = config.database.knex;
 
-function insertDefaultFixtures() {
-    return insertDefaultUser().then(function () {
-        return insertPosts();
-    }).then(function () {
-        return insertApps();
-    });
-}
+        user = DataGenerator.forKnex.createBasic(user);
+        user = _.extend({}, user, {'status': 'inactive'});
 
-function loadExportFixture(filename) {
-    var filepath = path.resolve(__dirname + '/fixtures/' + filename + '.json');
+        return knex('users').insert(user);
+    },
 
-    return nodefn.call(fs.readFile, filepath).then(function (fileContents) {
-        var data;
+    insertOwnerUser: function insertOwnerUser() {
+        var user,
+            knex = config.database.knex;
 
-        // Parse the json data
-        try {
-            data = JSON.parse(fileContents);
-        } catch (e) {
-            return when.reject(new Error("Failed to parse the file"));
+        user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+
+        return knex('users').insert(user);
+    },
+
+    overrideOwnerUser: function overrideOwnerUser() {
+        var user,
+            knex = config.database.knex;
+
+        user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+
+        return knex('users')
+            .where('id', '=', '1')
+            .update(user);
+    },
+
+    createUsersWithRoles: function createUsersWithRoles() {
+        var knex = config.database.knex;
+        return knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
+            return knex('users').insert(DataGenerator.forKnex.users);
+        }).then(function () {
+            return knex('roles_users').insert(DataGenerator.forKnex.roles_users);
+        });
+    },
+
+    insertOne: function insertOne(obj, fn) {
+        var knex = config.database.knex;
+        return knex(obj)
+           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][0]));
+    },
+
+    insertApps: function insertApps() {
+        var knex = config.database.knex;
+        return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
+            return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
+        });
+    },
+
+    loadExportFixture: function loadExportFixture(filename) {
+        var filepath = path.resolve(__dirname + '/fixtures/' + filename + '.json');
+
+        return nodefn.call(fs.readFile, filepath).then(function (fileContents) {
+            var data;
+
+            // Parse the json data
+            try {
+                data = JSON.parse(fileContents);
+            } catch (e) {
+                return when.reject(new Error("Failed to parse the file"));
+            }
+
+            return data;
+        });
+    },
+
+    permissionsFor: function permissionsFor(obj) {
+        var knex = config.database.knex,
+            permsToInsert = permsFixtures.permissions[obj],
+            permsRolesToInsert = permsFixtures.permissions_roles,
+            actions = [],
+            permissions_roles = [],
+            roles = {
+                'Administrator': 1,
+                'Editor': 2,
+                'Author': 3,
+                'Owner': 4
+            };
+
+        permsToInsert = _.map(permsToInsert, function (perms) {
+            perms.object_type = obj;
+            actions.push(perms.action_type);
+            return DataGenerator.forKnex.createBasic(perms);
+        });
+
+        _.each(permsRolesToInsert, function (perms, role) {
+            if (perms[obj]) {
+                if (perms[obj] === 'all') {
+                    _.each(actions, function (action, i) {
+                        permissions_roles.push({permission_id: (i + 1), role_id: roles[role]});
+                    });
+                }
+                else {
+                    _.each(perms[obj], function (action) {
+                        permissions_roles.push({permission_id: (_.indexOf(actions, action) + 1), role_id: roles[role]});
+                    });
+                }
+            }
+        });
+
+        return knex('permissions').insert(permsToInsert).then(function () {
+            return knex('permissions_roles').insert(permissions_roles);
+        });
+    }
+};
+
+/** Test Utility Functions **/
+initData = function initData() {
+    return migration.init();
+};
+
+clearData = function clearData() {
+    // we must always try to delete all tables
+    return migration.reset();
+};
+
+toDoList = {
+    'app': function insertApp() { return fixtures.insertOne('apps', 'createApp'); },
+    'app_field': function insertAppField() {
+        // TODO: use the actual app ID to create the field
+        return fixtures.insertOne('apps', 'createApp').then(function () {
+            return fixtures.insertOne('app_fields', 'createAppField');
+        });
+    },
+    'app_setting': function insertAppSetting() {
+        // TODO: use the actual app ID to create the field
+        return fixtures.insertOne('apps', 'createApp').then(function () {
+            return fixtures.insertOne('app_settings', 'createAppSetting');
+        });
+    },
+    'permission': function insertPermission() { return fixtures.insertOne('permissions', 'createPermission'); },
+    'role': function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
+    'tag': function insertRole() { return fixtures.insertOne('tags', 'createTag'); },
+    'posts': function insertPosts() { return fixtures.insertPosts(); },
+    'apps': function insertApps() { return fixtures.insertApps(); },
+    'settings': function populate() {
+        return settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
+    },
+    'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
+    'owner': function insertOwnerUser() { return fixtures.insertOwnerUser(); },
+    'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
+    'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
+    'perms:init': function initPermissions() { return permissions.init(); },
+    'perms': function permissionsFor(obj) {
+        return function permissionsForObj() { return fixtures.permissionsFor(obj); };
+    }
+};
+
+/**
+ * ## getFixtureOps
+ *
+ * Takes the arguments from a setup function and turns them into an array of promises to fullfil
+ *
+ * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
+  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
+  *  * `perms:init` - initialise the permissions object after having added permissions
+  *  * `perms:obj` - initialise permissions for a particular object type
+  *  * `users:roles` - create a full suite of users, one per role
+ * @param options
+ */
+getFixtureOps = function getFixtureOps(toDos) {
+    // default = default fixtures, if it isn't present, init with tables only
+    var tablesOnly = !toDos.default,
+        fixtureOps = [];
+
+    // Database initialisation
+    if (toDos.init || toDos.default) {
+        fixtureOps.push(function initDB() {
+            return migration.init(tablesOnly);
+        });
+        delete toDos.default;
+        delete toDos.init;
+    }
+
+    // Go through our list of things to do, and add them to an array
+    _.each(toDos, function (value, toDo) {
+        var tmp;
+        if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
+            tmp = toDo.split(':');
+            fixtureOps.push(toDoList[tmp[0]](tmp[1]));
+        } else {
+            fixtureOps.push(toDoList[toDo]);
         }
-
-        return data;
     });
-}
 
-teardown = function (done) {
+    return fixtureOps;
+};
+
+
+// ## Test Setup and Teardown
+
+/**
+ * ## Setup Integration Tests
+ * Setup takes a list of arguments like: 'default', 'tag', 'perms:tag', 'perms:init'
+ * Setup does 'init' (DB) by default
+ * @returns {Function}
+ */
+setup = function setup() {
+    var options = _.merge({'init': true}, _.transform(arguments, function (result, val) {
+                result[val] = true;
+            })
+        ),
+        fixtureOps = getFixtureOps(options);
+
+    return function (done) {
+       return sequence(fixtureOps).then(function () {
+            done();
+        }).catch(done);
+    };
+};
+
+/**
+ * ## DoAuth For Route Tests
+ *
+ * This function manages the work of ensuring we have an overriden owner user, and grabbing an access token
+ * @returns {deferred.promise<AccessToken>}
+ */
+// TODO make this do the DB init as well
+doAuth = function doAuth() {
+    var options = arguments,
+        deferred = when.defer(),
+        request = arguments[0],
+        user = DataGenerator.forModel.users[0],
+        fixtureOps;
+
+    // Remove request from this list
+    delete options[0];
+    // No DB setup, but override the owner
+    options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
+            result[val] = true;
+        })
+    );
+
+    fixtureOps = getFixtureOps(options);
+
+    sequence(fixtureOps).then(function () {
+        request.post('/ghost/api/v0.1/authentication/token/')
+            .send({ grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .end(function (err, res) {
+                if (err) {
+                    deferred.reject(err);
+                }
+
+                deferred.resolve(res.body.access_token);
+            });
+    });
+
+    return deferred.promise;
+};
+
+teardown = function teardown(done) {
     migration.reset().then(function () {
         done();
     }).catch(done);
@@ -254,26 +363,24 @@ teardown = function (done) {
 
 module.exports = {
     teardown: teardown,
+    setup: setup,
+    doAuth: doAuth,
 
     initData: initData,
     clearData: clearData,
-    insertDefaultFixtures: insertDefaultFixtures,
-    insertPosts: insertPosts,
-    insertMorePosts: insertMorePosts,
-    insertMorePostsTags: insertMorePostsTags,
-    insertDefaultUser: insertDefaultUser,
-    insertAdminUser: insertAdminUser,
-    insertEditorUser: insertEditorUser,
-    insertAuthorUser: insertAuthorUser,
-    insertDefaultApp: insertDefaultApp,
-    insertApps: insertApps,
-    insertAppWithSettings: insertAppWithSettings,
-    insertAppWithFields: insertAppWithFields,
 
-    loadExportFixture: loadExportFixture,
+    fixtures: fixtures,
 
     DataGenerator: DataGenerator,
     API: API,
 
-    fork: fork
+    fork: fork,
+
+    context: {
+        internal:   {context: {internal: true}},
+        owner:      {context: {user: 1}},
+        admin:      {context: {user: 2}},
+        editor:     {context: {user: 3}},
+        author:     {context: {user: 4}}
+    }
 };

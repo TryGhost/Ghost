@@ -8,22 +8,13 @@ var testUtils       = require('../../utils'),
     // Stuff we are testing
     PostModel       = require('../../../server/models').Post,
     DataGenerator   = testUtils.DataGenerator,
-    context         = {context: {user: 1}};
+    context         = testUtils.context.owner;
 
 describe('Post Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
     should.exist(PostModel);
 
@@ -41,7 +32,7 @@ describe('Post Model', function () {
         firstPost.created_by.name.should.equal(DataGenerator.Content.users[0].name);
         firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
         firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
-        firstPost.tags[0].name.should.equal('Getting Started');
+        firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
     }
 
     it('can findAll', function (done) {
@@ -61,7 +52,6 @@ describe('Post Model', function () {
                 should.exist(results);
                 results.length.should.be.above(0);
                 firstPost = results.models[0].toJSON();
-
                 checkFirstPostData(firstPost);
 
                 done();
@@ -75,7 +65,7 @@ describe('Post Model', function () {
             results.meta.pagination.page.should.equal(1);
             results.meta.pagination.limit.should.equal(15);
             results.meta.pagination.pages.should.equal(1);
-            results.posts.length.should.equal(5);
+            results.posts.length.should.equal(4);
 
             done();
         }).catch(done);
@@ -91,7 +81,7 @@ describe('Post Model', function () {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal(15);
                 results.meta.pagination.pages.should.equal(1);
-                results.posts.length.should.equal(5);
+                results.posts.length.should.equal(4);
 
                 firstPost = results.posts[0];
 
@@ -371,7 +361,7 @@ describe('Post Model', function () {
             should.exist(results);
             post = results.toJSON();
             post.id.should.equal(firstItemData.id);
-            post.tags.should.have.length(1);
+            post.tags.should.have.length(2);
             post.tags[0].should.equal(firstItemData.id);
 
             // Destroy the post
@@ -392,9 +382,9 @@ describe('Post Model', function () {
     });
 
     it('can findPage, with various options', function (done) {
-        testUtils.insertMorePosts().then(function () {
+        testUtils.fixtures.insertMorePosts().then(function () {
 
-            return testUtils.insertMorePostsTags();
+            return testUtils.fixtures.insertMorePostsTags();
         }).then(function () {
             return PostModel.findPage({page: 2});
         }).then(function (paginationResult) {
@@ -441,9 +431,9 @@ describe('Post Model', function () {
         }).catch(done);
     });
     it('can findPage for tag, with various options', function (done) {
-        testUtils.insertMorePosts().then(function () {
+        testUtils.fixtures.insertMorePosts().then(function () {
 
-            return testUtils.insertMorePostsTags();
+            return testUtils.fixtures.insertMorePostsTags();
         }).then(function () {
             // Test tag filter
             return PostModel.findPage({page: 1, tag: 'bacon'});
@@ -480,7 +470,7 @@ describe('Post Model', function () {
             paginationResult.meta.pagination.pages.should.equal(2);
             paginationResult.meta.filters.tags[0].name.should.equal('injection');
             paginationResult.meta.filters.tags[0].slug.should.equal('injection');
-            paginationResult.posts.length.should.equal(11);
+            paginationResult.posts.length.should.equal(10);
 
             done();
         }).catch(done);

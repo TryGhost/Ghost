@@ -1,29 +1,19 @@
 /*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    sequence    = require('when/sequence'),
-    _           = require('lodash'),
+var testUtils    = require('../../utils'),
+    should       = require('should'),
+    sequence     = require('when/sequence'),
+    _            = require('lodash'),
 
     // Stuff we are testing
-    Models      = require('../../../server/models'),
-    context     = {context: {user: 1}},
-    AppModel    = Models.App;
+    AppModel     = require('../../../server/models').App,
+    context      = testUtils.context.admin;
 
 describe('App Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultApp();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('app'));
 
     should.exist(AppModel);
 
