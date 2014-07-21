@@ -129,6 +129,16 @@
                 "name": "Delete users",
                 "action_type": "destroy"
             }
+        ],
+        "role": [
+            {
+                "name": "Assign a role",
+                "action_type": "assign"
+            },
+            {
+                "name": "Browse roles",
+                "action_type": "browse"
+            }
         ]
     },
     "permissions_roles": {
@@ -141,22 +151,26 @@
             "slug": "all",
             "tag": "all",
             "theme": "all",
-            "user": "all"
+            "user": "all",
+            "role": "all"
         },
         "Editor": {
             "post": "all",
             "setting": ["browse", "read"],
             "slug": "all",
             "tag": "all",
-            "user": "all"
-
+            "user": "all",
+            "setting": ["browse", "read"],
+            "role": "all"
         },
         "Author": {
             "post": ["browse", "read", "add"],
             "setting": ["browse", "read"],
             "slug": "all",
             "tag": ["browse", "read", "add"],
-            "user": ["browse", "read"]
+            "user": ["browse", "read"],
+            "setting": ["browse", "read"],
+            "role": ["browse"]
         }
     }
 }
