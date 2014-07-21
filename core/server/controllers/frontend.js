@@ -381,11 +381,15 @@ frontendControllers = {
                 var title = result[0].value.settings[0].value,
                     description = result[1].value.settings[0].value,
                     permalinks = result[2].value.settings[0],
+                    majorMinor = /^(\d+\.)?(\d+)/,
+                    trimmedVersion = res.locals.version,
                     siteUrl = config.urlFor('home', {secure: req.secure}, true),
                     feedUrl = config.urlFor('rss', {secure: req.secure}, true),
                     maxPage = page.meta.pagination.pages,
                     feedItems = [],
                     feed;
+
+                trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
                 if (tagParam) {
                     if (page.meta.filters.tags) {
@@ -397,7 +401,7 @@ frontendControllers = {
                 feed = new RSS({
                     title: title,
                     description: description,
-                    generator: 'Ghost v' + res.locals.version,
+                    generator: 'Ghost ' + trimmedVersion,
                     feed_url: feedUrl,
                     site_url: siteUrl,
                     ttl: '60'
