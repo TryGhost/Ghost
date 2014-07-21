@@ -25,6 +25,13 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     updated_by: DS.belongsTo('user', { async: true }),
     roles: DS.hasMany('role', { embedded: 'always' }),
 
+
+    // TODO: Once client-side permissions are in place,
+    // remove the hard role check.
+    isAuthor: Ember.computed('roles', function () {
+        return this.get('roles').objectAt(0).get('name').toLowerCase() === 'author';
+    }),
+
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
         return ic.ajax.request(url, {
