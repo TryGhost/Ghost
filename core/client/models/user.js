@@ -23,6 +23,7 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     created_by: DS.belongsTo('user', { async: true }),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.belongsTo('user', { async: true }),
+    roles: DS.hasMany('role', { embedded: 'always' }),
 
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
