@@ -165,6 +165,66 @@ frontendControllers = {
             });
         }).otherwise(handleError(next));
     },
+    'author': function (req, res, next) {
+
+        // Parse the page number
+        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            options = {
+                page: pageParam,
+                author: req.params.slug
+            };
+
+
+
+        // Get url for tag page
+        function authorUrl(author, page) {
+            var url = config().paths.subdir + '/author/' + author + '/';
+
+            if (page && page > 1) {
+                url += 'page/' + page + '/';
+            }
+
+            return url;
+        }
+
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
+            return res.redirect(authorUrl(options.author));
+        }
+
+        return getPostPage(options).then(function (page) {
+            // If page is greater than number of pages we have, redirect to last page
+            if (pageParam > page.meta.pagination.pages) {
+                return res.redirect(authorUrl(options.author, page.meta.pagination.pages));
+            }
+
+            setReqCtx(req, page.posts);
+            if (page.meta.filters.author) {
+                setReqCtx(req, page.meta.filters.author);
+            }
+
+            // Render the page of posts
+            filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+                api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
+                    var activeTheme = response.settings[0],
+                        paths = config().paths.availableThemes[activeTheme.value],
+                        view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
+
+                        // Format data for template
+                        result = _.extend(formatPageResponse(posts, page), {
+                            author: page.meta.filters.author ? page.meta.filters.author : ''
+                        });
+
+                    // If the resulting author is '' then 404.
+                    if (!result.author) {
+                        return next();
+                    }
+                    res.render(view, result);
+                });
+            });
+        }).otherwise(handleError(next));
+    },
+
     'single': function (req, res, next) {
         var path = req.path,
             params,

@@ -179,12 +179,20 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.author);
         });
 
-        it('Returns the full name of the author from the context', function () {
-            var data = {'author': {'name': 'abc123'}},
+        it('Returns the link to the author from the context', function () {
+            var data = {'author': {'name': 'abc 123', slug: 'abc123', bio: '', website: '', status: '', location: ''}},
                 result = helpers.author.call(data);
 
-            String(result).should.equal('abc123');
+            String(result).should.equal('<a href="/author/abc123/">abc 123</a>');
         });
+
+        it('Returns the full name of the author from the context if no autolink', function () {
+            var data = {'author': {'name': 'abc 123', slug: 'abc123'}},
+                result = helpers.author.call(data, {hash: {autolink: 'false'}});
+
+            String(result).should.equal('abc 123');
+        });
+
 
         it('Returns a blank string where author data is missing', function () {
             var data = {'author': null},
@@ -894,8 +902,7 @@ describe('Core Helpers', function () {
         it('can autolink tags to tag pages', function () {
             var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
                 rendered = handlebars.helpers.tags.call(
-                    {tags: tags},
-                    {'hash': {}}
+                    {tags: tags}
                 );
             should.exist(rendered);
 
