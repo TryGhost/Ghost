@@ -8,7 +8,9 @@ var UploadController = Ember.Controller.extend({
             this.get('model').save().then(function (model) {
                 self.notifications.showSuccess('Saved');
                 return model;
-            }).catch(this.notifications.showErrors);
+            }).catch(function (err) {
+                self.notifications.showErrors(err);
+            });
         },
 
         confirmReject: function () {
