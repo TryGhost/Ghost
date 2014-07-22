@@ -40,7 +40,7 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
                 });
             }).catch(function (error) {
                 self.toggleProperty('submitting');
-                // @TODO: notifications here for validation errors
+                self.notifications.showErrors(error);
                 console.log('validation error', error);
             });
         }
