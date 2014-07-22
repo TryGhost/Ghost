@@ -5,7 +5,7 @@
 	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
 
         <section class="page-actions">
-            <button class="button-save" {{action "save"}}>Save</button>
+            <button type="button" class="button-save" {{action "save"}}>Save</button>
         </section>
     </div>
 </header>
@@ -33,9 +33,9 @@
             <div class="form-group">
                 <label for="blog-logo">Blog Logo</label>
                 {{#if logo}}
-                    <button class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
+                    <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
                 {{else}}
-                    <button class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
+                    <button type="button" class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a sexy logo for your publication</p>
             </div>
@@ -43,9 +43,9 @@
             <div class="form-group">
                 <label for="blog-cover">Blog Cover</label>
                 {{#if cover}}
-                    <button class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
+                    <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
                 {{else}}
-                    <button class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
+                    <button type="button" class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a cover image on your site</p>
             </div>
