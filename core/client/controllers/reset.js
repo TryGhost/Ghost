@@ -32,16 +32,13 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
-                    console.log('success');
                     self.transitionToRoute('signin');
                 }).catch(function (errors) {
                     self.toggleProperty('submitting');
-                    console.log('error');
                 });
             }).catch(function (error) {
                 self.toggleProperty('submitting');
-                // @TODO: notifications here for validation errors
-                console.log('validation error', error);
+                self.notifications.showErrors(error);
             });
         }
     }
