@@ -16,7 +16,7 @@
                 {{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}} - package.json missing :({{/if}}
             </td>
             <td>
-                <button {{action toggleApp this}} {{bind-attr class=":js-button-active activeClass:button-delete inactiveClass:button-add activeClass:js-button-deactivate"}}>
+                <button type="button" {{action toggleApp this}} {{bind-attr class=":js-button-active activeClass:button-delete inactiveClass:button-add activeClass:js-button-deactivate"}}>
                     {{buttonText}}
                 </button>
             </td>
