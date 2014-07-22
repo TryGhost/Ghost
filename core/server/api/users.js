@@ -88,6 +88,11 @@ users = {
         }
 
         return canThis(options.context).edit.user(options.id).then(function () {
+        // TODO: add permission check for roles
+            // if (data.roles) {
+            //     return canThis(options.context).assign.role(<role-id>)
+            // }
+        // }.then(function (){
             return utils.checkObject(object, docName).then(function (checkedUserData) {
 
                 if (options.include) {
