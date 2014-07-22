@@ -170,7 +170,7 @@ describe('Frontend Routing', function () {
             request.get('/')
                 .expect(200)
                 .expect(/\<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
-                .expect(/copyright \<a href="http:\/\/127.0.0.1:2370\/">Ghost\<\/a\>/)
+                .expect(/\<a href="http:\/\/127.0.0.1:2370">Ghost\<\/a\>/)
                 .end(doEnd(done));
         });
 
@@ -179,7 +179,7 @@ describe('Frontend Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
                 .expect(/\<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
-                .expect(/copyright \<a href="https:\/\/localhost\/">Ghost\<\/a\>/)
+                .expect(/\<a href="https:\/\/localhost">Ghost\<\/a\>/)
                 .end(doEnd(done));
         });
     });
