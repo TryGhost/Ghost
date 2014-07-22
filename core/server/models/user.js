@@ -7,6 +7,7 @@ var _              = require('lodash'),
     http           = require('http'),
     crypto         = require('crypto'),
     validator      = require('validator'),
+    Role           = require('./role').Role,
 
     tokenSecurity  = {},
     User,
@@ -298,10 +299,55 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function (data, options) {
+        var self = this,
+            adminRole,
+            ownerRole;
+
         options = options || {};
         options.withRelated = _.union([ 'roles' ], options.include);
 
-        return ghostBookshelf.Model.edit.call(this, data, options);
+        return ghostBookshelf.Model.edit.call(this, data, options).then(function (user) {
+
+            if (data.roles) {
+
+                if (user.id === options.context.user) {
+                    return when.reject(new errors.ValidationError('You are not allowed to assign a new role to yourself'));
+                }
+                if (data.roles.length > 1) {
+                    return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
+                }
+
+                return Role.findOne({id: data.roles[0]}).then(function (role) {
+                    if (role.get('name') === 'Owner') {
+                        // Get admin and owner role
+                        return Role.findOne({name: 'Administrator'}).then(function (result) {
+                            adminRole = result;
+                            return Role.findOne({name: 'Owner'});
+                        }).then(function (result) {
+                            ownerRole = result;
+                            return User.findOne({id: options.context.user});
+                        }).then(function (contextUser) {
+                            // check if user has the owner role
+                            var currentRoles = contextUser.toJSON().roles;
+                            if (!_.contains(currentRoles, ownerRole.id)) {
+                                return when.reject(new errors.ValidationError('Only owners are able to transfer the owner role.'));
+                            }
+                            // convert owner to admin
+                            return contextUser.roles().updatePivot({role_id: adminRole.id});
+                        }).then(function () {
+                            // assign owner role to a new user
+                            return user.roles().updatePivot({role_id: ownerRole.id});
+                        });
+                    } else {
+                        // assign all other roles
+                        return user.roles().updatePivot({role_id: data.roles[0]});
+                    }
+                }).then(function () {
+                    return self.findOne(user, options);
+                });
+            }
+            return user;
+        });
     },
 
     /**
