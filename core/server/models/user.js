@@ -316,9 +316,8 @@ User = ghostBookshelf.Model.extend({
                 if (data.roles.length > 1) {
                     return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
                 }
-
-                return Role.findOne({id: data.roles[0]}).then(function (role) {
-                    if (role.get('name') === 'Owner') {
+                return Role.findOne({id: data.roles[0].id || data.roles[0]}).then(function (role) {
+                    if (role && role.get('name') === 'Owner') {
                         // Get admin and owner role
                         return Role.findOne({name: 'Administrator'}).then(function (result) {
                             adminRole = result;
@@ -340,7 +339,7 @@ User = ghostBookshelf.Model.extend({
                         });
                     } else {
                         // assign all other roles
-                        return user.roles().updatePivot({role_id: data.roles[0]});
+                        return user.roles().updatePivot({role_id: data.roles[0].id || data.roles[0]});
                     }
                 }).then(function () {
                     return self.findOne(user, options);
