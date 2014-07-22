@@ -42,9 +42,9 @@
 
         {{#each activeUsers itemController="settings/users/user"}}
             {{#link-to 'settings.users.user' this class="object-list-item" }}
-                <img class="object-list-item-figure"
-                     src="{{unbound imageUrl}}"
-                     alt="Photo of {{unbound name}}" />
+                <span class="object-list-item-figure" {{bind-attr style=image}}>
+                    <span class="hidden">Photo of {{unbound name}}</span>
+                </span>
 
                 <div class="object-list-item-body">
                     <span class="name">
