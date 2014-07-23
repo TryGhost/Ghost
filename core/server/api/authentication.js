@@ -45,7 +45,7 @@ authentication = {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {
-                var baseUrl = config().forceAdminSSL ? (config().urlSSL || config().url) : config().url,
+                var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
                     siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
                     resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + resetToken + '/',
                     resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
@@ -216,7 +216,7 @@ authentication = {
                     to: setupUser.email,
                     subject: 'Your New Ghost Blog',
                     html: '<p><strong>Hello!</strong></p>' +
-                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config().url + '</p>' +
+                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config.url + '</p>' +
                           '<p>You can log in to your admin account with the following details:</p>' +
                           '<p> Email Address: ' + setupUser.email + '<br>' +
                           'Password: The password you chose when you signed up</p>' +

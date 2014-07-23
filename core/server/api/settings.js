@@ -135,11 +135,11 @@ readSettingsResult = function (settingsModels) {
 
             return memo;
         }, {}),
-        themes = config().paths.availableThemes,
-        apps = config().paths.availableApps,
+        themes = config.paths.availableThemes,
+        apps = config.paths.availableApps,
         res;
 
-    if (settings.activeTheme) {
+    if (settings.activeTheme && themes) {
         res = filterPaths(themes, settings.activeTheme.value);
 
         settings.availableThemes = {
@@ -149,7 +149,7 @@ readSettingsResult = function (settingsModels) {
         };
     }
 
-    if (settings.activeApps) {
+    if (settings.activeApps && apps) {
         res = filterPaths(apps, JSON.parse(settings.activeApps.value));
 
         settings.availableApps = {
@@ -201,7 +201,7 @@ populateDefaultSetting = function (key) {
         // Add to the settings cache
         return updateSettingsCache(readResult).then(function () {
             // Update theme with the new settings
-            return config.theme.update(settings, config().url);
+            return config.theme.update(settings, config.url);
         }).then(function () {
             // Get the result from the cache with permission checks
             return defaultSetting;
@@ -379,7 +379,7 @@ settings = {
                 var readResult = readSettingsResult(result);
 
                 return updateSettingsCache(readResult).then(function () {
-                    return config.theme.update(settings, config().url);
+                    return config.theme.update(settings, config.url);
                 }).then(function () {
                     return settingsResult(readResult, type);
                 });

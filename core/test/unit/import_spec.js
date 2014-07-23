@@ -6,10 +6,13 @@ var testUtils = require('../utils'),
     when      = require('when'),
     assert    = require('assert'),
     _         = require('lodash'),
+    rewire    = require('rewire'),
 
     // Stuff we are testing
-    config      = require('../../server/config'),
-    migration   = require('../../server/data/migration'),
+    config      = rewire('../../server/config'),
+    configUpdate   = config.__get__('updateConfig'),
+    defaultConfig  = rewire('../../../config.example')[process.env.NODE_ENV],
+    migration   = rewire('../../server/data/migration'),
     versioning  = require('../../server/data/versioning'),
     exporter    = require('../../server/data/export'),
     importer    = require('../../server/data/import'),
@@ -23,10 +26,14 @@ describe('Import', function () {
     should.exist(exporter);
     should.exist(importer);
 
-    var sandbox,
-        knex = config().database.knex;
+    var sandbox, knex;
 
     beforeEach(function (done) {
+        var newConfig = _.extend(config, defaultConfig);
+        migration.__get__('config', newConfig);
+        configUpdate(newConfig);
+        knex = config.database.knex;
+
         sandbox = sinon.sandbox.create();
         // clear database... we need to initialise it manually for each test
         testUtils.clearData().then(function () {

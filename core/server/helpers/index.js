@@ -100,7 +100,7 @@ coreHelpers.encode = function (context, str) {
 //
 coreHelpers.page_url = function (context, block) {
     /*jshint unused:false*/
-    var url = config().paths.subdir;
+    var url = config.paths.subdir;
 
     if (this.tagSlug !== undefined) {
         url += '/tag/' + this.tagSlug;
@@ -173,7 +173,7 @@ coreHelpers.asset = function (context, options) {
     var output = '',
         isAdmin = options && options.hash && options.hash.ghost;
 
-    output += config().paths.subdir + '/';
+    output += config.paths.subdir + '/';
 
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
@@ -349,8 +349,8 @@ coreHelpers.excerpt = function (options) {
 // Returns the config value for fileStorage.
 coreHelpers.file_storage = function (context, options) {
     /*jshint unused:false*/
-    if (config().hasOwnProperty('fileStorage')) {
-        return config().fileStorage.toString();
+    if (config.hasOwnProperty('fileStorage')) {
+        return config.fileStorage.toString();
     }
     return 'true';
 };
@@ -363,8 +363,8 @@ coreHelpers.file_storage = function (context, options) {
 // Returns the config value for apps.
 coreHelpers.apps = function (context, options) {
     /*jshint unused:false*/
-    if (config().hasOwnProperty('apps')) {
-        return config().apps.toString();
+    if (config.hasOwnProperty('apps')) {
+        return config.apps.toString();
     }
     return 'false';
 };
@@ -374,7 +374,7 @@ coreHelpers.ghost_script_tags = function () {
 
     scriptList = _.map(scriptList, function (fileName) {
         return scriptTemplate({
-            source: config().paths.subdir + '/ghost/scripts/' + fileName,
+            source: config.paths.subdir + '/ghost/scripts/' + fileName,
             version: coreHelpers.assetHash
         });
     });
@@ -416,7 +416,7 @@ coreHelpers.body_class = function (options) {
 
     return api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
         var activeTheme = response.settings[0],
-            paths = config().paths.availableThemes[activeTheme.value],
+            paths = config.paths.availableThemes[activeTheme.value],
             view;
 
         if (post) {
@@ -494,7 +494,7 @@ coreHelpers.ghost_foot = function (options) {
         foot = [];
 
     foot.push(scriptTemplate({
-        source: config().paths.subdir + '/public/' + jquery,
+        source: config.paths.subdir + '/public/' + jquery,
         version: coreHelpers.assetHash
     }));
 

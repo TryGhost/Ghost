@@ -1,11 +1,14 @@
-var should = require('should');
-var when = require('when');
-var rewire = require('rewire');
-var packageInfo = require('../../../package');
-var ghost = require('../../../core');
-var permissions = require('../../server/permissions');
-var testUtils = require('../utils');
-var updateCheck = rewire('../../server/update-check');
+/*globals describe, before, beforeEach, afterEach, after, it */
+var should         = require('should'),
+    rewire         = require('rewire'),
+    _              = require('lodash'),
+    packageInfo    = require('../../../package'),
+    ghost          = require('../../../core'),
+    config         = rewire('../../../core/server/config'),
+    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
+    permissions    = require('../../server/permissions'),
+    testUtils      = require('../utils'),
+    updateCheck    = rewire('../../server/update-check');
 
 describe('Update Check', function () {
     var environmentsOrig;
@@ -14,7 +17,9 @@ describe('Update Check', function () {
         environmentsOrig = updateCheck.__get__('allowedCheckEnvironments');
         updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing']);
 
-        ghost().then(function () {
+        _.extend(config, defaultConfig);
+
+        ghost({config: config.paths.config}).then(function () {
             return testUtils.clearData();
         }).then(function () {
             done();

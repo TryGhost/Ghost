@@ -91,14 +91,14 @@ frontendControllers = {
 
         // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
-            return res.redirect(config().paths.subdir + '/');
+            return res.redirect(config.paths.subdir + '/');
         }
 
         return getPostPage(options).then(function (page) {
 
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
-                return res.redirect(page.meta.pagination.pages === 1 ? config().paths.subdir + '/' : (config().paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
+                return res.redirect(page.meta.pagination.pages === 1 ? config.paths.subdir + '/' : (config.paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
             }
 
             setReqCtx(req, page.posts);
@@ -119,7 +119,7 @@ frontendControllers = {
 
         // Get url for tag page
         function tagUrl(tag, page) {
-            var url = config().paths.subdir + '/tag/' + tag + '/';
+            var url = config.paths.subdir + '/tag/' + tag + '/';
 
             if (page && page > 1) {
                 url += 'page/' + page + '/';
@@ -148,7 +148,7 @@ frontendControllers = {
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
                     var activeTheme = response.settings[0],
-                        paths = config().paths.availableThemes[activeTheme.value],
+                        paths = config.paths.availableThemes[activeTheme.value],
                         view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
 
                         // Format data for template
@@ -277,7 +277,7 @@ frontendControllers = {
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
                 if (params.edit === 'edit') {
-                    return res.redirect(config().paths.subdir + '/ghost/editor/' + post.id + '/');
+                    return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
                 } else if (params.edit !== undefined) {
                     // reject with type: 'NotFound'
                     return when.reject(new errors.NotFoundError());
@@ -288,7 +288,7 @@ frontendControllers = {
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
                         var activeTheme = response.settings[0],
-                            paths = config().paths.availableThemes[activeTheme.value],
+                            paths = config.paths.availableThemes[activeTheme.value],
                             view = template.getThemeViewForPost(paths, post);
 
                         res.render(view, {post: post});
@@ -358,9 +358,9 @@ frontendControllers = {
         if (isNaN(pageParam) || pageParam < 1 ||
             (pageParam === 1 && (req.route.path === '/rss/:page/' || req.route.path === '/tag/:slug/rss/:page/'))) {
             if (tagParam !== undefined) {
-                return res.redirect(config().paths.subdir + '/tag/' + tagParam + '/rss/');
+                return res.redirect(config.paths.subdir + '/tag/' + tagParam + '/rss/');
             } else {
-                return res.redirect(config().paths.subdir + '/rss/');
+                return res.redirect(config.paths.subdir + '/rss/');
             }
         }
 
@@ -410,9 +410,9 @@ frontendControllers = {
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
                     if (tagParam) {
-                        return res.redirect(config().paths.subdir + '/tag/' + tagParam + '/rss/' + maxPage + '/');
+                        return res.redirect(config.paths.subdir + '/tag/' + tagParam + '/rss/' + maxPage + '/');
                     } else {
-                        return res.redirect(config().paths.subdir + '/rss/' + maxPage + '/');
+                        return res.redirect(config.paths.subdir + '/rss/' + maxPage + '/');
                     }
                 }
 
