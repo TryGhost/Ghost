@@ -107,17 +107,18 @@ cacheInvalidationHeader = function (req, result) {
 locationHeader = function (req, result) {
     var apiRoot = config.urlFor('api'),
         location,
-        post,
-        notification,
-        endpoint = req._parsedUrl.pathname;
+        newObject;
 
     if (req.method === 'POST') {
         if (result.hasOwnProperty('posts')) {
-            post = result.posts[0];
-            location = apiRoot + '/posts/' + post.id + '/?status=' + post.status;
-        } else if (endpoint === '/notifications/') {
-            notification = result.notifications;
-            location = apiRoot + endpoint + notification[0].id;
+            newObject = result.posts[0];
+            location = apiRoot + '/posts/' + newObject.id + '/?status=' + newObject.status;
+        } else if (result.hasOwnProperty('notifications')) {
+            newObject = result.notifications[0];
+            location = apiRoot + '/notifications/' + newObject.id;
+        } else if (result.hasOwnProperty('users')) {
+            newObject = result.users[0];
+            location = apiRoot + '/users/' + newObject.id;
         }
     }
 
