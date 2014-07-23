@@ -6,10 +6,6 @@ var Tag = DS.Model.extend({
     parent_id: DS.attr('number'),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
-    created_at: DS.attr('moment-date'),
-    created_by: DS.belongsTo('user', {async: true}),
-    updated_at: DS.attr('moment-date'),
-    updated_by: DS.belongsTo('user', {async: true})
 });
 
 export default Tag;
