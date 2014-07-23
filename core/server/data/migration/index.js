@@ -53,7 +53,9 @@ backupDatabase = function backupDatabase() {
 };
 
 // Check for whether data is needed to be bootstrapped or not
-init = function () {
+init = function (tablesOnly) {
+    tablesOnly = tablesOnly || false;
+
     var self = this;
     // There are 4 possibilities:
     // 1. The database exists and is up-to-date
@@ -92,7 +94,7 @@ init = function () {
             // 4. The database has not yet been created
             // Bring everything up from initial version.
             logInfo('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
-            return self.migrateUpFreshDb();
+            return self.migrateUpFreshDb(tablesOnly);
         }
         // 3. The database exists but the currentVersion setting does not or cannot be understood
         // In this case the setting was missing or there was some other problem
@@ -113,15 +115,21 @@ reset = function () {
 };
 
 // Only do this if we have no database at all
-migrateUpFreshDb = function () {
-    var tables = _.map(schemaTables, function (table) {
+migrateUpFreshDb = function (tablesOnly) {
+    var tableSequence,
+        tables = _.map(schemaTables, function (table) {
         return function () {
             logInfo('Creating table: ' + table);
             return utils.createTable(table);
         };
     });
     logInfo('Creating tables...');
-    return sequence(tables).then(function () {
+    tableSequence = sequence(tables);
+
+    if (tablesOnly) {
+        return tableSequence;
+    }
+    return tableSequence.then(function () {
         // Load the fixtures
         return fixtures.populate();
     }).then(function () {

@@ -1,62 +1,47 @@
 /*global describe, it, before, after */
-var supertest     = require('supertest'),
-    express       = require('express'),
+/*jshint expr:true*/
+var testUtils     = require('../../../utils'),
     should        = require('should'),
+    supertest     = require('supertest'),
+    express       = require('express'),
     _             = require('lodash'),
-    testUtils     = require('../../../utils'),
 
     ghost         = require('../../../../../core'),
 
     httpServer,
-    request,
-    agent;
+    request;
 
 
 describe('Post API', function () {
-    var user = testUtils.DataGenerator.forModel.users[0],
-        accesstoken = '';
+    var accesstoken = '';
 
     before(function (done) {
         var app = express();
             app.set('disableLoginLimiter', true);
 
+        // starting ghost automatically populates the db
+        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
         ghost({app: app}).then(function (_httpServer) {
             httpServer = _httpServer;
-
             request = supertest.agent(app);
 
-            testUtils.clearData()
-                .then(function () {
-                    return testUtils.initData();
-                })
-                .then(function () {
-                    return testUtils.insertDefaultFixtures();
-                })
-                .then(function () {
-                    request.post('/ghost/api/v0.1/authentication/token/')
-                        .send({ grant_type: "password", username: user.email, password: user.password, client_id: "ghost-admin"})
-                        .expect('Content-Type', /json/)
-                        .expect(200)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-                            var jsonResponse = res.body;
-                            testUtils.API.checkResponse(jsonResponse, 'accesstoken');
-                            accesstoken = jsonResponse.access_token;
-                            return done();
-                        });
-                }).catch(done);
+        }).then(function () {
+            return testUtils.doAuth(request, 'posts');
+        }).then(function (token) {
+            accesstoken = token;
+            done();
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
         });
     });
 
-    after(function () {
-        httpServer.close();
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            httpServer.close();
+            done();
+        });
     });
-
 
     describe('Browse', function () {
 
