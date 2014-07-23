@@ -255,9 +255,22 @@ users = {
     destroy: function destroy(options) {
         return canThis(options.context).destroy.user(options.id).then(function () {
             return users.read(options).then(function (result) {
-                return dataProvider.User.destroy(options).then(function () {
+                return dataProvider.Base.transaction(function (t) {
+                    options.transacting = t;
+                    dataProvider.Post.destroyByAuthor(options).then(function () {
+                        return dataProvider.User.destroy(options);
+                    }).then(function () {
+                        t.commit();
+                    }).catch(function (error) {
+                        t.rollback(error);
+                    });
+                }).then(function () {
                     return result;
+                }, function (error) {
+                    return when.reject(new errors.InternalServerError(error));
                 });
+            }, function (error) {
+                return errors.handleAPIError(error);
             });
         }).catch(function (error) {
             return errors.handleAPIError(error);
