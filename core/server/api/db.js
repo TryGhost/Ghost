@@ -17,8 +17,8 @@ var dataExport       = require('../data/export'),
 api.settings         = require('./settings');
 
 
-function isValidFile(type, ext) {
-    if (type === 'application/json' && ext === '.json') {
+function isValidFile(ext) {
+    if (ext === '.json') {
         return true;
     }
     return false;
@@ -75,7 +75,7 @@ db = {
             ext = path.extname(options.importfile.name).toLowerCase();
             filepath = options.importfile.path;
 
-            return when(isValidFile(type, ext)).then(function (result) {
+            return when(isValidFile(ext)).then(function (result) {
                 if (!result) {
                     return when.reject(new errors.UnsupportedMediaTypeError('Please select a .json file to import.'));
                 }
