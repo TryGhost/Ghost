@@ -521,7 +521,7 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-    permissable: function (postModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function (postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             postModel = postModelOrId,
             origArgs;
@@ -536,7 +536,7 @@ Post = ghostBookshelf.Model.extend({
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundPostModel].concat(origArgs);
 
-                return self.permissable.apply(self, newArgs);
+                return self.permissible.apply(self, newArgs);
             }, errors.logAndThrowError);
         }
 

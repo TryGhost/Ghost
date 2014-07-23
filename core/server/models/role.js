@@ -40,7 +40,7 @@ Role = ghostBookshelf.Model.extend({
     },
 
 
-    permissable: function (roleModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function (roleModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             checkAgainst = [],
             origArgs;
@@ -55,7 +55,7 @@ Role = ghostBookshelf.Model.extend({
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundRoleModel].concat(origArgs);
 
-                return self.permissable.apply(self, newArgs);
+                return self.permissible.apply(self, newArgs);
             }, errors.logAndThrowError);
         }
 
