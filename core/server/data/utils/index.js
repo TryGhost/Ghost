@@ -44,28 +44,28 @@ function addTableColumn(tablename, table, columnname) {
 }
 
 function addColumn(table, column) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.table(table, function (t) {
         addTableColumn(table, t, column);
     });
 }
 
 function addUnique(table, column) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.table(table, function (table) {
         table.unique(column);
     });
 }
 
 function dropUnique(table, column) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.table(table, function (table) {
         table.dropUnique(column);
     });
 }
 
 function createTable(table) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.createTable(table, function (t) {
         var columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (column) {
@@ -75,12 +75,12 @@ function createTable(table) {
 }
 
 function deleteTable(table) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.dropTableIfExists(table);
 }
 
 function getTables() {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
@@ -91,7 +91,7 @@ function getTables() {
 }
 
 function getIndexes(table) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
@@ -102,7 +102,7 @@ function getIndexes(table) {
 }
 
 function getColumns(table) {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
     if (_.contains(_.keys(clients), client)) {
@@ -113,7 +113,7 @@ function getColumns(table) {
 }
 
 function checkTables() {
-    dbConfig = dbConfig || config().database;
+    dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
     if (client === 'mysql') {
