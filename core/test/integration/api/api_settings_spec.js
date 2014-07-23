@@ -5,7 +5,6 @@ var testUtils           = require('../../utils'),
     _                   = require('lodash'),
 
     // Stuff we are testing
-    permissions         = require('../../../server/permissions'),
     SettingsAPI         = require('../../../server/api/settings'),
     defaultContext      = {user: 1},
     internalContext     = {internal: true},
@@ -17,22 +16,7 @@ describe('Settings API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            })
-            .then(function () {
-                return SettingsAPI.updateSettingsCache();
-            })
-            .then(function () {
-                return permissions.init();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
+    beforeEach(testUtils.setup('users:roles', 'perms:setting', 'settings', 'perms:init'));
 
     should.exist(SettingsAPI);
 

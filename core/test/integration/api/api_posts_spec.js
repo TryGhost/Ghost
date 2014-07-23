@@ -11,16 +11,8 @@ describe('Post API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
+    beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
 
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            })
-            .then(function () {
-                done();
-            }).catch(done);
-    });
 
     should.exist(PostAPI);
 
