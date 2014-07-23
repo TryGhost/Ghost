@@ -1,122 +1,115 @@
-/*globals describe, beforeEach, afterEach, it*/
+/*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var testUtils = require('../utils'),
-    should    = require('should'),
-    sinon     = require('sinon'),
-    when      = require('when'),
-    assert    = require('assert'),
-    _         = require('lodash'),
-    rewire    = require('rewire'),
+var testUtils   = require('../utils/index'),
+    should      = require('should'),
+    sinon       = require('sinon'),
+    when        = require('when'),
+    assert      = require('assert'),
+    _           = require('lodash'),
+    rewire      = require('rewire'),
 
     // Stuff we are testing
-    config      = rewire('../../server/config'),
-    configUpdate   = config.__get__('updateConfig'),
-    defaultConfig  = rewire('../../../config.example')[process.env.NODE_ENV],
-    migration   = rewire('../../server/data/migration'),
-    versioning  = require('../../server/data/versioning'),
-    exporter    = require('../../server/data/export'),
-    importer    = require('../../server/data/import'),
-    Importer000 = require('../../server/data/import/000'),
-    Importer001 = require('../../server/data/import/001'),
-    Importer002 = require('../../server/data/import/002'),
-    Importer003 = require('../../server/data/import/003');
+    config          = rewire('../../server/config'),
+    configUpdate    = config.__get__('updateConfig'),
+    defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
+    migration       = rewire('../../server/data/migration'),
+    versioning      = require('../../server/data/versioning'),
+    exporter        = require('../../server/data/export'),
+    importer        = require('../../server/data/import'),
+    Importer000     = require('../../server/data/import/000'),
+    Importer001     = require('../../server/data/import/001'),
+    Importer002     = require('../../server/data/import/002'),
+    Importer003     = require('../../server/data/import/003'),
+
+    knex,
+    sandbox = sinon.sandbox.create();
 
 describe('Import', function () {
-
-    should.exist(exporter);
-    should.exist(importer);
-
-    var sandbox, knex;
-
-    beforeEach(function (done) {
-        var newConfig = _.extend(config, defaultConfig);
-        migration.__get__('config', newConfig);
-        configUpdate(newConfig);
-        knex = config.database.knex;
-
-        sandbox = sinon.sandbox.create();
-        // clear database... we need to initialise it manually for each test
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
-
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
     afterEach(function () {
         sandbox.restore();
     });
 
-    it('resolves 000', function (done) {
-        var importStub = sandbox.stub(Importer000, 'importData', function () {
-                return when.resolve();
-            }),
-            fakeData = { test: true };
+    should.exist(exporter);
+    should.exist(importer);
 
-        importer('000', fakeData).then(function () {
-            importStub.calledWith(fakeData).should.equal(true);
+    describe('Resolves', function () {
 
-            importStub.restore();
+        beforeEach(testUtils.setup());
+        beforeEach(function () {
+            var newConfig = _.extend(config, defaultConfig);
+                migration.__get__('config', newConfig);
+                configUpdate(newConfig);
+                knex = config.database.knex;
+        });
 
-            done();
-        }).catch(done);
-    });
+        it('resolves 000', function (done) {
+            var importStub = sandbox.stub(Importer000, 'importData', function () {
+                    return when.resolve();
+                }),
+                fakeData = { test: true };
 
-    it('resolves 001', function (done) {
-        var importStub = sandbox.stub(Importer001, 'importData', function () {
-                return when.resolve();
-            }),
-            fakeData = { test: true };
+            importer('000', fakeData).then(function () {
+                importStub.calledWith(fakeData).should.equal(true);
 
-        importer('001', fakeData).then(function () {
-            importStub.calledWith(fakeData).should.equal(true);
+                importStub.restore();
 
-            importStub.restore();
-
-            done();
-        }).catch(done);
-    });
-
-    it('resolves 002', function (done) {
-        var importStub = sandbox.stub(Importer002, 'importData', function () {
-                return when.resolve();
-            }),
-            fakeData = { test: true };
-
-        importer('002', fakeData).then(function () {
-            importStub.calledWith(fakeData).should.equal(true);
-
-            importStub.restore();
-
-            done();
-        }).catch(done);
-    });
-
-    it('resolves 003', function (done) {
-        var importStub = sandbox.stub(Importer003, 'importData', function () {
-                return when.resolve();
-            }),
-            fakeData = { test: true };
-
-        importer('003', fakeData).then(function () {
-            importStub.calledWith(fakeData).should.equal(true);
-
-            importStub.restore();
-
-            done();
-        }).catch(done);
-    });
-
-    describe('000', function () {
-        should.exist(Importer000);
-
-        beforeEach(function (done) {
-            // migrate to current version
-            migration.migrateUpFreshDb().then(function () {
-                return testUtils.insertDefaultUser();
-            }).then(function () {
                 done();
             }).catch(done);
         });
 
+        it('resolves 001', function (done) {
+            var importStub = sandbox.stub(Importer001, 'importData', function () {
+                    return when.resolve();
+                }),
+                fakeData = { test: true };
+
+            importer('001', fakeData).then(function () {
+                importStub.calledWith(fakeData).should.equal(true);
+
+                importStub.restore();
+
+                done();
+            }).catch(done);
+        });
+
+        it('resolves 002', function (done) {
+            var importStub = sandbox.stub(Importer002, 'importData', function () {
+                    return when.resolve();
+                }),
+                fakeData = { test: true };
+
+            importer('002', fakeData).then(function () {
+                importStub.calledWith(fakeData).should.equal(true);
+
+                importStub.restore();
+
+                done();
+            }).catch(done);
+        });
+
+        it('resolves 003', function (done) {
+            var importStub = sandbox.stub(Importer003, 'importData', function () {
+                    return when.resolve();
+                }),
+                fakeData = { test: true };
+
+            importer('003', fakeData).then(function () {
+                importStub.calledWith(fakeData).should.equal(true);
+
+                importStub.restore();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('000', function () {
+
+        beforeEach(testUtils.setup('owner', 'settings'));
+
+        should.exist(Importer000);
 
         it('imports data from 000', function (done) {
             var exportData,
@@ -124,7 +117,7 @@ describe('Import', function () {
                     return when.resolve('000');
                 });
 
-            testUtils.loadExportFixture('export-000').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
 
                 return importer('000', exportData);
@@ -146,10 +139,10 @@ describe('Import', function () {
                     settings = importedData[2],
                     tags = importedData[3];
 
-                // we always have 1 user, the default user we added
+                // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
                 // import no longer requires all data to be dropped, and adds posts
-                posts.length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
+                posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
@@ -166,22 +159,16 @@ describe('Import', function () {
     });
 
     describe('001', function () {
-        should.exist(Importer001);
 
-        beforeEach(function (done) {
-            // migrate to current version
-            migration.migrateUpFreshDb().then(function () {
-                return testUtils.insertDefaultUser();
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
+        beforeEach(testUtils.setup('owner', 'settings'));
+
+        should.exist(Importer001);
 
         it('safely imports data from 001', function (done) {
             var exportData,
                 timestamp = 1349928000000;
 
-            testUtils.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
                 // Modify timestamp data for testing
@@ -221,7 +208,7 @@ describe('Import', function () {
                 users[0].bio.should.equal(exportData.data.users[0].bio);
 
                 // import no longer requires all data to be dropped, and adds posts
-                posts.length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
+                posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
@@ -241,10 +228,10 @@ describe('Import', function () {
                 // When in sqlite we are returned a unix timestamp number,
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
-                // to ensure the return is consistant for all DBs.
-                assert.equal(new Date(posts[1].created_at).getTime(), timestamp);
-                assert.equal(new Date(posts[1].updated_at).getTime(), timestamp);
-                assert.equal(new Date(posts[1].published_at).getTime(), timestamp);
+                // to ensure the return is consistent for all DBs.
+                assert.equal(new Date(posts[0].created_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].updated_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].published_at).getTime(), timestamp);
 
                 done();
             }).catch(done);
@@ -253,8 +240,7 @@ describe('Import', function () {
         it('doesn\'t import invalid post data from 001', function (done) {
             var exportData;
 
-
-            testUtils.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
 
                 //change title to 151 characters
@@ -285,15 +271,16 @@ describe('Import', function () {
 
                     // we always have 1 user, the default user we added
                     users.length.should.equal(1, 'There should only be one user');
-                    // import no longer requires all data to be dropped, and adds posts
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
 
-                    // test tags
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
+
 
                     done();
                 });
@@ -304,7 +291,7 @@ describe('Import', function () {
         it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
-            testUtils.loadExportFixture('export-001').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001').then(function (exported) {
                 exportData = exported;
                 //change to blank settings key
                 exportData.data.settings[3].key = null;
@@ -333,15 +320,14 @@ describe('Import', function () {
 
                     // we always have 1 user, the default user we added
                     users.length.should.equal(1, 'There should only be one user');
-                    // import no longer requires all data to be dropped, and adds posts
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
-
-                    // test tags
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
                     done();
                 });
@@ -351,22 +337,16 @@ describe('Import', function () {
     });
 
     describe('002', function () {
-        should.exist(Importer002);
 
-        beforeEach(function (done) {
-            // migrate to current version
-            migration.migrateUpFreshDb().then(function () {
-                return testUtils.insertDefaultUser();
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
+        beforeEach(testUtils.setup('owner', 'settings'));
+
+        should.exist(Importer002);
 
         it('safely imports data from 002', function (done) {
             var exportData,
                 timestamp = 1349928000000;
 
-            testUtils.loadExportFixture('export-002').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
 
                 // Modify timestamp data for testing
@@ -394,7 +374,7 @@ describe('Import', function () {
                     tags = importedData[3],
                     exportEmail;
 
-                // we always have 1 user, the default user we added
+                // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
 
                 // user should still have the credentials from the original insert, not the import
@@ -406,7 +386,7 @@ describe('Import', function () {
                 users[0].bio.should.equal(exportData.data.users[0].bio);
 
                 // import no longer requires all data to be dropped, and adds posts
-                posts.length.should.equal(exportData.data.posts.length + 1, 'Wrong number of posts');
+                posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
@@ -427,9 +407,9 @@ describe('Import', function () {
                 // in MySQL we're returned a date object.
                 // We pass the returned post always through the date object
                 // to ensure the return is consistant for all DBs.
-                assert.equal(new Date(posts[1].created_at).getTime(), timestamp);
-                assert.equal(new Date(posts[1].updated_at).getTime(), timestamp);
-                assert.equal(new Date(posts[1].published_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].created_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].updated_at).getTime(), timestamp);
+                assert.equal(new Date(posts[0].published_at).getTime(), timestamp);
 
                 done();
             }).catch(function (error) {
@@ -441,7 +421,7 @@ describe('Import', function () {
             var exportData;
 
 
-            testUtils.loadExportFixture('export-002').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
 
                 //change title to 151 characters
@@ -470,17 +450,15 @@ describe('Import', function () {
                         settings = importedData[2],
                         tags = importedData[3];
 
-                    // we always have 1 user, the default user we added
+                    // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
-                    // import no longer requires all data to be dropped, and adds posts
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
-
-                    // test tags
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
                     done();
                 });
@@ -491,7 +469,7 @@ describe('Import', function () {
         it('doesn\'t import invalid settings data from 002', function (done) {
             var exportData;
 
-            testUtils.loadExportFixture('export-002').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-002').then(function (exported) {
                 exportData = exported;
                 //change to blank settings key
                 exportData.data.settings[3].key = null;
@@ -518,17 +496,15 @@ describe('Import', function () {
                         settings = importedData[2],
                         tags = importedData[3];
 
-                    // we always have 1 user, the default user we added
+                    // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
-                    // import no longer requires all data to be dropped, and adds posts
-                    posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
-
-                    // test tags
-                    tags.length.should.equal(exportData.data.tags.length, 'no new tags');
 
                     done();
                 });
@@ -538,21 +514,15 @@ describe('Import', function () {
     });
 
     describe('003', function () {
-        should.exist(Importer003);
 
-        beforeEach(function (done) {
-            // migrate to current version
-            migration.migrateUpFreshDb().then(function () {
-                return testUtils.insertDefaultUser();
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
+        beforeEach(testUtils.setup('owner', 'settings'));
+
+        should.exist(Importer003);
 
         it('safely imports data from 003', function (done) {
             var exportData;
 
-            testUtils.loadExportFixture('export-003').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
                 return importer('003', exportData);
             }).then(function () {

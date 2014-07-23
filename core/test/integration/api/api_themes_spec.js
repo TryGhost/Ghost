@@ -8,66 +8,58 @@ var _             = require('lodash'),
     when          = require('when'),
 
     // Stuff we are testing
-    permissions   = require('../../../server/permissions'),
     SettingsAPI   = require('../../../server/api/settings'),
-    ThemeAPI      = rewire('../../../server/api/themes');
+    ThemeAPI      = rewire('../../../server/api/themes'),
+
+    sandbox     = sinon.sandbox.create();
+
 
 describe('Themes API', function () {
-    var configStub,
-        config,
-        sandbox,
-        settingsReadStub;
+    var config,
+        configStub;
 
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            sandbox.restore();
-            done();
-        }).catch(done);
+    afterEach(testUtils.teardown);
+    afterEach(function () {
+        sandbox.restore();
     });
 
-    beforeEach(function (done) {
-        testUtils.initData().then(function () {
-            return testUtils.insertDefaultFixtures();
-        }).then(function () {
-            return SettingsAPI.updateSettingsCache();
-        }).then(function () {
+    beforeEach(testUtils.setup('users:roles', 'perms:theme', 'perms:init'));
 
-            return permissions.init();
-        }).then(function () {
-            sandbox = sinon.sandbox.create();
+    beforeEach(function () {
+        // Override settings.read for activeTheme
+        sandbox.stub(SettingsAPI, 'read', function () {
+            return when({ settings: [{value: 'casper'}] });
+        });
 
-            // Override settings.read for activeTheme
-            settingsReadStub = sandbox.stub(SettingsAPI, 'read', function () {
-                return when({ settings: [{value: 'casper'}] });
-            });
+        sandbox.stub(SettingsAPI, 'edit', function () {
+            return when({ settings: [{value: 'rasper'}] });
+        });
 
-            configStub = {
-                'paths': {
-                    'subdir': '',
-                    'availableThemes': {
-                        'casper': {
-                            'package.json': { name: 'Casper', version: '0.9.3' }
-                        },
-                        'rasper': {
-                            'package.json': { name: 'Rasper', version: '0.9.6' }
-                        }
+        configStub = {
+            'paths': {
+                'subdir': '',
+                'availableThemes': {
+                    'casper': {
+                        'package.json': { name: 'Casper', version: '0.9.3' }
+                    },
+                    'rasper': {
+                        'package.json': { name: 'Rasper', version: '0.9.6' }
                     }
                 }
-            };
+            }
+        };
 
-            config = ThemeAPI.__get__('config');
-            _.extend(config, configStub);
+        config = ThemeAPI.__get__('config');
+        _.extend(config, configStub);
 
-            done();
-        }).catch(done);
     });
 
     should.exist(ThemeAPI);
 
     it('can browse', function (done) {
-        ThemeAPI.browse({context: {user: 1}}).then(function (result) {
+        ThemeAPI.browse(testUtils.context.owner).then(function (result) {
             should.exist(result);
             result.themes.length.should.be.above(0);
             testUtils.API.checkResponse(result.themes[0], 'theme');
@@ -78,12 +70,12 @@ describe('Themes API', function () {
     });
 
     it('can edit', function (done) {
-        ThemeAPI.edit({themes: [{uuid: 'casper', active: true }]}, {context: {user: 1}}).then(function (result) {
+        ThemeAPI.edit({themes: [{uuid: 'rasper', active: true }]}, testUtils.context.owner).then(function (result) {
             should.exist(result);
             should.exist(result.themes);
             result.themes.length.should.be.above(0);
             testUtils.API.checkResponse(result.themes[0], 'theme');
-            result.themes[0].uuid.should.equal('casper');
+            result.themes[0].uuid.should.equal('rasper');
             done();
         }).catch(function (error) {
             done(new Error(JSON.stringify(error)));

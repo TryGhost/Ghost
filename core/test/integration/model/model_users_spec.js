@@ -8,60 +8,62 @@ var testUtils   = require('../../utils'),
 
     // Stuff we are testing
     UserModel   = require('../../../server/models').User,
-    context     = {context: {user: 1}};
+    context     = testUtils.context.admin,
+    sandbox     = sinon.sandbox.create();
 
 
 describe('User Model', function run() {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
+    afterEach(function () {
+        sandbox.restore();
+    });
 
     should.exist(UserModel);
 
     describe('Registration', function runRegistration() {
-        beforeEach(function (done) {
-            testUtils.initData().then(function () {
-                done();
-            }).catch(done);
-        });
+        beforeEach(testUtils.setup());
 
         it('can add first', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0],
-                gravatarStub =  sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    return when.resolve(userData);
-                });
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return when.resolve(userData);
+            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-                gravatarStub.restore();
+
                 done();
             }).catch(done);
         });
 
         it('does NOT lowercase email', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2],
-                gravatarStub =  sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    return when.resolve(userData);
-                });
+            var userData = testUtils.DataGenerator.forModel.users[2];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return when.resolve(userData);
+            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-                gravatarStub.restore();
                 done();
             }).catch(done);
         });
 
         it('can find gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
-                gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
-                    return when.resolve(userData);
-                });
+            var userData = testUtils.DataGenerator.forModel.users[4];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
+                return when.resolve(userData);
+            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -69,22 +71,21 @@ describe('User Model', function run() {
                 createdUser.attributes.image.should.eql(
                     'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404', 'Gravatar found'
                 );
-                gravatarStub.restore();
                 done();
             }).catch(done);
         });
 
         it('can handle no gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0],
-                gravatarStub = sinon.stub(UserModel, 'gravatarLookup', function (userData) {
-                    return when.resolve(userData);
-                });
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return when.resolve(userData);
+            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 should.not.exist(createdUser.image);
-                gravatarStub.restore();
                 done();
             }).catch(done);
         });
@@ -124,16 +125,7 @@ describe('User Model', function run() {
     });
 
     describe('Basic Operations', function () {
-
-        beforeEach(function (done) {
-            testUtils.initData()
-                .then(function () {
-                    return when(testUtils.insertDefaultUser());
-                })
-                .then(function () {
-                    done();
-                }).catch(done);
-        });
+        beforeEach(testUtils.setup('owner'));
 
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
@@ -246,16 +238,7 @@ describe('User Model', function run() {
     });
 
     describe('Password Reset', function () {
-
-       beforeEach(function (done) {
-           testUtils.initData()
-               .then(function () {
-                   return when(testUtils.insertDefaultUser());
-               })
-               .then(function () {
-                   done();
-               }).catch(done);
-       });
+        beforeEach(testUtils.setup('owner'));
 
         it('can generate reset token', function (done) {
             // Expires in one minute
