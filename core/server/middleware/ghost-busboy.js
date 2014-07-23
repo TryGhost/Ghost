@@ -2,19 +2,17 @@ var BusBoy  = require('busboy'),
     fs      = require('fs-extra'),
     path    = require('path'),
     os      = require('os'),
-    crypto  = require('crypto'),
-    errors  = require('../errors');
+    crypto  = require('crypto');
 
 // ### ghostBusboy
 // Process multipart file streams
 function ghostBusBoy(req, res, next) {
     var busboy,
         stream,
-        tmpDir,
-        hasError = false;
+        tmpDir;
 
     // busboy is only used for POST requests
-    if (req.method && !req.method.match(/post/i)) {
+    if (req.method && !/post/i.test(req.method)) {
         return next();
     }
 
@@ -29,13 +27,9 @@ function ghostBusBoy(req, res, next) {
             tmpFileName,
             md5 = crypto.createHash('md5');
 
-        // If the filename is invalid, mark an error
+        // If the filename is invalid, skip the stream
         if (!filename) {
-            hasError = true;
-        }
-        // If we've flagged any errors, do not process any streams
-        if (hasError) {
-            return file.emit('end');
+            return file.resume();
         }
 
         // Create an MD5 hash of original filename
@@ -54,12 +48,7 @@ function ghostBusBoy(req, res, next) {
             };
         });
 
-        busboy.on('limit', function () {
-            hasError = true;
-            res.send(413, new errors.RequestEntityTooLargeError('File size limit breached.'));
-        });
-
-        busboy.on('error', function (error) {
+        file.on('error', function (error) {
             console.log('Error', 'Something went wrong uploading the file', error);
         });
 
@@ -73,11 +62,16 @@ function ghostBusBoy(req, res, next) {
 
     });
 
+    busboy.on('error', function (error) {
+        console.log('Error', 'Something went wrong parsing the form', error);
+        res.send(500, {code: 500, message: 'Could not parse upload completely.'});
+    });
+
     busboy.on('field', function (fieldname, val) {
         req.body[fieldname] = val;
     });
 
-    busboy.on('end', function () {
+    busboy.on('finish', function () {
         next();
     });
 
