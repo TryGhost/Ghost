@@ -178,7 +178,7 @@ frontendControllers = {
 
         // Get url for tag page
         function authorUrl(author, page) {
-            var url = config().paths.subdir + '/author/' + author + '/';
+            var url = config.paths.subdir + '/author/' + author + '/';
 
             if (page && page > 1) {
                 url += 'page/' + page + '/';
@@ -207,7 +207,7 @@ frontendControllers = {
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
                     var activeTheme = response.settings[0],
-                        paths = config().paths.availableThemes[activeTheme.value],
+                        paths = config.paths.availableThemes[activeTheme.value],
                         view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
 
                         // Format data for template
