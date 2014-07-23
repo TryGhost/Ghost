@@ -106,9 +106,9 @@ describe('Permissions', function () {
 //            }).catch(done);
 //    });
 //
-//    it('can use permissable function on Model to allow something', function (done) {
+//    it('can use permissible function on Model to allow something', function (done) {
 //        var testUser,
-//            permissableStub = sandbox.stub(Models.Post, 'permissable', function () {
+//            permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
 //                return when.resolve();
 //            });
 //
@@ -122,22 +122,22 @@ describe('Permissions', function () {
 //                return permissions.canThis({user: testUser.id}).edit.post(123);
 //            })
 //            .then(function () {
-//                permissableStub.restore();
-//                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false })
+//                permissibleStub.restore();
+//                permissibleStub.calledWith(123, { user: testUser.id, app: null, internal: false })
 //                    .should.equal(true);
 //
 //                done();
 //            })
 //            .catch(function () {
-//                permissableStub.restore();
+//                permissibleStub.restore();
 //
 //                done(new Error('did not allow testUser'));
 //            });
 //    });
 //
-//    it('can use permissable function on Model to forbid something', function (done) {
+//    it('can use permissible function on Model to forbid something', function (done) {
 //        var testUser,
-//            permissableStub = sandbox.stub(Models.Post, 'permissable', function () {
+//            permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
 //                return when.reject();
 //            });
 //
@@ -152,13 +152,13 @@ describe('Permissions', function () {
 //            })
 //            .then(function () {
 //
-//                permissableStub.restore();
+//                permissibleStub.restore();
 //                done(new Error('Allowed testUser to edit post'));
 //            })
 //            .catch(function () {
-//                permissableStub.calledWith(123, { user: testUser.id, app: null, internal: false })
+//                permissibleStub.calledWith(123, { user: testUser.id, app: null, internal: false })
 //                    .should.equal(true);
-//                permissableStub.restore();
+//                permissibleStub.restore();
 //                done();
 //            });
 //    });
@@ -257,7 +257,7 @@ describe('Permissions', function () {
 //    });
 //
 //    it('allows \'internal\' to be passed for internal requests', function (done) {
-//        // Using tag here because post implements the custom permissable interface
+//        // Using tag here because post implements the custom permissible interface
 //        permissions.canThis('internal')
 //            .edit
 //            .tag(1)
@@ -270,7 +270,7 @@ describe('Permissions', function () {
 //    });
 //
 //    it('allows { internal: true } to be passed for internal requests', function (done) {
-//        // Using tag here because post implements the custom permissable interface
+//        // Using tag here because post implements the custom permissible interface
 //        permissions.canThis({ internal: true })
 //            .edit
 //            .tag(1)
