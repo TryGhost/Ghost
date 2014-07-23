@@ -1370,9 +1370,9 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/ghost/scripts/vendor-ember.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/templates-ember.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+                '<script src="/ghost/scripts/vendor-dev.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/templates-dev.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/ghost-dev.js?v=abc"></script>'
             );
 
             overrideConfig({
@@ -1383,9 +1383,9 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/blog/ghost/scripts/vendor-ember.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/templates-ember.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+                '<script src="/blog/ghost/scripts/vendor-dev.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/templates-dev.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/ghost-dev.js?v=abc"></script>'
             );
         });
 
@@ -1396,9 +1396,8 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/ghost/scripts/vendor-ember.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/templates-ember.js?v=abc"></script>' +
-                    '<script src="/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+                '<script src="/ghost/scripts/vendor.min.js?v=abc"></script>' +
+                    '<script src="/ghost/scripts/ghost.min.js?v=abc"></script>'
             );
 
             overrideConfig({
@@ -1409,9 +1408,8 @@ describe('Core Helpers', function () {
             rendered = helpers.ghost_script_tags();
             should.exist(rendered);
             String(rendered).should.equal(
-                '<script src="/blog/ghost/scripts/vendor-ember.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/templates-ember.js?v=abc"></script>' +
-                    '<script src="/blog/ghost/scripts/ghost-dev-ember.js?v=abc"></script>'
+                '<script src="/blog/ghost/scripts/vendor.min.js?v=abc"></script>' +
+                    '<script src="/blog/ghost/scripts/ghost.min.js?v=abc"></script>'
             );
         });
     });

@@ -80,7 +80,7 @@
         "grunt-contrib-concat": "~0.4.0",
         "grunt-contrib-copy": "~0.4.1",
         "grunt-contrib-jshint": "~0.8.0",
-        "grunt-contrib-uglify": "~0.2.5",
+        "grunt-contrib-uglify": "~0.5.0",
         "grunt-contrib-watch": "~0.5.3",
         "grunt-docker": "~0.0.8",
         "grunt-ember-templates": "~0.4.18",
