@@ -521,6 +521,31 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
+
+    /**
+     * ### destroyByAuthor
+     * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
+     */
+    destroyByAuthor: function (options) {
+        var postCollection = Posts.forge(),
+            authorId = options.id;
+
+        options = this.filterOptions(options, 'destroyByAuthor');
+        if (authorId) {
+            return postCollection.query('where', 'author_id', '=', authorId).fetch(options).then(function (results) {
+                return when.map(results.models, function (post) {
+                    return post.related('tags').detach(null, options).then(function () {
+                        return post.destroy(options);
+                    });
+                });
+            }, function (error) {
+                return when.reject(new errors.InternalServerError(error.message || error));
+            });
+        }
+        return when.reject(new errors.NotFoundError('No user found'));
+    },
+
+
     permissible: function (postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             postModel = postModelOrId,

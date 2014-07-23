@@ -31,12 +31,71 @@ var when          = require('when'),
 fixtures = {
     insertPosts: function insertPosts() {
         var knex = config.database.knex;
-        // ToDo: Get rid of pyramid of doom
-        return when(knex('posts').insert(DataGenerator.forKnex.posts).then(function () {
-            return knex('tags').insert(DataGenerator.forKnex.tags).then(function () {
-                return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
-            });
-        }));
+        return when(knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
+            return knex('tags').insert(DataGenerator.forKnex.tags);
+        }).then(function () {
+            return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
+        });
+    },
+
+    insertMultiAuthorPosts: function insertMultiAuthorPosts(max) {
+        var knex = config.database.knex,
+            tags,
+            author,
+            authors,
+            i, j, k = postsInserted,
+            posts = [];
+
+        max = max || 50;
+        // insert users of different roles
+        return when(fixtures.createUsersWithRoles()).then(function (results) {
+            // create the tags
+            return knex('tags').insert(DataGenerator.forKnex.tags);
+        }).then(function (results) {
+            return knex('users').select('id');
+        }).then(function (results) {
+            authors = _.pluck(results, 'id');
+
+            // Let's insert posts with random authors
+            for (i = 0; i < max; i += 1) {
+                author = authors[i % authors.length];
+                posts.push(DataGenerator.forKnex.createGenericPost(k++, null, null, author));
+            }
+
+            // Keep track so we can run this function again safely
+            postsInserted = k;
+
+            return sequence(_.times(posts.length, function (index) {
+                return function () {
+                    return knex('posts').insert(posts[index]);
+                };
+            }));
+        }).then(function () {
+            return when.all([
+                // PostgreSQL can return results in any order
+                knex('posts').orderBy('id', 'asc').select('id'),
+                knex('tags').select('id')
+            ]);
+        }).then(function (results) {
+            var posts = _.pluck(results[0], 'id'),
+                tags = _.pluck(results[1], 'id'),
+                promises = [],
+                i;
+
+            if (max > posts.length) {
+                throw new Error('Trying to add more posts_tags than the number of posts.');
+            }
+
+            for (i = 0; i < max; i += 1) {
+                promises.push(DataGenerator.forKnex.createPostsTags(posts[i], tags[i % tags.length]));
+            }
+
+            return sequence(_.times(promises.length, function (index) {
+                return function () {
+                    return knex('posts_tags').insert(promises[index]);
+                };
+            }));
+        });
     },
 
     insertMorePosts: function insertMorePosts(max) {
@@ -263,14 +322,16 @@ toDoList = {
     'permission': function insertPermission() { return fixtures.insertOne('permissions', 'createPermission'); },
     'role': function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
     'roles': function insertRoles() { return fixtures.insertRoles(); },
-    'tag': function insertRole() { return fixtures.insertOne('tags', 'createTag'); },
+    'tag': function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
+
     'posts': function insertPosts() { return fixtures.insertPosts(); },
+    'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     'apps': function insertApps() { return fixtures.insertApps(); },
     'settings': function populate() {
         return settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
-    'users':    function createExtraUsers() { return fixtures.createExtraUsers(); },
+    'users': function createExtraUsers() { return fixtures.createExtraUsers(); },
     'owner': function insertOwnerUser() { return fixtures.insertOwnerUser(); },
     'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
     'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
