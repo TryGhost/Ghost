@@ -14,6 +14,7 @@ var _             = require('lodash'),
 
 describe('Themes API', function () {
     var configStub,
+        config,
         sandbox,
         settingsReadStub;
 
@@ -42,7 +43,7 @@ describe('Themes API', function () {
                 return when({ settings: [{value: 'casper'}] });
             });
 
-            configStub = sandbox.stub().returns({
+            configStub = {
                 'paths': {
                     'subdir': '',
                     'availableThemes': {
@@ -54,7 +55,10 @@ describe('Themes API', function () {
                         }
                     }
                 }
-            });
+            };
+
+            config = ThemeAPI.__get__('config');
+            _.extend(config, configStub);
 
             done();
         }).catch(done);
@@ -63,12 +67,6 @@ describe('Themes API', function () {
     should.exist(ThemeAPI);
 
     it('can browse', function (done) {
-        var config;
-
-        config = ThemeAPI.__get__('config');
-        _.extend(configStub, config);
-        ThemeAPI.__set__('config', configStub);
-
         ThemeAPI.browse({context: {user: 1}}).then(function (result) {
             should.exist(result);
             result.themes.length.should.be.above(0);
@@ -80,12 +78,6 @@ describe('Themes API', function () {
     });
 
     it('can edit', function (done) {
-        var config;
-
-        config = ThemeAPI.__get__('config');
-        _.extend(configStub, config);
-        ThemeAPI.__set__('config', configStub);
-
         ThemeAPI.edit({themes: [{uuid: 'casper', active: true }]}, {context: {user: 1}}).then(function (result) {
             should.exist(result);
             should.exist(result.themes);

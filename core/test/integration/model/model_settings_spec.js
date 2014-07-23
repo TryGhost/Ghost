@@ -164,7 +164,7 @@ describe('Settings Model', function () {
     describe('populating defaults from settings.json', function () {
 
         beforeEach(function (done) {
-            config().database.knex('settings').truncate().then(function () {
+            config.database.knex('settings').truncate().then(function () {
                 done();
             });
         });

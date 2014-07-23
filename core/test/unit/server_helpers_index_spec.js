@@ -9,7 +9,6 @@ var should         = require('should'),
     Polyglot       = require('node-polyglot'),
     api            = require('../../server/api'),
     hbs            = require('express-hbs'),
-    packageInfo    = require('../../../package'),
 
     // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -21,15 +20,14 @@ describe('Core Helpers', function () {
 
     var sandbox,
         apiStub,
-        configStub,
         overrideConfig = function (newConfig) {
-            helpers.__set__('config', function() {
-                return newConfig;
-            });
+            var existingConfig = helpers.__get__('config');
+            configUpdate(_.extend(existingConfig, newConfig));
         };
 
     beforeEach(function (done) {
-        var adminHbs = hbs.create();
+        var adminHbs = hbs.create(),
+            existingConfig = helpers.__get__('config');
         helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings, 'read', function () {
@@ -38,8 +36,7 @@ describe('Core Helpers', function () {
             });
         });
 
-        config = helpers.__get__('config');
-        configStub = sandbox.stub().returns({
+        overrideConfig({
             'paths': {
                 'subdir': '',
                 'availableThemes': {
@@ -54,17 +51,16 @@ describe('Core Helpers', function () {
                 }
             }
         });
-        _.extend(configStub, config);
-        configStub.theme = sandbox.stub().returns({
+
+        existingConfig.theme = sandbox.stub().returns({
             title: 'Ghost',
             description: 'Just a blogging platform.',
             url: 'http://testurl.com'
         });
-        helpers.__set__('config', configStub);
 
         helpers.loadCoreHelpers(adminHbs);
         // Load template helpers in handlebars
-        hbs.express3({ partialsDir: [config().paths.helperTemplates] });
+        hbs.express3({ partialsDir: [config.paths.helperTemplates] });
         hbs.cachePartials(function () {
             done();
         });
@@ -400,7 +396,7 @@ describe('Core Helpers', function () {
 
     describe('ghost_head Helper', function () {
          // TODO: these tests should be easier to do!
-        var configUrl = config().url;
+        var configUrl = config.url;
 
         afterEach(function () {
             configUpdate({url: configUrl});
@@ -625,10 +621,8 @@ describe('Core Helpers', function () {
         });
 
         it('can return a valid url with subdirectory', function () {
-            helpers.__set__('config', function() {
-                return {
-                    paths: {'subdir': '/blog'}
-                };
+            _.extend(helpers.__get__('config'), {
+                paths: {'subdir': '/blog'}
             });
             helpers.page_url(1).should.equal('/blog/');
             helpers.page_url(2).should.equal('/blog/page/2/');
@@ -645,10 +639,8 @@ describe('Core Helpers', function () {
         });
 
         it('can return a valid url for tag pages with subdirectory', function () {
-            helpers.__set__('config', function() {
-                return {
-                    paths: {'subdir': '/blog'}
-                };
+            _.extend(helpers.__get__('config'), {
+                paths: {'subdir': '/blog'}
             });
             var tagContext = {
                 tagSlug: 'pumpkin'
@@ -671,10 +663,8 @@ describe('Core Helpers', function () {
         });
 
         it('can return a valid url with subdirectory', function () {
-            helpers.__set__('config', function() {
-                return {
-                    paths: {'subdir': '/blog'}
-                };
+            _.extend(helpers.__get__('config'), {
+                paths: {'subdir': '/blog'}
             });
             helpers.pageUrl(1).should.equal('/blog/');
             helpers.pageUrl(2).should.equal('/blog/page/2/');
@@ -691,10 +681,8 @@ describe('Core Helpers', function () {
         });
 
         it('can return a valid url for tag pages with subdirectory', function () {
-            helpers.__set__('config', function() {
-                return {
-                    paths: {'subdir': '/blog'}
-                };
+            _.extend(helpers.__get__('config'), {
+                paths: {'subdir': '/blog'}
             });
             var tagContext = {
                 tagSlug: 'pumpkin'
@@ -1430,7 +1418,7 @@ describe('Core Helpers', function () {
 
     describe('adminUrl', function () {
         var rendered,
-            configUrl = config().url;
+            configUrl = config.url;
 
         afterEach(function () {
             configUpdate({url: configUrl});
@@ -1519,18 +1507,14 @@ describe('Core Helpers', function () {
             fileStorage.should.equal('true');
         });
 
-        it('should return the config().fileStorage value when it exists', function () {
+        it('should return the config.fileStorage value when it exists', function () {
             var setting = 'file storage value',
                 cfg = helpers.__get__('config'),
                 fileStorage;
 
-            configStub = sandbox.stub().returns({
+            _.extend(cfg, {
                 fileStorage: setting
             });
-
-            _.extend(cfg, configStub);
-
-            helpers.__set__('config', cfg);
 
             fileStorage = helpers.file_storage();
 
@@ -1552,18 +1536,14 @@ describe('Core Helpers', function () {
             apps.should.equal('false');
         });
 
-        it('should return the config().apps value when it exists', function () {
+        it('should return the config.apps value when it exists', function () {
             var setting = 'app value',
                 cfg = helpers.__get__('config'),
                 apps;
 
-            configStub = sandbox.stub().returns({
+            _.extend(cfg, {
                 apps: setting
             });
-
-            _.extend(cfg, configStub);
-
-            helpers.__set__('config', cfg);
 
             apps = helpers.apps();
 

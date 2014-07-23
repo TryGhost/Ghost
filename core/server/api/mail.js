@@ -56,7 +56,7 @@ mail = {
     sendTest: function (object, options) {
         var html = '<p><strong>Hello there!</strong></p>' +
             '<p>Excellent!' +
-            ' You\'ve successfully setup your email config for your Ghost blog over on ' + config().url + '</p>' +
+            ' You\'ve successfully setup your email config for your Ghost blog over on ' + config.url + '</p>' +
             '<p>If you hadn\'t, you wouldn\'t be reading this email, but you are, so it looks like all is well :)</p>' +
             '<p>xoxo</p>' +
             '<p>Team Ghost<br>' +

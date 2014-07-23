@@ -6,7 +6,7 @@ var _               = require('lodash'),
     errors          = require('../../errors'),
     sequence        = require('when/sequence'),
 
-    commands      = require('./commands'),
+    commands        = require('./commands'),
     versioning      = require('../versioning'),
     models          = require('../../models'),
     fixtures        = require('../fixtures'),
@@ -44,7 +44,7 @@ backupDatabase = function backupDatabase() {
     logInfo('Creating database backup');
     return dataExport().then(function (exportedData) {
         // Save the exported data to the file system for download
-        var fileName = path.resolve(config().paths.contentPath + '/data/' + dataExport.fileName());
+        var fileName = path.resolve(config.paths.contentPath + '/data/' + dataExport.fileName());
 
         return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
             logInfo('Database backup written to: ' + fileName);

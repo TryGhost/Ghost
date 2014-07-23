@@ -11,7 +11,7 @@ var path = require('path'),
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
-    return path.join(config().paths.appPath, name);
+    return path.join(config.paths.appPath, name);
 }
 
 // Get a relative path to the given apps root, defaults

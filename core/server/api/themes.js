@@ -27,7 +27,7 @@ themes = {
         return canThis(options.context).browse.theme().then(function () {
             return when.all([
                 settings.read({key: 'activeTheme', context: {internal: true}}),
-                config().paths.availableThemes
+                config.paths.availableThemes
             ]).then(function (result) {
                 var activeTheme = result[0].settings[0].value,
                     availableThemes = result[1],
