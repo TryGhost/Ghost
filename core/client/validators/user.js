@@ -13,13 +13,13 @@ var UserValidator = Ember.Object.create({
         invited: function (model) {
             var validationErrors = [],
                 email = model.get('email'),
-                role = model.get('role');
+                roles = model.get('roles');
 
             if (!validator.isEmail(email)) {
                 validationErrors.push({ message: 'Please supply a valid email address' });
             }
 
-            if (!validator.isLength(role, 1)) {
+            if (roles.length < 1) {
                 validationErrors.push({ message: 'Please select a role' });
             }
 

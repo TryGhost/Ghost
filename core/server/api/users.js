@@ -10,6 +10,7 @@ var when            = require('when'),
     globalUtils     = require('../utils'),
     config          = require('../config'),
     mail            = require('./mail'),
+    rolesAPI        = require('./roles'),
 
     docName         = 'users',
     ONE_DAY         = 60 * 60 * 24 * 1000,
@@ -107,7 +108,7 @@ users = {
                 return when.reject(new errors.NotFoundError('User not found.'));
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to edit this users.'));
+            return when.reject(new errors.NoPermissionError('You do not have permission to edit this user.'));
         });
     },
 
@@ -145,16 +146,22 @@ users = {
                 }
 
                 newUser = checkedUserData.users[0];
+                newUser.role = parseInt(newUser.roles[0].id || newUser.roles[0], 10);
 
-                if (newUser.email) {
-                    newUser.name = object.users[0].email.substring(0, newUser.email.indexOf('@'));
-                    newUser.password = globalUtils.uid(50);
-                    newUser.status = 'invited';
-                    // TODO: match user role with db and enforce permissions
-                    newUser.role = 3;
-                } else {
-                    return when.reject(new errors.BadRequestError('No email provided.'));
-                }
+                return rolesAPI.browse({ context: options.context, permissions: 'assign' }).then(function (results) {
+                    // Make sure user is allowed to add a user with this role
+                    if (!_.any(results.roles, { id: newUser.role })) {
+                        return when.reject(new errors.NoPermissionError('Not allowed to create user with that role.'));
+                    }
+
+                    if (newUser.email) {
+                        newUser.name = object.users[0].email.substring(0, newUser.email.indexOf('@'));
+                        newUser.password = globalUtils.uid(50);
+                        newUser.status = 'invited';
+                    } else {
+                        return when.reject(new errors.BadRequestError('No email provided.'));
+                    }
+                });
             }).then(function () {
                 return dataProvider.User.getByEmail(newUser.email);
             }).then(function (foundUser) {
@@ -204,9 +211,13 @@ users = {
             }).otherwise(function (error) {
                 if (error && error.type === 'EmailError') {
                     error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
+                    errors.logWarn(error.message);
+
                     // If sending the invitation failed, set status to invited-pending
-                    return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function () {
-                        return when.reject(error);
+                    return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function (user) {
+                        return dataProvider.User.findOne({ id: user.id }, options).then(function (user) {
+                            return { users: [user] };
+                        });
                     });
                 }
                 return when.reject(error);
