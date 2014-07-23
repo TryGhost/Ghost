@@ -182,28 +182,40 @@ users = {
                     dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(user.email, expires, dbHash);
             }).then(function (resetToken) {
-                var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
-                    siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
-                    resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/signup/' + resetToken + '/',
-                    resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
-                    payload = {
-                        mail: [{
-                            message: {
-                                to: user.email,
-                                subject: 'Invitation',
-                                html: '<p><strong>Hello!</strong></p>' +
-                                    '<p>You have been invited to ' + siteLink + '.</p>' +
-                                    '<p>Please follow the link to sign up and publish your ideas:<br><br>' + resetLink + '</p>' +
-                                    '<p>Ghost</p>'
-                            },
-                            options: {}
-                        }]
-                    };
-                return mail.send(payload, {context: {internal: true}}).then(function () {
-                    // If status was invited-pending and sending the invitation succeeded, set status to invited.
-                    if (user.status === 'invited-pending') {
-                        return dataProvider.User.edit({status: 'invited'}, {id: user.id});
-                    }
+                when.join(users.read({'id': user.created_by}), settings.read({'key': 'title'})).then(function (values) {
+                    var invitedBy = values[0].users[0],
+                        blogTitle = values[1].settings[0].value,
+                        baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
+                        resetUrl = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + resetToken + '/',
+                        emailData = {
+                            blogName: blogTitle,
+                            invitedByName: invitedBy.name,
+                            invitedByEmail: invitedBy.email,
+                            resetLink: resetUrl
+                        };
+
+                    mail.generateContent({data: emailData, template: 'invite-user'}).then(function (emailContent) {
+
+                        var payload = {
+                            mail: [
+                                {
+                                    message: {
+                                        to: user.email,
+                                        subject: emailData.invitedByName + ' has invited you to join ' + emailData.blogName,
+                                        html: emailContent.html,
+                                        text: emailContent.text
+                                    },
+                                    options: {}
+                                }
+                            ]
+                        };
+                        return mail.send(payload, {context: {internal: true}}).then(function () {
+                            // If status was invited-pending and sending the invitation succeeded, set status to invited.
+                            if (user.status === 'invited-pending') {
+                                return dataProvider.User.edit({status: 'invited'}, {id: user.id});
+                            }
+                        });
+                    });
                 });
             }).then(function () {
                 return when.resolve({users: [user]});
