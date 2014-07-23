@@ -407,7 +407,7 @@ describe('Frontend Routing', function () {
         });
 
         it('should retrieve built assets', function (done) {
-            request.get('/ghost/scripts/vendor-ember.js')
+            request.get('/ghost/scripts/vendor-dev.js')
                 .expect('Cache-Control', cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
