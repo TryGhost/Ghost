@@ -85,7 +85,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         var self = this;
 
         _.each(attrs, function (value, key) {
-            if (value !== null && schema.tables[self.tableName][key].type === 'dateTime') {
+            if (value !== null
+                    && schema.tables[self.tableName].hasOwnProperty(key)
+                    && schema.tables[self.tableName][key].type === 'dateTime') {
                 // convert dateTime value into a native javascript Date object
                 attrs[key] = moment(value).toDate();
             }
@@ -98,7 +100,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     fixBools: function (attrs) {
         var self = this;
         _.each(attrs, function (value, key) {
-            if (schema.tables[self.tableName][key].type === 'bool') {
+            if (schema.tables[self.tableName].hasOwnProperty(key)
+                    && schema.tables[self.tableName][key].type === 'bool') {
                 attrs[key] = value ? true : false;
             }
         });
