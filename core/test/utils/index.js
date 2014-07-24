@@ -141,6 +141,27 @@ fixtures = {
         });
     },
 
+    createExtraUsers: function createExtraUsers() {
+        var knex = config.database.knex,
+            // grab 3 more users
+            extraUsers = DataGenerator.Content.users.slice(2, 5);
+
+        extraUsers = _.map(extraUsers, function (user) {
+            return DataGenerator.forKnex.createUser(_.extend({}, user, {
+                email: 'a' + user.email,
+                slug: 'a' + user.slug
+            }));
+        });
+
+        return knex('users').insert(extraUsers).then(function () {
+            return knex('roles_users').insert([
+                    { user_id: 5, role_id: 1},
+                    { user_id: 6, role_id: 2},
+                    { user_id: 7, role_id: 3}
+            ]);
+        });
+    },
+
     insertOne: function insertOne(obj, fn) {
         var knex = config.database.knex;
         return knex(obj)
@@ -164,7 +185,7 @@ fixtures = {
             try {
                 data = JSON.parse(fileContents);
             } catch (e) {
-                return when.reject(new Error("Failed to parse the file"));
+                return when.reject(new Error('Failed to parse the file'));
             }
 
             return data;
@@ -244,6 +265,7 @@ toDoList = {
         return settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
+    'users':    function createExtraUsers() { return fixtures.createExtraUsers(); },
     'owner': function insertOwnerUser() { return fixtures.insertOwnerUser(); },
     'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
     'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
@@ -376,11 +398,31 @@ module.exports = {
 
     fork: fork,
 
+    // Helpers to make it easier to write tests which are easy to read
     context: {
         internal:   {context: {internal: true}},
         owner:      {context: {user: 1}},
         admin:      {context: {user: 2}},
         editor:     {context: {user: 3}},
         author:     {context: {user: 4}}
+    },
+    users: {
+        ids: {
+            owner: 1,
+            admin: 2,
+            editor: 3,
+            author: 4,
+            admin2: 5,
+            editor2: 6,
+            author2: 7
+        }
+    },
+    roles: {
+        ids: {
+            owner: 4,
+            admin: 1,
+            editor: 2,
+            author: 3
+        }
     }
 };
