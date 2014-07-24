@@ -223,12 +223,12 @@ describe('Frontend Routing', function () {
 
     describe('Archive pages', function () {
 
-        // Add enough posts to trigger pages for both the archive (6 pp) and rss (15 pp)
+        // Add enough posts to trigger pages for both the archive (5 pp) and rss (15 pp)
         // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
         // we then insert with max 11 which ensures we have 16 published posts
         before(function (done) {
             testUtils.fixtures.insertPosts().then(function () {
-                return testUtils.fixtures.insertMorePosts(11);
+                return testUtils.fixtures.insertMorePosts(9);
             }).then(function () {
                 done();
             }).catch(done);
@@ -277,6 +277,11 @@ describe('Frontend Routing', function () {
     });
 
     describe('RSS pages', function () {
+        before(function (done) {
+            testUtils.fixtures.insertMorePosts(2).then(function () {
+                done();
+            }).catch(done);
+        });
         it('should redirect without slash', function (done) {
             request.get('/rss/2')
                 .expect('Location', '/rss/2/')
@@ -475,7 +480,7 @@ describe('Frontend Routing', function () {
 
         it('should redirect to last page if page too high', function (done) {
             request.get('/tag/injection/page/4/')
-                .expect('Location', '/tag/injection/page/2/')
+                .expect('Location', '/tag/injection/page/3/')
                 .expect('Cache-Control', cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
