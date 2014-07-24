@@ -7,6 +7,7 @@ var url = require('url'),
     expectedProperties = {
         posts: ['posts', 'meta'],
         users: ['users', 'meta'],
+        roles: ['roles'],
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',

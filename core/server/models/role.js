@@ -59,19 +59,16 @@ Role = ghostBookshelf.Model.extend({
             }, errors.logAndThrowError);
         }
 
-        switch (loadedPermissions.user) {
-            case 'Owner':
-            case 'Administrator':
+        if (action === 'assign' && loadedPermissions.user) {
+            if (_.any(loadedPermissions.user.roles, { 'name': 'Owner' }) ||
+                _.any(loadedPermissions.user.roles, { 'name': 'Administrator' })) {
                 checkAgainst = ['Administrator', 'Editor', 'Author'];
-                break;
-            case 'Editor':
-                checkAgainst = ['Editor', 'Author'];
-        }
+            } else if (_.any(loadedPermissions.user.roles, { 'name': 'Editor' })) {
+                checkAgainst = ['Author'];
+            }
 
-        // If we have a role passed into here
-        if (roleModelOrId && !_.contains(checkAgainst, roleModelOrId.get('name'))) {
-            // Role not in the list of permissible roles
-            hasUserPermission = false;
+            // Role in the list of permissible roles
+            hasUserPermission = roleModelOrId && _.contains(checkAgainst, roleModelOrId.get('name'));
         }
 
         if (hasUserPermission && hasAppPermission) {
