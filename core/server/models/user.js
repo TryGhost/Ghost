@@ -487,9 +487,12 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             s;
         return this.getByEmail(object.email).then(function (user) {
-            if (!user || user.get('status') === 'invited' || user.get('status') === 'invited-pending'
+            if (!user) {
+                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
+            }
+            if (user.get('status') === 'invited' || user.get('status') === 'invited-pending'
                     || user.get('status') === 'inactive') {
-                return when.reject(new errors.NotFoundError('NotFound'));
+                return when.reject(new Error('The user with that email address is inactive.'));
             }
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
@@ -512,7 +515,7 @@ User = ghostBookshelf.Model.extend({
 
         }, function (error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
-                return when.reject(new Error('There is no user with that email address.'));
+                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
             }
 
             return when.reject(error);
