@@ -45,7 +45,6 @@ function getAdminURL() {
 
 // make sure the API only returns expected properties only
 function checkResponseValue(jsonResponse, properties) {
-    Object.keys(jsonResponse).length.should.eql(properties.length);
     for (var i = 0; i < properties.length; i = i + 1) {
         // For some reason, settings response objects do not have the 'hasOwnProperty' method
         if (Object.prototype.hasOwnProperty.call(jsonResponse, properties[i])) {
@@ -53,6 +52,7 @@ function checkResponseValue(jsonResponse, properties) {
         }
         jsonResponse.should.have.property(properties[i]);
     }
+    Object.keys(jsonResponse).length.should.eql(properties.length);
 }
 
 function checkResponse(jsonResponse, objectType, additionalProperties) {

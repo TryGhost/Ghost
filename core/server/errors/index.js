@@ -33,7 +33,7 @@ errors = {
 
     throwError: function (err) {
         if (!err) {
-            err = new Error("An error occurred");
+            err = new Error('An error occurred');
         }
 
         if (_.isString(err)) {
@@ -137,7 +137,7 @@ errors = {
     logAndRejectError: function (err, context, help) {
         this.logError(err, context, help);
 
-        this.rejectError(err, context, help);
+        return this.rejectError(err, context, help);
     },
 
     logErrorWithRedirect: function (msg, context, help, redirectTo, req, res) {
@@ -151,6 +151,22 @@ errors = {
                 res.redirect(redirectTo);
             }
         };
+    },
+
+    handleAPIError: function (error) {
+        if (!error) {
+            return this.rejectError(new this.NoPermissionError('You do not have permission to perform this action'));
+        }
+
+        if (_.isString(error)) {
+            return this.rejectError(new this.NoPermissionError(error));
+        }
+
+        if (error.type) {
+            return this.rejectError(error);
+        }
+
+        return this.rejectError(new this.InternalServerError(error));
     },
 
     renderErrorPage: function (code, err, req, res, next) {
@@ -207,17 +223,18 @@ errors = {
 
                 // And then try to explain things to the user...
                 // Cheat and output the error using handlebars escapeExpression
-                return res.send(500, "<h1>Oops, seems there is an an error in the error template.</h1>"
-                    + "<p>Encountered the error: </p>"
-                    + "<pre>" + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + "</pre>"
-                    + "<br ><p>whilst trying to render an error page for the error: </p>"
-                    + code + " " + "<pre>"  + hbs.handlebars.Utils.escapeExpression(err.message || err) + "</pre>"
-                    );
+                return res.send(500,
+                    '<h1>Oops, seems there is an an error in the error template.</h1>' +
+                    '<p>Encountered the error: </p>' +
+                    '<pre>' + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + '</pre>' +
+                    '<br ><p>whilst trying to render an error page for the error: </p>' +
+                    code + ' ' + '<pre>'  + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>'
+                );
             });
         }
 
         if (code >= 500) {
-            this.logError(err, "Rendering Error Page", "Ghost caught a processing error in the middleware layer.");
+            this.logError(err, 'Rendering Error Page', 'Ghost caught a processing error in the middleware layer.');
         }
 
         // Are we admin? If so, don't worry about the user template
@@ -230,7 +247,7 @@ errors = {
     },
 
     error404: function (req, res, next) {
-        var message = res.isAdmin && req.user ? "No Ghost Found" : "Page Not Found";
+        var message = res.isAdmin && req.user ? 'No Ghost Found' : 'Page Not Found';
 
         // do not cache 404 error
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
@@ -271,8 +288,16 @@ errors = {
 // Ensure our 'this' context for methods and preserve method arity by
 // using Function#bind for expressjs
 _.each([
+    'logWarn',
+    'logInfo',
+    'rejectError',
+    'throwError',
+    'logError',
     'logAndThrowError',
+    'logAndRejectError',
+    'logErrorAndExit',
     'logErrorWithRedirect',
+    'handleAPIError',
     'renderErrorPage',
     'error404',
     'error500'
