@@ -22,6 +22,7 @@ var popoverInitializer = {
         application.inject('component:gh-popover', 'popover', 'popover:service');
         application.inject('component:gh-popover-button', 'popover', 'popover:service');
         application.inject('controller:modals.delete-post', 'popover', 'popover:service');
+        application.inject('controller:modals.transfer-owner', 'popover', 'popover:service');
         application.inject('route:application', 'popover', 'popover:service');
     }
 };
