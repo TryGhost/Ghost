@@ -20,9 +20,6 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     meta_description: DS.attr('string'),
     last_login: DS.attr('moment-date'),
     created_at: DS.attr('moment-date'),
-    created_by: DS.belongsTo('user', { async: true }),
-    updated_at: DS.attr('moment-date'),
-    updated_by: DS.belongsTo('user', { async: true }),
     roles: DS.hasMany('role', { embedded: 'always' }),
 
 
