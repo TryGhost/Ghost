@@ -67,7 +67,7 @@ Once you have the Ghost server up and running, you should be able to navigate to
 
 Keep track of Ghost development and Ghost community activity.
 
-* Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](http://facebook.com/tryghostapp) and [Google+](https://plus.google.com/114465948129362706086).
+* Follow Ghost on [Twitter](http://twitter.com/TryGhost), [Facebook](https://www.facebook.com/ghost) and [Google+](https://plus.google.com/114465948129362706086).
 * Read and subscribe to the [The Official Ghost Blog](http://blog.ghost.org).
 * Join in discussions on the [Ghost Forum](http://ghost.org/forum/)
 * Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel. We have a public meeting every Tuesday at 5:30pm London time.
