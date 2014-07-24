@@ -47,7 +47,7 @@ CasperTest.begin('Admin navigation bar is correct', 27, function suite(test) {
     casper.waitForSelector('#usermenu ul.overlay.open', function then() {
         var profileHref = this.getElementAttribute('#usermenu li.usermenu-profile a', 'href'),
             helpHref = this.getElementAttribute('#usermenu li.usermenu-help a', 'href'),
-            signoutHref = this.getElementAttribute('#usermenu li.usermenu-signout a', 'href');
+            signoutHref = this.getElementAttribute('#usermenu li.usermenu-signout button', 'href');
 
         test.assertVisible('#usermenu ul.overlay', 'User menu should be visible');
 
@@ -60,8 +60,8 @@ CasperTest.begin('Admin navigation bar is correct', 27, function suite(test) {
         test.assertSelectorHasText('#usermenu li.usermenu-help a', 'Help / Support', 'Help menu item has correct text');
         test.assertEquals(helpHref, 'http://support.ghost.org/', 'Help href is correct');
 
-        test.assertExists('#usermenu li.usermenu-signout a', 'Sign Out menu item exists');
-        test.assertSelectorHasText('#usermenu li.usermenu-signout a', 'Sign Out', 'Signout menu item has correct text');
+        test.assertExists('#usermenu li.usermenu-signout button', 'Sign Out menu item exists');
+        test.assertSelectorHasText('#usermenu li.usermenu-signout button', 'Sign Out', 'Signout menu item has correct text');
         // test.assertEquals(signoutHref, '/ghost/signout/', 'Sign Out href is correct');
     }, casper.failOnTimeout(test, 'WaitForSelector #usermenu ul.overlay failed'));
 });
