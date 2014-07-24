@@ -1,5 +1,5 @@
-// # Posts API
-// RESTful API for the Post resource
+// # Roles API
+// RESTful API for the Role resource
 var when            = require('when'),
     _               = require('lodash'),
     canThis         = require('../permissions').canThis,
@@ -18,11 +18,13 @@ roles = {
      * ### Browse
      * Find all roles
      *
-     * Will return all roles that the current user is able to assign
+     * If a 'permissions' property is passed in the options object then
+     * the results will be filtered based on whether or not the context user has the given
+     * permission on a role.
      *
      *
      * @public
-     * @param {{context, page, limit, status, staticPages, tag}} options (optional)
+     * @param {{context, permissions}} options (optional)
      * @returns {Promise(Roles)} Roles Collection
      */
     browse: function browse(options) {
@@ -32,6 +34,7 @@ roles = {
         return canThis(options.context).browse.role().then(function () {
             return dataProvider.Role.findAll(options).then(function (foundRoles) {
                 if (options.permissions === 'assign') {
+
                     // Hacky implementation of filtering because when.filter is only available in when 3.4.0,
                     // but that's buggy and kills other tests and introduces Heisenbugs. Until we turn everything
                     // to Bluebird, this works. Sorry.

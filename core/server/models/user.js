@@ -179,8 +179,8 @@ User = ghostBookshelf.Model.extend({
             //TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
             //TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
 
-        // the status provided.
-        if (options.status) {
+        // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
+        if (options.status && options.status !== 'all') {
             // make sure that status is valid
             //TODO: need a better way of getting a list of statuses other than hard-coding them...
             options.status = _.indexOf(['active', 'warn-1', 'warn-2', 'warn-3', 'locked', 'invited'], options.status) !== -1 ? options.status : 'active';
@@ -390,7 +390,6 @@ User = ghostBookshelf.Model.extend({
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
         }).then(function (addedUser) {
-
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
             if (!data.role) {
