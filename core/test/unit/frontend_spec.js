@@ -51,7 +51,7 @@ describe('Frontend Controller', function () {
             apiSettingsStub.withArgs('postsPerPage').returns(when({
                 settings: [{
                     'key': 'postsPerPage',
-                    'value': 6
+                    'value': 5
                 }]
             }));
         });
@@ -274,7 +274,7 @@ describe('Frontend Controller', function () {
             apiSettingsStub.withArgs('postsPerPage').returns(when({
                 settings: [{
                     'key': 'postsPerPage',
-                    'value': 6
+                    'value': 5
                 }]
             }));
         });
