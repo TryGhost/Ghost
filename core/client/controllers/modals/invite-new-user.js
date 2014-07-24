@@ -14,7 +14,7 @@ var InviteNewUserController = Ember.Controller.extend({
             self = this;
 
         roles.promise = this.store.find('role', { permissions: 'assign' }).then(function (roles) {
-            return roles.rejectBy('name', 'Owner').sortBy('name');
+            return roles.rejectBy('name', 'Owner').sortBy('id');
         }).then(function (roles) {
             // After the promise containing the roles has been resolved and the array
             // has been sorted, explicitly set the selectedRole for the Ember.Select.
