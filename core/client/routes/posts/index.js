@@ -1,6 +1,6 @@
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var PostsIndexRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
+var PostsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
     // This route's only function is to determine whether or not a post
     // exists to be used for the content preview.  It has a parent resource (Posts)
     // that is responsible for populating the store.

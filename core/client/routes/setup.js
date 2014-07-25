@@ -12,7 +12,7 @@ var SetupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
 
         // If user is logged in, setup has already been completed.
         if (this.get('session').isAuthenticated) {
-            this.transitionTo(Ember.SimpleAuth.routeAfterAuthentication);
+            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
             return;
         }
 

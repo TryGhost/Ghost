@@ -33,12 +33,12 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.get('session').authenticate('ember-simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: self.get('password')
                     }).then(function () {
                         self.send('signedIn');
-                        self.transitionToRoute(Ember.SimpleAuth.routeAfterAuthentication);
+                        self.transitionToRoute(SimpleAuth.Configuration.routeAfterAuthentication);
                     });
                 }, function (resp) {
                     self.toggleProperty('submitting');
