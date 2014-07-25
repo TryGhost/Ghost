@@ -441,8 +441,8 @@ var path           = require('path'),
                         'bower_components/jquery-file-upload/js/jquery.fileupload.js',
                         'bower_components/fastclick/lib/fastclick.js',
                         'bower_components/nprogress/nprogress.js',
-                        'bower_components/ember-simple-auth/ember-simple-auth.js',
-                        'bower_components/ember-simple-auth/ember-simple-auth-oauth2.js',
+                        'bower_components/ember-simple-auth/simple-auth.js',
+                        'bower_components/ember-simple-auth/simple-auth-oauth2.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js'
