@@ -10,6 +10,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     },
     actions: {
         sessionAuthenticationFailed: function (error) {
+            this.notifications.closePassive();
             this.notifications.showError(error.message);
         },
         sessionAuthenticationSucceeded: function () {
@@ -26,6 +27,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
             });
         },
         sessionInvalidationFailed: function (error) {
+            this.notifications.closePassive();
             this.notifications.showError(error.message);
         },
         sessionInvalidationSucceeded: function () {
