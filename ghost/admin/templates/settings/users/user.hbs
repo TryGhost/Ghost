@@ -5,7 +5,9 @@
     <div class="settings-header-inner">
         {{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
         <section class="page-actions page-actions-alt">
-            {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
+            {{#unless session.user.isAuthor}}
+                {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
+            {{/unless}}
         </section>
 
         <section class="page-actions">
