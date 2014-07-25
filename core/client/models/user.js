@@ -53,9 +53,11 @@ var User = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     },
 
     resendInvite: function () {
-        var userData = {};
-
-        userData.email = this.get('email');
+        var fullUserData = this.toJSON(),
+            userData = {
+            email: fullUserData.email,
+            roles: fullUserData.roles
+        };
 
         return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
             type: 'POST',
