@@ -27,6 +27,7 @@
         "Em": true,
         "DS": true,
         "$": true,
+        "SimpleAuth": true,
         "validator": true,
         "ic": true,
         "_": true,
