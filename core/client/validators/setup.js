@@ -1,7 +1,9 @@
-var SetupValidator = Ember.Object.create({
+import NewUserValidator from 'ghost/validators/new-user';
+
+var SetupValidator = NewUserValidator.extend({
     check: function (model) {
-        var data = model.getProperties('blogTitle', 'name', 'email', 'password'),
-            validationErrors = [];
+        var data = model.getProperties('blogTitle'),
+            validationErrors = this._super(model);
 
         if (!validator.isLength(data.blogTitle, 1)) {
             validationErrors.push({
@@ -9,26 +11,8 @@ var SetupValidator = Ember.Object.create({
             });
         }
 
-        if (!validator.isLength(data.name, 1)) {
-            validationErrors.push({
-                message: 'Please enter a name.'
-            });
-        }
-
-        if (!validator.isEmail(data.email)) {
-            validationErrors.push({
-                message: 'Invalid Email.'
-            });
-        }
-
-        if (!validator.isLength(data.password, 8)) {
-            validationErrors.push({
-                message: 'Password must be at least 8 characters long.'
-            });
-        }
-
         return validationErrors;
     }
-});
+}).create();
 
 export default SetupValidator;
