@@ -923,6 +923,26 @@ describe('Core Helpers', function () {
             }).then(null, done);
         });
 
+        it('can return title for a tag page', function (done) {
+            var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
+            helpers.meta_title.call(tag).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Rasper Red - Ghost');
+
+                done();
+            }).then(null, done);
+        });
+
+        it('can return title for an author page', function (done) {
+            var author = {relativeUrl: '/author/donald', author: {name: 'Donald Duck'}};
+            helpers.meta_title.call(author).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Donald Duck - Ghost');
+
+                done();
+            }).then(null, done);
+        });
+
 	it('can return escaped title of a post', function (done) {
             var post = {relativeUrl: '/nice-escaped-post', post: {title: 'Post Title "</>'}};
             helpers.meta_title.call(post).then(function (rendered) {
