@@ -13,7 +13,6 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
             email = tokenText.split('|')[1];
         controller.token = params.token;
         controller.email = email;
-        controller.name = email.substring(0, email.indexOf('@'));
     }
 });
 
