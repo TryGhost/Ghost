@@ -6,18 +6,18 @@
                 <h2>Create your account to start publishing</h2>
             </header>
             <div class="form-group">
-                <label for="name">Full Name</label>
-                {{input type="text" name="name" autofocus="autofocus" autocorrect="off" value=name }}
-                <p>The name that you will sign your posts with</p>
-            </div>
-            <div class="form-group">
                 <label for="email">Email Address</label>
-                {{input type="email" name="email" autofocus="autofocus" autocorrect="off" value=email }}
+                {{input type="email" name="email" autocorrect="off" value=email }}
                 <p>Used for important notifications</p>
             </div>
             <div class="form-group">
+                <label for="name">Full Name</label>
+                {{input type="text" name="name" autofocus="autofocus" autocorrect="off" value="" }}
+                <p>The name that you will sign your posts with</p>
+            </div>
+            <div class="form-group">
                 <label for="password">Password</label>
-                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=password }}
+                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value="" }}
                 <p>Must be at least 8 characters</p>
             </div>
             <footer>
