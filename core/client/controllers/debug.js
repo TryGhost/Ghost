@@ -1,11 +1,6 @@
 var DebugController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
 
-    exportPath: function () {
-        return this.get('ghostPaths.url').api('db') +
-            '?access_token=' + this.get('session.access_token');
-    }.property(),
-
     actions: {
         onUpload: function (file) {
             var self = this,
@@ -33,15 +28,15 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
         },
 
         exportData: function () {
-            var self = this;
+            var iframe = $('#iframeDownload'),
+                downloadURL = this.get('ghostPaths.url').api('db') +
+                    '?access_token=' + this.get('session.access_token');
 
-            ic.ajax.request(this.get('ghostPaths.url').api('db'), {
-                type: 'GET'
-            }).then(function () {
-                self.notifications.showSuccess('Data exported successfully.');
-            }).catch(function (response) {
-                self.notifications.showErrors(response);
-            });
+            if (iframe.length === 0) {
+                iframe = $('<iframe>', { id: 'iframeDownload' }).hide().appendTo('body');
+            }
+
+            iframe.attr('src', downloadURL);
         },
 
         sendTestEmail: function () {
