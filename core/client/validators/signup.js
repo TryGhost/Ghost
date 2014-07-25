@@ -1,28 +1,3 @@
-var SignupValidator = Ember.Object.create({
-    check: function (model) {
-        var data = model.getProperties('name', 'email', 'password'),
-            validationErrors = [];
+import NewUserValidator from 'ghost/validators/new-user';
 
-        if (!validator.isLength(data.name, 1)) {
-            validationErrors.push({
-                message: 'Please enter a name.'
-            });
-        }
-
-        if (!validator.isEmail(data.email)) {
-            validationErrors.push({
-                message: 'Invalid Email.'
-            });
-        }
-
-        if (!validator.isLength(data.password, 8)) {
-            validationErrors.push({
-                message: 'Password must be at least 8 characters long.'
-            });
-        }
-
-        return validationErrors;
-    }
-});
-
-export default SignupValidator;
+export default NewUserValidator.create();
