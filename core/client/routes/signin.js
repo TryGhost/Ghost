@@ -8,6 +8,16 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
             this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
         }
     },
+
+    // the deactivate hook is called after a route has been exited.
+    deactivate: function () {
+        this._super();
+
+        // clear the password property from the controller when we're no longer
+        // on the signin screen
+        this.controllerFor('signin').set('password', '');
+    },
+
     actions: {
         sessionAuthenticationFailed: function (error) {
             this.notifications.closePassive();
