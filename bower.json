@@ -23,6 +23,7 @@
     "moment": "2.4.0",
     "nprogress": "0.1.2",
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
-    "validator-js": "3.4.0"
+    "validator-js": "3.4.0",
+    "google-caja": "5669.0.0"
   }
 }
