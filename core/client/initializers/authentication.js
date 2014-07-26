@@ -1,26 +1,28 @@
 var AuthenticationInitializer = {
 
     name: 'authentication',
+    before: 'simple-auth',
     after: 'registerTrailingLocationHistory',
 
-    initialize: function (container, application) {
-        Ember.SimpleAuth.Session.reopen({
+    initialize: function (container) {
+        window.ENV = window.ENV || {};
+        window.ENV['simple-auth'] = {
+            authenticationRoute: 'signin',
+            routeAfterAuthentication: 'content',
+            authorizer: 'simple-auth-authorizer:oauth2-bearer'
+        };
+        SimpleAuth.Session.reopen({
             user: function () {
                 return container.lookup('store:main').find('user', 'me');
             }.property()
         });
-        Ember.SimpleAuth.Authenticators.OAuth2.reopen({
+        SimpleAuth.Authenticators.OAuth2.reopen({
             serverTokenEndpoint: '/ghost/api/v0.1/authentication/token',
             refreshAccessTokens: true,
-            makeRequest: function (data) {
+            makeRequest: function (url, data) {
                 data.client_id = 'ghost-admin';
-                return this._super(data);
+                return this._super(url, data);
             }
-        });
-        Ember.SimpleAuth.setup(container, application, {
-            authenticationRoute: 'signin',
-            routeAfterAuthentication: 'content',
-            authorizerFactory: 'ember-simple-auth-authorizer:oauth2-bearer'
         });
     }
 };
