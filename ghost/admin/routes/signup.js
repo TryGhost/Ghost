@@ -5,7 +5,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-signup'],
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.transitionTo(Ember.SimpleAuth.routeAfterAuthentication);
+            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
         }
     },
     setupController: function (controller, params) {
