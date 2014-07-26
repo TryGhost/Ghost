@@ -5,7 +5,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-login'],
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.transitionTo(Ember.SimpleAuth.routeAfterAuthentication);
+            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
         }
     },
     actions: {
@@ -22,7 +22,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
                     attemptedTransition.retry();
                     self.get('session').set('attemptedTransition', null);
                 } else {
-                    self.transitionTo(Ember.SimpleAuth.routeAfterAuthentication);
+                    self.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
                 }
             });
         },

@@ -1,3 +1,3 @@
-var UsersRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin);
+var UsersRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin);
 
 export default UsersRoute;
