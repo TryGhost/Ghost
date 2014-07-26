@@ -9,7 +9,7 @@ var paginationSettings = {
     page: 1
 };
 
-var PostsRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
+var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
     classNames: ['manage'],
 
     model: function () {

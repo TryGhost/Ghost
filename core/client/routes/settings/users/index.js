@@ -6,7 +6,7 @@ var paginationSettings = {
     status: 'all'
 };
 
-var UsersIndexRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, PaginationRouteMixin, {
+var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, PaginationRouteMixin, {
     setupController: function (controller, model) {
         this._super(controller, model);
         this.setupPagination(paginationSettings);

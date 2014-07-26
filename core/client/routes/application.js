@@ -1,6 +1,6 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
-var ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
 
     shortcuts: {
         'esc': 'closePopups'

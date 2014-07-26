@@ -1,7 +1,7 @@
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SigninController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMixin, ValidationEngine, {
-    authenticatorFactory: 'ember-simple-auth-authenticator:oauth2-password-grant',
+var SigninController = Ember.Controller.extend(SimpleAuth.LoginControllerMixin, ValidationEngine, {
+    authenticator: 'simple-auth-authenticator:oauth2-password-grant',
 
     validationType: 'signin',
 
