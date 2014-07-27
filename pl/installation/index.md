@@ -13,7 +13,7 @@ next_section: mac
 
 Dokumentacja Ghost-a jest dopracowywana i udoskalana regularnie. Jeśli masz jakieś sugestie lub utkniesz to daj nam znać.
 
-Ghost został zbudowany używając Node.js [Node.js](http://nodejs.org), i wymaga wersję  `0.10.*` (ostatnia stabilna wersja).
+Ghost został zbudowany używając Node.js [Node.js](http://nodejs.org), i wymaga wersji  `0.10.*` (ostatnia stabilna wersja).
 
 Uruchomienie Ghosta lokalnie na twoim komputerze jest proste ale wymagana jest wpierw instalacja Node.js. 
 
