@@ -332,7 +332,7 @@ setup = function setup() {
         fixtureOps = getFixtureOps(options);
 
     return function (done) {
-       return sequence(fixtureOps).then(function () {
+        return sequence(fixtureOps).then(function () {
             done();
         }).catch(done);
     };

@@ -30,7 +30,8 @@ describe('Exporter', function () {
 
         exporter().then(function (exportData) {
             var tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
-                'permissions_users', 'settings', 'tags', 'posts_tags'];
+                'permissions_users', 'settings', 'tags', 'posts_tags'],
+                dbVersionSetting;
 
             should.exist(exportData);
 
@@ -38,7 +39,12 @@ describe('Exporter', function () {
             should.exist(exportData.data);
 
             exportData.meta.version.should.equal('003');
-            _.findWhere(exportData.data.settings, {key: 'databaseVersion'}).value.should.equal('003');
+
+            dbVersionSetting = _.findWhere(exportData.data.settings, {key: 'databaseVersion'});
+
+            should.exist(dbVersionSetting);
+
+            dbVersionSetting.value.should.equal('003');
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);

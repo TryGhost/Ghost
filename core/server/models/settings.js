@@ -20,6 +20,12 @@ function parseDefaultSettings() {
         _.each(settings, function (setting, settingName) {
             setting.type = categoryName;
             setting.key = settingName;
+
+            // Special case for dbHash
+            if (setting.key === 'dbHash' && setting.defaultValue === null) {
+                setting.defaultValue = uuid.v4();
+            }
+
             defaultSettingsFlattened[settingName] = setting;
         });
     });
@@ -114,15 +120,11 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     populateDefault: function (key) {
-
         if (!getDefaultSettings()[key]) {
             return when.reject(new errors.NotFoundError('Unable to find default setting: ' + key));
         }
 
-        // TOOD: databaseVersion and currentVersion special cases?
-
-        this.findOne({ key: key }).then(function (foundSetting) {
-
+        return this.findOne({ key: key }).then(function (foundSetting) {
             if (foundSetting) {
                 return foundSetting;
             }
