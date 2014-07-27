@@ -9,26 +9,26 @@ chapter: installation
 next_section: mac
 ---
 
-## Overview <a id="overview"></a>
+## Ogólny Zarys <a id="overview"></a>
 
-The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.
+Dokumentacja Ghost-a jest dopracowywana i udoskalana regularnie. Jeśli masz jakieś sugestje lub utkniesz to daj nam znać.
 
-Ghost is built on [Node.js](http://nodejs.org), and requires version `0.10.*` (latest stable version).
+Ghost został zbudowany używając Node.js [Node.js](http://nodejs.org), i wymaga wersji  `0.10.*` (ostatnia stabilna wersja).
 
-Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.
+Uruchomienie Ghosta lokalnie na twoim komputerze jest proste ale wymagana jest instalacja Node.js pierw. 
 
-### What is Node.js?
+### Co to Node.js?
 
-[Node.js](http://nodejs.org) is a modern platform for building fast, scalable and efficient web applications.
-    Over the past 20 years, the web has evolved from a collection of static pages into a platform capable of supporting complex web applications like Gmail and facebook.
-    JavaScript is the programming language which has enabled this progress.
+[Node.js](http://nodejs.org) to nowoczesna platforma do budowania szybkich, skalowalnych i wydajnych aplikacji webowych.
+    Przez ostanie 20 lat, siec rozwianela sie z kolekcji statycznych stron w platforme z mozliwoscia wspierania skomplikowanych aplikcji webowych jak Gmail i Facebook.
+    JavaScript to język programowania, ktory umozliwil ten postep.
 
-[Node.js](http://nodejs.org) provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.
+[Node.js](http://nodejs.org) daje nam mozliwosc pisania JavaScript na serwerze. Przedtem JavaScript istniały tylko w przeglądarce, i drugi język programowania, na przykład PHP, był potrzebny do programownia po stronie serwera. Posiadanie aplikacji webowej, ktora uzywa tylko jednego jezyka programownia jest wieką korzyscią i to powoduje że Node.js jest dostępny dla deweloperow ktorzy orginalnie pozostali by przy tworzeniu stron od strony interfejsu.
 
-The way that [Node.js](http://nodejs.org) makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
-    The following sections detail how to install Ghost locally on [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) or [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) or alternatively will help you get Ghost deployed on a [server or hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy) account.
+[Node.js](http://nodejs.org) umożliwia nam to poprzez zawijanie silnik JavaScript z przeglądarki Google Chrome i daje możliwosć instalacji tego gdziekolwiek. To oznacza że możesz zainstalować Ghost-a na twoim komputerze aby go wyprowbowac bardzo łatwo i szybko.
+    Następujące częsci opisują szczegolowo jak zainstalować Ghost lokalnie na [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/), [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) lub pomoże w wdrożeniu Ghost-a na twoim koncie [serweru lub hostingu]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy).
 
-### Getting started
+### Jak Zacząć
 
 If you don't fancy following instructions on installing Node.js and Ghost manually, the lovely people over at [BitNami](http://bitnami.com/) have created [Ghost installers](http://bitnami.com/stack/ghost) for all major platforms.
 
