@@ -39,9 +39,10 @@ describe('Import', function () {
         beforeEach(testUtils.setup());
         beforeEach(function () {
             var newConfig = _.extend(config, defaultConfig);
-                migration.__get__('config', newConfig);
-                configUpdate(newConfig);
-                knex = config.database.knex;
+
+            migration.__get__('config', newConfig);
+            configUpdate(newConfig);
+            knex = config.database.knex;
         });
 
         it('resolves 000', function (done) {
@@ -560,6 +561,49 @@ describe('Import', function () {
                 response[2].message.should.eql(
                     'Duplicate entry found. Multiple values of "test-ghost-post" found for posts.slug.'
                 );
+                done();
+            });
+        });
+
+        it('doesn\'t import invalid tags data from 003', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-nullTags').then(function (exported) {
+                exportData = exported;
+
+                exportData.data.tags.length.should.be.above(1);
+                exportData.data.posts_tags.length.should.be.above(1);
+
+                return importer('003', exportData);
+            }).then(function () {
+                done(new Error('Allowed import of invalid tags data'));
+            }).catch(function (response) {
+                response.length.should.equal(4);
+                response[0].type.should.equal('ValidationError');
+                response[0].message.should.eql('Value in [tags.uuid] cannot be blank.');
+                response[1].type.should.equal('ValidationError');
+                response[1].message.should.eql('Validation (isUUID) failed for uuid');
+                response[2].type.should.equal('ValidationError');
+                response[2].message.should.eql('Value in [tags.name] cannot be blank.');
+                response[3].type.should.equal('ValidationError');
+                response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
+                done();
+            });
+        });
+
+        it('doesn\'t import invalid posts data from 003', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-nullPosts').then(function (exported) {
+                exportData = exported;
+
+                exportData.data.posts.length.should.be.above(1);
+
+                return importer('003', exportData);
+            }).then(function () {
+                done(new Error('Allowed import of invalid tags data'));
+            }).catch(function (response) {
+                response.length.should.equal(6);
                 done();
             });
         });

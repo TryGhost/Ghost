@@ -3,7 +3,17 @@ var when   = require('when'),
     models = require('../../models'),
     Importer000,
     updatedSettingKeys,
+    areEmpty,
     internal = {context: {internal: true}};
+
+areEmpty = function (object) {
+    var fields = _.toArray(arguments).slice(1),
+        areEmpty = _.all(fields, function (field) {
+            return _.isEmpty(object[field]);
+        });
+
+    return areEmpty;
+};
 
 updatedSettingKeys = {
     activePlugins: 'activeApps',
@@ -75,9 +85,12 @@ function preProcessPostTags(tableData) {
             });
             post.tags = [];
             _.each(tags, function (tag) {
-                // names are unique.. this should get the right tags added
-                // as long as tags are added first;
-                post.tags.push({name: tag.name});
+                // Only add valid tags
+                if (!_.isEmpty(tag.uuid)) {
+                    // names are unique.. this should get the right tags added
+                    // as long as tags are added first;
+                    post.tags.push({name: tag.name});
+                }
             });
         }
     });
@@ -88,6 +101,11 @@ function preProcessPostTags(tableData) {
 function importTags(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (tag) {
+        // Validate minimum tag fields
+        if (areEmpty(tag, 'name', 'slug')) {
+            return;
+        }
+
         ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
             if (!_tag) {
                 return models.Tag.add(tag, _.extend(internal, {transacting: transaction}))
@@ -104,6 +122,11 @@ function importTags(ops, tableData, transaction) {
 function importPosts(ops, tableData, transaction) {
     tableData = stripProperties(['id'], tableData);
     _.each(tableData, function (post) {
+        // Validate minimum post fields
+        if (areEmpty(post, 'title', 'slug', 'markdown')) {
+            return;
+        }
+
         ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
             // add pass-through error handling so that bluebird doesn't think we've dropped it
             .catch(function (error) {
@@ -116,6 +139,7 @@ function importUsers(ops, tableData, transaction) {
     // don't override the users credentials
     tableData = stripProperties(['id', 'email', 'password'], tableData);
     tableData[0].id = 1;
+
     ops.push(models.User.edit(tableData[0], _.extend(internal, {id: 1, transacting: transaction}))
         // add pass-through error handling so that bluebird doesn't think we've dropped it
         .catch(function (error) {
