@@ -11,22 +11,22 @@ next_section: mac
 
 ## Ogólny Zarys <a id="overview"></a>
 
-Dokumentacja Ghost-a jest dopracowywana i udoskalana regularnie. Jeśli masz jakieś sugestje lub utkniesz to daj nam znać.
+Dokumentacja Ghost-a jest dopracowywana i udoskalana regularnie. Jeśli masz jakieś sugestie lub utkniesz to daj nam znać.
 
-Ghost został zbudowany używając Node.js [Node.js](http://nodejs.org), i wymaga wersji  `0.10.*` (ostatnia stabilna wersja).
+Ghost został zbudowany używając Node.js [Node.js](http://nodejs.org), i wymaga wersję  `0.10.*` (ostatnia stabilna wersja).
 
-Uruchomienie Ghosta lokalnie na twoim komputerze jest proste ale wymagana jest instalacja Node.js pierw. 
+Uruchomienie Ghosta lokalnie na twoim komputerze jest proste ale wymagana jest wpierw instalacja Node.js. 
 
 ### Co to Node.js?
 
-[Node.js](http://nodejs.org) to nowoczesna platforma do budowania szybkich, skalowalnych i wydajnych aplikacji webowych.
-    Przez ostanie 20 lat, siec rozwianela sie z kolekcji statycznych stron w platforme z mozliwoscia wspierania skomplikowanych aplikcji webowych jak Gmail i Facebook.
-    JavaScript to język programowania, ktory umozliwil ten postep.
+[Node.js](http://nodejs.org) to nowoczesna platforma służąca do budowania szybkich, skalowalnych i wydajnych aplikacji webowych.
+    Przez ostanie 20 lat, sieć rozwinęła się z kolekcji statycznych stron w platformę z możliwością wspierania skomplikowanych aplikacji webowych jak Gmail i Facebook.
+    JavaScript to język programowania, który umożliwił ten postęp.
 
-[Node.js](http://nodejs.org) daje nam mozliwosc pisania JavaScript na serwerze. Przedtem JavaScript istniały tylko w przeglądarce, i drugi język programowania, na przykład PHP, był potrzebny do programownia po stronie serwera. Posiadanie aplikacji webowej, ktora uzywa tylko jednego jezyka programownia jest wieką korzyscią i to powoduje że Node.js jest dostępny dla deweloperow ktorzy orginalnie pozostali by przy tworzeniu stron od strony interfejsu.
+[Node.js](http://nodejs.org) daje nam możliwość pisania JavaScript na serwerze. Przedtem JavaScript istniał tylko w przeglądarce, i drugi język programowania, na przykład PHP, był potrzebny do programowania po stronie serwera. Posiadanie aplikacji webowej, które używają tylko jednego języka programowania jest wielką korzyścią i to powoduje że Node.js jest dostępny dla deweloperów którzy oryginalnie pozostali by przy tworzeniu stron od strony interfejsu.
 
-[Node.js](http://nodejs.org) umożliwia nam to poprzez zawijanie silnik JavaScript z przeglądarki Google Chrome i daje możliwosć instalacji tego gdziekolwiek. To oznacza że możesz zainstalować Ghost-a na twoim komputerze aby go wyprowbowac bardzo łatwo i szybko.
-    Następujące częsci opisują szczegolowo jak zainstalować Ghost lokalnie na [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/), [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) lub pomoże w wdrożeniu Ghost-a na twoim koncie [serweru lub hostingu]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy).
+[Node.js](http://nodejs.org) umożliwia nam to poprzez zawijanie silnika JavaScript z przeglądarki Google Chrome i daje możliwość instalacji tego gdziekolwiek. To oznacza że możesz zainstalować Ghost-a na twoim komputerze aby go wypróbować łatwo i szybko.
+    Następujące części opisują szczegółowo jak zainstalować Ghost-a lokalnie na [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/), [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/)lub pomoże w wdrożeniu Ghost-a na twoim [serwerze lub koncie hostingowym]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy).
 
 ### Jak Zacząć
 
