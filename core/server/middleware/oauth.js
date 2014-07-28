@@ -33,13 +33,13 @@ oauth = {
                     //Everything validated, return the access- and refreshtoken
                     var accessToken = utils.uid(256),
                         refreshToken = utils.uid(256),
-                        accessExpires = Date.now() + 3600 * 1000,
-                        refreshExpires = Date.now() + 3600 * 24 * 1000;
+                        accessExpires = Date.now() + utils.ONE_HOUR_MS,
+                        refreshExpires = Date.now() + utils.ONE_DAY_MS;
 
                     return models.Accesstoken.add({token: accessToken, user_id: user.id, client_id: client.id, expires: accessExpires}).then(function () {
                         return models.Refreshtoken.add({token: refreshToken, user_id: user.id, client_id: client.id, expires: refreshExpires});
                     }).then(function () {
-                        return done(null, accessToken, refreshToken, {expires_in: 3600});
+                        return done(null, accessToken, refreshToken, {expires_in: utils.ONE_HOUR_S});
                     }).catch(function () {
                         return done(null, false);
                     });
@@ -62,11 +62,19 @@ oauth = {
                 } else {
                     var token = model.toJSON(),
                         accessToken = utils.uid(256),
-                        accessExpires = Date.now() + 3600 * 1000;
+                        accessExpires = Date.now() + utils.ONE_HOUR_MS,
+                        refreshExpires = Date.now() + utils.ONE_DAY_MS;
 
                     if (token.expires > Date.now()) {
-                        models.Accesstoken.add({token: accessToken, user_id: token.user_id, client_id: token.client_id, expires: accessExpires}).then(function () {
-                            return done(null, accessToken);
+                        models.Accesstoken.add({
+                            token: accessToken,
+                            user_id: token.user_id,
+                            client_id: token.client_id,
+                            expires: accessExpires
+                        }).then(function () {
+                            return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
+                        }).then(function () {
+                            return done(null, accessToken, {expires_in: utils.ONE_HOUR_S});
                         }).catch(function () {
                             return done(null, false);
                         });

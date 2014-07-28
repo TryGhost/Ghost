@@ -12,7 +12,6 @@ var when            = require('when'),
     mail            = require('./mail'),
 
     docName         = 'users',
-    ONE_DAY         = 60 * 60 * 24 * 1000,
     // TODO: implement created_by, updated_by
     allowedIncludes = ['permissions', 'roles', 'roles.permissions'],
     users;
@@ -179,7 +178,7 @@ users = {
                 user = invitedUser.toJSON();
                 return settings.read({context: {internal: true}, key: 'dbHash'});
             }).then(function (response) {
-                var expires = Date.now() + (14 * ONE_DAY),
+                var expires = Date.now() + (14 * globalUtils.ONE_DAY_MS),
                     dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(user.email, expires, dbHash);
             }).then(function (resetToken) {
