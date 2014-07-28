@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 // The main wrapper, sets position and bg colour.
-.globalnav {
+.global-nav {
     height: 60px;
     @include position(fixed, 0px 0px auto 0px);
     z-index: 9999;
@@ -11,51 +11,87 @@
     box-shadow: 0 0 2px rgba(6,8,8,0.15)
 }
 
+// Wrapper for each item
 .nav-item {
     position: relative;
     display: block;
     float: left;
-    color: #fff;
+    padding-left: 10px;
+    color: rgba(255,255,255,0.8);
+    font-size: 1.5rem;
+    line-height: 1;
 }
 
+// Pill shaped background
 .nav-label {
     height: 34px;
-    line-height: 34px;
     margin-top: 13px;
-    padding: 0 10px;
+    padding: 8px 10px;
     border-radius: 4px;
-    @include transition(background 0.4s);
+    @include transition(background 0.5s);
 }
-
+.nav-item.active .nav-label {
+    background: darken($darkgrey, 5%);
+}
 .nav-item:hover .nav-label {
-    background: darken($darkgrey, 2%);
+    background: darken($darkgrey, 10%);
+    @include transition(background 0.1s);
 }
 
+// Ghost branding
 .ghost-logo {
-    @include icon($i-ghost, 16px) { line-height: 0; }
+    @include icon($i-ghost, 14px) { line-height: 0; }
     display: inline-block;
     float: left;
     height: 60px;
     width: 60px;
-    padding: 22px;
+    padding: 23px;
     color: lighten($grey, 20%);
+    font-size: 1.5rem;
+    @include transition(color 0.5s);
 }
 .ghost-logo:hover,
 .ghost-logo:focus {
     color: $lightgrey;
+    @include transition(color 0.1s);
 }
 
-.user-item {
-    float: right;
+// Right hand dropdown
+.user-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
 
+    // Profile picture
     .image {
-        display: inline-block;
+        float: left;
+        margin: 0 7px 0 0;
 
         img {
             display: block;
             width: 32px;
             height: 32px;
             border-radius: 100%;
+        }
+    }
+
+    // Descriptive label for mobile menu
+    .name {
+        display: none; // Hide until mobile
+        float: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        line-height: 19px;
+        padding-bottom: 5px;
+
+        small {
+            font-size: 12px;
+            color: #cacaca;
+            margin-top: 0;
+            line-height: 19px;
         }
     }
 }
