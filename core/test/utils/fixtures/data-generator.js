@@ -158,20 +158,20 @@ DataGenerator.Content = {
 
     roles: [
         {
-            "name":             "Administrator",
-            "description":      "Administrators"
+            name:             'Administrator',
+            description:      'Administrators'
         },
         {
-            "name":             "Editor",
-            "description":      "Editors"
+            name:             'Editor',
+            description:      'Editors'
         },
         {
-            "name":             "Author",
-            "description":      "Authors"
+            name:             'Author',
+            description:      'Authors'
         },
         {
-            "name":             "Owner",
-            "description":      "Blog Owner"
+            name:             'Owner',
+            description:      'Blog Owner'
         }
     ],
 

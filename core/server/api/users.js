@@ -10,7 +10,6 @@ var when            = require('when'),
     globalUtils     = require('../utils'),
     config          = require('../config'),
     mail            = require('./mail'),
-    rolesAPI        = require('./roles'),
 
     docName         = 'users',
     ONE_DAY         = 60 * 60 * 24 * 1000,
@@ -44,8 +43,8 @@ users = {
                 options.include = prepareInclude(options.include);
             }
             return dataProvider.User.findPage(options);
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to browse users.'));
+        }).catch(function (error) {
+            return errors.handleAPIError(error);
         });
     },
 
@@ -84,48 +83,44 @@ users = {
      * @returns {Promise(User)}
      */
     edit: function edit(object, options) {
+        var editOperation;
         if (options.id === 'me' && options.context && options.context.user) {
             options.id = options.context.user;
         }
 
-        return canThis(options.context).edit.user(options.id).then(function () {
-        // TODO: add permission check for roles
-            // if (data.roles) {
-            //     return canThis(options.context).assign.role(<role-id>)
-            // }
-        // }.then(function (){
-            return utils.checkObject(object, docName).then(function (checkedUserData) {
+        if (options.include) {
+            options.include = prepareInclude(options.include);
+        }
 
-                if (options.include) {
-                    options.include = prepareInclude(options.include);
+        return utils.checkObject(object, docName).then(function (data) {
+            // Edit operation
+            editOperation = function () {
+                return dataProvider.User.edit(data.users[0], options)
+                    .then(function (result) {
+                        if (result) {
+                            return { users: [result.toJSON()]};
+                        }
+
+                        return when.reject(new errors.NotFoundError('User not found.'));
+                    });
+            };
+
+            // Check permissions
+            return canThis(options.context).edit.user(options.id).then(function () {
+                if (data.users[0].roles) {
+                    if (options.id === options.context.user) {
+                        return when.reject(new errors.NoPermissionError('You cannot change your own role.'));
+                    }
+                    return canThis(options.context).assign.role(data.users[0].roles[0]).then(function () {
+                        return editOperation();
+                    });
                 }
 
-                return dataProvider.User.edit(checkedUserData.users[0], options);
-            }).then(function (result) {
-                if (result) {
-                    return { users: [result.toJSON()]};
-                }
-                return when.reject(new errors.NotFoundError('User not found.'));
-            });
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to edit this user.'));
-        });
-    },
+                return editOperation();
 
-    /**
-     * ### Destroy
-     * @param {{id, context}} options
-     * @returns {Promise(User)}
-     */
-    destroy: function destroy(options) {
-        return canThis(options.context).destroy.user(options.id).then(function () {
-            return users.read(options).then(function (result) {
-                return dataProvider.User.destroy(options).then(function () {
-                    return result;
-                });
             });
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to remove the user.'));
+        }).catch(function (error) {
+            return errors.handleAPIError(error);
         });
     },
 
@@ -137,23 +132,26 @@ users = {
      */
     add: function add(object, options) {
         var newUser,
-            user;
+            user,
+            roleId;
 
-        return canThis(options.context).add.user().then(function () {
+        return canThis(options.context).add.user(object).then(function () {
             return utils.checkObject(object, docName).then(function (checkedUserData) {
                 if (options.include) {
                     options.include = prepareInclude(options.include);
                 }
 
                 newUser = checkedUserData.users[0];
-                newUser.role = parseInt(newUser.roles[0].id || newUser.roles[0], 10);
+                roleId = parseInt(newUser.roles[0].id || newUser.roles[0], 10);
 
-                return rolesAPI.browse({ context: options.context, permissions: 'assign' }).then(function (results) {
-                    // Make sure user is allowed to add a user with this role
-                    if (!_.any(results.roles, { id: newUser.role })) {
-                        return when.reject(new errors.NoPermissionError('Not allowed to create user with that role.'));
+                // Make sure user is allowed to add a user with this role
+                return dataProvider.Role.findOne({id: roleId}).then(function (role) {
+                    if (role.get('name') === 'Owner') {
+                        return when.reject(new errors.NoPermissionError('Not allowed to create an owner user.'));
                     }
 
+                    return canThis(options.context).assign.role(role);
+                }).then(function () {
                     if (newUser.email) {
                         newUser.name = object.users[0].email.substring(0, newUser.email.indexOf('@'));
                         newUser.password = globalUtils.uid(50);
@@ -161,6 +159,8 @@ users = {
                     } else {
                         return when.reject(new errors.BadRequestError('No email provided.'));
                     }
+                }).catch(function () {
+                    return when.reject(new errors.NoPermissionError('Not allowed to create user with that role.'));
                 });
             }).then(function () {
                 return dataProvider.User.getByEmail(newUser.email);
@@ -208,7 +208,7 @@ users = {
                 });
             }).then(function () {
                 return when.resolve({users: [user]});
-            }).otherwise(function (error) {
+            }).catch(function (error) {
                 if (error && error.type === 'EmailError') {
                     error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
                     errors.logWarn(error.message);
@@ -222,10 +222,29 @@ users = {
                 }
                 return when.reject(error);
             });
-        }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to add a user.'));
+        }).catch(function (error) {
+            return errors.handleAPIError(error);
         });
     },
+
+
+    /**
+     * ### Destroy
+     * @param {{id, context}} options
+     * @returns {Promise(User)}
+     */
+    destroy: function destroy(options) {
+        return canThis(options.context).destroy.user(options.id).then(function () {
+            return users.read(options).then(function (result) {
+                return dataProvider.User.destroy(options).then(function () {
+                    return result;
+                });
+            });
+        }).catch(function (error) {
+            return errors.handleAPIError(error);
+        });
+    },
+
 
     /**
      * ### Change Password
@@ -244,7 +263,7 @@ users = {
 
             return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
                 return when.resolve({password: [{message: 'Password changed successfully.'}]});
-            }).otherwise(function (error) {
+            }).catch(function (error) {
                 return when.reject(new errors.ValidationError(error.message));
             });
         });

@@ -13,11 +13,6 @@ var effective = {
                     allPerms = [],
                     user = foundUser.toJSON();
 
-                // TODO: using 'Owner' as return value is a bit hacky.
-                if (_.find(user.roles, { 'name': 'Owner' })) {
-                    return 'Owner';
-                }
-
                 rolePerms.push(foundUser.related('permissions').models);
 
                 _.each(rolePerms, function (rolePermGroup) {
@@ -34,7 +29,7 @@ var effective = {
                     });
                 });
 
-                return allPerms;
+                return {permissions: allPerms, roles: user.roles};
             }, errors.logAndThrowError);
     },
 
@@ -45,7 +40,7 @@ var effective = {
                     return [];
                 }
 
-                return foundApp.related('permissions').models;
+                return {permissions: foundApp.related('permissions').models};
             }, errors.logAndThrowError);
     }
 };
