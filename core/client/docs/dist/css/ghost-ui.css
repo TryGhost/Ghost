@@ -708,11 +708,11 @@ a, a:active {
     background: none !important; }
   .user-menu .image {
     float: left;
-    margin: 14px 7px 0 0; }
+    margin: 15px 8px 0 0; }
     .user-menu .image img {
       display: block;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 100%; }
   .user-menu .name {
     float: right;
