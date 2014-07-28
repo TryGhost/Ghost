@@ -1,9 +1,7 @@
 var frontend    = require('../controllers/frontend'),
     config      = require('../config'),
     express     = require('express'),
-
-    ONE_HOUR_S  = 60 * 60,
-    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
+    utils       = require('../utils'),
 
     frontendRoutes;
 
@@ -16,7 +14,7 @@ frontendRoutes = function () {
     router.get('/rss/:page/', frontend.rss);
     router.get('/feed/', function redirect(req, res) {
         /*jshint unused:true*/
-        res.set({'Cache-Control': 'public, max-age=' + ONE_YEAR_S});
+        res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
         res.redirect(301, subdir + '/rss/');
     });
 

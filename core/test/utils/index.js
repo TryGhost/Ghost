@@ -424,5 +424,7 @@ module.exports = {
             editor: 2,
             author: 3
         }
-    }
+    },
+    ONE_HOUR_S: 3600,
+    ONE_YEAR_S: 31536000
 };
