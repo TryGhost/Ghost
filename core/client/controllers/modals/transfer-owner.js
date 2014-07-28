@@ -1,9 +1,10 @@
 var TransferOwnerController = Ember.Controller.extend({
-
     actions: {
         confirmAccept: function () {
             var user = this.get('model'),
                 self = this;
+
+            self.get('popover').closePopovers();
 
             // Get owner role
             this.store.find('role').then(function (result) {
@@ -12,16 +13,16 @@ var TransferOwnerController = Ember.Controller.extend({
                 // remove roles and assign owner role
                 user.get('roles').clear();
                 user.get('roles').pushObject(ownerRole);
-                return user.save({ format: false });
-            }).then(function (model) {
+
+                return user.saveOnly('roles');
+            }).then(function () {
                 self.notifications.closePassive();
-                self.notifications.showSuccess('Settings successfully saved.');
-                return model;
+                self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
             }).catch(function (errors) {
                 self.notifications.closePassive();
+
+                errors = Ember.isArray(errors) ? errors : Ember.A([errors]);
                 self.notifications.showErrors(errors);
-            }).finally(function () {
-                self.get('popover').closePopovers();
             });
         },
 
