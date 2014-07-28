@@ -98,10 +98,12 @@
 
         small {
             display: none; // hide until mobile
-            font-size: 12px;
+            font-size: 11px;
+            text-transform: none;
+            letter-spacing: 0;
             color: #cacaca;
             margin-top: 0;
-            line-height: 19px;
+            line-height: 12px;
         }
     }
     &:hover .name {
@@ -112,18 +114,79 @@
 
 }//.user-menu
 
-/* mobile styles 
+//
+// Mobile
+// --------------------------------------------------
 
-.name {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    line-height: 19px;
-    padding-bottom: 5px;
+@media (max-width: 1025px) {
 
-    small {
-        display: block;
+    // Fixed width, position left
+    .global-nav {
+        width: 260px;
+        height: auto;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        overflow: auto;
     }
-}
 
-*/
+    .nav-item {
+        position: relative;
+        float: none;
+        height: auto;
+        margin: 0;
+        padding: 0;
+    }
+
+    // Convert to full-width mobile-friendly
+    .nav-label {
+        display: block;
+        height: 44px;
+        line-height: 44px;
+        margin: 0;
+        padding: 0 15px;
+        border-radius: 0;
+    }
+
+    // Drop it to the bottom of the menu
+    .user-menu {
+        height: auto;
+        padding: 15px;
+        @include position(absolute, auto 0px 0px 0px);
+
+        .nav-label {
+            padding: 0;
+            height: auto;
+        }
+
+        .image {
+            margin: 2px 10px 0 0;
+        }
+
+        .name {
+            float: left;
+            margin: 0;
+            padding: 0 0 5px 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 19px;
+            overflow: hidden;
+
+            small {
+                display: block;
+            }
+        }
+
+        &:hover {
+            color: rgba(255,255,255,0.9);
+            background: darken($darkgrey, 7%);
+            @include transition(all 0.1s);
+        }
+        &:hover .name {
+            background: transparent;
+            @include transition(none);
+        }
+
+    }
+
+}
