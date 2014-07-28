@@ -172,7 +172,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
-    var testFileLocation = 'test/file/location';
+    var testFileLocation = '/test/file/location';
 
     casper.then(function () {
         var markdownImageString = '![](' + testFileLocation + ')';
@@ -203,7 +203,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
         casper.thenClick('.entry-preview .image-uploader a.image-url');
     });
 
-    var imageURL = 'random.url';
+    var imageURL = 'http://www.random.url';
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
         casper.sendKeys('.image-uploader-url input.url.js-upload-url', imageURL);
         casper.thenClick('.js-button-accept.button-save');
