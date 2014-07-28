@@ -14,6 +14,7 @@ var _                          = require('lodash'),
     ValidationError            = require('./validationerror'),
     UnsupportedMediaTypeError  = require('./unsupportedmediaerror'),
     EmailError                 = require('./emailerror'),
+    DataImportError            = require('./dataimporterror'),
     errors,
 
     // Paths for views
@@ -315,3 +316,4 @@ module.exports.ValidationError            = ValidationError;
 module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;
 module.exports.UnsupportedMediaTypeError  = UnsupportedMediaTypeError;
 module.exports.EmailError                 = EmailError;
+module.exports.DataImportError            = DataImportError;
