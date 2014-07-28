@@ -300,7 +300,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
 
-                error[0].message.should.eql('Setting key cannot be empty.');
+                error[0].message.should.eql('Value in [settings.key] cannot be blank.');
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
@@ -478,7 +478,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
 
-                error[0].message.should.eql('Setting key cannot be empty.');
+                error[0].message.should.eql('Value in [settings.key] cannot be blank.');
                 error[0].type.should.eql('ValidationError');
 
                 when.all([
@@ -519,34 +519,49 @@ describe('Import', function () {
 
         should.exist(Importer003);
 
-        it('safely imports data from 003', function (done) {
+        it('handles validation errors nicely', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('broken-validation').then(function (exported) {
                 exportData = exported;
                 return importer('003', exportData);
-            }).then(function () {
-                // Grab the data from tables
-                return when.all([
-                    knex('apps').select(),
-                    knex('app_settings').select()
-                ]);
-            }).then(function (importedData) {
-                should.exist(importedData);
-
-                importedData.length.should.equal(2, 'Did not get data successfully');
-
-                var apps = importedData[0];
-                    // app_settings = importedData[1];
-
-                // test apps
-                apps.length.should.equal(exportData.data.apps.length, 'imported apps');
-
-                // test app settings
-                // app_settings.length.should.equal(exportData.data.app_settings.length, 'imported app settings');
-
+            }).catch(function (response) {
+                response.length.should.equal(5);
+                response[0].type.should.equal('ValidationError');
+                response[0].message.should.eql('Value in [posts.title] cannot be blank.');
+                response[1].type.should.equal('ValidationError');
+                response[1].message.should.eql('Value in [posts.slug] cannot be blank.');
+                response[2].type.should.equal('ValidationError');
+                response[2].message.should.eql('Value in [settings.key] cannot be blank.');
+                response[3].type.should.equal('ValidationError');
+                response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
+                response[4].type.should.equal('ValidationError');
+                response[4].message.should.eql('Value in [tags.name] cannot be blank.');
                 done();
-            }).catch(done);
+            });
+        });
+
+        it('handles database errors nicely', function (done) {
+            var exportData;
+            testUtils.fixtures.loadExportFixture('broken-db-errors').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).catch(function (response) {
+                response.length.should.equal(3);
+                response[0].type.should.equal('DataImportError');
+                response[0].message.should.eql(
+                    'Duplicate entry found. Multiple values of "tagging-things" found for tags.slug.'
+                );
+                response[1].type.should.equal('DataImportError');
+                response[1].message.should.eql(
+                    'Duplicate entry found. Multiple values of "tagging-things" found for tags.slug.'
+                );
+                response[2].type.should.equal('DataImportError');
+                response[2].message.should.eql(
+                    'Duplicate entry found. Multiple values of "test-ghost-post" found for posts.slug.'
+                );
+                done();
+            });
         });
     });
 });

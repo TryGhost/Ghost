@@ -1,5 +1,6 @@
 var DebugController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
+    importErrors: '',
 
     actions: {
         onUpload: function (file) {
@@ -7,6 +8,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
                 formData = new FormData();
 
             this.set('uploadButtonText', 'Importing');
+            this.notifications.closePassive();
 
             formData.append('importfile', file);
 
@@ -20,7 +22,10 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
             }).then(function () {
                 self.notifications.showSuccess('Import successful.');
             }).catch(function (response) {
-                self.notifications.showAPIError(response);
+                if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
+                    self.set('importErrors', response.jqXHR.responseJSON.errors);
+                }
+                self.notifications.showError('Import Failed');
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
                 self.trigger('reset');

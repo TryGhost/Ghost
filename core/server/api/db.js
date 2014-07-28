@@ -8,7 +8,6 @@ var dataExport       = require('../data/export'),
     nodefn           = require('when/node'),
     _                = require('lodash'),
     path             = require('path'),
-    validation       = require('../data/validation'),
     errors           = require('../../server/errors'),
     canThis          = require('../permissions').canThis,
     api              = {},
@@ -80,20 +79,19 @@ db = {
                     return when.reject(new errors.UnsupportedMediaTypeError('Please select a .json file to import.'));
                 }
             }).then(function () {
-                return api.settings.read({key: 'databaseVersion', context: { internal: true }}).then(function (response) {
+                return api.settings.read(
+                    {key: 'databaseVersion', context: { internal: true }}
+                ).then(function (response) {
                     var setting = response.settings[0];
 
                     return when(setting.value);
-                }, function () {
-                    return when('002');
                 });
             }).then(function (version) {
                 databaseVersion = version;
                 // Read the file contents
                 return nodefn.call(fs.readFile, filepath);
             }).then(function (fileContents) {
-                var importData,
-                    error = '';
+                var importData;
 
                 // Parse the json data
                 try {
@@ -104,26 +102,16 @@ db = {
                         importData = importData.db[0];
                     }
                 } catch (e) {
-                    errors.logError(e, "API DB import content", "check that the import file is valid JSON.");
-                    return when.reject(new errors.BadRequest("Failed to parse the import JSON file"));
+                    errors.logError(e, 'API DB import content', 'check that the import file is valid JSON.');
+                    return when.reject(new errors.BadRequest('Failed to parse the import JSON file'));
                 }
 
                 if (!importData.meta || !importData.meta.version) {
-                    return when.reject(new errors.ValidationError("Import data does not specify version", 'meta.version'));
+                    return when.reject(
+                        new errors.ValidationError('Import data does not specify version', 'meta.version')
+                    );
                 }
 
-                _.each(_.keys(importData.data), function (tableName) {
-                    _.each(importData.data[tableName], function (importValues) {
-                        validation.validateSchema(tableName, importValues).catch(function (err) {
-                            error += error !== '' ? '<br>' : '';
-                            error += err.message;
-                        });
-                    });
-                });
-
-                if (error !== '') {
-                    return when.reject(new Error(error));
-                }
                 // Import for the current version
                 return dataImport(databaseVersion, importData);
 
