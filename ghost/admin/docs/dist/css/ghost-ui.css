@@ -725,10 +725,12 @@ a, a:active {
     transition: background 0.5s; }
     .user-menu .name small {
       display: none;
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
       color: #cacaca;
       margin-top: 0;
-      line-height: 19px; }
+      line-height: 12px; }
   .user-menu:hover .name {
     color: rgba(255, 255, 255, 0.9);
     background: #131415;
@@ -736,18 +738,61 @@ a, a:active {
     -moz-transition: background 0.1s;
     transition: background 0.1s; }
 
-/* mobile styles 
+@media (max-width: 1025px) {
+  .global-nav {
+    width: 260px;
+    height: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto; }
 
-.name {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    line-height: 19px;
-    padding-bottom: 5px;
+  .nav-item {
+    position: relative;
+    float: none;
+    height: auto;
+    margin: 0;
+    padding: 0; }
 
-    small {
-        display: block;
-    }
-}
+  .nav-label {
+    display: block;
+    height: 44px;
+    line-height: 44px;
+    margin: 0;
+    padding: 0 15px;
+    border-radius: 0; }
 
-*/
+  .user-menu {
+    height: auto;
+    padding: 15px;
+    position: absolute;
+    top: auto;
+    right: 0px;
+    bottom: 0px;
+    left: 0px; }
+    .user-menu .nav-label {
+      padding: 0;
+      height: auto; }
+    .user-menu .image {
+      margin: 2px 10px 0 0; }
+    .user-menu .name {
+      float: left;
+      margin: 0;
+      padding: 0 0 5px 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 19px;
+      overflow: hidden; }
+      .user-menu .name small {
+        display: block; }
+    .user-menu:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: #131415;
+      -webkit-transition: all 0.1s;
+      -moz-transition: all 0.1s;
+      transition: all 0.1s; }
+    .user-menu:hover .name {
+      background: transparent;
+      -webkit-transition: none;
+      -moz-transition: none;
+      transition: none; } }
