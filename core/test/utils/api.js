@@ -7,6 +7,7 @@ var url = require('url'),
     expectedProperties = {
         posts: ['posts', 'meta'],
         users: ['users', 'meta'],
+        roles: ['roles'],
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',
@@ -45,7 +46,6 @@ function getAdminURL() {
 
 // make sure the API only returns expected properties only
 function checkResponseValue(jsonResponse, properties) {
-    Object.keys(jsonResponse).length.should.eql(properties.length);
     for (var i = 0; i < properties.length; i = i + 1) {
         // For some reason, settings response objects do not have the 'hasOwnProperty' method
         if (Object.prototype.hasOwnProperty.call(jsonResponse, properties[i])) {
@@ -53,6 +53,7 @@ function checkResponseValue(jsonResponse, properties) {
         }
         jsonResponse.should.have.property(properties[i]);
     }
+    Object.keys(jsonResponse).length.should.eql(properties.length);
 }
 
 function checkResponse(jsonResponse, objectType, additionalProperties) {
