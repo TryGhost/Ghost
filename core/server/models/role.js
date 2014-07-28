@@ -40,7 +40,7 @@ Role = ghostBookshelf.Model.extend({
     },
 
 
-    permissable: function (roleModelOrId, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function (roleModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             checkAgainst = [],
             origArgs;
@@ -55,23 +55,20 @@ Role = ghostBookshelf.Model.extend({
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundRoleModel].concat(origArgs);
 
-                return self.permissable.apply(self, newArgs);
+                return self.permissible.apply(self, newArgs);
             }, errors.logAndThrowError);
         }
 
-        switch (loadedPermissions.user) {
-            case 'Owner':
-            case 'Administrator':
+        if (action === 'assign' && loadedPermissions.user) {
+            if (_.any(loadedPermissions.user.roles, { 'name': 'Owner' }) ||
+                _.any(loadedPermissions.user.roles, { 'name': 'Administrator' })) {
                 checkAgainst = ['Administrator', 'Editor', 'Author'];
-                break;
-            case 'Editor':
-                checkAgainst = ['Editor', 'Author'];
-        }
+            } else if (_.any(loadedPermissions.user.roles, { 'name': 'Editor' })) {
+                checkAgainst = ['Author'];
+            }
 
-        // If we have a role passed into here
-        if (roleModelOrId && !_.contains(checkAgainst, roleModelOrId.get('name'))) {
-            // Role not in the list of permissible roles
-            hasUserPermission = false;
+            // Role in the list of permissible roles
+            hasUserPermission = roleModelOrId && _.contains(checkAgainst, roleModelOrId.get('name'));
         }
 
         if (hasUserPermission && hasAppPermission) {

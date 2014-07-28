@@ -78,8 +78,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
             // Wait for the user loading to finish
             return permissionLoad.then(function (loadedPermissions) {
                 // Iterate through the user permissions looking for an affirmation
-                var userPermissions = loadedPermissions.user,
-                    appPermissions = loadedPermissions.app,
+                var userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null,
+                    appPermissions = loadedPermissions.app ? loadedPermissions.app.permissions : null,
                     hasUserPermission,
                     hasAppPermission,
                     checkPermission = function (perm) {
@@ -105,14 +105,13 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                         return modelId === permObjId;
                     };
                 // Check user permissions for matching action, object and id.
-                if (!_.isEmpty(userPermissions)) {
-                    // TODO: using 'Owner' is a bit hacky.
-                    if (userPermissions === 'Owner') {
-                        hasUserPermission = true;
-                    } else {
-                        hasUserPermission = _.any(userPermissions, checkPermission);
-                    }
+
+                if (_.any(loadedPermissions.user.roles, { 'name': 'Owner' })) {
+                    hasUserPermission = true;
+                } else if (!_.isEmpty(userPermissions)) {
+                    hasUserPermission = _.any(userPermissions, checkPermission);
                 }
+
 
                 // Check app permissions if they were passed
                 hasAppPermission = true;
@@ -121,8 +120,10 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                 }
 
                 // Offer a chance for the TargetModel to override the results
-                if (TargetModel && _.isFunction(TargetModel.permissable)) {
-                    return TargetModel.permissable(modelId, context, loadedPermissions, hasUserPermission, hasAppPermission);
+                if (TargetModel && _.isFunction(TargetModel.permissible)) {
+                    return TargetModel.permissible(
+                        modelId, act_type, context, loadedPermissions, hasUserPermission, hasAppPermission
+                    );
                 }
 
                 if (hasUserPermission && hasAppPermission) {
