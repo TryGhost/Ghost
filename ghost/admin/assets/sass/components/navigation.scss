@@ -8,7 +8,6 @@
     @include position(fixed, 0px 0px auto 0px);
     z-index: 9999;
     background: $darkgrey;
-    box-shadow: 0 0 2px rgba(6,8,8,0.15)
 }
 
 // Wrapper for each item
@@ -16,26 +15,29 @@
     position: relative;
     display: block;
     float: left;
-    padding-left: 10px;
-    color: rgba(255,255,255,0.8);
-    font-size: 1.5rem;
-    line-height: 1;
+    height: 60px;
+    padding-right: 10px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    font-weight: 200;
+    line-height: 1.1em;
 }
 
 // Pill shaped background
 .nav-label {
-    height: 34px;
-    margin-top: 13px;
-    padding: 8px 10px;
+    height: 33px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
     border-radius: 4px;
-    @include transition(background 0.5s);
+    @include transition(all 0.5s);
 }
-.nav-item.active .nav-label {
-    background: darken($darkgrey, 5%);
-}
+.nav-item.active .nav-label,
 .nav-item:hover .nav-label {
-    background: darken($darkgrey, 10%);
-    @include transition(background 0.1s);
+    color: rgba(255,255,255,0.9);
+    background: darken($darkgrey, 7%);
+    @include transition(all 0.1s);
 }
 
 // Ghost branding
@@ -48,6 +50,7 @@
     padding: 23px;
     color: lighten($grey, 20%);
     font-size: 1.5rem;
+    line-height: 1em;
     @include transition(color 0.5s);
 }
 .ghost-logo:hover,
@@ -63,11 +66,18 @@
     right: 0;
     padding: 0;
     margin: 0;
+    cursor: pointer;
+
+    .nav-label {
+        margin: 0;
+        padding: 0 12px;
+        background: none !important;
+    }
 
     // Profile picture
     .image {
         float: left;
-        margin: 0 7px 0 0;
+        margin: 14px 7px 0 0;
 
         img {
             display: block;
@@ -79,19 +89,41 @@
 
     // Descriptive label for mobile menu
     .name {
-        display: none; // Hide until mobile
-        float: left;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        line-height: 19px;
-        padding-bottom: 5px;
+        float: right;
+        height: 33px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        @include transition(background 0.5s);
 
         small {
+            display: none; // hide until mobile
             font-size: 12px;
             color: #cacaca;
             margin-top: 0;
             line-height: 19px;
         }
     }
+    &:hover .name {
+        color: rgba(255,255,255,0.9);
+        background: darken($darkgrey, 7%);
+        @include transition(background 0.1s);
+    }
+
+}//.user-menu
+
+/* mobile styles 
+
+.name {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 19px;
+    padding-bottom: 5px;
+
+    small {
+        display: block;
+    }
 }
+
+*/
