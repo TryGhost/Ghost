@@ -180,20 +180,28 @@ User = ghostBookshelf.Model.extend({
             page: 1, // pagination page
             limit: 15,
             status: 'active',
-            where: {}
+            where: {},
+            whereIn: {}
         }, options);
 
         //TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
-            //TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
-            //TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
+        //TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
+        //TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status && options.status !== 'all') {
             // make sure that status is valid
             //TODO: need a better way of getting a list of statuses other than hard-coding them...
             options.status = _.indexOf(
-                ['active', 'warn-1', 'warn-2', 'warn-3', 'locked', 'invited'],
+                ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked', 'invited', 'inactive'],
                 options.status) !== -1 ? options.status : 'active';
+        }
+
+        if (options.status === 'active') {
+            userCollection.query().whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);
+        } else if (options.status === 'invited') {
+            userCollection.query().whereIn('status', ['invited', 'invited-pending']);
+        } else if (options.status !== 'all') {
             options.where.status = options.status;
         }
 
