@@ -5,7 +5,7 @@
 CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
+        var content = this.getHTML(),
             siteTitle = '<title><![CDATA[Test Blog]]></title>',
             siteDescription = '<description><![CDATA[Thoughts, stories and ideas by Test User]]></description>',
             siteUrl = '<link>http://127.0.0.1:2369/</link>',
@@ -32,7 +32,7 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
 CasperTest.begin('Ensure that author element is not included. Only dc:creator', 3, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
+        var content = this.getHTML(),
             author = '<author>',
             postCreator = '<dc:creator><![CDATA[Test User]]>';
 
@@ -45,7 +45,7 @@ CasperTest.begin('Ensure that author element is not included. Only dc:creator', 
 CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('on');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
+        var content = this.getHTML(),
             today = new Date(),
             dd = ("0" + today.getDate()).slice(-2),
             mm = ("0" + (today.getMonth() + 1)).slice(-2),
