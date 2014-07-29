@@ -8,15 +8,34 @@ title: Dropdowns - Ghost UI
     This is used to show, hide and position the dropdown
 -->
 
-<h1>Default Dropdown</h1>
+<h1>Dropdowns</h1>
+
+<p>Basic usage notes</p>
+
+<ul>
+    <li>The styles should be markup-independent, so you can use divs, lists, and so on.</li>
+    <li>Add the class <code>.dropdown-with-icons</code> to <code>.dropdown-menu</code> is you will be using icons in the dropdown items.</li>
+    <li>Triangles are optional class on the <code>.dropdown-menu</code> element, and have 6 positions:
+        <ul>
+            <li><code>.triangle-bottom</code></li>
+            <li><code>.triangle-bottom-left</code></li>
+            <li><code>.triangle-bottom-right</code></li>
+            <li><code>.triangle-top</code></li>
+            <li><code>.triangle-top-left</code></li>
+            <li><code>.triangle-top-right</code></li>
+        </ul>
+    </li>
+</ul>
+
+<h2>Default Dropdown</h2>
 
 <div class="dropdown">
-  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+  <ul class="dropdown-menu dropdown-with-icons" role="menu" aria-labelledby="dropdownMenu1">
     <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="#">Action</a></li>
     <li role="presentation"><a class="dropdown-item icon-trash" role="menuitem" tabindex="-1" href="#">Another action</a></li>
     <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="#">Something else here</a></li>
     <li role="presentation">
-        <span class="dropdown-item divider"></span>
+        <span class="divider"></span>
     </li>
     <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="#">Separated link</a></li>
   </ul>
@@ -24,7 +43,7 @@ title: Dropdowns - Ghost UI
 
 <hr>
 
-<h1>Bottom Triangle</h1>
+<h2>Bottom Triangle</h2>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-bottom" role="menu" aria-labelledby="dropdownMenu1">
@@ -33,7 +52,7 @@ title: Dropdowns - Ghost UI
   </ul>
 </div>
 
-<h2>Bottom Left Triangle</h2>
+<h3>Bottom Left Triangle</h3>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-bottom-left" role="menu" aria-labelledby="dropdownMenu1">
@@ -42,7 +61,7 @@ title: Dropdowns - Ghost UI
   </ul>
 </div>
 
-<h2>Bottom Right Triangle</h2>
+<h3>Bottom Right Triangle</h3>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-bottom-right" role="menu" aria-labelledby="dropdownMenu1">
@@ -53,7 +72,7 @@ title: Dropdowns - Ghost UI
 
 <hr>
 
-<h1>Top Triangle</h1>
+<h2>Top Triangle</h2>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-top" role="menu" aria-labelledby="dropdownMenu1">
@@ -62,7 +81,7 @@ title: Dropdowns - Ghost UI
   </ul>
 </div>
 
-<h2>Top Left Triangle</h2>
+<h3>Top Left Triangle</h3>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-top-left" role="menu" aria-labelledby="dropdownMenu1">
@@ -71,7 +90,7 @@ title: Dropdowns - Ghost UI
   </ul>
 </div>
 
-<h2>Top Right Triangle</h2>
+<h3>Top Right Triangle</h3>
 
 <div class="dropdown">
   <ul class="dropdown-menu triangle-top-right" role="menu" aria-labelledby="dropdownMenu1">
@@ -80,8 +99,8 @@ title: Dropdowns - Ghost UI
   </ul>
 </div>
 
-<h2>Div &amp; Button Markup</h2>
-
+<h3>Div &amp; Button Markup</h3>
+<!-- TODO: When button styles are in, check these look correct -->
 <div class="dropdown">
   <div class="dropdown-menu triangle-top-right" role="menu" aria-labelledby="dropdownMenu1">
     <span role="presentation"><button class="dropdown-item" role="menuitem" tabindex="-1">Action</button></span>
