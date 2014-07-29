@@ -1,4 +1,13 @@
 //
+// Global Container
+// --------------------------------------------------
+
+#container {
+    @include position(absolute, 0px 0px 0px 0px);
+    overflow: hidden;
+}
+
+//
 // Main Layout
 // --------------------------------------------------
 
@@ -8,8 +17,11 @@
     overflow: hidden;
     z-index: 500; // Above the .global-nav when collapsed
 
-    // TODO: move this to .global-nav-expanded class
     @media (max-width: 1025px) {
+        @include transition(transform 0.15s ease-in-out);
+    }
+
+    &.global-nav-expanded {
         @include transform(translate3d(260px, 0px, 0px));
     }
 }
