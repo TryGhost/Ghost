@@ -1,6 +1,6 @@
 <label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
 <div class="tags">
-{{#each tags}}
+{{#each controller.tags}}
     {{#view view.tagView tag=this}}
         {{view.tag.name}}
     {{/view}}
