@@ -629,231 +629,231 @@ describe('Users API', function () {
         });
     });
 
-//    describe('Edit and assign role', function () {
-//        var newName = 'Jo McBlogger';
-//
-//        function checkEditResponse(response) {
-//            should.exist(response);
-//            should.not.exist(response.meta);
-//            should.exist(response.users);
-//            response.users.should.have.length(1);
-//            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//            response.users[0].name.should.equal(newName);
-//            response.users[0].updated_at.should.be.a.Date;
-//        }
-//
-//        describe('Owner', function () {
-//            it('Can assign Admin role', function (done) {
-//                var options = _.extend({}, context.owner, {id: userIdFor.author}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.author);
-//                    response.users[0].roles[0].name.should.equal('Author');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.admin]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.author);
-//                            response.users[0].roles[0].name.should.equal('Administrator');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//
-//            it('Can assign Editor role', function (done) {
-//                var options = _.extend({}, context.owner, {id: userIdFor.admin}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.admin);
-//                    response.users[0].roles[0].name.should.equal('Administrator');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.editor]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.admin);
-//                            response.users[0].roles[0].name.should.equal('Editor');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//
-//            it('Can assign Author role', function (done) {
-//                var options = _.extend({}, context.owner, {id: userIdFor.admin}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.admin);
-//                    response.users[0].roles[0].name.should.equal('Administrator');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.author]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.admin);
-//                            response.users[0].roles[0].name.should.equal('Author');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//        });
-//
-//        describe('Admin', function () {
-//            it('Can assign Admin role', function (done) {
-//                var options = _.extend({}, context.admin, {id: userIdFor.author}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.author);
-//                    response.users[0].roles[0].name.should.equal('Author');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.admin]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.author);
-//                            response.users[0].roles[0].name.should.equal('Administrator');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//
-//            it('Can assign Editor role', function (done) {
-//                var options = _.extend({}, context.admin, {id: userIdFor.author}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.author);
-//                    response.users[0].roles[0].name.should.equal('Author');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.editor]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.author);
-//                            response.users[0].roles[0].name.should.equal('Editor');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//
-//            it('Can assign Author role', function (done) {
-//                var options = _.extend({}, context.admin, {id: userIdFor.editor}, {include: 'roles'});
-//                UserAPI.read(options).then(function (response) {
-//                    response.users[0].id.should.equal(userIdFor.editor);
-//                    response.users[0].roles[0].name.should.equal('Editor');
-//
-//                    return UserAPI.edit(
-//                        {users: [
-//                            {name: newName, roles: [roleIdFor.author]}
-//                        ]},
-//                        options
-//                    ).then(function (response) {
-//                            checkEditResponse(response);
-//                            response.users[0].id.should.equal(userIdFor.editor);
-//                            response.users[0].roles[0].name.should.equal('Author');
-//
-//                            done();
-//                        }).catch(done);
-//                });
-//            });
-//        });
-//
-//        describe('Editor', function () {
-//            it('Can assign author role to author', function (done) {
-//                UserAPI.edit(
-//                    {users: [
-//                        {name: newName, roles: [roleIdFor.author]}
-//                    ]}, _.extend({}, context.editor, {id: userIdFor.author2}, {include: 'roles'})
-//                ).then(function (response) {
-//                    checkEditResponse(response);
-//                    response.users[0].id.should.equal(userIdFor.author2);
-//                    response.users[0].roles[0].name.should.equal('Author');
-//
-//                    done();
-//                }).catch(done);
-//            });
-//
-//            it('CANNOT assign author role to self', function (done) {
-//                UserAPI.edit(
-//                    {users: [
-//                        {name: newName, roles: [roleIdFor.author]}
-//                    ]}, _.extend({}, context.editor, {id: userIdFor.editor}, {include: 'roles'})
-//                ).then(function (response) {
-//                        done(new Error('Editor should not be able to upgrade their role'));
-//                    }, function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    }).catch(done);
-//            });
-//
-//            it('CANNOT assign author role to other Editor', function (done) {
-//                UserAPI.edit(
-//                    {users: [
-//                        {name: newName, roles: [roleIdFor.author]}
-//                    ]}, _.extend({}, context.editor, {id: userIdFor.editor2}, {include: 'roles'})
-//                ).then(function (response) {
-//                    done(new Error('Editor should not be able to change the roles of other editors'));
-//                }, function (error) {
-//                    error.type.should.eql('NoPermissionError');
-//                    done();
-//                }).catch(done);
-//            });
-//
-//            it('CANNOT assign author role to admin', function (done) {
-//                UserAPI.edit(
-//                    {users: [
-//                        {name: newName, roles: [roleIdFor.author]}
-//                    ]}, _.extend({}, context.editor, {id: userIdFor.admin}, {include: 'roles'})
-//                ).then(function (response) {
-//                        done(new Error('Editor should not be able to change the roles of admins'));
-//                    }, function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    }).catch(done);
-//            });
-//            it('CANNOT assign admin role to author', function (done) {
-//                UserAPI.edit(
-//                    {users: [
-//                        {name: newName, roles: [roleIdFor.admin]}
-//                    ]}, _.extend({}, context.editor, {id: userIdFor.author}, {include: 'roles'})
-//                ).then(function (response) {
-//                        done(new Error('Editor should not be able to upgrade the role of authors'));
-//                    }, function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    }).catch(done);
-//            });
-//        });
-//
-//        describe('Author', function () {
-//           it('CANNOT assign higher role to self', function (done) {
-//               UserAPI.edit(
-//                   {users: [
-//                       {name: newName, roles: [roleIdFor.editor]}
-//                   ]}, _.extend({}, context.author, {id: userIdFor.author}, {include: 'roles'})
-//               ).then(function (response) {
-//                   done(new Error('Author should not be able to upgrade their role'));
-//               }, function (error) {
-//                   error.type.should.eql('NoPermissionError');
-//                   done();
-//               }).catch(done);
-//           });
-//        });
-//    });
+    describe('Edit and assign role', function () {
+        var newName = 'Jo McBlogger';
+
+        function checkEditResponse(response) {
+            should.exist(response);
+            should.not.exist(response.meta);
+            should.exist(response.users);
+            response.users.should.have.length(1);
+            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            response.users[0].name.should.equal(newName);
+            response.users[0].updated_at.should.be.a.Date;
+        }
+
+        describe('Owner', function () {
+            it('Can assign Admin role', function (done) {
+                var options = _.extend({}, context.owner, {id: userIdFor.author}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.author);
+                    response.users[0].roles[0].name.should.equal('Author');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.admin]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.author);
+                            response.users[0].roles[0].name.should.equal('Administrator');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+
+            it('Can assign Editor role', function (done) {
+                var options = _.extend({}, context.owner, {id: userIdFor.admin}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.admin);
+                    response.users[0].roles[0].name.should.equal('Administrator');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.editor]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.admin);
+                            response.users[0].roles[0].name.should.equal('Editor');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+
+            it('Can assign Author role', function (done) {
+                var options = _.extend({}, context.owner, {id: userIdFor.admin}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.admin);
+                    response.users[0].roles[0].name.should.equal('Administrator');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.author]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.admin);
+                            response.users[0].roles[0].name.should.equal('Author');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+        });
+
+        describe('Admin', function () {
+            it('Can assign Admin role', function (done) {
+                var options = _.extend({}, context.admin, {id: userIdFor.author}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.author);
+                    response.users[0].roles[0].name.should.equal('Author');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.admin]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.author);
+                            response.users[0].roles[0].name.should.equal('Administrator');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+
+            it('Can assign Editor role', function (done) {
+                var options = _.extend({}, context.admin, {id: userIdFor.author}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.author);
+                    response.users[0].roles[0].name.should.equal('Author');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.editor]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.author);
+                            response.users[0].roles[0].name.should.equal('Editor');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+
+            it('Can assign Author role', function (done) {
+                var options = _.extend({}, context.admin, {id: userIdFor.editor}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.editor);
+                    response.users[0].roles[0].name.should.equal('Editor');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.author]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                            checkEditResponse(response);
+                            response.users[0].id.should.equal(userIdFor.editor);
+                            response.users[0].roles[0].name.should.equal('Author');
+
+                            done();
+                        }).catch(done);
+                });
+            });
+        });
+
+        describe('Editor', function () {
+            it('Can assign author role to author', function (done) {
+                UserAPI.edit(
+                    {users: [
+                        {name: newName, roles: [roleIdFor.author]}
+                    ]}, _.extend({}, context.editor, {id: userIdFor.author2}, {include: 'roles'})
+                ).then(function (response) {
+                    checkEditResponse(response);
+                    response.users[0].id.should.equal(userIdFor.author2);
+                    response.users[0].roles[0].name.should.equal('Author');
+
+                    done();
+                }).catch(done);
+            });
+
+            it('CANNOT assign author role to self', function (done) {
+                UserAPI.edit(
+                    {users: [
+                        {name: newName, roles: [roleIdFor.author]}
+                    ]}, _.extend({}, context.editor, {id: userIdFor.editor}, {include: 'roles'})
+                ).then(function (response) {
+                        done(new Error('Editor should not be able to upgrade their role'));
+                    }, function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    }).catch(done);
+            });
+
+            it('CANNOT assign author role to other Editor', function (done) {
+                UserAPI.edit(
+                    {users: [
+                        {name: newName, roles: [roleIdFor.author]}
+                    ]}, _.extend({}, context.editor, {id: userIdFor.editor2}, {include: 'roles'})
+                ).then(function (response) {
+                    done(new Error('Editor should not be able to change the roles of other editors'));
+                }, function (error) {
+                    error.type.should.eql('NoPermissionError');
+                    done();
+                }).catch(done);
+            });
+
+            it('CANNOT assign author role to admin', function (done) {
+                UserAPI.edit(
+                    {users: [
+                        {name: newName, roles: [roleIdFor.author]}
+                    ]}, _.extend({}, context.editor, {id: userIdFor.admin}, {include: 'roles'})
+                ).then(function (response) {
+                        done(new Error('Editor should not be able to change the roles of admins'));
+                    }, function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    }).catch(done);
+            });
+            it('CANNOT assign admin role to author', function (done) {
+                UserAPI.edit(
+                    {users: [
+                        {name: newName, roles: [roleIdFor.admin]}
+                    ]}, _.extend({}, context.editor, {id: userIdFor.author}, {include: 'roles'})
+                ).then(function (response) {
+                        done(new Error('Editor should not be able to upgrade the role of authors'));
+                    }, function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    }).catch(done);
+            });
+        });
+
+        describe('Author', function () {
+           it('CANNOT assign higher role to self', function (done) {
+               UserAPI.edit(
+                   {users: [
+                       {name: newName, roles: [roleIdFor.editor]}
+                   ]}, _.extend({}, context.author, {id: userIdFor.author}, {include: 'roles'})
+               ).then(function (response) {
+                   done(new Error('Author should not be able to upgrade their role'));
+               }, function (error) {
+                   error.type.should.eql('NoPermissionError');
+                   done();
+               }).catch(done);
+           });
+        });
+    });
 
     describe('Transfer ownership', function () {
 // Temporarily commenting this test out until #3426 is fixed
