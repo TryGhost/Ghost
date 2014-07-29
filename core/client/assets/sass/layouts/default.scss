@@ -6,6 +6,7 @@
 .viewport {
     @include position(absolute, 0px 0px 0px 0px);
     overflow: hidden;
+    z-index: 500; // Above the .global-nav when collapsed
 
     // TODO: move this to .global-nav-expanded class
     @media (max-width: 1025px) {
