@@ -23,62 +23,55 @@
     }
 } // .dropdown-menu
 
+// Triangle & positioning placeholders
+%triangle {
+    &:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-color: #fff transparent;
+        display: block;
+        width: 0;
+    } // :before
+
+    &:after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        transform: rotate(45deg);
+        box-shadow: rgba(0,0,0,0.1) 0 0 5px 5px;
+        z-index: -1;
+    } // :after
+} // %triangle
+
+%triangle-top {
+    @extend %triangle;
+    &:before {
+        border-width: 0 10px 10px 10px;
+        top: -10px;
+    }
+    &:after {
+        top: -5px;
+    }
+} // %triangle-top
+
+%triangle-bottom {
+    @extend %triangle;
+    &:before {
+        border-width: 10px 10px 0 10px;
+        bottom: -10px;
+    }
+    &:after {
+        bottom: -5px;
+    }
+} // %triangle-bottom
+
 .dropdown-menu {
 
-    &[class*='triangle-'] {
-        &:before {
-            content: '';
-            position: absolute;
-            border-style: solid;
-            border-color: #fff transparent;
-            display: block;
-            width: 0;
-        } // :before
-
-        &:after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            transform: rotate(45deg);
-            box-shadow: rgba(0,0,0,0.1) 0 0 5px 5px;
-            z-index: -1;
-        } // :after
-    } // &[class*='triangle-']
-
-    // Bottom
-    &[class*='triangle-bottom'] {
-        &:before {
-            border-width: 10px 10px 0 10px;
-            bottom: -10px;
-        }
-        &:after {
-            bottom: -5px;
-        }
-    }
-    &.triangle-bottom {
-        &:before {
-            left: 50%;
-            margin-left: -10px;
-        }
-        &:after {
-            left: 50%;
-            margin-left: -10px;
-        }
-    } // &.triangle-bottom
-
-    // Top
-    &[class*='triangle-top'] {
-        &:before {
-            border-width: 0 10px 10px 10px;
-            top: -10px;
-        }
-        &:after {
-            top: -5px;
-        }
-    }
     &.triangle-top {
+        @extend %triangle-top;
         &:before {
             left: 50%;
             margin-left: -10px;
@@ -89,9 +82,40 @@
         }
     } // &.triangle-top
 
-    // Top & Bottom Sides
-    &.triangle-top-left,
+    &.triangle-top-left {
+        @extend %triangle-top;
+        &:before {
+            left: 2rem;
+        }
+        &:after {
+            left: 2rem;
+        }
+    } // &.triangle-top-left
+
+    &.triangle-top-right {
+        @extend %triangle-top;
+        &:before {
+            right: 2rem;
+        }
+        &:after {
+            right: 2rem;
+        }
+    } // &.triangle-top-right
+
+    &.triangle-bottom {
+        @extend %triangle-bottom;
+        &:before {
+            left: 50%;
+            margin-left: -10px;
+        }
+        &:after {
+            left: 50%;
+            margin-left: -10px;
+        }
+    } // &.triangle-bottom
+
     &.triangle-bottom-left {
+        @extend %triangle-bottom;
         &:before {
             left: 2rem;
         }
@@ -99,8 +123,9 @@
             left: 2rem;
         }
     } // &.triangle-bottom-left
-    &.triangle-top-right,
+
     &.triangle-bottom-right {
+        @extend %triangle-bottom;
         &:before {
             right: 2rem;
         }
@@ -125,14 +150,15 @@
 
     &[class*='icon-'] {
         position: relative;
-    }
-
-    &[class*='icon-']:before {
-        position: absolute;
-        left: 1.5rem;
-        font-size: 1.2rem;
-        line-height: 1.2;
-    }
+        &:before {
+            position: absolute;
+            top: 50%;
+            left: 1.5rem;
+            font-size: 1.2rem;
+            line-height: 1;
+            margin-top: -0.6rem;
+        }
+    } // &[class*='icon-']
 
     &.divider {
         position: relative;
@@ -146,5 +172,7 @@
             height: 1px;
             background: #eee;
         } // :before
+
     } // .divider
+
 } // .dropdown-item
