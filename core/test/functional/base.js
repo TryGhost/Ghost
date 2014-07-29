@@ -95,7 +95,7 @@ screens = {
    },
    'signout': {
        url: 'ghost/signout/',
-       linkSelector: '#user-menu li.usermenu-signout button',
+       linkSelector: '#usermenu li.usermenu-signout a',
        // When no user exists we get redirected to setup which has button-add
        selector: '.button-save, .button-add'
    },
