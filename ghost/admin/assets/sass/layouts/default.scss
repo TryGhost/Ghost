@@ -1,0 +1,62 @@
+//
+// Main Layout
+// --------------------------------------------------
+
+// The <main> content wrapper
+.viewport {
+    @include position(absolute, 0px 0px 0px 0px);
+    overflow: hidden;
+
+    // TODO: move this to .global-nav-expanded class
+    @media (max-width: 1025px) {
+        @include transform(translate3d(260px, 0px, 0px));
+    }
+}
+
+// The header bar, only visible below 1025px
+.page-header {
+    position: relative;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    color: #fff;
+    background: $darkgrey;
+    overflow: hidden;
+
+    @media (min-width: 1025px) {
+        height: 60px;
+        line-height: 60px;
+    }
+
+    // Centered page heading
+    h2 {
+        display: block;
+        height: 44px;
+        line-height: 44px;
+        margin: 0;
+        padding: 0 15%;
+        font-size: 1.8rem;
+        font-weight: normal;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
+        @media (min-width: 1025px) {
+            height: 60px;
+            line-height: 60px;
+        }
+    }
+
+}
+
+// The burger to expand .global-nav menu
+.menu-button {
+    @include icon($i-menu, 18px) { line-height: 44px; }
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    color: #fff;
+}
