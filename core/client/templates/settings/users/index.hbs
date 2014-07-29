@@ -48,15 +48,17 @@
 
                 <div class="object-list-item-body">
                     <span class="name">
-                        {{user.name}}
+                        {{name}}
                     </span>
                     <br>
                     <span class="description">Last seen: {{unbound last_login}}</span>
                 </div>
                 <aside class="object-list-item-aside">
-                    {{#each roles}}
-                       <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
-                    {{/each}}
+                    {{#unless isAuthor}}
+                        {{#each roles}}
+                            <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
+                        {{/each}}
+                    {{/unless}}
                 </aside>
             {{/link-to}}
         {{/each}}
