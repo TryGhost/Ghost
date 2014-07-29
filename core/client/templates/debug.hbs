@@ -28,6 +28,7 @@
                 <fieldset>
                     <div class="form-group">
                         <label>Import</label>
+                        {{partial "import-errors"}}
                         {{gh-file-upload id="importfile" uploadButtonText=uploadButtonText}}
                         <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
                     </div>

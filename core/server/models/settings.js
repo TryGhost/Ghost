@@ -96,7 +96,7 @@ Settings = ghostBookshelf.Model.extend({
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return when.reject(new errors.ValidationError('Setting key cannot be empty.'));
+                return when.reject(new errors.ValidationError('Value in [settings.key] cannot be blank.'));
             }
 
             item = self.filterData(item);

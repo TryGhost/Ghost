@@ -37,7 +37,7 @@ Importer000.prototype.canImport = function (data) {
         return when.resolve(this.importFrom[data.meta.version]);
     }
 
-    return when.reject("Unsupported version of data: " + data.meta.version);
+    return when.reject('Unsupported version of data: ' + data.meta.version);
 };
 
 
@@ -92,7 +92,9 @@ function importTags(ops, tableData, transaction) {
             if (!_tag) {
                 return models.Tag.add(tag, _.extend(internal, {transacting: transaction}))
                     // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .otherwise(function (error) { return when.reject(error); });
+                    .catch(function (error) {
+                        return when.reject({raw: error, model: 'tag', data: tag});
+                    });
             }
             return when.resolve(_tag);
         }));
@@ -104,7 +106,9 @@ function importPosts(ops, tableData, transaction) {
     _.each(tableData, function (post) {
         ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
             // add pass-through error handling so that bluebird doesn't think we've dropped it
-            .otherwise(function (error) { return when.reject(error); }));
+            .catch(function (error) {
+                return when.reject({raw: error, model: 'post', data: post});
+            }));
     });
 }
 
@@ -114,7 +118,9 @@ function importUsers(ops, tableData, transaction) {
     tableData[0].id = 1;
     ops.push(models.User.edit(tableData[0], _.extend(internal, {id: 1, transacting: transaction}))
         // add pass-through error handling so that bluebird doesn't think we've dropped it
-        .otherwise(function (error) { return when.reject(error); }));
+        .catch(function (error) {
+            return when.reject({raw: error, model: 'user', data: tableData[0]});
+        }));
 }
 
 function importSettings(ops, tableData, transaction) {
@@ -135,7 +141,9 @@ function importSettings(ops, tableData, transaction) {
 
     ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction}))
          // add pass-through error handling so that bluebird doesn't think we've dropped it
-         .otherwise(function (error) { return when.reject(error); }));
+         .catch(function (error) {
+            return when.reject({raw: error, model: 'setting', data: tableData});
+        }));
 }
 
 function importApps(ops, tableData, transaction) {
@@ -146,7 +154,9 @@ function importApps(ops, tableData, transaction) {
             if (!_app) {
                 return models.App.add(app, _.extend(internal, {transacting: transaction}))
                     // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .otherwise(function (error) { return when.reject(error); });
+                    .catch(function (error) {
+                        return when.reject({raw: error, model: 'app', data: app});
+                    });
             }
             return when.resolve(_app);
         }));
@@ -171,7 +181,7 @@ function importApps(ops, tableData, transaction) {
 //                 appSetting.app_id = _app.id;
 //                 return models.AppSetting.add(appSetting, {transacting: transaction})
 //                     // add pass-through error handling so that bluebird doesn't think we've dropped it
-//                     .otherwise(function (error) { return when.reject(error); });
+//                     .catch(function (error) { return when.reject(error); });
 //             }
 //             // Gracefully ignore missing apps
 //             return when.resolve(_app);
@@ -249,8 +259,8 @@ Importer000.prototype.basicImport = function (data) {
     }).then(function () {
         //TODO: could return statistics of imported items
         return when.resolve();
-    }, function (error) {
-        return when.reject(error);
+    }, function (errors) {
+        return when.reject(errors);
     });
 };
 
