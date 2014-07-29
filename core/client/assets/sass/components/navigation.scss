@@ -8,6 +8,11 @@
     @include position(fixed, 0px 0px auto 0px);
     z-index: 9999;
     background: $darkgrey;
+
+    .thing,
+    .thing2 {
+        display: none; // hide until mobile
+    }
 }
 
 // Wrapper for each item
@@ -31,13 +36,13 @@
     color: rgba(255,255,255,0.7);
     text-transform: uppercase;
     border-radius: 4px;
-    @include transition(all 0.5s);
+    @include transition(color 0.5s, background 0.5s);
 }
 .nav-item.active .nav-label,
 .nav-item:hover .nav-label {
     color: rgba(255,255,255,0.9);
     background: darken($darkgrey, 7%);
-    @include transition(all 0.1s);
+    @include transition(color 0.1s, background 0.1s);
 }
 
 // Ghost branding
@@ -114,6 +119,7 @@
 
 }//.user-menu
 
+
 //
 // Mobile
 // --------------------------------------------------
@@ -128,6 +134,10 @@
         bottom: 0;
         left: 0;
         overflow: auto;
+
+        .thing, .thing2 {
+            display: block;
+        }
     }
 
     .nav-item {
@@ -153,6 +163,7 @@
         height: auto;
         padding: 15px;
         @include position(absolute, auto 0px 0px 0px);
+        @include transition(color 0.5s, background 0.5s);
 
         .nav-label {
             padding: 0;
@@ -180,7 +191,7 @@
         &:hover {
             color: rgba(255,255,255,0.9);
             background: darken($darkgrey, 7%);
-            @include transition(all 0.1s);
+            @include transition(color 0.1s, background 0.1s);
         }
         &:hover .name {
             background: transparent;

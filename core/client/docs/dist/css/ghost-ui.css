@@ -589,7 +589,30 @@ html {
   -webkit-tap-highlight-color: transparent; }
 
 body {
-  width: 100%; }
+  width: 100%;
+  -webkit-font-feature-settings: 'kern' 1;
+  -moz-font-feature-settings: 'kern' 1;
+  font-feature-settings: 'kern' 1; }
+
+::-moz-selection {
+  background: #D6EDFF; }
+
+::selection {
+  background: #D6EDFF; }
+
+h1, h2, h3,
+h4, h5, h6 {
+  -webkit-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+  -moz-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+  font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+  line-height: 1.15em;
+  margin: 0 0 0.3em 0; }
+
+p, ul, ol, dl {
+  -webkit-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+  -moz-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+  font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+  margin: 0 0 1.7em 0; }
 
 a, a:active {
   text-decoration: none; }
@@ -630,6 +653,9 @@ a, a:active {
   left: 0px;
   z-index: 9999;
   background: #242628; }
+  .global-nav .thing,
+  .global-nav .thing2 {
+    display: none; }
 
 .nav-item {
   position: relative;
@@ -649,17 +675,17 @@ a, a:active {
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   border-radius: 4px;
-  -webkit-transition: all 0.5s;
-  -moz-transition: all 0.5s;
-  transition: all 0.5s; }
+  -webkit-transition: color 0.5s, background 0.5s;
+  -moz-transition: color 0.5s, background 0.5s;
+  transition: color 0.5s, background 0.5s; }
 
 .nav-item.active .nav-label,
 .nav-item:hover .nav-label {
   color: rgba(255, 255, 255, 0.9);
   background: #131415;
-  -webkit-transition: all 0.1s;
-  -moz-transition: all 0.1s;
-  transition: all 0.1s; }
+  -webkit-transition: color 0.1s, background 0.1s;
+  -moz-transition: color 0.1s, background 0.1s;
+  transition: color 0.1s, background 0.1s; }
 
 .ghost-logo {
   display: inline-block;
@@ -746,6 +772,8 @@ a, a:active {
     bottom: 0;
     left: 0;
     overflow: auto; }
+    .global-nav .thing, .global-nav .thing2 {
+      display: block; }
 
   .nav-item {
     position: relative;
@@ -769,7 +797,10 @@ a, a:active {
     top: auto;
     right: 0px;
     bottom: 0px;
-    left: 0px; }
+    left: 0px;
+    -webkit-transition: color 0.5s, background 0.5s;
+    -moz-transition: color 0.5s, background 0.5s;
+    transition: color 0.5s, background 0.5s; }
     .user-menu .nav-label {
       padding: 0;
       height: auto; }
@@ -788,11 +819,76 @@ a, a:active {
     .user-menu:hover {
       color: rgba(255, 255, 255, 0.9);
       background: #131415;
-      -webkit-transition: all 0.1s;
-      -moz-transition: all 0.1s;
-      transition: all 0.1s; }
+      -webkit-transition: color 0.1s, background 0.1s;
+      -moz-transition: color 0.1s, background 0.1s;
+      transition: color 0.1s, background 0.1s; }
     .user-menu:hover .name {
       background: transparent;
       -webkit-transition: none;
       -moz-transition: none;
       transition: none; } }
+.viewport {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  overflow: hidden; }
+  @media (max-width: 1025px) {
+    .viewport {
+      -webkit-transform: translate3d(260px, 0px, 0px);
+      -moz-transform: translate3d(260px, 0px, 0px);
+      -ms-transform: translate3d(260px, 0px, 0px);
+      -o-transform: translate3d(260px, 0px, 0px);
+      transform: translate3d(260px, 0px, 0px); } }
+
+.page-header {
+  position: relative;
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  color: #fff;
+  background: #242628;
+  overflow: hidden; }
+  @media (min-width: 1025px) {
+    .page-header {
+      height: 60px;
+      line-height: 60px; } }
+  .page-header h2 {
+    display: block;
+    height: 44px;
+    line-height: 44px;
+    margin: 0;
+    padding: 0 15%;
+    font-size: 1.8rem;
+    font-weight: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden; }
+    @media (min-width: 1025px) {
+      .page-header h2 {
+        height: 60px;
+        line-height: 60px; } }
+
+.menu-button {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  color: #fff; }
+  .menu-button:before {
+    font-family: "GhostIcons";
+    font-weight: normal;
+    font-style: normal;
+    vertical-align: -7%;
+    text-transform: none;
+    speak: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    content: "\e005";
+    font-size: 18px;
+    line-height: 44px; }
+  .menu-button:hover {
+    text-decoration: none; }
