@@ -298,6 +298,10 @@ coreHelpers.content = function (options) {
     return new hbs.handlebars.SafeString(this.html);
 };
 
+coreHelpers.title = function () {
+    return  new hbs.handlebars.SafeString(hbs.handlebars.Utils.escapeExpression(this.title || ''));
+};
+
 // ### Excerpt Helper
 //
 // *Usage example:*
@@ -786,6 +790,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerThemeHelper('author', coreHelpers.author);
 
     registerThemeHelper('content', coreHelpers.content);
+
+    registerThemeHelper('title', coreHelpers.title);
 
     registerThemeHelper('date', coreHelpers.date);
 
