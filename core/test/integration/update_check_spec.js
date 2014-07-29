@@ -9,26 +9,14 @@ var testUtils       = require('../utils'),
     packageInfo     = require('../../../package'),
     ghost           = require('../../../core'),
     config          = rewire('../../../core/server/config'),
-    defaultConfig   = require('../../../config.example')[process.env.NODE_ENV],
     updateCheck     = rewire('../../server/update-check');
 
 describe('Update Check', function () {
     var environmentsOrig;
 
-    before(function (done) {
+    before(function () {
         environmentsOrig = updateCheck.__get__('allowedCheckEnvironments');
         updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing']);
-
-        _.extend(config, defaultConfig);
-
-        ghost({config: config.paths.config}).then(function () {
-            return testUtils.clearData();
-        }).then(function () {
-            done();
-        }).catch(function (err) {
-            console.log('Update Check before error', err);
-            throw new Error(err);
-        });
     });
 
     after(function () {
