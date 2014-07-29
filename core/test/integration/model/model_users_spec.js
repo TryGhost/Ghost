@@ -5,9 +5,11 @@ var testUtils   = require('../../utils'),
     when        = require('when'),
     sinon       = require('sinon'),
     uuid        = require('node-uuid'),
+    _           = require('lodash'),
 
     // Stuff we are testing
     UserModel   = require('../../../server/models').User,
+    RoleModel   = require('../../../server/models').Role,
     context     = testUtils.context.admin,
     sandbox     = sinon.sandbox.create();
 
@@ -125,7 +127,7 @@ describe('User Model', function run() {
     });
 
     describe('Basic Operations', function () {
-        beforeEach(testUtils.setup('owner'));
+        beforeEach(testUtils.setup('owner', 'role'));
 
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
@@ -208,6 +210,28 @@ describe('User Model', function run() {
 
                 done();
 
+            }).catch(done);
+        });
+
+        it('can add', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[2];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return when.resolve(userData);
+            });
+
+            RoleModel.findOne().then(function (role) {
+                userData.roles = [role.toJSON()];
+
+                return  UserModel.add(userData, _.extend({}, context));
+            }).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('uuid').should.equal(true);
+                createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
+                createdUser.get('email').should.eql(userData.email, 'email address correct');
+                createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
+
+                done();
             }).catch(done);
         });
 
