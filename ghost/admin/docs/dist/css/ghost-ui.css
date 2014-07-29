@@ -592,7 +592,8 @@ body {
   width: 100%;
   -webkit-font-feature-settings: 'kern' 1;
   -moz-font-feature-settings: 'kern' 1;
-  font-feature-settings: 'kern' 1; }
+  font-feature-settings: 'kern' 1;
+  overflow-x: hidden; }
 
 ::-moz-selection {
   background: #D6EDFF; }
