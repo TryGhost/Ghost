@@ -10,11 +10,10 @@ var _           = require('lodash'),
     api         = require('../api'),
     passport    = require('passport'),
     errors      = require('../errors'),
+    utils       = require('../utils'),
 
     expressServer,
     oauthServer,
-    ONE_HOUR_MS = 60 * 60 * 1000,
-    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS,
     loginSecurity = [];
 
 function isBlackListedFileType(file) {
@@ -130,7 +129,7 @@ var middleware = {
         api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
             var activeTheme = response.settings[0];
 
-            express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: ONE_YEAR_MS})(req, res, next);
+            express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
         });
     },
 
