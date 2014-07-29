@@ -59,10 +59,27 @@ function getPostPage(options) {
 }
 
 function formatPageResponse(posts, page) {
+    // Delete email from author for frontend output
+    // TODO: do this on API level if no context is available
+    posts = _.each(posts, function (post) {
+        if (post.author) {
+            delete post.author.email;
+        }
+        return post;
+    });
     return {
         posts: posts,
         pagination: page.meta.pagination
     };
+}
+
+function formatResponse(post) {
+    // Delete email from author for frontend output
+    // TODO: do this on API level if no context is available
+    if (post.author) {
+        delete post.author.email;
+    }
+    return {post: post};
 }
 
 function handleError(next) {
@@ -291,7 +308,7 @@ frontendControllers = {
                             paths = config.paths.availableThemes[activeTheme.value],
                             view = template.getThemeViewForPost(paths, post);
 
-                        res.render(view, {post: post});
+                        res.render(view, formatResponse(post));
                     });
                 });
             }
