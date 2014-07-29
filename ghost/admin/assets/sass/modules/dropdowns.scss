@@ -8,16 +8,18 @@
 
 // List
 .dropdown-menu {
-    background: #fff;
-    box-shadow: rgba(0,0,0,0.5) 0 1px 15px;
+
     display: inline-block;
-    border-radius: 2px;
+    min-width: 160px;
     padding: 0.5rem 0;
     margin: 0;
     position: relative;
-    font-size: 1.4rem;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.175);
+    border-radius: 2px;
 
-    // Dropdown Resets - This means we can use any element
+    // Item Resets - This means we can use any element
     li {
         list-style: none;
     }
@@ -41,7 +43,7 @@
         height: 20px;
         background: #fff;
         transform: rotate(45deg);
-        box-shadow: rgba(0,0,0,0.1) 0 0 5px 5px;
+        box-shadow: 0 0 5px 1px rgba(0,0,0,0.175);
         z-index: -1;
     } // :after
 } // %triangle
@@ -133,46 +135,49 @@
             right: 2rem;
         }
     } // &.triangle-bottom-right
-
 } // .dropdown-menu
 
 // List Item
 .dropdown-item {
-    color: #000;
     display: block;
     width: 100%;
-    padding: 0.7rem 3.5rem;
+    padding: 0.6rem 2rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: #000;
 
     &:not(.divider):hover,
     &:not(.divider):focus {
         background: #f6f6f6;
     }
-
-    &[class*='icon-'] {
-        position: relative;
-        &:before {
-            position: absolute;
-            top: 50%;
-            left: 1.5rem;
-            font-size: 1.2rem;
-            line-height: 1;
-            margin-top: -0.6rem;
-        }
-    } // &[class*='icon-']
-
-    &.divider {
-        position: relative;
-        height: 1.5rem;
-        &:before {
-            content: '';
-            position: absolute;
-            top: 0.7rem;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: #eee;
-        } // :before
-
-    } // .divider
-
 } // .dropdown-item
+
+// Divider
+.dropdown-menu .divider {
+    display: block;
+    padding: 0;
+    margin: 0.9rem 0;
+    height: 1px;
+    width: 100%;
+    position: relative;
+    background: #eee;
+    overflow: hidden;
+} // .dropdown-menu .divider
+
+// Icons
+.dropdown-with-icons {
+    .dropdown-item:not(.divider) {
+        padding: 0.6rem 3rem;
+        &[class*='icon-'] {
+            position: relative;
+            &:before {
+                position: absolute;
+                top: 50%;
+                left: 1rem;
+                font-size: 1.2rem;
+                line-height: 1;
+                margin-top: -0.6rem;
+            }
+        } // &[class*='icon-']
+    } // .dropdown-item
+} // .dropdown-with-icons
