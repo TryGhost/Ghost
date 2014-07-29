@@ -392,6 +392,14 @@ User = ghostBookshelf.Model.extend({
         }).then(function (addedUser) {
             // Assign the userData to our created user so we can pass it back
             userData = addedUser;
+            //if we are given a "role" object, only pass in the role ID in place of the full object
+            roles = _.map(roles, function (role) {
+                if (_.isNumber(role)) {
+                    return role;
+                } else {
+                    return parseInt(role.id, 10);
+                }
+            });
 
             return userData.roles().attach(roles);
         }).then(function () {
