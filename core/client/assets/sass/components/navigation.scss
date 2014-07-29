@@ -9,6 +9,11 @@
     z-index: 9999;
     background: $darkgrey;
 
+    i:before {
+        display: inline-block;
+        width: 16px;
+    }
+
     .thing,
     .thing2 {
         display: none; // hide until mobile
@@ -47,21 +52,26 @@
 
 // Ghost branding
 .ghost-logo {
-    @include icon($i-ghost, 14px) { line-height: 0; }
-    display: inline-block;
-    float: left;
-    height: 60px;
     width: 60px;
-    padding: 23px;
+    padding-right: 0;
+    text-align: center;
     color: lighten($grey, 20%);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     line-height: 1em;
     @include transition(color 0.5s);
+
+    span {
+        display: none;
+    }
 }
 .ghost-logo:hover,
 .ghost-logo:focus {
     color: $lightgrey;
     @include transition(color 0.1s);
+
+    .nav-label {
+        background: transparent;
+    }
 }
 
 // Right hand dropdown
@@ -133,6 +143,7 @@
         top: 0;
         bottom: 0;
         left: 0;
+        background: darken($darkgrey, 7%);
         overflow: auto;
 
         .thing, .thing2 {
@@ -146,6 +157,7 @@
         height: auto;
         margin: 0;
         padding: 0;
+        border-bottom: $darkgrey 1px solid;
     }
 
     // Convert to full-width mobile-friendly
@@ -157,12 +169,34 @@
         padding: 0 15px;
         border-radius: 0;
     }
+    .nav-item.active .nav-label {
+        color: #fff !important;
+        background: darken($darkgrey, 4%);
+
+        i { color: #fff; }
+    }
+    .nav-item:hover .nav-label {
+        color: rgba(255,255,255,0.9);
+        background: $darkgrey;
+    }
+
+    .ghost-logo {
+        display: block;
+        width: 100%;
+        font-size: inherit;
+        line-height: 44px;
+        text-align: left;
+
+        span { display: inline; }
+    }
 
     // Drop it to the bottom of the menu
     .user-menu {
+        @include position(absolute, auto 0px 0px 0px);
         height: auto;
         padding: 15px;
-        @include position(absolute, auto 0px 0px 0px);
+        border-bottom: none;
+        border-top: $darkgrey 1px solid;
         @include transition(color 0.5s, background 0.5s);
 
         .nav-label {
@@ -190,7 +224,7 @@
 
         &:hover {
             color: rgba(255,255,255,0.9);
-            background: darken($darkgrey, 7%);
+            background: $darkgrey;
             @include transition(color 0.1s, background 0.1s);
         }
         &:hover .name {
