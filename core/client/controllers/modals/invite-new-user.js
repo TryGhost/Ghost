@@ -56,8 +56,7 @@ var InviteNewUserController = Ember.Controller.extend({
                 // but the user's status in the response object will be 'invited-pending'.
                 if (newUser.get('status') === 'invited-pending') {
                     self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
-                }
-                else {
+                } else {
                     self.notifications.showSuccess(notificationText, false);
                 }
             }).catch(function (errors) {
