@@ -13,6 +13,8 @@ html {
 
 body {
     width: 100%;
+    color: lighten($darkgrey, 10%);
+    font-size: 1.4rem;
     -webkit-font-feature-settings: 'kern' 1;
     -moz-font-feature-settings: 'kern' 1;
     font-feature-settings: 'kern' 1;
