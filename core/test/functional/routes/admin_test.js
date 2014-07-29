@@ -15,12 +15,10 @@ var request    = require('supertest'),
     httpServer,
     agent      = request.agent,
 
-    ONE_HOUR_S = 60 * 60,
-    ONE_YEAR_S = 365 * 24 * ONE_HOUR_S,
     cacheRules = {
         'public': 'public, max-age=0',
-        'hour':  'public, max-age=' + ONE_HOUR_S,
-        'year':  'public, max-age=' + ONE_YEAR_S,
+        'hour':  'public, max-age=' + testUtils.ONE_HOUR_S,
+        'year':  'public, max-age=' + testUtils.ONE_YEAR_S,
         'private': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     };
 

@@ -2,35 +2,31 @@
 // The following custom middleware functions cannot yet be unit tested, and as such are kept separate from
 // the testable custom middleware functions in middleware.js
 
-var api         = require('../api'),
-    bodyParser  = require('body-parser'),
-    config      = require('../config'),
-    errors      = require('../errors'),
-    express     = require('express'),
-    favicon     = require('static-favicon'),
-    fs          = require('fs'),
-    hbs         = require('express-hbs'),
-    logger      = require('morgan'),
-    middleware  = require('./middleware'),
-    packageInfo = require('../../../package.json'),
-    path        = require('path'),
-    routes      = require('../routes'),
-    slashes     = require('connect-slashes'),
-    storage     = require('../storage'),
-    url         = require('url'),
-    _           = require('lodash'),
-    passport    = require('passport'),
-    oauth       = require('./oauth'),
-    oauth2orize = require('oauth2orize'),
+var api            = require('../api'),
+    bodyParser     = require('body-parser'),
+    config         = require('../config'),
+    errors         = require('../errors'),
+    express        = require('express'),
+    favicon        = require('static-favicon'),
+    fs             = require('fs'),
+    hbs            = require('express-hbs'),
+    logger         = require('morgan'),
+    middleware     = require('./middleware'),
+    packageInfo    = require('../../../package.json'),
+    path           = require('path'),
+    routes         = require('../routes'),
+    slashes        = require('connect-slashes'),
+    storage        = require('../storage'),
+    url            = require('url'),
+    _              = require('lodash'),
+    passport       = require('passport'),
+    oauth          = require('./oauth'),
+    oauth2orize    = require('oauth2orize'),
     authStrategies = require('./authStrategies'),
+    utils          = require('../utils'),
 
     expressServer,
-    setupMiddleware,
-
-    ONE_HOUR_S  = 60 * 60,
-    ONE_YEAR_S  = 365 * 24 * ONE_HOUR_S,
-    ONE_HOUR_MS = ONE_HOUR_S * 1000,
-    ONE_YEAR_MS = 365 * 24 * ONE_HOUR_MS;
+    setupMiddleware;
 
 // ##Custom Middleware
 
@@ -209,7 +205,7 @@ function robots() {
                         headers: {
                             'Content-Type': 'text/plain',
                             'Content-Length': buf.length,
-                            'Cache-Control': 'public, max-age=' + ONE_YEAR_MS / 1000
+                            'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
                         },
                         body: buf
                     };
@@ -255,17 +251,17 @@ setupMiddleware = function (server) {
     expressServer.use(subdir, favicon(corePath + '/shared/favicon.ico'));
 
     // Static assets
-    expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared'), {maxAge: ONE_HOUR_MS}));
+    expressServer.use(subdir + '/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     expressServer.use(subdir + '/content/images', storage.get_storage().serve());
-    expressServer.use(subdir + '/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: ONE_YEAR_MS}));
-    expressServer.use(subdir + '/public', express['static'](path.join(corePath, '/built/public'), {maxAge: ONE_YEAR_MS}));
+    expressServer.use(subdir + '/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: utils.ONE_YEAR_MS}));
+    expressServer.use(subdir + '/public', express['static'](path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
     expressServer.use(updateActiveTheme);
     expressServer.use(decideContext);
 
     // Admin only config
-    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: ONE_YEAR_MS})));
+    expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: utils.ONE_YEAR_MS})));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
@@ -280,7 +276,7 @@ setupMiddleware = function (server) {
     expressServer.use(robots());
 
     // Add in all trailing slashes
-    expressServer.use(slashes(true, {headers: {'Cache-Control': 'public, max-age=' + ONE_YEAR_S}}));
+    expressServer.use(slashes(true, {headers: {'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}}));
 
     // Body parsing
     expressServer.use(bodyParser.json());

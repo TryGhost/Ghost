@@ -2,11 +2,11 @@ var _                = require('lodash'),
     dataProvider     = require('../models'),
     settings         = require('./settings'),
     mail             = require('./mail'),
+    globalUtils      = require('../utils'),
     utils            = require('./utils'),
     when             = require('when'),
     errors           = require('../errors'),
     config           = require('../config'),
-    ONE_DAY          = 60 * 60 * 24 * 1000,
     authentication;
 
 /**
@@ -23,7 +23,7 @@ authentication = {
      * @returns {Promise(passwordreset)} message
      */
     generateResetToken: function generateResetToken(object) {
-        var expires = Date.now() + ONE_DAY,
+        var expires = Date.now() + globalUtils.ONE_DAY_MS,
             email;
 
         return authentication.isSetup().then(function (result) {
