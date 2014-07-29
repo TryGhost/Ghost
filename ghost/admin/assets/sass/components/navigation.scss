@@ -116,9 +116,9 @@
             font-size: 11px;
             text-transform: none;
             letter-spacing: 0;
-            color: #cacaca;
+            color: rgba(255,255,255,0.4);
             margin-top: 0;
-            line-height: 12px;
+            line-height: 11px;
         }
     }
     &:hover .name {
@@ -138,6 +138,7 @@
 
     // Fixed width, position left
     .global-nav {
+        z-index: 20; // below the .viewport when collapsed
         width: 260px;
         height: auto;
         top: 0;
