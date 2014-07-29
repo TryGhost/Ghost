@@ -151,9 +151,16 @@
         left: 0;
         background: darken($darkgrey, 7%);
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        @include transform(translate3d(-260px, 0px, 0px));
+        @include transition(transform 0.15s ease-in-out);
 
         .thing, .thing2 {
             display: block;
+        }
+
+        &.global-nav-expanded {
+            @include transform(translate3d(0, 0px, 0px));
         }
     }
 

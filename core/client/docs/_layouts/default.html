@@ -5,16 +5,19 @@
     {% include head.html %}
 </head>
 <body>
-<a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
+    <div id="container">
 
-<!-- Main nav -->
-{% include nav/global.html %}
+        <a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
 
-<main id="gh-main" class="viewport" role="main">
-    {{content}}
-</main>
+        <!-- Main nav -->
+        {% include nav/global.html %}
 
-{% include foot.html %}
+        <main id="gh-main" class="viewport" role="main">
+            {{content}}
+        </main>
 
+        {% include foot.html %}
+
+    </div>
 </body>
 </html>
