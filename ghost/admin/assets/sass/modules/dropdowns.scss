@@ -8,15 +8,19 @@
 
 // List
 .dropdown-menu {
-
+    position: relative;
     display: inline-block;
     min-width: 160px;
     padding: 0.5rem 0;
     margin: 0;
-    position: relative;
+    font-size: 1.4rem;
+    line-height: 1;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
     background: #fff;
-    border: 1px solid rgba(0,0,0,0.15);
-    box-shadow: 0 1px 12px rgba(0,0,0,0.175);
+    border: #B0BEC4 1px solid;
+    box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
     border-radius: 2px;
 
     // Item Resets - This means we can use any element
@@ -39,20 +43,21 @@
     &:after {
         content: '';
         position: absolute;
-        width: 20px;
-        height: 20px;
+        width: 12px;
+        height: 12px;
         background: #fff;
         transform: rotate(45deg);
-        box-shadow: 0 0 5px 1px rgba(0,0,0,0.175);
+        box-shadow: #B0BEC4 0 0 0 1px;
         z-index: -1;
     } // :after
 } // %triangle
 
 %triangle-top {
     @extend %triangle;
+
     &:before {
-        border-width: 0 10px 10px 10px;
-        top: -10px;
+        border-width: 0 6px 6px 6px;
+        top: -6px;
     }
     &:after {
         top: -5px;
@@ -61,9 +66,10 @@
 
 %triangle-bottom {
     @extend %triangle;
+
     &:before {
-        border-width: 10px 10px 0 10px;
-        bottom: -10px;
+        border-width: 6px 6px 0 6px;
+        bottom: -6px;
     }
     &:after {
         bottom: -5px;
@@ -74,33 +80,36 @@
 
     &.triangle-top {
         @extend %triangle-top;
+
         &:before {
             left: 50%;
-            margin-left: -10px;
+            margin-left: -6px;
         }
         &:after {
             left: 50%;
-            margin-left: -10px;
+            margin-left: -6px;
         }
     } // &.triangle-top
 
     &.triangle-top-left {
         @extend %triangle-top;
+
         &:before {
-            left: 2rem;
+            left: 1.2rem;
         }
         &:after {
-            left: 2rem;
+            left: 1.2rem;
         }
     } // &.triangle-top-left
 
     &.triangle-top-right {
         @extend %triangle-top;
+
         &:before {
-            right: 2rem;
+            right: 1.2rem;
         }
         &:after {
-            right: 2rem;
+            right: 1.2rem;
         }
     } // &.triangle-top-right
 
@@ -108,31 +117,31 @@
         @extend %triangle-bottom;
         &:before {
             left: 50%;
-            margin-left: -10px;
+            margin-left: -6px;
         }
         &:after {
             left: 50%;
-            margin-left: -10px;
+            margin-left: -6px;
         }
     } // &.triangle-bottom
 
     &.triangle-bottom-left {
         @extend %triangle-bottom;
         &:before {
-            left: 2rem;
+            left: 1.2rem;
         }
         &:after {
-            left: 2rem;
+            left: 1.2rem;
         }
     } // &.triangle-bottom-left
 
     &.triangle-bottom-right {
         @extend %triangle-bottom;
         &:before {
-            right: 2rem;
+            right: 1.2rem;
         }
         &:after {
-            right: 2rem;
+            right: 1.2rem;
         }
     } // &.triangle-bottom-right
 } // .dropdown-menu
@@ -141,14 +150,15 @@
 .dropdown-item {
     display: block;
     width: 100%;
-    padding: 0.6rem 2rem;
+    padding: 0.8rem 2rem;
     font-size: 1.4rem;
     line-height: 1;
     color: #000;
 
     &:not(.divider):hover,
     &:not(.divider):focus {
-        background: #f6f6f6;
+        color: #fff;
+        background: $blue;
     }
 } // .dropdown-item
 
@@ -160,7 +170,7 @@
     height: 1px;
     width: 100%;
     position: relative;
-    background: #eee;
+    background: #D0DADE;
     overflow: hidden;
 } // .dropdown-menu .divider
 
