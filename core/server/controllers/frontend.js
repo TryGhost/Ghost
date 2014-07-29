@@ -81,6 +81,24 @@ function setReqCtx(req, data) {
     });
 }
 
+/**
+ * Returns the paths object of the active theme via way of a promise.
+ * @return {Promise} The promise resolves with the value of the paths.
+ */
+function getActiveThemePaths() {
+    return api.settings.read({
+        key: 'activeTheme',
+        context: {
+            internal: true
+        }
+    }).then(function (response) {
+        var activeTheme = response.settings[0],
+            paths = config.paths.availableThemes[activeTheme.value];
+
+        return paths;
+    });
+}
+
 frontendControllers = {
     'homepage': function (req, res, next) {
         // Parse the page number
@@ -105,7 +123,17 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                res.render('index', formatPageResponse(posts, page));
+                getActiveThemePaths().then(function (paths) {
+                    var view = paths.hasOwnProperty('home.hbs') ? 'home' : 'index';
+
+                    // If we're on a page then we always render the index
+                    // template.
+                    if (pageParam > 1) {
+                        view = 'index';
+                    }
+
+                    res.render(view, formatPageResponse(posts, page));
+                });
             });
         }).otherwise(handleError(next));
     },
@@ -146,10 +174,8 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
-                    var activeTheme = response.settings[0],
-                        paths = config.paths.availableThemes[activeTheme.value],
-                        view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
+                getActiveThemePaths().then(function (paths) {
+                    var view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
 
                         // Format data for template
                         result = _.extend(formatPageResponse(posts, page), {
@@ -205,10 +231,8 @@ frontendControllers = {
 
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
-                    var activeTheme = response.settings[0],
-                        paths = config.paths.availableThemes[activeTheme.value],
-                        view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
+                getActiveThemePaths().then(function (paths) {
+                    var view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
 
                         // Format data for template
                         result = _.extend(formatPageResponse(posts, page), {
@@ -286,10 +310,8 @@ frontendControllers = {
                 setReqCtx(req, post);
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
-                    api.settings.read({key: 'activeTheme', context: {internal: true}}).then(function (response) {
-                        var activeTheme = response.settings[0],
-                            paths = config.paths.availableThemes[activeTheme.value],
-                            view = template.getThemeViewForPost(paths, post);
+                    getActiveThemePaths().then(function (paths) {
+                        var view = template.getThemeViewForPost(paths, post);
 
                         res.render(view, {post: post});
                     });
