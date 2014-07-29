@@ -46,24 +46,26 @@ authentication = {
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {
                 var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
-                    siteLink = '<a href="' + baseUrl + '">' + baseUrl + '</a>',
                     resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + resetToken + '/',
-                    resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
-                    payload = {
+                    emailData = {
+                        resetUrl: resetUrl
+                    };
+
+                mail.generateContent({data: emailData, template: 'reset-password'}).then(function (emailContent) {
+                    var payload = {
                         mail: [{
                             message: {
                                 to: email,
                                 subject: 'Reset Password',
-                                html: '<p><strong>Hello!</strong></p>' +
-                                    '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
-                                    '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
-                                    '<p>Ghost</p>'
+                                html: emailContent.html,
+                                text: emailContent.text
                             },
                             options: {}
                         }]
                     };
+                    return mail.send(payload, {context: {internal: true}});
+                });
 
-                return mail.send(payload, {context: {internal: true}});
             }).then(function () {
                 return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
             }).otherwise(function (error) {
@@ -212,33 +214,32 @@ authentication = {
             setupUser = user.toJSON();
             return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
         }).then(function () {
-            var message = {
-                    to: setupUser.email,
-                    subject: 'Your New Ghost Blog',
-                    html: '<p><strong>Hello!</strong></p>' +
-                          '<p>Good news! You\'ve successfully created a brand new Ghost blog over on ' + config.url + '</p>' +
-                          '<p>You can log in to your admin account with the following details:</p>' +
-                          '<p> Email Address: ' + setupUser.email + '<br>' +
-                          'Password: The password you chose when you signed up</p>' +
-                          '<p>Keep this email somewhere safe for future reference, and have fun!</p>' +
-                          '<p>xoxo</p>' +
-                          '<p>Team Ghost<br>' +
-                          '<a href="https://ghost.org">https://ghost.org</a></p>'
-                },
-                payload = {
-                    mail: [{
-                        message: message,
-                        options: {}
-                    }]
-                };
+            var data = {
+                ownerEmail: setupUser.email
+            };
 
-            return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
-                errors.logError(
-                    error.message,
-                    "Unable to send welcome email, your blog will continue to function.",
-                    "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
-                );
+            mail.generateContent({data: data, template: 'welcome'}).then(function (emailContent) {
+                var message = {
+                        to: setupUser.email,
+                        subject: 'Your New Ghost Blog',
+                        html: emailContent.html,
+                        text: emailContent.text
+                    },
+                    payload = {
+                        mail: [{
+                            message: message,
+                            options: {}
+                        }]
+                    };
+                return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
+                    errors.logError(
+                        error.message,
+                        "Unable to send welcome email, your blog will continue to function.",
+                        "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
+                    );
+                });
             });
+
         }).then(function () {
             return when.resolve({ users: [setupUser]});
         });
