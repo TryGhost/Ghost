@@ -235,16 +235,21 @@
             }
         }
 
+        i {
+            display: none;
+        }
+
         &:hover {
             color: rgba(255,255,255,0.9);
             background: $darkgrey;
             @include transition(color 0.1s, background 0.1s);
-        }
-        &:hover .name {
-            background: transparent;
-            @include transition(none);
+
+            .name {
+                background: transparent;
+                @include transition(none);
+            }
         }
 
-    }
+    }//.user-menu
 
 }
