@@ -45,6 +45,10 @@ var SettingsUserController = Ember.ObjectController.extend({
         return createdAt ? createdAt.fromNow() : '';
     }.property('user.created_at'),
 
+    isAuthor: function () {
+        return this.get('user.isAuthor');
+    }.property('user.isAuthor'),
+
     actions: {
         revoke: function () {
             var self = this,
