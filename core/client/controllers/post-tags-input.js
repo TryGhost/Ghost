@@ -1,6 +1,33 @@
 var PostTagsInputController = Ember.Controller.extend({
 
-    tags: Ember.computed.alias('parentController.tags'),
+    tagEnteredOrder: Ember.A(),
+
+    tags: Ember.computed('parentController.tags', function () {
+        var proxyTags = Ember.ArrayProxy.create({
+            content: this.get('parentController.tags')
+        }),
+
+        temp = proxyTags.get('arrangedContent').slice();
+
+        proxyTags.get('arrangedContent').clear();
+
+        this.get('tagEnteredOrder').forEach(function (tagName) {
+            var tag = temp.find(function (tag) {
+                return tag.get('name') === tagName;
+            });
+
+            if (tag) {
+                proxyTags.get('arrangedContent').addObject(tag);
+                temp.removeObject(tag);
+            }
+        });
+
+        temp.forEach(function (tag) {
+            proxyTags.get('arrangedContent').addObject(tag);
+        });
+
+        return proxyTags;
+    }),
 
     suggestions: null,
     newTagText: null,
@@ -36,21 +63,25 @@ var PostTagsInputController = Ember.Controller.extend({
                 // otherwise create a new one
                 newTag = this.store.createRecord('tag');
                 newTag.set('name', newTagText);
-                this.get('tags').pushObject(newTag);
+
+                this.send('addTag', newTag);
             }
 
             this.send('reset');
         },
 
         addTag: function (tag) {
-            if (!Ember.isEmpty(tag) && !this.hasTag(tag.get('name'))) {
-                this.get('tags').pushObject(tag);
+            if (!Ember.isEmpty(tag)) {
+                this.get('tags').addObject(tag);
+                this.get('tagEnteredOrder').addObject(tag.get('name'));
             }
+
             this.send('reset');
         },
 
         deleteTag: function (tag) {
             this.get('tags').removeObject(tag);
+            this.get('tagEnteredOrder').removeObject(tag.get('name'));
         },
 
         deleteLastTag: function () {
