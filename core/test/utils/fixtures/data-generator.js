@@ -414,7 +414,8 @@ DataGenerator.forModel = (function () {
 
     var posts,
         tags,
-        users;
+        users,
+        roles;
 
     posts = _.map(DataGenerator.Content.posts, function (post) {
         return _.pick(post, 'title', 'markdown');
@@ -430,10 +431,15 @@ DataGenerator.forModel = (function () {
         }, user);
     });
 
+    roles = _.map(DataGenerator.Content.roles, function (role, id) {
+        return _.extend({}, role, {id: id + 1});
+    });
+
     return {
         posts: posts,
         tags: tags,
-        users: users
+        users: users,
+        roles: roles
     };
 
 }());
