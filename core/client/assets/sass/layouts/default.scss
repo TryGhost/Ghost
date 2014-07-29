@@ -13,7 +13,10 @@
     }
 }
 
-// The header bar, only visible below 1025px
+//
+// The header bar - visible below 1025px
+// --------------------------------------------------
+
 .page-header {
     position: relative;
     height: 44px;
@@ -59,4 +62,23 @@
     width: 44px;
     height: 44px;
     color: #fff;
+}
+
+
+//
+// The panel which wraps the main content area
+// --------------------------------------------------
+// We can't use position:fixed on .page-header because it would
+// break the mobile menu. So we create an overflow-auto content
+// area which scrolls just underneath the header, making it look
+// like the header is position:fixed.
+
+.page-content {
+    @include position(absolute, 60px 0px 0px 0px);
+    background: #fff;
+    overflow-y: auto;
+
+    @media (max-width: 1025px) {
+        top: 44px;
+    }
 }
