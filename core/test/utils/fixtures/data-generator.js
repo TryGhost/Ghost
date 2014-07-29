@@ -75,31 +75,36 @@ DataGenerator.Content = {
             name: 'Joe Bloggs',
             slug: 'joe-blogs',
             email: 'jbloggs@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            status: 'active'
         },
         {
             name: 'Smith Wellingsworth',
             slug: 'smith-wellingsworth',
             email: 'swellingsworth@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            status: 'invited-pending'
         },
         {
             name: 'Jimothy Bogendath',
             slug: 'jimothy-bogendath',
             email: 'jbOgendAth@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            status: 'warn-1'
         },
         {
             name: 'Slimer McEctoplasm',
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            status: 'warn-2'
         },
         {
             name: 'Ivan Email',
             slug: 'ivan-email',
             email: 'info@ghost.org',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            status: 'inactive'
         }
     ],
 
