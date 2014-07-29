@@ -16,6 +16,7 @@ body {
     -webkit-font-feature-settings: 'kern' 1;
     -moz-font-feature-settings: 'kern' 1;
     font-feature-settings: 'kern' 1;
+    overflow-x: hidden; // Never have horizontal scrollbars
 }
 
 ::-moz-selection {
