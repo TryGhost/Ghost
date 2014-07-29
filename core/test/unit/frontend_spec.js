@@ -152,7 +152,12 @@ describe('Frontend Controller', function () {
                 'slug': 'test-static-page',
                 'markdown': 'Test static page content',
                 'page': 1,
-                'published_at': new Date('2013/12/30').getTime()
+                'published_at': new Date('2013/12/30').getTime(),
+                'author': {
+                    'id': 1,
+                    'name': 'Test User',
+                    'email': 'test@ghost.org'
+                }
             }, {
                 'status': 'published',
                 'id': 2,
@@ -160,7 +165,12 @@ describe('Frontend Controller', function () {
                 'slug': 'test-normal-post',
                 'markdown': 'The test normal post content',
                 'page': 0,
-                'published_at': new Date('2014/1/2').getTime()
+                'published_at': new Date('2014/1/2').getTime(),
+                'author': {
+                    'id': 1,
+                    'name': 'Test User',
+                    'email': 'test@ghost.org'
+                }
             }],
             mockTags = [{
                 'name': 'video',
@@ -248,6 +258,7 @@ describe('Frontend Controller', function () {
                         render: function (view, context) {
                             assert.equal(view, 'tag');
                             assert.equal(context.tag, mockTags[0]);
+                            assert.equal(context.posts[0].author.email, undefined)
                             done();
                         }
                     };
@@ -376,7 +387,12 @@ describe('Frontend Controller', function () {
                     'slug': 'test-static-page',
                     'markdown': 'Test static page content',
                     'page': 1,
-                    'published_at': new Date('2013/12/30').getTime()
+                    'published_at': new Date('2013/12/30').getTime(),
+                    'author': {
+                        'id': 1,
+                        'name': 'Test User',
+                        'email': 'test@ghost.org'
+                    }
                 }]
             }, {
                 'posts': [{
@@ -386,7 +402,12 @@ describe('Frontend Controller', function () {
                     'slug': 'test-normal-post',
                     'markdown': 'The test normal post content',
                     'page': 0,
-                    'published_at': new Date('2014/1/2').getTime()
+                    'published_at': new Date('2014/1/2').getTime(),
+                    'author': {
+                        'id': 1,
+                        'name': 'Test User',
+                        'email': 'test@ghost.org'
+                    }
                 }]
             }, {
                 'posts': [{
@@ -396,7 +417,12 @@ describe('Frontend Controller', function () {
                     'slug': 'about',
                     'markdown': 'This is the about page content',
                     'page': 1,
-                    'published_at': new Date('2014/1/30').getTime()
+                    'published_at': new Date('2014/1/30').getTime(),
+                    'author': {
+                        'id': 1,
+                        'name': 'Test User',
+                        'email': 'test@ghost.org'
+                    }
                 }]
             }],
             // Helper function to prevent unit tests
@@ -460,6 +486,7 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 assert.equal(view, 'page-' + mockPosts[2].posts[0].slug);
                                 assert.equal(context.post, mockPosts[2].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
                                 done();
                             }
                         };
@@ -484,6 +511,7 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 assert.equal(view, 'page');
                                 assert.equal(context.post, mockPosts[0].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
                                 done();
                             }
                         };
@@ -629,6 +657,7 @@ describe('Frontend Controller', function () {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
                                 assert.equal(context.post, mockPosts[1].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
                                 done();
                             }
                         };
@@ -703,6 +732,7 @@ describe('Frontend Controller', function () {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
                                 assert.equal(context.post, mockPosts[1].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
                                 done();
                             }
                         };
@@ -793,6 +823,7 @@ describe('Frontend Controller', function () {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
                                 assert.equal(context.post, mockPosts[1].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
                                 done();
                             }
                         };
