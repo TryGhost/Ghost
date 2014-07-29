@@ -66,10 +66,16 @@ var SettingsUserController = Ember.ObjectController.extend({
         resend: function () {
             var self = this;
 
-            this.get('model').resendInvite().then(function () {
-                self.get('model').set('status', 'invited');
+            this.get('model').resendInvite().then(function (result) {
                 var notificationText = 'Invitation resent! (' + self.get('email') + ')';
-                self.notifications.showSuccess(notificationText, false);
+                // If sending the invitation email fails, the API will still return a status of 201
+                // but the user's status in the response object will be 'invited-pending'.
+                if (result.users[0].status === 'invited-pending') {
+                    self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                } else {
+                    self.get('model').set('status', result.users[0].status);
+                    self.notifications.showSuccess(notificationText, false);
+                }
             }).catch(function (error) {
                 self.notifications.closePassive();
                 self.notifications.showAPIError(error);
