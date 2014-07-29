@@ -127,6 +127,11 @@
         @include transition(background 0.1s);
     }
 
+    i:before {
+        width: auto;
+        margin-left: 5px;
+    }
+
 }//.user-menu
 
 
