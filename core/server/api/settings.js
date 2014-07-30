@@ -195,8 +195,9 @@ settingsResult = function (settings, type) {
 populateDefaultSetting = function (key) {
     // Call populateDefault and update the settings cache
     return dataProvider.Settings.populateDefault(key).then(function (defaultSetting) {
+
         // Process the default result and add to settings cache
-        var readResult = readSettingsResult(defaultSetting);
+        var readResult = readSettingsResult([defaultSetting]);
 
         // Add to the settings cache
         return updateSettingsCache(readResult).then(function () {

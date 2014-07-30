@@ -19,437 +19,437 @@ var testUtils   = require('../../utils'),
 describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    // TODO: remove settings once #3281 is fixed
-    beforeEach(testUtils.setup( 'users:roles', 'users', 'settings', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
 
-//    it('dateTime fields are returned as Date objects', function (done) {
-//        var userData = testUtils.DataGenerator.forModel.users[0];
-//
-//        UserModel.check({ email: userData.email, password: userData.password }).then(function (user) {
-//            return UserAPI.read({ id: user.id });
-//        }).then(function (response) {
-//            response.users[0].created_at.should.be.an.instanceof(Date);
-//            response.users[0].updated_at.should.be.an.instanceof(Date);
-//            response.users[0].last_login.should.be.an.instanceof(Date);
-//
-//            done();
-//        }).catch(done);
-//    });
-//
-//    describe('Browse', function () {
-//        function checkBrowseResponse(response) {
-//            should.exist(response);
-//            testUtils.API.checkResponse(response, 'users');
-//            should.exist(response.users);
-//            response.users.should.have.length(7);
-//            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//            testUtils.API.checkResponse(response.users[1], 'user', ['roles']);
-//            testUtils.API.checkResponse(response.users[2], 'user', ['roles']);
-//            testUtils.API.checkResponse(response.users[3], 'user', ['roles']);
-//        }
-//
-//        it('Owner can browse', function (done) {
-//            UserAPI.browse(context.owner).then(function (response) {
-//                checkBrowseResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Admin can browse', function (done) {
-//            UserAPI.browse(context.admin).then(function (response) {
-//                checkBrowseResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Editor can browse', function (done) {
-//            UserAPI.browse(context.editor).then(function (response) {
-//                checkBrowseResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Author can browse', function (done) {
-//            UserAPI.browse(context.author).then(function (response) {
-//                checkBrowseResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('No-auth CANNOT browse', function (done) {
-//            UserAPI.browse().then(function () {
-//                done(new Error('Browse users is not denied without authentication.'));
-//            }, function () {
-//                done();
-//            }).catch(done);
-//        });
-//    });
-//
-//    describe('Read', function () {
-//        function checkReadResponse(response) {
-//            should.exist(response);
-//            should.not.exist(response.meta);
-//            should.exist(response.users);
-//            response.users[0].id.should.eql(1);
-//            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//            response.users[0].created_at.should.be.a.Date;
-//        }
-//
-//        it('Owner can read', function (done) {
-//            UserAPI.read(_.extend({}, context.owner, {id: userIdFor.owner})).then(function (response) {
-//                checkReadResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//
-//        it('Admin can read', function (done) {
-//            UserAPI.read(_.extend({}, context.admin, {id: userIdFor.owner})).then(function (response) {
-//                checkReadResponse(response);
-//
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Editor can read', function (done) {
-//            UserAPI.read(_.extend({}, context.editor, {id: userIdFor.owner})).then(function (response) {
-//                checkReadResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Author can read', function (done) {
-//            UserAPI.read(_.extend({}, context.author, {id: userIdFor.owner})).then(function (response) {
-//                checkReadResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('No-auth can read', function (done) {
-//            UserAPI.read({id: userIdFor.owner}).then(function (response) {
-//                checkReadResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//    });
-//
-//    describe('Edit', function () {
-//        var newName = 'Jo McBlogger';
-//
-//        function checkEditResponse(response) {
-//            should.exist(response);
-//            should.not.exist(response.meta);
-//            should.exist(response.users);
-//            response.users.should.have.length(1);
-//            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//            response.users[0].name.should.equal(newName);
-//            response.users[0].updated_at.should.be.a.Date;
-//        }
-//
-//        it('Owner can edit all roles', function (done) {
-//            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.owner}))
-//                .then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.admin}));
-//                }).then(function (response) {
-//
-//                    checkEditResponse(response);
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.editor}));
-//                }).then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.author}));
-//                }).then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    done();
-//                }).catch(done);
-//        });
-//
-//        it('Admin can edit all roles', function (done) {
-//            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
-//                .then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
-//                }).then(function (response) {
-//
-//                    checkEditResponse(response);
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
-//                }).then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.author}));
-//                }).then(function (response) {
-//                    checkEditResponse(response);
-//
-//                    done();
-//                }).catch(done);
-//        });
-//
-//        it('Editor CANNOT edit Owner, Admin or Editor roles', function (done) {
-//            // Cannot edit Owner
-//            UserAPI.edit(
-//                {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.owner})
-//            ).then(function () {
-//                done(new Error('Editor should not be able to edit owner account'));
-//            }).catch(function (error) {
-//                error.type.should.eql('NoPermissionError');
-//            }).finally(function () {
-//                // Cannot edit Admin
-//                UserAPI.edit(
-//                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.admin})
-//                ).then(function () {
-//                    done(new Error('Editor should not be able to edit admin account'));
-//                }).catch(function (error) {
-//                    error.type.should.eql('NoPermissionError');
-//                }).finally(function () {
-//                    // Cannot edit Editor
-//                    UserAPI.edit(
-//                        {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.editor2})
-//                    ).then(function () {
-//                        done(new Error('Editor should not be able to edit other editor account'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//                });
-//            });
-//        });
-//
-//        it('Editor can edit self or Author role', function (done) {
-//            // Can edit self
-//            UserAPI.edit(
-//                {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.editor})
-//            ).then(function (response) {
-//                checkEditResponse(response);
-//                // Can edit Author
-//                return UserAPI.edit(
-//                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.author})
-//                );
-//            }).then(function (response) {
-//                checkEditResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//
-//        it('Author CANNOT edit all roles', function (done) {
-//            // Cannot edit owner
-//            UserAPI.edit(
-//                {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.owner})
-//            ).then(function () {
-//                done(new Error('Editor should not be able to edit owner account'));
-//            }).catch(function (error) {
-//                error.type.should.eql('NoPermissionError');
-//            }).finally(function () {
-//                // Cannot edit admin
-//                UserAPI.edit(
-//                    {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.admin})
-//                ).then(function () {
-//                    done(new Error('Editor should not be able to edit admin account'));
-//                }).catch(function (error) {
-//                    error.type.should.eql('NoPermissionError');
-//                }).finally(function () {
-//                    UserAPI.edit(
-//                        {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.author2})
-//                    ).then(function () {
-//                        done(new Error('Author should not be able to edit author account which is not their own'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//                });
-//            });
-//        });
-//
-//        it('Author can edit self', function (done) {
-//            // Next test that author CAN edit self
-//            UserAPI.edit(
-//                {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.author})
-//            ).then(function (response) {
-//                checkEditResponse(response);
-//                done();
-//            }).catch(done);
-//        });
-//    });
-//
-//    describe('Add', function () {
-//        var newUser;
-//
-//        beforeEach(function () {
-//            newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
-//
-//            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-//                return when.resolve(userData);
-//            });
-//
-//            sandbox.stub(mail, 'send', function () {
-//                return when.resolve();
-//            });
-//        });
-//        afterEach(function () {
-//            sandbox.restore();
-//        });
-//
-//        function checkAddResponse(response) {
-//            should.exist(response);
-//            should.exist(response.users);
-//            should.not.exist(response.meta);
-//            response.users.should.have.length(1);
-//            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//            response.users[0].created_at.should.be.a.Date;
-//        }
-//
-//        describe('Owner', function () {
-//            it('CANNOT add an Owner', function (done) {
-//                newUser.roles = [roleIdFor.owner];
-//                // Owner cannot add owner
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-//                    .then(function () {
-//                        done(new Error('Owner should not be able to add an owner'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//            });
-//
-//            it('Can add an Admin', function (done) {
-//                // Can add admin
-//                newUser.roles = [roleIdFor.admin];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Administrator');
-//                        done();
-//                    }).catch(done);
-//            });
-//
-//            it('Can add an Editor', function (done) {
-//                // Can add editor
-//                newUser.roles = [roleIdFor.editor];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Editor');
-//                        done();
-//                    }).catch(done);
-//            });
-//            it('Can add an Author', function (done) {
-//                // Can add author
-//                newUser.roles = [roleIdFor.author];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Author');
-//                        done();
-//                    }).catch(done);
-//            });
-//        });
-//
-//        describe('Admin', function () {
-//            it('CANNOT add an Owner', function (done) {
-//                newUser.roles = [roleIdFor.owner];
-//                // Admin cannot add owner
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-//                    .then(function () {
-//                        done(new Error('Admin should not be able to add an owner'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//            });
-//            it('Can add an Admin', function (done) {
-//                // Can add admin
-//                newUser.roles = [roleIdFor.admin];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Administrator');
-//                        done();
-//                    }).catch(done);
-//            });
-//
-//            it('Can add an Editor', function (done) {
-//                // Can add editor
-//                newUser.roles = [roleIdFor.editor];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Editor');
-//                        done();
-//                    }).catch(done);
-//            });
-//
-//            it('Can add an Author', function (done) {
-//                // Can add author
-//                newUser.roles = [roleIdFor.author];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Author');
-//                        done();
-//                    }).catch(done);
-//            });
-//        });
-//
-//        describe('Editor', function () {
-//            it('CANNOT add an Owner', function (done) {
-//                newUser.roles = [roleIdFor.owner];
-//                // Editor cannot add owner
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
-//                    .then(function () {
-//                        done(new Error('Editor should not be able to add an owner'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//            });
-//
-//            it('Can add an Author', function (done) {
-//                newUser.roles = [roleIdFor.author];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
-//                    .then(function (response) {
-//                        checkAddResponse(response);
-//                        response.users[0].id.should.eql(8);
-//                        response.users[0].roles[0].name.should.equal('Author');
-//                        done();
-//                    }).catch(done);
-//            });
-//        });
-//
-//        describe('Author', function () {
-//            it('CANNOT add an Owner', function (done) {
-//                newUser.roles = [roleIdFor.owner];
-//                // Admin cannot add owner
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
-//                    .then(function () {
-//                        done(new Error('Author should not be able to add an owner'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//            });
-//
-//            it('CANNOT add an Author', function (done) {
-//                newUser.roles = [roleIdFor.author];
-//                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
-//                    .then(function () {
-//                        done(new Error('Author should not be able to add an author'));
-//                    }).catch(function (error) {
-//                        error.type.should.eql('NoPermissionError');
-//                        done();
-//                    });
-//            });
-//        });
-//    });
+    beforeEach(testUtils.setup('users:roles', 'users', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
+    afterEach(testUtils.teardown);
+
+    it('dateTime fields are returned as Date objects', function (done) {
+        var userData = testUtils.DataGenerator.forModel.users[0];
+
+        UserModel.check({ email: userData.email, password: userData.password }).then(function (user) {
+            return UserAPI.read({ id: user.id });
+        }).then(function (response) {
+            response.users[0].created_at.should.be.an.instanceof(Date);
+            response.users[0].updated_at.should.be.an.instanceof(Date);
+            response.users[0].last_login.should.be.an.instanceof(Date);
+
+            done();
+        }).catch(done);
+    });
+
+    describe.skip('Browse', function () {
+        function checkBrowseResponse(response) {
+            should.exist(response);
+            testUtils.API.checkResponse(response, 'users');
+            should.exist(response.users);
+            response.users.should.have.length(7);
+            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[1], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[2], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[3], 'user', ['roles']);
+        }
+
+        it('Owner can browse', function (done) {
+            UserAPI.browse(context.owner).then(function (response) {
+                checkBrowseResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('Admin can browse', function (done) {
+            UserAPI.browse(context.admin).then(function (response) {
+                checkBrowseResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('Editor can browse', function (done) {
+            UserAPI.browse(context.editor).then(function (response) {
+                checkBrowseResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('Author can browse', function (done) {
+            UserAPI.browse(context.author).then(function (response) {
+                checkBrowseResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('No-auth CANNOT browse', function (done) {
+            UserAPI.browse().then(function () {
+                done(new Error('Browse users is not denied without authentication.'));
+            }, function () {
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe.skip('Read', function () {
+        function checkReadResponse(response) {
+            should.exist(response);
+            should.not.exist(response.meta);
+            should.exist(response.users);
+            response.users[0].id.should.eql(1);
+            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            response.users[0].created_at.should.be.a.Date;
+        }
+
+        it('Owner can read', function (done) {
+            UserAPI.read(_.extend({}, context.owner, {id: userIdFor.owner})).then(function (response) {
+                checkReadResponse(response);
+                done();
+            }).catch(done);
+        });
+
+
+        it('Admin can read', function (done) {
+            UserAPI.read(_.extend({}, context.admin, {id: userIdFor.owner})).then(function (response) {
+                checkReadResponse(response);
+
+                done();
+            }).catch(done);
+        });
+
+        it('Editor can read', function (done) {
+            UserAPI.read(_.extend({}, context.editor, {id: userIdFor.owner})).then(function (response) {
+                checkReadResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('Author can read', function (done) {
+            UserAPI.read(_.extend({}, context.author, {id: userIdFor.owner})).then(function (response) {
+                checkReadResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('No-auth can read', function (done) {
+            UserAPI.read({id: userIdFor.owner}).then(function (response) {
+                checkReadResponse(response);
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe.skip('Edit', function () {
+        var newName = 'Jo McBlogger';
+
+        function checkEditResponse(response) {
+            should.exist(response);
+            should.not.exist(response.meta);
+            should.exist(response.users);
+            response.users.should.have.length(1);
+            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            response.users[0].name.should.equal(newName);
+            response.users[0].updated_at.should.be.a.Date;
+        }
+
+        it('Owner can edit all roles', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.admin}));
+                }).then(function (response) {
+
+                    checkEditResponse(response);
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.editor}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.author}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    done();
+                }).catch(done);
+        });
+
+        it('Admin can edit all roles', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+                .then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
+                }).then(function (response) {
+
+                    checkEditResponse(response);
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.author}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    done();
+                }).catch(done);
+        });
+
+        it('Editor CANNOT edit Owner, Admin or Editor roles', function (done) {
+            // Cannot edit Owner
+            UserAPI.edit(
+                {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.owner})
+            ).then(function () {
+                done(new Error('Editor should not be able to edit owner account'));
+            }).catch(function (error) {
+                error.type.should.eql('NoPermissionError');
+            }).finally(function () {
+                // Cannot edit Admin
+                UserAPI.edit(
+                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.admin})
+                ).then(function () {
+                    done(new Error('Editor should not be able to edit admin account'));
+                }).catch(function (error) {
+                    error.type.should.eql('NoPermissionError');
+                }).finally(function () {
+                    // Cannot edit Editor
+                    UserAPI.edit(
+                        {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.editor2})
+                    ).then(function () {
+                        done(new Error('Editor should not be able to edit other editor account'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('Editor can edit self or Author role', function (done) {
+            // Can edit self
+            UserAPI.edit(
+                {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.editor})
+            ).then(function (response) {
+                checkEditResponse(response);
+                // Can edit Author
+                return UserAPI.edit(
+                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.author})
+                );
+            }).then(function (response) {
+                checkEditResponse(response);
+                done();
+            }).catch(done);
+        });
+
+        it('Author CANNOT edit all roles', function (done) {
+            // Cannot edit owner
+            UserAPI.edit(
+                {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.owner})
+            ).then(function () {
+                done(new Error('Editor should not be able to edit owner account'));
+            }).catch(function (error) {
+                error.type.should.eql('NoPermissionError');
+            }).finally(function () {
+                // Cannot edit admin
+                UserAPI.edit(
+                    {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.admin})
+                ).then(function () {
+                    done(new Error('Editor should not be able to edit admin account'));
+                }).catch(function (error) {
+                    error.type.should.eql('NoPermissionError');
+                }).finally(function () {
+                    UserAPI.edit(
+                        {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.author2})
+                    ).then(function () {
+                        done(new Error('Author should not be able to edit author account which is not their own'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('Author can edit self', function (done) {
+            // Next test that author CAN edit self
+            UserAPI.edit(
+                {users: [{name: newName}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function (response) {
+                checkEditResponse(response);
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe.skip('Add', function () {
+        var newUser;
+
+        beforeEach(function () {
+            newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return when.resolve(userData);
+            });
+
+            sandbox.stub(mail, 'send', function () {
+                return when.resolve();
+            });
+        });
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        function checkAddResponse(response) {
+            should.exist(response);
+            should.exist(response.users);
+            should.not.exist(response.meta);
+            response.users.should.have.length(1);
+            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            response.users[0].created_at.should.be.a.Date;
+        }
+
+        describe('Owner', function () {
+            it('CANNOT add an Owner', function (done) {
+                newUser.roles = [roleIdFor.owner];
+                // Owner cannot add owner
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function () {
+                        done(new Error('Owner should not be able to add an owner'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('Can add an Admin', function (done) {
+                // Can add admin
+                newUser.roles = [roleIdFor.admin];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Administrator');
+                        done();
+                    }).catch(done);
+            });
+
+            it('Can add an Editor', function (done) {
+                // Can add editor
+                newUser.roles = [roleIdFor.editor];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Editor');
+                        done();
+                    }).catch(done);
+            });
+            it('Can add an Author', function (done) {
+                // Can add author
+                newUser.roles = [roleIdFor.author];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                        done();
+                    }).catch(done);
+            });
+        });
+
+        describe('Admin', function () {
+            it('CANNOT add an Owner', function (done) {
+                newUser.roles = [roleIdFor.owner];
+                // Admin cannot add owner
+                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
+                    .then(function () {
+                        done(new Error('Admin should not be able to add an owner'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+            it('Can add an Admin', function (done) {
+                // Can add admin
+                newUser.roles = [roleIdFor.admin];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Administrator');
+                        done();
+                    }).catch(done);
+            });
+
+            it('Can add an Editor', function (done) {
+                // Can add editor
+                newUser.roles = [roleIdFor.editor];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Editor');
+                        done();
+                    }).catch(done);
+            });
+
+            it('Can add an Author', function (done) {
+                // Can add author
+                newUser.roles = [roleIdFor.author];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                        done();
+                    }).catch(done);
+            });
+        });
+
+        describe('Editor', function () {
+            it('CANNOT add an Owner', function (done) {
+                newUser.roles = [roleIdFor.owner];
+                // Editor cannot add owner
+                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
+                    .then(function () {
+                        done(new Error('Editor should not be able to add an owner'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('Can add an Author', function (done) {
+                newUser.roles = [roleIdFor.author];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                        done();
+                    }).catch(done);
+            });
+        });
+
+        describe('Author', function () {
+            it('CANNOT add an Owner', function (done) {
+                newUser.roles = [roleIdFor.owner];
+                // Admin cannot add owner
+                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
+                    .then(function () {
+                        done(new Error('Author should not be able to add an owner'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('CANNOT add an Author', function (done) {
+                newUser.roles = [roleIdFor.author];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
+                    .then(function () {
+                        done(new Error('Author should not be able to add an author'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+        });
+    });
 
     describe('Destroy', function () {
         function checkDestroyResponse(response) {
@@ -466,11 +466,11 @@ describe('Users API', function () {
             it('CANNOT destroy self', function (done) {
                 UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.owner}))
                     .then(function () {
-                          done(new Error('Owner should not be able to delete itself'));
-                      }).catch(function (error) {
-                          error.type.should.eql('NoPermissionError');
-                          done();
-                      });
+                        done(new Error('Owner should not be able to delete itself'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
             });
 
             it('Can destroy admin, editor, author', function (done) {
