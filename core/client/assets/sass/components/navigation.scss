@@ -152,8 +152,9 @@
         background: darken($darkgrey, 7%);
         overflow: auto;
         -webkit-overflow-scrolling: touch;
-        @include transform(translate3d(-260px, 0px, 0px));
-        @include transition(transform 0.15s ease-in-out);
+
+        @include transform(translate3d(-60px, 0px, 0px)); // Not off the screen, to give a parallax effect
+        @include transition(transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1));
 
         .thing, .thing2 {
             display: block;
