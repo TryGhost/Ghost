@@ -55,62 +55,67 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
     screens;
 
 screens = {
-   'root': {
-       url: 'ghost/',
-       linkSelector: '#main-menu > li.content a',
-       selector: '#main-menu .content.active'
-   },
-   'content': {
-       url: 'ghost/content/',
-       linkSelector: '#main-menu > li.content a',
-       selector: '#main-menu .content.active'
-   },
-   'editor': {
-       url: 'ghost/editor/',
-       linkSelector: '#main-menu > li.editor a',
-       selector: '#entry-title'
-   },
-   'settings': {
-       url: 'ghost/settings/',
-       linkSelector: '#main-menu > li.settings a',
-       selector: '.settings-content'
-   },
-   'settings.general': {
-       url: 'ghost/settings/general',
-       selector: '.settings-content .settings-general'
-   },
-   'settings.user': {
-       url: 'ghost/settings/user',
-       linkSelector: '#user-menu li.usermenu-profile a',
-       selector: '.settings-content .settings-user'
-   },
-   'signin': {
-       url: 'ghost/signin/',
-       selector: '.button-save'
-   },
-   'signin-authenticated': {
-       url: 'ghost/signin/',
-       //signin with authenticated user redirects to posts
-       selector: '#main-menu .content .active'
-   },
-   'signout': {
-       url: 'ghost/signout/',
+    'root': {
+        url: 'ghost/',
+        linkSelector: '#main-menu > li.content a',
+        selector: '#main-menu .content.active'
+    },
+    'content': {
+        url: 'ghost/content/',
+        linkSelector: '#main-menu > li.content a',
+        selector: '#main-menu .content.active'
+    },
+    'editor': {
+        url: 'ghost/editor/',
+        linkSelector: '#main-menu > li.editor a',
+        selector: '#entry-title'
+    },
+    'settings': {
+        url: 'ghost/settings/',
+        linkSelector: '#main-menu > li.settings a',
+        selector: '.settings-content'
+    },
+    'settings.general': {
+        url: 'ghost/settings/general',
+        selector: '.settings-content .settings-general'
+    },
+    'settings.users': {
+        url: 'ghost/settings/users',
+        linkSelector: '.settings-menu li.users a',
+        selector: '.settings-content .settings-users'
+    },
+    'settings.users.user': {
+        url: 'ghost/settings/users/test-user',
+        linkSelector: '#user-menu li.usermenu-profile a',
+        selector: '.settings-content .settings-user'
+    },
+    'signin': {
+        url: 'ghost/signin/',
+        selector: '.button-save'
+    },
+    'signin-authenticated': {
+        url: 'ghost/signin/',
+        //signin with authenticated user redirects to posts
+        selector: '#main-menu .content .active'
+    },
+    'signout': {
+        url: 'ghost/signout/',
        linkSelector: '#usermenu li.usermenu-signout a',
-       // When no user exists we get redirected to setup which has button-add
-       selector: '.button-save, .button-add'
-   },
-   'signup': {
-       url: 'ghost/signup/',
-       selector: '.button-save'
-   },
-   'setup': {
-       url: 'ghost/setup/',
-       selector: '.button-add'
-   },
-   'setup-authenticated': {
-       url: 'ghost/setup/',
-       selector: '#main-menu .content a.active'
-   }
+        // When no user exists we get redirected to setup which has button-add
+        selector: '.button-save, .button-add'
+    },
+    'signup': {
+        url: 'ghost/signup/',
+        selector: '.button-save'
+    },
+    'setup': {
+        url: 'ghost/setup/',
+        selector: '.button-add'
+    },
+    'setup-authenticated': {
+        url: 'ghost/setup/',
+        selector: '#main-menu .content a.active'
+    }
 };
 
 casper.writeContentToCodeMirror = function (content) {
