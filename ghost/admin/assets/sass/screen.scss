@@ -1,5 +1,5 @@
 //
-// Helpers - Variables and mixins
+// Helpers: Sass Utilities
 // --------------------------------------------------
 
 @import "_bourbon"; // via Bower http://bourbon.io/
@@ -10,7 +10,7 @@
 
 
 //
-// Libraries - 3rd party dependencies
+// Libraries: Code by Other Homies
 // --------------------------------------------------
 
 @import "normalize"; // via Bower
@@ -18,7 +18,7 @@
 
 
 //
-// Patterns - Re-usable styles
+// Patterns: Groups of Styles
 // --------------------------------------------------
 
 @import "patterns/global";
@@ -29,17 +29,18 @@
 
 
 //
-// Components - Groups of Patterns
+// Components: Groups of Patterns
 // --------------------------------------------------
 
 @import "components/navigation";
 @import "components/modals";
 @import "components/notifications";
+@import "components/uploader";
 @import "components/dropdowns";
 
 
 //
-// Layouts - Groups of Components
+// Layouts: Groups of Components
 // --------------------------------------------------
 
 @import "layouts/default";
