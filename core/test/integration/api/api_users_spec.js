@@ -37,7 +37,7 @@ describe('Users API', function () {
         }).catch(done);
     });
 
-    describe.skip('Browse', function () {
+    describe('Browse', function () {
         function checkBrowseResponse(response) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'users');
@@ -86,7 +86,7 @@ describe('Users API', function () {
         });
     });
 
-    describe.skip('Read', function () {
+    describe('Read', function () {
         function checkReadResponse(response) {
             should.exist(response);
             should.not.exist(response.meta);
@@ -134,7 +134,7 @@ describe('Users API', function () {
         });
     });
 
-    describe.skip('Edit', function () {
+    describe('Edit', function () {
         var newName = 'Jo McBlogger';
 
         function checkEditResponse(response) {
@@ -275,7 +275,7 @@ describe('Users API', function () {
         });
     });
 
-    describe.skip('Add', function () {
+    describe('Add', function () {
         var newUser;
 
         beforeEach(function () {
