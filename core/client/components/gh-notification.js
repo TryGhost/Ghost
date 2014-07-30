@@ -1,7 +1,7 @@
 var NotificationComponent = Ember.Component.extend({
     classNames: ['js-bb-notification'],
 
-    typeClass: function () {
+    typeClass: Ember.computed(function () {
         var classes = '',
             message = this.get('message'),
             type,
@@ -24,7 +24,7 @@ var NotificationComponent = Ember.Component.extend({
         }
 
         return classes;
-    }.property(),
+    }),
 
     didInsertElement: function () {
         var self = this;
