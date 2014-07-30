@@ -22,11 +22,15 @@ body {
 }
 
 ::-moz-selection {
-    background: #D6EDFF;
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
 }
 
 ::selection {
-    background: #D6EDFF;
+    color: $darkgrey;
+    background: lighten($blue, 20%);
+    text-shadow: none;
 }
 
 h1, h2, h3,
