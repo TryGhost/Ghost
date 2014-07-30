@@ -6,6 +6,7 @@
 @import "helpers/variables";
 @import "helpers/mixins";
 @import "helpers/icons";
+@import "helpers/animations";
 
 
 //
@@ -20,6 +21,8 @@
 // --------------------------------------------------
 
 @import "patterns/global";
+@import "patterns/forms";
+@import "patterns/buttons";
 
 
 //

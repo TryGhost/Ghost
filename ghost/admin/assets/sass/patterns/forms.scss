@@ -1,0 +1,386 @@
+//
+// Base Elements
+// --------------------------------------------------
+
+fieldset {
+    border: none;
+    margin: 0 0 3em 0;
+    padding: 0;
+}
+
+legend {
+    display: block;
+    width: 100%;
+    margin: 2em 0;
+    border-bottom: $lightbrown 1px solid;
+    font-size: 1.2em;
+    line-height: 2.0em;
+    color: $brown;
+}
+
+label {
+    display: block;
+    color: $darkgrey;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+textarea {
+    width: 100%;
+    max-width: 500px;
+    min-width: 250px;
+    height: auto;
+    min-height: 6.5em;
+}
+
+input[type="number"] {
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        padding-right: 6px;
+    }
+}
+
+#{$all-text-inputs},
+textarea,
+.gh-select,
+select {
+    display: block;
+    padding: 8px 10px;
+    width: 100%;
+    border: 1px solid #E0DFD7;
+    border-radius: $rounded;
+
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: $darkgrey;
+
+    @include transition(border-color, 0.15s linear);
+
+    &:focus {
+        border-color: $brown;
+    }
+
+}
+
+
+//
+// Form Groups
+// --------------------------------------------------
+
+.form-group {
+    position: relative;
+    margin-bottom: 1.6em;
+    width: 100%;
+    max-width: 500px;
+    p {
+        margin: 4px 0 0 0;
+        color: #B3B2A8;
+    }
+
+    label {
+        margin-bottom: 4px;
+    }
+
+    @media (max-width: 550px) {
+        max-width: 100%;
+    }
+
+} // .form-group
+
+// If the from group has an icon...
+.form-group[class*='icon-'] {
+    #{$all-text-inputs} {
+        padding-left: 32px;
+    }
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 11px;
+        font-size: 0.9em;
+        margin-top: calc(-0.45em - 1px);
+    }
+} // .thing[class*='icon-']
+
+// Wrapper for <select> elements
+.form-group.for-select {
+    &[class*="icon-"] {
+        .gh-select {
+            &:before {
+                left: 32px;
+            }
+        }
+    }
+} // .form-group.for-select
+
+// Wrapper for input[type="checkbox"] elements
+.form-group.for-checkbox {
+    @include clearfix;
+
+    .checkbox,
+    p {
+        float: left;
+    }
+
+    p {
+        margin-top: 0;
+        margin-left: 4px;
+    }
+} // .form-group.for-checkbox
+
+// Wrapper for input[type="radio"] elements
+.form-group.for-radio {
+    @include clearfix;
+
+    label:first-child {
+        display: block;
+        padding-bottom: 4px;
+    }
+
+    .gh-radio-wrapper {
+        @include clearfix;
+        span {
+            float: left;
+        }
+    }
+
+    span:not(.gh-radio) {
+        margin-top: 0;
+        margin-left: 4px;
+    }
+} // .form-group.for-radio
+
+
+//
+// Checkboxes
+// --------------------------------------------------
+/*
+<div class="form-group for-checkbox">
+    <label for="permalinks">Dated Permalinks</label>
+    <input id="permalinks" type="checkbox" name="general[permalinks]">
+    <label class="checkbox" for="permalinks"></label>
+    <p>Include the date in your post URLs</p>
+</div>
+*/
+
+// Hide the default checkbox
+input[type="checkbox"] {
+    @include position(absolute, 0 0 0 -9999px);
+}
+
+// Turn the label element into a fake checkbox
+.checkbox {
+    position: relative;
+    width: auto;
+
+    // Create a tick, hidden by default
+    &:before {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 6px;
+        top: 6px;
+        left: 5px;
+        border: 2px solid #fff;
+        border-top: none;
+        border-right: none;
+        @include transform(rotate(-45deg));
+        opacity: 0;
+    }
+
+    // The background for the faux checkbox
+    &:after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        background: lighten($lightbrown, 5%);
+        border-radius: $rounded;
+        border: darken($lightbrown, 5%) 1px solid;
+        @include transition(all 0.2s ease);
+    }
+} // .checkbox
+
+// Colour the checkbox correctly when checked
+input[type='checkbox'] {
+    &:checked + .checkbox {
+        &:after {
+            background: $green;
+            border-color: lighten($green, 10%);
+        }
+    }
+}
+
+input[type='checkbox'] {
+
+    // When checkbox is checked, show the tick
+    &:checked + .checkbox:before {
+        opacity: 1;
+    }
+
+    &:focus {
+        & + .checkbox {
+            &:after {
+                border: $brown 1px solid;
+            }
+        }
+    } // &:focus
+
+    &:active {
+        & + .checkbox {
+            &:after {
+                background: $lightbrown;
+            }
+        }
+    } // &:active
+
+} // input[type='checkbox']
+
+
+//
+// Radio Buttons
+// --------------------------------------------------
+/*
+<div class="form-group for-radio">
+    <label>The Option Title</label>
+    <label class="gh-radio-wrapper">
+        <input name="testing" type="radio" value="yes">
+        <span class="gh-radio"></span>
+        <span>Yes</span>
+    </label>
+    <label class="gh-radio-wrapper">
+        <input name="testing" type="radio" value="no">
+        <span class="gh-radio"></span>
+        <span>No</span>
+    </label>
+    <p>What does this thing mean?</p>
+</div>
+*/
+
+// Hide the default checkbox
+input[type="radio"] {
+    @include position(absolute, 0 0 0 -9999px);
+}
+
+// Turn the label element into a fake checkbox
+.gh-radio {
+    position: relative;
+    width: auto;
+
+    // Create a circle, hidden by default
+    &:before {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: 5px;
+        left: 5px;
+        opacity: 0;
+        border-radius: 100%;
+        background: $green;
+    }
+
+    // The background for the faux radio
+    &:after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        background: lighten($lightbrown, 5%);
+        border-radius: 100%;
+        border: $lightbrown 1px solid;
+        @include transition(all 0.2s ease);
+    }
+} // .gh-radio
+
+input[type='radio'] {
+
+    // When radio is checked, show the tick
+    &:checked + .gh-radio:before {
+        opacity: 1;
+    }
+
+    &:focus {
+        & + .gh-radio {
+            &:after {
+                border: $brown 1px solid;
+            }
+        }
+    } // &:focus
+
+} // input[type='radio']
+
+
+//
+// Select
+// --------------------------------------------------
+/*
+    <span class="gh-select">
+        {{view Ember.Select
+            id="activeTheme"
+            name="general[activeTheme]"
+            content=themes
+            optionValuePath="content.name"
+            optionLabelPath="content.label"
+            value=activeTheme
+            selection=selectedTheme}}
+    </span>
+*/
+
+.gh-select {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border-width: 0;
+
+    @include icon-after($i-chevron-down, 0.85em, $midbrown) {
+        @include position(absolute, 50% 0.8em null null);
+        margin-top: -0.5em;
+        pointer-events: none;
+    };
+
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: window;
+        text-indent: 0.01px;
+        text-overflow: "";
+        background: #fff;
+        outline: none;
+        padding: 8px 10px;
+        line-height: normal;
+
+        // This hides native gh-select button arrow in IE
+        &::-ms-expand {
+            display: none;
+        }
+
+        // Hover style - Not used, but works
+        &:hover {}
+
+        // Focus style
+        &:focus {
+          outline: none;
+        }
+
+        // This hides focus around selected option in FF
+        &:-moz-focusring {
+          color: transparent;
+          text-shadow: 0 0 0 #000;
+        }
+    } // select
+} // .gh-select
+
+// Firefox-specific size fixes
+@-moz-document url-prefix() {
+    .gh-select {
+        border-width: 1px;
+        select {
+            padding: 7px 10px 7px 8px;
+        }
+    }
+} // @-moz-document
