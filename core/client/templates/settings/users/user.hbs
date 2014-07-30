@@ -35,6 +35,10 @@
 
     <form class="user-profile" novalidate="novalidate" autocomplete="off">
 
+        {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+        <input style="display:none;" type="text" name="fakeusernameremembered"/>
+        <input style="display:none;" type="password" name="fakepasswordremembered"/>
+
         <fieldset class="user-details-top">
 
             <figure class="user-image">
@@ -67,7 +71,7 @@
             {{!-- The correct markup for select boxes. Needs changing to the correct data --}}
             {{!-- <div class="form-group">
                 <label for="user-role">Role</label>
-                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+                <span class="gh-select">
                    {{view Ember.Select
                        id="activeTheme"
                        name="general[activeTheme]"
