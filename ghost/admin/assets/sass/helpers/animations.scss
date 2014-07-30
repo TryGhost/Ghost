@@ -1,0 +1,38 @@
+//
+// Fade in
+// --------------------------------------------------
+
+@include keyframes(fade-in) {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.fade-in {
+    @include animation(fade-in 0.2s);
+}
+
+@include keyframes(fade-in-snap) {
+    to {
+        opacity: 1;
+    }
+}
+
+
+//
+// Fade out
+// --------------------------------------------------
+
+@include keyframes(fade-out) {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+.fade-out {
+    @include animation(fade-out 0.5s);
+}
