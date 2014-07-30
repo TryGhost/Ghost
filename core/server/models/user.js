@@ -167,7 +167,7 @@ User = ghostBookshelf.Model.extend({
         options = options || {};
 
         var userCollection = Users.forge(),
-            userQuery;
+            roleInstance = options.role !== undefined ? Role.forge({name: options.role}) : false;
 
         if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit) || 15;
@@ -213,14 +213,28 @@ User = ghostBookshelf.Model.extend({
                 .query('offset', options.limit * (options.page - 1));
         }
 
-        userQuery = userCollection
-            .query('orderBy', 'last_login', 'DESC')
-            .query('orderBy', 'name', 'ASC')
-            .query('orderBy', 'created_at', 'DESC')
-            .fetch(_.omit(options, 'page', 'limit'));
+        function fetchRoleQuery() {
+            if (roleInstance) {
+                return roleInstance.fetch();
+            }
+            return false;
+        }
 
+        return when(fetchRoleQuery())
+            .then(function () {
 
-        return when(userQuery)
+                if (roleInstance) {
+                    userCollection
+                        .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
+                        .query('where', 'roles_users.role_id', '=', roleInstance.id);
+                }
+
+                return userCollection
+                    .query('orderBy', 'last_login', 'DESC')
+                    .query('orderBy', 'name', 'ASC')
+                    .query('orderBy', 'created_at', 'DESC')
+                    .fetch(_.omit(options, 'page', 'limit'));
+            })
 
             // Fetch pagination information
             .then(function () {
@@ -234,6 +248,11 @@ User = ghostBookshelf.Model.extend({
 
                 if (options.where) {
                     qb.where(options.where);
+                }
+
+                if (roleInstance) {
+                    qb.join('roles_users', 'roles_users.user_id', '=', 'users.id');
+                    qb.where('roles_users.role_id', '=', roleInstance.id);
                 }
 
                 return qb.count(tableName + '.' + idAttribute + ' as aggregate');
@@ -275,6 +294,14 @@ User = ghostBookshelf.Model.extend({
                         pagination.prev = pagination.page - 1;
                     }
                 }
+
+                if (roleInstance) {
+                    meta.filters = {};
+                    if (!roleInstance.isNew()) {
+                        meta.filters.roles = [roleInstance.toJSON()];
+                    }
+                }
+
 
                 return data;
             })
