@@ -18,7 +18,7 @@
     z-index: 500; // Above the .global-nav when collapsed
 
     @media (max-width: 1025px) {
-        @include transition(transform 0.15s ease-in-out);
+        @include transition(transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1));
     }
 
     &.global-nav-expanded {
@@ -90,6 +90,7 @@
     @include position(absolute, 60px 0px 0px 0px);
     background: #fff;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
     @media (max-width: 1025px) {
         top: 44px;
