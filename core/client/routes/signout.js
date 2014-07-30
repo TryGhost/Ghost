@@ -5,6 +5,7 @@ var SignoutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleB
     classNames: ['ghost-signout'],
 
     afterModel: function (model, transition) {
+        this.notifications.clear();
         if (Ember.canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();
