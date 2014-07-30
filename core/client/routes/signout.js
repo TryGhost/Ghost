@@ -1,5 +1,6 @@
 import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
+import ghostPaths from 'ghost/utils/ghost-paths';
 
 var SignoutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, loadingIndicator, {
     classNames: ['ghost-signout'],
@@ -8,11 +9,15 @@ var SignoutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleB
         if (Ember.canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();
-            this.transitionTo('signin');
+            this.hardRefresh();
         } else {
             this.send('invalidateSession');
-            this.transitionTo('signin');
+            this.hardRefresh();
         }
+    },
+
+    hardRefresh: function () {
+        window.location = ghostPaths().adminRoot + '/signin/';
     }
 });
 
