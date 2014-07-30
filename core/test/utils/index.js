@@ -101,6 +101,10 @@ fixtures = {
             }));
         });
     },
+    insertRoles: function insertRoles() {
+        var knex = config.database.knex;
+        return knex('roles').insert(DataGenerator.forKnex.roles);
+    },
 
     initOwnerUser: function initOwnerUser() {
         var user = DataGenerator.Content.users[0],
@@ -258,6 +262,7 @@ toDoList = {
     },
     'permission': function insertPermission() { return fixtures.insertOne('permissions', 'createPermission'); },
     'role': function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
+    'roles': function insertRoles() { return fixtures.insertRoles(); },
     'tag': function insertRole() { return fixtures.insertOne('tags', 'createTag'); },
     'posts': function insertPosts() { return fixtures.insertPosts(); },
     'apps': function insertApps() { return fixtures.insertApps(); },
