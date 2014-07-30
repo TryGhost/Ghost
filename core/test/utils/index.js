@@ -172,7 +172,11 @@ fixtures = {
         user = DataGenerator.forKnex.createBasic(user);
         user = _.extend({}, user, {'status': 'inactive'});
 
-        return knex('users').insert(user);
+        return knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
+            return knex('users').insert(user);
+        }).then(function () {
+            return knex('roles_users').insert(DataGenerator.forKnex.roles_users[0]);
+        });
     },
 
     insertOwnerUser: function insertOwnerUser() {

@@ -232,7 +232,10 @@ canEditAllSettings = function (settingsInfo, options) {
                 );
             }
 
-            return canThis(options.context).edit.setting(setting.key);
+            return canThis(options.context).edit.setting(setting.key).catch(function () {
+                return when.reject(new errors.NoPermissionError('You do not have permission to edit settings.'));
+            });
+
         },
         checks = _.map(settingsInfo, function (settingInfo) {
             var setting = settingsCache[settingInfo.key];
