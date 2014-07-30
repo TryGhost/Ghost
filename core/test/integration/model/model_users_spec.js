@@ -127,7 +127,7 @@ describe('User Model', function run() {
     });
 
     describe('Basic Operations', function () {
-        beforeEach(testUtils.setup('owner', 'role'));
+        beforeEach(testUtils.setup('users:roles'));
 
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
@@ -163,16 +163,58 @@ describe('User Model', function run() {
         });
 
         it('can findAll', function (done) {
-
             UserModel.findAll().then(function (results) {
                 should.exist(results);
-
-                results.length.should.be.above(0);
+                results.length.should.equal(4);
 
                 done();
 
             }).catch(done);
         });
+
+        it('can findPage (default)', function (done) {
+            UserModel.findPage().then(function (results) {
+                should.exist(results);
+
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal(15);
+                results.meta.pagination.pages.should.equal(1);
+                results.users.length.should.equal(4);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can findPage by role', function (done) {
+            return testUtils.fixtures.createExtraUsers().then(function () {
+                return UserModel.findPage({role: 'Administrator'});
+            }).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal(15);
+                results.meta.pagination.pages.should.equal(1);
+                results.meta.pagination.total.should.equal(2);
+                results.users.length.should.equal(2);
+
+                return UserModel.findPage({role: 'Owner'});
+            }).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal(15);
+                results.meta.pagination.pages.should.equal(1);
+                results.meta.pagination.total.should.equal(1);
+                results.users.length.should.equal(1);
+
+                return UserModel.findPage({role: 'Editor', limit: 1});
+            }).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal(1);
+                results.meta.pagination.pages.should.equal(2);
+                results.meta.pagination.total.should.equal(2);
+                results.users.length.should.equal(1);
+
+                done();
+            }).catch(done);
+        });
+
 
         it('can findOne', function (done) {
             var firstUser;
@@ -214,7 +256,7 @@ describe('User Model', function run() {
         });
 
         it('can add', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            var userData = testUtils.DataGenerator.forModel.users[4];
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return when.resolve(userData);
