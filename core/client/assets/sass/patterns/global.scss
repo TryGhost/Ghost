@@ -15,10 +15,8 @@ body {
     width: 100%;
     color: lighten($darkgrey, 10%);
     font-size: 1.4rem;
-    -webkit-font-feature-settings: 'kern' 1;
-    -moz-font-feature-settings: 'kern' 1;
-    font-feature-settings: 'kern' 1;
-    overflow-x: hidden; // Never have horizontal scrollbars
+    @include font-feature-settings("kern" 1);
+    overflow-x: hidden; // Never allow horizontal scrollbars
 }
 
 ::-moz-selection {
@@ -35,23 +33,154 @@ body {
 
 h1, h2, h3,
 h4, h5, h6 {
-    -webkit-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
-    -moz-font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
-    font-feature-settings: 'dlig' 1, 'liga' 1, 'lnum' 1, 'kern' 1;
+    @include baseline;
     line-height: 1.15em;
-    margin: 0 0 0.3em 0;
+    text-rendering: optimizeLegibility;
+    @include font-feature-settings("dlig" 1, "liga" 1, "lnum" 1, "kern" 1);
 }
 
 p, ul, ol, dl {
-    -webkit-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
-    -moz-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
-    font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
-    margin: 0 0 1.7em 0;
+    @include baseline;
+    @include font-feature-settings("liga" 1, "onum" 1, "kern" 1);
 }
 
-a, a:active {
-    text-decoration: none;
+ol ol,
+ul ul,
+ul ol,
+ol ul {
+    margin: 0.4em 0;
 }
+
+mark {
+    background-color: #ffc336;
+}
+
+a {
+    color: $blue;
+    text-decoration: none;
+    @include transition(all 0.15s ease-in-out);
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &.highlight {
+        color: $orange;
+        font-weight: bold;
+    }
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid $lightbrown;
+    margin: 3.2em 0;
+    padding: 0;
+}
+
+dl {
+    @include baseline;
+
+    dt {
+        float: left;
+        width: 180px;
+        overflow: hidden;
+        clear: left;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: bold;
+        margin-bottom: 1em
+    }
+
+    dd {
+        margin-left: 200px;
+        margin-bottom: 1em
+    }
+}
+
+blockquote {
+    @include baseline;
+    padding: 0 1.6em 0 1.6em;
+    border-left: $lightbrown 0.6em solid;
+
+    p {
+        margin:0.8em 0;
+        font-size:1.2em;
+        font-weight: 300;
+    }
+
+    small {
+        display: inline-block;
+        margin: 0.8em 0 0.8em 1.5em;
+        font-size:0.9em;
+        color: $brown;
+        &:before {
+            content: '\2014 \00A0';
+        }
+    }
+
+    cite {
+        font-weight:bold;
+        a { font-weight: normal; }
+    }
+}
+
+.markdown,
+pre,
+code,
+tt {
+    font-family: $font-family-mono;
+}
+
+code, tt {
+    font-size: 0.85em;
+    white-space: pre-wrap;
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    border-radius: 2px;
+    padding: 1px 3px;
+}
+
+pre {
+    @include baseline;
+    background: lighten($lightbrown, 2%);
+    border: 1px solid darken($lightbrown, 8%);
+    width: 100%;
+    padding: 10px;
+    font-family: $font-family-mono;
+    font-size: 0.9em;
+    white-space: pre;
+    overflow: auto;
+    border-radius: 3px;
+
+    code, tt {
+        font-size: inherit;
+        white-space: -moz-pre-wrap;
+        white-space: pre-wrap;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+}
+
+kbd {
+    display: inline-block;
+    margin-bottom: 0.4em;
+    padding: 1px 8px;
+    border: #ccc 1px solid;
+    color: $darkgrey;
+    text-shadow: #fff 0 1px 0;
+    font-size: 0.9em;
+    font-weight: bold;
+    background: #f4f4f4;
+    border-radius: 4px;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
+        0 1px 0 0 #fff inset;
+}
+
 
 //
 // Utilities
