@@ -58,10 +58,11 @@ mark {
 a {
     color: $blue;
     text-decoration: none;
-    @include transition(all 0.15s ease-in-out);
+    @include transition(background 0.3s, color 0.3s);
 
     &:hover {
         text-decoration: none;
+        @include transition(background 0.1s, color 0.1s);
     }
 
     &.highlight {
