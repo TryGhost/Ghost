@@ -177,3 +177,50 @@ a.object-list-item {
     }
 
 }
+
+//
+// Invite User Modal
+// --------------------------------------------------
+
+.invite-new-user {
+    .modal-body {
+        @include clearfix;
+        fieldset {
+            margin: 1em 0 0 0;
+        }
+    }
+    .form-group {
+
+        margin-bottom: 0;
+        padding: 0;
+
+        label {
+            position: static;
+            display: block;
+            text-align: left;
+        }
+
+        &:nth-of-type(1) {
+            float: left;
+            width: 60%;
+        }
+        &:nth-of-type(2) {
+            float: left;
+            width: 35%;
+            margin-left: 5%;
+        }
+
+        input {
+            width: 100%;
+        }
+
+    } // .form-group
+
+    .button-add {
+        width: 100%;
+        padding: 0.85rem 1.9rem;
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+} // .invite-new-user
