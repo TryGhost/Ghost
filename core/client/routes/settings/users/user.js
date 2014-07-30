@@ -9,6 +9,20 @@ var SettingsUserRoute = Ember.Route.extend({
         });
     },
 
+    afterModel: function (user) {
+        var self = this;
+        this.store.find('user', 'me').then(function (currentUser) {
+            var isOwnProfile = user.get('id') === currentUser.get('id'),
+                isAuthor = currentUser.get('isAuthor'),
+                isEditor = currentUser.get('isEditor');
+            if (isAuthor && !isOwnProfile) {
+                self.transitionTo('settings.users.user', currentUser);
+            } else if (isEditor && !isOwnProfile && !user.get('isAuthor')) {
+                self.transitionTo('settings.users');
+            }
+        });
+    },
+
     deactivate: function () {
         var model = this.modelFor('settings.users.user');
 
