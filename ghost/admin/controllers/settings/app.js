@@ -28,13 +28,13 @@ var SettingsAppController = Ember.ObjectController.extend({
         }
     }.observes('appState').on('init'),
 
-    activeClass: function () {
+    activeClass: Ember.computed('appState', function () {
         return this.appState === AppStates.active ? true : false;
-    }.property('appState'),
+    }),
 
-    inactiveClass: function () {
+    inactiveClass: Ember.computed('appState', function () {
         return this.appState === AppStates.inactive ? true : false;
-    }.property('appState'),
+    }),
 
     actions: {
         toggleApp: function (app) {

@@ -38,9 +38,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     // whether the number of tags has changed for `isDirty`.
     previousTagNames: null,
 
-    tagNames: function () {
+    tagNames: Ember.computed('tags.[]', function () {
         return this.get('tags').mapBy('name');
-    }.property('tags.[]'),
+    }),
 
     // compares previousTagNames to tagNames
     tagNamesEqual: function () {

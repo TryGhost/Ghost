@@ -16,9 +16,9 @@ var AuthenticationInitializer = {
             authorizer: 'simple-auth-authorizer:oauth2-bearer'
         };
         SimpleAuth.Session.reopen({
-            user: function () {
+            user: Ember.computed(function () {
                 return container.lookup('store:main').find('user', 'me');
-            }.property()
+            })
         });
         SimpleAuth.Authenticators.OAuth2.reopen({
             serverTokenEndpoint: Ghost.apiRoot + '/authentication/token',
