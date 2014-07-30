@@ -41,6 +41,9 @@ roles = {
                     // TODO: replace with better filter when bluebird lands
                     _.each(foundRoles.toJSON(), function (role) {
                         permissionMap.push(canThis(options.context).assign.role(role).then(function () {
+                            if (role.name === 'Owner') {
+                                return null;
+                            }
                             return role;
                         }, function () {
                             return null;

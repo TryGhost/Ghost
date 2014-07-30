@@ -58,7 +58,7 @@ createOwner = function () {
     var user = fixtures.users[0];
 
     return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
-        user.role = ownerRole.id;
+        user.roles = [ownerRole.id];
         user.password = utils.uid(50);
 
         logInfo('Creating owner');

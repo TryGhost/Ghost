@@ -25,7 +25,7 @@ describe('User Model', function run() {
     should.exist(UserModel);
 
     describe('Registration', function runRegistration() {
-        beforeEach(testUtils.setup());
+        beforeEach(testUtils.setup('roles'));
 
         it('can add first', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
