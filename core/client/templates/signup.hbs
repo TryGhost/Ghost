@@ -1,6 +1,11 @@
 <section class="setup-box js-signup-box fade-in">
     <div class="vertical">
         <form id="signup" class="setup-form" method="post" novalidate="novalidate">
+
+            {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+            <input style="display:none;" type="text" name="fakeusernameremembered"/>
+            <input style="display:none;" type="password" name="fakepasswordremembered"/>
+
             <header>
                 <h1>Welcome to Ghost</h1>
                 <h2>Create your account to start publishing</h2>
