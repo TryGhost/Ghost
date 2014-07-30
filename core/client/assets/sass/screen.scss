@@ -21,21 +21,21 @@
 // --------------------------------------------------
 
 @import "patterns/global";
+@import "patterns/_shame"; // TODO: Remove
 @import "patterns/forms";
 @import "patterns/buttons";
 
 
 //
-// Components - User interface objects
+// Components - Groups of Patterns
 // --------------------------------------------------
 
 @import "components/navigation";
 @import "components/dropdowns";
-@import "components/floatingheader"; // TODO: Remove
 
 
 //
-// Layouts - Individual application screens
+// Layouts - Groups of Components
 // --------------------------------------------------
 
 @import "layouts/default";
