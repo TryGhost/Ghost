@@ -856,47 +856,41 @@ describe('Users API', function () {
     });
 
     describe('Transfer ownership', function () {
-// Temporarily commenting this test out until #3426 is fixed
-//        it('Owner can transfer ownership', function (done) {
-//            // transfer ownership to admin user id:2
-//            UserAPI.edit(
-//                {users: [
-//                    {name: 'Joe Blogger', roles: [roleIdFor.owner]}
-//                ]}, _.extend({}, context.owner, {id: userIdFor.admin})
-//            ).then(function (response) {
-//                should.exist(response);
-//                should.not.exist(response.meta);
-//                should.exist(response.users);
-//                response.users.should.have.length(1);
-//                testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-//                response.users[0].name.should.equal('Joe Blogger');
-//                response.users[0].id.should.equal(2);
-//                response.users[0].roles[0].should.equal(4);
-//                response.users[0].updated_at.should.be.a.Date;
-//                done();
-//            }).catch(done);
-//        });
+       it('Owner can transfer ownership', function (done) {
+           // transfer ownership to admin user id:2
+           UserAPI.transferOwnership(
+               {owner: [
+                   {id: userIdFor.admin}
+               ]}, context.owner
+           ).then(function (response) {
+               should.exist(response);
+               should.exist(response.owner);
+               response.owner.should.have.length(1);
+               response.owner[0].message.should.eql('Ownership transferred successfully.');
+               done();
+           }).catch(done);
+       });
 
         it('Owner CANNOT downgrade own role', function (done) {
             // Cannot change own role to admin
-            UserAPI.edit(
-                {users: [
-                    {name: 'Joe Blogger', roles: [roleIdFor.admin]}
-                ]}, _.extend({}, context.owner, {id: userIdFor.owner})
+            UserAPI.transferOwnership(
+                {owner: [
+                    {id: userIdFor.owner}
+                ]}, context.owner
             ).then(function (response) {
                 done(new Error('Owner should not be able to downgrade their role'));
                 }).catch(function (error) {
-                    error.type.should.eql('NoPermissionError');
+                    error.type.should.eql('ValidationError');
                     done();
                 });
         });
 
         it('Admin CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
-            UserAPI.edit(
-                {users: [
-                    {name: 'Joe Blogger', roles: [roleIdFor.owner]}
-                ]}, _.extend({}, context.admin, {id: userIdFor.admin})
+            UserAPI.transferOwnership(
+                {owner: [
+                    {id: userIdFor.editor}
+                ]}, context.admin
             ).then(function () {
                     done(new Error('Admin is not denied transferring ownership.'));
                 }).catch(function (error) {
@@ -907,10 +901,10 @@ describe('Users API', function () {
 
         it('Editor CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
-            UserAPI.edit(
-                {users: [
-                    {name: 'Joe Blogger', roles: [roleIdFor.owner]}
-                ]}, _.extend({}, context.editor, {id: userIdFor.admin})
+            UserAPI.transferOwnership(
+                {owner: [
+                    {id: userIdFor.admin}
+                ]}, context.editor
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
             }).catch(function (error) {
@@ -921,10 +915,10 @@ describe('Users API', function () {
 
         it('Author CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
-            UserAPI.edit(
-                {users: [
-                    {name: 'Joe Blogger', roles: [roleIdFor.owner]}
-                ]}, _.extend({}, context.author, {id: userIdFor.admin})
+            UserAPI.transferOwnership(
+                {owner: [
+                    {id: userIdFor.admin}
+                ]}, context.author
             ).then(function () {
                     done(new Error('Admin is not denied transferring ownership.'));
                 }).catch(function (error) {
