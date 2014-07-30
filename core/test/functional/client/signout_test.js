@@ -21,8 +21,8 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
 
     casper.captureScreenshot('user-menu-open.png');
 
-    casper.waitForSelector('.usermenu-signout button');
-    casper.thenClick('.usermenu-signout button');
+    casper.waitForSelector('.usermenu-signout a');
+    casper.thenClick('.usermenu-signout a');
 
     casper.waitForSelector('#login').then(function assertSuccess() {
         test.assert(true, 'Got login screen');
