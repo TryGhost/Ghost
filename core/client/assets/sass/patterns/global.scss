@@ -61,7 +61,7 @@ a {
     @include transition(all 0.15s ease-in-out);
 
     &:hover {
-        text-decoration: underline;
+        text-decoration: none;
     }
 
     &.highlight {
