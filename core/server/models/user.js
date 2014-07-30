@@ -40,12 +40,6 @@ User = ghostBookshelf.Model.extend({
         /*jshint unused:false*/
 
         var self = this;
-        // disabling sanitization until we can implement a better version
-        // this.set('name', this.sanitize('name'));
-        // this.set('email', this.sanitize('email'));
-        // this.set('location', this.sanitize('location'));
-        // this.set('website', this.sanitize('website'));
-        // this.set('bio', this.sanitize('bio'));
 
         ghostBookshelf.Model.prototype.saving.apply(this, arguments);
 
@@ -184,8 +178,8 @@ User = ghostBookshelf.Model.extend({
         }, options);
 
         //TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
-            //TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
-            //TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
+        //TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
+        //TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
         if (options.status && options.status !== 'all') {
@@ -334,7 +328,9 @@ User = ghostBookshelf.Model.extend({
                     return Role.findOne({id: roleId});
                 }).then(function (roleToAssign) {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
-                        return self.transferOwnership(user, roleToAssign, options.context);
+                        return when.reject(
+                            new errors.ValidationError('This method does not support assigning the owner role')
+                        );
                     } else {
                         // assign all other roles
                         return user.roles().updatePivot({role_id: roleId});
@@ -359,24 +355,23 @@ User = ghostBookshelf.Model.extend({
      */
     add: function (data, options) {
         var self = this,
-            // Clone the _user so we don't expose the hashed password unnecessarily
             userData = this.filterData(data),
-            // Get the role we're going to assign to this user, or the author role if there isn't one
-            // TODO: don't reference Author role by ID!
-            roles = data.roles || [1];
-
-        // remove roles from the object
-        delete data.roles;
-
-        // check for too many roles
-        if (roles.length > 1) {
-            return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
-        }
+            roles;
 
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union([ 'roles' ], options.include);
+        return Role.findOne({name: 'Author'}).then(function (authorRole) {
+            // Get the role we're going to assign to this user, or the author role if there isn't one
+            roles = data.roles || authorRole.id;
+            // check for too many roles
+            if (roles.length > 1) {
+                return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
+            }
+            // remove roles from the object
+            delete data.roles;
 
-        return validatePasswordLength(userData.password).then(function () {
+            return validatePasswordLength(userData.password);
+        }).then(function () {
             return self.forge().fetch();
         }).then(function () {
             // Generate a new password hash
@@ -693,23 +688,40 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    transferOwnership: function (user, ownerRole, context) {
-        var adminRole;
+    transferOwnership: function (object, options) {
+        var adminRole,
+            ownerRole,
+            contextUser,
+            assignUser;
+
         // Get admin role
         return Role.findOne({name: 'Administrator'}).then(function (result) {
             adminRole = result;
-            return User.findOne({id: context.user});
-        }).then(function (contextUser) {
+            return Role.findOne({name: 'Owner'});
+        }).then(function (result) {
+            ownerRole = result;
+            return User.findOne({id: options.context.user});
+        }).then(function (ctxUser) {
             // check if user has the owner role
-            var currentRoles = contextUser.toJSON().roles;
+            var currentRoles = ctxUser.toJSON().roles;
             if (!_.contains(currentRoles, ownerRole.id)) {
                 return when.reject(new errors.NoPermissionError('Only owners are able to transfer the owner role.'));
             }
+            contextUser = ctxUser;
+            return User.findOne({id: object.id});
+        }).then(function (user) {
+            
+            var currentRoles = user.toJSON().roles;
+            if (!_.contains(currentRoles, adminRole.id)) {
+                return when.reject(new errors.ValidationError('Only administrators can be assigned the owner role.'));
+            }
+
+            assignUser = user;
             // convert owner to admin
             return contextUser.roles().updatePivot({role_id: adminRole.id});
         }).then(function () {
             // assign owner role to a new user
-            return user.roles().updatePivot({role_id: ownerRole.id});
+            return assignUser.roles().updatePivot({role_id: ownerRole.id});
         });
     },
 
