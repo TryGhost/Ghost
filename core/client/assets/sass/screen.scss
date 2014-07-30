@@ -15,6 +15,7 @@
 
 @import "normalize"; // via Bower
 @import "lib/nprogress";
+@import "lib/codemirror";
 
 
 //
@@ -46,5 +47,7 @@
 @import "layouts/default";
 @import "layouts/setup";
 @import "layouts/auth";
+@import "layouts/content";
+@import "layouts/editor";
 @import "layouts/users";
 @import "layouts/about";
