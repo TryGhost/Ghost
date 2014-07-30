@@ -24,6 +24,34 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             this.send('loadServerNotifications', true);
         },
 
+        sessionAuthenticationFailed: function (error) {
+            this.notifications.closePassive();
+            this.notifications.showError(error.message);
+        },
+
+        sessionAuthenticationSucceeded: function () {
+            var self = this;
+            this.store.find('user', 'me').then(function (user) {
+                self.send('signedIn', user);
+                var attemptedTransition = self.get('session').get('attemptedTransition');
+                if (attemptedTransition) {
+                    attemptedTransition.retry();
+                    self.get('session').set('attemptedTransition', null);
+                } else {
+                    self.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+                }
+            });
+        },
+
+        sessionInvalidationFailed: function (error) {
+            this.notifications.closePassive();
+            this.notifications.showError(error.message);
+        },
+
+        sessionInvalidationSucceeded: function () {
+            this.notifications.showSuccess('You were successfully signed out.', true);
+        },
+
         openModal: function (modalName, model, type) {
             modalName = 'modals/' + modalName;
             // We don't always require a modal to have a controller

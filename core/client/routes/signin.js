@@ -13,40 +13,10 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     deactivate: function () {
         this._super();
 
-        // clear the password property from the controller when we're no longer
-        // on the signin screen
-        this.controllerFor('signin').set('password', '');
-    },
-
-    actions: {
-        sessionAuthenticationFailed: function (error) {
-            this.notifications.closePassive();
-            this.notifications.showError(error.message);
-        },
-        sessionAuthenticationSucceeded: function () {
-            var self = this;
-            this.store.find('user', 'me').then(function (user) {
-                self.send('signedIn', user);
-                var attemptedTransition = self.get('session').get('attemptedTransition');
-                if (attemptedTransition) {
-                    attemptedTransition.retry();
-                    self.get('session').set('attemptedTransition', null);
-                } else {
-                    self.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
-                }
-            });
-        },
-        sessionInvalidationFailed: function (error) {
-            this.notifications.closePassive();
-            this.notifications.showError(error.message);
-        },
-        sessionInvalidationSucceeded: function () {
-            this.notifications.showSuccess('You were successfully signed out.', true);
-            this.send('signedOut');
-        }
+        // clear the properties that hold the credentials from the controller
+        // when we're no longer on the signin screen
+        this.controllerFor('signin').setProperties({ identification: '', password: '' });
     }
-
-
 });
 
 export default SigninRoute;
