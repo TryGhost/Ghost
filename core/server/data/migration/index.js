@@ -35,7 +35,7 @@ logInfo = function logInfo(message) {
 populateDefaultSettings = function populateDefaultSettings() {
     // Initialise the default settings
     logInfo('Populating default settings');
-    return models.Settings.populateDefaults().then(function () {
+    return models.Settings.populateDefault('databaseVersion').then(function () {
         logInfo('Complete');
     });
 };
