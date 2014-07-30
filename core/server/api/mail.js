@@ -1,14 +1,14 @@
 // # Mail API
 // API for sending Mail
-var when       = require('when'),
-    _               = require('lodash'),
-    config     = require('../config'),
-    canThis    = require('../permissions').canThis,
-    errors     = require('../errors'),
-    path       = require('path'),
-    fs         = require('fs'),
-    templatesDir   = path.resolve(__dirname, '..', 'email-templates'),
-    htmlToText = require('html-to-text'),
+var _            = require('lodash'),
+    when         = require('when'),
+    config       = require('../config'),
+    canThis      = require('../permissions').canThis,
+    errors       = require('../errors'),
+    path         = require('path'),
+    fs           = require('fs'),
+    templatesDir = path.resolve(__dirname, '..', 'email-templates'),
+    htmlToText   = require('html-to-text'),
     mail;
 
 /**
@@ -105,9 +105,10 @@ mail = {
                 //generate a plain-text version of the same email
                 textContent = htmlToText.fromString(htmlContent);
 
-                resolve({ html: htmlContent,
-                          text: textContent
-                        });
+                resolve({
+                    html: htmlContent,
+                    text: textContent
+                });
 
             });
         });

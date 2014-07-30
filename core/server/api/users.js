@@ -132,7 +132,8 @@ users = {
     add: function add(object, options) {
         var newUser,
             user,
-            roleId;
+            roleId,
+            emailData;
 
         return canThis(options.context).add.user(object).then(function () {
             return utils.checkObject(object, docName).then(function (checkedUserData) {
@@ -182,39 +183,41 @@ users = {
                     dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(user.email, expires, dbHash);
             }).then(function (resetToken) {
-                when.join(users.read({'id': user.created_by}), settings.read({'key': 'title'})).then(function (values) {
+                return when.join(users.read({'id': user.created_by}), settings.read({'key': 'title'})).then(function (values) {
                     var invitedBy = values[0].users[0],
                         blogTitle = values[1].settings[0].value,
                         baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
-                        resetUrl = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + resetToken + '/',
-                        emailData = {
-                            blogName: blogTitle,
-                            invitedByName: invitedBy.name,
-                            invitedByEmail: invitedBy.email,
-                            resetLink: resetUrl
-                        };
+                        resetUrl = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + resetToken + '/';
 
-                    mail.generateContent({data: emailData, template: 'invite-user'}).then(function (emailContent) {
+                    emailData = {
+                        blogName: blogTitle,
+                        invitedByName: invitedBy.name,
+                        invitedByEmail: invitedBy.email,
+                        resetLink: resetUrl
+                    };
 
-                        var payload = {
-                            mail: [
-                                {
-                                    message: {
-                                        to: user.email,
-                                        subject: emailData.invitedByName + ' has invited you to join ' + emailData.blogName,
-                                        html: emailContent.html,
-                                        text: emailContent.text
-                                    },
-                                    options: {}
-                                }
-                            ]
-                        };
-                        return mail.send(payload, {context: {internal: true}}).then(function () {
-                            // If status was invited-pending and sending the invitation succeeded, set status to invited.
-                            if (user.status === 'invited-pending') {
-                                return dataProvider.User.edit({status: 'invited'}, {id: user.id});
+                    return mail.generateContent({data: emailData, template: 'invite-user'});
+                }).then(function (emailContent) {
+                    var payload = {
+                        mail: [
+                            {
+                                message: {
+                                    to: user.email,
+                                    subject: emailData.invitedByName + ' has invited you to join ' + emailData.blogName,
+                                    html: emailContent.html,
+                                    text: emailContent.text
+                                },
+                                options: {}
                             }
-                        });
+                        ]
+                    };
+                    return mail.send(payload, {context: {internal: true}}).then(function () {
+                        // If status was invited-pending and sending the invitation succeeded, set status to invited.
+                        if (user.status === 'invited-pending') {
+                            return dataProvider.User.edit({status: 'invited'}, {id: user.id}).then(function (editedUser) {
+                                user = editedUser.toJSON();
+                            });
+                        }
                     });
                 });
             }).then(function () {
