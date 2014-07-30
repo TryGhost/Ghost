@@ -36,7 +36,6 @@ var SettingsUserController = Ember.ObjectController.extend({
         var lastLogin = this.get('user.last_login');
 
         return lastLogin ? lastLogin.fromNow() : '';
-
     }.property('user.last_login'),
 
     created_at: function () {
@@ -44,12 +43,11 @@ var SettingsUserController = Ember.ObjectController.extend({
 
         return createdAt ? createdAt.fromNow() : '';
     }.property('user.created_at'),
-
-    isAuthor: function () {
-        return this.get('user.isAuthor');
-    }.property('user.isAuthor'),
-
+    
     actions: {
+        changeRole: function (newRole) {
+            this.set('model.role', newRole);
+        },
         revoke: function () {
             var self = this,
                 email = this.get('email');

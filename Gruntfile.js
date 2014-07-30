@@ -748,9 +748,9 @@ var path           = require('path'),
         //
         // You can use the `--target` argument to run any individual test file, or the admin or frontend tests:
         //
-        // `grunt test-functional --target=admin/editor_test.js` - run just the editor tests
+        // `grunt test-functional --target=client/editor_test.js` - run just the editor tests
         //
-        // `grunt test-functional --target=admin/` - run all of the tests in the admin directory
+        // `grunt test-functional --target=client/` - run all of the tests in the client directory
         //
         // Functional tests are run with [phantom.js](http://phantomjs.org/) and defined using the testing api from
         // [casper.js](http://docs.casperjs.org/en/latest/testing.html).
