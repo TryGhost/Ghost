@@ -51,7 +51,9 @@ authentication = {
                         resetUrl: resetUrl
                     };
 
-                mail.generateContent({data: emailData, template: 'reset-password'}).then(function (emailContent) {
+                return emailData;
+            }).then(function (emailData) {
+                return mail.generateContent({data: emailData, template: 'reset-password'}).then(function (emailContent) {
                     var payload = {
                         mail: [{
                             message: {
@@ -65,7 +67,6 @@ authentication = {
                     };
                     return mail.send(payload, {context: {internal: true}});
                 });
-
             }).then(function () {
                 return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
             }).otherwise(function (error) {
@@ -218,7 +219,7 @@ authentication = {
                 ownerEmail: setupUser.email
             };
 
-            mail.generateContent({data: data, template: 'welcome'}).then(function (emailContent) {
+            return mail.generateContent({data: data, template: 'welcome'}).then(function (emailContent) {
                 var message = {
                         to: setupUser.email,
                         subject: 'Your New Ghost Blog',
@@ -231,6 +232,9 @@ authentication = {
                             options: {}
                         }]
                     };
+
+                return payload;
+            }).then(function (payload) {
                 return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
                     errors.logError(
                         error.message,
