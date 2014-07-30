@@ -2,7 +2,7 @@
 // Helpers: Sass Utilities
 // --------------------------------------------------
 
-@import "_bourbon"; // via Bower http://bourbon.io/
+@import "_bourbon"; // via Bower
 @import "helpers/variables";
 @import "helpers/mixins";
 @import "helpers/icons";
@@ -51,3 +51,4 @@
 @import "layouts/editor";
 @import "layouts/users";
 @import "layouts/about";
+@import "layouts/error";
