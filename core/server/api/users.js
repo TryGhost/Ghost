@@ -142,6 +142,11 @@ users = {
                 }
 
                 newUser = checkedUserData.users[0];
+
+                if (_.isEmpty(newUser.roles)) {
+                    return when.reject(new errors.BadRequestError('No role provided.'));
+                }
+
                 roleId = parseInt(newUser.roles[0].id || newUser.roles[0], 10);
 
                 // Make sure user is allowed to add a user with this role
@@ -281,8 +286,26 @@ users = {
                 return when.reject(new errors.ValidationError(error.message));
             });
         });
-    }
+    },
 
+    /**
+     *
+     */
+    transferOwnership: function transferOwnership(object, options) {
+        return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+            return canThis(options.context).assign.role(ownerRole);
+        }).then(function () {
+            return utils.checkObject(object, 'owner').then(function (checkedOwnerTransfer) {
+                return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function () {
+                    return when.resolve({owner: [{message: 'Ownership transferred successfully.'}]});
+                }).catch(function (error) {
+                    return when.reject(new errors.ValidationError(error.message));
+                });
+            });
+        }).catch(function (error) {
+            return errors.handleAPIError(error);
+        });
+    }
 };
 
 module.exports = users;

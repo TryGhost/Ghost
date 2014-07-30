@@ -2,27 +2,24 @@ var TransferOwnerController = Ember.Controller.extend({
     actions: {
         confirmAccept: function () {
             var user = this.get('model'),
+                url = this.get('ghostPaths.url').api('users', 'owner'),
                 self = this;
 
             self.get('popover').closePopovers();
 
-            // Get owner role
-            this.store.find('role').then(function (result) {
-                return result.findBy('name', 'Owner');
-            }).then(function (ownerRole) {
-                // remove roles and assign owner role
-                user.get('roles').clear();
-                user.get('roles').pushObject(ownerRole);
-
-                return user.saveOnly('roles');
+            ic.ajax.request(url, {
+                type: 'PUT',
+                data: {
+                    owner: [{
+                        'id': user.get('id')
+                    }]
+                }
             }).then(function () {
                 self.notifications.closePassive();
                 self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
-            }).catch(function (errors) {
+            }).catch(function (error) {
                 self.notifications.closePassive();
-
-                errors = Ember.isArray(errors) ? errors : Ember.A([errors]);
-                self.notifications.showErrors(errors);
+                self.notifications.showAPIError(error);
             });
         },
 

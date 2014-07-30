@@ -27,6 +27,7 @@ apiRoutes = function (middleware) {
     router.get('/users/slug/:slug', api.http(api.users.read));
     router.get('/users/email/:email', api.http(api.users.read));
     router.put('/users/password', api.http(api.users.changePassword));
+    router.put('/users/owner', api.http(api.users.transferOwnership));
     router.put('/users/:id', api.http(api.users.edit));
     router.post('/users', api.http(api.users.add));
     router.del('/users/:id', api.http(api.users.destroy));
