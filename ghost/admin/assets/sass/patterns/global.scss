@@ -57,6 +57,14 @@ a, a:active {
 // Utilities
 // --------------------------------------------------
 
+.clearfix {
+    @include clearfix;
+}
+
+.wrapper {
+    position: relative;
+}
+
 .show {
     display: block !important;
 }
@@ -89,4 +97,16 @@ a, a:active {
         overflow: visible;
         clip: auto;
     }
+}
+
+.right {
+    float: right;
+}
+.left {
+    float: left;
+}
+
+.vertical {
+  display: table-cell;
+  vertical-align: middle;
 }
