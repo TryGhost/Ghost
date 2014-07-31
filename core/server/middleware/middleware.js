@@ -138,23 +138,37 @@ var middleware = {
     spamPrevention: function (req, res, next) {
         var currentTime = process.hrtime()[0],
             remoteAddress = req.connection.remoteAddress,
-            denied = '';
+            deniedSpam = '',
+            deniedRateLimit = '',
+            ipCount = '',
+            spamTimeout = config.spamTimeout || 2,
+            ratePeriod = config.ratePeriod || 3600,
+            rateAttempts = config.rateAttempts || 5;
 
         // filter for IPs that tried to login in the last 2 sec
         loginSecurity = _.filter(loginSecurity, function (logTime) {
-            return (logTime.time + 2 > currentTime);
+            return (logTime.time + ratePeriod > currentTime);
         });
+        
 
         // check if IP tried to login in the last 2 sec
-        denied = _.find(loginSecurity, function (logTime) {
-            return (logTime.ip === remoteAddress);
+        deniedSpam = _.find(loginSecurity, function (logTime) {
+            return (logTime.time + spamTimeout > currentTime && logTime.ip === remoteAddress);
         });
+        
+        // check if IP tried to login more than 'rateAttempts' time in the last 'ratePeriod' seconds
+        ipCount = _.chain(loginSecurity).countBy('ip').value();
+        deniedRateLimit = (ipCount[remoteAddress] > rateAttempts);
 
-        if (!denied || expressServer.get('disableLoginLimiter') === true) {
+        if ((!deniedSpam && !deniedRateLimit) || expressServer.get('disableLoginLimiter') === true) {
             loginSecurity.push({ip: remoteAddress, time: currentTime});
             next();
         } else {
-            return next(new errors.UnauthorizedError('Slow down, there are way too many login attempts!'));
+            if (deniedRateLimit) {
+                return next(new errors.UnauthorizedError('Only ' + rateAttempts + ' tries per IP address every ' + ratePeriod + ' seconds.'));
+            } else {
+                return next(new errors.UnauthorizedError('Slow down, there are way too many login attempts!'));
+            }
         }
     },
 
