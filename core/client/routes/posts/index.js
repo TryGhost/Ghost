@@ -5,12 +5,27 @@ var PostsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, loa
     // exists to be used for the content preview.  It has a parent resource (Posts)
     // that is responsible for populating the store.
     beforeModel: function () {
+        var self = this,
         // the store has been populated so we can work with the local copy
-        var post = this.store.all('post').get('firstObject');
+            posts = this.store.all('post');
 
-        if (post) {
-            return this.transitionTo('posts.post', post);
-        }
+        return this.store.find('user', 'me').then(function (user) {
+            // return the first post find that matches the following criteria:
+            // * User is an author, and is the author of this post
+            // * User has a role other than author
+            return posts.find(function (post) {
+                if (user.get('isAuthor')) {
+                    return post.isAuthoredByUser(user);
+                } else {
+                    return true;
+                }
+            });
+        })
+        .then(function (post) {
+            if (post) {
+                return self.transitionTo('posts.post', post);
+            }
+        });
     }
 });
 

@@ -13,8 +13,18 @@ var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Pag
     },
 
     model: function () {
-        return this.store.filter('user', paginationSettings, function () {
-            return true;
+        var self = this;
+        return this.store.find('user', 'me').then(function (currentUser) {
+            if (currentUser.get('isEditor')) {
+                // Editors only see authors in the list
+                paginationSettings.role = 'Author';
+            }
+            return self.store.filter('user', paginationSettings, function (user) {
+                if (currentUser.get('isEditor')) {
+                    return user.get('isAuthor');
+                }
+                return true;
+            });
         });
     }
 });

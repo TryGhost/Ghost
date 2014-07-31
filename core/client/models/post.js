@@ -18,6 +18,7 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
     author: DS.belongsTo('user',  { async: true }),
+    author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
@@ -36,7 +37,12 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
+    },
+
+    isAuthoredByUser: function (user) {
+        return parseInt(user.get('id'), 10) === parseInt(this.get('author_id'), 10);
     }
+
 });
 
 export default Post;
