@@ -37,7 +37,12 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
+    },
+
+    isAuthoredByUser: function (user) {
+        return parseInt(user.get('id'), 10) === parseInt(this.get('author_id'), 10);
     }
+
 });
 
 export default Post;
