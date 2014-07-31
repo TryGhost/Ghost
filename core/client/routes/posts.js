@@ -21,7 +21,11 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
             }
             // using `.filter` allows the template to auto-update when new models are pulled in from the server.
             // we just need to 'return true' to allow all models by default.
-            return self.store.filter('post', paginationSettings, function () {
+            return self.store.filter('post', paginationSettings, function (post) {
+                if (user.get('isAuthor')) {
+                    return user.get('id') === post.get('author_id');
+                }
+
                 return true;
             });
         });

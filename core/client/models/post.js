@@ -18,6 +18,7 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
     author: DS.belongsTo('user',  { async: true }),
+    author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', { async: true }),
