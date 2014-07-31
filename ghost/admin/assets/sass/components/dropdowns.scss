@@ -27,10 +27,7 @@
     li {
         list-style: none;
     }
-} // .dropdown-menu
 
-// Triangle & positioning placeholders
-%triangle {
     &:before {
         content: '';
         position: absolute;
@@ -43,108 +40,94 @@
     &:after {
         content: '';
         position: absolute;
-        width: 12px;
-        height: 12px;
-        background: #fff;
+        width: ($dropdown_triangle * 1.5);
+        height: ($dropdown_triangle * 1.5);
+        background: #B0BEC4;
         transform: rotate(45deg);
-        box-shadow: #B0BEC4 0 0 0 1px;
         z-index: -1;
     } // :after
-} // %triangle
 
-%triangle-top {
-    @extend %triangle;
-
-    &:before {
-        border-width: 0 6px 6px 6px;
-        top: -6px;
-    }
-    &:after {
-        top: -5px;
-    }
-} // %triangle-top
-
-%triangle-bottom {
-    @extend %triangle;
-
-    &:before {
-        border-width: 6px 6px 0 6px;
-        bottom: -6px;
-    }
-    &:after {
-        bottom: -5px;
-    }
-} // %triangle-bottom
-
-.dropdown-menu {
-
-    &.triangle-top {
-        @extend %triangle-top;
-
-        &:before {
-            left: 50%;
-            margin-left: -6px;
-        }
-        &:after {
-            left: 50%;
-            margin-left: -6px;
-        }
-    } // &.triangle-top
-
-    &.triangle-top-left {
-        @extend %triangle-top;
-
-        &:before {
-            left: 1.2rem;
-        }
-        &:after {
-            left: 1.2rem;
-        }
-    } // &.triangle-top-left
-
-    &.triangle-top-right {
-        @extend %triangle-top;
-
-        &:before {
-            right: 1.2rem;
-        }
-        &:after {
-            right: 1.2rem;
-        }
-    } // &.triangle-top-right
-
-    &.triangle-bottom {
-        @extend %triangle-bottom;
-        &:before {
-            left: 50%;
-            margin-left: -6px;
-        }
-        &:after {
-            left: 50%;
-            margin-left: -6px;
-        }
-    } // &.triangle-bottom
-
-    &.triangle-bottom-left {
-        @extend %triangle-bottom;
-        &:before {
-            left: 1.2rem;
-        }
-        &:after {
-            left: 1.2rem;
-        }
-    } // &.triangle-bottom-left
-
-    &.triangle-bottom-right {
-        @extend %triangle-bottom;
-        &:before {
-            right: 1.2rem;
-        }
-        &:after {
-            right: 1.2rem;
-        }
-    } // &.triangle-bottom-right
 } // .dropdown-menu
+
+
+.dropdown-triangle-top {
+    &:before {
+        border-width: 0 $dropdown_triangle $dropdown_triangle $dropdown_triangle;
+        top: -$dropdown_triangle;
+    }
+    &:after {
+        top: -($dropdown_triangle - 1);
+    }
+}
+.dropdown-triangle-bottom {
+    &:before {
+        border-width: $dropdown_triangle $dropdown_triangle 0 $dropdown_triangle;
+        bottom: -$dropdown_triangle;
+    }
+    &:after {
+        bottom: -($dropdown_triangle - 1);
+    }
+}
+.dropdown-triangle-center {
+    &:before {
+        left: 50%;
+        margin-left: -$dropdown_triangle;
+    }
+    &:after {
+        left: 50%;
+        margin-left: -($dropdown_triangle * 1.5 / 2);
+    }
+}
+// TODO: Make the values here use the $dropdown_triangle var
+.dropdown-triangle-left {
+    &:before {
+        left: 10px;
+    }
+    &:after {
+        left: 12px;
+    }
+}
+.dropdown-triangle-right {
+    &:before {
+        left: auto;
+        right: 10px;
+    }
+    &:after {
+        left: auto;
+        right: 12px;
+    }
+}
+
+.dropdown-top {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-center;
+    @extend .dropdown-triangle-top;
+}
+.dropdown-top-left {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-top;
+    @extend .dropdown-triangle-left;
+}
+.dropdown-top-right {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-top;
+    @extend .dropdown-triangle-right;
+}
+.dropdown-bottom {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-center;
+    @extend .dropdown-triangle-bottom;
+}
+.dropdown-bottom-left {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-bottom;
+    @extend .dropdown-triangle-left;
+}
+.dropdown-bottom-right {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-bottom;
+    @extend .dropdown-triangle-right;
+}
 
 // List Item
 .dropdown-item {
