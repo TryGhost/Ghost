@@ -308,6 +308,26 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        it('Author can edit self with role set', function (done) {
+            // Next test that author CAN edit self
+            UserAPI.edit(
+                {users: [{name: newName, roles: [roleIdFor.author]}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function (response) {
+                    checkEditResponse(response);
+                    done();
+                }).catch(done);
+        });
+
+        it('Author can edit self with role set as string', function (done) {
+            // Next test that author CAN edit self
+            UserAPI.edit(
+                {users: [{name: newName, roles: [roleIdFor.author.toString()]}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function (response) {
+                    checkEditResponse(response);
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Add', function () {
@@ -376,6 +396,30 @@ describe('Users API', function () {
             it('Can add an Author', function (done) {
                 // Can add author
                 newUser.roles = [roleIdFor.author];
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                        done();
+                    }).catch(done);
+            });
+
+            it('Can add with no role set', function (done) {
+                // Can add author
+                delete newUser.roles;
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                        done();
+                    }).catch(done);
+            });
+
+            it('Can add with role set as string', function (done) {
+                // Can add author
+                newUser.roles = [roleIdFor.author.toString()];
                 UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
                     .then(function (response) {
                         checkAddResponse(response);
@@ -485,7 +529,7 @@ describe('Users API', function () {
             });
         });
     });
-      
+
 
     describe('Destroy', function () {
         function checkDestroyResponse(response) {
