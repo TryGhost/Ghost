@@ -1,5 +1,15 @@
 var InviteNewUserController = Ember.Controller.extend({
-
+    //Used to set the initial value for the dropdown
+    authorRole: Ember.computed(function () {
+        var self = this;
+        return this.store.find('role').then(function (roles) {
+            var authorRole = roles.findBy('name', 'Author');
+            //Initialize role as well.
+            self.set('role', authorRole);
+            return authorRole;
+        });
+    }),
+    
     confirm: {
         accept: {
             text: 'send invitation now'
@@ -8,44 +18,22 @@ var InviteNewUserController = Ember.Controller.extend({
             buttonClass: 'hidden'
         }
     },
-
-    roles: Ember.computed(function () {
-        var roles = {},
-            self = this;
-
-        roles.promise = this.store.find('role', { permissions: 'assign' }).then(function (roles) {
-            return roles.rejectBy('name', 'Owner').sortBy('id');
-        }).then(function (roles) {
-            // After the promise containing the roles has been resolved and the array
-            // has been sorted, explicitly set the selectedRole for the Ember.Select.
-            // The explicit set is needed because the data-select-text attribute is
-            // not being set until a change is made in the dropdown list.
-            // This is only required with Ember.Select when it is bound to async data.
-            self.set('selectedRole', roles.get('firstObject'));
-
-            return roles;
-        });
-
-        return Ember.ArrayProxy.extend(Ember.PromiseProxyMixin).create(roles);
-    }),
-
+        
     actions: {
+        setRole: function (role) {
+            this.set('role', role);
+        },
         confirmAccept: function () {
             var email = this.get('email'),
-                role_id = this.get('role'),
+                role = this.get('role'),
                 self = this,
-                newUser,
-                role;
+                newUser;
 
             newUser = self.store.createRecord('user', {
                 email: email,
-                status: 'invited'
+                status: 'invited',
+                role: role
             });
-
-            // no need to make an API request, the store will already have this role
-            role = self.store.getById('role', role_id);
-
-            newUser.get('roles').pushObject(role);
 
             newUser.save().then(function () {
                 var notificationText = 'Invitation sent! (' + email + ')';

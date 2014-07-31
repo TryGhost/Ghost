@@ -26,18 +26,22 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     updated_by: DS.attr('number'),
     roles: DS.hasMany('role', { embedded: 'always' }),
 
-
-    // TODO: Once client-side permissions are in place,
-    // remove the hard role check.
-    isAuthor: Ember.computed('roles', function () {
-        return this.get('roles').objectAt(0).get('name').toLowerCase() === 'author';
+    role: Ember.computed('roles', function (name, value) {
+        if (arguments.length > 1) {
+            //Only one role per user, so remove any old data.
+            this.get('roles').clear();
+            this.get('roles').pushObject(value);
+            return value;
+        }
+        return this.get('roles.firstObject');
     }),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
-    isEditor: Ember.computed('roles', function () {
-        return this.get('roles').objectAt(0).get('name').toLowerCase() === 'editor';
-    }),
+    isAuthor: Ember.computed.equal('role.name', 'Author'),
+    isEditor: Ember.computed.equal('role.name', 'Editor'),
+    isAdmin: Ember.computed.equal('role.name', 'Administrator'),
+    isOwner: Ember.computed.equal('role.name', 'Owner'),
 
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
