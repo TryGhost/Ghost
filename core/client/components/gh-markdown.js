@@ -16,17 +16,24 @@ var Markdown = Ember.Component.extend({
     // might need to make sure markdown has been processed first
     reInitDropzones: function () {
         Ember.run.scheduleOnce('afterRender', this, function () {
-            var dropzones = $('.js-drop-zone');
+            var dropzones = $('.js-drop-zone'),
+                self = this;
 
             uploader.call(dropzones, {
                 editor: true,
                 fileStorage: this.get('config.fileStorage')
             });
 
-            dropzones.on('uploadstart', _.bind(this.sendAction, this, 'uploadStarted'));
-            dropzones.on('uploadfailure', _.bind(this.sendAction, this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadSuccess'));
+            function boundSendAction(actionName) {
+                return function() {
+                  self.sendAction.call(self, actionName);
+                }
+            }
+
+            dropzones.on('uploadstart', boundSendAction('uploadStarted'));
+            dropzones.on('uploadfailure', boundSendAction('uploadFinished'));
+            dropzones.on('uploadsuccess', boundSendAction('uploadFinished'));
+            dropzones.on('uploadsuccess', boundSendAction('uploadSuccess'));
         });
     }.observes('markdown')
 });
