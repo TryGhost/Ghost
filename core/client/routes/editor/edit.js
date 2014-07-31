@@ -91,7 +91,11 @@ var EditorEditRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, bas
 
             // remove model-related listeners created in editor-route-base
             this.detachModelHooks(controller, model);
-        }
+        },
+
+        authorizationFailed: function () {
+            this.send('openModal', 'signin');
+        },
     }
 });
 
