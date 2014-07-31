@@ -71,7 +71,10 @@ apiRoutes = function (middleware) {
 
 
     // ## Authentication
-    router.post('/authentication/passwordreset', api.http(api.authentication.generateResetToken));
+    router.post('/authentication/passwordreset',
+        middleware.spamPrevention,
+        api.http(api.authentication.generateResetToken)
+    );
     router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
     router.post('/authentication/setup', api.http(api.authentication.setup));
