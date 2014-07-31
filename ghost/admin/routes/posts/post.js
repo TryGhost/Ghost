@@ -34,6 +34,12 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
             return self.transitionTo('posts.index');
         });
     },
+    setupController: function (controller, model) {
+        this._super(controller, model);
+        
+        this.controllerFor('posts').set('currentPost', model);
+    },
+    
     shortcuts: {
         'enter': 'openEditor'
     },
