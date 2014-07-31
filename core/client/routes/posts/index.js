@@ -7,18 +7,25 @@ var PostsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, loa
     beforeModel: function () {
         var self = this,
         // the store has been populated so we can work with the local copy
-            post = this.store.all('post').get('firstObject');
+            posts = this.store.all('post');
 
-        if (post) {
-            return this.store.find('user', 'me').then(function (user) {
-                if (user.get('isAuthor') && post.isAuthoredByUser(user)) {
-                    // do not show the post if they are an author but not this posts author
-                    return;
+        return this.store.find('user', 'me').then(function (user) {
+            // return the first post find that matches the following criteria:
+            // * User is an author, and is the author of this post
+            // * User has a role other than author
+            return posts.find(function (post) {
+                if (user.get('isAuthor')) {
+                    return post.isAuthoredByUser(user);
+                } else {
+                    return true;
                 }
-
-                return self.transitionTo('posts.post', post);
             });
-        }
+        })
+        .then(function (post) {
+            if (post) {
+                return self.transitionTo('posts.post', post);
+            }
+        });
     }
 });
 
