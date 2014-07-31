@@ -54,6 +54,8 @@ var Notifications = Ember.ArrayProxy.extend({
             this.showError(resp.jqXHR.responseJSON.error, delayed);
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
             this.showErrors(resp.jqXHR.responseJSON.errors, delayed);
+        } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.message) {
+            this.showError(resp.jqXHR.responseJSON.message, delayed);
         } else {
             this.showError(defaultErrorText, delayed);
         }
