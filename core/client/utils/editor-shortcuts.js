@@ -17,6 +17,11 @@ shortcuts['ctrl+alt+u'] = {action: 'codeMirrorShortcut', options: {type: 'strike
 shortcuts[ctrlOrCmd + '+b'] = {action: 'codeMirrorShortcut', options: {type: 'bold'}};
 shortcuts[ctrlOrCmd + '+i'] = {action: 'codeMirrorShortcut', options: {type: 'italic'}};
 
+shortcuts['ctrl+U'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'}};
+shortcuts['ctrl+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
+shortcuts['ctrl+alt+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
+
+
 //Headings
 shortcuts['ctrl+alt+1'] = {action: 'codeMirrorShortcut', options: {type: 'h1'}};
 shortcuts['ctrl+alt+2'] = {action: 'codeMirrorShortcut', options: {type: 'h2'}};
@@ -38,9 +43,6 @@ shortcuts[ctrlOrCmd + '+shift+i'] = {action: 'codeMirrorShortcut', options: {typ
 // Some may be broken due to a conflict with CodeMirror commands.
 // (see http://codemirror.net/doc/manual.html#commands)
 //
-//shortcuts['ctrl+U'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'}};
-//shortcuts['ctrl+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
-//shortcuts['ctrl+alt+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
 //shortcuts[ctrlOrCmd + '+c'] = {action: 'codeMirrorShortcut', options: {type: 'copyHTML'}};
 
 export default shortcuts;
