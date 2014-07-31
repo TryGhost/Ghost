@@ -42,10 +42,6 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             this.notifications.showError(error.message);
         },
 
-        sessionInvalidationSucceeded: function () {
-            this.notifications.showSuccess('You were successfully signed out.', true);
-        },
-
         openModal: function (modalName, model, type) {
             modalName = 'modals/' + modalName;
             // We don't always require a modal to have a controller
