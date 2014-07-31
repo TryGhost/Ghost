@@ -389,18 +389,34 @@ frontendControllers = {
         });
     },
     'rss': function (req, res, next) {
+        function isPaginated() {
+            return req.route.path.indexOf(':page') !== -1;
+        }
+
+        function isTag() {
+            return req.route.path.indexOf('/tag/') !== -1;
+        }
+
+        function isAuthor() {
+            return req.route.path.indexOf('/author/') !== -1;
+        }
+
         // Initialize RSS
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            tagParam = req.params.slug;
+            slugParam = req.params.slug,
+            baseUrl = config.paths.subdir;
+
+        if (isTag()) {
+            baseUrl += '/tag/' + slugParam + '/rss/';
+        } else if (isAuthor()) {
+            baseUrl += '/author/' + slugParam + '/rss/';
+        } else {
+            baseUrl += '/rss/';
+        }
 
         // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 ||
-            (pageParam === 1 && (req.route.path === '/rss/:page/' || req.route.path === '/tag/:slug/rss/:page/'))) {
-            if (tagParam !== undefined) {
-                return res.redirect(config.paths.subdir + '/tag/' + tagParam + '/rss/');
-            } else {
-                return res.redirect(config.paths.subdir + '/rss/');
-            }
+        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && isPaginated())) {
+            return res.redirect(baseUrl);
         }
 
         return when.settle([
@@ -411,7 +427,8 @@ frontendControllers = {
 
             var options = {};
             if (pageParam) { options.page = pageParam; }
-            if (tagParam) { options.tag = tagParam; }
+            if (isTag()) { options.tag = slugParam; }
+            if (isAuthor()) { options.author = slugParam; }
 
             options.include = 'author,tags,fields';
 
@@ -430,10 +447,17 @@ frontendControllers = {
 
                 trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
-                if (tagParam) {
+                if (isTag()) {
                     if (page.meta.filters.tags) {
                         title = page.meta.filters.tags[0].name + ' - ' + title;
                         feedUrl = feedUrl + 'tag/' + page.meta.filters.tags[0].slug + '/';
+                    }
+                }
+
+                if (isAuthor()) {
+                    if (page.meta.filters.author) {
+                        title = page.meta.filters.author.name + ' - ' + title;
+                        feedUrl = feedUrl + 'author/' + page.meta.filters.author.slug + '/';
                     }
                 }
 
@@ -448,11 +472,7 @@ frontendControllers = {
 
                 // If page is greater than number of pages we have, redirect to last page
                 if (pageParam > maxPage) {
-                    if (tagParam) {
-                        return res.redirect(config.paths.subdir + '/tag/' + tagParam + '/rss/' + maxPage + '/');
-                    } else {
-                        return res.redirect(config.paths.subdir + '/rss/' + maxPage + '/');
-                    }
+                    return res.redirect(baseUrl + maxPage + '/');
                 }
 
                 setReqCtx(req, page.posts);
