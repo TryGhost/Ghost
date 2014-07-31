@@ -1,0 +1,14 @@
+{{#gh-modal-dialog action="closeModal" showClose=true type="action" style="wide,centered" animation="fade"
+    title="Please login again" confirm=confirm}}
+
+        <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
+            <div class="email-wrap">
+                {{input class="email" type="email" placeholder="Email Address" name="identification" autofocus="autofocus" autocapitalize="off" autocorrect="off" value=identification}}
+            </div>
+            <div class="password-wrap">
+                {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+            </div>
+            <button class="button-save" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
+       </form>
+
+{{/gh-modal-dialog}}

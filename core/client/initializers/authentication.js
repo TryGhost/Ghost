@@ -27,9 +27,9 @@ AuthenticationInitializer = {
         };
 
         SimpleAuth.Session.reopen({
-            user: Ember.computed(function () {
+            user: function () {
                 return container.lookup('store:main').find('user', 'me');
-            })
+            }).property()
         });
 
         SimpleAuth.Authenticators.OAuth2.reopen({

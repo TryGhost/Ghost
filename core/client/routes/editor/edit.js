@@ -48,6 +48,12 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
                 return self.replaceWith('posts.index');
             }
         });
+    },
+
+    actions: {
+         authorizationFailed: function () {
+            this.send('openModal', 'signin');
+        }
     }
 });
 
