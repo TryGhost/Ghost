@@ -169,13 +169,54 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
 });
 
+CasperTest.begin('Users screen is correct', 9, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('settings.general');
+    casper.thenTransitionAndWaitForScreenLoad('settings.users', function canTransition () {
+        test.assert(true, 'Can transition to users screen from settings.general');
+        test.assertUrlMatch(/ghost\/settings\/users\/$/, 'settings.users transitions to correct url');
+    });
+    casper.then(function usersScreenHasContent() {
+        test.assertSelectorHasText('.settings-users .object-list .object-list-title', 'Active users');
+        test.assertExists('.settings-users .object-list .object-list-item', 'Has an active user');
+        test.assertSelectorHasText('.settings-users .object-list-item .name', 'Test User');
+        test.assertExists('.settings-users .object-list-item .role-label.owner', 'First user has owner role displayed');
+
+        test.assertExists('.page-actions .button-add', 'Add user button is on page.');
+    });
+    casper.thenClick('.page-actions .button-add');
+    casper.waitForOpaque('.invite-new-user .modal-content', function then() {
+        test.assertEval(function testOwnerRoleNotAnOption() {
+            var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
+                i = 0;
+            for (; i < options.length; i++) {
+                if (options[i].text === "Owner") {
+                    return false;
+                }
+            }
+            return true;
+        }, '"Owner" is not a role option for new users');
+    });
+    //role options get loaded asynchronously; give them a chance to come in
+    casper.waitForSelector('.invite-new-user select#new-user-role option', function then() {
+        test.assertEval(function authorIsSelectedByDefault() {
+            var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
+                i = 0;
+            for (; i < options.length; i++) {
+                if (options[i].selected) {
+                    return options[i].text === "Author"
+                }
+            }
+            return false;
+        }, 'The "Author" role is selected by default when adding a new user');
+    });
+});
 // ### User settings tests
 // Please uncomment and fix these as the functionality is implemented
 
 //CasperTest.begin('Can save settings', 6, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('settings.user', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//        test.assertUrlMatch(/ghost\/settings\/user\/$/, 'Landed on the correct URL');
+//    casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
+//        test.assertTitle('Ghost Admin', 'Ghost Admin title is GhostAdmin');
+//        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'settings.users.user has correct URL');
 //    });
 //
 //    function handleUserRequest(requestData) {

@@ -10,16 +10,10 @@
 
             <div class="form-group for-select">
                 <label for="new-user-role">Role</label>
-                <span class="gh-select" {{bind-attr data-select-text=selectedRole.name}}>
-                   {{view Ember.Select
-                        content=roles
-                        id="new-user-role"
-                        optionValuePath="content.id"
-                        optionLabelPath="content.name"
-                        name="role"
-                        value=role
-                        selection=selectedRole}}
-                </span>
+                {{gh-role-selector
+                    initialValue=authorRole
+                    onChange="setRole"
+                    selectId="new-user-role"}}
             </div>
 
         </fieldset>
