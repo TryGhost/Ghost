@@ -7,8 +7,10 @@ var formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
     var html = '';
 
     // replace script and iFrame
-    markdown = markdown.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '```\nEmbedded JavaScript\n```');
-    markdown = markdown.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '```\nEmbedded IFrame\n```');
+    markdown = markdown.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
+    markdown = markdown.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+        '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
 
     // convert markdown to HTML
     html = showdown.makeHtml(markdown || '');
