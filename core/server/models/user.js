@@ -397,7 +397,8 @@ User = ghostBookshelf.Model.extend({
         options.withRelated = _.union([ 'roles' ], options.include);
         return Role.findOne({name: 'Author'}).then(function (authorRole) {
             // Get the role we're going to assign to this user, or the author role if there isn't one
-            roles = data.roles || authorRole.id;
+            roles = data.roles || [authorRole.get('id')];
+
             // check for too many roles
             if (roles.length > 1) {
                 return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
@@ -424,7 +425,9 @@ User = ghostBookshelf.Model.extend({
             userData = addedUser;
             //if we are given a "role" object, only pass in the role ID in place of the full object
             roles = _.map(roles, function (role) {
-                if (_.isNumber(role)) {
+                if (_.isString(role)) {
+                    return parseInt(role, 10);
+                } else if (_.isNumber(role)) {
                     return role;
                 } else {
                     return parseInt(role.id, 10);
@@ -781,12 +784,15 @@ User = ghostBookshelf.Model.extend({
     // Get the user by email address, enforces case insensitivity rejects if the user is not found
     // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
     // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
-    getByEmail: function (email) {
+    getByEmail: function (email, options) {
+        options = options || {};
         // We fetch all users and process them in JS as there is no easy way to make this query across all DBs
         // Although they all support `lower()`, sqlite can't case transform unicode characters
         // This is somewhat mute, as validator.isEmail() also doesn't support unicode, but this is much easier / more
         // likely to be fixed in the near future.
-        return Users.forge().fetch({require: true}).then(function (users) {
+        options.require = true;
+
+        return Users.forge(options).fetch(options).then(function (users) {
             var userWithEmail = users.find(function (user) {
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });
