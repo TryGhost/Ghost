@@ -46,27 +46,22 @@ authentication = {
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {
                 var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
-                    resetUrl = baseUrl.replace(/\/$/, '') +  '/ghost/reset/' + resetToken + '/',
-                    emailData = {
-                        resetUrl: resetUrl
-                    };
+                    resetUrl = baseUrl.replace(/\/$/, '') + '/ghost/reset/' + resetToken + '/';
 
-                return emailData;
-            }).then(function (emailData) {
-                return mail.generateContent({data: emailData, template: 'reset-password'}).then(function (emailContent) {
-                    var payload = {
-                        mail: [{
-                            message: {
-                                to: email,
-                                subject: 'Reset Password',
-                                html: emailContent.html,
-                                text: emailContent.text
-                            },
-                            options: {}
-                        }]
-                    };
-                    return mail.send(payload, {context: {internal: true}});
-                });
+                return mail.generateContent({data: { resetUrl: resetUrl  }, template: 'reset-password'});
+            }).then(function (emailContent) {
+                var payload = {
+                    mail: [{
+                        message: {
+                            to: email,
+                            subject: 'Reset Password',
+                            html: emailContent.html,
+                            text: emailContent.text
+                        },
+                        options: {}
+                    }]
+                };
+                return mail.send(payload, {context: {internal: true}});
             }).then(function () {
                 return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
             }).otherwise(function (error) {
@@ -219,29 +214,27 @@ authentication = {
                 ownerEmail: setupUser.email
             };
 
-            return mail.generateContent({data: data, template: 'welcome'}).then(function (emailContent) {
-                var message = {
-                        to: setupUser.email,
-                        subject: 'Your New Ghost Blog',
-                        html: emailContent.html,
-                        text: emailContent.text
-                    },
-                    payload = {
-                        mail: [{
-                            message: message,
-                            options: {}
-                        }]
-                    };
+            return mail.generateContent({data: data, template: 'welcome'});
+        }).then(function (emailContent) {
+            var message = {
+                    to: setupUser.email,
+                    subject: 'Your New Ghost Blog',
+                    html: emailContent.html,
+                    text: emailContent.text
+                },
+                payload = {
+                    mail: [{
+                        message: message,
+                        options: {}
+                    }]
+                };
 
-                return payload;
-            }).then(function (payload) {
-                return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
-                    errors.logError(
-                        error.message,
-                        "Unable to send welcome email, your blog will continue to function.",
-                        "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
-                    );
-                });
+            return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
+                errors.logError(
+                    error.message,
+                    "Unable to send welcome email, your blog will continue to function.",
+                    "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
+                );
             });
 
         }).then(function () {
