@@ -67,23 +67,16 @@
                 {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
                 <p>Used for notifications</p>
             </div>
-
-            {{!-- The correct markup for select boxes. Needs changing to the correct data --}}
-            {{!-- <div class="form-group">
+            {{#if view.rolesDropdownIsVisible}}
+            <div class="form-group">
                 <label for="user-role">Role</label>
-                <span class="gh-select">
-                   {{view Ember.Select
-                       id="activeTheme"
-                       name="general[activeTheme]"
-                       content=themes
-                       optionValuePath="content.name"
-                       optionLabelPath="content.label"
-                       value=activeTheme
-                       selection=selectedTheme}}
-               </span>
+                {{gh-role-selector
+                    initialValue=role
+                    onChange="changeRole"
+                    selectId="user-role"}}
                 <p>What permissions should this user have?</p>
-            </div> --}}
-
+            </div>
+            {{/if}}
             <div class="form-group">
                 <label for="user-location">Location</label>
                 {{input type="text" value=user.location id="user-location"}}
