@@ -6,9 +6,9 @@ var formatHTML = Ember.Handlebars.makeBoundHelper(function (html) {
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-        '<pre><code>Embedded JavaScript</code></pre>');
+        '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-        '<pre><code>Embedded IFrame</code></pre>');
+        '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
 
     // sanitize HTML
     escapedhtml = html_sanitize(escapedhtml, cajaSanitizers.url, cajaSanitizers.id);
