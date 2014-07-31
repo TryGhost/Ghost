@@ -3,6 +3,8 @@
  *  See editor-route-base
  */
 
+import titleize from 'ghost/utils/titleize';
+
 function init() {
     //Used for simple, noncomputational replace-and-go! shortcuts.
     //  See default case in shortcut function below.
@@ -20,30 +22,37 @@ function init() {
             cursor = this.getCursor(),
             line = this.getLine(cursor.line),
             fromLineStart = {line: cursor.line, ch: 0},
+            toLineEnd = {line: cursor.line, ch: line.length},
             md, letterCount, textIndex, position;
         switch (type) {
         case 'h1':
-            this.replaceRange('# ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('# ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 2);
             return;
         case 'h2':
-            this.replaceRange('## ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('## ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 3);
             return;
         case 'h3':
-            this.replaceRange('### ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('### ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 4);
             return;
         case 'h4':
-            this.replaceRange('#### ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('#### ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 5);
             return;
         case 'h5':
-            this.replaceRange('##### ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('##### ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 6);
             return;
         case 'h6':
-            this.replaceRange('###### ' + line, fromLineStart);
+            line = line.replace(/^#* /, '');
+            this.replaceRange('###### ' + line, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + 7);
             return;
         case 'link':
@@ -80,7 +89,6 @@ function init() {
             md = moment(new Date()).format('D MMMM YYYY');
             this.replaceSelection(md, 'end');
             return;
-        /** @TODO
         case 'uppercase':
             md = text.toLocaleUpperCase();
             break;
@@ -88,8 +96,9 @@ function init() {
             md = text.toLocaleLowerCase();
             break;
         case 'titlecase':
-            md = text.toTitleCase();
+            md = titleize(text);
             break;
+        /** @TODO
         case 'copyHTML':
             converter = new Showdown.converter();
             if (text) {
