@@ -90,14 +90,6 @@ function init() {
         case 'titlecase':
             md = text.toTitleCase();
             break;
-        case 'selectword':
-            word = this.getTokenAt(cursor);
-            if (!/\w$/g.test(word.string)) {
-                this.setSelection({line: cursor.line, ch: word.start}, {line: cursor.line, ch: word.end - 1});
-            } else {
-                this.setSelection({line: cursor.line, ch: word.start}, {line: cursor.line, ch: word.end});
-            }
-            break;
         case 'copyHTML':
             converter = new Showdown.converter();
             if (text) {
@@ -107,11 +99,6 @@ function init() {
             }
 
             $(".modal-copyToHTML-content").text(md).selectText();
-            break;
-        case 'newLine':
-            if (line !== "") {
-                this.replaceRange(line + "\n\n", fromLineStart);
-            }
             break;
         */
         default:
