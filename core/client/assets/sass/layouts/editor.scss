@@ -387,6 +387,18 @@
 
 }
 
+// Placeholder objects for <script> & <iframe>
+.js-embed-placeholder,
+.iframe-embed-placeholder {
+    background: #f9f9f9;
+    border: none;
+    padding: 100px 20px;
+    font-family: $font-family;
+    font-weight: bold;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
 
 //
 // Zen Mode
