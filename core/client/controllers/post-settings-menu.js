@@ -2,6 +2,7 @@
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import isNumber from 'ghost/utils/isNumber';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
     //State for if the user is viewing a tab's pane.
@@ -274,7 +275,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 // if the candidate slug is the same as the existing slug except
                 // for the incrementor then the existing slug should be used
-                if (_.isNumber(check) && check > 0) {
+                if (isNumber(check) && check > 0) {
                     if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
                         self.set('slugValue', slug);
 

@@ -50,7 +50,7 @@ var UserValidator = Ember.Object.create({
                 validationErrors.push({ message: 'Location is too long' });
             }
 
-            if (!_.isEmpty(website) &&
+            if (!Ember.isEmpty(website) &&
                 (!validator.isURL(website, { protocols: ['http', 'https'], require_protocol: true }) ||
                 !validator.isLength(website, 0, 2000))) {
 

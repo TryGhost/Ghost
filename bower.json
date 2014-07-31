@@ -18,7 +18,6 @@
     "jquery-ui": "1.10.4",
     "keymaster": "git://github.com/madrobby/keymaster#564ea42e07de40da8113a571f17ceae8802672ff",
     "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
-    "lodash": "2.4.1",
     "moment": "2.4.0",
     "nanoscroller": "0.8.4",
     "normalize-scss": "~3.0.1",
