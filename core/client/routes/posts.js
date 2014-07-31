@@ -23,7 +23,7 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
             // we just need to 'return true' to allow all models by default.
             return self.store.filter('post', paginationSettings, function (post) {
                 if (user.get('isAuthor')) {
-                    return user.get('id') === post.get('author_id');
+                    return post.isAuthoredByUser(user);
                 }
 
                 return true;
@@ -35,15 +35,15 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
         this._super(controller, model);
         this.setupPagination(paginationSettings);
     },
-    
+
     stepThroughPosts: function (step) {
         var currentPost = this.get('controller.currentPost'),
             posts = this.get('controller.model'),
             length = posts.get('length'),
             newPosition;
-        
+
         newPosition = posts.indexOf(currentPost) + step;
-        
+
         //Make sure we're inbounds
         if (newPosition >= length) {
             newPosition = 0;
@@ -53,7 +53,7 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
         }
         this.transitionTo('posts.post', posts.objectAt(newPosition));
     },
-    
+
     shortcuts: {
         'up': 'moveUp',
         'down': 'moveDown'

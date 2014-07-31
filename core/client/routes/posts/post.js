@@ -35,7 +35,7 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
             return self.store.find('post', paginationSettings).then(function (records) {
                 var post = records.get('firstObject');
 
-                if (user.get('isAuthor') && user.get('id') !== post.get('author_id')) {
+                if (user.get('isAuthor') && post.isAuthoredByUser(user)) {
                     // do not show the post if they are an author but not this posts author
                     post = null;
                 }
@@ -50,10 +50,10 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
     },
     setupController: function (controller, model) {
         this._super(controller, model);
-        
+
         this.controllerFor('posts').set('currentPost', model);
     },
-    
+
     shortcuts: {
         'enter': 'openEditor'
     },
