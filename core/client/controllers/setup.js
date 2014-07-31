@@ -35,9 +35,6 @@ var SetupController = Ember.ObjectController.extend(ValidationEngine, {
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: self.get('password')
-                    }).then(function () {
-                        self.send('signedIn');
-                        self.transitionToRoute(SimpleAuth.Configuration.routeAfterAuthentication);
                     });
                 }, function (resp) {
                     self.toggleProperty('submitting');

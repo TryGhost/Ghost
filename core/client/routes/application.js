@@ -6,12 +6,6 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         'esc': 'closePopups'
     },
 
-    setupController: function () {
-        Ember.run.next(this, function () {
-            this.send('loadServerNotifications');
-        });
-    },
-
     actions: {
         closePopups: function () {
             this.get('popover').closePopovers();
