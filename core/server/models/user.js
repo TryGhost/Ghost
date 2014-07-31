@@ -329,6 +329,10 @@ User = ghostBookshelf.Model.extend({
             delete data.role;
         }
 
+        if (data.status === 'all') {
+            delete data.status;
+        }
+
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },
 
