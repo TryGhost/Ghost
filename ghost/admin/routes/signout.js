@@ -10,11 +10,11 @@ var SignoutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleB
         if (Ember.canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();
-            this.hardRefresh();
         } else {
             this.send('invalidateSession');
-            this.hardRefresh();
         }
+
+        this.hardRefresh();
     },
 
     hardRefresh: function () {
