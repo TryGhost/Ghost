@@ -337,8 +337,8 @@ users = {
             return canThis(options.context).assign.role(ownerRole);
         }).then(function () {
             return utils.checkObject(object, 'owner').then(function (checkedOwnerTransfer) {
-                return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function () {
-                    return when.resolve({owner: [{message: 'Ownership transferred successfully.'}]});
+                return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function (updatedUsers) {
+                    return when.resolve({ users: updatedUsers });
                 }).catch(function (error) {
                     return when.reject(new errors.ValidationError(error.message));
                 });
