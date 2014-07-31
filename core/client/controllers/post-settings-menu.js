@@ -32,10 +32,17 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     }.observes('selectedAuthor'),
     authors: function () {
         //Loaded asynchronously, so must use promise proxies.
-        var deferred = {};
+        var deferred = {},
+            self = this;
+
         deferred.promise = this.store.find('user').then(function (users) {
             return users.rejectBy('id', 'me');
+        }).then(function (users) {
+            self.set('selectedAuthor', users.get('firstObject'));
+
+            return users;
         });
+
         return Ember.ArrayProxy
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
