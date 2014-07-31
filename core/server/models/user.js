@@ -757,6 +757,12 @@ User = ghostBookshelf.Model.extend({
         }).then(function () {
             // assign owner role to a new user
             return assignUser.roles().updatePivot({role_id: ownerRole.id});
+        }).then(function () {
+            return Users.forge()
+                .query('whereIn', 'id', [contextUser.id, assignUser.id])
+                .fetch({ withRelated: ['roles'] });
+        }).then(function (users) {
+            return users.toJSON({ include: ['roles'] });
         });
     },
 
