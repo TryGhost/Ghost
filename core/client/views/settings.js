@@ -1,4 +1,5 @@
 import {mobileQuery} from 'ghost/utils/mobile';
+import bind from 'ghost/utils/bind';
 
 var SettingsView = Ember.View.extend({
     classNames: ['wrapper'],
@@ -24,7 +25,7 @@ var SettingsView = Ember.View.extend({
     },
 
     mobileInteractions: function () {
-        this.set('changeLayout', _.bind(function changeLayout(mq) {
+        this.set('changeLayout', bind(function changeLayout(mq) {
             if (mq.matches) {
                 //transitioned to mobile layout, so show content
                 this.showSettingsContent();

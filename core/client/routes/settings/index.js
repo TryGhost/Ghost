@@ -1,5 +1,6 @@
 import {mobileQuery} from 'ghost/utils/mobile';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import bind from 'ghost/utils/bind';
 
 var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
     // redirect to general tab, unless on a mobile phone
@@ -17,7 +18,7 @@ var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, 
 
                     //fillOutlet needs special treatment so that it is
                     //properly bound to this when called from a MQ event
-                    self.set('fillOutlet', _.bind(function fillOutlet(mq) {
+                    self.set('fillOutlet', bind(function fillOutlet(mq) {
                         if (!mq.matches) {
                             self.transitionTo('settings.general');
                         }

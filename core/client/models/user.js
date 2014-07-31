@@ -87,10 +87,10 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
 
     isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
     active: function () {
-        return _.contains(['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'], this.get('status'));
+        return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
     }.property('status'),
     invited: function () {
-        return _.contains(['invited', 'invited-pending'], this.get('status'));
+        return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
     }.property('status'),
     pending: Ember.computed.equal('status', 'invited-pending').property('status')
 });

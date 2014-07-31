@@ -19,7 +19,6 @@
     "jquery-ui": "1.10.4",
     "keymaster": "git://github.com/madrobby/keymaster#0f09fc1b7e66c2b7e07afe89a419366dcf2d1cd8",
     "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
-    "lodash": "2.4.1",
     "moment": "2.4.0",
     "nprogress": "0.1.2",
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
