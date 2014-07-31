@@ -613,6 +613,19 @@ describe('Core Helpers', function () {
             inverse.called.should.be.true;
         });
 
+        it('should not do anything if there are no attributes', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {tags: [{ name: 'foo'}, { name: 'bar'}, { name: 'baz'}]},
+                {fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.false;
+        });
+
         it('should not do anything when an invalid attribute is given', function () {
             var fn = sinon.spy(),
                 inverse = sinon.spy();
@@ -624,6 +637,84 @@ describe('Core Helpers', function () {
 
             fn.called.should.be.false;
             inverse.called.should.be.false;
+        });
+
+        it('should handle author list that evaluates to true', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: { name: 'sam'}},
+                {hash: { author: 'joe, sam, pat'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle author list that evaluates to false', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: { name: 'jamie'}},
+                {hash: { author: 'joe, sam, pat'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.true;
+        });
+
+        it('should handle authors with case-insensitivity', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: { name: 'Sam'}},
+                {hash: { author: 'joe, sAm, pat'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle tags and authors like an OR query (pass)', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: {name: 'sam'}, tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]},
+                {hash: {author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle tags and authors like an OR query (pass)', function () {
+            var fn = sinon.spy(),
+               inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: { name: 'sam'}, tags: [{ name: 'much'}, { name: 'bar'}, { name: 'baz'}]},
+                {hash: { author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should handle tags and authors like an OR query (fail)', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.has.call(
+                {author: { name: 'fred'}, tags: [{ name: 'foo'}, { name: 'bar'}, { name: 'baz'}]},
+                {hash: { author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.true;
         });
     });
 
@@ -733,6 +824,27 @@ describe('Core Helpers', function () {
             helpers.page_url.call(tagContext, 1).should.equal('/blog/tag/pumpkin/');
             helpers.page_url.call(tagContext, 2).should.equal('/blog/tag/pumpkin/page/2/');
             helpers.page_url.call(tagContext, 50).should.equal('/blog/tag/pumpkin/page/50/');
+        });
+
+        it('can return a valid url for tag pages', function () {
+            var authorContext = {
+                authorSlug: 'pumpkin'
+            };
+            helpers.page_url.call(authorContext, 1).should.equal('/author/pumpkin/');
+            helpers.page_url.call(authorContext, 2).should.equal('/author/pumpkin/page/2/');
+            helpers.page_url.call(authorContext, 50).should.equal('/author/pumpkin/page/50/');
+        });
+
+        it('can return a valid url for tag pages with subdirectory', function () {
+            _.extend(helpers.__get__('config'), {
+                paths: {'subdir': '/blog'}
+            });
+            var authorContext = {
+                authorSlug: 'pumpkin'
+            };
+            helpers.page_url.call(authorContext, 1).should.equal('/blog/author/pumpkin/');
+            helpers.page_url.call(authorContext, 2).should.equal('/blog/author/pumpkin/page/2/');
+            helpers.page_url.call(authorContext, 50).should.equal('/blog/author/pumpkin/page/50/');
         });
     });
 

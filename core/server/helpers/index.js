@@ -99,6 +99,10 @@ coreHelpers.page_url = function (context, block) {
         url += '/tag/' + this.tagSlug;
     }
 
+    if (this.authorSlug !== undefined) {
+        url += '/author/' + this.authorSlug;
+    }
+
     if (context > 1) {
         url += '/page/' + context;
     }
@@ -644,10 +648,18 @@ coreHelpers.foreach = function (context, options) {
 
 // ### Has Helper
 // `{{#has tag="video, music"}}`
+// `{{#has author="sam, pat"}}`
 // Checks whether a post has at least one of the tags
 coreHelpers.has = function (options) {
+    options = options || {};
+    options.hash = options.hash || {};
+
     var tags = _.pluck(this.tags, 'name'),
-        tagList = options && options.hash ? options.hash.tag : false;
+        author = this.author ? this.author.name : null,
+        tagList = options.hash.tag || false,
+        authorList = options.hash.author || false,
+        tagsOk,
+        authorOk;
 
     function evaluateTagList(expr, tags) {
         return expr.split(',').map(function (v) {
@@ -662,12 +674,23 @@ coreHelpers.has = function (options) {
         }, false);
     }
 
-    if (!tagList) {
+    function evaluateAuthorList(expr, author) {
+        var authorList =  expr.split(',').map(function (v) {
+            return v.trim().toLocaleLowerCase();
+        });
+
+        return _.contains(authorList, author.toLocaleLowerCase());
+    }
+
+    if (!tagList && !authorList) {
         errors.logWarn('Invalid or no attribute given to has helper');
         return;
     }
 
-    if (tagList && evaluateTagList(tagList, tags)) {
+    tagsOk = tagList && evaluateTagList(tagList, tags) || false;
+    authorOk = authorList && evaluateAuthorList(authorList, author) || false;
+
+    if (tagsOk || authorOk) {
         return options.fn(this);
     }
     return options.inverse(this);
@@ -701,6 +724,10 @@ coreHelpers.pagination = function (options) {
 
     if (this.tag !== undefined) {
         context.tagSlug = this.tag.slug;
+    }
+
+    if (this.author !== undefined) {
+        context.authorSlug = this.author.slug;
     }
 
     return template.execute('pagination', context);
