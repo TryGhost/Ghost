@@ -23,22 +23,6 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
     },
 
     actions: {
-        authorizationFailed: function () {
-            var currentRoute = this.get('controller').get('currentRouteName'),
-                editorController;
-
-            if (currentRoute.split('.')[0] === 'editor') {
-                editorController = this.controllerFor(currentRoute);
-
-                if (editorController.get('isDirty')) {
-                    this.send('openModal', 'auth-failed-unsaved', editorController);
-                    return;
-                }
-            }
-
-            this._super();
-        },
-
         toggleGlobalMobileNav: function () {
             this.toggleProperty('controller.showGlobalMobileNav');
         },
@@ -46,9 +30,11 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
         openSettingsMenu: function () {
             this.set('controller.showSettingsMenu', true);
         },
+
         closeSettingsMenu: function () {
             this.set('controller.showSettingsMenu', false);
         },
+
         toggleSettingsMenu: function () {
             this.toggleProperty('controller.showSettingsMenu');
         },
