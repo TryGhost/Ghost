@@ -515,15 +515,128 @@ describe('Import', function () {
     });
 
     describe('003', function () {
+        knex = config.database.knex;
 
-        beforeEach(testUtils.setup('owner', 'settings'));
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         should.exist(Importer003);
+
+        it('safely imports data from 003 (single user)', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return when.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select()
+                ]);
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                importedData.length.should.equal(4, 'Did not get data successfully');
+
+                var users = importedData[0],
+                    posts = importedData[1],
+                    settings = importedData[2],
+                    tags = importedData[3];
+
+                // user should still have the credentials from the original insert, not the import
+                users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
+                users[0].password.should.equal(testUtils.DataGenerator.Content.users[0].password);
+                // but the name, slug, and bio should have been overridden
+                users[0].name.should.equal(exportData.data.users[0].name);
+                users[0].slug.should.equal(exportData.data.users[0].slug);
+                users[0].bio.should.equal(exportData.data.users[0].bio);
+                // test posts
+                posts.length.should.equal(1, 'Wrong number of posts');
+                // test tags
+                tags.length.should.equal(1, 'no new tags');
+
+                // test settings
+                settings.length.should.be.above(0, 'Wrong number of settings');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+
+                done();
+            }).catch(done);
+        });
+
+        it('safely imports data from 003 (multi user)', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-mu').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return when.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('settings').select(),
+                    knex('tags').select(),
+                    knex('roles_users').select()
+                ]);
+            }).then(function (importedData) {
+                should.exist(importedData);
+                var user2,
+                    user3;
+
+                importedData.length.should.equal(5, 'Did not get data successfully');
+
+                var users = importedData[0],
+                    posts = importedData[1],
+                    settings = importedData[2],
+                    tags = importedData[3],
+                    roles_users = importedData[4];
+
+                // we imported 2 users, the original user should be untouched
+                users.length.should.equal(3, 'There should only be three users');
+                users[0].email.should.equal(testUtils.DataGenerator.Content.users[0].email);
+                users[0].password.should.equal(testUtils.DataGenerator.Content.users[0].password);
+
+                // the other two users should have the imported data, but they get inserted in different orders
+                user2 = _.find(users, function (user) {
+                    return user.name === 'Josephine Bloggs';
+                });
+                user3 = _.find(users, function (user) {
+                    return user.name === 'Smith Wellingsworth';
+                });
+                user2.email.should.equal(exportData.data.users[0].email);
+                user3.email.should.equal(exportData.data.users[1].email);
+
+                roles_users.length.should.equal(2, 'There should be 3 role relations');
+
+                _.each(roles_users, function (roleUser) {
+                    if (roleUser.user_id === user2.id) {
+                        roleUser.role_id.should.equal(1, 'Josephine should be an admin');
+                    }
+
+                    if (roleUser.user_id === user3.id) {
+                        roleUser.role_id.should.equal(3, 'Smith should be an author by default');
+                    }
+                });
+
+                // test posts
+                posts.length.should.equal(1, 'Wrong number of posts');
+                // test tags
+                tags.length.should.equal(1, 'no new tags');
+
+                // test settings
+                settings.length.should.be.above(0, 'Wrong number of settings');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+
+                done();
+            }).catch(done);
+        });
 
         it('handles validation errors nicely', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('broken-validation').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
                 exportData = exported;
                 return importer('003', exportData);
             }).catch(function (response) {
@@ -544,7 +657,7 @@ describe('Import', function () {
 
         it('handles database errors nicely', function (done) {
             var exportData;
-            testUtils.fixtures.loadExportFixture('broken-db-errors').then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-dbErrors').then(function (exported) {
                 exportData = exported;
                 return importer('003', exportData);
             }).catch(function (response) {
