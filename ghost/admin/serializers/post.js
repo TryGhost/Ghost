@@ -6,6 +6,15 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
         tags: { embedded: 'always' }
     },
 
+    normalize: function (type, hash) {
+        // this is to enable us to still access the raw author_id
+        // without requiring an extra get request (since it is an
+        // async relationship).
+        hash.author_id = hash.author;
+
+        return this._super(type, hash);
+    },
+
     extractSingle: function (store, primaryType, payload) {
         var root = this.keyForAttribute(primaryType.typeKey),
             pluralizedRoot = Ember.String.pluralize(primaryType.typeKey);

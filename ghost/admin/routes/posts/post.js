@@ -35,6 +35,11 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
             return self.store.find('post', paginationSettings).then(function (records) {
                 var post = records.get('firstObject');
 
+                if (user.get('isAuthor') && user.get('id') !== post.get('author_id')) {
+                    // do not show the post if they are an author but not this posts author
+                    post = null;
+                }
+
                 if (post) {
                     return post;
                 }
