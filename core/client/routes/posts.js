@@ -24,7 +24,25 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
         this._super(controller, model);
         this.setupPagination(paginationSettings);
     },
-
+    
+    stepThroughPosts: function (step) {
+        var currentPost = this.get('controller.currentPost'),
+            posts = this.get('controller.model'),
+            length = posts.get('length'),
+            newPosition;
+        
+        newPosition = posts.indexOf(currentPost) + step;
+        
+        //Make sure we're inbounds
+        if (newPosition >= length) {
+            newPosition = 0;
+        }
+        else if (newPosition < 0) {
+            newPosition = length - 1;
+        }
+        this.transitionTo('posts.post', posts.objectAt(newPosition));
+    },
+    
     shortcuts: {
         'up': 'moveUp',
         'down': 'moveDown'
@@ -34,10 +52,10 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
             this.transitionTo('editor.edit', post);
         },
         moveUp: function () {
-            window.alert('@todo keyboard post navigation: up');
+            this.stepThroughPosts(-1);
         },
         moveDown: function () {
-            window.alert('@todo keyboard post navigation: down');
+            this.stepThroughPosts(1);
         }
     }
 });
