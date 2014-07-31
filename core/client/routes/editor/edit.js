@@ -6,7 +6,8 @@ var EditorEditRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, bas
     model: function (params) {
         var self = this,
             post,
-            postId;
+            postId,
+            paginationSettings;
 
         postId = Number(params.post_id);
 
@@ -20,18 +21,31 @@ var EditorEditRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, bas
             return post;
         }
 
-        return this.store.find('post', {
-            id: params.post_id,
+        paginationSettings = {
+            id: postId,
             status: 'all',
-            staticPages: 'all',
-        }).then(function (records) {
-            var post = records.get('firstObject');
+            staticPages: 'all'
+        };
 
-            if (post) {
-                return post;
+        return this.store.find('user', 'me').then(function (user) {
+            if (user.get('isAuthor')) {
+                paginationSettings.author = user.get('slug');
             }
 
-            return self.transitionTo('posts.index');
+            return self.store.find('post', paginationSettings).then(function (records) {
+                var post = records.get('firstObject');
+
+                if (user.get('isAuthor') && post.isAuthoredByUser(user)) {
+                    // do not show the post if they are an author but not this posts author
+                    post = null;
+                }
+
+                if (post) {
+                    return post;
+                }
+
+                return self.transitionTo('posts.index');
+            });
         });
     },
 
