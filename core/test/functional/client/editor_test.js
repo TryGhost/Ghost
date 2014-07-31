@@ -282,7 +282,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Your post has been saved as a draft.');
+        test.assertSelectorHasText('.notification-success', 'Saved.');
         casper.click('.notification-success a.close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');

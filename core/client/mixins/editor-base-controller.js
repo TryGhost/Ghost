@@ -139,12 +139,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         errors: {
             post: {
                 published: {
-                    'published': 'Your post could not be updated.',
-                    'draft': 'Your post could not be saved as a draft.'
+                    'published': 'Update failed.',
+                    'draft': 'Saving failed.'
                 },
                 draft: {
-                    'published': 'Your post could not be published.',
-                    'draft': 'Your post could not be saved as a draft.'
+                    'published': 'Publish failed.',
+                    'draft': 'Saving failed.'
                 }
 
             }
@@ -153,12 +153,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         success: {
             post: {
                 published: {
-                    'published': 'Your post has been updated.',
-                    'draft': 'Your post has been saved as a draft.'
+                    'published': 'Updated.',
+                    'draft': 'Saved.'
                 },
                 draft: {
-                    'published': 'Your post has been published.',
-                    'draft': 'Your post has been saved as a draft.'
+                    'published': 'Published!',
+                    'draft': 'Saved.'
                 }
             }
         }
