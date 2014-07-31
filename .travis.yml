@@ -6,6 +6,8 @@ cache:
   directories:
     - node_modules
     - bower_components
+addons:
+  postgresql: "9.3"
 env:
   - DB=sqlite3 NODE_ENV=testing
   - DB=mysql NODE_ENV=testing-mysql
