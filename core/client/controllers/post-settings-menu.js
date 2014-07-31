@@ -59,7 +59,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Lazy load the slug generator for slugPlaceholder
     slugGenerator: Ember.computed(function () {
         return SlugGenerator.create({
-            ghostPaths: this.get('ghostPaths')
+            ghostPaths: this.get('ghostPaths'),
+            slugType: 'post'
         });
     }),
     //Requests slug from title

@@ -1,5 +1,6 @@
 var SlugGenerator = Ember.Object.extend({
     ghostPaths: null,
+    slugType: null,
     value: null,
     toString: function () {
         return this.get('value');
@@ -12,7 +13,7 @@ var SlugGenerator = Ember.Object.extend({
             return Ember.RSVP.resolve('');
         }
 
-        url = this.get('ghostPaths.url').api('slugs', 'post', encodeURIComponent(textToSlugify));
+        url = this.get('ghostPaths.url').api('slugs', this.get('slugType'), encodeURIComponent(textToSlugify));
 
         return ic.ajax.request(url, {
             type: 'GET'
