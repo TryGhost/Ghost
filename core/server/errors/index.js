@@ -154,9 +154,11 @@ errors = {
         };
     },
 
-    handleAPIError: function (error) {
+    handleAPIError: function (error, permsMessage) {
         if (!error) {
-            return this.rejectError(new this.NoPermissionError('You do not have permission to perform this action'));
+            return this.rejectError(
+                new this.NoPermissionError(permsMessage || 'You do not have permission to perform this action')
+            );
         }
 
         if (_.isString(error)) {
