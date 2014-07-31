@@ -21,14 +21,7 @@ shortcuts['ctrl+U'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'
 shortcuts['ctrl+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
 shortcuts['ctrl+alt+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
 
-
-//Headings
-shortcuts['ctrl+alt+1'] = {action: 'codeMirrorShortcut', options: {type: 'h1'}};
-shortcuts['ctrl+alt+2'] = {action: 'codeMirrorShortcut', options: {type: 'h2'}};
-shortcuts['ctrl+alt+3'] = {action: 'codeMirrorShortcut', options: {type: 'h3'}};
-shortcuts['ctrl+alt+4'] = {action: 'codeMirrorShortcut', options: {type: 'h4'}};
-shortcuts['ctrl+alt+5'] = {action: 'codeMirrorShortcut', options: {type: 'h5'}};
-shortcuts['ctrl+alt+6'] = {action: 'codeMirrorShortcut', options: {type: 'h6'}};
+shortcuts['ctrl+h'] = {action: 'codeMirrorShortcut', options: {type: 'cycleHeaderLevel'}};
 
 //Formatting
 shortcuts['ctrl+q'] = {action: 'codeMirrorShortcut', options: {type: 'blockquote'}};

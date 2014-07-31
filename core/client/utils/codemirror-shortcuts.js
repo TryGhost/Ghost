@@ -6,6 +6,9 @@
 import titleize from 'ghost/utils/titleize';
 
 function init() {
+    // remove predefined `ctrl+h` shortcut
+    delete CodeMirror.keyMap.emacsy['Ctrl-H'];
+
     //Used for simple, noncomputational replace-and-go! shortcuts.
     //  See default case in shortcut function below.
     CodeMirror.prototype.simpleShortcutSyntax = {
@@ -23,38 +26,26 @@ function init() {
             line = this.getLine(cursor.line),
             fromLineStart = {line: cursor.line, ch: 0},
             toLineEnd = {line: cursor.line, ch: line.length},
-            md, letterCount, textIndex, position;
+            md, letterCount, textIndex, position, match,
+            currentHeaderLevel, hashPrefix, replacementLine;
         switch (type) {
-        case 'h1':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('# ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 2);
-            return;
-        case 'h2':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('## ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 3);
-            return;
-        case 'h3':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('### ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 4);
-            return;
-        case 'h4':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('#### ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 5);
-            return;
-        case 'h5':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('##### ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 6);
-            return;
-        case 'h6':
-            line = line.replace(/^#* /, '');
-            this.replaceRange('###### ' + line, fromLineStart, toLineEnd);
-            this.setCursor(cursor.line, cursor.ch + 7);
-            return;
+        case 'cycleHeaderLevel':
+            match = line.match(/^#+/);
+
+            if (!match) {
+                currentHeaderLevel = 1;
+            } else {
+                currentHeaderLevel = match[0].length;
+            }
+
+            if (currentHeaderLevel > 5) { currentHeaderLevel = 0; }
+
+            hashPrefix = new Array(currentHeaderLevel + 2).join('#');
+            replacementLine = hashPrefix + ' ' + line.replace(/^#* /, '');
+
+            this.replaceRange(replacementLine, fromLineStart, toLineEnd);
+            this.setCursor(cursor.line, cursor.ch +  replacementLine.length - line.length);
+            break;
         case 'link':
             md = this.simpleShortcutSyntax.link.replace('$1', text);
             this.replaceSelection(md, 'end');
