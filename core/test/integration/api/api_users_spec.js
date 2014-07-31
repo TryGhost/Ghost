@@ -898,11 +898,13 @@ describe('Users API', function () {
                    {id: userIdFor.admin}
                ]}, context.owner
            ).then(function (response) {
-               should.exist(response);
-               should.exist(response.owner);
-               response.owner.should.have.length(1);
-               response.owner[0].message.should.eql('Ownership transferred successfully.');
-               done();
+                should.exist(response);
+                response.users.should.have.length(2);
+                testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+                testUtils.API.checkResponse(response.users[1], 'user', ['roles']);
+                response.users[0].roles[0].id.should.equal(1);
+                response.users[1].roles[0].id.should.equal(4);
+                done();
            }).catch(done);
        });
 
