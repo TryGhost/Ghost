@@ -399,7 +399,8 @@ User = ghostBookshelf.Model.extend({
 
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union([ 'roles' ], options.include);
-        return Role.findOne({name: 'Author'}).then(function (authorRole) {
+
+        return Role.findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function (authorRole) {
             // Get the role we're going to assign to this user, or the author role if there isn't one
             roles = data.roles || [authorRole.get('id')];
 
@@ -412,7 +413,7 @@ User = ghostBookshelf.Model.extend({
 
             return validatePasswordLength(userData.password);
         }).then(function () {
-            return self.forge().fetch();
+            return self.forge().fetch(options);
         }).then(function () {
             // Generate a new password hash
             return generatePasswordHash(data.password);
@@ -438,7 +439,7 @@ User = ghostBookshelf.Model.extend({
                 }
             });
 
-            return userData.roles().attach(roles);
+            return userData.roles().attach(roles, options);
         }).then(function () {
             // find and return the added user
             return self.findOne({id: userData.id}, options);
