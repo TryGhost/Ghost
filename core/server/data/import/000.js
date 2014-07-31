@@ -1,24 +1,10 @@
 var when   = require('when'),
     _      = require('lodash'),
     models = require('../../models'),
-    Importer000,
-    updatedSettingKeys,
-    areEmpty,
-    internal = {context: {internal: true}};
+    utils  = require('./utils'),
 
-areEmpty = function (object) {
-    var fields = _.toArray(arguments).slice(1),
-        areEmpty = _.all(fields, function (field) {
-            return _.isEmpty(object[field]);
-        });
+    Importer000;
 
-    return areEmpty;
-};
-
-updatedSettingKeys = {
-    activePlugins: 'activeApps',
-    installedPlugins: 'installedApps'
-};
 
 Importer000 = function () {
     _.bindAll(this, 'basicImport');
@@ -50,169 +36,6 @@ Importer000.prototype.canImport = function (data) {
     return when.reject('Unsupported version of data: ' + data.meta.version);
 };
 
-
-function stripProperties(properties, data) {
-    data = _.clone(data, true);
-    _.each(data, function (obj) {
-        _.each(properties, function (property) {
-            delete obj[property];
-        });
-    });
-    return data;
-}
-
-function preProcessPostTags(tableData) {
-    var postTags,
-        postsWithTags = {};
-
-
-    postTags = tableData.posts_tags;
-    _.each(postTags, function (post_tag) {
-        if (!postsWithTags.hasOwnProperty(post_tag.post_id)) {
-            postsWithTags[post_tag.post_id] = [];
-        }
-        postsWithTags[post_tag.post_id].push(post_tag.tag_id);
-    });
-
-    _.each(postsWithTags, function (tag_ids, post_id) {
-        var post, tags;
-        post = _.find(tableData.posts, function (post) {
-            return post.id === parseInt(post_id, 10);
-        });
-        if (post) {
-            tags = _.filter(tableData.tags, function (tag) {
-                return _.indexOf(tag_ids, tag.id) !== -1;
-            });
-            post.tags = [];
-            _.each(tags, function (tag) {
-                // Only add valid tags
-                if (!_.isEmpty(tag.uuid)) {
-                    // names are unique.. this should get the right tags added
-                    // as long as tags are added first;
-                    post.tags.push({name: tag.name});
-                }
-            });
-        }
-    });
-
-    return tableData;
-}
-
-function importTags(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
-    _.each(tableData, function (tag) {
-        // Validate minimum tag fields
-        if (areEmpty(tag, 'name', 'slug')) {
-            return;
-        }
-
-        ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
-            if (!_tag) {
-                return models.Tag.add(tag, _.extend(internal, {transacting: transaction}))
-                    // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .catch(function (error) {
-                        return when.reject({raw: error, model: 'tag', data: tag});
-                    });
-            }
-            return when.resolve(_tag);
-        }));
-    });
-}
-
-function importPosts(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
-    _.each(tableData, function (post) {
-        // Validate minimum post fields
-        if (areEmpty(post, 'title', 'slug', 'markdown')) {
-            return;
-        }
-
-        ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
-            // add pass-through error handling so that bluebird doesn't think we've dropped it
-            .catch(function (error) {
-                return when.reject({raw: error, model: 'post', data: post});
-            }));
-    });
-}
-
-function importUsers(ops, tableData, transaction) {
-    // don't override the users credentials
-    tableData = stripProperties(['id', 'email', 'password'], tableData);
-    tableData[0].id = 1;
-
-    ops.push(models.User.edit(tableData[0], _.extend(internal, {id: 1, transacting: transaction}))
-        // add pass-through error handling so that bluebird doesn't think we've dropped it
-        .catch(function (error) {
-            return when.reject({raw: error, model: 'user', data: tableData[0]});
-        }));
-}
-
-function importSettings(ops, tableData, transaction) {
-    // for settings we need to update individual settings, and insert any missing ones
-    // settings we MUST NOT update are 'core' and 'theme' settings
-    // as all of these will cause side effects which don't make sense for an import
-    var blackList = ['core', 'theme'];
-
-    tableData = stripProperties(['id'], tableData);
-    tableData = _.filter(tableData, function (data) {
-        return blackList.indexOf(data.type) === -1;
-    });
-
-    // Clean up legacy plugin setting references
-    _.each(tableData, function (datum) {
-        datum.key = updatedSettingKeys[datum.key] || datum.key;
-    });
-
-    ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction}))
-         // add pass-through error handling so that bluebird doesn't think we've dropped it
-         .catch(function (error) {
-            return when.reject({raw: error, model: 'setting', data: tableData});
-        }));
-}
-
-function importApps(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
-    _.each(tableData, function (app) {
-        // Avoid duplicates
-        ops.push(models.App.findOne({name: app.name}, {transacting: transaction}).then(function (_app) {
-            if (!_app) {
-                return models.App.add(app, _.extend(internal, {transacting: transaction}))
-                    // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .catch(function (error) {
-                        return when.reject({raw: error, model: 'app', data: app});
-                    });
-            }
-            return when.resolve(_app);
-        }));
-    });
-}
-
-// function importAppSettings(ops, tableData, transaction) {
-//     var appsData = tableData.apps,
-//         appSettingsData = tableData.app_settings,
-//         appName;
-//
-//     appSettingsData = stripProperties(['id'], appSettingsData);
-//
-//     _.each(appSettingsData, function (appSetting) {
-//         // Find app to attach settings to
-//         appName = _.find(appsData, function (app) {
-//             return app.id === appSetting.app_id;
-//         }).name;
-//         ops.push(models.App.findOne({name: appName}, {transacting: transaction}).then(function (_app) {
-//             if (_app) {
-//                 // Fix app_id
-//                 appSetting.app_id = _app.id;
-//                 return models.AppSetting.add(appSetting, {transacting: transaction})
-//                     // add pass-through error handling so that bluebird doesn't think we've dropped it
-//                     .catch(function (error) { return when.reject(error); });
-//             }
-//             // Gracefully ignore missing apps
-//             return when.resolve(_app);
-//         }));
-//     });
-// }
-
 // No data needs modifying, we just import whatever tables are available
 Importer000.prototype.basicImport = function (data) {
     var ops = [],
@@ -221,39 +44,34 @@ Importer000.prototype.basicImport = function (data) {
 
         // Do any pre-processing of relationships (we can't depend on ids)
         if (tableData.posts_tags && tableData.posts && tableData.tags) {
-            tableData = preProcessPostTags(tableData);
+            tableData = utils.preProcessPostTags(tableData);
         }
 
         // Import things in the right order:
         if (tableData.tags && tableData.tags.length) {
-            importTags(ops, tableData.tags, t);
+            utils.importTags(ops, tableData.tags, t);
         }
 
         if (tableData.posts && tableData.posts.length) {
-            importPosts(ops, tableData.posts, t);
+            utils.importPosts(ops, tableData.posts, t);
         }
 
-        if (tableData.users && tableData.users.length) {
-            importUsers(ops, tableData.users, t);
+        // If we only have 1 user, behave as we always have done, overwriting properties,
+        // Else attempt to import users like any other resource, failing if there are clashes
+        if (tableData.users && tableData.users.length && tableData.users.length > 1) {
+            if (tableData.roles_users && tableData.roles_users.length) {
+                tableData = utils.preProcessRolesUsers(tableData);
+            }
+
+            utils.importUsers(ops, tableData.users, t);
+        } else if (tableData.users && tableData.users.length) {
+            utils.importSingleUser(ops, tableData.users, t);
         }
 
         if (tableData.settings && tableData.settings.length) {
-            importSettings(ops, tableData.settings, t);
+            utils.importSettings(ops, tableData.settings, t);
         }
 
-        if (tableData.apps && tableData.apps.length) {
-            importApps(ops, tableData.apps, t);
-
-            // ToDo: This is rather complicated
-            // Only import settings if there are apps defined
-            //if (tableData.app_settings && tableData.app_settings.length) {
-            //    importAppSettings(ops, _.pick(tableData, 'apps', 'app_settings'), t);
-            //}
-
-            //if (tableData.app_fields && tableData.app_fields.length) {
-            //    importAppFields(ops, _.pick(tableData, 'apps', 'posts', 'app_fields'), t);
-            //}
-        }
 
         /** do nothing with these tables, the data shouldn't have changed from the fixtures
          *   permissions
