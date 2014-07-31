@@ -745,7 +745,7 @@ User = ghostBookshelf.Model.extend({
             contextUser = ctxUser;
             return User.findOne({id: object.id});
         }).then(function (user) {
-            
+
             var currentRoles = user.toJSON().roles;
             if (!_.contains(currentRoles, adminRole.id)) {
                 return when.reject(new errors.ValidationError('Only administrators can be assigned the owner role.'));
