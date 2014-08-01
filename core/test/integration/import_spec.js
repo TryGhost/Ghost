@@ -652,7 +652,7 @@ describe('Import', function () {
                 response[4].type.should.equal('ValidationError');
                 response[4].message.should.eql('Value in [tags.name] cannot be blank.');
                 done();
-            });
+            }).catch(done);
         });
 
         it('handles database errors nicely', function (done) {
@@ -675,7 +675,7 @@ describe('Import', function () {
                     'Duplicate entry found. Multiple values of "test-ghost-post" found for posts.slug.'
                 );
                 done();
-            });
+            }).catch(done);
         });
 
         it('doesn\'t import invalid tags data from 003', function (done) {
@@ -701,7 +701,7 @@ describe('Import', function () {
                 response[3].type.should.equal('ValidationError');
                 response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
                 done();
-            });
+            }).catch(done);
         });
 
         it('doesn\'t import invalid posts data from 003', function (done) {
@@ -718,7 +718,7 @@ describe('Import', function () {
             }).catch(function (response) {
                 response.length.should.equal(6);
                 done();
-            });
+            }).catch(done);
         });
     });
 });
