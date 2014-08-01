@@ -43,7 +43,7 @@ CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
         test.assertNotExists('#usermenu ul.overlay.open', 'User menu should not be visible');
     });
 
-    casper.thenClick('#usermenu a');
+    casper.thenClick('#usermenu button');
     casper.waitForSelector('#usermenu ul.overlay.open', function then() {
         var profileHref = this.getElementAttribute('#usermenu li.usermenu-profile a', 'href'),
             helpHref = this.getElementAttribute('#usermenu li.usermenu-help a', 'href'),
