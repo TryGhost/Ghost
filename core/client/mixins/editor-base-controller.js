@@ -166,18 +166,16 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status];
-        this.notifications.closePassive();
 
-        this.notifications.showSuccess(message, delay);
+        this.notifications.showSuccess(message, { delayed: delay });
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
         var message = this.messageMap.errors.post[prevStatus][status];
-        this.notifications.closePassive();
 
         message += '<br />' + errors[0].message;
 
-        this.notifications.showError(message, delay);
+        this.notifications.showError(message, { delayed: delay });
     },
 
     actions: {

@@ -38,8 +38,6 @@ var InviteNewUserController = Ember.Controller.extend({
             newUser.save().then(function () {
                 var notificationText = 'Invitation sent! (' + email + ')';
 
-                self.notifications.closePassive();
-
                 // If sending the invitation email fails, the API will still return a status of 201
                 // but the user's status in the response object will be 'invited-pending'.
                 if (newUser.get('status') === 'invited-pending') {
@@ -49,7 +47,6 @@ var InviteNewUserController = Ember.Controller.extend({
                 }
             }).catch(function (errors) {
                 newUser.deleteRecord();
-                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
 
