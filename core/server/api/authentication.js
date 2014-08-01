@@ -65,11 +65,6 @@ authentication = {
             }).then(function () {
                 return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
             }).otherwise(function (error) {
-                // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
-                if (error && error.message === 'NotFound') {
-                    error = new errors.UnauthorizedError('Invalid email address');
-                }
-
                 return when.reject(error);
             });
         });

@@ -631,7 +631,7 @@ User = ghostBookshelf.Model.extend({
     generateResetToken: function (email, expires, dbHash) {
         return this.getByEmail(email).then(function (foundUser) {
             if (!foundUser) {
-                return when.reject(new Error('NotFound'));
+                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
             }
 
             var hash = crypto.createHash('sha256'),
