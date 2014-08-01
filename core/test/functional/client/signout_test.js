@@ -11,7 +11,7 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL without signing in');
     });
 
-    casper.thenClick('#usermenu a').waitFor(function checkOpaque() {
+    casper.thenClick('#usermenu button').waitFor(function checkOpaque() {
         return this.evaluate(function () {
             var menu = document.querySelector('#usermenu .overlay.open');
             return window.getComputedStyle(menu).getPropertyValue('display') === 'block' &&
