@@ -105,7 +105,6 @@ describe('Post Model', function () {
                 }).catch(done);
         });
 
-
         it('can findOne', function (done) {
             var firstPost;
 
@@ -156,7 +155,6 @@ describe('Post Model', function () {
                 done();
             }).catch(done);
         });
-
 
         it('can add, defaults are all correct', function (done) {
             var createdPostUpdatedDate,
@@ -395,7 +393,6 @@ describe('Post Model', function () {
             }).catch(done);
         });
 
-
         it('can findPage, with various options', function (done) {
             testUtils.fixtures.insertMorePosts().then(function () {
 
@@ -445,6 +442,7 @@ describe('Post Model', function () {
                 done();
             }).catch(done);
         });
+
         it('can findPage for tag, with various options', function (done) {
             testUtils.fixtures.insertMorePosts().then(function () {
 
@@ -489,6 +487,17 @@ describe('Post Model', function () {
 
                 done();
             }).catch(done);
+        });
+
+        it('can NOT findPage for a page that overflows the datatype', function (done) {
+            PostModel.findPage({ page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309 })
+                .then(function (paginationResult) {
+                    should.exist(paginationResult.meta);
+
+                    paginationResult.meta.pagination.page.should.be.a.Number;
+
+                    done();
+                }).catch(done);
         });
     });
 
