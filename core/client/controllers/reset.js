@@ -32,8 +32,10 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
+                    self.notifications.showSuccess(resp.passwordreset[0].message, true);
                     self.transitionToRoute('signin');
-                }).catch(function (errors) {
+                }).catch(function (response) {
+                    self.notifications.showAPIError(response);
                     self.toggleProperty('submitting');
                 });
             }).catch(function (error) {
