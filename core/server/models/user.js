@@ -164,7 +164,11 @@ User = ghostBookshelf.Model.extend({
             roleInstance = options.role !== undefined ? Role.forge({name: options.role}) : false;
 
         if (options.limit && options.limit !== 'all') {
-            options.limit = parseInt(options.limit) || 15;
+            options.limit = parseInt(options.limit, 10) || 15;
+        }
+
+        if (options.page) {
+            options.page = parseInt(options.page, 10) || 1;
         }
 
         options = this.filterOptions(options, 'findPage');
@@ -268,7 +272,7 @@ User = ghostBookshelf.Model.extend({
                     meta = {},
                     data = {};
 
-                pagination.page = parseInt(options.page, 10);
+                pagination.page = options.page;
                 pagination.limit = options.limit;
                 pagination.pages = calcPages === 0 ? 1 : calcPages;
                 pagination.total = totalUsers;
