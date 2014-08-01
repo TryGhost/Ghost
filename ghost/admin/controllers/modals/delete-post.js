@@ -10,7 +10,7 @@ var DeletePostController = Ember.Controller.extend({
             model.destroyRecord().then(function () {
                 self.get('popover').closePopovers();
                 self.transitionToRoute('posts.index');
-                self.notifications.showSuccess('Your post has been deleted.', true);
+                self.notifications.showSuccess('Your post has been deleted.', { delayed: true });
             }, function () {
                 self.notifications.showError('Your post could not be deleted. Please try again.');
             });
