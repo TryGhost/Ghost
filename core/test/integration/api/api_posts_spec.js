@@ -2,6 +2,7 @@
  /*jshint expr:true*/
 var testUtils     = require('../../utils'),
     should        = require('should'),
+    _             = require('lodash'),
 
     // Stuff we are testing
     PostAPI       = require('../../../server/api/posts');
@@ -13,6 +14,9 @@ describe('Post API', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
 
+    function extractFirstPost(posts) {
+        return _.filter(posts, { id: 1 })[0];
+    }
 
     should.exist(PostAPI);
 
@@ -34,7 +38,7 @@ describe('Post API', function () {
             should.exist(results);
             should.exist(results.posts);
             results.posts.length.should.be.above(0);
-            firstPost = results.posts[0];
+            firstPost = extractFirstPost(results.posts);
             return PostAPI.read({slug: firstPost.slug, include: 'tags'});
         }).then(function (found) {
             var post;
