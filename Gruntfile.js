@@ -392,6 +392,9 @@ var path           = require('path'),
                         dest: 'core/client/assets/',
                         expand: true
                     }, {
+                        src: 'core/client/config-prod.js',
+                        dest: 'core/client/config.js'
+                    }, {
                         expand: true,
                         src: buildGlob,
                         dest: '<%= paths.releaseBuild %>/'
@@ -875,8 +878,8 @@ var path           = require('path'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['shell:bower', 'update_submodules', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify',
-            'clean:release', 'copy:release', 'compress:release']);
+            ['shell:bower', 'update_submodules', 'concat', 'emberBuildDev',
+            'emberBuildProd', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration
