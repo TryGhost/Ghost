@@ -21,6 +21,10 @@ describe('Post Model', function () {
 
         should.exist(PostModel);
 
+        function extractFirstPost(posts) {
+            return _.filter(posts, { id: 1 })[0];
+        }
+
         function checkFirstPostData(firstPost) {
             should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object;
@@ -54,8 +58,14 @@ describe('Post Model', function () {
                 .then(function (results) {
                     should.exist(results);
                     results.length.should.be.above(0);
-                    firstPost = results.models[0].toJSON();
-                    checkFirstPostData(firstPost);
+                    posts = results.models.map(function (model) {
+                        return model.toJSON();
+                    });
+
+                    // the first post in the result is not always the post at
+                    // position 0 in the fixture data so we need to use extractFirstPost
+                    // to get the post with id: 1
+                    checkFirstPostData(extractFirstPost(posts));
 
                     done();
                 }).catch(done);
@@ -86,9 +96,10 @@ describe('Post Model', function () {
                     results.meta.pagination.pages.should.equal(1);
                     results.posts.length.should.equal(4);
 
-                    firstPost = results.posts[0];
-
-                    checkFirstPostData(firstPost);
+                    // the first post in the result is not always the post at
+                    // position 0 in the fixture data so we need to use extractFirstPost
+                    // to get the post with id: 1
+                    checkFirstPostData(extractFirstPost(results.posts));
 
                     done();
                 }).catch(done);
