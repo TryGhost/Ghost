@@ -9,6 +9,7 @@ import ForgotValidator from 'ghost/validators/forgotten';
 import SettingValidator from 'ghost/validators/setting';
 import ResetValidator from 'ghost/validators/reset';
 import UserValidator from 'ghost/validators/user';
+import InviteValidator from 'ghost/validators/invite';
 
 // our extensions to the validator library
 ValidatorExtensions.init();
@@ -72,7 +73,8 @@ var ValidationEngine = Ember.Mixin.create({
         forgotten: ForgotValidator,
         setting: SettingValidator,
         reset: ResetValidator,
-        user: UserValidator
+        user: UserValidator,
+        invite: InviteValidator
     },
 
     /**

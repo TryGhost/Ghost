@@ -1,4 +1,9 @@
-var InviteNewUserController = Ember.Controller.extend({
+import ValidationEngine from 'ghost/mixins/validation-engine';
+
+var InviteNewUserController = Ember.Controller.extend(ValidationEngine, {
+
+    validationType: 'invite',
+
     //Used to set the initial value for the dropdown
     authorRole: Ember.computed(function () {
         var self = this;
@@ -29,32 +34,38 @@ var InviteNewUserController = Ember.Controller.extend({
                 self = this,
                 newUser;
 
-            newUser = self.store.createRecord('user', {
-                email: email,
-                status: 'invited',
-                role: role
-            });
+            this.validate({ format: false }).then(function () {
+                newUser = self.store.createRecord('user', {
+                    email: email,
+                    status: 'invited',
+                    role: role
+                });
 
-            newUser.save().then(function () {
-                var notificationText = 'Invitation sent! (' + email + ')';
+                newUser.save().then(function () {
+                    var notificationText = 'Invitation sent! (' + email + ')';
 
-                self.notifications.closePassive();
+                    self.notifications.closePassive();
 
-                // If sending the invitation email fails, the API will still return a status of 201
-                // but the user's status in the response object will be 'invited-pending'.
-                if (newUser.get('status') === 'invited-pending') {
-                    self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
-                } else {
-                    self.notifications.showSuccess(notificationText, false);
-                }
+                    // If sending the invitation email fails, the API will still return a status of 201
+                    // but the user's status in the response object will be 'invited-pending'.
+                    if (newUser.get('status') === 'invited-pending') {
+                        self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                    } else {
+                        self.notifications.showSuccess(notificationText, false);
+                    }
+                }).catch(function (errors) {
+                    newUser.deleteRecord();
+                    self.notifications.closePassive();
+                    self.notifications.showErrors(errors);
+                });
+
+                self.set('email', null);
+                self.set('role', null);
             }).catch(function (errors) {
-                newUser.deleteRecord();
+                self.toggleProperty('submitting');
                 self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
-
-            self.set('email', null);
-            self.set('role', null);
         },
 
         confirmReject: function () {
