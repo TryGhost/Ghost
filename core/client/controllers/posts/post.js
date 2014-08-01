@@ -9,7 +9,6 @@ var PostController = Ember.ObjectController.extend({
 
             this.toggleProperty('featured');
             this.get('model').save(options).catch(function (errors) {
-                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
         }

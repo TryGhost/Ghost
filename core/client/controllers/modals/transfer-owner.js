@@ -26,10 +26,8 @@ var TransferOwnerController = Ember.Controller.extend({
                     });
                 }
 
-                self.notifications.closePassive();
                 self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
             }).catch(function (error) {
-                self.notifications.closePassive();
                 self.notifications.showAPIError(error);
             });
         },

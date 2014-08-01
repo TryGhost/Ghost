@@ -36,48 +36,84 @@ var Notifications = Ember.ArrayProxy.extend({
             this.delayedNotifications.push(message);
         }
     },
-    showError: function (message, delayed) {
+    showError: function (message, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
         this.handleNotification({
             type: 'error',
             message: message
-        }, delayed);
+        }, options.delayed);
     },
-    showErrors: function (errors) {
+    showErrors: function (errors, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
         for (var i = 0; i < errors.length; i += 1) {
-            this.showError(errors[i].message || errors[i]);
+            this.showError(errors[i].message || errors[i], { doNotClosePassive: true });
         }
     },
-    showAPIError: function (resp, defaultErrorText, delayed) {
-        defaultErrorText = defaultErrorText || 'There was a problem on the server, please try again.';
+    showAPIError: function (resp, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
+        options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
         if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.error) {
-            this.showError(resp.jqXHR.responseJSON.error, delayed);
+            this.showError(resp.jqXHR.responseJSON.error, options);
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-            this.showErrors(resp.jqXHR.responseJSON.errors, delayed);
+            this.showErrors(resp.jqXHR.responseJSON.errors, options);
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.message) {
-            this.showError(resp.jqXHR.responseJSON.message, delayed);
+            this.showError(resp.jqXHR.responseJSON.message, options);
         } else {
-            this.showError(defaultErrorText, delayed);
+            this.showError(options.defaultErrorText, { doNotClosePassive: true });
         }
     },
-    showInfo: function (message, delayed) {
+    showInfo: function (message, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
         this.handleNotification({
             type: 'info',
             message: message
-        }, delayed);
+        }, options.delayed);
     },
-    showSuccess: function (message, delayed) {
+    showSuccess: function (message, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
         this.handleNotification({
             type: 'success',
             message: message
-        }, delayed);
+        }, options.delayed);
     },
     // @Todo this function isn't referenced anywhere. Should it be removed?
-    showWarn: function (message, delayed) {
+    showWarn: function (message, options) {
+        options = options || {};
+
+        if (!options.doNotClosePassive) {
+            this.closePassive();
+        }
+
         this.handleNotification({
             type: 'warn',
             message: message
-        }, delayed);
+        }, options.delayed);
     },
     displayDelayed: function () {
         var self = this;
