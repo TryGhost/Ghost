@@ -103,11 +103,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
-        this.notifications.closePassive();
         this.notifications.showErrors(errors);
     },
     showSuccess: function (message) {
-        this.notifications.closePassive();
         this.notifications.showSuccess(message);
     },
     actions: {

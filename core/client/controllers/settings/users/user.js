@@ -69,7 +69,6 @@ var SettingsUserController = Ember.ObjectController.extend({
                 var notificationText = 'Invitation revoked. (' + email + ')';
                 self.notifications.showSuccess(notificationText, false);
             }).catch(function (error) {
-                self.notifications.closePassive();
                 self.notifications.showAPIError(error);
             });
         },
@@ -88,7 +87,6 @@ var SettingsUserController = Ember.ObjectController.extend({
                     self.notifications.showSuccess(notificationText, false);
                 }
             }).catch(function (error) {
-                self.notifications.closePassive();
                 self.notifications.showAPIError(error);
             });
         },
@@ -98,12 +96,10 @@ var SettingsUserController = Ember.ObjectController.extend({
                 self = this;
 
             user.save({ format: false }).then(function (model) {
-                self.notifications.closePassive();
                 self.notifications.showSuccess('Settings successfully saved.');
 
                 return model;
             }).catch(function (errors) {
-                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
         },
@@ -122,12 +118,10 @@ var SettingsUserController = Ember.ObjectController.extend({
                         'ne2Password': ''
                     });
 
-                    self.notifications.closePassive();
                     self.notifications.showSuccess('Password updated.');
 
                     return model;
                 }).catch(function (errors) {
-                    self.notifications.closePassive();
                     self.notifications.showAPIError(errors);
                 });
             } else {
