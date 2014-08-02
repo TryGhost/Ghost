@@ -5,10 +5,14 @@
 // **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
-var path           = require('path'),
+var _              = require('lodash'),
     colors         = require('colors'),
-    fs             = require('fs'),
-    _              = require('lodash'),
+    fs             = require('fs-extra'),
+    getTopContribs = require('top-gh-contribs'),
+    path           = require('path'),
+    Promise        = require('bluebird'),
+    request        = require('request'),
+
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
@@ -852,18 +856,67 @@ var path           = require('path'),
         // ### Ember Build *(Utility Task)*
         // All tasks related to building the Ember client code including transpiling ES6 modules and building templates
         grunt.registerTask('emberBuildDev', 'Build Ember JS & templates for development',
-            ['clean:tmp', 'emberTemplates:dev', 'transpile', 'concat_sourcemap:dev']);
+            ['clean:tmp', 'buildAboutPage', 'emberTemplates:dev', 'transpile', 'concat_sourcemap:dev']);
 
         // ### Ember Build *(Utility Task)*
         // All tasks related to building the Ember client code including transpiling ES6 modules and building templates
         grunt.registerTask('emberBuildProd', 'Build Ember JS & templates for production',
-            ['clean:tmp', 'emberTemplates:prod', 'transpile', 'concat_sourcemap:prod']);
+            ['clean:tmp', 'buildAboutPage', 'emberTemplates:prod', 'transpile', 'concat_sourcemap:prod']);
 
         // ### CSS Build *(Utility Task)*
         // Build the CSS files from the SCSS files
         grunt.registerTask('css', 'Build Client CSS',
             ['sass', 'autoprefixer']);
 
+        // ### Build About Page *(Utility Task)*
+        // Builds the github contributors partial template used on the Settings/About page,
+        // and downloads the avatar for each of the users.
+        // Run by any task that compiles the ember assets (emberBuildDev, emberBuildProd)
+        //     or manually via `grunt buildAboutPage`.
+        // Change which version you're working against by setting the "releaseTag" below.
+        grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
+            var done = this.async();
+
+            grunt.verbose.writeln('Downloading release and contributor information from GitHub');
+            getTopContribs({
+                user: 'tryghost',
+                repo: 'ghost',
+                releaseTag: '0.4.2',
+                count: 20
+            }).then(function makeContributorTemplate(contributors) {
+                var contributorTemplate = '<li>\n\t<a href="<%githubUrl%>" title="<%name%>">\n' +
+                    '\t\t<img src="{{unbound ghostPaths.contributorsDir}}/<%name%>" alt="<%name%>">\n' +
+                    '\t</a>\n</li>';
+
+                grunt.verbose.writeln('Creating contributors template.');
+                grunt.file.write('core/client/templates/-contributors.hbs',
+                    //Map contributors to the template.
+                    _.map(contributors, function (contributor) {
+                        return contributorTemplate
+                            .replace(/<%githubUrl%>/g, contributor.githubUrl)
+                            .replace(/<%name%>/g, contributor.name);
+                    }).join('\n')
+                );
+                grunt.verbose.writeln('Downloading images for top contributors');
+                return Promise.promisify(fs.mkdirs)('core/client/assets/img/contributors').then(function () {
+                    return contributors;
+                });
+            }).then(function downloadContributorImages(contributors) {
+                var downloadImagePromise = function (url, name) {
+                    return new Promise(function (resolve, reject) {
+                        request(url)
+                        .pipe(fs.createWriteStream('core/client/assets/img/contributors/' + name))
+                        .on('close', resolve)
+                        .on('error', reject);
+                    });
+                };
+                return Promise.all(_.map(contributors, function (contributor) {
+                    return downloadImagePromise(contributor.avatarUrl, contributor.name);
+                }));
+            }).catch(function (error) {
+                grunt.log.error(error);
+            }).finally(done);
+        });
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
         //

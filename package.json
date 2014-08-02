@@ -99,6 +99,7 @@
         "require-dir": "~0.1.0",
         "should": "~2.1.1",
         "sinon": "~1.7.3",
-        "supertest": "~0.8.2"
+        "supertest": "~0.8.2",
+        "top-gh-contribs": "0.0.1"
     }
 }
