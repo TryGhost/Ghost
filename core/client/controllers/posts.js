@@ -1,5 +1,25 @@
 import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
+function publishedAtCompare(item1, item2) {
+    var published1 = item1.get('published_at'),
+        published2 = item2.get('published_at');
+
+    if (!published1 && !published2) {
+        return 0;
+    }
+
+    if (!published1 && published2) {
+        return -1;
+    }
+
+    if (!published2 && published1) {
+        return 1;
+    }
+
+    return Ember.compare(published1.valueOf(), published2.valueOf());
+}
+
+
 var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     // this will cause the list to re-sort when any of these properties change on any of the models
     sortProperties: ['status', 'published_at', 'updated_at'],
@@ -15,25 +35,6 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     //     published_at: DESC
     //     updated_at: DESC
     orderBy: function (item1, item2) {
-        function publishedAtCompare() {
-            var published1 = item1.get('published_at'),
-                published2 = item2.get('published_at');
-
-            if (!published1 && !published2) {
-                return 0;
-            }
-
-            if (!published1 && published2) {
-                return -1;
-            }
-
-            if (!published2 && published1) {
-                return 1;
-            }
-
-            return Ember.compare(item1.get('published_at').valueOf(), item2.get('published_at').valueOf());
-        }
-
         var updated1 = item1.get('updated_at'),
             updated2 = item2.get('updated_at'),
             statusResult,
@@ -52,7 +53,7 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
 
         statusResult = Ember.compare(item1.get('status'), item2.get('status'));
         updatedAtResult = Ember.compare(updated1.valueOf(), updated2.valueOf());
-        publishedAtResult = publishedAtCompare();
+        publishedAtResult = publishedAtCompare(item1, item2);
 
         if (statusResult === 0) {
             if (publishedAtResult === 0) {
