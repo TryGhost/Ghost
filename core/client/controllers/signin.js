@@ -19,7 +19,6 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
                 self.notifications.closePassive();
                 self.send('authenticate');
             }).catch(function (errors) {
-                self.notifications.closePassive();
                 self.notifications.showErrors(errors);
             });
         }

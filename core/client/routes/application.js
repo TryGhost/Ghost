@@ -19,7 +19,6 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         },
 
         sessionAuthenticationFailed: function (error) {
-            this.notifications.closePassive();
             this.notifications.showError(error.message);
         },
 
@@ -38,7 +37,6 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         },
 
         sessionInvalidationFailed: function (error) {
-            this.notifications.closePassive();
             this.notifications.showError(error.message);
         },
 
