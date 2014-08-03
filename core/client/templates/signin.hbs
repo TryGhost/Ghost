@@ -1,7 +1,8 @@
 <section class="login-box js-login-box fade-in">
     <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
         <div class="email-wrap">
-            {{input class="email" type="email" placeholder="Email Address" name="identification" autofocus="autofocus" autocapitalize="off" autocorrect="off" value=identification}}
+            {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autofocus="autofocus" 
+            autocapitalize="off" autocorrect="off" value=identification}}
         </div>
         <div class="password-wrap">
             {{input class="password" type="password" placeholder="Password" name="password" value=password}}
