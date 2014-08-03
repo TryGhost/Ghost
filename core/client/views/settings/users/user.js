@@ -7,7 +7,7 @@ var SettingsUserView = Ember.View.extend({
     
     canAssignRoles: Ember.computed.or('currentUser.isAdmin', 'currentUser.isOwner'),
 
-    canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile'),
+    canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile', 'controller.user.isAdmin'),
     
     rolesDropdownIsVisible: Ember.computed.and('isNotOwnProfile', 'canAssignRoles'),
 
