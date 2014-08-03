@@ -29,7 +29,7 @@ init = function init() {
         $('body').addClass('touch-editor');
 
         // make editor tabs touch-to-toggle in portrait mode
-        $('.floatingheader').on('touchstart', function () {
+        $('.floatingheader').on('tap', function () {
             $('.entry-markdown').toggleClass('active');
             $('.entry-preview').toggleClass('active');
         });
