@@ -72,6 +72,18 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
         //this is necesariy because we do not have access to the model inside the Controller::init method
         this._super({'modelType': 'post'});
 
+    },
+
+    actions: {
+        showContentPreview: function () {
+            $('.content-list').animate({right: '100%', left: '-100%', 'margin-right': '15px'}, 300);
+            $('.content-preview').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
+        },
+
+        hideContentPreview: function () {
+            $('.content-list').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
+            $('.content-preview').animate({right: '-100%', left: '100%', 'margin-left': '15px'}, 300);
+        },
     }
 });
 
