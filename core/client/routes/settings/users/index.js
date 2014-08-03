@@ -26,6 +26,12 @@ var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Pag
                 return true;
             });
         });
+    },
+
+    actions: {
+        reload: function () {
+            this.refresh();
+        }
     }
 });
 
