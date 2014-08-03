@@ -6,7 +6,7 @@
 					<label for="url">URL</label>
 				</td>
 				<td class="post-setting-field">
-					{{gh-blur-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" action="updateSlug" placeholder=slugPlaceholder selectOnClick="true"}}
+					{{gh-blur-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" action="updateSlug" placeholder=slugPlaceholder selectOnClick="true" stopEnterKeyDownPropagation="true"}}
 				</td>
 			</tr>
 			<tr class="post-setting">
@@ -14,7 +14,7 @@
 					<label for="pub-date">Pub Date</label>
 				</td>
 				<td class="post-setting-field">
-					{{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder}}
+					{{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
 				</td>
 			</tr>
 			<tr class="post-setting">
