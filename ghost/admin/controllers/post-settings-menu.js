@@ -24,6 +24,12 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             return;
         }
         model.set('author', selectedAuthor);
+
+        //if this is a new post (never been saved before), don't try to save it
+        if (this.get('isNew')) {
+            return;
+        }
+
         model.save(this.get('saveOptions')).catch(function (errors) {
             self.showErrors(errors);
             self.set('selectedAuthor', author);
