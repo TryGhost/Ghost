@@ -38,7 +38,7 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
 
     stepThroughPosts: function (step) {
         var currentPost = this.get('controller.currentPost'),
-            posts = this.get('controller.model'),
+            posts = this.get('controller.arrangedContent'),
             length = posts.get('length'),
             newPosition;
 
