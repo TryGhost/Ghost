@@ -372,20 +372,6 @@ button {
     }
 }
 
-// Alternative button with more visual attention, 
-// but no extra semantic meaning
-.button-alt {
-    @extend %btn;
-    background: lighten($darkgrey, 10%);
-    &:hover,
-    &:focus {
-        background: $darkgrey;
-    }
-    &[class*='icon-']:before {
-        border-right-color: lighten($darkgrey, 10%);
-    }
-}
-
 // Alternative button with more visual attention, but no extra semantic meaning
 .button-info {
     @extend %btn;
@@ -393,19 +379,6 @@ button {
     &:hover,
     &:focus {
         background: lighten(#A1ADB3, 10%);
-    }
-}
-
-// This applies normal link styles to de-emphasise a button
-.button-link {
-    @extend %btn;
-    color: $blue;
-    background: transparent;
-    border: none;
-    &:hover,
-    &:focus {
-        background: transparent;
-        text-decoration: underline;
     }
 }
 
