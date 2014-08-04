@@ -47,5 +47,5 @@ Se hai già deciso di installare Ghost sul tuo server o hosting personale, è un
 </div>
 
 Ricordati che Ghost è molto giovane, ed il team sta lavorando duramente per implementare funzionalità ad un ritmo frenetico. Se hai bisogno di aggiornare Ghost all'ultima versione, segui la [guida all'aggiornamento](/installation/upgrading/).
-    Se hai problemi, dai un'occhiata alla [guida alla risoluzione dei problemi]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), o se non è sufficiente, perfavore scrivi sul [forum di Ghost](http://ghost.org/forum) dove lo staff e la community sono disponibili per aiutarti con qualsiasi problema.
+    Se hai problemi, dai un'occhiata alla [guida alla risoluzione dei problemi]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), o se non è sufficiente, per favore scrivi sul [forum di Ghost](http://ghost.org/forum) dove lo staff e la community sono disponibili per aiutarti con qualsiasi problema.
 
