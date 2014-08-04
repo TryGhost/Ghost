@@ -1,14 +1,200 @@
 //
-// Button Reset
+// Buttons
 // --------------------------------------------------
 
-button {
-    border: 0;
-    padding: 0;
-    background: transparent;
-    @include transition(all 0.15s ease-in-out);
+
+// Base styles
+// --------------------------------------------------
+
+.btn {
+    display: inline-block;
+    margin-bottom: 0; // For input.btn
+    padding: 6px 12px;
+    font-size: 1.4rem;
+    line-height: 1.428571429;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+    border: 1px solid transparent;
+    white-space: nowrap;
+    border-radius: $rounded;
+    @include user-select(none);
+
+    &,
+    &:active,
+    &.active {
+        &:focus {
+            @include tab-focus();
+        }
+    }
+
+    &:hover,
+    &:focus {
+        color: $blue;
+        text-decoration: none;
+    }
+
+    &:active,
+    &.active {
+        outline: 0;
+        background-image: none;
+        box-shadow: inset 0 2px 2px rgba(0,0,0,.125);
+    }
+
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+        cursor: not-allowed;
+        pointer-events: none; // Future-proof disabling of clicks
+        opacity: 0.65;
+        box-shadow: none;
+    }
 }
 
+
+// Alternate buttons
+// --------------------------------------------------
+
+@mixin button-style($color, $background, $border) {
+    color: $color;
+    background-color: $background;
+    border-color: $border;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active,
+    .open > &.dropdown-toggle {
+        color: $color;
+        background-color: darken($background, 10%);
+        border-color: darken($border, 12%);
+    }
+    &:active,
+    &.active,
+    .open > &.dropdown-toggle {
+        background-image: none;
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+        &,
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            background-color: $background;
+            border-color: $border;
+        }
+    }
+
+    .badge {
+        color: $background;
+        background-color: $color;
+    }
+}
+
+.btn-default {
+    @include button-style($darkgrey, #fff, lighten($midgrey, 30%));
+}
+.btn-primary {
+    @include button-style(#fff, $blue, darken($blue, 5%));
+}
+// Success appears as green
+.btn-success {
+    @include button-style(#fff, $green, darken($green, 5%));
+}
+// Danger and error appear as red
+.btn-danger {
+    @include button-style(#fff, $red, darken($red, 5%));
+}
+
+
+// Link buttons
+// -------------------------
+
+// Make a button look and behave like a link
+.btn-link {
+    color: $blue;
+    font-weight: normal;
+    cursor: pointer;
+    border-radius: 0;
+
+    &,
+    &:active,
+    &[disabled],
+    fieldset[disabled] & {
+        background-color: transparent;
+        box-shadow: none;
+    }
+    &,
+    &:hover,
+    &:focus,
+    &:active {
+        border-color: transparent;
+    }
+    &:hover,
+    &:focus {
+        text-decoration: underline;
+        background-color: transparent;
+    }
+    &[disabled],
+    fieldset[disabled] & {
+        &:hover,
+        &:focus {
+            color: $midgrey;
+            text-decoration: none;
+        }
+    }
+}
+
+
+// Button Sizes
+// --------------------------------------------------
+
+.btn-lg {
+    padding: 10px 16px;
+    font-size: 1.8rem;
+    line-height: 1.33;
+    border-radius: 4px;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    border-radius: 2px;
+}
+
+
+// Block button
+// --------------------------------------------------
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+// Vertically space out multiple block buttons
+.btn-block + .btn-block {
+    margin-top: 5px;
+}
+
+// Specificity overrides
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+    &.btn-block {
+        width: 100%;
+    }
+}
+
+// --------------------------------------------------
+//
+// TODO: These are the old styles to be removed.
+//
+// --------------------------------------------------
 
 //
 // Base Button
@@ -179,20 +365,6 @@ button {
     }
 }
 
-// Alternative button with more visual attention, 
-// but no extra semantic meaning
-.button-alt {
-    @extend %btn;
-    background: lighten($darkgrey, 10%);
-    &:hover,
-    &:focus {
-        background: $darkgrey;
-    }
-    &[class*='icon-']:before {
-        border-right-color: lighten($darkgrey, 10%);
-    }
-}
-
 // Alternative button with more visual attention, but no extra semantic meaning
 .button-info {
     @extend %btn;
@@ -200,19 +372,6 @@ button {
     &:hover,
     &:focus {
         background: lighten(#A1ADB3, 10%);
-    }
-}
-
-// This applies normal link styles to de-emphasise a button
-.button-link {
-    @extend %btn;
-    color: $blue;
-    background: transparent;
-    border: none;
-    &:hover,
-    &:focus {
-        background: transparent;
-        text-decoration: underline;
     }
 }
 
@@ -255,161 +414,4 @@ button {
         }
     }
 
-}
-
-
-//
-// Base Splitbutton
-// --------------------------------------------------
-
-%splitbtn {
-    display: inline-block;
-    position: relative;
-    font-size: 0; // hack to stop space after button
-    white-space: nowrap;
-
-    button {
-        font-size: 11px; // hack to restore font size
-        @include border-right-radius(0);
-    }
-
-    // This is the additional dropdown arrow, to the right of the button.
-    .options {
-        display: inline-block;
-        position:relative;
-        width: 35px;
-        height: 35px;
-        margin-left: -1px;
-        vertical-align: top;
-        text-align: center;
-        color: #fff;
-        background: #e5e5e5;
-        border-radius: 0 2px 2px 0;
-        border-left: 0;
-        box-shadow:
-            rgba(0,0,0,0.02) 0 1px 0 inset,
-            rgba(0,0,0,0.02) -1px 0 0 inset,
-            rgba(0,0,0,0.02) 0 -1px 0 inset;
-
-        @include icon($i-chevron-down, 9px) {
-            position: absolute;
-            top: 50%;
-            right: 50%;
-            margin-top: -3px;
-            margin-right: -5px;
-            @include transition(margin-top 0.3s ease);
-            /* Transition of transform properties are split out due to a
-                defect in the vendor prefixing of transform transitions.
-                See: http://github.com/thoughtbot/bourbon/pull/86 */
-            @include transition-property(transform);
-            @include transition-duration(0.3);
-            @include transition-timing-function(ease);
-        };
-
-        @include transition(background-color 0.3s linear);
-
-        // Keep the arrow spun when the associated menu is open
-        &.active:before {
-            @include transform(rotate(360deg));
-        }
-
-        &.up.active:before {
-            margin-top:-4px;
-            @include transform(rotate(540deg));
-        }
-
-        // Spin the arrow on hover and while menu is open
-        &:hover,
-        &:focus {
-            will-change: box-shadow, background;
-            box-shadow: none;
-            background: #f8f8f8;
-            @include icon($i-chevron-down) {
-                will-change: transform;
-                @include transform(rotate(360deg));
-            };
-        }
-
-        // If it has a class of "up" spin it an extra 180degress to point up
-        &.up:hover,
-        &.up:focus {
-            @include icon($i-chevron-down) {
-                margin-top:-4px;
-                @include transform(rotate(540deg));
-                @include transition-property(transform);
-                @include transition-duration(0.6);
-                @include transition-timing-function(ease);
-            };
-        }
-    }
-}
-
-
-//
-// The Splitbuttons
-// --------------------------------------------------
-
-// The default splitbutton
-.splitbutton {
-    @extend %splitbtn;
-    .options {
-        color:#777;
-        &:hover,
-        &:focus {
-            box-shadow:
-                rgba(0,0,0,0.07) 0 1px 0 inset,
-                rgba(0,0,0,0.07) -1px 0 0 inset,
-                rgba(0,0,0,0.07) 0 -1px 0 inset;
-        }
-    }
-}
-
-// For save/next/continue/confirm actions
-.splitbutton-save {
-    @extend %splitbtn;
-    .options {
-        background: darken($blue, 5%);
-        &:hover,
-        &.active,
-        &:focus {
-            background: darken($blue, 10%);
-        }
-    }
-}
-
-// For actions which add something
-.splitbutton-add {
-    @extend %splitbtn;
-    .options {
-        background: darken($green, 6%);
-        &:hover,
-        &:focus {
-            background: darken($green, 8%);
-        }
-    }
-}
-
-// For actions which delete something
-.splitbutton-delete {
-    @extend %splitbtn;
-    .options {
-        background: darken($red, 6%);
-        &:hover,
-        &:focus {
-            background: darken($red, 10%);
-        }
-    }
-}
-
-// Alternative style with more visual attention, 
-// but no extra semantic meaning
-.splitbutton-alt {
-    @extend %splitbtn;
-    .options {
-        background: lighten($darkgrey, 4%);
-        &:hover,
-        &:focus {
-            background: $darkgrey;
-        }
-    }
 }
