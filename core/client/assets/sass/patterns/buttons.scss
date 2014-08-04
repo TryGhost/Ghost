@@ -192,18 +192,6 @@ input[type="button"] {
 
 
 //
-// Button Reset
-// --------------------------------------------------
-
-button {
-    border: 0;
-    padding: 0;
-    background: transparent;
-    @include transition(all 0.15s ease-in-out);
-}
-
-
-//
 // Base Button
 // --------------------------------------------------
 
