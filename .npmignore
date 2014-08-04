@@ -10,9 +10,10 @@ content/themes/**
 !content/themes/casper/**
 content/apps/**
 !content/apps/README.md
+content/data/**
+!content/data/README.md
 node_modules/**
 core/test/**
-core/server/data/export/exported*
 **/*.db*
 *.db*
 .sass*
@@ -24,6 +25,8 @@ core/server/data/export/exported*
 config.js
 core/client/config-dev.js
 core/client/config-prod.js
+core/client/html/**
+core/built/**/*.map
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml

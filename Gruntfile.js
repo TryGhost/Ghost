@@ -344,7 +344,13 @@ var path           = require('path'),
                     src: ['core/built/**']
                 },
                 release: {
-                    src: ['<%= paths.releaseBuild %>/**']
+                    src: [
+                        '<%= paths.releaseBuild %>/**',
+                        'core/built/public/jquery.js',
+                        'core/built/scripts/vendor.js',
+                        'core/built/scripts/templates.js',
+                        'core/built/scripts/ghost.js'
+                    ]
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
@@ -503,7 +509,17 @@ var path           = require('path'),
             uglify: {
                 prod: {
                     options: {
-                        sourceMap: true,
+                        sourceMap: true
+                    },
+                    files: {
+                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js',
+                        'core/built/scripts/vendor.min.js': 'core/built/scripts/vendor.js',
+                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
+                    }
+                },
+                release: {
+                    options: {
+                        sourceMap: false
                     },
                     files: {
                         'core/built/public/jquery.min.js': 'core/built/public/jquery.js',
@@ -852,7 +868,7 @@ var path           = require('path'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['concat:prod', 'copy:prod', 'emberBuildProd', 'uglify', 'master-warn']);
+            ['concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:prod', 'master-warn']);
 
         // ### Default asset build
         // `grunt` - default grunt task
@@ -887,8 +903,7 @@ var path           = require('path'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['shell:bower', 'update_submodules', 'concat', 'emberBuildDev',
-            'emberBuildProd', 'uglify', 'clean:release', 'copy:release', 'compress:release']);
+            ['init', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:release', 'clean:release', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration
