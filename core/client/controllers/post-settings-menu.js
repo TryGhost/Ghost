@@ -13,7 +13,13 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     },
-    selectedAuthor: Ember.computed.oneWay('author'),
+    selectedAuthor: Ember.computed(function () {
+        var self = this;
+        return this.get('author').then(function (author) {
+            self.set('selectedAuthor', author);
+            return author;
+        });
+    }),
     changeAuthor: function () {
         var author = this.get('author'),
             selectedAuthor = this.get('selectedAuthor'),
@@ -38,15 +44,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     }.observes('selectedAuthor'),
     authors: function () {
         //Loaded asynchronously, so must use promise proxies.
-        var deferred = {},
-            self = this;
+        var deferred = {};
 
         deferred.promise = this.store.find('user').then(function (users) {
             return users.rejectBy('id', 'me');
         }).then(function (users) {
-            self.set('selectedAuthor', users.get('firstObject'));
-
-            return users;
+            return users.filter(function (user) {
+                return user.get('active');
+            });
         });
 
         return Ember.ArrayProxy
