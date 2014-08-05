@@ -30,43 +30,6 @@ CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     });
 }, true);
 
-// CasperTest.begin('Can\'t spam it', 4, function suite(test) {
-//     CasperTest.Routines.signout.run(test);
-
-//     casper.thenOpenAndWaitForPageLoad('signin', function testTitle() {
-//         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-//         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
-//     });
-
-//     casper.waitForOpaque('.login-box',
-//         function then() {
-//             this.fillAndSave('#login', falseUser);
-//         },
-//         function onTimeout() {
-//             test.fail('Sign in form didn\'t fade in.');
-//         });
-
-
-//     casper.captureScreenshot('login_spam_test.png');
-
-//     casper.waitForText('attempts remaining!', function then() {
-//         this.fillAndSave('#login', falseUser);
-//     });
-
-//     casper.captureScreenshot('login_spam_test2.png');
-
-//     casper.waitForText('Slow down, there are way too many login attempts!', function onSuccess() {
-//         test.assert(true, 'Spamming the login did result in an error notification');
-//         test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
-//     }, function onTimeout() {
-//         test.assert(false, 'Spamming the login did not result in an error notification');
-//     });
-
-//     // This test causes the spam notification
-//     // add a wait to ensure future tests don't get tripped up by this.
-//     casper.wait(2000);
-// }, true);
-
 CasperTest.begin('Login limit is in place', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
@@ -93,9 +56,6 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'We did not trip the login limit.');
     });
-    // This test used login, add a wait to
-    // ensure future tests don't get tripped up by this.
-    casper.wait(2000);
 }, true);
 
 CasperTest.begin('Can login to Ghost', 5, function suite(test) {
