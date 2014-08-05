@@ -1,37 +1,54 @@
-<header id="global-header" class="navbar">
+<nav class="global-nav" role="navigation">
+
+    <a class="ghost-logo nav-item" {{bind-attr href=ghostPaths.blogRoot title=ghostPaths.blogRoot}}>
+        <div class="nav-label"><i class="icon-ghost"></i> <span>Visit blog</span> </div>
+    </a>
     
-    <button {{action "toggleSidebar" target="view"}} class="ghost-logo ghost-logo-button">
-        <span class="hidden">Ghost</span>
-    </button>
-    <a class="ghost-logo ghost-logo-link" {{bind-attr href=view.blogRoot}}>
-        <span class="hidden">Ghost</span>
+    {{#link-to "posts" classNames="nav-item"}}
+        <div class="nav-label"><i class="icon-content"></i> Content</div>
+    {{/link-to}}
+
+    {{#link-to "editor.new" classNames="nav-item"}}
+        <div class="nav-label"><i class="icon-add"></i> New Post</div>
+    {{/link-to}}
+    
+    {{#unless session.user.isAuthor}}
+    {{#link-to "settings" classNames="nav-item"}}
+        <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
+    {{/link-to}}
+    {{/unless}}
+    
+    {{! TODO: Mobile-only menu items
+
+    <a class="nav-item thing" href="#">
+        <div class="nav-label">Thing</div>
+    </a>
+    <a class="nav-item thing2" href="#">
+        <div class="nav-label">Thing2</div>
     </a>
 
-    <nav id="global-nav" role="navigation">
-        <ul id="main-menu" >
-            {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
-            {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor js-close-sidebar"}}
-            {{#unless session.user.isAuthor}}
-                {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
-            {{/unless}}
+    }}
 
-            <li id="usermenu" class="usermenu subnav">
-                {{#gh-popover-button popoverName="user-menu" classNames="dropdown"}}
-                    {{#if session.user.image}}
-                    <img class="avatar" {{bind-attr src="session.user.image"}} alt="Avatar" />
-                    {{else}}
-                    <img class="avatar" src="/shared/img/user-image.png" alt="Avatar" />
-                    {{/if}}
-                    <span class="name">{{session.user.name}}</span>
-                {{/gh-popover-button}}
-                {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
-                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}Your Profile{{/link-to}}</li>
-                        <li class="divider"></li>
-                        <li class="usermenu-help"><a href="http://support.ghost.org/" target="_blank">Help / Support</a></li>
-                        <li class="divider"></li>
-                        <li class="usermenu-signout">{{#link-to "signout"}}Sign Out{{/link-to}}</li>
-                {{/gh-popover}}
-            </li>
-        </ul>
-    </nav>
-</header>
+    <div class="nav-item user-menu" data-href="#">
+        {{#gh-popover-button popoverName="user-menu" tagName="div" classNames="nav-label"}}
+            {{#if session.user.image}}
+            <div class="image"><img {{bind-attr src="session.user.image"}} alt="{{session.user.name}}'s profile picture" /></div>
+            {{else}}
+            <div class="image"><img src="/shared/img/user-image.png" alt="Profile picture" /></div>
+            {{/if}}
+            <div class="name">
+                {{session.user.name}} <i class="icon-chevron-down"></i>
+                <small>Profile &amp; Settings</small>
+            </div>
+        {{/gh-popover-button}}
+        {{#gh-popover tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
+            <ul class="dropdown-menu triangle-top-right" role="menu">
+                <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1"}}Your Profile{{/link-to}}</li>
+                <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="http://support.ghost.org/">Help / Support</a></li>
+                <li class="divider"></li>
+                <li role="presentation">{{#link-to "signout" classNames="dropdown-item" role="menuitem" tabindex="-1"}}Sign Out{{/link-to}}</li>
+            </ul>
+        {{/gh-popover}}
+    </div>{{! .user-menu }}
+
+</nav>{{! .global-nav }}
