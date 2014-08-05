@@ -189,8 +189,10 @@ authentication = {
             if (ownerUser) {
                 return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));
             } else {
-                // TODO: needs to pass owner role when role endpoint is finished!
-                return dataProvider.User.add(setupUser, internal);
+                return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+                    setupUser.roles = [ownerRole.id];
+                    return dataProvider.User.add(setupUser, internal);
+                });
             }
         }).then(function (user) {
             var userSettings = [];
