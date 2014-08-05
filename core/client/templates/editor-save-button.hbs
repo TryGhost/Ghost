@@ -1,9 +1,8 @@
-<button type="button" {{action "save"}} {{bind-attr class="view.isDangerous:button-delete:button-save :js-publish-button" }}>
-    {{view.save-text}}
-</button>
-{{#gh-popover-button popoverName="post-save-menu" classNameBindings="open:active :options :up" title="Post Settings"}}
-    <span class="hidden">Post Settings</span>
-{{/gh-popover-button}} 
+<button type="button" {{action "save"}} {{bind-attr class=":btn :btn-sm view.isDangerous:btn-red:btn-blue :js-publish-button" }}>{{view.save-text}}</button>
+{{#gh-popover-button popoverName="post-save-menu" classNameBindings=":btn :btn-sm view.isDangerous:btn-red:btn-blue btnopen:active :dropdown-toggle :up"}}
+    <i class="options"></i>
+    <span class="sr-only">Toggle Settings Menu</span>
+{{/gh-popover-button}}
 {{#gh-popover name="post-save-menu" closeOnClick="true" tagName="ul" classNames="editor-options overlay" publishTextBinding="view.publish-text" draftTextBinding="view.draft-text"}}
     <li {{bind-attr class="controller.willPublish:active" }}>
         <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
