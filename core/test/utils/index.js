@@ -225,6 +225,28 @@ fixtures = {
         });
     },
 
+    createInvitedUsers: function createInvitedUser() {
+        var knex = config.database.knex,
+            // grab 3 more users
+            extraUsers = DataGenerator.Content.users.slice(2, 5);
+
+        extraUsers = _.map(extraUsers, function (user) {
+            return DataGenerator.forKnex.createUser(_.extend({}, user, {
+                email: 'inv' + user.email,
+                slug: 'inv' + user.slug,
+                status: 'invited-pending'
+            }));
+        });
+
+        return knex('users').insert(extraUsers).then(function () {
+            return knex('roles_users').insert([
+                    { user_id: 8, role_id: 1},
+                    { user_id: 9, role_id: 2},
+                    { user_id: 10, role_id: 3}
+            ]);
+        });
+    },
+
     insertOne: function insertOne(obj, fn) {
         var knex = config.database.knex;
         return knex(obj)
