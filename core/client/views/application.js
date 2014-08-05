@@ -10,6 +10,7 @@ var ApplicationView = Ember.View.extend({
                 body.toggleClass('off-canvas');
             });
         });
+        $('[data-off-canvas]').attr('href', this.get('controller.ghostPaths.blogRoot'));
         // #### Navigating within the sidebar closes it.
         $('.js-close-sidebar').on('click', function () {
             body.removeClass('off-canvas');
