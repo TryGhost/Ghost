@@ -63,13 +63,23 @@ var SettingsUserController = Ember.ObjectController.extend({
         },
         revoke: function () {
             var self = this,
+                model = this.get('model'),
                 email = this.get('email');
 
-            this.get('model').destroyRecord().then(function () {
-                var notificationText = 'Invitation revoked. (' + email + ')';
-                self.notifications.showSuccess(notificationText, false);
-            }).catch(function (error) {
-                self.notifications.showAPIError(error);
+            //reload the model to get the most up-to-date user information
+            model.reload().then(function () {
+                if (self.get('invited')) {
+                    model.destroyRecord().then(function () {
+                        var notificationText = 'Invitation revoked. (' + email + ')';
+                        self.notifications.showSuccess(notificationText, false);
+                    }).catch(function (error) {
+                        self.notifications.showAPIError(error);
+                    });
+                } else {
+                    //if the user is no longer marked as "invited", then show a warning and reload the route
+                    self.get('target').send('reload');
+                    self.notifications.showError('This user has already accepted the invitation.', {delayed: 500});
+                }
             });
         },
 
