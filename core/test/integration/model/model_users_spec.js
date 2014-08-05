@@ -179,7 +179,7 @@ describe('User Model', function run() {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal(15);
                 results.meta.pagination.pages.should.equal(1);
-                results.users.length.should.equal(3);
+                results.users.length.should.equal(4);
 
                 done();
             }).catch(done);
@@ -193,7 +193,7 @@ describe('User Model', function run() {
                 results.meta.pagination.limit.should.equal(15);
                 results.meta.pagination.pages.should.equal(1);
                 results.meta.pagination.total.should.equal(2);
-                results.users.length.should.equal(1);
+                results.users.length.should.equal(2);
 
                 return UserModel.findPage({role: 'Owner'});
             }).then(function (results) {

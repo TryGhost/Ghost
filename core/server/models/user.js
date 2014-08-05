@@ -10,6 +10,8 @@ var _              = require('lodash'),
     Role           = require('./role').Role,
 
     tokenSecurity  = {},
+    activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
+    invitedStates  = ['invited', 'invited-pending'],
     User,
     Users;
 
@@ -109,7 +111,7 @@ User = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['withRelated'],
+                findOne: ['withRelated', 'status'],
                 findAll: ['withRelated'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
@@ -196,9 +198,9 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (options.status === 'active') {
-            userCollection.query().whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);
+            userCollection.query().whereIn('status', activeStates);
         } else if (options.status === 'invited') {
-            userCollection.query().whereIn('status', ['invited', 'invited-pending']);
+            userCollection.query().whereIn('status', invitedStates);
         } else if (options.status !== 'all') {
             options.where.status = options.status;
         }
@@ -320,6 +322,16 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
     findOne: function (data, options) {
+        var query,
+            status;
+
+        data = _.extend({
+            status: 'active'
+        }, data || {});
+
+        status = data.status;
+        delete data.status;
+
         options = options || {};
         options.withRelated = _.union([ 'roles' ], options.include);
 
@@ -333,11 +345,24 @@ User = ghostBookshelf.Model.extend({
             delete data.role;
         }
 
-        if (data.status === 'all') {
-            delete data.status;
+        // We pass include to forge so that toJSON has access
+        query = this.forge(data, {include: options.include});
+
+        data = this.filterData(data);
+
+
+        if (status === 'active') {
+            query.query('whereIn', 'status', activeStates);
+        } else if (status === 'invited') {
+            query.query('whereIn', 'status', invitedStates);
+        } else if (status !== 'all') {
+            query.query('where', { 'status': options.status});
         }
 
-        return ghostBookshelf.Model.findOne.call(this, data, options);
+        options = this.filterOptions(options, 'findOne');
+        delete options.include;
+
+        return query.fetch(options);
     },
 
     /**
@@ -379,7 +404,8 @@ User = ghostBookshelf.Model.extend({
                         return user.roles().updatePivot({role_id: roleId});
                     }
                 }).then(function () {
-                    return self.findOne(user, options);
+                    options.status = 'all';
+                    return self.findOne({id: user.id}, options);
                 });
             }
             return user;
@@ -446,7 +472,7 @@ User = ghostBookshelf.Model.extend({
             return userData.roles().attach(roles, options);
         }).then(function () {
             // find and return the added user
-            return self.findOne({id: userData.id}, options);
+            return self.findOne({id: userData.id, status: 'all'}, options);
         });
     },
 
