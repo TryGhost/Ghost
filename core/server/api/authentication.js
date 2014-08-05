@@ -106,6 +106,31 @@ authentication = {
     },
 
     /**
+     * ### Check for Invitation
+     * @param {invivationcheck} object containing the email to check for
+     * @returns {Promise(checkedInvitation}} message
+     */
+    checkForInvitation: function checkForInvitation(object) {
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (!setup) {
+                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+            }
+
+            return utils.checkObject(object, 'invitationcheck');
+        }).then(function (checkedObject) {
+            return dataProvider.User.getByEmail(checkedObject.invitationcheck[0].email).then(function (result) {
+                if (!result) {
+                    return when.reject(new errors.NoPermissionError('The invitation link is not valid or has been revoked.'));
+                } else {
+                    return when.resolve({checkedInvitation: [{message: 'Invitation found.'}]});
+                }
+            });
+        });
+    },
+
+    /**
      * ### Accept Invitation
      * @param {User} object the user to create
      * @returns {Promise(User}} Newly created user
