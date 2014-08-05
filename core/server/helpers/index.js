@@ -411,6 +411,11 @@ coreHelpers.body_class = function (options) {
         classes.push('tag-' + this.tag.slug);
     }
 
+    if (this.author !== undefined) {
+        classes.push('author-template');
+        classes.push('author-' + this.author.slug);
+    }
+
     if (tags) {
         classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
     }
