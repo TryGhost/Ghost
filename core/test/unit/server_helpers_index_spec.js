@@ -209,7 +209,7 @@ describe('Core Helpers', function () {
 
         it('Returns the link to the author from the context', function () {
             var data = {'author': {'name': 'abc 123', slug: 'abc123', bio: '', website: '', status: '', location: ''}},
-                result = helpers.author.call(data);
+                result = helpers.author.call(data, {hash: {}});
 
             String(result).should.equal('<a href="/author/abc123/">abc 123</a>');
         });
@@ -224,12 +224,21 @@ describe('Core Helpers', function () {
 
         it('Returns a blank string where author data is missing', function () {
             var data = {'author': null},
-                result = helpers.author.call(data);
+                result = helpers.author.call(data, {hash: {}});
 
             String(result).should.equal('');
         });
 
+        it('Functions as block helper if called with #', function () {
+            var data = {'author': {'name': 'abc 123', slug: 'abc123'}},
+                // including fn emulates the #
+                result = helpers.author.call(data, {hash: {}, fn: function () { return 'FN'; }});
+
+            // It outputs the result of fn
+            String(result).should.equal('FN');
+        });
     });
+
 
     describe('encode Helper', function () {
 
@@ -246,8 +255,6 @@ describe('Core Helpers', function () {
             String(escaped).should.equal(expected);
         });
     });
-
-
 
     describe('Plural Helper', function () {
 

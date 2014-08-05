@@ -202,11 +202,15 @@ coreHelpers.asset = function (context, options) {
 // Returns the full name of the author of a given post, or a blank string
 // if the author could not be determined.
 //
-coreHelpers.author = function (options) {
-    options = options || {};
-    options.hash = options.hash || {};
+coreHelpers.author = function (context, options) {
+    if (_.isUndefined(options)) {
+        options = context;
+    }
 
-    /*jshint unused:false*/
+    if (options.fn) {
+        return hbs.handlebars.helpers['with'].call(this, this.author, options);
+    }
+
     var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
         output = '';
 
