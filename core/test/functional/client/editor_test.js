@@ -283,7 +283,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
         test.assertSelectorHasText('.notification-success', 'Saved.');
-        casper.click('.notification-success a.close');
+        casper.click('.notification-success .close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
     });
@@ -312,7 +312,7 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
         test.assertSelectorHasText('.notification-success', 'Permalink successfully changed to new-url-editor.');
-        casper.click('.notification-success a.close');
+        casper.click('.notification-success .close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
     });
