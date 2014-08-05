@@ -232,7 +232,7 @@ setupMiddleware = function (server) {
     expressServer = server;
     middleware.cacheServer(expressServer);
     middleware.cacheOauthServer(oauthServer);
-    oauth.init(oauthServer);
+    oauth.init(oauthServer, middleware.resetSpamCounter);
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
