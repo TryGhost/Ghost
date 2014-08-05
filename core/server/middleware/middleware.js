@@ -14,7 +14,8 @@ var _           = require('lodash'),
 
     expressServer,
     oauthServer,
-    loginSecurity = [];
+    loginSecurity = [],
+    forgottenSecurity = [];
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
@@ -132,44 +133,90 @@ var middleware = {
             express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
         });
     },
-
     // ### Spam prevention Middleware
-    // limit signin requests to one every two seconds
-    spamPrevention: function (req, res, next) {
+    // limit signin requests to ten failed requests per IP per hour
+    spamSigninPrevention: function (req, res, next) {
         var currentTime = process.hrtime()[0],
             remoteAddress = req.connection.remoteAddress,
-            deniedSpam = '',
             deniedRateLimit = '',
             ipCount = '',
-            spamTimeout = config.spamTimeout || 2,
-            ratePeriod = config.ratePeriod || 3600,
-            rateAttempts = config.rateAttempts || 5;
+            rateSigninPeriod = config.rateSigninPeriod || 3600,
+            rateSigninAttempts = config.rateSigninAttempts || 10;
 
-        // filter for IPs that tried to login in the last 2 sec
-        loginSecurity = _.filter(loginSecurity, function (logTime) {
-            return (logTime.time + ratePeriod > currentTime);
-        });
-        
-
-        // check if IP tried to login in the last 2 sec
-        deniedSpam = _.find(loginSecurity, function (logTime) {
-            return (logTime.time + spamTimeout > currentTime && logTime.ip === remoteAddress);
-        });
-        
-        // check if IP tried to login more than 'rateAttempts' time in the last 'ratePeriod' seconds
-        ipCount = _.chain(loginSecurity).countBy('ip').value();
-        deniedRateLimit = (ipCount[remoteAddress] > rateAttempts);
-
-        if ((!deniedSpam && !deniedRateLimit) || expressServer.get('disableLoginLimiter') === true) {
-            loginSecurity.push({ip: remoteAddress, time: currentTime});
-            next();
+        if (req.body.username) {
+            loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
         } else {
-            if (deniedRateLimit) {
-                return next(new errors.UnauthorizedError('Only ' + rateAttempts + ' tries per IP address every ' + ratePeriod + ' seconds.'));
-            } else {
-                return next(new errors.UnauthorizedError('Slow down, there are way too many login attempts!'));
-            }
+            return next(new errors.BadRequestError('No username.'));
         }
+
+        // filter entries that are older than rateSigninPeriod
+        loginSecurity = _.filter(loginSecurity, function (logTime) {
+            return (logTime.time + rateSigninPeriod > currentTime);
+        });
+
+        // check number of tries per IP address
+        ipCount = _.chain(loginSecurity).countBy('ip').value();
+        deniedRateLimit = (ipCount[remoteAddress] > rateSigninAttempts);
+
+        if (deniedRateLimit) {
+            return next(new errors.UnauthorizedError('Only ' + rateSigninAttempts + ' tries per IP address every ' + rateSigninPeriod + ' seconds.'));
+        }
+        next();
+    },
+
+    // ### Spam prevention Middleware
+    // limit forgotten password requests to five requests per IP per hour for different email addresses
+    // limit forgotten password requests to five requests per email address
+    spamForgottenPrevention: function (req, res, next) {
+        var currentTime = process.hrtime()[0],
+            remoteAddress = req.connection.remoteAddress,
+            rateForgottenPeriod = config.rateForgottenPeriod || 3600,
+            rateForgottenAttempts = config.rateForgottenAttempts || 5,
+            email = req.body.passwordreset[0].email,
+            ipCount = '',
+            deniedRateLimit = '',
+            deniedEmailRateLimit = '',
+            index = _.findIndex(forgottenSecurity, function (logTime) {
+                return (logTime.ip === remoteAddress && logTime.email === email);
+            });
+
+        if (email) {
+            if (index !== -1) {
+                forgottenSecurity[index].count = forgottenSecurity[index].count + 1;
+            } else {
+                forgottenSecurity.push({ip: remoteAddress, time: currentTime, email: email, count: 0});
+            }
+        } else {
+            return next(new errors.BadRequestError('No email.'));
+        }
+
+        // filter entries that are older than rateForgottenPeriod
+        forgottenSecurity = _.filter(forgottenSecurity, function (logTime) {
+            return (logTime.time + rateForgottenPeriod > currentTime);
+        });
+
+        // check number of tries with different email addresses per IP
+        ipCount = _.chain(forgottenSecurity).countBy('ip').value();
+        deniedRateLimit = (ipCount[remoteAddress] > rateForgottenAttempts);
+
+        if (index !== -1) {
+            deniedEmailRateLimit = (forgottenSecurity[index].count > rateForgottenAttempts);
+        }
+        
+        if (deniedEmailRateLimit) {
+            return next(new errors.UnauthorizedError('Only ' + rateForgottenAttempts + ' forgotten password attempts per email every ' + rateForgottenPeriod + ' seconds.'));
+        }
+
+        if (deniedRateLimit) {
+            return next(new errors.UnauthorizedError('Only ' + rateForgottenAttempts + ' tries per IP address every ' + rateForgottenPeriod + ' seconds.'));
+        }
+
+        next();
+    },
+    resetSpamCounter: function (email) {
+        loginSecurity = _.filter(loginSecurity, function (logTime) {
+            return (logTime.email !== email);
+        });
     },
 
     // work around to handle missing client_secret
