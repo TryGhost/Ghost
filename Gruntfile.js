@@ -224,7 +224,8 @@ var path           = require('path'),
                 bower: {
                     command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower --allow-root install'),
                     options: {
-                        stdout: true
+                        stdout: true,
+                        stdin: false
                     }
                 },
                 // #### Update Ghost-UI
@@ -233,7 +234,8 @@ var path           = require('path'),
                 ghost_ui: {
                     command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower update ghost-ui'),
                     options: {
-                        stdout: true
+                        stdout: true,
+                        stdin: false
                     }
                 },
                 // #### Generate coverage report
