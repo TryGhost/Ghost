@@ -37,6 +37,15 @@
         padding-left: 12px;
         padding-right: 12px;
         @include border-left-radius(0);
+
+        &.btn-sm {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        &.btn-lg {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
     
 
         // This is the additional dropdown arrow, to the right of the button.
