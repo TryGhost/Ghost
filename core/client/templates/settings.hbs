@@ -1,19 +1,31 @@
-<aside class="settings-sidebar" role="complementary">
-    <header>
-        <h1 class="title">Settings</h1>
-    </header>
-    <nav class="settings-menu">
-        <ul>
-            {{#unless session.user.isAuthor}}
-                {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+<header class="page-header">
+    <a class="menu-button" href="#"><span class="sr-only">Menu</span></a>
+    <h2>Settings</h2>
+</header>
+
+<div class="page-content">
+    <aside class="settings-sidebar" role="complementary">
+        <header>
+            <h1 class="title">Settings</h1>
+        </header>
+        <nav class="settings-menu">
+            <ul>
+                {{#unless session.user.isAuthor}}
+                    {{#unless session.user.isEditor}}
+                        {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+                    {{/unless}}
+
+                    {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
+
+                    {{#if showApps}}
+                        {{#unless session.user.isEditor}}
+                            {{gh-activating-list-item route="settings.apps" title="Apps" classNames="apps"}}
+                        {{/unless}}
+                    {{/if}}
                 {{/unless}}
+            </ul>
+        </nav>
+    </aside>
 
-                {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
-
-            {{/unless}}
-        </ul>
-    </nav>
-</aside>
-
-{{outlet}}
+    {{outlet}}
+</div>
