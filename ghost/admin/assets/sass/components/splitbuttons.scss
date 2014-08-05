@@ -2,6 +2,92 @@
 // Base Splitbutton
 // --------------------------------------------------
 
+.splitbtn {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    
+    .btn {
+        position: relative;
+        float: left;
+        
+        // Prevent double border between buttons
+        + .btn { margin-left: -1px; }
+        
+        // Make sure the hovered element is always on
+        // top so overlap from .btn + btn. invisible
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+          z-index: 2;
+        }
+    }
+    
+    // Flatten out the right side
+    .btn:first-child {
+      margin-left: 0;
+      &:not(:last-child):not(.dropdown-toggle) {
+        @include border-right-radius(0);
+      }
+    }
+
+    // Flatten out the left side
+    .dropdown-toggle {
+        padding-left: 12px;
+        padding-right: 12px;
+        @include border-left-radius(0);
+    
+
+        // This is the additional dropdown arrow, to the right of the button.
+        .options {
+            text-align: center;
+            color: #fff;
+
+            @include icon($i-chevron-down, 9px) {
+                margin-top: -3px;
+                @include transition(margin-top 0.3s ease);
+                /* Transition of transform properties are split out due to a
+                    defect in the vendor prefixing of transform transitions.
+                    See: http://github.com/thoughtbot/bourbon/pull/86 */
+                @include transition-property(transform);
+                @include transition-duration(0.3);
+                @include transition-timing-function(ease);
+            }
+
+        }
+
+        // Keep the arrow spun when the associated menu is open
+        &.active .options:before {
+            @include transform(rotate(-360deg));
+        }
+
+        &.up.active .options:before {
+            margin-top:-4px;
+            @include transform(rotate(540deg));
+        }
+
+        // Spin the arrow on hover and while menu is open
+        &:hover .options:before,
+        &:focus .options:before {
+            will-change: transform;
+            @include transform(rotate(-360deg));
+        }
+
+        // If it has a class of "up" spin it an extra 180degress to point up
+        &.up:hover .options:before,
+        &.up:focus .options:before {
+            margin-top:-4px;
+            @include transform(rotate(540deg));
+            @include transition-property(transform);
+            @include transition-duration(0.6);
+            @include transition-timing-function(ease);
+        }
+
+    }
+    
+}
+
 %splitbtn {
     display: inline-block;
     position: relative;
