@@ -9,11 +9,14 @@
 .btn {
     display: inline-block;
     margin-bottom: 0; // For input.btn
-    padding: 6px 12px;
-    font-size: 1.4rem;
+    padding: 9px 14px;
+    font-size: 1.1rem;
     line-height: 1.428571429;
-    font-weight: normal;
+    font-weight: 300;
     text-align: center;
+    text-transform: uppercase;
+    text-shadow: none;
+    letter-spacing: 1px;
     vertical-align: middle;
     cursor: pointer;
     background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
@@ -61,6 +64,7 @@
     color: $color;
     background-color: $background;
     border-color: $border;
+    @include transition(background 0.2s ease, border-color 0.2s ease);
 
     &:hover,
     &:focus,
@@ -96,17 +100,21 @@
 }
 
 .btn-default {
-    @include button-style($darkgrey, #fff, lighten($midgrey, 30%));
+    font-weight: normal;
+    @include button-style(#666, #fff, lighten($midgrey, 40%));
 }
-.btn-primary {
+.btn-alt {
+    @include button-style(#fff, #A1ADB3, darken(#A1ADB3, 5%));
+}
+.btn-blue {
     @include button-style(#fff, $blue, darken($blue, 5%));
 }
 // Success appears as green
-.btn-success {
+.btn-green {
     @include button-style(#fff, $green, darken($green, 5%));
 }
 // Danger and error appear as red
-.btn-danger {
+.btn-red {
     @include button-style(#fff, $red, darken($red, 5%));
 }
 
@@ -132,6 +140,7 @@
     &:hover,
     &:focus,
     &:active {
+        color: $blue;
         border-color: transparent;
     }
     &:hover,
@@ -150,19 +159,31 @@
 }
 
 
+// Minor buttons
+// -------------------------
+
+// Add this class to buttons with a small/insignificant action
+// for example a "cancel" button. Style is de-emphasised.
+.btn-minor {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1.2rem;
+    padding: 8px 14px;
+}
+
 // Button Sizes
 // --------------------------------------------------
 
 .btn-lg {
-    padding: 10px 16px;
-    font-size: 1.8rem;
+    padding: 12px 18px;
+    font-size: 1.4rem;
     line-height: 1.33;
     border-radius: 4px;
 }
 
 .btn-sm {
-    padding: 5px 10px;
-    font-size: 1.2rem;
+    padding: 7px 10px;
+    font-size: 1rem;
     line-height: 1.5;
     border-radius: 2px;
 }
