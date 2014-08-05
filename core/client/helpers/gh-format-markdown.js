@@ -4,20 +4,20 @@ import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 var showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm']});
 
 var formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
-    var html = '';
-
-    // replace script and iFrame
-    markdown = markdown.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-        '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
-    markdown = markdown.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-        '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
+    var escapedhtml = '';
 
     // convert markdown to HTML
-    html = showdown.makeHtml(markdown || '');
+    escapedhtml = showdown.makeHtml(markdown || '');
+
+    // replace script and iFrame
+    escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
+    escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+        '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
 
     // sanitize html
-    html = html_sanitize(html, cajaSanitizers.url, cajaSanitizers.id);
-    return new Handlebars.SafeString(html);
+    escapedhtml = html_sanitize(escapedhtml, cajaSanitizers.url, cajaSanitizers.id);
+    return new Handlebars.SafeString(escapedhtml);
 });
 
 export default formatMarkdown;
