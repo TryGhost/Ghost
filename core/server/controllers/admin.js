@@ -18,8 +18,8 @@ adminControllers = {
 
         updateCheck().then(function () {
             return updateCheck.showUpdateNotification();
-        }).then(function (updateAvailable) {
-            if (!updateAvailable) {
+        }).then(function (updateVersion) {
+            if (!updateVersion) {
                 return when.resolve();
             }
 
@@ -28,10 +28,11 @@ adminControllers = {
                 location: 'top',
                 dismissible: false,
                 status: 'persistent',
-                message: 'A new version of Ghost is available! Hot Damn. <a href="https://ghost.org/download">Upgrade now</a>'
+                message: '<a href="https://ghost.org/download">Ghost ' + updateVersion +
+                '</a> is available! Hot Damn. Please <a href="http://support.ghost.org/how-to-upgrade/">upgrade</a> now'
             };
 
-            return api.notifications.browse().then(function (results) {
+            return api.notifications.browse({context: {internal: true}}).then(function (results) {
                 if (!_.some(results.notifications, { message: notification.message })) {
                     return api.notifications.add({ notifications: [notification] }, {context: {internal: true}});
                 }
