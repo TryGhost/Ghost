@@ -7,7 +7,7 @@ var oauth2orize = require('oauth2orize'),
 
 oauth = {
 
-    init: function (oauthServer) {
+    init: function (oauthServer, resetSpamCounter) {
 
         // remove all expired accesstokens on startup
         models.Accesstoken.destroyAllExpired();
@@ -39,6 +39,7 @@ oauth = {
                     return models.Accesstoken.add({token: accessToken, user_id: user.id, client_id: client.id, expires: accessExpires}).then(function () {
                         return models.Refreshtoken.add({token: refreshToken, user_id: user.id, client_id: client.id, expires: refreshExpires});
                     }).then(function () {
+                        resetSpamCounter(username);
                         return done(null, accessToken, refreshToken, {expires_in: utils.ONE_HOUR_S});
                     }).catch(function () {
                         return done(null, false);
