@@ -466,41 +466,14 @@ body.zen {
         right: -3px;
     }
 
-    .button-save,
-    .button-delete {
-        min-height: 30px;
-        height: 30px;
-        line-height: 12px;
-        padding: 0 10px;
+    .splitbtn {
         margin-top: 5px;
-        border-top: rgba(255,255,255,0.4) 1px solid;
-    }
-
-    .options {
-        width: 30px;
-        min-height: 30px;
-        height: 30px;
-        margin-top: 5px;
-        border-top: rgba(255,255,255,0.4) 1px solid;
-    }
-
-    .splitbutton-save,
-    .splitbutton-delete{
-        .button-save,
-        .button-delete{
-            @include transition(width 0.25s ease, background-color 0.3s linear);
-        }
-
-        .editor-options{
-            @extend .dropdown-bottom-right !optional;
-            bottom: 140%;
-            right: -3%;
-
-            a {
-                font-size: 14px;
-            }
+        
+        .btn {
+            border-top: rgba(255,255,255,0.3) 1px solid;
         }
     }
+
 }
 
 .extended-tags { // When the tag bar is exapanded
