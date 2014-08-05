@@ -1,176 +1,318 @@
 //
-// Dropdown Styles
+// Dropdown menus
 // --------------------------------------------------
 
-// Wrapper
-// Does nothing yet...
-.dropdown {}
 
-// List
-.dropdown-menu {
-    position: relative;
+// Dropdown arrow/caret
+.caret {
     display: inline-block;
-    min-width: 160px;
-    padding: 0.5rem 0;
-    margin: 0;
-    font-size: 1.4rem;
-    line-height: 1;
-    font-weight: normal;
-    text-transform: none;
-    letter-spacing: 0;
-    background: #fff;
-    border: #B0BEC4 1px solid;
-    box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
-    border-radius: 2px;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top:   4px solid;
+    border-right: 4px solid transparent;
+    border-left:  4px solid transparent;
+}
 
-    // Item Resets - This means we can use any element
-    li {
-        list-style: none;
+// The dropdown wrapper (div)
+.dropdown {
+    position: relative;
+}
+
+// Prevent the focus on the dropdown toggle when closing dropdowns
+.dropdown-toggle:focus {
+    outline: 0;
+}
+
+// The dropdown menu (ul)
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none; // none by default, but block on "open" of the menu
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0; // override default ul
+    list-style: none;
+    font-size: 14px;
+    text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: $rounded;
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    background-clip: padding-box;
+
+    // Aligns the dropdown menu to right
+    //
+    // Deprecated as of 3.1.0 in favor of `.dropdown-menu-[dir]`
+    &.pull-right {
+        right: 0;
+        left: auto;
     }
 
+    // Dividers (basically an hr) within the dropdown
+    .divider {
+        height: 1px;
+        margin: ((20px / 2) - 1) 0;
+        overflow: hidden;
+        background-color: #e5e5e5;
+    }
+
+    // Links within the dropdown menu
+    > li > a {
+        display: block;
+        padding: 3px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.428571429;
+        color: #333;
+        white-space: nowrap; // prevent links from randomly breaking onto new lines
+    }
+}
+
+// Hover/Focus state
+.dropdown-menu > li > a {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+        color: #262626;
+        background-color: #f5f5f5;
+    }
+}
+
+// Active state
+.dropdown-menu > .active > a {
+    &,
+    &:hover,
+    &:focus {
+        color: #fff;
+        text-decoration: none;
+        outline: 0;
+        background-color: #428bca;
+    }
+}
+
+// Disabled state
+//
+// Gray out text and ensure the hover/focus state remains gray
+
+.dropdown-menu > .disabled > a {
+    &,
+    &:hover,
+    &:focus {
+        color: #777;
+    }
+}
+// Nuke hover/focus effects
+.dropdown-menu > .disabled > a {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+        background-color: transparent;
+        background-image: none; // Remove CSS gradient
+        cursor: not-allowed;
+    }
+}
+
+// Open state for the dropdown
+.open {
+    // Show the menu
+    > .dropdown-menu {
+        display: block;
+    }
+
+    // Remove the outline when :focus is triggered
+    > a {
+        outline: 0;
+    }
+}
+
+// Menu positioning
+//
+// Add extra class to `.dropdown-menu` to flip the alignment of the dropdown
+// menu with the parent.
+.dropdown-menu-right {
+    left: auto; // Reset the default from `.dropdown-menu`
+    right: 0;
+}
+// With v3, we enabled auto-flipping if you have a dropdown within a right
+// aligned nav component. To enable the undoing of that, we provide an override
+// to restore the default dropdown menu alignment.
+//
+// This is only for left-aligning a dropdown menu within a `.navbar-right` or
+// `.pull-right` nav component.
+.dropdown-menu-left {
+    left: 0;
+    right: auto;
+}
+
+// Dropdown section headers
+.dropdown-header {
+    display: block;
+    padding: 3px 20px;
+    font-size: 12px;
+    line-height: 1.428571429;
+    color: #777;
+    white-space: nowrap; // as with > li > a
+}
+
+// Backdrop to catch body clicks on mobile, etc.
+.dropdown-backdrop {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: (1000 - 10);
+}
+
+// Right aligned dropdowns
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+// Allow for dropdowns to go bottom up (aka, dropup-menu)
+//
+// Just add .dropup after the standard .dropdown class and you're set, bro.
+// TODO: abstract this so that the navbar fixed styles are not placed here?
+
+.dropup,
+.navbar-fixed-bottom .dropdown {
+    // Reverse the caret
+    .caret {
+        border-top: 0;
+        border-bottom: 4px solid;
+        content: "";
+    }
+    // Different positioning for bottom up menu
+    .dropdown-menu {
+        top: auto;
+        bottom: 100%;
+        margin-bottom: 1px;
+    }
+}
+
+
+// Component alignment
+//
+// Reiterate per navbar.less and the modified component alignment there.
+
+@media (min-width: 768px) {
+    .navbar-right {
+        .dropdown-menu {
+            right: 0; left: auto;
+        }
+        // Necessary for overrides of the default right aligned menu.
+        // Will remove come v4 in all likelihood.
+        .dropdown-menu-left {
+            left: 0; right: auto;
+        }
+    }
+}
+
+
+//
+// Dropdown triangles
+// --------------------------------------------------
+
+// Placeholders
+%dropdown-triangle {
     &:before {
         content: '';
         position: absolute;
-        border-style: solid;
-        border-color: #fff transparent;
         display: block;
-        width: 0;
     } // :before
 
     &:after {
         content: '';
         position: absolute;
-        width: ($dropdown_triangle * 1.5);
-        height: ($dropdown_triangle * 1.5);
-        background: #B0BEC4;
-        transform: rotate(45deg);
         z-index: -1;
     } // :after
+}
 
-} // .dropdown-menu
-
-
-.dropdown-triangle-top {
+%dropdown-triangle-top {
     &:before {
-        border-width: 0 $dropdown_triangle $dropdown_triangle $dropdown_triangle;
+        @include triangle(($dropdown_triangle * 2), #fff, up);
         top: -$dropdown_triangle;
     }
     &:after {
-        top: -($dropdown_triangle - 1);
+        @include triangle(($dropdown_triangle * 2) + 2, #B0BEC4, up);
+        top: -($dropdown_triangle + 1);
     }
 }
-.dropdown-triangle-bottom {
+%dropdown-triangle-bottom {
     &:before {
-        border-width: $dropdown_triangle $dropdown_triangle 0 $dropdown_triangle;
+        @include triangle(($dropdown_triangle * 2), #fff, down);
         bottom: -$dropdown_triangle;
     }
     &:after {
-        bottom: -($dropdown_triangle - 1);
+        @include triangle(($dropdown_triangle * 2) + 2, #B0BEC4, down);
+        bottom: -($dropdown_triangle + 1);
     }
 }
-.dropdown-triangle-center {
+%dropdown-triangle-center {
     &:before {
         left: 50%;
-        margin-left: -$dropdown_triangle;
+        margin-left: (-$dropdown_triangle);
     }
     &:after {
         left: 50%;
-        margin-left: -($dropdown_triangle * 1.5 / 2);
+        margin-left: -($dropdown_triangle + 1);
     }
 }
+
 // TODO: Make the values here use the $dropdown_triangle var
-.dropdown-triangle-left {
+%dropdown-triangle-left {
     &:before {
-        left: 10px;
+        left: ($dropdown_triangle + 2);
     }
     &:after {
-        left: 12px;
+        left: ($dropdown_triangle + 1);
     }
 }
-.dropdown-triangle-right {
+%dropdown-triangle-right {
     &:before {
         left: auto;
-        right: 10px;
+        right: ($dropdown_triangle + 2);
     }
     &:after {
         left: auto;
-        right: 12px;
+        right: ($dropdown_triangle + 1);
     }
 }
 
-.dropdown-top {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-center;
-    @extend .dropdown-triangle-top;
+// Usable classes
+.dropdown-triangle-top {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-center;
 }
-.dropdown-top-left {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-top;
-    @extend .dropdown-triangle-left;
+.dropdown-triangle-top-left {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-left;
 }
-.dropdown-top-right {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-top;
-    @extend .dropdown-triangle-right;
+.dropdown-triangle-top-right {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-right;
 }
-.dropdown-bottom {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-center;
-    @extend .dropdown-triangle-bottom;
+.dropdown-triangle-bottom {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-center;
 }
-.dropdown-bottom-left {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-bottom;
-    @extend .dropdown-triangle-left;
+.dropdown-triangle-bottom-left {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-left;
 }
-.dropdown-bottom-right {
-    @extend .dropdown-menu;
-    @extend .dropdown-triangle-bottom;
-    @extend .dropdown-triangle-right;
+.dropdown-triangle-bottom-right {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-right;
 }
-
-// List Item
-.dropdown-item {
-    display: block;
-    width: 100%;
-    padding: 0.8rem 2rem;
-    font-size: 1.4rem;
-    line-height: 1;
-    color: #000;
-
-    &:not(.divider):hover,
-    &:not(.divider):focus {
-        color: #fff;
-        background: $blue;
-    }
-} // .dropdown-item
-
-// Divider
-.dropdown-menu .divider {
-    display: block;
-    padding: 0;
-    margin: 0.9rem 0;
-    height: 1px;
-    width: 100%;
-    position: relative;
-    background: #D0DADE;
-    overflow: hidden;
-} // .dropdown-menu .divider
-
-// Icons
-.dropdown-with-icons {
-    .dropdown-item:not(.divider) {
-        padding: 0.6rem 3rem;
-        &[class*='icon-'] {
-            position: relative;
-            &:before {
-                position: absolute;
-                top: 50%;
-                left: 1rem;
-                font-size: 1.2rem;
-                line-height: 1;
-                margin-top: -0.6rem;
-            }
-        } // &[class*='icon-']
-    } // .dropdown-item
-} // .dropdown-with-icons

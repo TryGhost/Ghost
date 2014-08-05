@@ -492,7 +492,7 @@ body.zen {
         }
 
         .editor-options{
-            @extend .dropdown-bottom-right;
+            @extend .dropdown-bottom-right !optional;
             bottom: 140%;
             right: -3%;
 
