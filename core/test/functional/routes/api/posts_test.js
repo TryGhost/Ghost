@@ -17,7 +17,6 @@ describe('Post API', function () {
 
     before(function (done) {
         var app = express();
-            app.set('disableLoginLimiter', true);
 
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
