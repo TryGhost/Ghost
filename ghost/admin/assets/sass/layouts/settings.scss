@@ -98,6 +98,9 @@
     }
 
     ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
         border-top: none;
         @media (max-width: 800px) { border-bottom: #edece4 1px solid; }
     }
@@ -111,22 +114,34 @@
         }
 
         a {
+            display: block;
+            border-bottom: $lightbrown 1px solid;
             padding: 15px 15px 15px 40px;
             border-bottom: none;
+            color: $brown;
+
             @media (max-width: 1000px) { padding-left: 15px; }
             @media (max-width: 800px) {
                 @include icon-after($i-chevron) {
                     float: right;
                     margin-top: 5px;
-                };
+                }
             }
-        }
 
-        &:first-child {
-            border-top: none;
-        }
-        &:first-child.active {
-            border-top: none;
+            &:hover,
+            &:focus {
+                color: $darkgrey;
+                background: $lightbrown;
+                text-decoration: none;
+            }
+            
+            // Make space for icons
+            &:before {
+                margin-right: 20px;
+                @media (max-width: 1000px) {
+                    margin-right: 15px;
+                }
+            }
         }
 
         &.active {
@@ -152,15 +167,14 @@
             }
         } // .active
 
-    } // li
-
-    // Give all icons some space
-    li a:before {
-        margin-right: 20px;
-        @media (max-width: 1000px) {
-            margin-right: 15px;
+        &:first-of-type {
+            border-top: none;
         }
-    }
+        &:first-of-type.active {
+            border-top: none;
+        }
+
+    } // li
 
     // Add the icons for specific menu items
     .about a {
