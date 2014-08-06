@@ -33,22 +33,58 @@ body {
 
 h1, h2, h3,
 h4, h5, h6 {
-    @include baseline;
+    margin: 0 0 0.3em 0;
     line-height: 1.15em;
+    color: $darkgrey;
     text-rendering: optimizeLegibility;
     @include font-feature-settings("dlig" 1, "liga" 1, "lnum" 1, "kern" 1);
 }
 
-p, ul, ol, dl {
-    @include baseline;
-    @include font-feature-settings("liga" 1, "onum" 1, "kern" 1);
+h1 {
+    font-size: 5rem;
+    letter-spacing: -2px;
+    text-indent: -3px;
 }
 
-ol ol,
-ul ul,
-ul ol,
-ol ul {
-    margin: 0.4em 0;
+h2 {
+    font-size: 4.2rem;
+    letter-spacing: -1px;
+}
+
+h3 {
+    font-size: 3.8rem;
+}
+
+h4 {
+    font-size: 3.1rem;
+}
+
+h5 {
+    font-size: 2.8rem;
+}
+
+h6 {
+    font-size: 2.2rem;
+}
+
+p, ul, ol, dl {
+    -webkit-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+    -moz-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+    -ms-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+    -o-font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+    font-feature-settings: 'liga' 1, 'onum' 1, 'kern' 1;
+    margin: 0 0 1.7em 0;
+}
+
+ol, ul {
+    padding-left: 2.5em;
+}
+
+ol ol, ul ul,
+ul ol, ol ul {
+    margin: 0 0 0.4em 0;
+    padding-left: 2em;
+    font-size: 0.9em;
 }
 
 mark {
@@ -139,15 +175,14 @@ code, tt {
     font-size: 0.85em;
     white-space: pre-wrap;
     background: lighten($lightbrown, 2%);
-    border: 1px solid darken($lightbrown, 8%);
     border-radius: 2px;
-    padding: 1px 3px;
+    padding: 0.2em 0.4em;
+    vertical-align: top;
 }
 
 pre {
     @include baseline;
     background: lighten($lightbrown, 2%);
-    border: 1px solid darken($lightbrown, 8%);
     width: 100%;
     padding: 10px;
     font-family: $font-family-mono;
