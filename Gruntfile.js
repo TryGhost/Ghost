@@ -9,8 +9,10 @@ var path           = require('path'),
     colors         = require('colors'),
     fs             = require('fs'),
     _              = require('lodash'),
-    buildDirectory = path.resolve(process.cwd(), '.build'),
-    distDirectory  = path.resolve(process.cwd(), '.dist'),
+    escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
+    cwd            = process.cwd().replace(' ', escapeChar + ' '),
+    buildDirectory = path.resolve(cwd, '.build'),
+    distDirectory  = path.resolve(cwd, '.dist'),
 
     // ## Build File Patterns
     // A list of files and patterns to include when creating a release zip.
@@ -222,7 +224,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 bower: {
-                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower --allow-root install'),
+                    command: path.resolve(cwd + '/node_modules/.bin/bower --allow-root install'),
                     options: {
                         stdout: true
                     }
@@ -231,7 +233,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 ghost_ui: {
-                    command: path.resolve(__dirname.replace(' ', '\\ ') + '/node_modules/.bin/bower update ghost-ui'),
+                    command: path.resolve(cwd  + '/node_modules/.bin/bower update ghost-ui'),
                     options: {
                         stdout: true
                     }
@@ -239,12 +241,8 @@ var path           = require('path'),
                 // #### Generate coverage report
                 // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
-                    command: function () {
-                        // **Note:** will only work on windows if mocha is globally installed
-                        var cmd = !!process.platform.match(/^win/) ? 'mocha' : './node_modules/mocha/bin/mocha';
-                        return cmd +
-                            ' --timeout 15000 --reporter html-cov > coverage.html ./core/test/blanket_coverage.js';
-                    },
+                    command: path.resolve(cwd  + '/node_modules/mocha/bin/mocha  --timeout 15000 --reporter' +
+                    ' html-cov > coverage.html ./core/test/blanket_coverage.js'),
                     execOptions: {
                         env: 'NODE_ENV=' + process.env.NODE_ENV
                     }
