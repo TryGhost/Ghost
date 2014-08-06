@@ -2,6 +2,12 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
 var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
 
+    afterModel: function (model, transition) {
+        if (this.get('session').isAuthenticated) {
+            transition.send('loadServerNotifications');
+        }
+    },
+
     shortcuts: {
         'esc': 'closePopups'
     },
