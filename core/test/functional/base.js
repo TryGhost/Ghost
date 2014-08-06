@@ -91,7 +91,7 @@ screens = {
     },
     'signin': {
         url: 'ghost/signin/',
-        selector: '.button-save'
+        selector: '.btn-blue'
     },
     'signin-authenticated': {
         url: 'ghost/signin/',
@@ -101,16 +101,16 @@ screens = {
     'signout': {
         url: 'ghost/signout/',
        linkSelector: '#usermenu li.usermenu-signout a',
-        // When no user exists we get redirected to setup which has button-add
-        selector: '.button-save, .button-add'
+        // When no user exists we get redirected to setup which has btn-green
+        selector: '.btn-blue, .btn-green'
     },
     'signup': {
         url: 'ghost/signup/',
-        selector: '.button-save'
+        selector: '.btn-blue'
     },
     'setup': {
         url: 'ghost/setup/',
-        selector: '.button-add'
+        selector: '.btn-green'
     },
     'setup-authenticated': {
         url: 'ghost/setup/',
@@ -191,21 +191,21 @@ casper.failOnTimeout = function (test, message) {
 
 // ### Fill And Save
 // With Ember in place, we don't want to submit forms, rather press the button which always has a class of
-// 'button-save'. This method handles that smoothly.
+// 'btn-blue'. This method handles that smoothly.
 casper.fillAndSave = function (selector, data) {
     casper.then(function doFill() {
         casper.fill(selector, data, false);
-        casper.thenClick('.button-save');
+        casper.thenClick('.btn-blue');
     });
 };
 
 // ### Fill And Add
 // With Ember in place, we don't want to submit forms, rather press the green button which always has a class of
-// 'button-add'. This method handles that smoothly.
+// 'btn-green'. This method handles that smoothly.
 casper.fillAndAdd = function (selector, data) {
     casper.then(function doFill() {
         casper.fill(selector, data, false);
-        casper.thenClick('.button-add');
+        casper.thenClick('.btn-green');
     });
 };
 
@@ -432,7 +432,7 @@ CasperTest.Routines = (function () {
             });
             if (currentState !== state) {
                 casper.thenClick('#permalinks');
-                casper.thenClick('.button-save');
+                casper.thenClick('.btn-blue');
 
                 casper.captureScreenshot('saving.png');
 

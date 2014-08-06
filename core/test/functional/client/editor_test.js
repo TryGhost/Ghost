@@ -162,7 +162,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
 
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
         test.assertExists('.image-uploader-url .url.js-upload-url', 'Image URL uploader exists');
-        test.assertExists('.image-uploader-url .button-save.js-button-accept', 'Image URL accept button exists');
+        test.assertExists('.image-uploader-url .btn-blue.js-button-accept', 'Image URL accept button exists');
         test.assertExists('.image-uploader-url .image-upload', 'Back to normal image upload style button exists');
     });
 
@@ -206,7 +206,7 @@ CasperTest.begin('Image Uploads', 17, function suite(test) {
     var imageURL = 'http://www.random.url';
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
         casper.sendKeys('.image-uploader-url input.url.js-upload-url', imageURL);
-        casper.thenClick('.js-button-accept.button-save');
+        casper.thenClick('.js-button-accept.btn-blue');
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
@@ -415,7 +415,7 @@ CasperTest.begin('Publish menu - new post', 11, function suite(test) {
         test.assertExists('.js-publish-splitbutton');
         test.assertExists('.js-publish-splitbutton.splitbutton-save');
         test.assertExists('.js-publish-button');
-        test.assertExists('.js-publish-button.button-save');
+        test.assertExists('.js-publish-button.btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Save Draft');
     });
 
@@ -436,7 +436,7 @@ CasperTest.begin('Publish menu - new post', 11, function suite(test) {
 
         // ... check status, label, class
         casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
-            test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
+            test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
             test.assertSelectorHasText('.js-publish-button', 'Publish Now');
         }, function onTimeout() {
             test.assert(false, 'Publish split button should have .splitbutton-delete');
@@ -448,7 +448,7 @@ CasperTest.begin('Publish menu - new post', 11, function suite(test) {
 
     // ... check status, label, class
     casper.waitForSelector('.js-publish-splitbutton.splitbutton-save', function onSuccess() {
-        test.assertExists('.js-publish-button.button-save', 'Update button should have .button-save');
+        test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Update Post');
     }, function onTimeout() {
         test.assert(false, 'Publish split button should have .splitbutton-save');
@@ -483,7 +483,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
         test.assertExists('.js-publish-splitbutton');
         test.assertExists('.js-publish-splitbutton.splitbutton-save');
         test.assertExists('.js-publish-button');
-        test.assertExists('.js-publish-button.button-save');
+        test.assertExists('.js-publish-button.btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Save Draft');
     });
 
@@ -498,7 +498,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
 
         // ... check status, label, class
         casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
-            test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
+            test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
             test.assertSelectorHasText('.js-publish-button', 'Publish Now');
         }, function onTimeout() {
             test.assert(false, 'Publish split button should have .splitbutton-delete');
@@ -517,7 +517,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
         test.assertExists('.js-publish-splitbutton');
         test.assertExists('.js-publish-splitbutton.splitbutton-save');
         test.assertExists('.js-publish-button');
-        test.assertExists('.js-publish-button.button-save');
+        test.assertExists('.js-publish-button.btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Update Post');
     });
 
@@ -532,7 +532,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
 
         // ... check status, label, class
         casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
-            test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
+            test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
             test.assertSelectorHasText('.js-publish-button', 'Unpublish');
         }, function onTimeout() {
             test.assert(false, 'Publish split button should have .splitbutton-delete');
@@ -544,7 +544,7 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     casper.waitForSelector('.notification-success', function checkPostWasCreated() {
         // ... check status, label, class
         casper.waitForSelector('.js-publish-splitbutton.splitbutton-save', function onSuccess() {
-            test.assertExists('.js-publish-button.button-save', 'Publish button should have .button-save');
+            test.assertExists('.js-publish-button.btn-blue', 'Publish button should have .btn-blue');
             test.assertSelectorHasText('.js-publish-button', 'Save Draft');
         }, function onTimeout() {
             test.assert(false, 'Publish split button should have .splitbutton-save');
