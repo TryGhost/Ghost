@@ -32,6 +32,12 @@ var UserAdapter = EmbeddedRelationAdapter.extend({
 
         // Use the url from the ApplicationAdapter's buildURL method
         return this.ajax(url, 'PUT', { data: data });
+    },
+
+    find: function (store, type, id) {
+        var url = this.buildQuery(store, type, id);
+        url.status = 'all';
+        return this.findQuery(store, type, url);
     }
 });
 
