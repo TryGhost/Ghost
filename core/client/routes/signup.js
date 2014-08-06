@@ -10,10 +10,23 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
         }
     },
     setupController: function (controller, params) {
-        var tokenText = atob(params.token),
-            email = tokenText.split('|')[1];
-        controller.token = params.token;
-        controller.email = email;
+        var tokenText,
+            email,
+            re = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+        if (re.test(params.token)) {
+            try {
+                tokenText = atob(params.token);
+                email = tokenText.split('|')[1];
+                controller.token = params.token;
+                controller.email = email;
+            } catch (e) {
+                this.transitionTo('signin');
+                this.notifications.showError('Invalid token.', {delayed: true});
+            }
+        } else {
+            this.transitionTo('signin');
+            this.notifications.showError('Invalid token.', {delayed: true});
+        }
     }
 });
 
