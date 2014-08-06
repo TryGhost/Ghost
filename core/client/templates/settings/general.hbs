@@ -2,10 +2,10 @@
     <h2 class="title">General</h2>
 
     <div class="settings-header-inner">
-	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
+	{{#link-to 'settings' class='btn btn-default'}}Back{{/link-to}}
 
         <section class="page-actions">
-            <button type="button" class="button-save" {{action "save"}}>Save</button>
+            <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
         </section>
     </div>
 </header>
@@ -35,7 +35,7 @@
                 {{#if logo}}
                     <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
                 {{else}}
-                    <button type="button" class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
+                    <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a sexy logo for your publication</p>
             </div>
@@ -45,7 +45,7 @@
                 {{#if cover}}
                     <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
                 {{else}}
-                    <button type="button" class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
+                    <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a cover image on your site</p>
             </div>
