@@ -38,7 +38,7 @@ describe('Users API', function () {
     });
 
     describe('Browse', function () {
-       function checkBrowseResponse(response, count) {
+        function checkBrowseResponse(response, count) {
            should.exist(response);
            testUtils.API.checkResponse(response, 'users');
            should.exist(response.users);
@@ -47,60 +47,63 @@ describe('Users API', function () {
            testUtils.API.checkResponse(response.users[1], 'user', ['roles']);
            testUtils.API.checkResponse(response.users[2], 'user', ['roles']);
            testUtils.API.checkResponse(response.users[3], 'user', ['roles']);
-       }
+        }
 
-       it('Owner can browse', function (done) {
+        it('Owner can browse', function (done) {
            UserAPI.browse(context.owner).then(function (response) {
-               checkBrowseResponse(response, 5);
+               checkBrowseResponse(response, 7);
                done();
            }).catch(done);
-       });
+        });
 
-       it('Admin can browse', function (done) {
+        it('Admin can browse', function (done) {
            UserAPI.browse(context.admin).then(function (response) {
-               checkBrowseResponse(response, 5);
+               checkBrowseResponse(response, 7);
                done();
            }).catch(done);
-       });
+        });
 
-       it('Editor can browse', function (done) {
+        it('Editor can browse', function (done) {
            UserAPI.browse(context.editor).then(function (response) {
-               checkBrowseResponse(response, 5);
+               checkBrowseResponse(response, 7);
                done();
            }).catch(done);
-       });
+        });
 
-       it('Author can browse active', function (done) {
+        it('Author can browse active', function (done) {
            UserAPI.browse(context.author).then(function (response) {
-               checkBrowseResponse(response, 5);
+               checkBrowseResponse(response, 7);
                done();
            }).catch(done);
-       });
+        });
 
-       it('No-auth CANNOT browse', function (done) {
+        it('No-auth CANNOT browse', function (done) {
            UserAPI.browse().then(function () {
                done(new Error('Browse users is not denied without authentication.'));
            }, function () {
                done();
            }).catch(done);
-       });
+        });
 
+        
         it('Can browse invited/invited-pending (admin)', function (done) {
-            UserAPI.browse(_.extend(testUtils.context.admin, { status: 'invited' })).then(function (response) {
-                should.exist(response);
-                testUtils.API.checkResponse(response, 'users');
-                should.exist(response.users);
-                response.users.should.have.length(1);
-                testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-                response.users[0].status.should.equal('invited-pending');
+            testUtils.fixtures.createInvitedUsers().then(function () {
+                UserAPI.browse(_.extend(testUtils.context.admin, { status: 'invited' })).then(function (response) {
+                    should.exist(response);
+                    testUtils.API.checkResponse(response, 'users');
+                    should.exist(response.users);
+                    response.users.should.have.length(3);
+                    testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+                    response.users[0].status.should.equal('invited-pending');
 
-                done();
-            }).catch(done);
+                    done();
+                }).catch(done);
+            });
         });
 
         it('Author can browse', function (done) {
             UserAPI.browse(context.author).then(function (response) {
-                checkBrowseResponse(response, 5);
+                checkBrowseResponse(response, 7);
                 done();
             }).catch(done);
         });

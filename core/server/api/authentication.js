@@ -4,6 +4,7 @@ var _                = require('lodash'),
     mail             = require('./mail'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
+    users            = require('./users'),
     when             = require('when'),
     errors           = require('../errors'),
     config           = require('../config'),
@@ -41,7 +42,12 @@ authentication = {
                 return when.reject(new errors.BadRequestError('No email provided.'));
             }
 
-            return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
+            return users.read({ context: {internal: true}, email: email, status: 'active' }).then(function (foundUser) {
+                if (!foundUser) {
+                    when.reject(new errors.NotFound('Invalid email address'));
+                }
+                return settings.read({context: {internal: true}, key: 'dbHash'});
+            }).then(function (response) {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {
@@ -147,20 +153,14 @@ authentication = {
 
     isSetup: function () {
         return dataProvider.User.query(function (qb) {
-                qb.where('status', '=', 'active')
-                    .orWhere('status', '=', 'warn-1')
-                    .orWhere('status', '=', 'warn-2')
-                    .orWhere('status', '=', 'warn-3')
-                    .orWhere('status', '=', 'warn-4')
-                    .orWhere('status', '=', 'locked');
+                qb.whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);
             }).fetch().then(function (users) {
-
-            if (users) {
-                return when.resolve({ setup: [{status: true}]});
-            } else {
-                return when.resolve({ setup: [{status: false}]});
-            }
-        });
+                if (users) {
+                    return when.resolve({ setup: [{status: true}]});
+                } else {
+                    return when.resolve({ setup: [{status: false}]});
+                }
+            });
     },
 
     setup: function (object) {
@@ -184,7 +184,7 @@ authentication = {
                 status: 'active'
             };
 
-            return dataProvider.User.findOne({role: 'Owner'});
+            return dataProvider.User.findOne({role: 'Owner', status: 'all'});
         }).then(function (ownerUser) {
             if (ownerUser) {
                 return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));

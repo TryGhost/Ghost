@@ -96,7 +96,7 @@ users = {
      * @returns {Promise(User)} User
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'email'],
+        var attrs = ['id', 'slug', 'email', 'status'],
             data = _.pick(options, attrs);
 
         options = _.omit(options, attrs);
@@ -154,7 +154,7 @@ users = {
                         roleId = parseInt(role.id || role, 10);
 
                     return dataProvider.User.findOne(
-                        {id: options.context.user, include: 'roles'}
+                        {id: options.context.user, status: 'all'}, {include: 'roles'}
                     ).then(function (contextUser) {
                         var contextRoleId = contextUser.related('roles').toJSON()[0].id;
 
@@ -240,7 +240,7 @@ users = {
 
                         // If sending the invitation failed, set status to invited-pending
                         return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function (user) {
-                            return dataProvider.User.findOne({ id: user.id }, options).then(function (user) {
+                            return dataProvider.User.findOne({ id: user.id, status: 'all' }, options).then(function (user) {
                                 return { users: [user] };
                             });
                         });
