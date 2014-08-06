@@ -21,7 +21,7 @@ describe('Authentication API', function () {
         describe('Not completed', function () {
 
             // TODO: stub settings
-            beforeEach(testUtils.setup('owner:pre', 'settings', 'perms:setting', 'perms:init'));
+            beforeEach(testUtils.setup('owner:pre', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
             it('should report that setup has not been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
