@@ -69,8 +69,6 @@
 
     .entry-title {
         font-size: 1.4em;
-        line-height: 1.1em;
-        margin-bottom: 0.5em;
         font-weight: normal;
     }
 
@@ -84,20 +82,20 @@
         }
     }
 
+    .status {
+        font-size: 1.3rem;
+        font-weight: 300;
+
+        .draft { color: $red; }
+        .scheduled { color: $orange; }
+    }
+
     .featured .status {
         @include icon($i-featured, 11px) {
             margin-right: 10px;
             vertical-align: 7%;
         };
     }
-
-    .status .draft {
-        color: $red;
-    }
-    .status .scheduled {
-        color: $orange;
-    }
-
 
     ol {
         list-style: none;
@@ -116,7 +114,7 @@
 
             display: block;
             padding: 20px 15px;
-            color: $brown;
+            color: rgba(0,0,0,0.5);
             @media (max-width: 400px) {
                 padding: 15px;
             }
@@ -149,23 +147,11 @@
             // only apply active styles on larger devices
 
             border-bottom: lighten($midgrey, 40%) 1px solid;
-            background: lighten($midgrey, 45%);
+            background: lighten($lightbrown, 5%);
             box-shadow:
                 lighten($midgrey, 40%) 0 -1px 0, // top border
                 rgba(0,0,0,0.06) 7px 0 0 inset, // big left border
                 lighten($midgrey, 40%) 1px 0 0 inset; // small left border
-
-            a:hover {
-                box-shadow: rgba(0,0,0,0.1) 7px 0 0 inset;
-                @include transition(all 0.4s ease);
-            }
-
-            .entry-title {
-                font-weight: bold;
-            }
-            .entry-meta {
-                color: $darkgrey;
-            }
 
             .views {
                 @include icon($i-stats, 10px, $darkgrey);
