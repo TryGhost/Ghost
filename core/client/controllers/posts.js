@@ -75,6 +75,11 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     },
 
     actions: {
+        resetContentPreview: function () {
+            $('.content-list').removeAttr('style');
+            $('.content-preview').removeAttr('style');
+        },
+
         showContentPreview: function () {
             $('.content-list').animate({right: '100%', left: '-100%', 'margin-right': '15px'}, 300);
             $('.content-preview').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
