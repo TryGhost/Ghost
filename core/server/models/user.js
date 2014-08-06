@@ -513,7 +513,7 @@ User = ghostBookshelf.Model.extend({
             // Grab the original args without the first one
             origArgs = _.toArray(arguments).slice(1);
             // Get the actual post model
-            return this.findOne({id: userModelOrId}).then(function (foundUserModel) {
+            return this.findOne({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundUserModel].concat(origArgs);
 
