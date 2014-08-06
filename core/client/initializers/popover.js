@@ -8,8 +8,8 @@ var PopoverService = Ember.Object.extend(Ember.Evented, BodyEventListener, {
     closePopovers: function () {
         this.trigger('close');
     },
-    togglePopover: function (popoverName) {
-        this.trigger('toggle', {target: popoverName});
+    togglePopover: function (popoverName, popoverButton) {
+        this.trigger('toggle', {target: popoverName, button: popoverButton});
     }
 });
 
