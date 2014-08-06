@@ -344,13 +344,7 @@ var path           = require('path'),
                     src: ['core/built/**']
                 },
                 release: {
-                    src: [
-                        '<%= paths.releaseBuild %>/**',
-                        'core/built/public/jquery.js',
-                        'core/built/scripts/vendor.js',
-                        'core/built/scripts/templates.js',
-                        'core/built/scripts/ghost.js'
-                    ]
+                    src: ['<%= paths.releaseBuild %>/**']
                 },
                 test: {
                     src: ['content/data/ghost-test.db']
