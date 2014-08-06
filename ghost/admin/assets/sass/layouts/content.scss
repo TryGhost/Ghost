@@ -44,18 +44,17 @@
         .menu-drop {
             display: block;
         }
-    } // .content-filter
+    }
 
-    .button-add {
+    .btn-green {
         @include icon($i-add);
         position: absolute;
         top: 10px;
         right: 15px;
         z-index: 700;
-        color: #fff;
         padding: 3px 4px 3px 5px;
-        min-height: 0;
-    } // .button-add
+        color: #fff !important; // getting overridden by floatingheader
+    }
 
 
     .content-list-content {
@@ -66,7 +65,7 @@
         left: 0;
         overflow: auto;
         padding-top: 40px;
-    } // .content-list-content
+    }
 
     .entry-title {
         font-size: 1.4em;
