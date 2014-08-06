@@ -9,6 +9,10 @@
                     {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
                 {{/unless}}
 
+                {{#unless session.user.isEditor}}
+                    {{gh-activating-list-item route="settings.code-injection" title="Code Injection" classNames="code"}}
+                {{/unless}}
+
                 {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
 
                 {{#if showApps}}

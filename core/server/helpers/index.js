@@ -486,7 +486,16 @@ coreHelpers.ghost_head = function (options) {
     return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
         head.push('<link rel="canonical" href="' + url + '" />');
 
-        return filters.doFilter('ghost_head', head);
+        return api.settings.read({key: 'ghost_head'}).then(function (response) {
+            for (var i = 0; i < response.settings.length; i += 1) {
+                if (response.settings[i].key === 'ghost_head') {
+                    head.push(response.settings[i].value);
+                }
+            }
+            return head;
+        }).then(function (head) {
+            return filters.doFilter('ghost_head', head);
+        });
     }).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n' + item; }, '');
         return new hbs.handlebars.SafeString(headString.trim());
@@ -504,6 +513,11 @@ coreHelpers.ghost_foot = function (options) {
     }));
 
     return filters.doFilter('ghost_foot', foot).then(function (foot) {
+        return api.settings.read({key: 'ghost_foot'}).then(function (response) {
+            foot.push(response.settings[0].value);
+            return foot;
+        });
+    }).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(footString.trim());
     });

@@ -1,0 +1,35 @@
+<header>
+    <h2 class="title">Code Injection</h2>
+
+    <div class="settings-header-inner">
+	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
+
+        <section class="page-actions">
+            <button type="button" class="button-save" {{action "save"}}>Save</button>
+        </section>
+    </div>
+</header>
+
+<section class="content settings-codeInjection">
+    <form id="settings-codeInjection" novalidate="novalidate">
+        <fieldset>
+            <div class="form-group">
+                <p>
+                    Ghost allows you to inject code into the top and bottom of your template files without editing them. This allows for quick modifications to insert useful things like tracking codes and meta data.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="blog-header">Blog Header</label>
+                <p>Code here will be injected to the \{{ghost_head}} helper at the top of your page</p>
+                {{textarea id="ghost-head" name="codeInjection[ghost_head]" type="text" value=ghost_head}}
+            </div>
+
+            <div class="form-group">
+                <label for="blog-header">Blog Footer</label>
+                <p>Code here will be injected to the \{{ghost_foot}} helper at the top of your page</p>
+                {{textarea id="blog-foot" name="codeInjection[ghost_foot]" type="text" value=ghost_foot}}
+            </div>
+        </fieldset>
+    </form>
+</section>
