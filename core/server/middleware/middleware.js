@@ -208,7 +208,7 @@ var middleware = {
         }
 
         if (deniedRateLimit) {
-            return next(new errors.UnauthorizedError('Only ' + rateForgottenAttempts + ' tries per IP address every ' + rateForgottenPeriod + ' seconds.'));
+            return next(new errors.UnauthorizedError('There have been too many login attempts from your IP!'));
         }
 
         next();
