@@ -5,7 +5,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-signup'],
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.notifications.showWarn('You need to sign out to register as a new user.', true);
+            this.notifications.showWarn('You need to sign out to register as a new user.', { delayed: true });
             this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
         }
     },
