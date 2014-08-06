@@ -140,6 +140,7 @@ var middleware = {
             remoteAddress = req.connection.remoteAddress,
             deniedRateLimit = '',
             ipCount = '',
+            message = 'Too many attempts.',
             rateSigninPeriod = config.rateSigninPeriod || 3600,
             rateSigninAttempts = config.rateSigninAttempts || 10;
 
@@ -159,7 +160,12 @@ var middleware = {
         deniedRateLimit = (ipCount[remoteAddress] > rateSigninAttempts);
 
         if (deniedRateLimit) {
-            return next(new errors.UnauthorizedError('Only ' + rateSigninAttempts + ' tries per IP address every ' + rateSigninPeriod + ' seconds.'));
+            errors.logError(
+                'Only ' + rateSigninAttempts + ' tries per IP address every ' + rateSigninPeriod + ' seconds.',
+                'Too many login attempts.'
+            );
+            message += rateSigninPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
+            return next(new errors.UnauthorizedError(message));
         }
         next();
     },
@@ -176,6 +182,7 @@ var middleware = {
             ipCount = '',
             deniedRateLimit = '',
             deniedEmailRateLimit = '',
+            message = 'Too many attempts.',
             index = _.findIndex(forgottenSecurity, function (logTime) {
                 return (logTime.ip === remoteAddress && logTime.email === email);
             });
@@ -202,13 +209,27 @@ var middleware = {
         if (index !== -1) {
             deniedEmailRateLimit = (forgottenSecurity[index].count > rateForgottenAttempts);
         }
-        
+
+
+
         if (deniedEmailRateLimit) {
-            return next(new errors.UnauthorizedError('Only ' + rateForgottenAttempts + ' forgotten password attempts per email every ' + rateForgottenPeriod + ' seconds.'));
+            errors.logError(
+                'Only ' + rateForgottenAttempts + ' forgotten password attempts per email every ' +
+                rateForgottenPeriod + ' seconds.',
+                'Forgotten password reset attempt failed'
+            );
         }
 
         if (deniedRateLimit) {
-            return next(new errors.UnauthorizedError('Only ' + rateForgottenAttempts + ' tries per IP address every ' + rateForgottenPeriod + ' seconds.'));
+            errors.logError(
+                'Only ' + rateForgottenAttempts + ' tries per IP address every ' + rateForgottenPeriod + ' seconds.',
+                'Forgotten password reset attempt failed'
+            );
+        }
+
+        if (deniedEmailRateLimit || deniedRateLimit) {
+            message += rateForgottenPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
+            return next(new errors.UnauthorizedError(message));
         }
 
         next();
