@@ -48,11 +48,11 @@ var ModalDialog = Ember.Component.extend({
     }.property('type', 'style', 'animation'),
 
     acceptButtonClass: function () {
-        return this.get('confirm.accept.buttonClass') ? this.get('confirm.accept.buttonClass') : 'button-add';
+        return this.get('confirm.accept.buttonClass') ? this.get('confirm.accept.buttonClass') : 'btn btn-green';
     }.property('confirm.accept.buttonClass'),
 
     rejectButtonClass: function () {
-        return this.get('confirm.reject.buttonClass') ? this.get('confirm.reject.buttonClass') : 'button-delete';
+        return this.get('confirm.reject.buttonClass') ? this.get('confirm.reject.buttonClass') : 'btn btn-red';
     }.property('confirm.reject.buttonClass')
 });
 
