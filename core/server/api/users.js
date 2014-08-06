@@ -282,7 +282,7 @@ users = {
      */
     destroy: function destroy(options) {
         return canThis(options.context).destroy.user(options.id).then(function () {
-            return users.read(options).then(function (result) {
+            return users.read(_.merge(options, { status: 'all'})).then(function (result) {
                 return dataProvider.Base.transaction(function (t) {
                     options.transacting = t;
                     dataProvider.Post.destroyByAuthor(options).then(function () {
