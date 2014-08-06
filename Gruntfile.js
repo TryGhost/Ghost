@@ -75,8 +75,8 @@ var path           = require('path'),
                 },
                 livereload: {
                     files: [
-                        'content/themes/casper/css/*.css',
-                        'content/themes/casper/js/*.js',
+                        'content/themes/casper/assets/css/*.css',
+                        'content/themes/casper/assets/js/*.js',
                         'core/client/assets/css/*.css',
                         'core/built/scripts/*.js'
                     ],
