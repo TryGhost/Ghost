@@ -16,7 +16,7 @@ var PostsView = Ember.View.extend({
             });
 
             // ### Hide content preview
-            $('.manage').on('click', '.content-preview .button-back', function (event) {
+            $('.manage').on('click', '.content-preview .btn .btn-default', function (event) {
                 responsiveAction(event, '(max-width: 800px)', function () {
                     self.send('hideContentPreview');
                 });

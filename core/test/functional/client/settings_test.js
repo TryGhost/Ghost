@@ -89,8 +89,8 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
     });
 
     // Ensure can save
-    casper.waitForSelector('header .button-save').then(function () {
-        casper.thenClick('header .button-save').waitFor(function successNotification() {
+    casper.waitForSelector('header .btn-blue').then(function () {
+        casper.thenClick('header .btn-blue').waitFor(function successNotification() {
             return this.evaluate(function () {
                 return document.querySelectorAll('.js-bb-notification section').length > 0;
             });
@@ -181,9 +181,9 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
         test.assertSelectorHasText('.settings-users .object-list-item .name', 'Test User');
         test.assertExists('.settings-users .object-list-item .role-label.owner', 'First user has owner role displayed');
 
-        test.assertExists('.page-actions .button-add', 'Add user button is on page.');
+        test.assertExists('.page-actions .btn-green', 'Add user button is on page.');
     });
-    casper.thenClick('.page-actions .button-add');
+    casper.thenClick('.page-actions .btn-green');
     casper.waitForOpaque('.invite-new-user .modal-content', function then() {
         test.assertEval(function testOwnerRoleNotAnOption() {
             var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
@@ -237,7 +237,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        casper.on('resource.requested', handleUserRequest);
 //    });
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //    casper.waitFor(function successNotification() {
 //        return this.evaluate(function () {
 //            return document.querySelectorAll('.js-bb-notification section').length > 0;
@@ -261,7 +261,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        }, 'general tab is marked active');
 //    });
 //
-//    casper.thenClick('#general .button-save').waitFor(function successNotification() {
+//    casper.thenClick('#general .btn-blue').waitFor(function successNotification() {
 //        return this.evaluate(function () {
 //            return document.querySelectorAll('.js-bb-notification section').length > 0;
 //        });
@@ -301,7 +301,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        }, false);
 //    });
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //
 //    casper.waitForResource('/users/');
 //
@@ -316,7 +316,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        }, false);
 //    });
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //
 //    casper.waitForResource(/users/);
 //
@@ -365,7 +365,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        });
 //    }, casper.failOnTimeout(test, 'waitForSelector #user timed out'));
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //
 //    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
 //        test.assertSelectorHasText('.notification-error', 'is too long');
@@ -384,7 +384,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        });
 //    }, casper.failOnTimeout(test, 'waitForSelector #user timed out'));
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //
 //    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
 //        test.assertSelectorHasText('.notification-error', 'use a valid url');
@@ -403,7 +403,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        });
 //    }, casper.failOnTimeout(test, 'waitForSelector #user timed out'));
 //
-//    casper.thenClick('#user .button-save');
+//    casper.thenClick('#user .btn-blue');
 //
 //    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
 //        test.assertSelectorHasText('.notification-error', 'is too long');
