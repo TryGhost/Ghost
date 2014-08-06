@@ -142,7 +142,7 @@ var middleware = {
             ipCount = '',
             message = 'Too many attempts.',
             rateSigninPeriod = config.rateSigninPeriod || 3600,
-            rateSigninAttempts = config.rateSigninAttempts || 10;
+            rateSigninAttempts = config.rateSigninAttempts || 5;
 
         if (req.body.username && req.body.grant_type === 'password') {
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
@@ -154,7 +154,7 @@ var middleware = {
 
         // filter entries that are older than rateSigninPeriod
         loginSecurity = _.filter(loginSecurity, function (logTime) {
-            return (logTime.time + rateSigninPeriod > currentTime);
+            return (logTime.time + rateSigninPeriod > currentTime && logTime.email === req.body.username);
         });
 
         // check number of tries per IP address
