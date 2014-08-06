@@ -514,6 +514,12 @@ coreHelpers.ghost_foot = function (options) {
     });
 };
 
+// ### Meta title helper
+//
+// *Usage example:*
+// `{{meta_title}}`
+//
+// Returns the post title on posts, or otherwise the blog title
 coreHelpers.meta_title = function (options) {
     /*jshint unused:false*/
     var title = '',
@@ -521,7 +527,7 @@ coreHelpers.meta_title = function (options) {
 
     if (_.isString(this.relativeUrl)) {
         blog = config.theme();
-        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl.match(/\/page/)) {
             title = blog.title;
         } else if (this.post) {
             title = this.post.title;
@@ -538,15 +544,26 @@ coreHelpers.meta_title = function (options) {
     });
 };
 
+// ### Meta description helper
+//
+// *Usage example:*
+// `{{meta_description}}`
+//
+// Returns an excerpt under 160 characters on posts, or the blog description on all other pages
 coreHelpers.meta_description = function (options) {
     /*jshint unused:false*/
     var description,
         blog;
 
     if (_.isString(this.relativeUrl)) {
-        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl.match(/\/(page|tag)/)) {
             blog = config.theme();
             description = blog.description;
+        } else if (this.post) {
+            description = String(this.post.html).replace(/<\/?[^>]+>/g, '');
+            description = description.replace(/\n+/g, ' ');
+            description = downsize(description, {'characters': 160});
+            description = description.replace(/ [^ ]+$/, '');
         } else {
             description = '';
         }
