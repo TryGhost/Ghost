@@ -7,7 +7,7 @@ var PopoverButton = Ember.Component.extend(PopoverMixin, {
     /*Notify popover service this popover should be toggled*/
     click: function (event) {
         this._super(event);
-        this.get('popover').togglePopover(this.get('popoverName'));
+        this.get('popover').togglePopover(this.get('popoverName'), this);
     }
 });
 
