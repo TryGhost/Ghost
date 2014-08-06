@@ -94,7 +94,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                     self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
                 } else {
                     self.get('model').set('status', result.users[0].status);
-                    self.notifications.showSuccess(notificationText, false);
+                    self.notifications.showSuccess(notificationText);
                 }
             }).catch(function (error) {
                 self.notifications.showAPIError(error);
