@@ -63,14 +63,14 @@
       @include icon($i-image, 12px);
     }
 
-    .button-add {
+    .btn-green {
         display: inline-block;
         position:relative;
         z-index: 700;
         color: #fff;
         padding-left:5px;
     }
-    .button-save {
+    .btn-blue {
       margin: 0 0 0 10px;
     }
 

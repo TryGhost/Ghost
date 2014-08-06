@@ -17,7 +17,7 @@
         color: $midgrey;
     }
 
-} // .settings-about
+}
 
 
 //
@@ -28,45 +28,53 @@
     h1 {
         margin-top: -6px;
         margin-bottom: -21px;
+
         .version {
             font-weight: 300;
             font-size: 1.3rem;
             position: relative;
             top: -3px;
         }
-    } // h1
+    }
 
     @media (max-width: 550px) {
         padding-top: 40px;
     }
 
-} // .about-ghost-intro
+}
 
 .about-environment-help {
     margin-top: 35px;
 }
+
 .about-environment {
     p {
         margin: 0;
         line-height: 1.7;
     }
 }
+
 .about-help {
     padding-top: 6px;
+
     @media (max-width: 500px) {
         padding-top: 16px;
     }
-    .button-dark {
+
+    .btn-alt {
         width: 100%;
         display: block;
         font-size: 0.85rem;
         padding-top: 8px;
         padding-bottom: 8px;
         min-height: 32px;
+
         &:nth-child(1) {
             margin-bottom: 11px;
         }
-    } // .button-dark
+
+    }
+    
 } // .about-help
 
 @media (min-width: 501px) {
@@ -81,7 +89,7 @@
         float: right;
         width: 176px;
     }
-} // @media (min-width: 501px)
+}
 
 
 //
@@ -91,12 +99,15 @@
 .top-contributors {
     padding-left: 0;
     max-width: 650px;
+
     li {
         float: left;
         list-style: none;
         width: 10%;
+
         a {
             display: block;
+
             @media (min-width: 601px) {
                 margin-right: 9px;
                 margin-bottom: 9px;
@@ -105,13 +116,17 @@
                 margin-right: 6px;
                 margin-bottom: 6px;
             }
+
             img {
                 width: 100%;
                 display: block;
                 border-radius: 100%;
             }
-        } // a
+
+        }
+
     } // li
+
 } // .top-contributors
 
 
@@ -121,6 +136,7 @@
 
 .about-credits {
     margin-top: 48px;
+
     h1 {
         font-size: 1.85rem;
         margin-bottom: 2rem;
@@ -133,13 +149,14 @@
     max-width: 620px;
 }
 
-.button-save.large.about-get-involved {
+.about-get-involved {
     margin-top: -0.1rem;
     font-size: 0.9rem;
 }
 
 .about-copyright {
     margin-top: 4.9rem;
+
     a {
         &:link,
         &:visited {
@@ -152,4 +169,5 @@
             color: $blue;
         }
     }
+
 } // .about-copyright
