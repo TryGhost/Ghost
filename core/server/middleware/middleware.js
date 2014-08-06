@@ -143,8 +143,10 @@ var middleware = {
             rateSigninPeriod = config.rateSigninPeriod || 3600,
             rateSigninAttempts = config.rateSigninAttempts || 10;
 
-        if (req.body.username) {
+        if (req.body.username && req.body.grant_type === 'password') {
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
+        } else if (req.body.grant_type === 'refresh_token') {
+            return next();
         } else {
             return next(new errors.BadRequestError('No username.'));
         }
