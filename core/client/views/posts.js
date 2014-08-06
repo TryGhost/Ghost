@@ -1,4 +1,4 @@
-import {responsiveAction} from 'ghost/utils/mobile';
+import {mobileQuery, responsiveAction} from 'ghost/utils/mobile';
 
 var PostsView = Ember.View.extend({
     target: Ember.computed.alias('controller'),
@@ -8,6 +8,13 @@ var PostsView = Ember.View.extend({
     mobileInteractions: function () {
         Ember.run.scheduleOnce('afterRender', this, function () {
             var self = this;
+
+            $(window).resize(function() {
+              if (!mobileQuery.matches) {
+                self.send('resetContentPreview');
+              }
+            });
+
             // ### Show content preview when swiping left on content list
             $('.manage').on('click', '.content-list ol li', function (event) {
                 responsiveAction(event, '(max-width: 800px)', function () {
