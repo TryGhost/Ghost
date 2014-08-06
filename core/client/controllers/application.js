@@ -1,5 +1,5 @@
 var ApplicationController = Ember.Controller.extend({
-    hideNav: Ember.computed.match('currentPath', /(signin|signup|setup|forgotten|reset)/),
+    hideNav: Ember.computed.match('currentPath', /(error|signin|signup|setup|forgotten|reset)/),
 
     topNotificationCount: 0,
 
