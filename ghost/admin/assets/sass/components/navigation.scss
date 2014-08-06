@@ -6,7 +6,7 @@
 .global-nav {
     height: 60px;
     @include position(fixed, 0px 0px auto 0px);
-    z-index: 9999;
+    z-index: 800;
     background: $darkgrey;
 
     i:before {
