@@ -342,21 +342,7 @@
         color: $blue;
         text-decoration: underline;
     }
-    p {
-        margin: 1.2em 0 1.6em;
-        &:first-of-type {
-            margin-top: 0;
-        }
-    }
-    h1 {
-        font-size: 3em;
-    }
-    h2 {
-        font-size: 2.2em;
-    }
-    h3 {
-        font-size: 1.8em;
-    }
+
     .btn {
         text-decoration: none;
         color: $grey;
