@@ -217,6 +217,13 @@ kbd {
         0 1px 0 0 #fff inset;
 }
 
+button {
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
 
 //
 // Utilities
