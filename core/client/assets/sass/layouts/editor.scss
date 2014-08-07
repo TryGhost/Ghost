@@ -7,7 +7,7 @@
  // The main post title
 .entry-container .entry-title {
     height: 60px;
-    padding: 0 15px;
+    padding: 0 20px;
     position: relative;
 
     input {
@@ -388,7 +388,8 @@ body.zen {
     .usermenu {
         display: none;
     }
-    #global-header,
+    .global-nav,
+    .page-header,
     #publish-bar {
         opacity: 0;
         height: 0;
@@ -396,10 +397,11 @@ body.zen {
         @include transition(all 0.5s ease-out);
     }
 
-    main {
-        top: 15px;
+    .page-content {
+        top: 0;
         @include transition(all 0.5s ease-out);
     }
+
     .entry-markdown,
     .entry-preview {
         bottom: 0;
