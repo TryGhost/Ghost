@@ -7,6 +7,7 @@ var _              = require('lodash'),
     http           = require('http'),
     crypto         = require('crypto'),
     validator      = require('validator'),
+    validation     = require('../data/validation'),
     Role           = require('./role').Role,
 
     tokenSecurity  = {},
@@ -53,6 +54,17 @@ User = ghostBookshelf.Model.extend({
                     self.set({slug: slug});
                 });
         }
+    },
+
+    // For the user model ONLY it is possible to disable validations.
+    // This is used to bypass validation during the credential check, and must never be done with user-provided data
+    // Should be removed when #3691 is done
+    validate: function () {
+        var opts = arguments[1];
+        if (opts && _.has(opts, 'validate') && opts.validate === false) {
+            return;
+        }
+        return validation.validateSchema(this.tableName, this.toJSON());
     },
 
     // Get the user from the options object
@@ -561,7 +573,7 @@ User = ghostBookshelf.Model.extend({
         return when.reject();
     },
 
-    setWarning: function (user) {
+    setWarning: function (user, options) {
         var status = user.get('status'),
             regexp = /warn-(\d+)/i,
             level;
@@ -577,7 +589,7 @@ User = ghostBookshelf.Model.extend({
                 user.set('status', 'warn-' + level);
             }
         }
-        return when(user.save()).then(function () {
+        return when(user.save(options)).then(function () {
             return 5 - level;
         });
     },
@@ -598,16 +610,36 @@ User = ghostBookshelf.Model.extend({
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
-                        return when(self.setWarning(user)).then(function (remaining) {
+                        return when(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
                             return when.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
                                 remaining + ' attempt' + s + ' remaining!'));
+
+                            // Use comma structure, not .catch, because we don't want to catch incorrect passwords
+                        }, function (error) {
+
+                            // If we get a validation or other error during this save, catch it and log it, but don't
+                            // cause a login error because of it. The user validation is not important here.
+                            errors.logError(
+                                error,
+                                'Error thrown from user update during login',
+                                'Visit and save your profile after logging in to check for problems.'
+                            );
+                            return when.reject(new errors.UnauthorizedError('Your password is incorrect.'));
                         });
                     }
 
-                    return when(user.set({status : 'active', last_login : new Date()}).save()).then(function (user) {
-                        return user;
-                    });
+                    return when(user.set({status : 'active', last_login : new Date()}).save({validate: false}))
+                        .catch(function (error) {
+                            // If we get a validation or other error during this save, catch it and log it, but don't
+                            // cause a login error because of it. The user validation is not important here.
+                            errors.logError(
+                                error,
+                                'Error thrown from user update during login',
+                                'Visit and save your profile after logging in to check for problems.'
+                            );
+                            return user;
+                        });
                 }, errors.logAndThrowError);
             }
             return when.reject(new errors.NoPermissionError('Your account is locked due to too many ' +

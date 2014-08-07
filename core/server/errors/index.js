@@ -84,15 +84,20 @@ errors = {
     },
 
     logError: function (err, context, help) {
+        var self = this,
+            origArgs = _.toArray(arguments).slice(1),
+            stack,
+            msgs;
+
         if (_.isArray(err)) {
             _.each(err, function (e) {
-                errors.logError(e);
+                var newArgs = [e].concat(origArgs);
+                errors.logError.apply(self, newArgs);
             });
             return;
         }
 
-        var stack = err ? err.stack : null,
-            msgs;
+        stack = err ? err.stack : null;
 
         err = _.isString(err) ? err : (_.isObject(err) ? err.message : 'An unknown error occurred.');
 
