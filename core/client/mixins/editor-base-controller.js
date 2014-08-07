@@ -88,10 +88,16 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         var model = this.get('model'),
             markdown = this.get('markdown'),
+            title = this.get('title'),
+            titleScratch = this.get('titleScratch'),
             scratch = this.getMarkdown().withoutMarkers,
             changedAttributes;
 
         if (!this.tagNamesEqual()) {
+            return true;
+        }
+
+        if (titleScratch !== title) {
             return true;
         }
 
