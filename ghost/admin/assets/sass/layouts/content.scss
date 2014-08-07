@@ -48,10 +48,10 @@
     .btn-green {
         @include icon($i-add);
         position: absolute;
-        top: 10px;
-        right: 15px;
+        top: 9px;
+        right: 20px;
         z-index: 700;
-        padding: 3px 4px 3px 5px;
+        padding: 2px 4px 3px 5px;
         color: #fff !important; // getting overridden by floatingheader
     }
 
@@ -67,7 +67,8 @@
     }
 
     .entry-title {
-        font-size: 1.4em;
+        font-size: 1.6rem;
+        line-height: 1.25em;
         font-weight: normal;
     }
 
@@ -112,7 +113,7 @@
         a {
 
             display: block;
-            padding: 20px 15px;
+            padding: 20px 20px;
             color: rgba(0,0,0,0.5);
             @media (max-width: 400px) {
                 padding: 15px;
