@@ -15,15 +15,14 @@
 }
 
 .content-list {
-    width: 35%;
+    width: 33%;
     padding: 15px;
     position: absolute;
     bottom: 0;
     top: 0;
     left: 0;
-    border-right: $lightbrown 2px solid;
+    border-right: $lightbrown 1px solid;
     background: #fff;
-    box-shadow: $shadow;
 
     @media (max-width: 800px) {
         width: auto;
@@ -170,15 +169,13 @@
 // --------------------------------------------------
 
 .content-preview {
-    width: 65%;
+    width: 67%;
     padding: 15px;
     position: absolute;
     bottom:0;
     top:0;
     right:0;
-    border-left:$lightbrown 2px solid;
     background: #fff;
-    box-shadow: $shadow;
     @media (max-width: 800px) {
         width: auto;
         left: 100%;

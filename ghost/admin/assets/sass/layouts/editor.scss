@@ -6,15 +6,10 @@
 
  // The main post title
 .entry-container .entry-title {
-    @extend .box;
     height: 57px;
     padding: 2px 15px;
     margin-bottom: 5px;
     position: relative;
-
-    @media (max-width: 400px) {
-        box-shadow: none;
-    }
 
     input {
         border: 0;
@@ -45,8 +40,8 @@
     }
 
     // The two content panel wrappers, positioned left/right
-    .entry-markdown { left: 0; border-right: $lightbrown 2px solid; }
-    .entry-preview { right: 0; border-left: $lightbrown 2px solid; }
+    .entry-markdown { left: 0; }
+    .entry-preview { right: 0; border-left: $lightbrown 1px solid; }
 
     // The visual styles for both panels
     .entry-markdown,
@@ -56,12 +51,8 @@
         position: absolute;
         bottom: 40px; // height of the publish bar
         top: 61px; // height of the post title + margin
+        border-top: $lightbrown 1px solid;
         background: #fff;
-        box-shadow: $shadow;
-
-        @media (max-width: 400px) {
-            box-shadow: none;
-        }
 
         // Convert all content areas to small boxes
         @media (max-width: 1000px) {
