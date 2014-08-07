@@ -2,22 +2,22 @@ import PopoverMixin from 'ghost/mixins/popover-mixin';
 
 var GhostPopover = Ember.Component.extend(PopoverMixin, {
     classNames: 'ghost-popover fade-in',
-    classNameBindings: ['isOpen:open'],
     name: null,
+    closeOnClick: false,
+    //Helps track the user re-opening the menu while it's fading out.
+    closing: false,
 
-    //Don't manipulate isOpen directly! Use open() and close()
-    isOpen: false,
     open: function () {
         this.set('closing', false);
         this.set('isOpen', true);
+        this.set('button.isOpen', true);
     },
-
-    //Helps us track if the menu was opened again right after
-    //  it was closed.
-    closing: false,
     close: function () {
         var self = this;
         this.set('closing', true);
+        if (this.get('button')) {
+            this.set('button.isOpen', false);
+        }
         this.$().fadeOut(200, function () {
             //Make sure this wasn't an aborted fadeout by
             //checking `closing`.
@@ -32,16 +32,20 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
         var isClosing = this.get('closing'),
             isOpen = this.get('isOpen'),
             name = this.get('name'),
+            button = this.get('button'),
             targetPopoverName = options.target;
         
         if (name === targetPopoverName && (!isOpen || isClosing)) {
+            if (!button) {
+                button = options.button;
+                this.set('button', button);
+            }
             this.open();
         } else if (isOpen) {
             this.close();
         }
     },
 
-    closeOnClick: false,
     click: function (event) {
         this._super(event);
         if (this.get('closeOnClick')) {
