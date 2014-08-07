@@ -44,12 +44,13 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
 
         newPosition = posts.indexOf(currentPost) + step;
 
-        //Make sure we're inbounds
+        // if we are on the first or last item
+        // just do nothing (desired behavior is to not
+        // loop around)
         if (newPosition >= length) {
-            newPosition = 0;
-        }
-        else if (newPosition < 0) {
-            newPosition = length - 1;
+            return;
+        } else if (newPosition < 0) {
+            return;
         }
         this.transitionTo('posts.post', posts.objectAt(newPosition));
     },
