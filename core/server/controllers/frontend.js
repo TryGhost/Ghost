@@ -317,6 +317,9 @@ frontendControllers = {
 
             function render() {
                 // If we're ready to render the page but the last param is 'edit' then we'll send you to the edit page.
+                if (params.edit) {
+                    params.edit = params.edit.toLowerCase();
+                }
                 if (params.edit === 'edit') {
                     return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
                 } else if (params.edit !== undefined) {
