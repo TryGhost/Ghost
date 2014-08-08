@@ -224,7 +224,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 bower: {
-                    command: path.resolve(cwd + '/node_modules/.bin/bower --allow-root install'),
+                    command: './node_modules/.bin/bower --allow-root install',
                     options: {
                         stdout: true
                     }
@@ -233,7 +233,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 ghost_ui: {
-                    command: path.resolve(cwd  + '/node_modules/.bin/bower update ghost-ui'),
+                    command: './node_modules/.bin/bower update ghost-ui',
                     options: {
                         stdout: true
                     }
@@ -241,8 +241,8 @@ var path           = require('path'),
                 // #### Generate coverage report
                 // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
-                    command: path.resolve(cwd  + '/node_modules/mocha/bin/mocha  --timeout 15000 --reporter' +
-                    ' html-cov > coverage.html ./core/test/blanket_coverage.js'),
+                    command: './node_modules/mocha/bin/mocha  --timeout 15000 --reporter' +
+                    ' html-cov > coverage.html ./core/test/blanket_coverage.js',
                     execOptions: {
                         env: 'NODE_ENV=' + process.env.NODE_ENV
                     }
