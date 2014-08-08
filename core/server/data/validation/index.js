@@ -24,7 +24,7 @@ validator.extend('notContains', function (str, badString) {
 });
 
 validator.extend('isEmptyOrURL', function (str) {
-    return (_.isEmpty(str) || validator.isURL(str, { protocols: ['http', 'https'], require_protocol: true }));
+    return (_.isEmpty(str) || validator.isURL(str, { require_protocol: false }));
 });
 
 // Validation validation against schema attributes
