@@ -24,11 +24,17 @@ var InviteNewUserController = Ember.Controller.extend({
         setRole: function (role) {
             this.set('role', role);
         },
+
         confirmAccept: function () {
             var email = this.get('email'),
                 role = this.get('role'),
                 self = this,
                 newUser;
+
+            // reset the form and close the modal
+            self.set('email', '');
+            self.set('role', self.get('authorRole'));
+            self.send('closeModal');
 
             newUser = self.store.createRecord('user', {
                 email: email,
@@ -49,13 +55,6 @@ var InviteNewUserController = Ember.Controller.extend({
             }).catch(function (errors) {
                 newUser.deleteRecord();
                 self.notifications.showErrors(errors);
-            }).finally(function () {
-                //Reset
-                self.set('email', '');
-                self.set('role', self.get('authorRole'));
-                //Make sure the modal closes on confirm, no matter the
-                //method used to close it (enter in input vs Confirm click)
-                self.send('closeModal');
             });
         },
 
