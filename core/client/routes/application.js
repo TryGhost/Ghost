@@ -25,7 +25,12 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         },
 
         sessionAuthenticationFailed: function (error) {
-            this.notifications.showError(error.message);
+            if (error.errors) {
+                this.notifications.showErrors(error.errors);
+            } else {
+                // connection errors don't return proper status message, only req.body
+                this.notifications.showError('There was a problem on the server.');
+            }
         },
 
         sessionAuthenticationSucceeded: function () {
