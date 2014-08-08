@@ -37,12 +37,15 @@
     padding: 5px 0;
     margin: 2px 0 0; // override default ul
     list-style: none;
-    font-size: 14px;
+    font-size: 1.4rem;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
     text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
     background-color: #fff;
-    border: 1px solid rgba(0,0,0,.15);
+    border: #B0BEC4 1px solid;
     border-radius: $rounded;
-    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
     background-clip: padding-box;
 
     // Aligns the dropdown menu to right
@@ -56,9 +59,9 @@
     // Dividers (basically an hr) within the dropdown
     .divider {
         height: 1px;
-        margin: ((20px / 2) - 1) 0;
+        margin: 9px 0;
         overflow: hidden;
-        background-color: #e5e5e5;
+        background: #D0DADE;
     }
 
     // Links within the dropdown menu
@@ -78,8 +81,8 @@
     &:hover,
     &:focus {
         text-decoration: none;
-        color: #262626;
-        background-color: #f5f5f5;
+        color: #fff;
+        background: $blue;
     }
 }
 
@@ -153,7 +156,7 @@
 .dropdown-header {
     display: block;
     padding: 3px 20px;
-    font-size: 12px;
+    font-size: 1.2rem;
     line-height: 1.428571429;
     color: #777;
     white-space: nowrap; // as with > li > a
@@ -166,7 +169,7 @@
     right: 0;
     bottom: 0;
     top: 0;
-    z-index: (1000 - 10);
+    z-index: 990;
 }
 
 // Right aligned dropdowns
