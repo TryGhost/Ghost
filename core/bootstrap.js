@@ -121,7 +121,7 @@ function loadConfig(configFilePath) {
         pendingConfig;
 
     // Allow config file path to be taken from, in order of importance:
-    // environment process, passed in value, default location
+    // process environment, passed in value, default location
     configFile = process.env.GHOST_CONFIG || configFilePath || config.paths.config;
 
     /* Check for config file and copy from config.example.js
