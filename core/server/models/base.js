@@ -61,6 +61,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     validate: function () {
+        if (arguments[1].hasOwnProperty('validate') && arguments[1].validate === false) {
+            return;
+        }
         return validation.validateSchema(this.tableName, this.toJSON());
     },
 
