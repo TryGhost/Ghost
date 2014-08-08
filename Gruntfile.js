@@ -10,7 +10,7 @@ var path           = require('path'),
     fs             = require('fs'),
     _              = require('lodash'),
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
-    cwd            = process.cwd().replace(' ', escapeChar + ' '),
+    cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
 
