@@ -184,6 +184,10 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         this.notifications.showError(message, { delayed: delay });
     },
 
+    shouldFocusTitle: Ember.computed('model', function () {
+        return !!this.get('model.isNew');
+    }),
+
     actions: {
         save: function () {
             var status = this.get('willPublish') ? 'published' : 'draft',
