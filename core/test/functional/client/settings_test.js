@@ -143,7 +143,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number');
+        test.assertSelectorHasText('.notification-error', 'must be a number');
     }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
 
     casper.thenClick('.js-bb-notification .close');
@@ -154,7 +154,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
+        test.assertSelectorHasText('.notification-error', 'maximum number of posts per page is 1000');
     }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
 
     casper.thenClick('.js-bb-notification .close');
@@ -165,7 +165,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
+        test.assertSelectorHasText('.notification-error', 'minimum number of posts per page is 1');
     }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
 });
 
