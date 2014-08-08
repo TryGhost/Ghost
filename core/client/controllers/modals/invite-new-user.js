@@ -29,32 +29,44 @@ var InviteNewUserController = Ember.Controller.extend({
             var email = this.get('email'),
                 role = this.get('role'),
                 self = this,
-                newUser;
+                newUser,
+                invitedUser,
+                invitedStatus;
 
             // reset the form and close the modal
             self.set('email', '');
             self.set('role', self.get('authorRole'));
             self.send('closeModal');
 
-            newUser = self.store.createRecord('user', {
-                email: email,
-                status: 'invited',
-                role: role
-            });
-
-            newUser.save().then(function () {
-                var notificationText = 'Invitation sent! (' + email + ')';
-
+            //Make sure this isn't a known user
+            this.store.find('user').then(function (result) {
+                if (result.findBy('email', email)) {
+                    self.notifications.showError(email + ' already invited.');
+                    return Ember.RSVP.reject();
+                }
+                else {
+                    newUser = self.store.createRecord('user', {
+                        email: email,
+                        status: 'invited',
+                        role: role
+                    });
+                    return newUser.save();
+                }
+            }).then(function () {
                 // If sending the invitation email fails, the API will still return a status of 201
                 // but the user's status in the response object will be 'invited-pending'.
                 if (newUser.get('status') === 'invited-pending') {
                     self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
                 } else {
-                    self.notifications.showSuccess(notificationText);
+                    self.notifications.showSuccess('Invitation sent! (' + email + ')');
                 }
-            }).catch(function (errors) {
-                newUser.deleteRecord();
-                self.notifications.showErrors(errors);
+            }).catch(function (error) {
+                if (newUser) {
+                    newUser.deleteRecord();
+                }
+                if (error) {
+                    self.notifications.showAPIError(error);
+                }
             });
         },
 
