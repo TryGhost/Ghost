@@ -27,6 +27,7 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
                     self.notifications.showSuccess('Please check your email for instructions.', {delayed: true});
+                    self.set('email', '');
                     self.transitionToRoute('signin');
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
