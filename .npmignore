@@ -24,7 +24,6 @@ core/test/**
 *.iml
 config.js
 core/built/scripts/templates.js
-core/built/public/jquery.js
 core/built/scripts/vendor.js
 core/built/scripts/templates.js
 core/built/scripts/ghost.js
