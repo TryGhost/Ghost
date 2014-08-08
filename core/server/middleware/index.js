@@ -80,13 +80,17 @@ function activateTheme(activeTheme) {
     // Set active theme variable on the express server
     expressServer.set('activeTheme', activeTheme);
 }
-
-// ### decideContext Middleware
+// ### decideIsAdmin Middleware
 // Uses the URL to detect whether this response should be an admin response
 // This is used to ensure the right content is served, and is not for security purposes
-function decideContext(req, res, next) {
+function decideIsAdmin(req, res, next) {
     res.isAdmin = req.url.lastIndexOf(config.paths.subdir + '/ghost/', 0) === 0;
+    next();
+}
 
+// ### configHbsForContext Middleware
+// Setup handlebars for the current context (admin or theme)
+function configHbsForContext(req, res, next) {
     if (res.isAdmin) {
         expressServer.enable('admin');
         expressServer.engine('hbs', expressServer.get('admin view engine'));
@@ -257,8 +261,9 @@ setupMiddleware = function (server) {
     expressServer.use(subdir + '/public', express['static'](path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
+    expressServer.use(decideIsAdmin);
     expressServer.use(updateActiveTheme);
-    expressServer.use(decideContext);
+    expressServer.use(configHbsForContext);
 
     // Admin only config
     expressServer.use(subdir + '/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: utils.ONE_YEAR_MS})));
