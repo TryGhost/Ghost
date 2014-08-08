@@ -36,25 +36,37 @@ var InviteNewUserController = Ember.Controller.extend({
             self.set('role', self.get('authorRole'));
             self.send('closeModal');
 
-            newUser = self.store.createRecord('user', {
-                email: email,
-                status: 'invited',
-                role: role
-            });
-
-            newUser.save().then(function () {
-                var notificationText = 'Invitation sent! (' + email + ')';
-
-                // If sending the invitation email fails, the API will still return a status of 201
-                // but the user's status in the response object will be 'invited-pending'.
-                if (newUser.get('status') === 'invited-pending') {
-                    self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+            this.store.find('user').then(function (result) {
+                var invitedUser = result.findBy('email', email);
+                if (invitedUser) {
+                    if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
+                        self.notifications.showWarn('A user with that email address was already invited.');
+                    } else {
+                        self.notifications.showWarn('A user with that email address already exists.');
+                    }
+                    
                 } else {
-                    self.notifications.showSuccess(notificationText);
+                    newUser = self.store.createRecord('user', {
+                        email: email,
+                        status: 'invited',
+                        role: role
+                    });
+
+                    newUser.save().then(function () {
+                        var notificationText = 'Invitation sent! (' + email + ')';
+
+                        // If sending the invitation email fails, the API will still return a status of 201
+                        // but the user's status in the response object will be 'invited-pending'.
+                        if (newUser.get('status') === 'invited-pending') {
+                            self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                        } else {
+                            self.notifications.showSuccess(notificationText);
+                        }
+                    }).catch(function (errors) {
+                        newUser.deleteRecord();
+                        self.notifications.showErrors(errors);
+                    });
                 }
-            }).catch(function (errors) {
-                newUser.deleteRecord();
-                self.notifications.showErrors(errors);
             });
         },
 
