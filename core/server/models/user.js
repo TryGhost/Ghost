@@ -561,7 +561,7 @@ User = ghostBookshelf.Model.extend({
         return when.reject();
     },
 
-    setWarning: function (user) {
+    setWarning: function (user, options) {
         var status = user.get('status'),
             regexp = /warn-(\d+)/i,
             level;
@@ -577,7 +577,7 @@ User = ghostBookshelf.Model.extend({
                 user.set('status', 'warn-' + level);
             }
         }
-        return when(user.save()).then(function () {
+        return when(user.save(options)).then(function () {
             return 5 - level;
         });
     },
@@ -598,16 +598,17 @@ User = ghostBookshelf.Model.extend({
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
-                        return when(self.setWarning(user)).then(function (remaining) {
+                        return when(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
                             return when.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
                                 remaining + ' attempt' + s + ' remaining!'));
                         });
                     }
 
-                    return when(user.set({status : 'active', last_login : new Date()}).save()).then(function (user) {
-                        return user;
-                    });
+                    return when(user.set({status : 'active', last_login : new Date()}).save({validate: false}))
+                        .then(function (user) {
+                            return user;
+                        });
                 }, errors.logAndThrowError);
             }
             return when.reject(new errors.NoPermissionError('Your account is locked due to too many ' +
