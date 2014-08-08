@@ -286,15 +286,25 @@ errors = {
             }
             errors.renderErrorPage(err.status || 500, err, req, res, next);
         } else {
-            // generate a valid JSON response
             var statusCode = 500,
-                errorContent = {};
+                returnErrors = [];
 
-            statusCode = err.code || 500;
+            if (!_.isArray(err)) {
+                err = [].concat(err);
+            }
 
-            errorContent.message = _.isString(err) ? err : (_.isObject(err) ? err.message : 'Unknown Error');
-            errorContent.type = err.type || 'InternalServerError';
-            res.json(statusCode, errorContent);
+            _.each(err, function (errorItem) {
+                var errorContent = {};
+
+                statusCode = errorItem.code || 500;
+
+                errorContent.message = _.isString(errorItem) ? errorItem :
+                    (_.isObject(errorItem) ? errorItem.message : 'Unknown Error');
+                errorContent.type = errorItem.type || 'InternalServerError';
+                returnErrors.push(errorContent);
+            });
+
+            res.json(statusCode, {errors: returnErrors});
         }
     }
 };
