@@ -1,6 +1,6 @@
-<div id="modal-container" {{action bubbles=false preventDefault=false}}>
-    <article {{bind-attr class="klass  :js-modal"}}>
-        <section class="modal-content">
+<div id="modal-container" {{action "closeModal"}}>
+    <article {{bind-attr class="klass :js-modal"}}>
+        <section class="modal-content" {{action bubbles=false preventDefault=false}}>
             {{#if title}}<header class="modal-header"><h1>{{title}}</h1></header>{{/if}}
             {{#if showClose}}<a class="close" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>{{/if}}
             <section class="modal-body">
@@ -19,4 +19,4 @@
         </section>
     </article>
 </div>
-<div class="modal-background fade" {{action "closeModal"}}></div>
+<div class="modal-background fade"></div>
