@@ -58,15 +58,7 @@ apiRoutes = function (middleware) {
     // ## Mail
     router.post('/mail', api.http(api.mail.send));
     router.post('/mail/test', function (req, res) {
-        api.settings.read('email').then(function (result) {
-            // attach the to: address to the request body so that it is available
-            // to the http api handler
-            req.body = { to: result.settings[0].value };
-
-            api.http(api.mail.sendTest)(req, res);
-        }).catch(function () {
-            api.http(api.mail.sendTest)(req, res);
-        });
+        api.http(api.mail.sendTest)(req, res);
     });
 
 

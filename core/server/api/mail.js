@@ -58,19 +58,23 @@ mail = {
      * @param {Object} required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: function (object, options) {
+    sendTest: function (options) {
+        var user = require('../models/user').User;
 
-        return mail.generateContent({template: 'test'}).then(function (emailContent) {
-            var payload = {mail: [{
-                message: {
-                    to: object.to,
-                    subject: 'Test Ghost Email',
-                    html: emailContent.html,
-                    text: emailContent.text
-                }
-            }]};
-
-            return mail.send(payload, options);
+        return user.findOne({id: options.context.user}).then(function (result) {
+            return mail.generateContent({template: 'test'}).then(function (emailContent) {
+                var payload = {mail: [{
+                    message: {
+                        to: result.get('email'),
+                        subject: 'Test Ghost Email',
+                        html: emailContent.html,
+                        text: emailContent.text
+                    }
+                }]};
+                return mail.send(payload, options);
+            });
+        }, function () {
+            return when.reject(new errors.NotFoundError('Could not find the current user'));
         });
     },
 
