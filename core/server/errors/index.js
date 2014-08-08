@@ -100,7 +100,13 @@ errors = {
         stack = err ? err.stack : null;
 
         err = _.isString(err) ? err : (_.isObject(err) ? err.message : 'An unknown error occurred.');
-
+        
+        // Overwrite error to provide information that this is probably a permission problem
+        // TODO: https://github.com/TryGhost/Ghost/issues/3687
+        if (err.indexOf('SQLITE_READONLY') !== -1) {
+            context = "Your database is in read only mode. Visitors can read your blog, but you can't log in or add posts.";
+            help = "Check your database file and make sure that file owner and permissions are correct.";
+        }
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
