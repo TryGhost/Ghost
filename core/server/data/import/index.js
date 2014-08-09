@@ -42,6 +42,10 @@ cleanError = function cleanError(error) {
 handleErrors = function handleErrors(errorList) {
     var processedErrors = [];
 
+    if (!_.isArray(errorList)) {
+        return when.reject(errorList);
+    }
+
     _.each(errorList, function (error) {
         if (!error.raw) {
             // These are validation errors

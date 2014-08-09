@@ -73,7 +73,7 @@ DataGenerator.Content = {
     users: [
         {
             name: 'Joe Bloggs',
-            slug: 'joe-blogs',
+            slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
             password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
         },
