@@ -1,13 +1,12 @@
 {
     "meta": {
         "exported_on": 1388318311015,
-        "version": "001"
+        "version": "003"
     },
     "data": {
         "posts": [
             {
                 "id": 1,
-                "uuid": "8492fbba-1102-4b53-8e3e-abe207952f0c",
                 "title": "Welcome to Ghost",
                 "slug": "welcome-to-ghost",
                 "markdown": "You're live! Nice.",
@@ -19,23 +18,22 @@
                 "language": "en_US",
                 "meta_title": null,
                 "meta_description": null,
-                "author_id": 1,
+                "author_id": 2,
                 "created_at": 1388318310782,
                 "created_by": 1,
                 "updated_at": 1388318310782,
                 "updated_by": 1,
                 "published_at": 1388318310783,
-                "published_by": 1
+                "published_by": 2
             }
         ],
         "users": [
             {
                 "id": 1,
-                "uuid": "e5188224-4742-4c32-a2d6-e9c5c5d4c123",
                 "name": "Joe Bloggs",
-                "slug": "joe-bloggs",
-                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                "slug": "joe-blogs",
                 "email": "jbloggs@example.com",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6",
                 "image": null,
                 "cover": null,
                 "bio": "A blogger",
@@ -47,7 +45,7 @@
                 "meta_title": null,
                 "meta_description": null,
                 "last_login": null,
-                "created_at": 1388319501897,
+                "created_at": 1388319432895,
                 "created_by": 1,
                 "updated_at": null,
                 "updated_by": null
@@ -88,8 +86,13 @@
         "roles_users": [
             {
                 "id": 1,
-                "role_id": 1,
+                "role_id": 3,
                 "user_id": 1
+            },
+            {
+                "id": 1,
+                "role_id": 1,
+                "user_id": 2
             }
         ],
         "permissions": [
@@ -286,7 +289,7 @@
                 "uuid": "f3afce35-5166-453e-86c3-50dfff74dca7",
                 "key": "activeApps",
                 "value": "[]",
-                "type": "app",
+                "type": "plugin",
                 "created_at": 1388318310831,
                 "created_by": 1,
                 "updated_at": 1388318310831,
@@ -297,7 +300,7 @@
                 "uuid": "2ea560a3-2304-449d-a62b-f7b622987510",
                 "key": "installedApps",
                 "value": "[]",
-                "type": "app",
+                "type": "plugin",
                 "created_at": 1388318310831,
                 "created_by": 1,
                 "updated_at": 1388318310831,
@@ -307,7 +310,6 @@
         "tags": [
             {
                 "id": 1,
-                "uuid": "a950117a-9735-4584-931d-25a28015a80d",
                 "name": "Getting Started",
                 "slug": "getting-started",
                 "description": null,
@@ -318,13 +320,32 @@
                 "created_by": 1,
                 "updated_at": 1388318310790,
                 "updated_by": 1
-            }
-        ],
-        "posts_tags": [
+            },
             {
-                "id": 1,
-                "post_id": 1,
-                "tag_id": 1
+                "id": 2,
+                "name": "Another tag",
+                "slug": "another-tag",
+                "description": null,
+                "parent_id": null,
+                "meta_title": null,
+                "meta_description": null,
+                "created_at": 1388318310790,
+                "created_by": 2,
+                "updated_at": 1388318310790,
+                "updated_by": 2
+            },
+            {
+                "id": 3,
+                "name": "Taggy goodness",
+                "slug": "taggy-goodness",
+                "description": null,
+                "parent_id": null,
+                "meta_title": null,
+                "meta_description": null,
+                "created_at": 1388318310790,
+                "created_by": 3,
+                "updated_at": 1388318310790,
+                "updated_by": 1
             }
         ]
     }

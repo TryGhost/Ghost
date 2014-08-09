@@ -1,8 +1,10 @@
-var when   = require('when'),
-    _      = require('lodash'),
-    models = require('../../models'),
+var when        = require('when'),
+    _           = require('lodash'),
+    models      = require('../../models'),
+    errors      = require('../../errors'),
+    globalUtils = require('../../utils'),
 
-    internal = {context: {internal: true}},
+    internal    = {context: {internal: true}},
     utils,
     areEmpty,
     updatedSettingKeys,
@@ -33,6 +35,72 @@ stripProperties = function stripProperties(properties, data) {
 };
 
 utils = {
+    processUsers: function preProcessUsers(tableData, owner, existingUsers, objs) {
+        // We need to:
+        // 1. figure out who the owner of the blog is
+        // 2. figure out what users we have
+        // 3. figure out what users the import data refers to in foreign keys
+        // 4. try to map each one to a user
+        var userKeys = ['created_by', 'updated_by', 'published_by', 'author_id'],
+            userMap = {};
+
+        // Search the passed in objects for any user foreign keys
+        _.each(objs, function (obj) {
+            if (tableData[obj]) {
+                // For each object in the tableData that matches
+                _.each(tableData[obj], function (data) {
+                    //console.log('checking ' + obj + ' ' + data.slug);
+                    // For each possible user foreign key
+                    _.each(userKeys, function (key) {
+                        if (_.has(data, key) && data[key] !== null) {
+                            //console.log('found ' + key + ' with value ' + data[key]);
+                            userMap[data[key]] = {};
+                        }
+                    });
+                });
+            }
+        });
+
+        // We now have a list of users we need to figure out what their email addresses are
+        _.each(_.keys(userMap), function (userToMap) {
+            userToMap = parseInt(userToMap, 10);
+            var foundUser = _.find(tableData.users, function (tableDataUser) {
+                return tableDataUser.id === userToMap;
+            });
+
+            // we now know that userToMap's email is foundUser.email - look them up in existing users
+            if (foundUser && _.has(foundUser, 'email') && _.has(existingUsers, foundUser.email)) {
+                existingUsers[foundUser.email].importId = userToMap;
+                userMap[userToMap] = existingUsers[foundUser.email].realId;
+            } else if (userToMap === 1) {
+                // if we don't have user data and the id is 1, we assume this means the owner
+                existingUsers[owner.email].importId = userToMap;
+                userMap[userToMap] = existingUsers[owner.email].realId;
+            } else {
+                throw new errors.DataImportError(
+                    'Attempting to import data linked to unknown user id ' + userToMap, 'user.id', userToMap
+                );
+            }
+        });
+
+        // now replace any user foreign keys
+        _.each(objs, function (obj) {
+            if (tableData[obj]) {
+                // For each object in the tableData that matches
+                _.each(tableData[obj], function (data) {
+                    // For each possible user foreign key
+                    _.each(userKeys, function (key) {
+                        if (_.has(data, key) && data[key] !== null) {
+                            data[key] = userMap[data[key]];
+                        }
+                    });
+                });
+            }
+        });
+
+        return tableData;
+    },
+
     preProcessPostTags: function preProcessPostTags(tableData) {
         var postTags,
             postsWithTags = {};
@@ -117,7 +185,9 @@ utils = {
         });
     },
 
-    importUsers: function importUsers(ops, tableData, transaction) {
+    importUsers: function importUsers(tableData, existingUsers, transaction) {
+        var ops = [];
+
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (user) {
              // Validate minimum user fields
@@ -125,23 +195,23 @@ utils = {
                 return;
             }
 
+            if (_.has(existingUsers, user.email)) {
+                // User is already present, ignore
+                return;
+            }
+
+            // Set password to a random password, and lock the account
+            user.password = globalUtils.uid(50);
+            user.status = 'locked';
+
             ops.push(models.User.add(user, _.extend(internal, {transacting: transaction}))
                 // add pass-through error handling so that bluebird doesn't think we've dropped it
                 .catch(function (error) {
                     return when.reject({raw: error, model: 'user', data: user});
                 }));
         });
-    },
 
-    importSingleUser: function importSingleUser(ops, tableData, transaction) {
-        // don't override the users credentials
-        tableData = stripProperties(['id', 'email', 'password'], tableData);
-        tableData[0].id = 1;
-        ops.push(models.User.edit(tableData[0], _.extend(internal, {id: 1, transacting: transaction}))
-            // add pass-through error handling so that bluebird doesn't think we've dropped it
-            .otherwise(function (error) {
-                return when.reject(error);
-            }));
+        return ops;
     },
 
     importSettings: function importSettings(ops, tableData, transaction) {
