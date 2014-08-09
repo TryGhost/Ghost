@@ -1,0 +1,28 @@
+<section class="error-content error-404 js-error-container">
+    <section class="error-details">
+         <figure class="error-image">
+             <img class="error-ghost" {{bind-attr src=ghostPaths.errorImageSrc srcset=ghostPaths.errorImageSrcSet}} />
+         </figure>
+         <section class="error-message">
+             <h1 class="error-code">{{code}}</h1>
+             <h2 class="error-description">{{message}}</h2>
+             <a class="error-link" {{bind-attr href=ghostPaths.blogRoot}}>Go to the front page →</a>
+         </section>
+    </section>
+</section>
+
+{{#if stack}}
+    <section class="error-stack">
+        <h3>Stack Trace</h3>
+        <p><strong>{{message}}</strong></p>
+        <ul class="error-stack-list">
+            {{#each stack}}
+                <li>
+                    at
+                    {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
+                    <span class="error-stack-file">({{at}})</span>
+                </li>
+            {{/each}}
+        </ul>
+    </section>
+{{/if}}
