@@ -172,7 +172,7 @@ function checkSSL(req, res, next) {
             // Check if forceAdminSSL: { redirect: false } is set, which means
             // we should just deny non-SSL access rather than redirect
             if (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect) {
-                return res.send(403);
+                return res.status(403).end();
             }
 
             redirectUrl = url.parse(config.urlSSL || config.url);
@@ -285,7 +285,7 @@ setupMiddleware = function (server) {
 
     // Body parsing
     expressServer.use(bodyParser.json());
-    expressServer.use(bodyParser.urlencoded());
+    expressServer.use(bodyParser.urlencoded({ extended: true }));
 
     expressServer.use(passport.initialize());
 
