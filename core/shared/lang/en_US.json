@@ -1,0 +1,25 @@
+{
+    "__SECTION__": "admin core",
+    "admin.navbar.blog": "Blog",
+    "admin.navbar.settings": "Settings",
+
+    "__SECTION__": "icons",
+    "icon.tag.label": "Tag",
+    "icon.faq.label": "?",
+    "icon.faq.markdown.title": "What is Markdown?",
+    "icon.full_screen.label": "Full Screen",
+    "icon.full_screen.title": "Enter full screen mode",
+    "icon.settings.label": "Settings",
+
+    "__SECTION__": "editor",
+    "editor.entry_title.placeholder": "Your Post Title",
+    "editor.entry_permalink.label": "Permalink:",
+    "editor.entry_permalink.example_url": "http://yoursite.com/",
+    "editor.entry_permalink.example_slug": "the-post-title-goes-here",
+    "editor.headers.markdown.label": "Markdown",
+    "editor.headers.preview.label": "Preview",
+    "editor.word_count": "%{count} words",
+    "editor.actions.save_draft": "Save Draft",
+    "editor.actions.publish": "Publish"
+
+}

@@ -1,0 +1,4 @@
+    <input data-url="upload" class="button-add" type="file" name="importfile" {{bind-attr accept=options.acceptEncoding}}>
+    <button type="submit" class="button-save" id="startupload" {{bind-attr disabled=uploadButtonDisabled}} {{action "upload"}}>
+        {{uploadButtonText}}
+    </button>

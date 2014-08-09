@@ -1,0 +1,57 @@
+<div class="wrapper">
+    <aside class="settings-sidebar" role="complementary">
+        <header>
+            <h1 class="title">Ugly Debug Tools</h1>
+        </header>
+        <nav class="settings-menu">
+            <ul>
+                <li class="general"><a href="javascript:void(0);">General</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <section class="settings-content active">
+        <header>
+            <h2 class="title">General</h2>
+        </header>
+        <section class="content">
+            <form id="settings-export">
+                <fieldset>
+                    <div class="form-group">
+                        <label>Export</label>
+                        <a class="button-save" {{action "exportData"}}>Export</a>
+                        <p>Export the blog settings and data.</p>
+                    </div>
+                </fieldset>
+            </form>
+            {{#gh-form id="settings-import" enctype="multipart/form-data"}}
+                <fieldset>
+                    <div class="form-group">
+                        <label>Import</label>
+                        {{partial "import-errors"}}
+                        {{gh-file-upload id="importfile" uploadButtonText=uploadButtonText}}
+                        <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
+                    </div>
+                </fieldset>
+            {{/gh-form}}
+            <form id="settings-resetdb">
+                <fieldset>
+                    <div class="form-group">
+                        <label>Delete all Content</label>
+                        <a href="javascript:void(0);" class="button-delete js-delete" {{action "openModal" "deleteAll"}}>Delete</a>
+                        <p>Delete all posts and tags from the database.</p>
+                    </div>
+                </fieldset>
+            </form>
+            <form id="settings-testmail">
+                <fieldset>
+                    <div class="form-group">
+                        <label>Send a test email</label>
+                        <button type="submit" id="sendtestmail" class="button-save" {{action "sendTestEmail"}}>Send</button>
+                        <p>Sends a test email to your address.</p>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+    </section>
+</div>

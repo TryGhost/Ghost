@@ -1,0 +1,35 @@
+<section class="content-list js-content-list">
+    <header class="floatingheader">
+        <section class="content-filter">
+            <small>All Posts</small>
+        </section>
+        {{#link-to "editor.new" class="button button-add" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
+    </header>
+    {{#view "content-list-content-view" tagName="section"}}
+    <ol class="posts-list">
+        {{#each itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
+        {{#link-to "posts.post" this class="permalink" title="Edit this post"}}
+        <h3 class="entry-title">{{title}}</h3>
+        <section class="entry-meta">
+            <span class="status">
+                {{#if isPublished}}
+                {{#if page}}
+                <span class="page">Page</span>
+                {{else}}
+                <time datetime="{{unbound published_at}}" class="date published">
+                    Published {{gh-format-timeago published_at}}
+                </time>
+                {{/if}}
+                {{else}}
+                <span class="draft">Draft</span>
+                {{/if}}
+            </span>
+        </section>
+        {{/link-to}}
+        {{/each}}
+    </ol>
+    {{/view}}
+</section>
+<section class="content-preview js-content-preview">
+    {{outlet}}
+</section>

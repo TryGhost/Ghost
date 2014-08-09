@@ -1,0 +1,56 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title>{{code}} — {{message}}</title>
+    <meta name="description" content="{{siteDescription}}">
+    <meta name="author" content="">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
+    <link rel="stylesheet" href="{{asset "css/ghost-ui.min.css" ghost="true"}}">
+  </head>
+  <body class="{{bodyClass}}">
+    <main role="main" id="main">
+      <section class="error-content error-404 js-error-container">
+        <section class="error-details">
+          <figure class="error-image">
+            <img
+              class="error-ghost"
+              src="{{asset "img/404-ghost@2x.png" ghost="true"}}"
+              srcset="{{asset "img/404-ghost.png" ghost="true"}} 1x, {{asset "img/404-ghost@2x.png" ghost="true"}} 2x"/>
+          </figure>
+          <section class="error-message">
+            <h1 class="error-code">{{code}}</h1>
+            <h2 class="error-description">{{message}}</h2>
+            <a class="error-link" href="{{@blog.url}}">Go to the front page →</a>
+          </section>
+        </section>
+      </section>
+      {{#if stack}}
+        <section class="error-stack">
+          <h3>Stack Trace</h3>
+          <p><strong>{{message}}</strong></p>
+          <ul class="error-stack-list">
+            {{#each stack}}
+              <li>
+                at
+                {{#if function}}<em class="error-stack-function">{{function}}</em>{{/if}}
+                <span class="error-stack-file">({{at}})</span>
+              </li>
+            {{/each}}
+          </ul>
+        </section>
+      {{/if}}
+    </main>
+  </body>
+</html>

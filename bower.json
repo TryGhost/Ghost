@@ -1,0 +1,29 @@
+{
+  "name": "ghost",
+  "dependencies": {
+    "codemirror": "4.0.1",
+    "Countable": "2.0.2",
+    "device": "git://github.com/matthewhudson/device.js#5347a275b66020a0d4dfe9aad81a488f8cce448d",
+    "ember": "1.6.1",
+    "ember-data": "~1.0.0-beta.8",
+    "ember-load-initializers": "git://github.com/stefanpenner/ember-load-initializers.git#0.0.1",
+    "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#181251821cf513bb58d3e192faa13245a816f75e",
+    "ember-simple-auth": "0.6.4",
+    "fastclick": "1.0.0",
+    "ghost-ui": "~0.8.0",
+    "handlebars": "1.3.0",
+    "ic-ajax": "1.0.1",
+    "jquery": "1.11.0",
+    "jquery-file-upload": "9.5.6",
+    "jquery-hammerjs": "1.0.1",
+    "jquery-ui": "1.10.4",
+    "keymaster": "git://github.com/madrobby/keymaster#0f09fc1b7e66c2b7e07afe89a419366dcf2d1cd8",
+    "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
+    "lodash": "2.4.1",
+    "moment": "2.4.0",
+    "nprogress": "0.1.2",
+    "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
+    "validator-js": "3.4.0",
+    "google-caja": "5669.0.0"
+  }
+}
