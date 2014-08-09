@@ -24,6 +24,7 @@ There are a couple of options for simple installers at the moment:
 *   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
 *   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
 *   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   Run for free on [OpenShift Online](https://www.openshift.com/quickstarts/ghost)
 
 ### Manual Setup
 
@@ -41,6 +42,7 @@ The following links contain instructions on how to get up and running with:
 *   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
 *   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [OpenShift Online](https://www.openshift.com/quickstarts/ghost) - (autoinstaller)
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
 *   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
 
