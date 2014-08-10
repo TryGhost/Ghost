@@ -13,13 +13,17 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     },
-    selectedAuthor: Ember.computed(function () {
+
+    selectedAuthor: null,
+    initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;
+
         return this.get('author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
         });
-    }),
+    }).on('init'),
+
     changeAuthor: function () {
         var author = this.get('author'),
             selectedAuthor = this.get('selectedAuthor'),
