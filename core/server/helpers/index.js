@@ -374,6 +374,17 @@ coreHelpers.apps = function (context, options) {
     return 'false';
 };
 
+// ### Blog Url helper
+//
+// *Usage example:*
+// `{{blog_url}}`
+//
+// Returns the config value for url.
+coreHelpers.blog_url = function (context, options) {
+    /*jshint unused:false*/
+    return config.theme().url.toString();
+};
+
 coreHelpers.ghost_script_tags = function () {
     var scriptList = isProduction ? scriptFiles.production : scriptFiles.development;
 
@@ -874,6 +885,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAdminHelper('apps', coreHelpers.apps);
 
     registerAdminHelper('file_storage', coreHelpers.file_storage);
+
+    registerAdminHelper('blog_url', coreHelpers.blog_url);
 };
 
 module.exports = coreHelpers;

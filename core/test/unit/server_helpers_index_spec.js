@@ -732,12 +732,17 @@ describe('Core Helpers', function () {
     });
 
     describe('url Helper', function () {
+        var configUrl = config.url;
 
         beforeEach(function () {
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
                 return when({ settings: [{ value: '/:slug/' }] });
             });
+        });
+
+        afterEach(function () {
+            configUpdate({url: configUrl});
         });
 
         it('has loaded url helper', function () {
@@ -1773,10 +1778,31 @@ describe('Core Helpers', function () {
                 apps: setting
             });
 
+
             apps = helpers.apps();
 
             should.exist(apps);
             apps.should.equal(setting);
+        });
+    });
+
+    describe('blog_url helper', function () {
+        var configUrl = config.url;
+
+        afterEach(function () {
+            configUpdate({url: configUrl});
+        });
+
+        it('is loaded', function () {
+            should.exist(helpers.blog_url);
+        });
+
+        it('should return the test url by default', function () {
+            var blog_url = helpers.blog_url();
+
+            should.exist(blog_url);
+            // this is set in another test == bad!
+            blog_url.should.equal('http://testurl.com');
         });
     });
 });
