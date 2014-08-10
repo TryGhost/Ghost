@@ -203,13 +203,22 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
                 i = 0;
             for (; i < options.length; i++) {
                 if (options[i].selected) {
-                    return options[i].text === "Author"
+                    return options[i].text === "Author";
                 }
             }
             return false;
         }, 'The "Author" role is selected by default when adding a new user');
     });
 });
+
+CasperTest.begin('User profile screen is correct', 1, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('settings.users');
+    casper.thenClick('.active-users .object-list-item-body');
+    casper.waitForSelector('.user-details-bottom', function then() {
+        test.assertSelectorHasText('.user-details-bottom .form-group p', 'http://127.0.0.1:2369/author/test-user');
+    });
+});
+
 // ### User settings tests
 // Please uncomment and fix these as the functionality is implemented
 

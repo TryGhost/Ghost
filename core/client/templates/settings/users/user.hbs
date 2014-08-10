@@ -62,7 +62,7 @@
                 <label for="user-slug">Slug</label>
                 {{!-- {{input value=user.slug id="user-slug" placeholder="Slug" autocorrect="off"}} --}}
                 {{gh-blur-input class="user-name" id="user-slug" value=slugValue name="user" action="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
-                <p>http://blog-url.com/author/{{slugValue}}</p>
+                <p>{{gh-blog-url}}/author/{{slugValue}}</p>
             </div>
 
             <div class="form-group">
