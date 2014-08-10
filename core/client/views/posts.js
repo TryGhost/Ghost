@@ -28,7 +28,6 @@ var PostsView = Ember.View.extend({
                     self.send('hideContentPreview');
                 });
             });
-            $('[data-off-canvas]').attr('href', this.get('controller.ghostPaths.blogRoot'));
         });
     }.on('didInsertElement'),
 });
