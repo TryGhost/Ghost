@@ -42,7 +42,7 @@ function doFirstRun() {
 
         'Your URL is set to',
         '<strong>' + config.url + '</strong>.',
-        'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
+        'See <a href="http://support.ghost.org/">http://support.ghost.org</a> for instructions.'
     ];
 
     return api.notifications.add({ notifications: [{
@@ -175,7 +175,7 @@ function initNotifications() {
             message: [
                 "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
                 "It is recommended that you explicitly configure an e-mail service,",
-                "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
+                "See <a href=\"http://support.ghost.org/mail\">http://support.ghost.org/mail</a> for instructions"
             ].join(' ')
         }] }, {context: {internal: true}});
     }
@@ -184,7 +184,7 @@ function initNotifications() {
             type: 'warn',
             message: [
                 "Ghost is currently unable to send e-mail.",
-                "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
+                "See <a href=\"http://support.ghost.org/mail\">http://support.ghost.org/mail</a> for instructions"
             ].join(' ')
         }] }, {context: {internal: true}});
     }

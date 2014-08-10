@@ -1,6 +1,6 @@
 // # Ghost Configuration
 // Setup your Ghost install for various environments
-// Documentation can be found at http://docs.ghost.org/usage/configuration/
+// Documentation can be found at http://support.ghost.org/config/
 
 var path = require('path'),
     config;
@@ -12,7 +12,7 @@ config = {
         url: 'http://my-ghost-blog.com',
 
         // Example mail config
-        // Visit http://docs.ghost.org/mail for instructions
+        // Visit http://support.ghost.org/mail for instructions
         // ```
         //  mail: {
         //      transport: 'SMTP',
