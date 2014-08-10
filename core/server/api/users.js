@@ -227,7 +227,6 @@ users = {
                         return dataProvider.User.edit(
                             {status: 'invited'}, _.extend({}, options, {id: user.id})
                         ).then(function (editedUser) {
-                            console.log('user to return 2', user);
                             user = editedUser.toJSON();
                         });
                     }
