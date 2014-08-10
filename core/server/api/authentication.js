@@ -230,7 +230,7 @@ authentication = {
                 errors.logError(
                     error.message,
                     "Unable to send welcome email, your blog will continue to function.",
-                    "Please see http://docs.ghost.org/mail/ for instructions on configuring email."
+                    "Please see http://support.ghost.org/mail/ for instructions on configuring email."
                 );
             });
 

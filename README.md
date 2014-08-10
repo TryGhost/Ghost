@@ -2,7 +2,7 @@
 
 Ghost is a free, open, simple blogging platform that's available to anyone who wants to use it. Lovingly created and maintained by [John O'Nolan](http://twitter.com/JohnONolan) + [Hannah Wolfe](http://twitter.com/ErisDS) + an amazing group of [contributors](https://github.com/TryGhost/Ghost/contributors).
 
-Visit the project's website at <http://ghost.org> &bull; docs on <http://docs.ghost.org>.
+Visit the project's website at <http://ghost.org> &bull; docs on <http://support.ghost.org>.
 
 ## Getting Involved
 
@@ -18,7 +18,7 @@ There are **two** main ways to get started with Ghost, take care to use the meth
 
 If you just want to get a Ghost blog running in the fastest time possible, this method is for you.
 
-For detailed instructions for various platforms visit the [Ghost Installation Guide](http://docs.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
+For detailed instructions for various platforms visit the [Ghost Installation Guide](http://support.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
 
 1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
@@ -29,7 +29,7 @@ For detailed instructions for various platforms visit the [Ghost Installation Gu
 1. To start ghost, run `npm start`
 1. Visit `http://localhost:2368/` in your web browser or go to `http://localhost:2368/ghost` to log in
 
-Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
 
 
@@ -50,13 +50,13 @@ Please do **NOT** use the master branch of Ghost in production. If you are using
 
 Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
 
-Check out the [Documentation](http://docs.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
 If you want to use [Ghost as a NPM module there is a Wiki entry](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module) where you can find instructions on how to get set up.
 
 ### Upgrading to The Latest Version
 
-Upgrade instructions are in the [Ghost Guide](http://docs.ghost.org/installation/upgrading/)
+Upgrade instructions can be found on the [Ghost Support Site](http://support.ghost.org/how-to-upgrade/)
 
 ### Logging in For The First Time
 
