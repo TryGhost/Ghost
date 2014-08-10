@@ -133,7 +133,7 @@ describe('User API', function () {
         });
 
         it('can retrieve a user by slug', function (done) {
-            request.get(testUtils.API.getApiQuery('users/slug/joe-blogs/'))
+            request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -221,7 +221,7 @@ describe('User API', function () {
         });
 
         it('can retrieve a user by slug with role and permissions', function (done) {
-            request.get(testUtils.API.getApiQuery('users/slug/joe-blogs/?include=roles,roles.permissions'))
+            request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/?include=roles,roles.permissions'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect(200)

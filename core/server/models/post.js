@@ -73,7 +73,9 @@ Post = ghostBookshelf.Model.extend({
                 this.set('published_at', new Date());
             }
             // This will need to go elsewhere in the API layer.
-            this.set('published_by', this.contextUser(options));
+            if (!this.get('published_by')) {
+                this.set('published_by', this.contextUser(options));
+            }
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {

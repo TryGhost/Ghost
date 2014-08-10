@@ -23,6 +23,7 @@ var when          = require('when'),
     setup,
     doAuth,
 
+    initFixtures,
     initData,
     clearData;
 
@@ -185,7 +186,9 @@ fixtures = {
 
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
-        return knex('users').insert(user);
+        return knex('users').insert(user).then(function () {
+            return knex('roles_users').insert(DataGenerator.forKnex.roles_users[0]);
+        });
     },
 
     overrideOwnerUser: function overrideOwnerUser() {
@@ -353,7 +356,7 @@ toDoList = {
     'posts': function insertPosts() { return fixtures.insertPosts(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     'apps': function insertApps() { return fixtures.insertApps(); },
-    'settings': function populate() {
+    'settings': function populateSettings() {
         return settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
@@ -410,6 +413,16 @@ getFixtureOps = function getFixtureOps(toDos) {
 
 // ## Test Setup and Teardown
 
+initFixtures = function initFixtures() {
+    var options = _.merge({'init': true}, _.transform(arguments, function (result, val) {
+                result[val] = true;
+            })
+        ),
+        fixtureOps = getFixtureOps(options);
+
+    return sequence(fixtureOps);
+};
+
 /**
  * ## Setup Integration Tests
  * Setup takes a list of arguments like: 'default', 'tag', 'perms:tag', 'perms:init'
@@ -417,14 +430,11 @@ getFixtureOps = function getFixtureOps(toDos) {
  * @returns {Function}
  */
 setup = function setup() {
-    var options = _.merge({'init': true}, _.transform(arguments, function (result, val) {
-                result[val] = true;
-            })
-        ),
-        fixtureOps = getFixtureOps(options);
+    var self = this,
+        args = arguments;
 
     return function (done) {
-        return sequence(fixtureOps).then(function () {
+        return initFixtures.apply(self, args).then(function () {
             done();
         }).catch(done);
     };
@@ -433,7 +443,7 @@ setup = function setup() {
 /**
  * ## DoAuth For Route Tests
  *
- * This function manages the work of ensuring we have an overriden owner user, and grabbing an access token
+ * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
  * @returns {deferred.promise<AccessToken>}
  */
 // TODO make this do the DB init as well
@@ -480,6 +490,7 @@ module.exports = {
     setup: setup,
     doAuth: doAuth,
 
+    initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
 
