@@ -14,9 +14,16 @@
   <meta name="description" content="{{ page.meta_description }}" />
   {% endif %}
 
-  <link rel="canonical" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">
+  {% if page.canonical %}
+  <link rel="canonical" href="{{ page.canonical }}" />
+  <link rel="alternate" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
+
+  {% else %}
+  <link rel="canonical" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
+  {% endif %}
+
   {% for lang in site.languages %}
-  <link rel="alternate" hreflang="{{ lang.key }}" href="{{ site.url }}/{% if lang.key != 'en' %}{{ lang.key }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}">
+  <link rel="alternate" hreflang="{{ lang.key }}" href="{{ site.url }}/{% if lang.key != 'en' %}{{ lang.key }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
   {% endfor %}
 
   <link rel="stylesheet" href="{{ site.url }}/assets/css/bootstrap.css" >
@@ -29,6 +36,12 @@
 
   <link rel="shortcut icon" href="{{ site.url }}/assets/img/favicon.ico">
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+
+  {% if page.canonical and page.redirectToCanonical %}
+    <script type="text/javascript">
+      window.location.href = '{{ page.canonical }}';
+    </script>
+  {% endif %}
 
   <script type="text/javascript">
     var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
@@ -124,6 +137,7 @@
 
   {{ content }}
 
+
 </main>
 
 <footer id="global-footer">
@@ -135,7 +149,9 @@
 
 <script src="{{ site.url }}/assets/js/jquery.js"></script>
 <script src="{{ site.url }}/assets/js/bootstrap.min.js"></script>
+<script src="{{ site.url }}/assets/js/anchor.min.js"></script>
 <script src="{{ site.url }}/assets/js/main.js"></script>
+
 
 </body>
 </html>

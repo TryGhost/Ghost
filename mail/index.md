@@ -13,7 +13,7 @@ The following documentation details how to configure email in Ghost. Ghost uses 
 
 ### Wait what?
 
-If you're familiar with PHP land, then you're probably very used to having email just magically work on your hosting platform. Node is a bit different, it's shiny and new and still a little rough around the edges in places.
+Most other other blogging platforms are based on a scripting language called PHP. If you’ve used those platforms before, you’re probably used to having email just magically work. Ghost is based on Node.js. Node is shiny and new, and still a little rough around the edges. It requires some configuration to get email working.
 
 But don't fear, setting up your email is a one-time thing and we're here to walk you through it.
 
@@ -36,7 +36,7 @@ Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account.
 You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your sandbox domain on the right hand side. Here is an updated screencast to understand exactly where to find these details:
 
 <img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />
-  
+
 Right, now you've got everything you need, it's time to open up your config file. Open your <code class="path">config.js</code> file in the editor of your choice. Navigate to the environment you want to setup mail for, and change your mail settings to look like this:
 
 ```

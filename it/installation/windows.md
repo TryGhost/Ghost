@@ -14,6 +14,8 @@ next_section: linux
 
 # Installazione su Windows <a id="install-windows"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 ### Installare Node.js
 
 *   Su [http://nodejs.org](http://nodejs.org) clicca installa, per scaricare il file '.msi'.

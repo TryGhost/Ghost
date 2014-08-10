@@ -1,7 +1,9 @@
-pygments:     true
+hightlighter: rouge
 permalinks: pretty
 relative_permalinks: false
 markdown: redcarpet
+redcarpet:
+  extensions: ["tables"]
 languages:
     - name: 'English'
       key: 'en'

@@ -15,6 +15,8 @@ next_section: deploy
 
 # Instalando no Linux <a id="install-linux"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 ### Instalar o Node
 
 *   Você pode baixar o arquivo `.tar.gz` do site [http://nodejs.org](http://nodejs.org), ou seguir as instruções para [instalar pelo gerenciador de pacotes](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) também.

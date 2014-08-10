@@ -13,6 +13,8 @@ next_section: deploy
 
 # Linux에 Ghost 설치 <a id="install-linux"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 ### Node.js 설치
 
 *   [http://nodejs.org](http://nodejs.org)에서 `.tar.gz` 아카이브를 다운로드하시거나 [패키지 관리자로 Node.js를 설치](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)하는 방법을 따라하세요.

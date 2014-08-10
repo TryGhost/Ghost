@@ -14,6 +14,8 @@ next_section: linux
 
 # 在 Windows 上安装<a id="install-windows"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 ### 安装 Node
 
 *   访问 [http://nodejs.org](http://nodejs.org) 点击 install， 将会下载一个 '.msi' 文件。

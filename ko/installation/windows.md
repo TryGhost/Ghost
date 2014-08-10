@@ -14,6 +14,8 @@ next_section: linux
 
 # 윈도우에 설치하기 <a id="install-windows"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 ### Node 설치
 
 *   [http://nodejs.org](http://nodejs.org)에서 INSTALL 버튼을 눌러 '.msi' 파일을 다운로드합니다.

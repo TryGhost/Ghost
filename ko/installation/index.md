@@ -11,6 +11,8 @@ next_section: mac
 
 ## 개요 <a id="overview"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 Ghost 문서는 작업중인 부분이 많으며 지속적으로 개선되고 있습니다. 안내대로 진행이 안 되거나 개선할 부분이 있으면 알려주시기 바랍니다.
 
 Ghost는 [Node.js](http://nodejs.org)를 이용해 만들었으며, Node.js의 `0.10.*`(최신 안정 버전)이 필요합니다.

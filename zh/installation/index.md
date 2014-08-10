@@ -11,6 +11,8 @@ next_section: mac
 
 ## 概览 <a id="overview"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 Ghost文档还不完备，仍在继续完善中，每天可能都会有更新和改进。如果你遇到了难题或者有改进意见，请告诉我们。
 
 Ghost构建于[Node.js](http://nodejs.org)平台之上，支持`0.10.*`版本（最新稳定版）的Node.js。

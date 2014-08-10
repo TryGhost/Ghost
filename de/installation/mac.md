@@ -15,6 +15,8 @@ next_section: windows
 
 # Installation auf einem Mac <a id="install-mac"></a>
 
+<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+
 Um Node.js auf deinem Mac zu installieren, wirst du ein Terminal brauchen. Um dieses zu starten, öffne Spotlight und gib "Terminal" ein.
 
 ### Node installieren
