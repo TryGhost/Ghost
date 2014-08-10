@@ -1,3 +1,7 @@
+import ghostPaths from 'ghost/utils/ghost-paths';
+
+var Ghost = ghostPaths();
+
 var AuthenticationInitializer = {
 
     name: 'authentication',
@@ -17,7 +21,7 @@ var AuthenticationInitializer = {
             }.property()
         });
         SimpleAuth.Authenticators.OAuth2.reopen({
-            serverTokenEndpoint: '/ghost/api/v0.1/authentication/token',
+            serverTokenEndpoint: Ghost.apiRoot + '/authentication/token',
             refreshAccessTokens: true,
             makeRequest: function (url, data) {
                 data.client_id = 'ghost-admin';
