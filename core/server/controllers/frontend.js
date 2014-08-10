@@ -450,14 +450,14 @@ frontendControllers = {
                 if (isTag()) {
                     if (page.meta.filters.tags) {
                         title = page.meta.filters.tags[0].name + ' - ' + title;
-                        feedUrl = feedUrl + 'tag/' + page.meta.filters.tags[0].slug + '/';
+                        feedUrl = siteUrl + 'tag/' + page.meta.filters.tags[0].slug + '/rss/';
                     }
                 }
 
                 if (isAuthor()) {
                     if (page.meta.filters.author) {
                         title = page.meta.filters.author.name + ' - ' + title;
-                        feedUrl = feedUrl + 'author/' + page.meta.filters.author.slug + '/';
+                        feedUrl = siteUrl + 'author/' + page.meta.filters.author.slug + '/rss/';
                     }
                 }
 
