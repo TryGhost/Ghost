@@ -45,8 +45,8 @@
 }
 .nav-item.active .nav-label,
 .nav-item:hover .nav-label {
-    color: rgba(255,255,255,0.9);
-    background: darken($darkgrey, 7%);
+    color: #fff;
+    background: darken($darkgrey, 9%);
     @include transition(color 0.1s, background 0.1s);
 }
 
