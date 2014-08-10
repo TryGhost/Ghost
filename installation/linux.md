@@ -9,6 +9,8 @@ chapter: installation
 section: linux
 prev_section: windows
 next_section: deploy
+canonical: http://support.ghost.org/installing-ghost-linux/
+redirectToCanonical: true
 ---
 
 

@@ -9,6 +9,8 @@ chapter: installation
 section: mac
 prev_section: installation
 next_section: windows
+canonical: http://support.ghost.org/installing-ghost-mac/
+redirectToCanonical: true
 ---
 
 

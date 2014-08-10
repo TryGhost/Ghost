@@ -9,6 +9,8 @@ chapter: installation
 section: windows
 prev_section: mac
 next_section: linux
+canonical: http://support.ghost.org/installing-ghost-windows/
+redirectToCanonical: true
 ---
 
 # Installing on Windows <a id="install-windows"></a>

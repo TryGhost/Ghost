@@ -85,15 +85,13 @@
             {% endif %}
           </a>
         </li>
+        {% if page.lang %}
         <li>
-          <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}mail/">
-            {% if page.lang %}
-              {{site.translations.[page.lang].email}}
-            {% else %}
-              Email
-            {% endif %}
+          <a href="{{ site.url }}/{{page.lang}}/mail/">
+            {{site.translations.[page.lang].email}}
           </a>
         </li>
+        {% endif %}
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}themes/">
             {% if page.lang %}

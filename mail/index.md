@@ -4,6 +4,8 @@ meta_title: Ghost Mail Configuration - Ghost Docs
 meta_description: How to configure your email server and send emails with the Ghost blogging platform. Everything you need to know.
 heading: Setting up Email
 chapter: mail
+canonical: http://support.ghost.org/mail/
+redirectToCanonical: true
 ---
 
 
