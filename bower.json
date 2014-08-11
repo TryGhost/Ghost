@@ -10,7 +10,7 @@
     "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#181251821cf513bb58d3e192faa13245a816f75e",
     "ember-simple-auth": "0.6.4",
     "fastclick": "1.0.0",
-    "ghost-ui": "~0.8.0",
+    "ghost-ui": "0.8.13",
     "handlebars": "1.3.0",
     "ic-ajax": "1.0.1",
     "jquery": "1.11.0",

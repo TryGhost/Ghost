@@ -355,7 +355,7 @@ coreHelpers.excerpt = function (options) {
 coreHelpers.file_storage = function (context, options) {
     /*jshint unused:false*/
     if (config.hasOwnProperty('fileStorage')) {
-        return config.fileStorage.toString();
+        return _.isObject(config.fileStorage) ? 'true' : config.fileStorage.toString();
     }
     return 'true';
 };

@@ -1,6 +1,6 @@
 {
     "name"        : "ghost",
-    "version"     : "0.5.0-rc4",
+    "version"     : "0.5.0",
     "description" : "Just a blogging platform.",
     "author"      : "Ghost Foundation",
     "homepage"    : "http://ghost.org",
@@ -32,7 +32,7 @@
     "engineStrict": true,
     "dependencies": {
         "bcryptjs": "0.7.10",
-        "body-parser": "1.0.2",
+        "body-parser": "1.6.3",
         "bookshelf": "0.7.6",
         "busboy": "0.2.3",
         "colors": "0.6.2",
@@ -41,7 +41,7 @@
         "connect-slashes": "1.2.0",
         "cookie-parser": "1.0.1",
         "downsize": "0.0.5",
-        "express": "4.1.1",
+        "express": "4.8.3",
         "express-hbs": "0.7.10",
         "express-session": "1.0.4",
         "fs-extra": "0.8.1",

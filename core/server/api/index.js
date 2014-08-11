@@ -265,7 +265,7 @@ http = function (apiMethod) {
                 // #### Error
                 var httpErrors = formatHttpErrors(error);
                 // Send a properly formatted HTTP response containing the errors
-                res.json(httpErrors.statusCode, {errors: httpErrors.errors});
+                res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
             });
     };
 };

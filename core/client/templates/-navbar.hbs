@@ -1,7 +1,12 @@
 <header id="global-header" class="navbar">
-    <button {{action "toggleSidebarOrGoHome" target="view"}} class="ghost-logo">
+    
+    <button {{action "toggleSidebarOrGoHome" target="view"}} class="ghost-logo ghost-logo-button">
         <span class="hidden">Ghost</span>
     </button>
+    <a class="ghost-logo ghost-logo-link">
+        <span class="hidden">Ghost</span>
+    </a>
+
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
             {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
