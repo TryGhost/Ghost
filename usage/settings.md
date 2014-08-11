@@ -9,6 +9,8 @@ section: settings
 permalink: /usage/settings/
 prev_section: configuration
 next_section: managing
+canonical: http://support.ghost.org/blog-settings-overview/
+redirectToCanonical: true
 ---
 
 ##  Ghost Settings <a id="settings"></a>

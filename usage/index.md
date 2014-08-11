@@ -6,6 +6,8 @@ heading: Using Ghost
 subheading: Finding your way around, and getting set up the way you want
 chapter: usage
 next_section: configuration
+canonical: http://support.ghost.org/getting-started/
+redirectToCanonical: true
 ---
 
 ## Overview <a id="overview"></a>

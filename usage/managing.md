@@ -9,6 +9,9 @@ section: managing
 permalink: /usage/managing/
 prev_section: settings
 next_section: writing
+canonical: http://support.ghost.org/how-to-publish-a-post/
+redirectToCanonical: true
+
 ---
 
 
