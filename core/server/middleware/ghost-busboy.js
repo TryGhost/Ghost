@@ -64,7 +64,7 @@ function ghostBusBoy(req, res, next) {
 
     busboy.on('error', function (error) {
         console.log('Error', 'Something went wrong parsing the form', error);
-        res.send(500, {code: 500, message: 'Could not parse upload completely.'});
+        res.status(500).send({code: 500, message: 'Could not parse upload completely.'});
     });
 
     busboy.on('field', function (fieldname, val) {
