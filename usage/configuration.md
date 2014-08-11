@@ -9,6 +9,8 @@ section: configuration
 permalink: /usage/configuration/
 prev_section: usage
 next_section: settings
+canonical: http://support.ghost.org/config/
+redirectToCanonical: true
 ---
 
 

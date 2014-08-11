@@ -8,6 +8,8 @@ permalink: /installation/troubleshooting/
 chapter: installation
 section: troubleshooting
 prev_section: upgrading
+canonical: http://support.ghost.org/troubleshooting/
+redirectToCanonical: true
 ---
 
 

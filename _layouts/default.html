@@ -68,14 +68,12 @@
     <div class="nav-collapse collapse bs-navbar-collapse">
       <ul class="nav navbar-nav">
         <li>
-          <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}installation/">
-            {% if page.lang %}
+          {% if page.lang %}
+          <a href="{{ site.url }}/{{page.lang}}/installation/">
               {{site.translations.[page.lang].installation}}
-            {% else %}
-              Installation
-            {% endif %}
           </a>
         </li>
+        {% endif %}
         <li>
           <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}usage/">
             {% if page.lang %}

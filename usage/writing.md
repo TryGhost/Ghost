@@ -9,6 +9,9 @@ section: writing
 permalink: /usage/writing/
 prev_section: managing
 next_section: faq
+canonical: http://support.ghost.org/markdown-guide/
+redirectToCanonical: true
+
 ---
 
 ##  Writing posts <a id="writing"></a>

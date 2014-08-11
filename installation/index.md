@@ -6,6 +6,8 @@ heading: Installing Ghost &amp; Getting Started
 subheading: The first steps to setting up your new blog for the first time.
 chapter: installation
 next_section: mac
+canonical: http://support.ghost.org/installation/
+redirectToCanonical: true
 ---
 
 # Overview
@@ -48,5 +50,5 @@ If you've already decided to deploy Ghost to your server or hosting account, tha
 </div>
 
 Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our [upgrading documentation](http://support.ghost.org/how-to-upgrade/).
-    If you get stuck, checkout the [troubleshooting guide]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), or if that doesn't help, please get in touch via the [Ghost forum](http://ghost.org/forum) where the Ghost staff and community are on hand to help you with any problems.
+    If you get stuck, checkout the [troubleshooting guide](http://support.ghost.org/troubleshooting/), or if that doesn't help, please get in touch via the [Ghost forum](http://ghost.org/forum) where the Ghost staff and community are on hand to help you with any problems.
 
