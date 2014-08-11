@@ -15,6 +15,9 @@ var PostsView = Ember.View.extend({
                 }
             });
 
+            // ### Add the blog URL to the <a> version of the ghost logo
+            $('.ghost-logo-link').attr('href', this.get('controller.ghostPaths').blogRoot);
+
             // ### Show content preview when swiping left on content list
             $('.manage').on('click', '.content-list ol li', function (event) {
                 responsiveAction(event, '(max-width: 800px)', function () {
