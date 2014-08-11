@@ -1,9 +1,15 @@
 var ApplicationView = Ember.View.extend({
+
     setupCloseSidebar: function () {
+
         // #### Navigating within the sidebar closes it.
         $(document).on('click', '.js-close-sidebar', function () {
             $('body').removeClass('off-canvas');
         });
+
+        // #### Add the blog URL to the <a> version of the ghost logo
+        $('.ghost-logo-link').attr('href', this.get('controller.ghostPaths').blogRoot);
+
     }.on('didInsertElement'),
     
     actions: {
