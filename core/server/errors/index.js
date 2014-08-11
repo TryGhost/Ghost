@@ -230,14 +230,14 @@ errors = {
                 stack: stack
             }, function (templateErr, html) {
                 if (!templateErr) {
-                    return res.send(code, html);
+                    return res.status(code).send(html);
                 }
                 // There was an error trying to render the error page, output the error
                 self.logError(templateErr, 'Error whilst rendering error page', 'Error template has an error');
 
                 // And then try to explain things to the user...
                 // Cheat and output the error using handlebars escapeExpression
-                return res.send(500,
+                return res.status(500).send(
                     '<h1>Oops, seems there is an an error in the error template.</h1>' +
                     '<p>Encountered the error: </p>' +
                     '<pre>' + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + '</pre>' +
@@ -268,7 +268,7 @@ errors = {
         if (req.method === 'GET') {
             this.renderErrorPage(404, message, req, res, next);
         } else {
-            res.send(404, message);
+            res.status(404).send(message);
         }
     },
 
@@ -304,7 +304,7 @@ errors = {
                 returnErrors.push(errorContent);
             });
 
-            res.json(statusCode, {errors: returnErrors});
+            res.status(statusCode).json({errors: returnErrors});
         }
     }
 };
