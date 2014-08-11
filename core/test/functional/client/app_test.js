@@ -3,19 +3,22 @@
 
 /*globals CasperTest, casper */
 
-CasperTest.begin('Admin navigation bar is correct', 27, function suite(test) {
+CasperTest.begin('Admin navigation bar is correct', 29, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testNavItems() {
-        var contentHref = this.getElementAttribute('#main-menu li.content a', 'href'),
+        var logoHref = this.getElementAttribute('.ghost-logo-link', 'href'),
+            contentHref = this.getElementAttribute('#main-menu li.content a', 'href'),
             editorHref = this.getElementAttribute('#main-menu li.editor a', 'href'),
             settingsHref = this.getElementAttribute('#main-menu li.settings a', 'href');
 
         // Logo
-        test.assertExists('button.ghost-logo', 'Ghost logo home page button exists');
+        test.assertExists('.ghost-logo-button', 'Ghost logo home page button exists');
+        test.assertExists('.ghost-logo-link', 'Ghost logo home page link exists');
+        test.assertEquals(logoHref, '/', 'Ghost logo link href is correct');
 
         // Content
         test.assertExists('#main-menu li.content a', 'Content nav item exists');
