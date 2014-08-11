@@ -403,7 +403,7 @@ User = ghostBookshelf.Model.extend({
                 return user.roles().fetch().then(function (roles) {
                     // return if the role is already assigned
                     if (roles.models[0].id === roleId) {
-                        return user;
+                        return;
                     }
                     return Role.findOne({id: roleId});
                 }).then(function (roleToAssign) {
