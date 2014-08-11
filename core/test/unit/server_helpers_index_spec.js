@@ -1754,6 +1754,21 @@ describe('Core Helpers', function () {
             should.exist(fileStorage);
             fileStorage.should.equal(setting);
         });
+
+        it('should just return true if config.fileStorage is an object', function () {
+            var setting = {someKey: 'someValue'},
+                cfg = helpers.__get__('config'),
+                fileStorage;
+
+            _.extend(cfg, {
+                fileStorage: setting
+            });
+
+            fileStorage = helpers.file_storage();
+
+            should.exist(fileStorage);
+            fileStorage.should.equal('true');
+        });
     });
 
     describe('apps helper', function () {
