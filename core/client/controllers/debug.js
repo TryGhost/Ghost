@@ -50,9 +50,13 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
             ic.ajax.request(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
-                self.notifications.showSuccess('Check your email for the test message:');
-            }).catch(function (response) {
-                self.notifications.showErrors(response);
+                self.notifications.showSuccess('Check your email for the test message.');
+            }).catch(function (error) {
+                if (typeof error.jqXHR !== 'undefined') {
+                    self.notifications.showAPIError(error);
+                } else {
+                    self.notifications.showErrors(error);
+                }
             });
         }
     }
