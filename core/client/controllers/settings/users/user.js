@@ -1,7 +1,12 @@
 import SlugGenerator from 'ghost/models/slug-generator';
-import boundOneWay from 'ghost/utils/bound-one-way';
 
 var SettingsUserController = Ember.ObjectController.extend({
+
+    _lastSlug: null,
+
+    updateLastSlug: Ember.observer(function () {
+        this.set('_lastSlug', this.get('user.slug'));
+    }),
 
     user: Ember.computed.alias('model'),
 
@@ -54,8 +59,6 @@ var SettingsUserController = Ember.ObjectController.extend({
             slugType: 'user'
         });
     }),
-
-    slugValue: boundOneWay('user.slug'),
 
     actions: {
         changeRole: function (newRole) {
@@ -140,7 +143,7 @@ var SettingsUserController = Ember.ObjectController.extend({
         },
 
         updateSlug: function (newSlug) {
-            var slug = this.get('user.slug'),
+            var slug = this.get('_lastSlug'),
                 self = this;
 
             newSlug = newSlug || slug;
@@ -178,7 +181,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                     }
                 }
 
-                self.set('user.slug', serverSlug);
+                self.set('_lastSlug', serverSlug);
             });
         }
     }
