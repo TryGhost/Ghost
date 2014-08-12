@@ -154,6 +154,45 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
     });
 });
 
+CasperTest.begin('Post url input is reset from all whitespace back to original value', 3, function suite(test) {
+    // Create a sample post
+    CasperTest.Routines.createTestPost.run(false);
+
+    // Begin test
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    casper.thenClick('.post-settings');
+
+    casper.waitForOpaque('.post-settings-menu.open');
+
+    var originalSlug;
+    casper.then(function () {
+        originalSlug = casper.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-slug');
+        });
+    });
+
+    // Test change permalink
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': '    '
+        }, false);
+
+        this.click('.post-settings');
+    });
+
+    casper.then(function checkValueMatches() {
+        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        var slugVal = this.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-slug');
+        });
+        test.assertEqual(slugVal, originalSlug);
+    });
+});
+
 CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
