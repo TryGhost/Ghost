@@ -2,15 +2,13 @@ import SlugGenerator from 'ghost/models/slug-generator';
 
 var SettingsUserController = Ember.ObjectController.extend({
 
-    _lastSlug: null,
-
-    updateLastSlug: Ember.observer(function () {
-        this.set('_lastSlug', this.get('user.slug'));
-    }),
-
     user: Ember.computed.alias('model'),
 
     email: Ember.computed.readOnly('user.email'),
+
+    slugValue: Ember.computed.oneWay('user.slug'),
+
+    lastPromise: null,
 
     coverDefault: function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
@@ -106,15 +104,43 @@ var SettingsUserController = Ember.ObjectController.extend({
 
         save: function () {
             var user = this.get('user'),
+                slugValue = this.get('slugValue'),
+                afterUpdateSlug = this.get('lastPromise'),
+                promise,
+                slugChanged,
                 self = this;
 
-            user.save({ format: false }).then(function (model) {
+            if (user.get('slug') !== slugValue) {
+                slugChanged = true;
+                user.set('slug', slugValue);
+            }
+
+            promise = Ember.RSVP.resolve(afterUpdateSlug).then(function () {
+                return user.save({ format: false });
+            }).then(function (model) {
+                var currentPath,
+                    newPath;
+
                 self.notifications.showSuccess('Settings successfully saved.');
+
+                // If the user's slug has changed, change the URL and replace
+                // the history so refresh and back button still work
+                if (slugChanged) {
+                    currentPath = window.history.state.path;
+
+                    newPath = currentPath.split('/');
+                    newPath[newPath.length - 2] = model.get('slug');
+                    newPath = newPath.join('/');
+
+                    window.history.replaceState({ path: newPath }, '', newPath);
+                }
 
                 return model;
             }).catch(function (errors) {
                 self.notifications.showErrors(errors);
             });
+
+            this.set('lastPromise', promise);
         },
 
         password: function () {
@@ -143,46 +169,57 @@ var SettingsUserController = Ember.ObjectController.extend({
         },
 
         updateSlug: function (newSlug) {
-            var slug = this.get('_lastSlug'),
-                self = this;
+            var self = this,
+                afterSave = this.get('lastPromise'),
+                promise;
 
-            newSlug = newSlug || slug;
+            promise = Ember.RSVP.resolve(afterSave).then(function () {
+                var slug = self.get('slug');
 
-            newSlug = newSlug.trim();
+                newSlug = newSlug || slug;
 
-            // Ignore unchanged slugs or candidate slugs that are empty
-            if (!newSlug || slug === newSlug) {
-                return;
-            }
+                newSlug = newSlug.trim();
 
-            this.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
+                // Ignore unchanged slugs or candidate slugs that are empty
+                if (!newSlug || slug === newSlug) {
+                    self.set('slugValue', slug);
 
-                // If after getting the sanitized and unique slug back from the API
-                // we end up with a slug that matches the existing slug, abort the change
-                if (serverSlug === slug) {
                     return;
                 }
 
-                // Because the server transforms the candidate slug by stripping
-                // certain characters and appending a number onto the end of slugs
-                // to enforce uniqueness, there are cases where we can get back a
-                // candidate slug that is a duplicate of the original except for
-                // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+                return self.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
 
-                // get the last token out of the slug candidate and see if it's a number
-                var slugTokens = serverSlug.split('-'),
-                    check = Number(slugTokens.pop());
-
-                // if the candidate slug is the same as the existing slug except
-                // for the incrementor then the existing slug should be used
-                if (_.isNumber(check) && check > 0) {
-                    if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                    // If after getting the sanitized and unique slug back from the API
+                    // we end up with a slug that matches the existing slug, abort the change
+                    if (serverSlug === slug) {
                         return;
                     }
-                }
 
-                self.set('_lastSlug', serverSlug);
+                    // Because the server transforms the candidate slug by stripping
+                    // certain characters and appending a number onto the end of slugs
+                    // to enforce uniqueness, there are cases where we can get back a
+                    // candidate slug that is a duplicate of the original except for
+                    // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+
+                    // get the last token out of the slug candidate and see if it's a number
+                    var slugTokens = serverSlug.split('-'),
+                        check = Number(slugTokens.pop());
+
+                    // if the candidate slug is the same as the existing slug except
+                    // for the incrementor then the existing slug should be used
+                    if (_.isNumber(check) && check > 0) {
+                        if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                            self.set('slugValue', slug);
+
+                            return;
+                        }
+                    }
+
+                    self.set('slugValue', serverSlug);
+                });
             });
+
+            this.set('lastPromise', promise);
         }
     }
 });
