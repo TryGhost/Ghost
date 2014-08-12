@@ -7,12 +7,16 @@ var path          = require('path'),
     when          = require('when'),
     url           = require('url'),
     _             = require('lodash'),
+    knex          = require('knex'),
     requireTree   = require('../require-tree').readAll,
     theme         = require('./theme'),
     configUrl     = require('./url'),
     ghostConfig   = {},
     appRoot       = path.resolve(__dirname, '../../../'),
-    corePath      = path.resolve(appRoot, 'core/');
+    corePath      = path.resolve(appRoot, 'core/'),
+    testingEnvs   = ['testing', 'testing-mysql', 'testing-pg'],
+    defaultConfig = {},
+    knexInstance;
 
 // Are we using sockets? Custom socket or the default?
 function getSocket() {
@@ -23,7 +27,7 @@ function getSocket() {
 }
 
 function updateConfig(config) {
-    var localPath,
+    var localPath = '',
         contentPath,
         subdir;
 
@@ -51,7 +55,14 @@ function updateConfig(config) {
     // Otherwise default to default content path location
     contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
 
+    if (!knexInstance && ghostConfig.database && ghostConfig.database.client) {
+        knexInstance = knex(ghostConfig.database);
+    }
+
     _.merge(ghostConfig, {
+        database: {
+            knex: knexInstance
+        },
         paths: {
             'appRoot':          appRoot,
             'subdir':           subdir,
@@ -71,8 +82,8 @@ function updateConfig(config) {
             'lang':             path.join(corePath, '/shared/lang/'),
             'debugPath':        subdir + '/ghost/debug/',
 
-            'availableThemes':  ghostConfig.paths.availableThemes || [],
-            'availableApps':    ghostConfig.paths.availableApps || [],
+            'availableThemes':  ghostConfig.paths.availableThemes || {},
+            'availableApps':    ghostConfig.paths.availableApps || {},
             'builtScriptPath':  path.join(corePath, 'built/scripts/')
         }
     });
@@ -81,8 +92,6 @@ function updateConfig(config) {
     // configUrl object to maintain
     // clean depedency tree
     configUrl.setConfig(ghostConfig);
-
-    return ghostConfig;
 }
 
 function initConfig(rawConfig) {
@@ -90,7 +99,7 @@ function initConfig(rawConfig) {
     // object so we can later refer to it.
     // Note: this is not the entirety of config.js,
     // just the object appropriate for this NODE_ENV
-    ghostConfig = updateConfig(rawConfig);
+    updateConfig(rawConfig);
 
     return when.all([requireTree(ghostConfig.paths.themePath), requireTree(ghostConfig.paths.appPath)]).then(function (paths) {
         ghostConfig.paths.availableThemes = paths[0];
@@ -99,23 +108,14 @@ function initConfig(rawConfig) {
     });
 }
 
-// Returns NODE_ENV config object
-function config() {
-    // @TODO: get rid of require statement.
-    // This is currently needed for tests to load config file
-    // successfully.  While running application we should never
-    // have to directly delegate to the config.js file.
-    if (_.isEmpty(ghostConfig)) {
-        try {
-            ghostConfig = require(path.resolve(__dirname, '../../../', 'config.js'))[process.env.NODE_ENV] || {};
-        } catch (ignore) {/*jslint strict: true */}
-        ghostConfig = updateConfig(ghostConfig);
-    }
-
-    return ghostConfig;
+if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
+    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 }
 
-module.exports = config;
+// Init config
+updateConfig(defaultConfig);
+
+module.exports = ghostConfig;
 module.exports.init = initConfig;
 module.exports.theme = theme;
 module.exports.getSocket = getSocket;

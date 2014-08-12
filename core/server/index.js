@@ -2,6 +2,7 @@
 var crypto      = require('crypto'),
     express     = require('express'),
     hbs         = require('express-hbs'),
+    compress    = require('compression'),
     fs          = require('fs'),
     uuid        = require('node-uuid'),
     Polyglot    = require('node-polyglot'),
@@ -11,17 +12,18 @@ var crypto      = require('crypto'),
 
     api         = require('./api'),
     config      = require('./config'),
-    errors      = require('./errorHandling'),
+    errors      = require('./errors'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
     middleware  = require('./middleware'),
+    migrations  = require('./data/migration'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
-    routes      = require('./routes'),
     packageInfo = require('../../package.json'),
 
 // Variables
+    httpServer,
     dbHash;
 
 // If we're in development mode, require "when/console/monitor"
@@ -39,32 +41,33 @@ function doFirstRun() {
         '</strong>environment.',
 
         'Your URL is set to',
-        '<strong>' + config().url + '</strong>.',
-        'See <a href="http://docs.ghost.org/">http://docs.ghost.org</a> for instructions.'
+        '<strong>' + config.url + '</strong>.',
+        'See <a href="http://support.ghost.org/">http://support.ghost.org</a> for instructions.'
     ];
 
-    return api.notifications.add({
+    return api.notifications.add({ notifications: [{
         type: 'info',
-        message: firstRunMessage.join(' '),
-        status: 'persistent',
-        id: 'ghost-first-run'
-    });
+        message: firstRunMessage.join(' ')
+    }] }, {context: {internal: true}});
 }
 
 function initDbHashAndFirstRun() {
-    return when(api.settings.read('dbHash')).then(function (hash) {
-        // we already ran this, chill
-        // Holds the dbhash (mainly used for cookie secret)
-        dbHash = hash.value;
+    return api.settings.read({key: 'dbHash', context: {internal: true}}).then(function (response) {
+        var hash = response.settings[0].value,
+            initHash;
+
+        dbHash = hash;
 
         if (dbHash === null) {
-            var initHash = uuid.v4();
-            return when(api.settings.edit('dbHash', initHash)).then(function (settings) {
-                dbHash = settings.dbHash;
-                return dbHash;
-            }).then(doFirstRun);
+            initHash = uuid.v4();
+            return api.settings.edit({settings: [{key: 'dbHash', value: initHash}]}, {context: {internal: true}})
+                .then(function (response) {
+                    dbHash = response.settings[0].value;
+                    return dbHash;
+                }).then(doFirstRun);
         }
-        return dbHash.value;
+
+        return dbHash;
     });
 }
 
@@ -73,10 +76,10 @@ function initDbHashAndFirstRun() {
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config().paths.builtScriptPath,
+        location = config.paths.builtScriptPath,
 
         fileNames = process.env.NODE_ENV === 'production' ?
-                helpers.scriptFiles.production : helpers.scriptFiles.development;
+            helpers.scriptFiles.production : helpers.scriptFiles.development;
 
     function checkExist(fileName) {
         var deferred = when.defer(),
@@ -105,63 +108,86 @@ function builtFilesExist() {
     return when.all(deferreds);
 }
 
-function startGhost(deferred) {
+function ghostStartMessages() {
+    // Tell users if their node version is not supported, and exit
+    if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+        console.log(
+            "\nERROR: Unsupported version of Node".red,
+            "\nGhost needs Node version".red,
+            packageInfo.engines.node.yellow,
+            "you are using version".red,
+            process.versions.node.yellow,
+            "\nPlease go to http://nodejs.org to get a supported version".green
+        );
 
-    return function () {
-        // Tell users if their node version is not supported, and exit
-        if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+        process.exit(0);
+    }
+
+    // Startup & Shutdown messages
+    if (process.env.NODE_ENV === 'production') {
+        console.log(
+            "Ghost is running...".green,
+            "\nYour blog is now available on",
+            config.url,
+            "\nCtrl+C to shut down".grey
+        );
+
+        // ensure that Ghost exits correctly on Ctrl+C
+        process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
-                "\nERROR: Unsupported version of Node".red,
-                "\nGhost needs Node version".red,
-                packageInfo.engines.node.yellow,
-                "you are using version".red,
-                process.versions.node.yellow,
-                "\nPlease go to http://nodejs.org to get a supported version".green
+                "\nGhost has shut down".red,
+                "\nYour blog is now offline"
             );
-
             process.exit(0);
-        }
-
-        // Startup & Shutdown messages
-        if (process.env.NODE_ENV === 'production') {
+        });
+    } else {
+        console.log(
+            ("Ghost is running in " + process.env.NODE_ENV + "...").green,
+            "\nListening on",
+                config.getSocket() || config.server.host + ':' + config.server.port,
+            "\nUrl configured as:",
+            config.url,
+            "\nCtrl+C to shut down".grey
+        );
+        // ensure that Ghost exits correctly on Ctrl+C
+        process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
-                "Ghost is running...".green,
-                "\nYour blog is now available on",
-                config().url,
-                "\nCtrl+C to shut down".grey
+                "\nGhost has shutdown".red,
+                "\nGhost was running for",
+                Math.round(process.uptime()),
+                "seconds"
             );
+            process.exit(0);
+        });
+    }
+}
 
-            // ensure that Ghost exits correctly on Ctrl+C
-            process.on('SIGINT', function () {
-                console.log(
-                    "\nGhost has shut down".red,
-                    "\nYour blog is now offline"
-                );
-                process.exit(0);
-            });
-        } else {
-            console.log(
-                ("Ghost is running in " + process.env.NODE_ENV + "...").green,
-                "\nListening on",
-                config.getSocket() || config().server.host + ':' + config().server.port,
-                "\nUrl configured as:",
-                config().url,
-                "\nCtrl+C to shut down".grey
-            );
-            // ensure that Ghost exits correctly on Ctrl+C
-            process.on('SIGINT', function () {
-                console.log(
-                    "\nGhost has shutdown".red,
-                    "\nGhost was running for",
-                    Math.round(process.uptime()),
-                    "seconds"
-                );
-                process.exit(0);
-            });
-        }
 
-        deferred.resolve();
-    };
+// This is run after every initialization is done, right before starting server.
+// Its main purpose is to move adding notifications here, so none of the submodules
+// should need to include api, which previously resulted in circular dependencies.
+// This is also a "one central repository" of adding startup notifications in case
+// in the future apps will want to hook into here
+function initNotifications() {
+    if (mailer.state && mailer.state.usingSendmail) {
+        api.notifications.add({ notifications: [{
+            type: 'info',
+            message: [
+                "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
+                "It is recommended that you explicitly configure an e-mail service,",
+                "See <a href=\"http://support.ghost.org/mail\">http://support.ghost.org/mail</a> for instructions"
+            ].join(' ')
+        }] }, {context: {internal: true}});
+    }
+    if (mailer.state && mailer.state.emailDisabled) {
+        api.notifications.add({ notifications: [{
+            type: 'warn',
+            message: [
+                "Ghost is currently unable to send e-mail.",
+                "See <a href=\"http://support.ghost.org/mail\">http://support.ghost.org/mail</a> for instructions"
+            ].join(' ')
+        }] }, {context: {internal: true}});
+    }
 }
 
 // ## Initializes the ghost application.
@@ -191,21 +217,26 @@ function init(server) {
         // Initialise the models
         return models.init();
     }).then(function () {
+        // Initialize migrations
+        return migrations.init();
+    }).then(function () {
         // Populate any missing default settings
         return models.Settings.populateDefaults();
     }).then(function () {
         // Initialize the settings cache
         return api.init();
     }).then(function () {
+        // Initialize the permissions actions and objects
+        // NOTE: Must be done before the config.theme.update and initDbHashAndFirstRun calls
+        return permissions.init();
+    }).then(function () {
         // We must pass the api.settings object
         // into this method due to circular dependencies.
-        return config.theme.update(api.settings, config().url);
+        return config.theme.update(api.settings, config.url);
     }).then(function () {
         return when.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-            // Initialize the permissions actions and objects
-            permissions.init(),
             // Initialize mail
             mailer.init(),
             // Initialize apps
@@ -215,63 +246,66 @@ function init(server) {
         var adminHbs = hbs.create(),
             deferred = when.defer();
 
+        // Output necessary notifications on init
+        initNotifications();
         // ##Configuration
 
         // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
+
+        // enabled gzip compression by default
+        if (config.server.compress !== false) {
+            server.use(compress());
+        }
 
         // ## View engine
         // set the view engine
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        server.set('admin view engine', adminHbs.express3({partialsDir: config().paths.adminViews + 'partials'}));
+        server.set('admin view engine', adminHbs.express3({}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
 
-        // ## Middleware
+        // ## Middleware and Routing
         middleware(server, dbHash);
 
-        // ## Routing
-
-        // Set up API routes
-        routes.api(server);
-
-        // Set up Admin routes
-        routes.admin(server);
-
-        // Set up Frontend routes
-        routes.frontend(server);
-
         // Log all theme errors and warnings
-        _.each(config().paths.availableThemes._messages.errors, function (error) {
+        _.each(config.paths.availableThemes._messages.errors, function (error) {
             errors.logError(error.message, error.context, error.help);
         });
 
-        _.each(config().paths.availableThemes._messages.warns, function (warn) {
+        _.each(config.paths.availableThemes._messages.warns, function (warn) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 
         // ## Start Ghost App
         if (config.getSocket()) {
             // Make sure the socket is gone before trying to create another
-            fs.unlink(config.getSocket(), function (err) {
-                /*jshint unused:false*/
-                server.listen(
-                    config.getSocket(),
-                    startGhost(deferred)
-                );
-                fs.chmod(config.getSocket(), '0660');
-            });
+            try {
+                fs.unlinkSync(config.getSocket());
+            } catch (e) {
+                // We can ignore this.
+            }
+
+            httpServer = server.listen(
+                config.getSocket()
+            );
+            fs.chmod(config.getSocket(), '0660');
 
         } else {
-            server.listen(
-                config().server.port,
-                config().server.host,
-                startGhost(deferred)
+            httpServer = server.listen(
+                config.server.port,
+                config.server.host
             );
         }
+
+        httpServer.on('listening', function () {
+            ghostStartMessages();
+            deferred.resolve(httpServer);
+        });
+
 
         return deferred.promise;
     });

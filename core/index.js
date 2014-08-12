@@ -17,14 +17,20 @@ function startGhost(options) {
     options = options || {};
 
     bootstrap(options.config).then(function () {
-        var ghost = require('./server');
-        return ghost(options.app).then(deferred.resolve).otherwise(function (e) {
-            // We don't return the rejected promise to stop
-            // the propogation of the rejection and just
-            // allow the user to manage what to do.
+        try {
+            var ghost = require('./server');
+            return ghost(options.app)
+                .then(deferred.resolve)
+                    .catch(function (err) {
+                    // We don't return the rejected promise to stop
+                    // the propagation of the rejection and just
+                    // allow the user to manage what to do.
+                    deferred.reject(err);
+                });
+        } catch (e) {
             deferred.reject(e);
-        });
-    });
+        }
+    }).catch(deferred.reject);
 
     return deferred.promise;
 }

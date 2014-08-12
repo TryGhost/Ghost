@@ -28,7 +28,7 @@ var Ghost = Ghost || {};
                             result = '<img class="js-upload-target" src="' + src + '"/>';
                         }
 
-                        if (Ghost && Ghost.touchEditor) {
+                        if ((Ghost && Ghost.touchEditor) || (typeof window !== 'undefined' && Ember.touchEditor)) {
                             output = '<section class="image-uploader">' +
                                 result + '<div class="description">Mobile uploads coming soon</div></section>';
                         } else {

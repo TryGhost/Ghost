@@ -1,0 +1,37 @@
+<header id="global-header" class="navbar">
+    
+    <button {{action "toggleSidebarOrGoHome" target="view"}} class="ghost-logo ghost-logo-button">
+        <span class="hidden">Ghost</span>
+    </button>
+    <a class="ghost-logo ghost-logo-link">
+        <span class="hidden">Ghost</span>
+    </a>
+
+    <nav id="global-nav" role="navigation">
+        <ul id="main-menu" >
+            {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
+            {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor js-close-sidebar"}}
+            {{#unless session.user.isAuthor}}
+                {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
+            {{/unless}}
+
+            <li id="usermenu" class="usermenu subnav">
+                {{#gh-popover-button popoverName="user-menu" classNames="dropdown"}}
+                    {{#if session.user.image}}
+                    <img class="avatar" {{bind-attr src="session.user.image"}} alt="Avatar" />
+                    {{else}}
+                    <img class="avatar" src="/shared/img/user-image.png" alt="Avatar" />
+                    {{/if}}
+                    <span class="name">{{session.user.name}}</span>
+                {{/gh-popover-button}}
+                {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
+                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}Your Profile{{/link-to}}</li>
+                        <li class="divider"></li>
+                        <li class="usermenu-help"><a href="http://support.ghost.org/">Help / Support</a></li>
+                        <li class="divider"></li>
+                        <li class="usermenu-signout">{{#link-to "signout"}}Sign Out{{/link-to}}</li>
+                {{/gh-popover}}
+            </li>
+        </ul>
+    </nav>
+</header>

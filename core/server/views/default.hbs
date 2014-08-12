@@ -4,7 +4,6 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="csrf-param" content="{{csrfToken}}" />
 
     <title>Ghost Admin</title>
 
@@ -32,24 +31,9 @@
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
     <link rel="stylesheet" href="{{asset "css/ghost-ui.min.css" ghost="true"}}" />
 </head>
-<body class="{{bodyClass}}{{update_notification classOnly="true"}}">
-    {{#unless hideNavbar}}
-        {{> navbar}}
-    {{/unless}}
-
-    <main role="main" id="main">
-        {{update_notification}}
-
-        <aside id="notifications" class="notifications">
-            {{> notifications}}
-        </aside>
-
-        {{{body}}}
-    </main>
-
-    <div id="modal-container"></div>
-    <div class="modal-background fade"></div>
+<body class="{{bodyClass}}" data-apps="{{apps}}" data-filestorage="{{file_storage}}" data-blogurl="{{blog_url}}">
 
     {{{ghost_script_tags}}}
+
 </body>
 </html>

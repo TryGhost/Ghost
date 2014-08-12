@@ -1,18 +1,21 @@
 var when   = require('when'),
     _      = require('lodash'),
     models = require('../../models'),
+    utils  = require('./utils'),
+
     Importer000;
 
 
 Importer000 = function () {
-    _.bindAll(this, 'basicImport');
+    _.bindAll(this, 'doImport');
 
     this.version = '000';
 
     this.importFrom = {
-        '000': this.basicImport,
-        '001': this.basicImport,
-        '002': this.basicImport
+        '000': this.doImport,
+        '001': this.doImport,
+        '002': this.doImport,
+        '003': this.doImport
     };
 };
 
@@ -30,164 +33,145 @@ Importer000.prototype.canImport = function (data) {
         return when.resolve(this.importFrom[data.meta.version]);
     }
 
-    return when.reject("Unsupported version of data: " + data.meta.version);
+    return when.reject('Unsupported version of data: ' + data.meta.version);
 };
 
 
-function stripProperties(properties, data) {
-    _.each(data, function (obj) {
-        _.each(properties, function (property) {
-            delete obj[property];
-        });
-    });
-    return data;
-}
+Importer000.prototype.loadUsers = function () {
+    var users = {all: {}};
 
-function preProcessPostTags(tableData) {
-    var postTags,
-        postsWithTags = {};
-
-
-    postTags = tableData.posts_tags;
-    _.each(postTags, function (post_tag) {
-        if (!postsWithTags.hasOwnProperty(post_tag.post_id)) {
-            postsWithTags[post_tag.post_id] = [];
-        }
-        postsWithTags[post_tag.post_id].push(post_tag.tag_id);
-    });
-
-    _.each(postsWithTags, function (tag_ids, post_id) {
-        var post, tags;
-        post = _.find(tableData.posts, function (post) {
-            return post.id === parseInt(post_id, 10);
-        });
-        if (post) {
-            tags = _.filter(tableData.tags, function (tag) {
-                return _.indexOf(tag_ids, tag.id) !== -1;
-            });
-            post.tags = [];
-            _.each(tags, function (tag) {
-                // names are unique.. this should get the right tags added
-                // as long as tags are added first;
-                post.tags.push({name: tag.name});
-            });
-        }
-    });
-
-    return tableData;
-}
-
-function importTags(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
-    _.each(tableData, function (tag) {
-        ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
-            if (!_tag) {
-                return models.Tag.add(tag, {transacting: transaction})
-                    // add pass-through error handling so that bluebird doesn't think we've dropped it
-                    .otherwise(function (error) { return when.reject(error); });
+    return models.User.findAll({include: 'roles'}).then(function (_users) {
+        _users.forEach(function (user) {
+            users.all[user.get('email')] = {'realId': user.get('id')};
+            if (user.related('roles').toJSON()[0] && user.related('roles').toJSON()[0].name === 'Owner') {
+                users.owner = user.toJSON();
             }
-            return when.resolve(_tag);
-        }));
+        });
+
+        if (!users.owner) {
+            return when.reject('Unable to find an owner');
+        }
+
+        return when.resolve(users);
     });
-}
+};
 
-function importPosts(ops, tableData, transaction) {
-    tableData = stripProperties(['id'], tableData);
-    _.each(tableData, function (post) {
-        ops.push(models.Post.add(post, {transacting: transaction, importing: true})
-            // add pass-through error handling so that bluebird doesn't think we've dropped it
-            .otherwise(function (error) { return when.reject(error); }));
-    });
-}
+//Importer000.prototype.importerFunction = function (t) {
+//
+//};
 
-function importUsers(ops, tableData, transaction) {
-    // don't override the users credentials
-    tableData = stripProperties(['id', 'email', 'password'], tableData);
-    tableData[0].id = 1;
-    ops.push(models.User.edit(tableData[0], {transacting: transaction})
-        // add pass-through error handling so that bluebird doesn't think we've dropped it
-        .otherwise(function (error) { return when.reject(error); }));
-}
+Importer000.prototype.doUserImport = function (t, tableData, users, errors) {
+    var userOps = [],
+        imported = [];
 
-function importSettings(ops, tableData, transaction) {
-    // for settings we need to update individual settings, and insert any missing ones
-    // settings we MUST NOT update are 'core' and 'theme' settings
-    // as all of these will cause side effects which don't make sense for an import
-    var blackList = ['core', 'theme'];
-
-    tableData = stripProperties(['id'], tableData);
-    tableData = _.filter(tableData, function (data) {
-        return blackList.indexOf(data.type) === -1;
-    });
-
-    ops.push(models.Settings.edit(tableData, transaction)
-         // add pass-through error handling so that bluebird doesn't think we've dropped it
-         .otherwise(function (error) { return when.reject(error); }));
-}
-
-// No data needs modifying, we just import whatever tables are available
-Importer000.prototype.basicImport = function (data) {
-    var ops = [],
-        tableData = data.data;
-    return models.Base.transaction(function (t) {
-
-        // Do any pre-processing of relationships (we can't depend on ids)
-        if (tableData.posts_tags && tableData.posts && tableData.tags) {
-            tableData = preProcessPostTags(tableData);
+    if (tableData.users && tableData.users.length) {
+        if (tableData.roles_users && tableData.roles_users.length) {
+            tableData = utils.preProcessRolesUsers(tableData);
         }
 
-        // Import things in the right order:
-        if (tableData.tags && tableData.tags.length) {
-            importTags(ops, tableData.tags, t);
-        }
+        // Import users, deduplicating with already present users
+        userOps = utils.importUsers(tableData.users, users, t);
 
-        if (tableData.posts && tableData.posts.length) {
-            importPosts(ops, tableData.posts, t);
-        }
-
-        if (tableData.users && tableData.users.length) {
-            importUsers(ops, tableData.users, t);
-        }
-
-        if (tableData.settings && tableData.settings.length) {
-            importSettings(ops, tableData.settings, t);
-        }
-
-        /** do nothing with these tables, the data shouldn't have changed from the fixtures
-         *   permissions
-         *   roles
-         *   permissions_roles
-         *   permissions_users
-         *   roles_users
-         */
-
-        // Write changes to DB, if successful commit, otherwise rollback
-        // when.all() does not work as expected, when.settle() does.
-        when.settle(ops).then(function (descriptors) {
-            var rej = false,
-                error = '';
+        return when.settle(userOps).then(function (descriptors) {
             descriptors.forEach(function (d) {
                 if (d.state === 'rejected') {
-                    error += _.isEmpty(error) ? '' : '</br>';
-                    if (!_.isEmpty(d.reason.clientError)) {
-                        error += d.reason.clientError;
-                    } else if (!_.isEmpty(d.reason.message)) {
-                        error += d.reason.message;
-                    }
-                    rej = true;
+                    errors = errors.concat(d.reason);
+                } else {
+                    imported.push(d.value.toJSON());
                 }
             });
-            if (rej) {
-                t.rollback(error);
+
+            // If adding the users fails,
+            if (errors.length > 0) {
+                t.rollback(errors);
             } else {
-                t.commit();
+                return when.resolve(imported);
             }
         });
-    }).then(function () {
-        //TODO: could return statistics of imported items
-        return when.resolve();
-    }, function (error) {
-        return when.reject("Error importing data: " + error);
+    }
+
+    return when.resolve({});
+};
+
+Importer000.prototype.doImport = function (data) {
+    var self = this,
+        ops = [],
+        errors = [],
+        tableData = data.data,
+        imported = {},
+        users = {},
+        owner = {};
+
+    return self.loadUsers().then(function (result) {
+        owner = result.owner;
+        users = result.all;
+
+        return models.Base.transaction(function (t) {
+
+            // Step 1: Attempt to handle adding new users
+            self.doUserImport(t, tableData, users, errors).then(function (result) {
+                imported.users = result;
+
+                _.each(imported.users, function (user) {
+                    users[user.email] = {realId: user.id};
+                });
+
+                // process user data - need to figure out what users we have available for assigning stuff to etc
+                try {
+                    tableData = utils.processUsers(tableData, owner, users, ['posts', 'tags']);
+                } catch (error) {
+                    return t.rollback([error]);
+                }
+
+                // Do any pre-processing of relationships (we can't depend on ids)
+                if (tableData.posts_tags && tableData.posts && tableData.tags) {
+                    tableData = utils.preProcessPostTags(tableData);
+                }
+
+                // Import things in the right order:
+                if (tableData.tags && tableData.tags.length) {
+                    utils.importTags(ops, tableData.tags, t);
+                }
+
+                if (tableData.posts && tableData.posts.length) {
+                    utils.importPosts(ops, tableData.posts, t);
+                }
+
+                if (tableData.settings && tableData.settings.length) {
+                    utils.importSettings(ops, tableData.settings, t);
+                }
+
+                /** do nothing with these tables, the data shouldn't have changed from the fixtures
+                 *   permissions
+                 *   roles
+                 *   permissions_roles
+                 *   permissions_users
+                 */
+
+                // Write changes to DB, if successful commit, otherwise rollback
+                // when.all() does not work as expected, when.settle() does.
+                when.settle(ops).then(function (descriptors) {
+                    var errors = [];
+
+                    descriptors.forEach(function (d) {
+                        if (d.state === 'rejected') {
+                            errors = errors.concat(d.reason);
+                        }
+                    });
+
+                    if (errors.length === 0) {
+                        t.commit();
+                    } else {
+                        t.rollback(errors);
+                    }
+                });
+            });
+        }).then(function () {
+            //TODO: could return statistics of imported items
+            return when.resolve();
+        }, function (error) {
+            return when.reject(error);
+        });
     });
 };
 

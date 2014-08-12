@@ -5,9 +5,9 @@
 CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
-            siteTitle = '<title><![CDATA[Ghost]]></title>',
-            siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
+        var content = this.getHTML(),
+            siteTitle = '<title><![CDATA[Test Blog]]></title>',
+            siteDescription = '<description><![CDATA[Thoughts, stories and ideas.]]></description>',
             siteUrl = '<link>http://127.0.0.1:2369/</link>',
             postTitle = '<![CDATA[Welcome to Ghost]]>',
             postStart = '<description><![CDATA[<p>You\'re live!',
@@ -32,7 +32,7 @@ CasperTest.begin('Ensure that RSS is available', 11, function suite(test) {
 CasperTest.begin('Ensure that author element is not included. Only dc:creator', 3, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('off');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
+        var content = this.getHTML(),
             author = '<author>',
             postCreator = '<dc:creator><![CDATA[Test User]]>';
 
@@ -45,7 +45,7 @@ CasperTest.begin('Ensure that author element is not included. Only dc:creator', 
 CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('on');
     casper.thenOpen(url + 'rss/', function (response) {
-        var content = this.getPageContent(),
+        var content = this.getHTML(),
             today = new Date(),
             dd = ("0" + today.getDate()).slice(-2),
             mm = ("0" + (today.getMonth() + 1)).slice(-2),
@@ -57,3 +57,11 @@ CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(te
     });
     CasperTest.Routines.togglePermalinks.run('off');
 }, false);
+
+CasperTest.begin('Ensure that character set is UTF-8 for RSS feed', 1, function suite(test) {
+    CasperTest.Routines.togglePermalinks.run('off');
+    casper.thenOpen(url + 'rss/', function (response) {
+        test.assertEqual(response.headers.get('Content-Type'), 'text/xml; charset=utf-8', 'Content type should include UTF-8 character set encoding.');
+    });
+}, false);
+

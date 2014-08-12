@@ -1,7 +1,7 @@
 
 var _           = require('lodash'),
     when        = require('when'),
-    errors      = require('../errorHandling'),
+    errors      = require('../errors'),
     api         = require('../api'),
     loader      = require('./loader'),
     // Holds the available apps
@@ -9,7 +9,9 @@ var _           = require('lodash'),
 
 
 function getInstalledApps() {
-    return api.settings.read('installedApps').then(function (installed) {
+    return api.settings.read({context: {internal: true}, key: 'installedApps'}).then(function (response) {
+        var installed = response.settings[0];
+
         installed.value = installed.value || '[]';
 
         try {
@@ -26,7 +28,7 @@ function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
         var updatedAppsInstalled = _.uniq(installedApps.concat(currentInstalledApps));
 
-        return api.settings.edit('installedApps', updatedAppsInstalled);
+        return api.settings.edit({settings: [{key: 'installedApps', value: updatedAppsInstalled}]}, {context: {internal: true}});
     });
 }
 
@@ -36,7 +38,9 @@ module.exports = {
 
         try {
             // We have to parse the value because it's a string
-            api.settings.read('activeApps').then(function (aApps) {
+            api.settings.read({context: {internal: true}, key: 'activeApps'}).then(function (response) {
+                var aApps = response.settings[0];
+
                 appsToLoad = JSON.parse(aApps.value) || [];
             });
         } catch (e) {

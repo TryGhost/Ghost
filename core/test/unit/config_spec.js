@@ -1,12 +1,11 @@
-/*globals describe, it, beforeEach, afterEach */
-
+/*globals describe, it, before, beforeEach, afterEach */
+/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     when           = require('when'),
     path           = require('path'),
-    fs             = require('fs'),
     _              = require('lodash'),
-    rewire         = require("rewire"),
+    rewire         = require('rewire'),
 
     testUtils      = require('../utils'),
 
@@ -15,6 +14,9 @@ var should         = require('should'),
     theme          = rewire('../../server/config/theme'),
     config         = rewire('../../server/config'),
     configUpdate   = config.__get__('updateConfig');
+
+// To stop jshint complaining
+should.equal(true, true);
 
 describe('Config', function () {
 
@@ -30,18 +32,18 @@ describe('Config', function () {
             settings = {'read': function read() {}};
 
             settingsStub = sandbox.stub(settings, 'read', function () {
-                return when({value: 'casper'});
+                return when({ settings: [{value: 'casper'}] });
             });
 
             theme.update(settings, 'http://my-ghost-blog.com')
                 .then(done)
-                .then(null, done);
+                .catch(done);
         });
 
         afterEach(function (done) {
             theme.update(settings, defaultConfig.url)
                 .then(done)
-                .then(null, done);
+                .catch(done);
 
             sandbox.restore();
         });
@@ -69,17 +71,16 @@ describe('Config', function () {
     });
 
     describe('Index', function () {
-        // Make a copy of the default config file
-        // so we can restore it after every test.
-        // Using _.merge to recursively apply every property.
-        var defaultConfigFile = _.merge({}, config());
 
         afterEach(function () {
-            configUpdate(defaultConfigFile);
+            // Make a copy of the default config file
+            // so we can restore it after every test.
+            // Using _.merge to recursively apply every property.
+            configUpdate(_.merge({}, config));
         });
 
         it('should have exactly the right keys', function () {
-            var pathConfig = config().paths;
+            var pathConfig = config.paths;
 
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
@@ -105,7 +106,7 @@ describe('Config', function () {
         });
 
         it('should have the correct values for each key', function () {
-            var pathConfig = config().paths,
+            var pathConfig = config.paths,
                 appRoot = path.resolve(__dirname, '../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
@@ -114,28 +115,28 @@ describe('Config', function () {
 
         it('should not return a slash for subdir', function () {
             configUpdate({url: 'http://my-ghost-blog.com'});
-            config().paths.should.have.property('subdir', '');
+            config.paths.should.have.property('subdir', '');
 
             configUpdate({url: 'http://my-ghost-blog.com/'});
-            config().paths.should.have.property('subdir', '');
+            config.paths.should.have.property('subdir', '');
         });
 
         it('should handle subdirectories properly', function () {
             configUpdate({url: 'http://my-ghost-blog.com/blog'});
-            config().paths.should.have.property('subdir', '/blog');
+            config.paths.should.have.property('subdir', '/blog');
 
             configUpdate({url: 'http://my-ghost-blog.com/blog/'});
-            config().paths.should.have.property('subdir', '/blog');
+            config.paths.should.have.property('subdir', '/blog');
 
             configUpdate({url: 'http://my-ghost-blog.com/my/blog'});
-            config().paths.should.have.property('subdir', '/my/blog');
+            config.paths.should.have.property('subdir', '/my/blog');
 
             configUpdate({url: 'http://my-ghost-blog.com/my/blog/'});
-            config().paths.should.have.property('subdir', '/my/blog');
+            config.paths.should.have.property('subdir', '/my/blog');
         });
 
         it('should allow specific properties to be user defined', function () {
-            var contentPath = path.join(config().paths.appRoot, 'otherContent', '/'),
+            var contentPath = path.join(config.paths.appRoot, 'otherContent', '/'),
                 configFile = 'configFileDanceParty.js';
 
             configUpdate({
@@ -145,15 +146,19 @@ describe('Config', function () {
                 }
             });
 
-            config().should.have.property('config', configFile);
-            config().paths.should.have.property('contentPath', contentPath);
-            config().paths.should.have.property('themePath', contentPath + 'themes');
-            config().paths.should.have.property('appPath', contentPath + 'apps');
-            config().paths.should.have.property('imagesPath', contentPath + 'images');
+            config.should.have.property('config', configFile);
+            config.paths.should.have.property('contentPath', contentPath);
+            config.paths.should.have.property('themePath', contentPath + 'themes');
+            config.paths.should.have.property('appPath', contentPath + 'apps');
+            config.paths.should.have.property('imagesPath', contentPath + 'images');
         });
     });
 
     describe('urlFor', function () {
+
+        before(function () {
+            configUpdate(_.merge({}, defaultConfig));
+        });
 
         afterEach(function () {
             configUpdate({url: defaultConfig.url});
@@ -221,8 +226,8 @@ describe('Config', function () {
                     permalinks: {value: '/:year/:month/:day/:slug/'}
                 },
                 today = new Date(),
-                dd = ("0" + today.getDate()).slice(-2),
-                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                dd = ('0' + today.getDate()).slice(-2),
+                mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),
                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
 
@@ -265,8 +270,9 @@ describe('Config', function () {
         it('should output correct url for post', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:slug/'});
+                    return when({ settings: [{value: '/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/short-and-sweet/';
 
@@ -295,19 +301,20 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
 
         });
 
         it('should output correct url for post with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:year/:month/:day/:slug/'});
+                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 today = new Date(),
-                dd = ("0" + today.getDate()).slice(-2),
-                mm = ("0" + (today.getMonth() + 1)).slice(-2),
+                dd = ('0' + today.getDate()).slice(-2),
+                mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),
                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
 
@@ -336,14 +343,15 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
         it('should output correct url for page with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({value: '/:year/:month/:day/:slug/'});
+                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
+                /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[5],
                 postLink = '/static-page-test/';
 
@@ -372,7 +380,7 @@ describe('Config', function () {
                 url.should.equal('http://my-ghost-blog.com/blog' + postLink);
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
     });
 });
