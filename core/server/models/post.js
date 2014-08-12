@@ -169,6 +169,9 @@ Post = ghostBookshelf.Model.extend({
     author_id: function () {
         return this.belongsTo('User', 'author_id');
     },
+    post_type: function () {
+        return this.belongsTo('PostType', 'post_type');
+    },
 
     created_by: function () {
         return this.belongsTo('User', 'created_by');

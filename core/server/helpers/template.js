@@ -30,6 +30,7 @@ templates.execute = function (name, context) {
 // If given a static post object it will return 'page'.
 // If given a static post object and a custom page template
 // exits it will return that page.
+var typeLink = ['article','video','active','topic','meizu'];
 templates.getThemeViewForPost = function (themePaths, post) {
     var customPageView = 'page-' + post.slug,
         view = 'post';
@@ -40,6 +41,8 @@ templates.getThemeViewForPost = function (themePaths, post) {
         } else if (themePaths.hasOwnProperty('page.hbs')) {
             view = 'page';
         }
+    }else if(post.post_type){
+        return 'post-' + typeLink[post.post_type-1];
     }
 
     return view;
