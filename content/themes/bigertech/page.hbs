@@ -1,0 +1,26 @@
+{{!< default}}
+
+{{! This is a page template. A page outputs content just like any other post, and has all the same
+    attributes by default, but you can also customise it to behave differently if you prefer. }}
+
+<nav class="main-nav clearfix">
+    <a class="back-button icon-arrow-left" href="{{@blog.url}}">Home</a>
+    <a class="subscribe-button icon-feed" href="{{@blog.url}}/rss/">Subscribe</a>
+</nav>
+
+<main class="content" role="main">
+
+    <article class="{{post_class}}">
+    {{! Everything inside the #post tags pulls data from the post }}
+    {{#post}}
+
+        <h1 class="post-title">{{title}}</h1>
+
+        <section class="post-content">
+            {{content}}
+        </section>
+
+    {{/post}}
+    </article>
+
+</main>
