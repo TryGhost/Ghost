@@ -4,6 +4,7 @@ var _              = require('lodash'),
     when           = require('when'),
     errors         = require('../errors'),
     Showdown       = require('showdown'),
+    cheerio        = require('cheerio'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
     Tag            = require('./tag').Tag,
@@ -11,10 +12,13 @@ var _              = require('lodash'),
     User           = require('./user').User,
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
-
     Post,
     Posts;
-
+function getPostImg(html){
+    var $       = cheerio.load(html),
+        bgImg   = $("img[alt='bg']");
+    return bgImg.length > 0 ? $(bgImg[0]).attr("src"):'/assets/images/def-bg.png';
+}
 Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
@@ -67,7 +71,9 @@ Post = ghostBookshelf.Model.extend({
         // disabling sanitization until we can implement a better version
         //this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
-
+        /* liuxing */
+        this.set('image',getPostImg(this.get('html')));
+        /* liuxing */
         if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {
             if (!this.get('published_at')) {
                 this.set('published_at', new Date());

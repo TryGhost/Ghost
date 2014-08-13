@@ -61,12 +61,13 @@ coreHelpers.date = function (context, options) {
         timeago = options.hash.timeago,
         date;
 
-
+    moment.lang("zh-cn");
     if (timeago) {
         date = moment(context).fromNow();
     } else {
         date = moment(context).format(f);
     }
+    moment.lang("en");
     return date;
 };
 

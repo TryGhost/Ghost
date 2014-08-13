@@ -870,7 +870,9 @@ body:not(.post-template) .post-title {
 .post-template .post:after {
     display: none;
 }
-
+.post-content img[alt='bg']{
+    display: none;
+}
 /* Keep images centred and within the bounds of the post-width */
 .post-content img {
     display: block;
