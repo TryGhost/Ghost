@@ -13,13 +13,15 @@
         <section class="page-actions">
 
             {{#if view.userActionsAreVisible}}
-                {{#gh-popover-button popoverName="user-actions-menu" tagName="a" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
-                    <i class="icon-settings"></i>
-                    <span class="hidden">User Settings</span>
-                {{/gh-popover-button}}
-                {{#gh-popover name="user-actions-menu" classNames="user-actions-menu menu-drop-right"}}
-                    {{render "user-actions-menu" model}}
-                {{/gh-popover}}
+                <span class="dropdown">
+                    {{#gh-popover-button popoverName="user-actions-menu" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
+                        <i class="icon-settings"></i>
+                        <span class="hidden">User Settings</span>
+                    {{/gh-popover-button}}
+                    {{#gh-popover name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                        {{render "user-actions-menu" model}}
+                    {{/gh-popover}}
+                </span>
             {{/if}}
 
             <button class="btn btn-blue" {{action "save"}}>Save</button>
