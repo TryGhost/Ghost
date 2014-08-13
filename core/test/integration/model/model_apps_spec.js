@@ -6,7 +6,7 @@ var testUtils    = require('../../utils'),
     _            = require('lodash'),
 
     // Stuff we are testing
-    AppModel     = require('../../../server/models').App,
+    AppModel     = require('../../../server/models/app').App,
     context      = testUtils.context.admin;
 
 describe('App Model', function () {
@@ -15,7 +15,9 @@ describe('App Model', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('app'));
 
-    should.exist(AppModel);
+    before(function () {
+        should.exist(AppModel);
+    });
 
     it('can findAll', function (done) {
         AppModel.findAll().then(function (results) {

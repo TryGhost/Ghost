@@ -6,13 +6,7 @@ var canThis      = require('../permissions').canThis,
     when         = require('when'),
 
     slugs,
-    // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
-    allowedTypes = {
-        post: dataProvider.Post,
-        tag: dataProvider.Tag,
-        user: dataProvider.User,
-        app: dataProvider.App
-    };
+    allowedTypes;
 
 /**
  * ## Slugs API Methods
@@ -30,6 +24,14 @@ slugs = {
      */
     generate: function (options) {
         options = options || {};
+
+        // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
+        allowedTypes = {
+            post: dataProvider.Post,
+            tag: dataProvider.Tag,
+            user: dataProvider.User,
+            app: dataProvider.App
+        };
 
         return canThis(options.context).generate.slug().then(function () {
             if (allowedTypes[options.type] === undefined) {
