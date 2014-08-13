@@ -3,11 +3,13 @@
     <i class="options"></i>
     <span class="sr-only">Toggle Settings Menu</span>
 {{/gh-popover-button}}
-{{#gh-popover name="post-save-menu" closeOnClick="true" tagName="ul" classNames="editor-options overlay" publishTextBinding="view.publish-text" draftTextBinding="view.draft-text"}}
-    <li {{bind-attr class="controller.willPublish:active" }}>
-        <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
-    </li>
-    <li {{bind-attr class="controller.willPublish::active" }}>
-        <a {{action "setSaveType" "draft"}} href="#">{{view.draftText}}</a>
-    </li>
+{{#gh-popover name="post-save-menu" closeOnClick="true" tagName="div" classNames="dropdown editor-options" publishTextBinding="view.publish-text" draftTextBinding="view.draft-text"}}
+    <ul class="dropdown-menu dropdown-triangle-bottom-right">
+        <li {{bind-attr class="controller.willPublish:active" }}>
+            <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
+        </li>
+        <li {{bind-attr class="controller.willPublish::active" }}>
+            <a {{action "setSaveType" "draft"}} href="#">{{view.draftText}}</a>
+        </li>
+    </ul>
 {{/gh-popover}}
