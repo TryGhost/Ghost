@@ -63,7 +63,7 @@ UploadUi = function ($dropzone, settings) {
             var self = this;
 
             $dropzone.find('.js-fileupload').fileupload().fileupload('option', {
-                url: Ghost.subdir + '/ghost/api/v0.1/uploads/',
+                url: Ghost.apiRoot + '/uploads/',
                 add: function (e, data) {
                     /*jshint unused:false*/
                     $('.js-button-accept').prop('disabled', true);
