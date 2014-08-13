@@ -65,19 +65,23 @@
     }
 
     // Links within the dropdown menu
-    > li > a {
+    > li > a,
+    > li > button {
         display: block;
+        width: 100%;
         padding: 3px 20px;
         clear: both;
         font-weight: normal;
         line-height: 1.428571429;
+        text-align: left;
         color: #333;
         white-space: nowrap; // prevent links from randomly breaking onto new lines
     }
 }
 
 // Hover/Focus state
-.dropdown-menu > li > a {
+.dropdown-menu > li > a,
+.dropdown-menu > li > button {
     &:hover,
     &:focus {
         text-decoration: none;
@@ -87,7 +91,8 @@
 }
 
 // Active state
-.dropdown-menu > .active > a {
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > button {
     &,
     &:hover,
     &:focus {
@@ -102,7 +107,8 @@
 //
 // Gray out text and ensure the hover/focus state remains gray
 
-.dropdown-menu > .disabled > a {
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > button {
     &,
     &:hover,
     &:focus {
@@ -110,7 +116,8 @@
     }
 }
 // Nuke hover/focus effects
-.dropdown-menu > .disabled > a {
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > button {
     &:hover,
     &:focus {
         text-decoration: none;
