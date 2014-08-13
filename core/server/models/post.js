@@ -72,6 +72,8 @@ Post = ghostBookshelf.Model.extend({
         //this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
         /* liuxing */
+        var post_type = this.get('post_type') == null ? 1:this.get('post_type'); //默认文章类型
+        this.set('post_type',post_type);
         this.set('image',getPostImg(this.get('html')));
         /* liuxing */
         if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {

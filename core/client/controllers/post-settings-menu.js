@@ -69,16 +69,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         var self = this;
         return this.store.find('postType').then(function(types){
             return types.filter(function(type){
-                console.log(type);
-
                 if(type.get('id') == self.get('model').get('post_type')){
                     self.set('selectedType', type);
                     return type;
                 }
             });
-
-
-
         });
     }).on('init'),
 
