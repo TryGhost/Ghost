@@ -7,17 +7,20 @@ var testUtils       = require('../utils'),
     _               = require('lodash'),
 
     // Stuff we are testing
-    ModelPermission    = require('../../server/models').Permission,
-    ModelPermissions    = require('../../server/models').Permissions,
-    permissions         = require('../../server/permissions'),
-    effectivePerms      = require('../../server/permissions/effective'),
-    context = testUtils.context.owner,
+    Models          = require('../../server/models'),
+    permissions     = require('../../server/permissions'),
+    effectivePerms  = require('../../server/permissions/effective'),
+    context         = testUtils.context.owner,
 
-    sandbox = sinon.sandbox.create();
+    sandbox         = sinon.sandbox.create();
 
 // TODO move to integrations or stub
 
 describe('Permissions', function () {
+    before(function (done) {
+        Models.init().then(done).catch(done);
+    });
+
     afterEach(function () {
         sandbox.restore();
     });
@@ -27,8 +30,8 @@ describe('Permissions', function () {
             return testUtils.DataGenerator.forKnex.createPermission(testPerm);
         });
 
-        sandbox.stub(ModelPermission, 'findAll', function () {
-            return when(ModelPermissions.forge(permissions));
+        sandbox.stub(Models.Permission, 'findAll', function () {
+            return when(Models.Permissions.forge(permissions));
         });
 
     });

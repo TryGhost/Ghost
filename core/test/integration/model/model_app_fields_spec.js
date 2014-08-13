@@ -4,7 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
-    AppFieldsModel  = require('../../../server/models').AppField,
+    AppFieldsModel  = require('../../../server/models/appField').AppField,
     context         = testUtils.context.admin;
 
 describe('App Fields Model', function () {
@@ -13,7 +13,9 @@ describe('App Fields Model', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('app_field'));
 
-    should.exist(AppFieldsModel);
+    before(function () {
+        should.exist(AppFieldsModel);
+    });
 
     it('can findAll', function (done) {
         AppFieldsModel.findAll().then(function (results) {
