@@ -233,7 +233,7 @@ var path           = require('path'),
                 // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
                 // information.
                 ghost_ui: {
-                    command: path.resolve(cwd  + '/node_modules/.bin/bower update ghost-ui'),
+                    command: path.resolve(cwd  + '/node_modules/.bin/bower update ghost-ui --allow-root'),
                     options: {
                         stdout: true
                     }
