@@ -8,7 +8,6 @@ var _              = require('lodash'),
     crypto         = require('crypto'),
     validator      = require('validator'),
     validation     = require('../data/validation'),
-    Role           = require('./role').Role,
 
     tokenSecurity  = {},
     activeStates   = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'],
@@ -175,7 +174,7 @@ User = ghostBookshelf.Model.extend({
         options = options || {};
 
         var userCollection = Users.forge(),
-            roleInstance = options.role !== undefined ? Role.forge({name: options.role}) : false;
+            roleInstance = options.role !== undefined ? ghostBookshelf.model('Role').forge({name: options.role}) : false;
 
         if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
@@ -405,7 +404,7 @@ User = ghostBookshelf.Model.extend({
                     if (roles.models[0].id === roleId) {
                         return;
                     }
-                    return Role.findOne({id: roleId});
+                    return ghostBookshelf.model('Role').findOne({id: roleId});
                 }).then(function (roleToAssign) {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return when.reject(
@@ -442,7 +441,7 @@ User = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union([ 'roles' ], options.include);
 
-        return Role.findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function (authorRole) {
+        return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function (authorRole) {
             // Get the role we're going to assign to this user, or the author role if there isn't one
             roles = data.roles || [authorRole.get('id')];
 
@@ -800,9 +799,9 @@ User = ghostBookshelf.Model.extend({
             assignUser;
 
         // Get admin role
-        return Role.findOne({name: 'Administrator'}).then(function (result) {
+        return ghostBookshelf.model('Role').findOne({name: 'Administrator'}).then(function (result) {
             adminRole = result;
-            return Role.findOne({name: 'Owner'});
+            return ghostBookshelf.model('Role').findOne({name: 'Owner'});
         }).then(function (result) {
             ownerRole = result;
             return User.findOne({id: options.context.user});

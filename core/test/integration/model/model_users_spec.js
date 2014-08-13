@@ -8,8 +8,8 @@ var testUtils   = require('../../utils'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    UserModel   = require('../../../server/models').User,
-    RoleModel   = require('../../../server/models').Role,
+    UserModel   = require('../../../server/models/user').User,
+    RoleModel   = require('../../../server/models/role').Role,
     context     = testUtils.context.admin,
     sandbox     = sinon.sandbox.create();
 
@@ -22,7 +22,9 @@ describe('User Model', function run() {
         sandbox.restore();
     });
 
-    should.exist(UserModel);
+    before(function () {
+        should.exist(UserModel);
+    });
 
     describe('Registration', function runRegistration() {
         beforeEach(testUtils.setup('roles'));

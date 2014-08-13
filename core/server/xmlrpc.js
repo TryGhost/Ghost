@@ -1,8 +1,9 @@
 var _               = require('lodash'),
-    config          = require('./config'),
-    errors          = require('./errors'),
     http            = require('http'),
     xml             = require('xml'),
+    api             = require('./api'),
+    config          = require('./config'),
+    errors          = require('./errors'),
     pingList;
 
 // ToDo: Make this configurable
@@ -29,7 +30,7 @@ function ping(post) {
     }
 
     // Need to require here because of circular dependency
-    return config.urlForPost(require('./api').settings, post, true).then(function (url) {
+    return config.urlForPost(api.settings, post, true).then(function (url) {
 
         // Build XML object.
         pingXML = xml({
