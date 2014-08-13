@@ -441,13 +441,13 @@ body.zen {
 
     .post-settings-menu {
         position: absolute;
-        bottom: 44px;
+        bottom: 41px;
         right: -3px;
     }
 
     .splitbtn {
         margin-top: 5px;
-        
+
         .btn {
             border-top: rgba(255,255,255,0.3) 1px solid;
         }
@@ -646,11 +646,23 @@ body.zen {
             }
         }
     }
+
 }
 
 #entry-actions {
     margin-right: 6px;
     position: relative;
+    .dropdown {
+        position: absolute;
+        bottom: 49px;
+        right: 0;
+        .dropdown-menu {
+            top: auto;
+            left: auto;
+            right: 100%;
+            bottom: 100%;
+        }
+    }
 }
 
 #entry-actions-menu {
@@ -679,6 +691,15 @@ body.zen {
 } // .post-settings
 
 .post-settings-menu {
+
+    .dropdown-menu {
+        top: auto;
+        bottom: 100%;
+        left: auto;
+        right: 100%;
+    }
+
+    /*
     padding-top: 0;
     text-transform: none;
 
@@ -801,6 +822,8 @@ body.zen {
             color: #fff;
         }
     } // .delete
+
+    */
 
 } // .post-settings-menu
 
