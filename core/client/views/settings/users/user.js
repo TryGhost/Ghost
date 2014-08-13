@@ -5,11 +5,13 @@ var SettingsUserView = Ember.View.extend({
         return this.get('controller.user.id') !== this.get('currentUser.id');
     }),
     
+    isNotOwnersProfile: Ember.computed.not('controller.user.isOwner'),
+    
     canAssignRoles: Ember.computed.or('currentUser.isAdmin', 'currentUser.isOwner'),
 
     canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile', 'controller.user.isAdmin'),
     
-    rolesDropdownIsVisible: Ember.computed.and('isNotOwnProfile', 'canAssignRoles'),
+    rolesDropdownIsVisible: Ember.computed.and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
 
     deleteUserActionIsVisible: Ember.computed('currentUser', 'canAssignRoles', 'controller.user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('controller.user.isOwner')) ||
