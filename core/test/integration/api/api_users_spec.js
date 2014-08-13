@@ -852,6 +852,26 @@ describe('Users API', function () {
                         }).catch(done);
                 });
             });
+
+            it('CANNOT downgrade owner', function (done) {
+                var options = _.extend({}, context.admin, {id: userIdFor.owner}, {include: 'roles'});
+                UserAPI.read(options).then(function (response) {
+                    response.users[0].id.should.equal(userIdFor.owner);
+                    response.users[0].roles[0].name.should.equal('Owner');
+
+                    return UserAPI.edit(
+                        {users: [
+                            {name: newName, roles: [roleIdFor.author]}
+                        ]},
+                        options
+                    ).then(function (response) {
+                        done(new Error('Author should not be able to downgrade owner'));
+                    }).catch(function (error) {
+                        error.type.should.eql('NoPermissionError');
+                        done();
+                    });
+                });
+            });
         });
 
         describe('Editor', function () {
