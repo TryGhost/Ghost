@@ -87,6 +87,7 @@
         margin: 0;
         padding: 0 12px;
         background: none !important;
+        height: 60px;
     }
 
     // Profile picture
@@ -130,6 +131,17 @@
     i:before {
         width: auto;
         margin-left: 5px;
+    }
+
+    .dropdown {
+        position: absolute;
+        top: 100%;
+        right: 100%;
+        .dropdown-menu {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
     }
 
 }//.user-menu
