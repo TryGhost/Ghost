@@ -16,6 +16,7 @@ var api            = require('../api'),
     path           = require('path'),
     routes         = require('../routes'),
     slashes        = require('connect-slashes'),
+    sm             = require('sitemap'),
     storage        = require('../storage'),
     url            = require('url'),
     _              = require('lodash'),
@@ -188,6 +189,60 @@ function checkSSL(req, res, next) {
     next();
 }
 
+// ### Sitemap Middleware
+// Handle requests to sitemap.xml
+function sitemap() {
+    var content;
+
+    function buildSitemap(posts, done, sitemap) {
+        var post;
+
+        sitemap = sitemap || sm.createSitemap({
+            hostname: config.url,
+            cacheTime: utils.ONE_HOUR_MS
+        });
+
+        if (posts.length > 0) {
+            post = posts.shift();
+            config.urlForPost(api.settings, post, true).then(function (url) {
+                var updated = post.updated_at.getFullYear() + '-' + post.updated_at.getMonth() + '-' + post.updated_at.getDate();
+                sitemap.add({ url: url, lastmod: updated });
+                process.nextTick(buildSitemap.bind(this, posts, done, sitemap));
+            }.bind(this));
+        } else {
+            sitemap.toXML(function (xml) {
+                done(xml);
+            });
+        }
+    }
+
+    return function sitemap(req, res, next) {
+        if ('/sitemap.xml' !== req.url) {
+            return next();
+        }
+
+        if (content) {
+            res.writeHead(200, content.headers);
+            res.end(content.body);
+        } else {
+            api.posts.browse({ staticPages: 'all', limit: 5000 }).then(function (result) {
+                buildSitemap(result.posts, function (sitemap) {
+                    content = {
+                        headers: {
+                            'Content-Type': 'application/xml'
+                        },
+                        body: sitemap
+                    };
+
+                    res.writeHead(200, content.headers);
+                    res.end(content.body);
+                    setTimeout(function () { content = null; }, utils.ONE_MINUTE_MS);
+                });
+            });
+        }
+    };
+}
+
 // ### Robots Middleware
 // Handle requests to robots.txt and cache file
 function robots() {
@@ -276,6 +331,9 @@ setupMiddleware = function (server) {
 
     // Theme only config
     expressServer.use(subdir, middleware.staticTheme());
+
+    // Serve sitemap.xml
+    expressServer.use(sitemap());
 
     // Serve robots.txt if not found in theme
     expressServer.use(robots());
