@@ -20,7 +20,22 @@
             "meta_description": null
         }
     ],
+    "post_types": [
+        {
+            "id":            1,
+            "uuid":          null,
+            "name":          "文章",
+            "slug":          "articles"
 
+        },
+        {
+            "id":            2,
+            "uuid":          null,
+            "name":          "视频",
+            "slug":          "videos"
+
+        }
+    ],
     "tags": [
         {
             "name":             "Getting Started",
