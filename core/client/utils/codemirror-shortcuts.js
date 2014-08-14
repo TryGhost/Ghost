@@ -1,4 +1,4 @@
-/* global CodeMirror, moment */
+/* global CodeMirror, moment, Showdown */
 /** Set up a shortcut function to be called via router actions.
  *  See editor-route-base
  */
@@ -23,7 +23,9 @@ function init() {
             line = this.getLine(cursor.line),
             fromLineStart = {line: cursor.line, ch: 0},
             toLineEnd = {line: cursor.line, ch: line.length},
-            md, letterCount, textIndex, position;
+            md, letterCount, textIndex, position, converter,
+            generatedHTML;
+
         switch (type) {
         case 'h1':
             line = line.replace(/^#* /, '');
@@ -98,18 +100,19 @@ function init() {
         case 'titlecase':
             md = titleize(text);
             break;
-        /** @TODO
         case 'copyHTML':
             converter = new Showdown.converter();
+
             if (text) {
-                md = converter.makeHtml(text);
+                generatedHTML = converter.makeHtml(text);
             } else {
-                md = converter.makeHtml(this.getValue());
+                generatedHTML = converter.makeHtml(this.getValue());
             }
 
-            $(".modal-copyToHTML-content").text(md).selectText();
+            // Talk to Ember
+            this.component.sendAction('openModal', 'copy-html', { generatedHTML: generatedHTML });
+            
             break;
-        */
         default:
             if (this.simpleShortcutSyntax[type]) {
                 md = this.simpleShortcutSyntax[type].replace('$1', text);
