@@ -421,6 +421,12 @@ CasperTest.begin('Publish menu - new post', 11, function suite(test) {
         test.assertSelectorHasText('.js-publish-button', 'Save Draft');
     });
 
+    // Fill headline and content
+    casper.then(function fillContent() {
+        casper.sendKeys('#entry-title', 'Headline');
+        casper.writeContentToCodeMirror('Just a bit of testtext');
+    })
+
     casper.then(function switchMenuToPublish() {
        // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .options.up');
