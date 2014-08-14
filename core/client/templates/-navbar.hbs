@@ -1,9 +1,9 @@
 <header id="global-header" class="navbar">
     
-    <button {{action "toggleSidebarOrGoHome" target="view"}} class="ghost-logo ghost-logo-button">
+    <button {{action "toggleSidebar" target="view"}} class="ghost-logo ghost-logo-button">
         <span class="hidden">Ghost</span>
     </button>
-    <a class="ghost-logo ghost-logo-link">
+    <a class="ghost-logo ghost-logo-link" {{bind-attr href=view.blogRoot}}>
         <span class="hidden">Ghost</span>
     </a>
 
