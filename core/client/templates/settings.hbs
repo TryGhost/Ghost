@@ -1,15 +1,14 @@
 <aside class="settings-sidebar" role="complementary">
     <header>
-        <h1 class="title">Settings</h1>
+        <h1 class="title">设置</h1>
     </header>
     <nav class="settings-menu">
         <ul>
             {{#unless session.user.isAuthor}}
                 {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+                    {{gh-activating-list-item route="settings.general" title="基本设置" classNames="general"}}
                 {{/unless}}
-
-                {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
+                {{gh-activating-list-item route="settings.users" title="用户列表" classNames="users"}}
 
             {{/unless}}
         </ul>
