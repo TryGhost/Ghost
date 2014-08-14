@@ -96,6 +96,7 @@
     .badge {
         color: $background;
         background-color: $color;
+        box-shadow: 0 0 0 1px $color;
     }
 }
 
