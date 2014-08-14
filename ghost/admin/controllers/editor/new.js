@@ -11,9 +11,6 @@ var EditorNewController = Ember.ObjectController.extend(EditorControllerMixin, {
                 if (model.get('id')) {
                     self.transitionToRoute('editor.edit', model);
                 }
-            }).catch(function () {
-                // Publishing failed
-                self.set('status', 'draft');
             });
         }
     }
