@@ -16,7 +16,7 @@
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo setCodeMirror="setCodeMirror"}}
+            {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo setCodeMirror="setCodeMirror" openModal="openModal"}}
         </section>
     </section>
 
@@ -26,7 +26,7 @@
         </header>
         <section class="entry-preview-content">
             {{gh-markdown markdown=scratch scrollPosition=view.scrollPosition
-                uploadStarted="disableCodeMirror" uploadFinished="enableCodeMirror" uploadSuccess="handleImgUpload"}}
+            uploadStarted="disableCodeMirror" uploadFinished="enableCodeMirror" uploadSuccess="handleImgUpload"}}
         </section>
     </section>
 
