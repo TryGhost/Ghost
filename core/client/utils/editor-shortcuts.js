@@ -20,6 +20,7 @@ shortcuts[ctrlOrCmd + '+i'] = {action: 'codeMirrorShortcut', options: {type: 'it
 shortcuts['ctrl+U'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'}};
 shortcuts['ctrl+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
 shortcuts['ctrl+alt+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
+shortcuts[ctrlOrCmd + '+shift+c'] = {action: 'codeMirrorShortcut', options: {type: 'copyHTML'}};
 
 //Headings
 shortcuts['ctrl+alt+1'] = {action: 'codeMirrorShortcut', options: {type: 'h1'}};
@@ -38,11 +39,5 @@ shortcuts['ctrl+shift+1'] = {action: 'codeMirrorShortcut', options: {type: 'curr
 shortcuts[ctrlOrCmd + '+k'] = {action: 'codeMirrorShortcut', options: {type: 'link'}};
 shortcuts[ctrlOrCmd + '+shift+i'] = {action: 'codeMirrorShortcut', options: {type: 'image'}};
 shortcuts[ctrlOrCmd + '+shift+k'] = {action: 'codeMirrorShortcut', options: {type: 'code'}};
-
-//Currently broken CodeMirror Markdown shortcuts.
-// Some may be broken due to a conflict with CodeMirror commands.
-// (see http://codemirror.net/doc/manual.html#commands)
-//
-//shortcuts[ctrlOrCmd + '+c'] = {action: 'codeMirrorShortcut', options: {type: 'copyHTML'}};
 
 export default shortcuts;
