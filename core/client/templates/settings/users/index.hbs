@@ -1,8 +1,8 @@
 <header class="settings-content-header">
-    {{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
-    <h2 class="title">Users</h2>
+    {{#link-to 'settings' class='button-back button'}}返回{{/link-to}}
+    <h2 class="title">用户</h2>
     <section class="page-actions">
-        <button class="button-add" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
+        <button class="button-add" {{action "openModal" "invite-new-user"}} >新建&nbsp;用户</button>
     </section>
 </header>
 
@@ -11,7 +11,7 @@
 
         <section class="object-list invited-users">
 
-            <h4 class="object-list-title">Invited users</h4>
+            <h4 class="object-list-title">邀请用户</h4>
 
             {{#each invitedUsers itemController="settings/users/user"}}
                 <div class="object-list-item">
@@ -20,14 +20,14 @@
                     <div class="object-list-item-body">
                         <span class="name">{{email}}</span><br>
                             {{#if pending}}
-                                <span class="red">Invitation not sent - please try again</span>
+                                <span class="red">邀请没有发送？再次尝试</span>
                             {{else}}
-                                <span class="description">Invitation sent: {{created_at}}</span>
+                                <span class="description">发送邀请: {{created_at}}</span>
                             {{/if}}
                     </div>
                     <aside class="object-list-item-aside">
-                        <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                        <a class="object-list-action" href="#" {{action "resend"}}>Resend</a>
+                        <a class="object-list-action" href="#" {{action "revoke"}}>撤销</a>
+                        <a class="object-list-action" href="#" {{action "resend"}}>重新发送</a>
                     </aside>
                 </div>
             {{/each}}
@@ -38,12 +38,12 @@
 
     <section class="object-list active-users">
 
-        <h4 class="object-list-title">Active users</h4>
+        <h4 class="object-list-title">已经激活的用户</h4>
 
         {{#each activeUsers itemController="settings/users/user"}}
             {{#link-to 'settings.users.user' this class="object-list-item" }}
                 <span class="object-list-item-figure" {{bind-attr style=image}}>
-                    <span class="hidden">Photo of {{unbound name}}</span>
+                    <span class="hidden"> {{unbound name}} 的相片</span>
                 </span>
 
                 <div class="object-list-item-body">
@@ -51,7 +51,7 @@
                         {{name}}
                     </span>
                     <br>
-                    <span class="description">Last seen: {{unbound last_login}}</span>
+                    <span class="description">上一次登录: {{unbound last_login}}</span>
                 </div>
                 <aside class="object-list-item-aside">
                     {{#unless isAuthor}}

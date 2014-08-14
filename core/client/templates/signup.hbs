@@ -7,26 +7,26 @@
             <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
             <header>
-                <h1>Welcome to Ghost</h1>
-                <h2>Create your account to start publishing</h2>
+                <h1>欢迎来到ghost</h1>
+                <h2>开始创建您的账号</h2>
             </header>
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">邮件地址</label>
                 {{input type="email" name="email" autocorrect="off" value=email }}
-                <p>Used for important notifications</p>
+                <p>用来接收重要的通知</p>
             </div>
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">你的名字</label>
                 {{gh-trim-focus-input type="text" name="name" autofocus="autofocus" autocorrect="off" value=name }}
-                <p>The name that you will sign your posts with</p>
+                <p>将会用这个名字注册到博客</p>
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">密 码</label>
                 {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=password }}
-                <p>Must be at least 8 characters</p>
+                <p>至少8个字符</p>
             </div>
             <footer>
-                <button type="submit" class="button-add large" {{action "signup"}} {{bind-attr disabled=submitting}}>Create Account</button>
+                <button type="submit" class="button-add large" {{action "signup"}} {{bind-attr disabled=submitting}}>创建账号</button>
             </footer>
         </form>
     </div>

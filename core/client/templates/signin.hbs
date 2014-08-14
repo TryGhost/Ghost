@@ -7,9 +7,9 @@
         <div class="password-wrap">
             {{input class="password" type="password" placeholder="Password" name="password" value=password}}
         </div>
-        <button class="button-save" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
+        <button class="button-save" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>登录</button>
         <section class="meta">
-            {{#link-to 'forgotten' class="forgotten-password"}}Forgotten password?{{/link-to}}
+            {{#link-to 'forgotten' class="forgotten-password"}}忘记密码?{{/link-to}}
         </section>
     </form>
 </section>

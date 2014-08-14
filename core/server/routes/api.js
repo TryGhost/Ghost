@@ -32,8 +32,13 @@ apiRoutes = function (middleware) {
     router.post('/users', api.http(api.users.add));
     router.del('/users/:id', api.http(api.users.destroy));
 
+   //postType
+    router.get('/postType', api.http(api.postType.browse));
+
     // ## Tags
     router.get('/tags', api.http(api.tags.browse));
+    // postType
+    router.get('/postTypes', api.http(api.postType.browse));
 
     // ## Roles
     router.get('/roles/', api.http(api.roles.browse));

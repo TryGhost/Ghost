@@ -62,6 +62,58 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
     }.property(),
+    //begin add by liuxing
+    selectedType: null,
+    postTypes: null,
+    initializeSelectedType: Ember.observer('model', function () {
+        var self = this;
+        return this.store.find('postType').then(function(types){
+            return types.filter(function(type){
+                if(type.get('id') == self.get('model').get('post_type')){
+                    self.set('selectedType', type);
+                    return type;
+                }
+            });
+        });
+    }).on('init'),
+
+    changeType: function () {
+        var type = this.get('post_type'),
+            selectedType = this.get('selectedType'),
+            model = this.get('model'),
+            self = this;
+        //return if nothing changed
+        if (selectedType.get('id') === type) {
+            return;
+        }
+        model.set('post_type', selectedType.get('id'));
+
+        //if this is a new post (never been saved before), don't try to save it
+        if (this.get('isNew')) {
+            return;
+        }
+
+        model.save(this.get('saveOptions')).catch(function (errors) {
+            self.showErrors(errors);
+            self.set('selectedType', type);
+            model.rollback();
+        });
+    }.observes('selectedType'),
+    types: function () {
+        var self = this;
+        //Loaded asynchronously, so must use promise proxies.
+        var deferred = {};
+
+        deferred.promise = this.store.find('postType').then(function (types) {
+            self.set('postTypes',types);
+            return types;
+        });
+
+        return Ember.ArrayProxy
+            .extend(Ember.PromiseProxyMixin)
+            .create(deferred);
+    }.property(),
+    //end add by liuxing
     //Changes in the PSM are too minor to warrant NProgress firing
     saveOptions: {disableNProgress: true},
     /**
@@ -88,7 +140,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Requests slug from title
     generateSlugPlaceholder: function () {
         var self = this,
-            title = this.get('titleScratch');
+            //title = this.get('titleScratch');
+            title = 'postSlugInit';
 
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
             self.set('slugPlaceholder', slug);

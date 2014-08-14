@@ -1,7 +1,7 @@
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
 var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
-
+    LOG_TRANSITIONS: true,
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
             transition.send('loadServerNotifications');

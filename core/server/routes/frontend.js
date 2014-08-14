@@ -33,6 +33,7 @@ frontendRoutes = function () {
     // Default
     router.get('/page/:page/', frontend.homepage);
     router.get('/', frontend.homepage);
+    router.get('/t/:category', frontend.category);
     router.get('*', frontend.single);
 
     return router;

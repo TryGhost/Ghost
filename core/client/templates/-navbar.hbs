@@ -9,10 +9,10 @@
 
     <nav id="global-nav" role="navigation">
         <ul id="main-menu" >
-            {{gh-activating-list-item route="posts" title="Content" classNames="content js-close-sidebar"}}
-            {{gh-activating-list-item route="editor.new" title="New Post" classNames="editor js-close-sidebar"}}
+            {{gh-activating-list-item route="posts" title="文章列表" classNames="content js-close-sidebar"}}
+            {{gh-activating-list-item route="editor.new" title="新建文章" classNames="editor js-close-sidebar"}}
             {{#unless session.user.isAuthor}}
-                {{gh-activating-list-item route="settings" title="Settings" classNames="settings js-close-sidebar"}}
+                {{gh-activating-list-item route="settings" title="设置" classNames="settings js-close-sidebar"}}
             {{/unless}}
 
             <li id="usermenu" class="usermenu subnav">
@@ -25,11 +25,11 @@
                     <span class="name">{{session.user.name}}</span>
                 {{/gh-popover-button}}
                 {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
-                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}Your Profile{{/link-to}}</li>
+                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}你的资料{{/link-to}}</li>
                         <li class="divider"></li>
-                        <li class="usermenu-help"><a href="http://support.ghost.org/">Help / Support</a></li>
+                        <li class="usermenu-help"><a href="http://support.ghost.org/">帮助 / 支持</a></li>
                         <li class="divider"></li>
-                        <li class="usermenu-signout">{{#link-to "signout"}}Sign Out{{/link-to}}</li>
+                        <li class="usermenu-signout">{{#link-to "signout"}}退出{{/link-to}}</li>
                 {{/gh-popover}}
             </li>
         </ul>

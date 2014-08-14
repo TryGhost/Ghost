@@ -15,10 +15,10 @@
     },
     "blog": {
         "title": {
-            "defaultValue": "Ghost"
+            "defaultValue": "Ghost中文版"
         },
         "description": {
-            "defaultValue": "Just a blogging platform."
+            "defaultValue": "一个简单的博客平台."
         },
         "email": {
             "defaultValue": "ghost@example.com",
@@ -34,7 +34,7 @@
             "defaultValue": ""
         },
         "defaultLang": {
-            "defaultValue": "en_US",
+            "defaultValue": "zh_CN",
             "validations": {
                 "isNull": false
             }
@@ -65,7 +65,7 @@
     },
     "theme": {
         "activeTheme": {
-            "defaultValue": "casper"
+            "defaultValue": "bigertech"
         }
     },
     "app": {

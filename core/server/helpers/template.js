@@ -1,6 +1,9 @@
 var templates     = {},
     hbs           = require('express-hbs'),
-    errors        = require('../errors');
+    api           = require('../api'),
+    errors        = require('../errors'),
+    _             = require('lodash'),
+    typeLinks = [];
 
 // ## Template utils
 
@@ -30,6 +33,13 @@ templates.execute = function (name, context) {
 // If given a static post object it will return 'page'.
 // If given a static post object and a custom page template
 // exits it will return that page.
+api.postType.browse().then(function(result){
+    if(result.postTypes){
+        _.forEach(result.postTypes,function(item){
+            typeLinks[item.id] = item.slug;
+        });
+    }
+});
 templates.getThemeViewForPost = function (themePaths, post) {
     var customPageView = 'page-' + post.slug,
         view = 'post';
@@ -40,6 +50,8 @@ templates.getThemeViewForPost = function (themePaths, post) {
         } else if (themePaths.hasOwnProperty('page.hbs')) {
             view = 'page';
         }
+    }else if(post.post_type){
+        return 'post-' + typeLinks[post.post_type];
     }
 
     return view;

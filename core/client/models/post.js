@@ -21,6 +21,8 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     published_at: DS.attr('moment-date'),
+    post_type: DS.attr('string'), //add by liuxing
+    type: DS.belongsTo('post-type',  { async: true }),
     published_by: DS.belongsTo('user', { async: true }),
     tags: DS.hasMany('tag', { embedded: 'always' }),
     titleScratch: boundOneWay('title'),
