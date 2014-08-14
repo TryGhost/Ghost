@@ -72,7 +72,7 @@ Post = ghostBookshelf.Model.extend({
         //this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
         /* liuxing */
-        var post_type = this.get('post_type') == null ? 1:this.get('post_type'); //默认文章类型
+        var post_type = this.get('post_type') == null ? 0 : this.get('post_type'); //default post type
         this.set('post_type',post_type);
         this.set('image',getPostImg(this.get('html')));
         /* liuxing */
@@ -290,6 +290,12 @@ Post = ghostBookshelf.Model.extend({
      */
     findPage: function (options) {
         options = options || {};
+        //add by liuxing
+        var post_type;
+        if(options.post_type) {
+            post_type = options.post_type;
+        }
+        //end by liuxing
 
         var postCollection = Posts.forge(),
             tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
@@ -321,7 +327,11 @@ Post = ghostBookshelf.Model.extend({
             }
             options.where.page = options.staticPages;
         }
-
+        /* add by liuxing  如果有类型查询，则加入 where 条件*/
+        if(post_type){
+            options.where.post_type = post_type;
+        }
+        /* end add  by liuxing */
         // Unless `all` is passed as an option, filter on
         // the status provided.
         if (options.status !== 'all') {

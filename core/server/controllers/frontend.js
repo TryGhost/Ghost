@@ -19,12 +19,22 @@ var moment      = require('moment'),
     frontendControllers,
     staticPostPermalink,
     oldRoute,
-    dummyRouter = require('express').Router();
-
+    dummyRouter = require('express').Router(),
+    //add by liuxing  post type  and url relation
+    typeLinks = [];
+api.postType.browse().then(function(result){
+    if(result.postTypes){
+        _.forEach(result.postTypes,function(item){
+            typeLinks[item.id] = item.slug;
+        });
+    }
+});
+//end add
 // Overload this dummyRouter as we only want the layer object.
 // We don't want to keep in memory many items in an array so we
 // clear the stack array after every invocation.
 oldRoute = dummyRouter.route;
+
 dummyRouter.route = function () {
     var layer;
 
@@ -53,7 +63,7 @@ function getPostPage(options) {
         if (!isNaN(postsPerPage) && postsPerPage > 0) {
             options.limit = postsPerPage;
         }
-        options.include = 'author,tags,fields';
+        options.include = 'author,tags,fields,post_type';
         return api.posts.browse(options);
     });
 }
@@ -154,6 +164,48 @@ frontendControllers = {
             });
         }).otherwise(handleError(next));
     },
+    // add by liuxing add article、video  list
+    'category': function (req, res, next) {
+        // Parse the page number
+        var category = req.params.category,
+            post_type = _.indexOf(typeLinks,category),
+            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            options = {
+                page: pageParam,
+                post_type:post_type
+            };
+
+        // No negative pages, or page 1
+        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
+            return res.redirect(config.paths.subdir + '/');
+        }
+
+        return getPostPage(options).then(function (page) {
+
+            // If page is greater than number of pages we have, redirect to last page
+            if (pageParam > page.meta.pagination.pages) {
+                return res.redirect(page.meta.pagination.pages === 1 ? config.paths.subdir + '/' : (config.paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
+            }
+
+            setReqCtx(req, page.posts);
+
+            // Render the page of posts
+            filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+                getActiveThemePaths().then(function (paths) {
+                    var view = paths.hasOwnProperty('home.hbs') ? 'home' : category;
+
+                    // If we're on a page then we always render the index
+                    // template.
+                    if (pageParam > 1) {
+                        view = category;
+                    }
+
+                    res.render(view, formatPageResponse(posts, page));
+                });
+            });
+        }).otherwise(handleError(next));
+    },
+    // end add
     'tag': function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,

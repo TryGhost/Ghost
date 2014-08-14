@@ -57,7 +57,6 @@ posts = {
         if (options.include) {
             options.include = prepareInclude(options.include);
         }
-
         return dataProvider.Post.findPage(options);
     },
 
