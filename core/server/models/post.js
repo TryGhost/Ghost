@@ -88,7 +88,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || 'postSlugInit',
                     {status: 'all', transacting: options.transacting})
                 .then(function (slug) {
                     self.set({slug: slug});

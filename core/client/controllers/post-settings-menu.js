@@ -140,7 +140,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Requests slug from title
     generateSlugPlaceholder: function () {
         var self = this,
-            title = this.get('titleScratch');
+            //title = this.get('titleScratch');
+            title = 'postSlugInit';
 
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
             self.set('slugPlaceholder', slug);
