@@ -74,7 +74,7 @@
             padding-left: 15px;
         }
     }
-    
+
 } // .settings-sidebar
 
 // Main settings-menu styles, apply to every item
@@ -134,7 +134,7 @@
                 background: $lightbrown;
                 text-decoration: none;
             }
-            
+
             // Make space for icons
             &:before {
                 margin-right: 20px;
@@ -399,6 +399,12 @@
         float: right;
         font-weight: bold;
         color: darken($brown, 5%);
+    }
+
+    // Fixes for images in buttons (user avatar/cover)
+    button.js-modal-logo,
+    button.js-modal-cover {
+        padding: 0;
     }
 
     @media (max-width: 550px) {
