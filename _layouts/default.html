@@ -67,8 +67,8 @@
     </button>
     <div class="nav-collapse collapse bs-navbar-collapse">
       <ul class="nav navbar-nav">
+        {% if page.lang %}
         <li>
-          {% if page.lang %}
           <a href="{{ site.url }}/{{page.lang}}/installation/">
               {{site.translations.[page.lang].installation}}
           </a>
@@ -81,10 +81,33 @@
           </a>
         </li>
         {% endif %}
-        {% if page.lang %}
+        {% if page.lang  %}
         <li>
           <a href="{{ site.url }}/{{page.lang}}/mail/">
             {{site.translations.[page.lang].email}}
+          </a>
+        </li>
+        {% endif %}
+
+        {% if page.lang == nil or site.translations.[page.lang].api %}
+        <li>
+          <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}api/">
+            {% unless page.lang and site.translations.[page.lang].api %}
+              API
+            {% else %}
+              {{site.translations.[page.lang].api}}
+            {% endunless %}
+          </a>
+        </li>
+        {% endif %}
+          {% if page.lang == nil or site.translations.[page.lang].apps %}
+        <li>
+          <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}apps/">
+            {% unless page.lang and site.translations.[page.lang].apps %}
+              Apps
+            {% else %}
+              {{site.translations.[page.lang].apps}}
+            {% endunless %}
           </a>
         </li>
         {% endif %}

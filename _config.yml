@@ -1,6 +1,7 @@
 hightlighter: rouge
 permalinks: pretty
 relative_permalinks: false
+encoding: utf-8
 markdown: redcarpet
 redcarpet:
   extensions: ["tables"]
@@ -73,7 +74,7 @@ translations:
     themes:       'Themen'
     help:         'Hilfe'
     deploy:       'Einsetzen'
-    upgrading:    'Aktualisieren' 
+    upgrading:    'Aktualisieren'
     troubleshooting: 'Problembehebung'
     configuration: 'Konfiguration'
     faq: 'FAQ'
@@ -120,7 +121,7 @@ translations:
     translations: 'Traduzioni'
     help:         'Aiuto'
     deploy:       'Deploy'
-    upgrading:    'Aggiornamento' 
+    upgrading:    'Aggiornamento'
     troubleshooting: 'Risoluzione dei Problemi'
   zh_TW:
     site_title:   'Ghost 使用手冊'
@@ -137,7 +138,7 @@ translations:
     email:        'Email'
     themes:       'Temas'
     help:         'Ajuda'
-    upgrading:    'Atualizando' 
+    upgrading:    'Atualizando'
     troubleshooting: 'Resolução de Problemas'
 
 # If running locally, simply comment out the line below to make all urls relative

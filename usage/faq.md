@@ -8,7 +8,7 @@ chapter: usage
 section: faq
 permalink: /usage/faq/
 prev_section: writing
-canonical: http://support.ghost.org/user-guide/
+canonical: http://support.ghost.org/faq/
 redirectToCanonical: true
 
 ---
