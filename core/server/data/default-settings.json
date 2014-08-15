@@ -44,7 +44,7 @@
             "validations": {
                 "isNull": false,
                 "isInt": true,
-                "isLength": [0, 1000]
+                "isLength": [1, 1000]
             }
         },
         "forceI18n": {

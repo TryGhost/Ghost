@@ -15,15 +15,19 @@ var SettingValidator = Ember.Object.create({
         }
 
         if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
-            validationErrors.push({ message: 'Please supply a valid email address' });
+            validationErrors.push({ message: 'Supply a valid email address' });
         }
 
-        if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
-            validationErrors.push({ message: 'Please use a number less than 1000' });
+        if (postsPerPage > 1000) {
+            validationErrors.push({ message: 'The maximum number of posts per page is 1000' });
         }
 
-        if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
-            validationErrors.push({ message: 'Please use a number greater than 0' });
+        if (postsPerPage < 1) {
+            validationErrors.push({ message: 'The minimum number of posts per page is 1' });
+        }
+
+        if (!validator.isInt(postsPerPage)) {
+            validationErrors.push({ message: 'Posts per page must be a number' });
         }
 
         return validationErrors;
