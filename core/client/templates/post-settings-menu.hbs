@@ -17,6 +17,7 @@
 					{{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
 				</td>
 			</tr>
+			{{#unless session.user.isAuthor}}
 			<tr class="post-setting">
 				<td class="post-setting-label">
 			<label for="post-setting-author">Author</label>
@@ -32,6 +33,7 @@
 			</span>
 		</td>
 		</tr>
+        {{/unless}}
 		<tr class="post-setting">
 		<td class="post-setting-label">
 					<label class="label" for="static-page">Static Page</label>
