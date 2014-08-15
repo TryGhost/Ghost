@@ -15,10 +15,12 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     },
 
     selectedAuthor: null,
+    userIsAuthor: null,
     initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;
 
         return this.get('author').then(function (author) {
+            self.set('userIsAuthor', author.get('isAuthor'));
             self.set('selectedAuthor', author);
             return author;
         });
