@@ -210,7 +210,7 @@ function showUpdateNotification() {
         }
 
         if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
-            return when(currentVersion);
+            return when(display.value);
         }
         return when(false);
     });
