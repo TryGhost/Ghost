@@ -199,8 +199,8 @@ frontendControllers = {
                             tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
                         });
 
-                    // If the resulting tag is '' then 404.
-                    if (!result.tag) {
+                    // If the resulting tag is '' or there are no pages then 404.
+                    if (!result.tag || result.pagination.total === 0) {
                         return next();
                     }
                     res.render(view, result);
