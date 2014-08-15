@@ -184,7 +184,7 @@ function initNotifications() {
             type: 'warn',
             message: [
                 "Ghost is currently unable to send e-mail.",
-                "See <a href=\"http://support.ghost.org/mail\">http://support.ghost.org/mail</a> for instructions"
+                "See <a href=\"http://support.ghost.org/mail\" target=\"_blank\">http://support.ghost.org/mail</a> for instructions"
             ].join(' ')
         }] }, {context: {internal: true}});
     }
