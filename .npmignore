@@ -34,4 +34,5 @@ CONTRIBUTING.md
 SECURITY.md
 .travis.yml
 *.html
+!core/server/email-templates/**
 bower_components/**
