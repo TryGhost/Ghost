@@ -211,6 +211,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 return model;
             }).catch(function (errors) {
                 self.showErrorNotification(prevStatus, self.get('status'), errors);
+
+                self.set('status', prevStatus);
+
                 return Ember.RSVP.reject(errors);
             });
         },

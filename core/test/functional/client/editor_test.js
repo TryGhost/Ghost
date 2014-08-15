@@ -375,8 +375,6 @@ CasperTest.begin('Post settings menu', 30, function suite(test) {
         });
         test.assert(!checked, 'Turned page into post.');
     });
-        
-
 
     // Test Delete Post Modal
     casper.thenClick('.post-settings-menu button.delete');
@@ -554,6 +552,102 @@ CasperTest.begin('Publish menu - existing post', 21, function suite(test) {
     });
 });
 
+CasperTest.begin('Publish menu - new post status is correct after failed save', 4, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    // Fill title and content
+    casper.then(function writePost() {
+        casper.sendKeys('#entry-title', Array(160).join('x'));
+        casper.writeContentToCodeMirror('body content');
+    });
+
+    casper.then(function switchMenuToPublish() {
+       // Open the publish options menu;
+        casper.thenClick('.js-publish-splitbutton .options.up');
+
+        casper.waitForOpaque('.js-publish-splitbutton .open');
+
+        // Select the publish post button
+        casper.thenClick('.js-publish-splitbutton li:first-child a');
+    });
+
+    // attempt to save
+    casper.thenClick('.js-publish-button');
+
+    // ... check status, label, class
+    casper.waitForSelector('.notification-error', function onSuccess() {
+        test.assertExists('.js-publish-button.button-save', 'Update button should have .button-save');
+        // wait for button to settle
+        casper.wait(500);
+        test.assertSelectorHasText('.js-publish-button', 'Save Draft');
+    }, function onTimeout() {
+        test.assert(false, 'Saving post with invalid title should trigger an error');
+    });
+
+    casper.thenClick('li.content a');
+
+    casper.waitUntilVisible('.modal-content', function onSuccess() {
+        casper.thenClick('.button-delete');
+    }, function onTimeout() {
+        test.assert(false, 'Are you sure you want to leave modal did not appear.');
+    });
+});
+
+CasperTest.begin('Publish menu - existing post status is correct after failed save', 6, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    // Fill title and content
+    casper.then(function writePost() {
+        casper.sendKeys('#entry-title', 'a valid title');
+        casper.writeContentToCodeMirror('body content');
+    });
+
+    // save
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success');
+
+    casper.then(function updateTitle() {
+        casper.sendKeys('#entry-title', Array(160).join('y'));
+    });
+
+    casper.then(function switchMenuToPublish() {
+        // Open the publish options menu;
+        casper.thenClick('.js-publish-splitbutton .options.up');
+
+        casper.waitForOpaque('.js-publish-splitbutton .open');
+
+        // Select the publish post button
+        casper.thenClick('.js-publish-splitbutton li:first-child a');
+
+        // ... check status, label, class
+        casper.waitForSelector('.js-publish-splitbutton.splitbutton-delete', function onSuccess() {
+            test.assertExists('.js-publish-button.button-delete', 'Publish button should have .button-delete');
+            test.assertSelectorHasText('.js-publish-button', 'Publish Now');
+        }, function onTimeout() {
+            test.assert(false, 'Publish split button should have .splitbutton-delete');
+        });
+    });
+
+    // attempt to save
+    casper.thenClick('.js-publish-button');
+
+    // ... check status, label, class
+    casper.waitForSelector('.notification-error', function onSuccess() {
+        test.assertExists('.js-publish-button.button-save', 'Update button should have .button-save');
+        // wait for button to settle
+        casper.wait(500);
+        test.assertSelectorHasText('.js-publish-button', 'Save Draft');
+    }, function onTimeout() {
+        test.assert(false, 'Saving post with invalid title should trigger an error');
+    });
+});
 
 // test the markdown help modal
 CasperTest.begin('Markdown help modal', 5, function suite(test) {
