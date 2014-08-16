@@ -1,6 +1,12 @@
-<header>
-    {{#link-to 'settings' class='btn btn-default'}}Back{{/link-to}}
-    <h2 class="title">Users</h2>
+<script>
+$(document).ready(function() {
+    $('body').addClass('settings-view');
+});
+</script>
+
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">Users</h2>
     <section class="page-actions">
         <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
     </section>
