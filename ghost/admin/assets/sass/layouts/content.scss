@@ -176,6 +176,7 @@
     bottom:0;
     top:0;
     right:0;
+    overflow: auto;
     background: #fff;
     @media (max-width: 800px) {
         width: auto;
@@ -204,12 +205,6 @@
     }
 
     .content-preview-content {
-        position: absolute;
-        top:0;
-        right:0;
-        bottom:0;
-        left:0;
-        overflow: auto;
         padding: 80px 40px;
         word-break: break-word;
         hyphens: auto;
@@ -234,8 +229,6 @@
 
     .post-edit {
         @include icon($i-edit, 14px);
-        margin-right: 2px;
-        padding: 0 10px;
     }
 
     img {
