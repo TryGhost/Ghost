@@ -1368,43 +1368,6 @@ describe('Core Helpers', function () {
         });
     });
 
-    describe('e helper', function () {
-
-        it('is loaded', function () {
-            should.exist(handlebars.helpers.e);
-        });
-
-        it('should return the correct default string', function (done) {
-            apiStub.restore();
-            apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({ settings: ['en_US'] });
-            });
-
-            helpers.e('testKey', 'default', { hash: {} }).then(function (result) {
-                result.should.equal('default');
-                done();
-            }).catch(done);
-        });
-
-        it('should return the correct string', function (done) {
-            apiStub.restore();
-            apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({ settings: ['fr'] });
-            });
-
-            var polyglot = new Polyglot();
-
-            polyglot.extend({ testKey: 'test value' });
-
-            helpers.__set__('polyglot', polyglot);
-
-            helpers.e('testKey', 'default', { hash: {} }).then(function (result) {
-                result.should.equal('test value');
-                done();
-            }).catch(done);
-        });
-    });
-
     describe('foreach helper', function () {
 
         // passed into the foreach helper.  takes the input string along with the metadata about
