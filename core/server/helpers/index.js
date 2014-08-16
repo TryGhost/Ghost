@@ -1,7 +1,6 @@
 var downsize        = require('downsize'),
     hbs             = require('express-hbs'),
     moment          = require('moment'),
-    polyglot        = require('node-polyglot').instance,
     _               = require('lodash'),
     when            = require('when'),
 
@@ -566,32 +565,6 @@ coreHelpers.meta_description = function (options) {
     return filters.doFilter('meta_description', description).then(function (description) {
         description = description || '';
         return description.trim();
-    });
-};
-
-/**
- * Localised string helpers
- *
- * @param {String} key
- * @param {String} default translation
- * @param {Object} options
- * @return {String} A correctly internationalised string
- */
-coreHelpers.e = function (key, defaultString, options) {
-    var output;
-    return when.all([
-        api.settings.read('defaultLang'),
-        api.settings.read('forceI18n')
-    ]).then(function (values) {
-        if (values[0].settings[0] === 'en_US' &&
-                _.isEmpty(options.hash) &&
-                values[1].settings[0] !== 'true') {
-            output = defaultString;
-        } else {
-            output = polyglot.t(key, options.hash);
-        }
-
-        return output;
     });
 };
 
