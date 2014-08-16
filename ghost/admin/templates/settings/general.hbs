@@ -1,13 +1,9 @@
-<header class="settings-content-header">
-    <h2 class="title">General</h2>
-
-    <div class="settings-header-inner">
-	{{#link-to 'settings' class='btn btn-default'}}Back{{/link-to}}
-
-        <section class="page-actions">
-            <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
-        </section>
-    </div>
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">General</h2>
+    <section class="page-actions">
+        <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
 </header>
 
 <section class="content settings-general">
