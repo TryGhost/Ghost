@@ -35,6 +35,11 @@ Once you've decided on what email service to use, you need to add your settings 
 
 Head along to [mailgun.com](http://www.mailgun.com/) and sign up for an account. It's free to use up to 10.000 emails per month. After signing up with Mailgun, verify your email address and [log-in to your account](https://www.mailgun.com/cp). Mailgun allows you to use your own domain for sending transactional emails but if you do not own one it is possible to simply use the handy subdomain that they provide you with (also known as the sandbox domain), although sandbox domains are limited to 300 emails per day. You can change this later, so for now let's use the subdomain automatically generated for you.
 
+Now you have to choices: 
+
+1. Use the [official Mailgun `config.js` generator available here](https://ghost.mailgun.com)
+2. Edit your files manually (Continue reading below)
+
 You're going to need to find your new email service username and password that Mailgun have created for you (they're not the ones you sign up with), by clicking on your sandbox domain on the right hand side. Here is an updated screencast to understand exactly where to find these details:
 
 <img src="http://imgur.com/6uCVuZJ.gif" alt="Mailgun details" width="100%" />
