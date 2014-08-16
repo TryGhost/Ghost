@@ -1,36 +1,26 @@
-<header class="settings-content-header user-settings-header">
+<header class="settings-subview-header">
+    {{#unless session.user.isAuthor}}
+        {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
+    {{/unless}}
+    <h2 class="page-title">{{user.name}}</h2>
+    <section class="page-actions">
+        {{#if view.userActionsAreVisible}}
+            <span class="dropdown">
+                {{#gh-popover-button popoverName="user-actions-menu" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
+                    <i class="icon-settings"></i>
+                    <span class="hidden">User Settings</span>
+                {{/gh-popover-button}}
+                {{#gh-popover name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                    {{render "user-actions-menu" model}}
+                {{/gh-popover}}
+            </span>
+        {{/if}}
 
-    <h2 class="hidden">Your Profile</h2>
-
-    <div class="settings-header-inner">
-        {{#link-to 'settings' class='btn btn-default'}}Back{{/link-to}}
-        <section class="page-actions page-actions-alt">
-            {{#unless session.user.isAuthor}}
-                {{#link-to "settings.users" class="button has-icon users-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
-            {{/unless}}
-        </section>
-
-        <section class="page-actions">
-
-            {{#if view.userActionsAreVisible}}
-                <span class="dropdown">
-                    {{#gh-popover-button popoverName="user-actions-menu" classNames="button only-has-icon user-actions-cog" title="User Actions"}}
-                        <i class="icon-settings"></i>
-                        <span class="hidden">User Settings</span>
-                    {{/gh-popover-button}}
-                    {{#gh-popover name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
-                        {{render "user-actions-menu" model}}
-                    {{/gh-popover}}
-                </span>
-            {{/if}}
-
-            <button class="btn btn-blue" {{action "save"}}>Save</button>
-        </section>
-    </div>
-
+        <button class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
 </header>
 
-<section class="content settings-user no-padding">
+<section class="content settings-user">
 
     <header class="user-profile-header">
         <img id="user-cover" class="cover-image" {{bind-attr src=cover title=coverTitle}} />
