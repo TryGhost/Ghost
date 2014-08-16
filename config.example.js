@@ -5,6 +5,9 @@
 var path = require('path'),
     config;
 
+// Define which kind of environment you want to use ('development', 'production' or 'testing')
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
 config = {
     // ### Development **(default)**
     development: {
