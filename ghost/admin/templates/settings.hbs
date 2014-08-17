@@ -8,14 +8,14 @@
         <ul>
             {{#unless session.user.isAuthor}}
                 {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="General" classNames="general"}}
+                    {{gh-activating-list-item route="settings.general" title="General" classNames="settings-menu-general"}}
                 {{/unless}}
 
-                {{gh-activating-list-item route="settings.users" title="Users" classNames="users"}}
+                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-menu-users"}}
 
                 {{#if showApps}}
                     {{#unless session.user.isEditor}}
-                        {{gh-activating-list-item route="settings.apps" title="Apps" classNames="apps"}}
+                        {{gh-activating-list-item route="settings.apps" title="Apps" classNames="settings-menu-apps"}}
                     {{/unless}}
                 {{/if}}
             {{/unless}}
