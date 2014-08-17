@@ -3,7 +3,7 @@
 var testUtils   = require('../../utils'),
     should      = require('should'),
     sinon       = require('sinon'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     _           = require('lodash'),
 
 // Stuff we are testing
@@ -340,11 +340,11 @@ describe('Users API', function () {
             newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
 
             sandbox.stub(ModelUser.User, 'gravatarLookup', function (userData) {
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             sandbox.stub(mail, 'send', function () {
-                return when.resolve();
+                return Promise.resolve();
             });
         });
         afterEach(function () {
@@ -933,11 +933,11 @@ describe('Users API', function () {
                         {name: newName, roles: [roleIdFor.admin]}
                     ]}, _.extend({}, context.editor, {id: userIdFor.author}, {include: 'roles'})
                 ).then(function (response) {
-                        done(new Error('Editor should not be able to upgrade the role of authors'));
-                    }, function (error) {
-                        error.type.should.eql('NoPermissionError');
-                        done();
-                    }).catch(done);
+                    done(new Error('Editor should not be able to upgrade the role of authors'));
+                }).catch(function (error) {
+                    error.type.should.eql('NoPermissionError');
+                    done();
+                }).catch(done);
             });
         });
 

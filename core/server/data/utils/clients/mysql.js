@@ -1,5 +1,4 @@
 var _       = require('lodash'),
-    when    = require('when'),
     config  = require('../../../config/index'),
 
     //private
@@ -43,9 +42,7 @@ checkPostTable = function checkPostTable() {
     return config.database.knex.raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
-                return config.database.knex.raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT').then(function () {
-                    return when.resolve();
-                });
+                return config.database.knex.raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT');
             }
         }));
     });

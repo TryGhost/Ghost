@@ -1,12 +1,11 @@
 // # Themes API
 // RESTful API for Themes
-var when               = require('when'),
+var Promise            = require('bluebird'),
     _                  = require('lodash'),
     canThis            = require('../permissions').canThis,
     config             = require('../config'),
     errors             = require('../errors'),
     settings           = require('./settings'),
-    when               = require('when'),
     themes;
 
 /**
@@ -25,7 +24,7 @@ themes = {
         options = options || {};
 
         return canThis(options.context).browse.theme().then(function () {
-            return when.all([
+            return Promise.all([
                 settings.read({key: 'activeTheme', context: {internal: true}}),
                 config.paths.availableThemes
             ]).then(function (result) {
@@ -57,7 +56,7 @@ themes = {
                 return { themes: themes };
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
         });
     },
 
@@ -73,7 +72,7 @@ themes = {
 
         // Check whether the request is properly formatted.
         if (!_.isArray(object.themes)) {
-            return when.reject({type: 'BadRequest', message: 'Invalid request.'});
+            return Promise.reject({type: 'BadRequest', message: 'Invalid request.'});
         }
 
         themeName = object.themes[0].uuid;
@@ -88,7 +87,7 @@ themes = {
                 });
 
                 if (!theme) {
-                    return when.reject(new errors.BadRequestError('Theme does not exist.'));
+                    return Promise.reject(new errors.BadRequestError('Theme does not exist.'));
                 }
 
                 // Activate the theme
@@ -100,7 +99,7 @@ themes = {
                 });
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
         });
     }
 };

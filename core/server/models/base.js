@@ -6,7 +6,7 @@
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
 var bookshelf  = require('bookshelf'),
-    when       = require('when'),
+    Promise    = require('bluebird'),
     moment     = require('moment'),
     _          = require('lodash'),
     uuid       = require('node-uuid'),
@@ -55,7 +55,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         this.on('creating', this.creating, this);
         this.on('saving', function (model, attributes, options) {
-            return when(self.saving(model, attributes, options)).then(function () {
+            return Promise.resolve(self.saving(model, attributes, options)).then(function () {
                 return self.validate(model, attributes, options);
             });
         });
@@ -327,7 +327,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 var trimSpace;
 
                 if (!found) {
-                    return when.resolve(slugToFind);
+                    return slugToFind;
                 }
 
                 slugTryCount += 1;
