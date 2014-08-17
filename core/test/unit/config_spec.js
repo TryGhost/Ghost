@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
     path           = require('path'),
     _              = require('lodash'),
     rewire         = require('rewire'),
@@ -32,7 +32,7 @@ describe('Config', function () {
             settings = {'read': function read() {}};
 
             settingsStub = sandbox.stub(settings, 'read', function () {
-                return when({ settings: [{value: 'casper'}] });
+                return Promise.resolve({ settings: [{value: 'casper'}] });
             });
 
             theme.update(settings, 'http://my-ghost-blog.com')
@@ -270,7 +270,7 @@ describe('Config', function () {
         it('should output correct url for post', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({ settings: [{value: '/:slug/'}] });
+                    return Promise.resolve({ settings: [{value: '/:slug/'}] });
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
@@ -308,7 +308,7 @@ describe('Config', function () {
         it('should output correct url for post with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
+                    return Promise.resolve({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
@@ -349,7 +349,7 @@ describe('Config', function () {
         it('should output correct url for page with date permalink', function (done) {
             var settings = {'read': function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return when({ settings: [{value: '/:year/:month/:day/:slug/'}] });
+                    return Promise.resolve({ settings: [{value: '/:year/:month/:day/:slug/'}] });
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[5],

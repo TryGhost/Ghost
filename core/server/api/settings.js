@@ -2,7 +2,7 @@
 // RESTful API for the Setting resource
 var _            = require('lodash'),
     dataProvider = require('../models'),
-    when         = require('when'),
+    Promise      = require('bluebird'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
@@ -44,7 +44,7 @@ updateSettingsCache = function (settings) {
             settingsCache[key] = setting;
         });
 
-        return when(settingsCache);
+        return Promise.resolve(settingsCache);
     }
 
     return dataProvider.Settings.findAll()
@@ -206,14 +206,14 @@ populateDefaultSetting = function (key) {
         }).then(function () {
             // Get the result from the cache with permission checks
         });
-    }).otherwise(function (err) {
+    }).catch(function (err) {
         // Pass along NotFoundError
         if (typeof err === errors.NotFoundError) {
-            return when.reject(err);
+            return Promise.reject(err);
         }
 
         // TODO: Different kind of error?
-        return when.reject(new errors.NotFoundError('Problem finding setting: ' + key));
+        return Promise.reject(new errors.NotFoundError('Problem finding setting: ' + key));
     });
 };
 
@@ -227,13 +227,13 @@ populateDefaultSetting = function (key) {
 canEditAllSettings = function (settingsInfo, options) {
     var checkSettingPermissions = function (setting) {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
-                return when.reject(
+                return Promise.reject(
                     new errors.NoPermissionError('Attempted to access core setting from external request')
                 );
             }
 
             return canThis(options.context).edit.setting(setting.key).catch(function () {
-                return when.reject(new errors.NoPermissionError('You do not have permission to edit settings.'));
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to edit settings.'));
             });
 
         },
@@ -251,7 +251,7 @@ canEditAllSettings = function (settingsInfo, options) {
             return checkSettingPermissions(setting);
         });
 
-    return when.all(checks);
+    return Promise.all(checks);
 };
 
 /**
@@ -281,7 +281,7 @@ settings = {
 
         // If there is no context, return only blog settings
         if (!options.context) {
-            return when(_.filter(result.settings, function (setting) { return setting.type === 'blog'; }));
+            return Promise.resolve(_.filter(result.settings, function (setting) { return setting.type === 'blog'; }));
         }
 
         // Otherwise return whatever this context is allowed to browse
@@ -312,19 +312,19 @@ settings = {
                 result[options.key] = setting;
 
                 if (setting.type === 'core' && !(options.context && options.context.internal)) {
-                    return when.reject(
+                    return Promise.reject(
                         new errors.NoPermissionError('Attempted to access core setting from external request')
                     );
                 }
 
                 if (setting.type === 'blog') {
-                    return when(settingsResult(result));
+                    return Promise.resolve(settingsResult(result));
                 }
 
                 return canThis(options.context).read.setting(options.key).then(function () {
                     return settingsResult(result);
                 }, function () {
-                    return when.reject(new errors.NoPermissionError('You do not have permission to read settings.'));
+                    return Promise.reject(new errors.NoPermissionError('You do not have permission to read settings.'));
                 });
             };
 

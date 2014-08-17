@@ -1,7 +1,7 @@
-var when   = require('when'),
-    _      = require('lodash'),
-    models = require('../../models'),
-    utils  = require('./utils'),
+var Promise = require('bluebird'),
+    _       = require('lodash'),
+    models  = require('../../models'),
+    utils   = require('./utils'),
 
     Importer000;
 
@@ -23,17 +23,15 @@ Importer000.prototype.importData = function (data) {
     return this.canImport(data)
         .then(function (importerFunc) {
             return importerFunc(data);
-        }, function (reason) {
-            return when.reject(reason);
         });
 };
 
 Importer000.prototype.canImport = function (data) {
     if (data.meta && data.meta.version && this.importFrom[data.meta.version]) {
-        return when.resolve(this.importFrom[data.meta.version]);
+        return Promise.resolve(this.importFrom[data.meta.version]);
     }
 
-    return when.reject('Unsupported version of data: ' + data.meta.version);
+    return Promise.reject('Unsupported version of data: ' + data.meta.version);
 };
 
 
@@ -49,10 +47,10 @@ Importer000.prototype.loadUsers = function () {
         });
 
         if (!users.owner) {
-            return when.reject('Unable to find an owner');
+            return Promise.reject('Unable to find an owner');
         }
 
-        return when.resolve(users);
+        return users;
     });
 };
 
@@ -72,12 +70,12 @@ Importer000.prototype.doUserImport = function (t, tableData, users, errors) {
         // Import users, deduplicating with already present users
         userOps = utils.importUsers(tableData.users, users, t);
 
-        return when.settle(userOps).then(function (descriptors) {
+        return Promise.settle(userOps).then(function (descriptors) {
             descriptors.forEach(function (d) {
-                if (d.state === 'rejected') {
-                    errors = errors.concat(d.reason);
+                if (d.isRejected()) {
+                    errors = errors.concat(d.reason());
                 } else {
-                    imported.push(d.value.toJSON());
+                    imported.push(d.value().toJSON());
                 }
             });
 
@@ -85,12 +83,12 @@ Importer000.prototype.doUserImport = function (t, tableData, users, errors) {
             if (errors.length > 0) {
                 t.rollback(errors);
             } else {
-                return when.resolve(imported);
+                return imported;
             }
         });
     }
 
-    return when.resolve({});
+    return Promise.resolve({});
 };
 
 Importer000.prototype.doImport = function (data) {
@@ -149,13 +147,12 @@ Importer000.prototype.doImport = function (data) {
                  */
 
                 // Write changes to DB, if successful commit, otherwise rollback
-                // when.all() does not work as expected, when.settle() does.
-                when.settle(ops).then(function (descriptors) {
+                Promise.settle(ops).then(function (descriptors) {
                     var errors = [];
 
                     descriptors.forEach(function (d) {
-                        if (d.state === 'rejected') {
-                            errors = errors.concat(d.reason);
+                        if (d.isRejected()) {
+                            errors = errors.concat(d.reason());
                         }
                     });
 
@@ -168,9 +165,7 @@ Importer000.prototype.doImport = function (data) {
             });
         }).then(function () {
             //TODO: could return statistics of imported items
-            return when.resolve();
-        }, function (error) {
-            return when.reject(error);
+            return Promise.resolve();
         });
     });
 };

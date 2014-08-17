@@ -3,7 +3,7 @@
 var fs          = require('fs-extra'),
     should      = require('should'),
     sinon       = require('sinon'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     storage     = require('../../../server/storage'),
 
     // Stuff we are testing
@@ -23,9 +23,9 @@ describe('Upload API', function () {
 
     beforeEach(function () {
         store = sinon.stub();
-        store.save = sinon.stub().returns(when('URL'));
-        store.exists = sinon.stub().returns(when(true));
-        store.destroy = sinon.stub().returns(when());
+        store.save = sinon.stub().returns(Promise.resolve('URL'));
+        store.exists = sinon.stub().returns(Promise.resolve(true));
+        store.destroy = sinon.stub().returns(Promise.resolve());
         sinon.stub(storage, 'get_storage').returns(store);
         sinon.stub(fs, 'unlink').yields();
     });

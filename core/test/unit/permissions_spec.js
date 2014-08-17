@@ -3,7 +3,7 @@
 var testUtils       = require('../utils'),
     should          = require('should'),
     sinon           = require('sinon'),
-    when            = require('when'),
+    Promise         = require('bluebird'),
     _               = require('lodash'),
 
     // Stuff we are testing
@@ -31,7 +31,7 @@ describe('Permissions', function () {
         });
 
         sandbox.stub(Models.Permission, 'findAll', function () {
-            return when(Models.Permissions.forge(permissions));
+            return Promise.resolve(Models.Permissions.forge(permissions));
         });
 
     });
@@ -112,7 +112,7 @@ describe('Permissions', function () {
 //    it('can use permissible function on Model to allow something', function (done) {
 //        var testUser,
 //            permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
-//                return when.resolve();
+//                return Promise.resolve();
 //            });
 //
 //        testUtils.insertAuthorUser()
@@ -141,7 +141,7 @@ describe('Permissions', function () {
 //    it('can use permissible function on Model to forbid something', function (done) {
 //        var testUser,
 //            permissibleStub = sandbox.stub(Models.Post, 'permissible', function () {
-//                return when.reject();
+//                return Promise.reject();
 //            });
 //
 //        testUtils.insertAuthorUser()
@@ -203,7 +203,7 @@ describe('Permissions', function () {
 //
 //                        return newPerm.save(null, context).then(function () {
 //                            return foundUser.permissions().attach(newPerm).then(function () {
-//                                return when.all([updatedPost, foundUser]);
+//                                return Promise.all([updatedPost, foundUser]);
 //                            });
 //                        });
 //                    });

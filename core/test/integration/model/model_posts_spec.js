@@ -2,7 +2,8 @@
 /*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
-    sequence        = require('when/sequence'),
+    Promise         = require('bluebird'),
+    sequence        = require('../../../server/utils/sequence'),
     _               = require('lodash'),
 
     // Stuff we are testing
@@ -541,6 +542,6 @@ describe('Post Model', function () {
     //    }).then(function (saved) {
     //        saved.get('title').should.eql("&lt;/title&gt;&lt;/head>&lt;body&gt;[removed]alert&#40;'blogtitle'&#41;;[removed]");
     //        done();
-    //    }).otherwise(done);
+    //    }).catch(done);
     // });
 });

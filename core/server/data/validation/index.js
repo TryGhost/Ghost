@@ -1,7 +1,7 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
     validator = require('validator'),
-    when      = require('when'),
+    Promise   = require('bluebird'),
     errors    = require('../../errors'),
     config    = require('../../config'),
     requireTree = require('../../require-tree').readAll,
@@ -73,10 +73,10 @@ validateSchema = function (tableName, model) {
     });
 
     if (validationErrors.length !== 0) {
-        return when.reject(validationErrors);
+        return Promise.reject(validationErrors);
     }
 
-    return when.resolve();
+    return Promise.resolve();
 };
 
 // Validation for settings
@@ -92,10 +92,10 @@ validateSettings = function (defaultSettings, model) {
     }
 
     if (validationErrors.length !== 0) {
-        return when.reject(validationErrors);
+        return Promise.reject(validationErrors);
     }
 
-    return when.resolve();
+    return Promise.resolve();
 };
 
 // A Promise that will resolve to an object with a property for each installed theme.
@@ -107,15 +107,13 @@ validateActiveTheme = function (themeName) {
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
     if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {
-        availableThemes = when(config.paths.availableThemes);
+        availableThemes = Promise.resolve(config.paths.availableThemes);
     }
 
     return availableThemes.then(function (themes) {
         if (!themes.hasOwnProperty(themeName)) {
-            return when.reject(new errors.ValidationError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme'));
+            return Promise.reject(new errors.ValidationError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme'));
         }
-
-        return when.resolve();
     });
 };
 

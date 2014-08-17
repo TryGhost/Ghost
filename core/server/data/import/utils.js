@@ -1,4 +1,4 @@
-var when        = require('when'),
+var Promise     = require('bluebird'),
     _           = require('lodash'),
     models      = require('../../models'),
     errors      = require('../../errors'),
@@ -162,10 +162,11 @@ utils = {
                     return models.Tag.add(tag, _.extend(internal, {transacting: transaction}))
                         // add pass-through error handling so that bluebird doesn't think we've dropped it
                         .catch(function (error) {
-                            return when.reject({raw: error, model: 'tag', data: tag});
+                            return Promise.reject({raw: error, model: 'tag', data: tag});
                         });
                 }
-                return when.resolve(_tag);
+
+                return _tag;
             }));
         });
     },
@@ -180,7 +181,7 @@ utils = {
             ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
                 // add pass-through error handling so that bluebird doesn't think we've dropped it
                 .catch(function (error) {
-                    return when.reject({raw: error, model: 'post', data: post});
+                    return Promise.reject({raw: error, model: 'post', data: post});
                 }));
         });
     },
@@ -207,7 +208,7 @@ utils = {
             ops.push(models.User.add(user, _.extend(internal, {transacting: transaction}))
                 // add pass-through error handling so that bluebird doesn't think we've dropped it
                 .catch(function (error) {
-                    return when.reject({raw: error, model: 'user', data: user});
+                    return Promise.reject({raw: error, model: 'user', data: user});
                 }));
         });
 
@@ -233,7 +234,7 @@ utils = {
         ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction}))
              // add pass-through error handling so that bluebird doesn't think we've dropped it
              .catch(function (error) {
-                return when.reject({raw: error, model: 'setting', data: tableData});
+                return Promise.reject({raw: error, model: 'setting', data: tableData});
             }));
     },
 
@@ -247,10 +248,11 @@ utils = {
                     return models.App.add(app, _.extend(internal, {transacting: transaction}))
                         // add pass-through error handling so that bluebird doesn't think we've dropped it
                         .catch(function (error) {
-                            return when.reject({raw: error, model: 'app', data: app});
+                            return Promise.reject({raw: error, model: 'app', data: app});
                         });
                 }
-                return when.resolve(_app);
+
+                return _app;
             }));
         });
     }

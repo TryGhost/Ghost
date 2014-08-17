@@ -5,7 +5,7 @@ var _                = require('lodash'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
     users            = require('./users'),
-    when             = require('when'),
+    Promise          = require('bluebird'),
     errors           = require('../errors'),
     config           = require('../config'),
     authentication;
@@ -31,7 +31,7 @@ authentication = {
             var setup = result.setup[0].status;
 
             if (!setup) {
-                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+                return Promise.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
             }
 
             return utils.checkObject(object, 'passwordreset');
@@ -39,13 +39,10 @@ authentication = {
             if (checkedPasswordReset.passwordreset[0].email) {
                 email = checkedPasswordReset.passwordreset[0].email;
             } else {
-                return when.reject(new errors.BadRequestError('No email provided.'));
+                return Promise.reject(new errors.BadRequestError('No email provided.'));
             }
 
-            return users.read({ context: {internal: true}, email: email, status: 'active' }).then(function (foundUser) {
-                if (!foundUser) {
-                    when.reject(new errors.NotFound('Invalid email address'));
-                }
+            return users.read({ context: {internal: true}, email: email, status: 'active' }).then(function () {
                 return settings.read({context: {internal: true}, key: 'dbHash'});
             }).then(function (response) {
                 var dbHash = response.settings[0].value;
@@ -69,9 +66,9 @@ authentication = {
                 };
                 return mail.send(payload, {context: {internal: true}});
             }).then(function () {
-                return when.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
-            }).otherwise(function (error) {
-                return when.reject(error);
+                return Promise.resolve({passwordreset: [{message: 'Check your email for further instructions.'}]});
+            }).catch(function (error) {
+                return Promise.reject(error);
             });
         });
     },
@@ -91,7 +88,7 @@ authentication = {
             var setup = result.setup[0].status;
 
             if (!setup) {
-                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+                return Promise.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
             }
 
             return utils.checkObject(object, 'passwordreset');
@@ -104,9 +101,9 @@ authentication = {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
             }).then(function () {
-                return when.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
-            }).otherwise(function (error) {
-                return when.reject(new errors.UnauthorizedError(error.message));
+                return Promise.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
+            }).catch(function (error) {
+                return Promise.reject(new errors.UnauthorizedError(error.message));
             });
         });
     },
@@ -127,7 +124,7 @@ authentication = {
             var setup = result.setup[0].status;
 
             if (!setup) {
-                return when.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+                return Promise.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
             }
 
             return utils.checkObject(object, 'invitation');
@@ -144,9 +141,9 @@ authentication = {
             }).then(function (user) {
                 return dataProvider.User.edit({name: name, email: email}, {id: user.id});
             }).then(function () {
-                return when.resolve({invitation: [{message: 'Invitation accepted.'}]});
-            }).otherwise(function (error) {
-                return when.reject(new errors.UnauthorizedError(error.message));
+                return Promise.resolve({invitation: [{message: 'Invitation accepted.'}]});
+            }).catch(function (error) {
+                return Promise.reject(new errors.UnauthorizedError(error.message));
             });
         });
     },
@@ -156,9 +153,9 @@ authentication = {
                 qb.whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);
             }).fetch().then(function (users) {
                 if (users) {
-                    return when.resolve({ setup: [{status: true}]});
+                    return Promise.resolve({ setup: [{status: true}]});
                 } else {
-                    return when.resolve({ setup: [{status: false}]});
+                    return Promise.resolve({ setup: [{status: false}]});
                 }
             });
     },
@@ -171,7 +168,7 @@ authentication = {
             var setup = result.setup[0].status;
 
             if (setup) {
-                return when.reject(new errors.NoPermissionError('Setup has already been completed.'));
+                return Promise.reject(new errors.NoPermissionError('Setup has already been completed.'));
             }
 
             return utils.checkObject(object, 'setup');
@@ -226,7 +223,7 @@ authentication = {
                     }]
                 };
 
-            return mail.send(payload, {context: {internal: true}}).otherwise(function (error) {
+            return mail.send(payload, {context: {internal: true}}).catch(function (error) {
                 errors.logError(
                     error.message,
                     "Unable to send welcome email, your blog will continue to function.",
@@ -235,7 +232,7 @@ authentication = {
             });
 
         }).then(function () {
-            return when.resolve({ users: [setupUser]});
+            return Promise.resolve({ users: [setupUser]});
         });
     }
 };

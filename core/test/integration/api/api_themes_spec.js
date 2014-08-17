@@ -5,7 +5,7 @@ var _             = require('lodash'),
     rewire        = require('rewire'),
     should        = require('should'),
     sinon         = require('sinon'),
-    when          = require('when'),
+    Promise       = require('bluebird'),
 
     // Stuff we are testing
     SettingsAPI   = require('../../../server/api/settings'),
@@ -30,11 +30,11 @@ describe('Themes API', function () {
     beforeEach(function () {
         // Override settings.read for activeTheme
         sandbox.stub(SettingsAPI, 'read', function () {
-            return when({ settings: [{value: 'casper'}] });
+            return Promise.resolve({ settings: [{value: 'casper'}] });
         });
 
         sandbox.stub(SettingsAPI, 'edit', function () {
-            return when({ settings: [{value: 'rasper'}] });
+            return Promise.resolve({ settings: [{value: 'rasper'}] });
         });
 
         configStub = {

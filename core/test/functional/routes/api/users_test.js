@@ -334,7 +334,8 @@ describe('User API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'joe-bloggs.ghost.org';
-                    jsonResponse.users[0].should.exist;
+
+                    should.exist(jsonResponse.users[0]);
                     jsonResponse.users[0].website = changedValue;
 
                     request.put(testUtils.API.getApiQuery('users/me/'))
