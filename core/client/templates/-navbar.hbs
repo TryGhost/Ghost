@@ -24,7 +24,7 @@
                     {{/if}}
                     <span class="name">{{session.user.name}}</span>
                 {{/gh-popover-button}}
-                {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
+                {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true" closeMobileSidebar="true"}}
                         <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}Your Profile{{/link-to}}</li>
                         <li class="divider"></li>
                         <li class="usermenu-help"><a href="http://support.ghost.org/" target="_blank">Help / Support</a></li>
