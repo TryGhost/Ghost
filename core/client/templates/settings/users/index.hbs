@@ -54,11 +54,9 @@
                     <span class="description">Last seen: {{unbound last_login}}</span>
                 </div>
                 <aside class="object-list-item-aside">
-                    {{#unless isAuthor}}
-                        {{#each roles}}
-                            <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
-                        {{/each}}
-                    {{/unless}}
+                    {{#each roles}}
+                        <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
+                    {{/each}}
                 </aside>
             {{/link-to}}
         {{/each}}
