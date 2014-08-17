@@ -11,9 +11,9 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL without signing in');
     });
 
-    casper.thenClick('#usermenu button').waitFor(function checkOpaque() {
+    casper.thenClick('.user-menu .nav-label').waitFor(function checkOpaque() {
         return this.evaluate(function () {
-            var menu = document.querySelector('#usermenu .overlay.open');
+            var menu = document.querySelector('.user-menu .dropdown.open');
             return window.getComputedStyle(menu).getPropertyValue('display') === 'block' &&
                 window.getComputedStyle(menu).getPropertyValue('opacity') === '1';
         });
@@ -21,8 +21,8 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
 
     casper.captureScreenshot('user-menu-open.png');
 
-    casper.waitForSelector('.usermenu-signout a');
-    casper.thenClick('.usermenu-signout a');
+    casper.waitForSelector('.user-menu-signout');
+    casper.thenClick('.user-menu-signout');
 
     casper.waitForSelector('#login').then(function assertSuccess() {
         test.assert(true, 'Got login screen');
