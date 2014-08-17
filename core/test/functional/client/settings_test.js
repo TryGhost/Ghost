@@ -15,31 +15,30 @@ CasperTest.begin('Settings screen is correct', 16, function suite(test) {
     });
 
     casper.then(function testViews() {
-        test.assertExists('.wrapper', 'Settings main view is present');
-        test.assertExists('.settings-sidebar', 'Settings sidebar view is present');
+        test.assertExists('.settings', 'Settings main view is present');
         test.assertExists('.settings-menu', 'Settings menu is present');
-        test.assertExists('.settings-menu .general a', 'General link is present');
-        test.assertExists('.settings-menu .users a', 'Users link is present');
-        test.assertNotExists('.settings-menu .apps a', 'Apps link is present');
-        test.assertExists('.wrapper', 'Settings main view is present');
+        test.assertExists('.settings-menu-general a', 'General link is present');
+        test.assertExists('.settings-menu-users a', 'Users link is present');
+        test.assertNotExists('.settings-menu-apps a', 'Apps link is present');
+        test.assertExists('.settings', 'Settings main view is present');
         test.assertExists('.settings-content', 'Settings content view is present');
         test.assertExists(generalTabDetector, 'Form is present');
-        test.assertSelectorHasText('.settings-content h2.title', 'General', 'Title is "General"');
+        test.assertSelectorHasText('.page-title', 'General', 'Title is "General"');
     });
 
     casper.then(function testSwitchingTabs() {
-        casper.thenClick('.settings-menu .users a');
+        casper.thenClick('.settings-menu-users a');
         casper.waitForSelector(usersTabDetector, function then () {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu .users.active a', 'Users link is active');
-            test.assertDoesntExist('.settings-menu .general.active a', 'General link is not active');
+            test.assertExists('.settings-menu-users.active a', 'Users link is active');
+            test.assertDoesntExist('.settings-menu-general.active a', 'General link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
 
-        casper.thenClick('.settings-menu .general a');
+        casper.thenClick('.settings-menu-general a');
         casper.waitForSelector(generalTabDetector, function then () {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu .general.active a', 'General link is active');
-            test.assertDoesntExist('.settings-menu .users.active a', 'User link is not active');
+            test.assertExists('.settings-menu-general.active a', 'General link is active');
+            test.assertDoesntExist('.settings-menu-users.active a', 'User link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
 });
@@ -143,7 +142,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number');
+        test.assertSelectorHasText('.notification-error', 'be a number');
     }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
 
     casper.thenClick('.js-bb-notification .close');
@@ -154,7 +153,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number less than 1000');
+        test.assertSelectorHasText('.notification-error', 'maximum number of posts per page is 1000');
     }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
 
     casper.thenClick('.js-bb-notification .close');
@@ -165,7 +164,7 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'use a number greater than 0');
+        test.assertSelectorHasText('.notification-error', 'minimum number of posts per page is 1');
     }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
 });
 
@@ -254,7 +253,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 //        test.assert(true, 'Got success notification');
 //    }, casper.failOnTimeout(test, 'No success notification :('));
 //
-//    casper.thenClick('#main-menu .settings a').then(function testOpeningSettingsTwice() {
+//    casper.thenClick('.global-nav .settings a').then(function testOpeningSettingsTwice() {
 //        casper.on('resource.requested', handleSettingsRequest);
 //        test.assertEval(function testUserIsActive() {
 //            return document.querySelector('.settings-menu .general').classList.contains('active');

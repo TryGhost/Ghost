@@ -74,7 +74,7 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
 
     casper.waitForResource(/posts/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.global-nav', 'Global admin header is present');
         test.assertExists('.manage', 'We\'re now on content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
@@ -97,7 +97,7 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
 
     casper.waitForResource(/posts/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.global-nav', 'Global admin header is present');
         test.assertExists('.manage', 'We\'re now on content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
@@ -105,7 +105,7 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
 
     casper.thenOpenAndWaitForPageLoad('signin-authenticated', function testTitleAndUrl() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('#global-header', 'Global admin header is present');
+        test.assertExists('.global-nav', 'Global admin header is present');
         test.assertExists('.manage', 'We\'re now on content');
     }, function onTimeOut() {
         test.fail('Failed to redirect');
