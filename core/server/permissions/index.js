@@ -2,7 +2,7 @@
 // canThis(someUser).edit.post(somePost|somePostId)
 
 var _                   = require('lodash'),
-    when                = require('when'),
+    Promise             = require('bluebird'),
     Models              = require('../models'),
     effectivePerms      = require('./effective'),
     init,
@@ -65,7 +65,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
 
             // If it's an internal request, resolve immediately
             if (context.internal) {
-                return when.resolve();
+                return Promise.resolve();
             }
 
             if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
@@ -127,9 +127,10 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (obj_types, act_type,
                 }
 
                 if (hasUserPermission && hasAppPermission) {
-                    return when.resolve();
+                    return;
                 }
-                return when.reject();
+
+                return Promise.reject();
             });
         };
 
@@ -155,7 +156,7 @@ CanThisResult.prototype.beginCheck = function (context) {
         userPermissionLoad = effectivePerms.user(context.user);
     } else {
         // Resolve null if no context.user to prevent db call
-        userPermissionLoad = when.resolve(null);
+        userPermissionLoad = Promise.resolve(null);
     }
 
 
@@ -164,11 +165,11 @@ CanThisResult.prototype.beginCheck = function (context) {
         appPermissionLoad = effectivePerms.app(context.app);
     } else {
         // Resolve null if no context.app
-        appPermissionLoad = when.resolve(null);
+        appPermissionLoad = Promise.resolve(null);
     }
 
     // Wait for both user and app permissions to load
-    permissionsLoad = when.all([userPermissionLoad, appPermissionLoad]).then(function (result) {
+    permissionsLoad = Promise.all([userPermissionLoad, appPermissionLoad]).then(function (result) {
         return {
             user: result[0],
             app: result[1]
@@ -232,7 +233,7 @@ init = refresh = function () {
             seenActions[action_type][object_type] = true;
         });
 
-        return when(exported.actionsMap);
+        return exported.actionsMap;
     });
 };
 

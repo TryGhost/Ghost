@@ -1,4 +1,4 @@
-var when = require('when'),
+var Promise = require('bluebird'),
     fs = require('fs'),
     semver = require('semver'),
     packageInfo = require('../../package.json'),
@@ -88,54 +88,59 @@ GhostServer.prototype.logUpgradeWarning = function () {
 
 // Starts the ghost server listening on the configured port
 GhostServer.prototype.start = function () {
+    var self = this;
+
     // ## Start Ghost App
-    var deferred  = when.defer();
-    if (config.getSocket()) {
-        // Make sure the socket is gone before trying to create another
-        try {
-            fs.unlinkSync(config.getSocket());
-        } catch (e) {
-            // We can ignore this.
+    return new Promise(function (resolve) {
+        if (config.getSocket()) {
+            // Make sure the socket is gone before trying to create another
+            try {
+                fs.unlinkSync(config.getSocket());
+            } catch (e) {
+                // We can ignore this.
+            }
+
+            self.httpServer = self.app.listen(
+                config.getSocket()
+            );
+
+            fs.chmod(config.getSocket(), '0660');
+
+        } else {
+            self.httpServer = self.app.listen(
+                config.server.port,
+                config.server.host
+            );
         }
 
-        this.httpServer = this.app.listen(
-            config.getSocket()
-        );
-        fs.chmod(config.getSocket(), '0660');
-
-    } else {
-        this.httpServer = this.app.listen(
-            config.server.port,
-            config.server.host
-        );
-    }
-
-    this.httpServer.on('connection', this.connection.bind(this));
-    this.httpServer.on('listening', function () {
-        this.logStartMessages();
-        clearTimeout(this.upgradeWarning);
-        deferred.resolve(this);
-    }.bind(this));
-    return deferred.promise;
+        self.httpServer.on('connection', self.connection.bind(self));
+        self.httpServer.on('listening', function () {
+            self.logStartMessages();
+            clearTimeout(self.upgradeWarning);
+            resolve(self);
+        });
+    });
 };
 
 // Returns a promise that will be fulfilled when the server stops.
 // If the server has not been started, the promise will be fulfilled
 // immediately
 GhostServer.prototype.stop = function () {
-    var deferred = when.defer();
+    var self = this;
 
-    if (this.httpServer === null) {
-        deferred.resolve(this);
-    } else {
-        this.httpServer.close(function () {
-            this.httpServer = null;
-            this.logShutdownMessages();
-            deferred.resolve(this);
-        }.bind(this));
-        this.closeConnections();
-    }
-    return deferred.promise;
+    return new Promise(function (resolve) {
+        if (self.httpServer === null) {
+            resolve(self);
+        } else {
+            self.httpServer.close(function () {
+                self.httpServer = null;
+                self.logShutdownMessages();
+                resolve(self);
+            });
+
+            self.closeConnections();
+        }
+    });
 };
 
 // Restarts the ghost application
@@ -146,8 +151,8 @@ GhostServer.prototype.restart = function () {
 // To be called after `stop`
 GhostServer.prototype.hammertime = function () {
     console.log('Can\'t touch this'.green);
-    return this;
+
+    return Promise.resolve(this);
 };
 
 module.exports = GhostServer;
-

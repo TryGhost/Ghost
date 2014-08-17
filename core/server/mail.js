@@ -1,7 +1,6 @@
 var cp         = require('child_process'),
     _          = require('lodash'),
-    when       = require('when'),
-    nodefn     = require('when/node'),
+    Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
     config     = require('./config');
 
@@ -17,7 +16,7 @@ GhostMailer.prototype.init = function () {
     self.state = {};
     if (config.mail && config.mail.transport) {
         this.createTransport();
-        return when.resolve();
+        return Promise.resolve();
     }
 
     // Attempt to detect and fallback to `sendmail`
@@ -26,11 +25,9 @@ GhostMailer.prototype.init = function () {
             path: binpath
         });
         self.state.usingSendmail = true;
-    }, function () {
+    }).catch(function () {
         self.state.emailDisabled = true;
         self.transport = null;
-    }).ensure(function () {
-        return when.resolve();
     });
 };
 
@@ -40,13 +37,15 @@ GhostMailer.prototype.isWindows = function () {
 
 GhostMailer.prototype.detectSendmail = function () {
     if (this.isWindows()) {
-        return when.reject();
+        return Promise.reject();
     }
-    return when.promise(function (resolve, reject) {
+
+    return new Promise(function (resolve, reject) {
         cp.exec('which sendmail', function (err, stdout) {
             if (err && !/bin\/sendmail/.test(stdout)) {
                 return reject();
             }
+
             resolve(stdout.toString().replace(/(\n|\r|\r\n)$/, ''));
         });
     });
@@ -63,7 +62,7 @@ GhostMailer.prototype.fromAddress = function () {
 
     if (!from) {
         // Extract the domain name from url set in config.js
-        domain = config.url.match(new RegExp("^https?://([^/:?#]+)(?:[/:?#]|$)", "i"));
+        domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         domain = domain && domain[1];
 
         // Default to ghost@[blog.url]
@@ -84,12 +83,12 @@ GhostMailer.prototype.send = function (message) {
     to = message.to || false;
 
     if (!this.transport) {
-        return when.reject(new Error('Email Error: No e-mail transport configured.'));
+        return Promise.reject(new Error('Email Error: No e-mail transport configured.'));
     }
     if (!(message && message.subject && message.html && message.to)) {
-        return when.reject(new Error('Email Error: Incomplete message data.'));
+        return Promise.reject(new Error('Email Error: Incomplete message data.'));
     }
-    sendMail = nodefn.lift(self.transport.sendMail.bind(self.transport));
+    sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
     message = _.extend(message, {
         from: self.fromAddress(),

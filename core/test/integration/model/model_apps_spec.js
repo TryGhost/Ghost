@@ -2,7 +2,8 @@
 /*jshint expr:true*/
 var testUtils    = require('../../utils'),
     should       = require('should'),
-    sequence     = require('when/sequence'),
+    Promise      = require('bluebird'),
+    sequence     = require('../../../server/utils/sequence'),
     _            = require('lodash'),
 
     // Stuff we are testing

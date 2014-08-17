@@ -1,7 +1,7 @@
 // # Mail API
 // API for sending Mail
 var _            = require('lodash'),
-    when         = require('when'),
+    Promise      = require('bluebird'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
@@ -42,12 +42,12 @@ mail = {
                     };
                     return object;
                 })
-                .otherwise(function (error) {
-                    return when.reject(new errors.EmailError(error.message));
+                .catch(function (error) {
+                    return Promise.reject(new errors.EmailError(error.message));
                 });
 
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to send mail.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to send mail.'));
         });
     },
 
@@ -73,7 +73,7 @@ mail = {
                 return mail.send(payload, options);
             });
         }, function () {
-            return when.reject(new errors.NotFoundError('Could not find the current user'));
+            return Promise.reject(new errors.NotFoundError('Could not find the current user'));
         });
     },
 
@@ -95,7 +95,7 @@ mail = {
         _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
         //read the proper email body template
-        return when.promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             fs.readFile(templatesDir + '/' + options.template + '.html', {encoding: 'utf8'}, function (err, fileContent) {
                 if (err) {
                     reject(err);

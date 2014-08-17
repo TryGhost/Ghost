@@ -3,7 +3,7 @@
 var canThis      = require('../permissions').canThis,
     dataProvider = require('../models'),
     errors       = require('../errors'),
-    when         = require('when'),
+    Promise      = require('bluebird'),
 
     slugs,
     allowedTypes;
@@ -35,22 +35,22 @@ slugs = {
 
         return canThis(options.context).generate.slug().then(function () {
             if (allowedTypes[options.type] === undefined) {
-                return when.reject(new errors.BadRequestError('Unknown slug type \'' + options.type + '\'.'));
+                return Promise.reject(new errors.BadRequestError('Unknown slug type \'' + options.type + '\'.'));
             }
 
             return dataProvider.Base.Model.generateSlug(allowedTypes[options.type], options.name, {status: 'all'}).then(function (slug) {
                 if (!slug) {
-                    return when.reject(new errors.InternalServerError('Could not generate slug.'));
+                    return Promise.reject(new errors.InternalServerError('Could not generate slug.'));
                 }
 
                 return { slugs: [{ slug: slug }] };
             });
         }).catch(function (err) {
             if (err) {
-                return when.reject(err);
+                return Promise.reject(err);
             }
 
-            return when.reject(new errors.NoPermissionError('You do not have permission to generate a slug.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to generate a slug.'));
         });
     }
 
