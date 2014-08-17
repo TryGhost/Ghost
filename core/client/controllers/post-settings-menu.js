@@ -148,7 +148,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             newSlug = newSlug || slug;
 
-            newSlug = newSlug.trim();
+            newSlug = newSlug && newSlug.trim();
 
             // Ignore unchanged slugs or candidate slugs that are empty
             if (!newSlug || slug === newSlug) {
