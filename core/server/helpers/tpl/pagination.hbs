@@ -1,9 +1,9 @@
 <nav class="pagination" role="navigation">
     {{#if prev}}
-        <a class="newer-posts" href="{{page_url prev}}">&larr; Newer Posts</a>
+        <a class="newer-posts" href="{{page_url prev}}">&larr; 上一页</a>
     {{/if}}
-    <span class="page-number">Page {{page}} of {{pages}}</span>
+    <span class="page-number">当前 {{page}} / {{pages}}</span>
     {{#if next}}
-        <a class="older-posts" href="{{page_url next}}">Older Posts &rarr;</a>
+        <a class="older-posts" href="{{page_url next}}">下一页 &rarr;</a>
     {{/if}}
 </nav>
