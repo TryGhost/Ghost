@@ -103,10 +103,8 @@ coreHelpers.page_url = function (context, block) {
     if (this.authorSlug !== undefined) {
         url += '/author/' + this.authorSlug;
     }
+    url += '/'+block+'/' + context;
 
-    if (context > 1) {
-        url += '/page/' + context;
-    }
 
     url += '/';
 
@@ -740,7 +738,29 @@ coreHelpers.pagination = function (options) {
             !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
         return errors.logAndThrowError('Invalid value, check page, pages, limit and total are numbers');
     }
+    var slug = 'category/'+this.posts[0].post_type.slug;
+    /* 显示页数 liuxing */
+    if(options.hash.type == 'page'){  //不是默认主页（各种类型混合），则使用文章的类型（文章、视频、等等）
+        slug = options.hash.type;
+    }
+    this.pagination.post_type  = slug;
+    var pagesItem =  '';
+    var result = getPagination(this.pagination.pages,this.pagination.page);
+    for(var i = 0 ;i < result.length;i++){
+        //省略号
+        if(result[i] == '...'){
+            pagesItem += "<span class='page omit'>"+result[i]+"</span>";
+            continue;
+        }
+        if(result[i] == this.pagination.page){
+            pagesItem +=  "<span class='page current'>"+result[i]+"</span>";
+        }else{
+            pagesItem += "<a href=/"+ this.pagination.post_type+"/"+ result[i] +" class='page-num'><span class='page'>"+result[i]+"</span></a>";
+        }
+    }
 
+    this.pagination.pageArray = pagesItem;
+    /* 显示页数 */
     var context = _.merge({}, this.pagination);
 
     if (this.tag !== undefined) {
@@ -753,7 +773,55 @@ coreHelpers.pagination = function (options) {
 
     return template.execute('pagination', context);
 };
+function getPagination(pageNum,current){
+    if(pageNum < current)
+        return 'error';
 
+    var pageArray = [];
+    //小于 5 页
+    if(pageNum <= 5){
+        for(var i = 1;i <= pageNum ;i++){
+            pageArray.push(i);
+        }
+        return pageArray;
+    }
+    //大于5页
+    //当前页小3
+
+    if(current <= 3){
+        for(var i = 1;i <= 5 ;i++){
+            pageArray.push(i);
+        }
+        pageArray.push('...');
+        pageArray.push(pageNum); //尾页
+        return pageArray;
+    }
+    pageArray.push(1);      //首页
+    //当前页大于 pageNum-3      ... ,3 ,4 ,5 ,6, 7
+    if( current >= pageNum-3 ){
+        pageArray.push('...');
+        for(var i = pageNum-4;i <= pageNum ;i++){
+            pageArray.push(i);
+        }
+        return pageArray;
+    }
+    if(current  > 4){
+        pageArray.push('...');
+    }
+    //其他情况
+
+    pageArray.push(current - 2);
+    pageArray.push(current - 1);
+    pageArray.push(current );
+    pageArray.push(current + 1);
+    pageArray.push(current + 2);
+    if(current  < pageNum-1 ){
+        pageArray.push('...');
+    }
+    pageArray.push(pageNum); //尾页
+
+    return pageArray;
+}
 // ## Pluralize strings depending on item count
 // {{plural 0 empty='No posts' singular='% post' plural='% posts'}}
 // The 1st argument is the numeric variable which the helper operates on

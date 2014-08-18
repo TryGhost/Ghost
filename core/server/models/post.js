@@ -292,7 +292,7 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
         //add by liuxing
         var post_type;
-        if(options.post_type) {
+        if(options.post_type > -1) {
             post_type = options.post_type;
         }
         //end by liuxing
@@ -328,7 +328,7 @@ Post = ghostBookshelf.Model.extend({
             options.where.page = options.staticPages;
         }
         /* add by liuxing  如果有类型查询，则加入 where 条件*/
-        if(post_type){
+        if(post_type > -1){
             options.where.post_type = post_type;
         }
         /* end add  by liuxing */

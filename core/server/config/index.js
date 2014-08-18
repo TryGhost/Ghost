@@ -54,7 +54,6 @@ function updateConfig(config) {
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
     contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
-
     if (!knexInstance && ghostConfig.database && ghostConfig.database.client) {
         knexInstance = knex(ghostConfig.database);
     }

@@ -179,14 +179,11 @@ frontendControllers = {
         if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
             return res.redirect(config.paths.subdir + '/');
         }
-
         return getPostPage(options).then(function (page) {
-
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(page.meta.pagination.pages === 1 ? config.paths.subdir + '/' : (config.paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
             }
-
             setReqCtx(req, page.posts);
 
             // Render the page of posts
@@ -200,7 +197,7 @@ frontendControllers = {
                         view = category;
                     }
 
-                    res.render(view, formatPageResponse(posts, page));
+                    res.render('list-'+view, formatPageResponse(posts, page));
                 });
             });
         }).otherwise(handleError(next));
