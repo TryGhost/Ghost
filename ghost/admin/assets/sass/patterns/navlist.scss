@@ -26,7 +26,7 @@
         border-bottom: 1px solid #E0DFD7;
     }
 
-    @include icon($i-chevron, 1.4rem, #C0BFB6) {
+    @include icon($i-chevron, 1.4rem, $midbrown) {
         position: absolute;
         top: 50%;
         right: 10px;
@@ -35,15 +35,15 @@
         transform: translateY(-50%);
     };
 
-    color: #2D3032;
+    color: $darkgrey;
     a {
         &:link, &:visited {
-            color: #2D3032;
+            color: $darkgrey;
         }
     }
 
     &:hover {
-        background: #F9F8F5;
+        background: lighten($lightbrown, 5%);
     }
 
     b {
@@ -55,7 +55,7 @@
     span {
         display: block;
         font-size: 1.1rem;
-        color: #7E878B;
+        color: $midgrey;
         line-height: 1.375;
     }
 }

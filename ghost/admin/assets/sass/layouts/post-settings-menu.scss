@@ -4,7 +4,7 @@
 
 // Wrapper
 .post-settings-menu {
-    background: #FCFCFC;
+    background: $lightestgrey;
     width: 100%;
     max-width: 350px;
 }
@@ -50,12 +50,12 @@
         -webkit-transform: translateY(-50%);
         -ms-transform: translateY(-50%);
         transform: translateY(-50%);
-        color: #C0BFB6;
+        color: $midbrown;
         font-size: 2rem;
     }
     &:hover {
         &:before {
-            color: #7E878B;
+            color: $midgrey;
         }
     }
 }
