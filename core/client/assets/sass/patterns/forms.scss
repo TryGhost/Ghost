@@ -45,29 +45,28 @@ form {
 } // .form-group
 
 // If the from group has an icon...
-.form-group[class*='icon-'] {
+.input-icon[class*='icon-'] {
+    position: relative;
+    display: block;
     #{$all-text-inputs} {
         padding-left: 3.2rem;
+    }
+    .gh-select {
+        select {
+            padding-left: 3.2rem;
+        }
     }
     &:before {
         position: absolute;
         top: 50%;
         left: 1.1rem;
         font-size: 1.3rem;
-        margin-top: calc(-0.45rem - 1px);
+        -webkit-transform: translateY(-52%);
+        -ms-transform: translateY(-52%);
+        transform: translateY(-52%);
+        z-index: 100;
     }
 } // .thing[class*='icon-']
-
-// Wrapper for <select> elements
-.form-group.for-select {
-    &[class*="icon-"] {
-        .gh-select {
-            &:before {
-                left: 32px;
-            }
-        }
-    }
-} // .form-group.for-select
 
 // Wrapper for input[type="radio"] and input[type="checkbox"] elements
 .for-radio,
@@ -161,6 +160,7 @@ textarea {
     min-width: 250px;
     height: auto;
     min-height: 10rem;
+    line-height: 1.5;
 }
 
 input[type="number"] {
