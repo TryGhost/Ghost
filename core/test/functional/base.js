@@ -57,64 +57,64 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
 screens = {
     'root': {
         url: 'ghost/',
-        linkSelector: '#main-menu > li.content a',
-        selector: '#main-menu .content.active'
+        linkSelector: '.nav-content',
+        selector: '.nav-content.active'
     },
     'content': {
         url: 'ghost/content/',
-        linkSelector: '#main-menu > li.content a',
-        selector: '#main-menu .content.active'
+        linkSelector: '.nav-content',
+        selector: '.nav-content.active'
     },
     'editor': {
         url: 'ghost/editor/',
-        linkSelector: '#main-menu > li.editor a',
+        linkSelector: '.nav-new',
         selector: '#entry-title'
     },
     'settings': {
         url: 'ghost/settings/',
-        linkSelector: '#main-menu > li.settings a',
-        selector: '.settings-content'
+        linkSelector: '.nav-settings',
+        selector: '.nav-settings.active'
     },
     'settings.general': {
         url: 'ghost/settings/general',
-        selector: '.settings-content .settings-general'
+        selector: '.settings-menu-general.active'
     },
     'settings.users': {
         url: 'ghost/settings/users',
-        linkSelector: '.settings-menu li.users a',
-        selector: '.settings-content .settings-users'
+        linkSelector: '.settings-menu-users a',
+        selector: '.settings-menu-users.active'
     },
     'settings.users.user': {
         url: 'ghost/settings/users/test-user',
-        linkSelector: '#user-menu li.usermenu-profile a',
-        selector: '.settings-content .settings-user'
+        linkSelector: '.user-menu-profile',
+        selector: '.user-profile'
     },
     'signin': {
         url: 'ghost/signin/',
-        selector: '.button-save'
+        selector: '.btn-blue'
     },
     'signin-authenticated': {
         url: 'ghost/signin/',
         //signin with authenticated user redirects to posts
-        selector: '#main-menu .content .active'
+        selector: '.nav-content.active'
     },
     'signout': {
         url: 'ghost/signout/',
-       linkSelector: '#usermenu li.usermenu-signout a',
-        // When no user exists we get redirected to setup which has button-add
-        selector: '.button-save, .button-add'
+       linkSelector: '.user-menu-signout',
+        // When no user exists we get redirected to setup which has btn-green
+        selector: '.btn-blue, .btn-green'
     },
     'signup': {
         url: 'ghost/signup/',
-        selector: '.button-save'
+        selector: '.btn-blue'
     },
     'setup': {
         url: 'ghost/setup/',
-        selector: '.button-add'
+        selector: '.btn-green'
     },
     'setup-authenticated': {
         url: 'ghost/setup/',
-        selector: '#main-menu .content a.active'
+        selector: '.nav-content.active'
     }
 };
 
@@ -162,7 +162,7 @@ casper.waitForTransparent = function (classname, then, timeout) {
 
 
 // ### Then Open And Wait For Page Load
-// Always wait for the `#main` element as some indication that the ember app has loaded.
+// Always wait for the `.page-content` element as some indication that the ember app has loaded.
 casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     then = then || function () {};
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
@@ -191,21 +191,21 @@ casper.failOnTimeout = function (test, message) {
 
 // ### Fill And Save
 // With Ember in place, we don't want to submit forms, rather press the button which always has a class of
-// 'button-save'. This method handles that smoothly.
+// 'btn-blue'. This method handles that smoothly.
 casper.fillAndSave = function (selector, data) {
     casper.then(function doFill() {
         casper.fill(selector, data, false);
-        casper.thenClick('.button-save');
+        casper.thenClick('.btn-blue');
     });
 };
 
 // ### Fill And Add
 // With Ember in place, we don't want to submit forms, rather press the green button which always has a class of
-// 'button-add'. This method handles that smoothly.
+// 'btn-green'. This method handles that smoothly.
 casper.fillAndAdd = function (selector, data) {
     casper.then(function doFill() {
         casper.fill(selector, data, false);
-        casper.thenClick('.button-add');
+        casper.thenClick('.btn-green');
     });
 };
 
@@ -276,7 +276,7 @@ casper.captureScreenshot = function (filename, debugOnly) {
 casper.test.on('fail', function captureFailure() {
     casper.captureScreenshot(casper.test.filename || 'casper_test_fail.png', false);
     casper.then(function () {
-        console.log(casper.getHTML());
+       // console.log(casper.getHTML());
         casper.exit(1);
     });
 });
@@ -432,7 +432,7 @@ CasperTest.Routines = (function () {
             });
             if (currentState !== state) {
                 casper.thenClick('#permalinks');
-                casper.thenClick('.button-save');
+                casper.thenClick('.btn-blue');
 
                 casper.captureScreenshot('saving.png');
 
@@ -455,12 +455,12 @@ CasperTest.Routines = (function () {
 
         if (publish) {
             // Open the publish options menu;
-            casper.thenClick('.js-publish-splitbutton .options.up');
+            casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
             casper.waitForOpaque('.js-publish-splitbutton .open');
 
             // Select the publish post button
-            casper.thenClick('.js-publish-splitbutton li:first-child a');
+            casper.thenClick('.post-save-publish a');
 
             casper.waitForSelectorTextChange('.js-publish-button', function onSuccess() {
                 casper.thenClick('.js-publish-button');
