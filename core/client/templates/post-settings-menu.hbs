@@ -37,11 +37,13 @@
         </tr>
         <tr class="post-setting">
             <td class="post-setting-label">
-                <label class="label" for="static-page">Static Page</label>
+                <label for="static-page" {{action "togglePage" bubbles="false"}}>Static Page</label>
             </td>
             <td class="post-setting-item">
-                {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
-                <label class="checkbox" for="static-page" {{action 'togglePage' bubbles="false"}}></label>
+                <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
+                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
+                    <span class="input-toggle-component"></span>
+                </label>
             </td>
         </tr>
         </tbody>
