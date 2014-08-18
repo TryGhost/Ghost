@@ -8,7 +8,7 @@
 var generalTabDetector = '.settings-content form#settings-general',
     usersTabDetector = '.settings-content .settings-users';
 
-CasperTest.begin('Settings screen is correct', 16, function suite(test) {
+CasperTest.begin('Settings screen is correct', 15, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');

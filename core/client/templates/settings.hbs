@@ -13,11 +13,6 @@
 
                 {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-menu-users"}}
 
-                {{#if showApps}}
-                    {{#unless session.user.isEditor}}
-                        {{gh-activating-list-item route="settings.apps" title="Apps" classNames="settings-menu-apps"}}
-                    {{/unless}}
-                {{/if}}
             {{/unless}}
         </ul>
     </nav>

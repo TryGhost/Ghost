@@ -276,7 +276,7 @@ casper.captureScreenshot = function (filename, debugOnly) {
 casper.test.on('fail', function captureFailure() {
     casper.captureScreenshot(casper.test.filename || 'casper_test_fail.png', false);
     casper.then(function () {
-        console.log(casper.getHTML());
+       // console.log(casper.getHTML());
         casper.exit(1);
     });
 });
