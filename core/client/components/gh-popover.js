@@ -4,6 +4,7 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
     classNames: 'ghost-popover fade-in',
     name: null,
     closeOnClick: false,
+    closeMobileSidebar: false,
     //Helps track the user re-opening the menu while it's fading out.
     closing: false,
 
@@ -48,6 +49,9 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
 
     click: function (event) {
         this._super(event);
+        if (this.get('closeMobileSidebar')) {
+            $('body').removeClass('off-canvas');
+        }
         if (this.get('closeOnClick')) {
             return this.close();
         }
