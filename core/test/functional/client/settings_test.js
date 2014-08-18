@@ -283,6 +283,57 @@ CasperTest.begin('Can save settings', 7, function suite(test) {
     });
 });
 
+CasperTest.begin('User settings screen resets all whitespace slug to original value', 3, function suite(test) {
+    var slug;
+
+    casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+    });
+
+    casper.then(function setSlugToAllWhitespace() {
+        slug = casper.getElementInfo('#user-slug').attributes.value;
+
+        casper.fillSelectors('.user-profile', {
+            '#user-slug': '   '
+        }, false);
+    });
+
+    casper.thenClick('.content.settings-user');
+
+    casper.then(function checkSlugInputValue() {
+        casper.wait(250);
+        test.assertField('user', slug);
+    });
+});
+
+CasperTest.begin('User settings screen change slug handles duplicate slug', 4, function suite(test) {
+    var slug;
+
+    casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+    });
+
+    casper.then(function changeSlug() {
+        slug = casper.getElementInfo('#user-slug').attributes.value;
+
+        casper.fillSelectors('.user-profile', {
+            '#user-slug': slug + '!'
+        }, false);
+    });
+
+    casper.thenClick('.content.settings-user');
+
+    casper.waitForResource(/\/slugs\/user\//, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
+    });
+
+    casper.then(function checkSlugInputValue() {
+        test.assertField('user', slug);
+    });
+});
+
 CasperTest.begin('User settings screen validates email', 6, function suite(test) {
     var email, brokenEmail;
 
