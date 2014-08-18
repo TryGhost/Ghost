@@ -17,30 +17,31 @@
                 {{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
             </td>
         </tr>
+        {{#unless session.user.isAuthor}}
         <tr class="post-setting">
             <td class="post-setting-label">
                 <label for="post-setting-author">Author</label>
             </td>
+
             <td class="post-setting-field">
-			<span class="gh-select">
-                {{view Ember.Select
-                name="post-setting-author"
-                content=authors
-                optionValuePath="content.id"
-                optionLabelPath="content.name"
-                selection=selectedAuthor}}
-            </span>
+                <span class="gh-select">
+                    {{view Ember.Select
+                    name="post-setting-author"
+                    content=authors
+                    optionValuePath="content.id"
+                    optionLabelPath="content.name"
+                    selection=selectedAuthor}}
+                </span>
             </td>
+        {{/unless}}
         </tr>
         <tr class="post-setting">
             <td class="post-setting-label">
-                <label for="static-page" {{action "togglePage" bubbles="false"}}>Static Page</label>
+                <label class="label" for="static-page">Static Page</label>
             </td>
             <td class="post-setting-item">
-                <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
-                    <span class="input-toggle-component"></span>
-                </label>
+                {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
+                <label class="checkbox" for="static-page" {{action 'togglePage' bubbles="false"}}></label>
             </td>
         </tr>
         </tbody>
