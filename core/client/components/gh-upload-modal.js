@@ -17,7 +17,7 @@ var UploadModal = ModalDialog.extend({
             text: 'Cancel' // The reject button text
         },
         accept: {
-            buttonClass: 'button-save right',
+            buttonClass: 'btn btn-blue right',
             text: 'Save', // The accept button texttext: 'Save'
             func: function () {
                 var imageType = 'model.' + this.get('imageType');

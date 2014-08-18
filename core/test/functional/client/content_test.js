@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, testPost, newUser */
 
-CasperTest.begin('Content screen is correct', 21, function suite(test) {
+CasperTest.begin('Content screen is correct', 17, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
@@ -16,9 +16,9 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
     casper.then(function testViews() {
         test.assertExists('.content-view-container', 'Content main view is present');
         test.assertExists('.content-list-content', 'Content list view is present');
-        test.assertExists('.content-list .floatingheader a.button.button-add', 'add new post button exists');
+        test.assertExists('.content-list .floatingheader a.btn.btn-green', 'add new post button exists');
         test.assertEquals(
-            this.getElementAttribute('.content-list .floatingheader a.button.button-add', 'href'),
+            this.getElementAttribute('.content-list .floatingheader a.btn.btn-green', 'href'),
             '/ghost/editor/', 'add new post href is correct'
         );
         test.assertExists('.content-list-content li .entry-title', 'Content list view has at least one item');
@@ -41,20 +41,6 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
         test.assertExists('.content-preview a.post-edit', 'edit post button exists');
     });
 
-    casper.then(function testPostSettingsMenu() {
-        test.assertExists('.content-preview button.post-settings', 'post settings button exists');
-        this.click('.content-preview button.post-settings');
-    });
-
-    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
-        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
-    });
-
-    casper.then(function postSettingsMenuItems() {
-        test.assertExists('.post-settings-menu .post-setting-static-page', 'post settings static page exists');
-        test.assertExists('.post-settings-menu button.delete', 'post settings delete this post exists');
-    });
-
     casper.then(function testActiveItem() {
         test.assertExists('.content-list-content li:first-of-type .active', 'first item is active');
         test.assertDoesntExist('.content-list-content li:nth-of-type(2) .active', 'second item is not active');
@@ -66,7 +52,7 @@ CasperTest.begin('Content screen is correct', 21, function suite(test) {
     });
 });
 
-CasperTest.begin('Content list shows correct post status', 7, function testStaticPageStatus(test) {
+CasperTest.begin('Content list shows correct post status', 5, function testStaticPageStatus(test) {
     CasperTest.Routines.createTestPost.run(true);
 
     // Begin test
@@ -80,7 +66,7 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
 
     // Test for status of 'Published'
     casper.then(function checkStatus() {
-        test.assertSelectorHasText('.content-list-content li.active .entry-meta .status time', 'Published',
+        test.assertSelectorHasText('.content-list-content .active .published', 'Published',
             'status is present and labeled as published');
     });
 
@@ -94,68 +80,26 @@ CasperTest.begin('Content list shows correct post status', 7, function testStati
         );
     });
 
-    // Change post to static page
-    casper.thenClick('button.post-settings');
+    casper.thenClick('.post-edit');
+    casper.waitForSelector('#entry-title');
 
-    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
-        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
-    });
+    // TODO readd this test when #3811 is fixed
+//    // Change post to static page
+//    casper.thenClick('.post-settings');
+//    casper.waitForOpaque('.post-settings-menu.open');
+//
+//    casper.thenClick('.post-setting-static-page');
+//
+//    casper.thenTransitionAndWaitForScreenLoad('content', function onSuccess() {
+//        casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
+//               test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
+//           }, function onTimeout() {
+//               test.assert(false, 'status did not change');
+//           });
+//    });
 
-    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
-
-    casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
-        test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
-    }, function onTimeout() {
-        test.assert(false, 'status did not change');
-    });
 });
 
-CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
-    // Create a post that can be deleted
-    CasperTest.Routines.createTestPost.run(false);
-
-    // Begin test
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
-        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-    });
-
-    // Open post settings menu
-    casper.thenClick('.content-preview button.post-settings');
-    casper.waitForOpaque('.content-preview .post-settings-menu.open');
-    casper.thenClick('.post-settings-menu button.delete');
-
-    casper.waitUntilVisible('#modal-container', function onSuccess() {
-        test.assertSelectorHasText(
-            '.modal-content .modal-header',
-            'Are you sure you want to delete this post?',
-            'delete modal has correct text');
-    });
-
-    casper.thenClick('.js-button-reject');
-
-    casper.waitWhileVisible('#modal-container', function onSuccess() {
-        test.assert(true, 'clicking cancel should close the delete post modal');
-    });
-
-    // Test delete
-    casper.thenClick('.content-preview button.post-settings');
-    casper.thenClick('.post-settings-menu button.delete');
-
-    casper.waitForSelector('#modal-container .modal-content', function onSuccess() {
-        test.assertExists('.modal-content .js-button-accept', 'delete button exists');
-
-        // Delete the post
-        this.click('.modal-content .js-button-accept');
-
-        casper.waitForSelector('.notification-success', function onSuccess() {
-            test.assert(true, 'Got success notification from delete post');
-            test.assertSelectorHasText('.notification-message', 'Your post has been deleted.');
-        }, function onTimeout() {
-            test.fail('No success notification from delete post');
-        });
-    });
-});
 
 // TODO: Implement this test... much needed!
 //CasperTest.begin('Infinite scrolling', 2, function suite(test) {
@@ -207,119 +151,5 @@ CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
         test.assertDoesntExist('.content-list-content li.featured:first-of-type');
     }, function onTimeout() {
         test.assert(false, 'Couldn\'t unfeature post.');
-    });
-});
-
-CasperTest.begin('Post url can be changed', 5, function suite(test) {
-    // Create a sample post
-    CasperTest.Routines.createTestPost.run(false);
-
-    // Begin test
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
-        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-    });
-
-    casper.thenClick('button.post-settings');
-
-    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
-        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
-    });
-
-    // Test change permalink
-    casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
-            '#url': 'new-url'
-        }, false);
-
-        this.click('button.post-settings');
-    });
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
-    });
-
-    casper.then(function checkValueMatches() {
-        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
-        var slugVal = this.evaluate(function () {
-            return __utils__.getFieldValue('post-setting-slug');
-        });
-        test.assertEqual(slugVal, 'new-url');
-    });
-});
-
-CasperTest.begin('Post published date can be changed', 5, function suite(test) {
-    // Create a sample post
-    CasperTest.Routines.createTestPost.run(false);
-
-    // Begin test
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
-        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-    });
-
-    casper.thenClick('button.post-settings');
-
-    casper.waitUntilVisible('.post-settings-menu', function onSuccess() {
-        test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
-    });
-
-    // Test change published date
-    casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
-            '.post-setting-date': '22 May 14 @ 23:39'
-        }, false);
-
-        this.click('button.post-settings');
-    });
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
-    });
-
-    casper.then(function checkValueMatches() {
-        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
-        var dateVal = this.evaluate(function () {
-            return __utils__.getFieldValue('post-setting-date');
-        });
-        test.assertEqual(dateVal, '22 May 14 @ 23:39');
-    });
-});
-
-CasperTest.begin('Post can be changed to static page', 7, function suite(test) {
-    // Create a sample post
-    CasperTest.Routines.createTestPost.run(false);
-
-    // Begin test
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
-        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-    });
-
-    casper.thenClick('.content-preview button.post-settings');
-
-    casper.waitForOpaque('.content-preview .post-settings-menu.open', function onSuccess() {
-        test.assert(true, 'post settings should be visible after clicking post-settings icon');
-    });
-
-    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(400 > resource.status);
-    });
-    //Reload the page so the html can update to have the checked attribute
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertExists('.post-setting-static-page[checked=checked]', 'can turn on static page');
-    });
-
-    casper.thenClick('.post-settings-menu .post-setting-static-page + label');
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(400 > resource.status);
-    });
-
-    //Reload so html can be updated to not have the checked attribute
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertDoesntExist('.post-setting-static-page[checked=checked]', 'can turn off static page');
     });
 });

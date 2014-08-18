@@ -1,6 +1,6 @@
 {{#if view.parentView.canMakeOwner}}
-<a href="javascript:void(0);" {{action "openModal" "transfer-owner" this}}>Make Owner</a>
+<li><button {{action "openModal" "transfer-owner" this}}>Make Owner</button></li>
 {{/if}}
 {{#if view.parentView.deleteUserActionIsVisible}}
-<a href="javascript:void(0);" {{action "openModal" "delete-user" this}} class="delete">Delete User</a>
+<li><button {{action "openModal" "delete-user" this}} class="delete">Delete User</button></li>
 {{/if}}

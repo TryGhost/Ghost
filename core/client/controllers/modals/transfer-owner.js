@@ -39,12 +39,12 @@ var TransferOwnerController = Ember.Controller.extend({
 
     confirm: {
         accept: {
-            text: 'YEP - I\'M SURE',
-            buttonClass: 'button-delete'
+            text: 'Yep - I\'m sure',
+            buttonClass: 'btn btn-red'
         },
         reject: {
-            text: 'CANCEL',
-            buttonClass: 'button'
+            text: 'Cancel',
+            buttonClass: 'btn btn-default btn-minor'
         }
     }
 });

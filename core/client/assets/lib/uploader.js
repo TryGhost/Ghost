@@ -129,7 +129,7 @@ UploadUi = function ($dropzone, settings) {
                 $dropzone.append('<div class="js-fail failed" style="display: none">Something went wrong :(</div>');
             }
             if (!$dropzone.find('button.js-fail')[0]) {
-                $dropzone.append('<button class="js-fail button-add" style="display: none">Try Again</button>');
+                $dropzone.append('<button class="js-fail btn btn-green" style="display: none">Try Again</button>');
             }
             if (!$dropzone.find('a.image-url')[0]) {
                 $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');
@@ -177,7 +177,7 @@ UploadUi = function ($dropzone, settings) {
             $dropzone.find('div.description').before($url);
 
             if (settings.editor) {
-                $dropzone.find('div.js-url').append('<button class="js-button-accept button-save">Save</button>');
+                $dropzone.find('div.js-url').append('<button class="btn btn-blue js-button-accept">Save</button>');
             }
 
             $dropzone.find('.js-button-accept').on('click', function () {

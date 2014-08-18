@@ -20,11 +20,11 @@ var DeleteAllController = Ember.Controller.extend({
     confirm: {
         accept: {
             text: 'Delete',
-            buttonClass: 'button-delete'
+            buttonClass: 'btn btn-red'
         },
         reject: {
             text: 'Cancel',
-            buttonClass: 'button'
+            buttonClass: 'btn btn-default btn-minor'
         }
     }
 });

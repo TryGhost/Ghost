@@ -1,8 +1,7 @@
 var EditorSaveButtonView = Ember.View.extend({
     templateName: 'editor-save-button',
     tagName: 'section',
-    classNames: ['js-publish-splitbutton'],
-    classNameBindings: ['isDangerous:splitbutton-delete:splitbutton-save'],
+    classNames: ['splitbtn js-publish-splitbutton'],
 
     //Tracks whether we're going to change the state of the post on save
     isDangerous: function () {

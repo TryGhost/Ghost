@@ -1,7 +1,6 @@
 import {mobileQuery} from 'ghost/utils/mobile';
 
 var SettingsView = Ember.View.extend({
-    classNames: ['wrapper'],
     // used by SettingsContentBaseView and on resize to mobile from desktop
     showSettingsContent: function () {
         if (mobileQuery.matches) {
