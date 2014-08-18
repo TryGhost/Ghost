@@ -1,0 +1,103 @@
+//
+// Post Settings Menu
+// --------------------------------------------------
+
+// Wrapper
+.post-settings-menu {
+    background: #FCFCFC;
+    width: 100%;
+    max-width: 350px;
+}
+
+// Header
+.post-settings-header {
+    position: relative;
+    padding: 19px 24px;
+    h4 {
+        font-weight: normal;
+        font-size: 1.6rem;
+        line-height: 1.375;
+        margin: 0;
+    }
+    .close {
+        right: 0;
+        &:before {
+            right: 22px;
+        }
+    }
+}
+.subview .post-settings-header {
+    h4 {
+        text-align: center;
+    }
+    .back {
+        left: 0;
+        &:before {
+            left: 19px;
+        }
+    }
+}
+
+.post-settings-header-action {
+    position: absolute;
+    top: 0;
+    bottom: 7px;
+    width: 45px;
+    padding: 0;
+    &:before {
+        position: absolute;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        color: #C0BFB6;
+        font-size: 2rem;
+    }
+    &:hover {
+        &:before {
+            color: #7E878B;
+        }
+    }
+}
+
+// Content
+.post-settings-content {
+    padding: 0 24px 24px;
+
+    .image-uploader {
+        padding-top: 35px;
+        padding-bottom: 35px;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .form-group {
+        // margin-bottom: 1.5rem;
+    } // .form-group
+
+    textarea {
+        height: 108px;
+    }
+
+    .nav-list {
+        margin-top: 3rem;
+    }
+}
+
+.seo-preview {
+    font-family: Arial, sans-serif;
+    line-height: 1.46;
+}
+.seo-preview-title {
+    font-size: 1.6rem;
+    text-decoration: underline;
+    color: #1E0FBE;
+}
+.seo-preview-link {
+    font-size: 1.3rem;
+    color: #006621;
+    margin: 2px 0;
+}
+.seo-preview-description {
+    font-size: 1.3rem;
+    color: #545454;
+}
