@@ -10,45 +10,45 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     lastPromise: null,
 
-    coverDefault: function () {
+    coverDefault: Ember.computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
-    }.property('ghostPaths'),
+    }),
 
-    userDefault: function () {
+    userDefault: Ember.computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
-    }.property('ghostPaths'),
+    }),
 
-    cover: function () {
+    cover: Ember.computed('user.cover', 'coverDefault', function () {
         var cover = this.get('user.cover');
         if (Ember.isBlank(cover)) {
             cover = this.get('coverDefault');
         }
         return cover;
-    }.property('user.cover', 'coverDefault'),
+    }),
 
-    coverTitle: function () {
+    coverTitle: Ember.computed('user.name', function () {
         return this.get('user.name') + '\'s Cover Image';
-    }.property('user.name'),
+    }),
 
-    image: function () {
+    image: Ember.computed('imageUrl', function () {
         return  'background-image: url(' + this.get('imageUrl') + ')';
-    }.property('imageUrl'),
+    }),
 
-    imageUrl: function () {
+    imageUrl: Ember.computed('user.image', function () {
         return this.get('user.image') || this.get('userDefault');
-    }.property('user.image'),
+    }),
 
-    last_login: function () {
+    last_login: Ember.computed('user.last_login', function () {
         var lastLogin = this.get('user.last_login');
 
         return lastLogin ? lastLogin.fromNow() : '';
-    }.property('user.last_login'),
+    }),
 
-    created_at: function () {
+    created_at: Ember.computed('user.created_at', function () {
         var createdAt = this.get('user.created_at');
 
         return createdAt ? createdAt.fromNow() : '';
-    }.property('user.created_at'),
+    }),
 
     //Lazy load the slug generator for slugPlaceholder
     slugGenerator: Ember.computed(function () {

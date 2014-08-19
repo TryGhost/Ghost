@@ -71,7 +71,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
         });
     },
 
-    passwordValidationErrors: function () {
+    passwordValidationErrors: Ember.computed('password', 'newPassword', 'ne2Password', function () {
         var validationErrors = [];
 
         if (!validator.equals(this.get('newPassword'), this.get('ne2Password'))) {
@@ -83,16 +83,17 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
         }
 
         return validationErrors;
-    }.property('password', 'newPassword', 'ne2Password'),
+    }),
 
     isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
-    active: function () {
+
+    active: Ember.computed('status', function () {
         return _.contains(['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'], this.get('status'));
-    }.property('status'),
-    invited: function () {
+    }),
+    invited: Ember.computed('status', function () {
         return _.contains(['invited', 'invited-pending'], this.get('status'));
-    }.property('status'),
-    pending: Ember.computed.equal('status', 'invited-pending').property('status')
+    }),
+    pending: Ember.computed.equal('status', 'invited-pending')
 });
 
 export default User;

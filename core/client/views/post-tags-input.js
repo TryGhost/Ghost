@@ -26,7 +26,7 @@ var PostTagsInputView = Ember.View.extend({
         this.get('controller').send('reset');
     },
 
-    overlayStyles: function () {
+    overlayStyles: Ember.computed('hasFocus', 'controller.suggestions.length', function () {
         var styles = [],
             leftPos;
 
@@ -40,7 +40,7 @@ var PostTagsInputView = Ember.View.extend({
         }
 
         return styles.join(';');
-    }.property('hasFocus', 'controller.suggestions.length'),
+    }),
 
 
     tagInputView: Ember.TextField.extend({
