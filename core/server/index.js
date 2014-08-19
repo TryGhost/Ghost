@@ -5,7 +5,6 @@ var crypto      = require('crypto'),
     compress    = require('compression'),
     fs          = require('fs'),
     uuid        = require('node-uuid'),
-    semver      = require('semver'),
     _           = require('lodash'),
     when        = require('when'),
 
@@ -20,9 +19,9 @@ var crypto      = require('crypto'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
     packageInfo = require('../../package.json'),
+    GhostServer = require('./GhostServer'),
 
 // Variables
-    httpServer,
     dbHash;
 
 // If we're in development mode, require "when/console/monitor"
@@ -107,61 +106,6 @@ function builtFilesExist() {
     return when.all(deferreds);
 }
 
-function ghostStartMessages() {
-    // Tell users if their node version is not supported, and exit
-    if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
-        console.log(
-            "\nERROR: Unsupported version of Node".red,
-            "\nGhost needs Node version".red,
-            packageInfo.engines.node.yellow,
-            "you are using version".red,
-            process.versions.node.yellow,
-            "\nPlease go to http://nodejs.org to get a supported version".green
-        );
-
-        process.exit(0);
-    }
-
-    // Startup & Shutdown messages
-    if (process.env.NODE_ENV === 'production') {
-        console.log(
-            "Ghost is running...".green,
-            "\nYour blog is now available on",
-            config.url,
-            "\nCtrl+C to shut down".grey
-        );
-
-        // ensure that Ghost exits correctly on Ctrl+C
-        process.removeAllListeners('SIGINT').on('SIGINT', function () {
-            console.log(
-                "\nGhost has shut down".red,
-                "\nYour blog is now offline"
-            );
-            process.exit(0);
-        });
-    } else {
-        console.log(
-            ("Ghost is running in " + process.env.NODE_ENV + "...").green,
-            "\nListening on",
-                config.getSocket() || config.server.host + ':' + config.server.port,
-            "\nUrl configured as:",
-            config.url,
-            "\nCtrl+C to shut down".grey
-        );
-        // ensure that Ghost exits correctly on Ctrl+C
-        process.removeAllListeners('SIGINT').on('SIGINT', function () {
-            console.log(
-                "\nGhost has shutdown".red,
-                "\nGhost was running for",
-                Math.round(process.uptime()),
-                "seconds"
-            );
-            process.exit(0);
-        });
-    }
-}
-
-
 // This is run after every initialization is done, right before starting server.
 // Its main purpose is to move adding notifications here, so none of the submodules
 // should need to include api, which previously resulted in circular dependencies.
@@ -192,7 +136,7 @@ function initNotifications() {
 // ## Initializes the ghost application.
 // Sets up the express server instance.
 // Instantiates the ghost singleton, helpers, routes, middleware, and apps.
-// Finally it starts the http server.
+// Finally it returns an instance of GhostServer
 function init(server) {
     // create a hash for cache busting assets
     var assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
@@ -239,8 +183,7 @@ function init(server) {
             apps.init()
         );
     }).then(function () {
-        var adminHbs = hbs.create(),
-            deferred = when.defer();
+        var adminHbs = hbs.create();
 
         // Output necessary notifications on init
         initNotifications();
@@ -276,34 +219,8 @@ function init(server) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 
-        // ## Start Ghost App
-        if (config.getSocket()) {
-            // Make sure the socket is gone before trying to create another
-            try {
-                fs.unlinkSync(config.getSocket());
-            } catch (e) {
-                // We can ignore this.
-            }
 
-            httpServer = server.listen(
-                config.getSocket()
-            );
-            fs.chmod(config.getSocket(), '0660');
-
-        } else {
-            httpServer = server.listen(
-                config.server.port,
-                config.server.host
-            );
-        }
-
-        httpServer.on('listening', function () {
-            ghostStartMessages();
-            deferred.resolve(httpServer);
-        });
-
-
-        return deferred.promise;
+        return new GhostServer(server);
     });
 }
 

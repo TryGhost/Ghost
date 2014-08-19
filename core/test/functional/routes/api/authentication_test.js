@@ -6,7 +6,7 @@ var supertest     = require('supertest'),
     testUtils     = require('../../../utils'),
     user          = testUtils.DataGenerator.forModel.users[0],
     ghost         = require('../../../../../core'),
-    httpServer,
+    ghostServer,
     request;
 
 
@@ -18,8 +18,8 @@ describe('Authentication API', function () {
 
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost({app: app}).then(function (_httpServer) {
-            httpServer = _httpServer;
+        ghost({app: app}).then(function (_ghostServer) {
+            ghostServer = _ghostServer;
             request = supertest.agent(app);
         }).then(function () {
             return testUtils.doAuth(request);
@@ -34,7 +34,7 @@ describe('Authentication API', function () {
 
     after(function (done) {
         testUtils.clearData().then(function () {
-            httpServer.close();
+            ghostServer.stop();
             done();
         });
     });
