@@ -226,3 +226,45 @@ CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
         test.assertDoesntExist('.post-setting-static-page:checked', 'can turn off static page');
     });
 });
+
+CasperTest.begin('Post url input is reset from all whitespace back to original value', 3, function suite(test) {
+    // Create a sample post
+    CasperTest.Routines.createTestPost.run(false);
+
+    // Begin test
+    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
+    });
+
+    // Transition to the editor
+    casper.thenClick('.post-edit');
+    casper.waitForSelector('#entry-title');
+
+    casper.thenClick('.post-settings');
+    casper.waitForOpaque('.post-settings-menu.open');
+
+    var originalSlug;
+    casper.then(function () {
+        originalSlug = casper.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-slug');
+        });
+    });
+
+    // Test change permalink
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': '    '
+        }, false);
+
+        this.click('button.post-settings');
+    });
+
+    casper.then(function checkValueMatches() {
+        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        var slugVal = this.evaluate(function () {
+            return __utils__.getFieldValue('post-setting-slug');
+        });
+        test.assertEqual(slugVal, originalSlug);
+    });
+});
