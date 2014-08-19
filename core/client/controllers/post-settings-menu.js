@@ -152,6 +152,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             // Ignore unchanged slugs or candidate slugs that are empty
             if (!newSlug || slug === newSlug) {
+                // reset the input to its previous state
+                this.set('slugValue', slug);
+
                 return;
             }
 
@@ -176,6 +179,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 // for the incrementor then the existing slug should be used
                 if (_.isNumber(check) && check > 0) {
                     if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                        self.set('slugValue', slug);
+
                         return;
                     }
                 }
@@ -193,9 +198,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 }
 
                 return self.get('model').save(self.get('saveOptions'));
-            }).then(function () {
-                self.showSuccess('Permalink successfully changed to <strong>' +
+            }).then(function (changed) {
+                if (changed) {
+                    self.showSuccess('Permalink successfully changed to <strong>' +
                     self.get('slug') + '</strong>.');
+                }
             }).catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
