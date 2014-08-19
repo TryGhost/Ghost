@@ -13,7 +13,7 @@ var supertest     = require('supertest'),
 
     ghost         = require('../../../../../core'),
 
-    httpServer,
+    ghostServer,
     request,
     agent;
 
@@ -22,8 +22,8 @@ describe('Unauthorized', function () {
     before(function (done) {
         var app = express();
 
-        ghost({app: app}).then(function (_httpServer) {
-            httpServer = _httpServer;
+        ghost({app: app}).then(function (_ghostServer) {
+            ghostServer = _ghostServer;
             // request = supertest(app);
             request = supertest.agent(app);
             testUtils.clearData().then(function () {
@@ -37,7 +37,7 @@ describe('Unauthorized', function () {
     });
 
     after(function () {
-        httpServer.close();
+        ghostServer.stop();
     });
 
 
