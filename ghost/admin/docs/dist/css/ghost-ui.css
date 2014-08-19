@@ -2319,6 +2319,11 @@ table,
     max-height: 253px;
     overflow: auto; }
   .notification .close, .notification-success .close, .notification-error .close, .notification-warn .close, .notification-info .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 34px;
     color: rgba(255, 255, 255, 0.6); }
     .notification .close:after, .notification-success .close:after, .notification-error .close:after, .notification-warn .close:after, .notification-info .close:after {
       font-family: "GhostIcons";
@@ -2330,10 +2335,10 @@ table,
       line-height: 1;
       -webkit-font-smoothing: antialiased;
       content: "\e01c";
-      padding: 6px;
+      padding: 10px;
       position: absolute;
-      top: 8px;
-      right: 9px; }
+      top: 4px;
+      right: 1px; }
     .notification .close:hover, .notification-success .close:hover, .notification-error .close:hover, .notification-warn .close:hover, .notification-info .close:hover {
       text-decoration: none; }
     .notification .close:hover, .notification-success .close:hover, .notification-error .close:hover, .notification-warn .close:hover, .notification-info .close:hover {

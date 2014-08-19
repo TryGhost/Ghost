@@ -65,18 +65,22 @@
     }
 
     .close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 34px;
         @include icon-after($i-close) {
-            padding: 6px;
+            padding: 10px;
             position: absolute;
-            top: 8px;
-            right: 9px;
+            top: 4px;
+            right: 1px;
         };
         color: rgba(255,255,255,0.6);
         &:hover {
             color: #fff;
         }
-
-    }
+    } // .close
 
     a {
         color: inherit;
