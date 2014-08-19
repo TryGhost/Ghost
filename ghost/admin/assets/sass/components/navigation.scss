@@ -41,6 +41,7 @@
     color: rgba(255,255,255,0.7);
     text-transform: uppercase;
     border-radius: 4px;
+    white-space: nowrap;
     @include transition(color 0.5s, background 0.5s);
 }
 .nav-item.active .nav-label,

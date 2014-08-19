@@ -1925,6 +1925,7 @@ table,
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   border-radius: 4px;
+  white-space: nowrap;
   -webkit-transition: color 0.5s, background 0.5s;
   -moz-transition: color 0.5s, background 0.5s;
   transition: color 0.5s, background 0.5s; }
