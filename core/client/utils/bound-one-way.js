@@ -12,9 +12,9 @@ var BoundOneWay = function (upstream, transform) {
         //default to the identity function
         transform = function (value) { return value; };
     }
-    return function (key, value) {
+    return Ember.computed(upstream, function (key, value) {
         return arguments.length > 1 ? value : transform(this.get(upstream));
-    }.property(upstream);
+    });
 };
 
 export default BoundOneWay;

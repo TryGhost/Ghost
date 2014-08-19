@@ -46,7 +46,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             model.rollback();
         });
     }.observes('selectedAuthor'),
-    authors: function () {
+    authors: Ember.computed(function () {
         //Loaded asynchronously, so must use promise proxies.
         var deferred = {};
 
@@ -61,20 +61,20 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return Ember.ArrayProxy
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
-    }.property(),
+    }),
     //Changes in the PSM are too minor to warrant NProgress firing
     saveOptions: {disableNProgress: true},
     /**
      * The placeholder is the published date of the post,
      * or the current date if the pubdate has not been set.
      */
-    publishedAtPlaceholder: function () {
+    publishedAtPlaceholder: Ember.computed('publishedAtValue', function () {
         var pubDate = this.get('published_at');
         if (pubDate) {
             return formatDate(pubDate);
         }
         return formatDate(moment());
-    }.property('publishedAtValue'),
+    }),
     publishedAtValue: boundOneWay('published_at', formatDate),
 
     slugValue: boundOneWay('slug'),
@@ -99,7 +99,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
         }
     },
-    slugPlaceholder: function (key, value) {
+    slugPlaceholder: Ember.computed(function (key, value) {
         var slug = this.get('slug');
 
         //If the post has a slug, that's its placeholder.
@@ -114,7 +114,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         }
         //The title will stand in until the actual slug has been generated
         return this.get('titleScratch');
-    }.property(),
+    }),
 
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];

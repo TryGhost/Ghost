@@ -147,14 +147,14 @@ var PostTagsInputController = Ember.Controller.extend({
     },
 
 
-    selectedSuggestion: function () {
+    selectedSuggestion: Ember.computed('suggestions.@each.selected', function () {
         var suggestions = this.get('suggestions');
         if (suggestions && suggestions.get('length')) {
             return suggestions.filterBy('selected').get('firstObject');
         } else {
             return null;
         }
-    }.property('suggestions.@each.selected'),
+    }),
 
 
     updateSuggestionsList: function () {
