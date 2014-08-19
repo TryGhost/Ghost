@@ -6,7 +6,6 @@ var should         = require('should'),
     _              = require('lodash'),
     rewire         = require('rewire'),
     moment         = require('moment'),
-    Polyglot       = require('node-polyglot'),
     api            = require('../../server/api'),
     hbs            = require('express-hbs'),
 

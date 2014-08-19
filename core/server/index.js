@@ -5,7 +5,6 @@ var crypto      = require('crypto'),
     compress    = require('compression'),
     fs          = require('fs'),
     uuid        = require('node-uuid'),
-    Polyglot    = require('node-polyglot'),
     semver      = require('semver'),
     _           = require('lodash'),
     when        = require('when'),
@@ -203,9 +202,6 @@ function init(server) {
     if (!server) {
         server = express();
     }
-
-    // Set up Polygot instance on the require module
-    Polyglot.instance = new Polyglot();
 
     // ### Initialisation
     // The server and its dependencies require a populated config
