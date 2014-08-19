@@ -3344,15 +3344,15 @@ a.badge:hover, a.badge:focus {
     @media (max-width: 550px) {
       .setup-form label {
         width: 100%; } }
-  .setup-form input {
+  .setup-form .form-group input {
     padding: 7px;
     border: none;
     color: #fff;
     background: #3c4043;
-    -webkit-transition: background ease 0.25s;
-    -moz-transition: background ease 0.25s;
-    transition: background ease 0.25s; }
-    .setup-form input:focus {
+    -webkit-transition: background 0.25s ease;
+    -moz-transition: background 0.25s ease;
+    transition: background 0.25s ease; }
+    .setup-form .form-group input:focus {
       border: none;
       background: #484c50; }
   .setup-form input:-webkit-autofill {
@@ -3361,6 +3361,7 @@ a.badge:hover, a.badge:focus {
     margin: 0;
     font-weight: 200;
     font-size: 26px;
+    letter-spacing: 0;
     color: #e2edf2; }
     @media (max-width: 550px) {
       .setup-form h1 {
@@ -3371,7 +3372,9 @@ a.badge:hover, a.badge:focus {
     border: none;
     font-weight: 200;
     font-size: 16px;
-    color: #7d878a; }
+    letter-spacing: 0;
+    color: #7d878a;
+    white-space: nowrap; }
     @media (max-width: 550px) {
       .setup-form h2 {
         font-size: 14px; } }
@@ -3447,15 +3450,18 @@ a.badge:hover, a.badge:focus {
   @media (max-width: 630px) {
     .login-form {
       max-width: 264px; } }
-  .login-form div {
+  .login-form .email-wrap,
+  .login-form .password-wrap {
     position: relative;
     margin: 0 0 5px 0;
     background: #3c4043;
     float: left; }
     @media (max-width: 630px) {
-      .login-form div {
+      .login-form .email-wrap,
+      .login-form .password-wrap {
         margin-bottom: 1em; } }
-  .login-form input {
+  .login-form .email,
+  .login-form .password {
     display: inline-block;
     clear: both;
     padding: 8px 0 8px 8px;
@@ -3464,75 +3470,30 @@ a.badge:hover, a.badge:focus {
     -moz-transition: background ease 0.25s;
     transition: background ease 0.25s; }
     @media (max-width: 630px) {
-      .login-form input {
+      .login-form .email,
+      .login-form .password {
         width: 264px;
         -webkit-transition: none;
         -moz-transition: none;
         transition: none; } }
-    .login-form input:focus {
+    .login-form .email:focus,
+    .login-form .password:focus {
       border: none;
       background: #484c50; }
   .login-form .email-wrap {
-    position: relative;
     margin-right: 3px; }
-    .login-form .email-wrap:before {
-      font-family: "GhostIcons";
-      font-weight: normal;
-      font-style: normal;
-      vertical-align: -7%;
-      text-transform: none;
-      speak: none;
-      line-height: 1;
-      -webkit-font-smoothing: antialiased;
-      content: "\e012";
-      font-size: 12px;
-      position: absolute;
-      bottom: 11px;
-      left: 8px;
-      z-index: 100; }
-    .login-form .email-wrap:hover {
-      text-decoration: none; }
     @media (max-width: 630px) {
       .login-form .email-wrap {
         margin-right: 0; } }
-    .login-form .email-wrap .email {
-      padding-left: 28px;
-      border-radius: 2px 0 0 2px; }
-  .login-form .password-wrap {
-    position: relative; }
-    .login-form .password-wrap:before {
-      font-family: "GhostIcons";
-      font-weight: normal;
-      font-style: normal;
-      vertical-align: -7%;
-      text-transform: none;
-      speak: none;
-      line-height: 1;
-      -webkit-font-smoothing: antialiased;
-      content: "\e02c";
-      font-size: 10px;
-      position: absolute;
-      bottom: 12px;
-      left: 11px;
-      z-index: 100; }
-    .login-form .password-wrap:hover {
-      text-decoration: none; }
-    .login-form .password-wrap .password {
-      padding-left: 28px;
-      border-radius: 0 2px 2px 0; }
-  @media (min-width: 631px) {
-    .login-form .email-wrap,
-    .login-form .email-wrap .email {
-      border-radius: 2px 0 0 2px; }
-    .login-form .password-wrap,
-    .login-form .password-wrap .password {
-      border-radius: 0 2px 2px 0; } }
   @media (max-width: 630px) {
-    .login-form .email-wrap,
-    .login-form .email-wrap .email,
-    .login-form .password-wrap,
-    .login-form .password-wrap .password {
+    .login-form .email,
+    .login-form .password {
       border-radius: 2px; } }
+  @media (min-width: 631px) {
+    .login-form .email {
+      border-radius: 2px 0 0 2px; }
+    .login-form .password {
+      border-radius: 0 2px 2px 0; } }
   .login-form button {
     width: 85px;
     height: 36px;
@@ -3627,25 +3588,22 @@ a.badge:hover, a.badge:focus {
   color: #a5acae;
   display: table-cell;
   vertical-align: middle; }
-  .forgotten-form div {
+  .forgotten-form .email-wrap {
     position: relative;
     margin: 0 0 1em 0;
     background: #3c4043;
-    float: left; }
-  .forgotten-form input {
+    float: left;
+    border-radius: 2px;
+    width: 100%; }
+  .forgotten-form .email {
     padding: 8px 10px;
+    border-radius: 2px;
     -webkit-transition: background ease 0.25s;
     -moz-transition: background ease 0.25s;
     transition: background ease 0.25s; }
-    .forgotten-form input:focus {
+    .forgotten-form .email:focus {
       border: none;
       background: #484c50; }
-  .forgotten-form .email-wrap {
-    width: 100%;
-    position: relative;
-    border-radius: 2px; }
-    .forgotten-form .email-wrap .email {
-      border-radius: 2px; }
   .forgotten-form button {
     width: 100%;
     height: 36px;

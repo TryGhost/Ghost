@@ -70,8 +70,8 @@
         max-width: 264px;
     }
 
-    div { // Yes. Really.
-        // TODO: This ^ can be improved 1000%
+    .email-wrap,
+    .password-wrap {
         position: relative;
         margin: 0 0 5px 0;
         background: lighten($darkgrey, 10%);
@@ -82,8 +82,8 @@
         }
     }
 
-    // TODO: make more specific
-    input {
+    .email,
+    .password {
         display: inline-block;
         clear: both;
         padding: 8px 0 8px 8px;
@@ -100,62 +100,30 @@
             background: lighten($darkgrey, 15%);
         }
 
-    }
+    } // .email, .password
 
     .email-wrap {
-        position: relative;
-        @include icon($i-mail, 12px) {
-            position: absolute;
-            bottom: 11px;
-            left: 8px;
-            z-index: 100;
-        }
         margin-right: 3px;
         @media (max-width: 630px) {
             margin-right: 0;
-
         }
-        .email {
-            padding-left: 28px;
-            border-radius: 2px 0 0 2px;
-        }
-    }
-
-    .password-wrap {
-        position:relative;
-        @include icon($i-lock, 10px) {
-            position: absolute;
-            bottom: 12px;
-            left: 11px;
-            z-index: 100;
-        }
-        .password {
-            padding-left: 28px;
-            border-radius: 0 2px 2px 0;
-        }
-    }
-
-    @media (min-width: 631px) {
-        .email-wrap,
-        .email-wrap .email {
-            border-radius: 2px 0 0 2px;
-        }
-        .password-wrap,
-        .password-wrap .password {
-            border-radius: 0 2px 2px 0;
-        }
-    }
+    } // .email-wrap
 
     @media (max-width: 630px) {
-        .email-wrap,
-        .email-wrap .email,
-        .password-wrap,
-        .password-wrap .password {
+        .email,
+        .password {
             border-radius: 2px;
         }
     }
 
-
+    @media (min-width: 631px) {
+        .email {
+            border-radius: 2px 0 0 2px;
+        }
+        .password {
+            border-radius: 0 2px 2px 0;
+        }
+    }
 
     button {
         width: 85px;
@@ -171,7 +139,7 @@
             width: 100%;
             margin-bottom: 1em;
         }
-    }
+    } // button
 
     .meta {
         clear: both;
@@ -186,7 +154,7 @@
             color: lighten($midgrey, 5%);
             text-decoration: none;
         }
-    }
+    } // a
 
 } // .login-form
 
@@ -283,34 +251,25 @@
     display: table-cell;
     vertical-align: middle;
 
-    div { // Yes. Really.
-        // TODO: Again, can make this better.
+    .email-wrap {
         position: relative;
         margin: 0 0 1em 0;
         background: lighten($darkgrey, 10%);
         float: left;
-    }
+        border-radius: 2px;
+        width: 100%;
+    } // .email-wrap
 
-    input {
+    .email {
         padding: 8px 10px;
+        border-radius: 2px;
         @include transition(background ease 0.25s);
 
         &:focus {
             border: none;
             background: lighten($darkgrey, 15%);
         }
-
-    }
-
-    .email-wrap {
-        width: 100%;
-        position:relative;
-        border-radius: 2px;
-
-        .email {
-            border-radius: 2px;
-        }
-    }
+    } // .email
 
     button {
         width: 100%;
@@ -320,6 +279,6 @@
         min-height: 30px;
         min-width: 80px;
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
-    }
+    } // button
 
 } // .forgotten-form
