@@ -5,6 +5,7 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
+    Models       = require('../models'),
     path         = require('path'),
     fs           = require('fs'),
     templatesDir = path.resolve(__dirname, '..', 'email-templates'),
@@ -59,9 +60,7 @@ mail = {
      * @returns {Promise}
      */
     sendTest: function (options) {
-        var user = require('../models/user').User;
-
-        return user.findOne({id: options.context.user}).then(function (result) {
+        return Models.User.findOne({id: options.context.user}).then(function (result) {
             return mail.generateContent({template: 'test'}).then(function (emailContent) {
                 var payload = {mail: [{
                     message: {

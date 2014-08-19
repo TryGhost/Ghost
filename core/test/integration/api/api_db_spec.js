@@ -4,9 +4,9 @@ var testUtils = require('../../utils'),
     should    = require('should'),
 
     // Stuff we are testing
-    dbAPI         = require('../../../server/api/db'),
-    TagModel      = require('../../../server/models').Tag,
-    PostModel     = require('../../../server/models').Post;
+    dbAPI          = require('../../../server/api/db'),
+    ModelTag       = require('../../../server/models/tag'),
+    ModelPost      = require('../../../server/models/post');
 
 
 
@@ -24,12 +24,12 @@ describe('DB API', function () {
             result.db.should.be.instanceof(Array);
             result.db.should.be.empty;
         }).then(function () {
-            return TagModel.findAll(testUtils.context.owner).then(function (results) {
+            return ModelTag.Tag.findAll(testUtils.context.owner).then(function (results) {
                  should.exist(results);
                 results.length.should.equal(0);
             });
         }).then(function () {
-            return PostModel.findAll(testUtils.context.owner).then(function (results) {
+            return ModelPost.Post.findAll(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 results.length.should.equal(0);
                 done();
@@ -43,12 +43,12 @@ describe('DB API', function () {
             result.db.should.be.instanceof(Array);
             result.db.should.be.empty;
         }).then(function () {
-            return TagModel.findAll(testUtils.context.admin).then(function (results) {
+            return ModelTag.Tag.findAll(testUtils.context.admin).then(function (results) {
                 should.exist(results);
                 results.length.should.equal(0);
             });
         }).then(function () {
-            return PostModel.findAll(testUtils.context.admin).then(function (results) {
+            return ModelPost.Post.findAll(testUtils.context.admin).then(function (results) {
                 should.exist(results);
                 results.length.should.equal(0);
                 done();
