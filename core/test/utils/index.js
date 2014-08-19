@@ -5,7 +5,7 @@ var when          = require('when'),
     fs            = require('fs-extra'),
     path          = require('path'),
     migration     = require('../../server/data/migration/'),
-    settings      = require('../../server/models').Settings,
+    Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
     permsFixtures = require('../../server/data/fixtures/permissions/permissions.json'),
@@ -357,7 +357,7 @@ toDoList = {
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     'apps': function insertApps() { return fixtures.insertApps(); },
     'settings': function populateSettings() {
-        return settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
+        return Models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
     'users': function createExtraUsers() { return fixtures.createExtraUsers(); },
@@ -434,7 +434,9 @@ setup = function setup() {
         args = arguments;
 
     return function (done) {
-        return initFixtures.apply(self, args).then(function () {
+        return Models.init().then(function () {
+            return initFixtures.apply(self, args);
+        }).then(function () {
             done();
         }).catch(done);
     };
