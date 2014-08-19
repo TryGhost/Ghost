@@ -551,6 +551,32 @@ describe('Core Helpers', function () {
                 done();
             }).catch(done);
         });
+
+        it('returns next & prev URL correctly for middle page', function (done) {
+            configUpdate({url: 'http://testurl.com'});
+            helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/3/', pagination: {next: '4', prev: '2'}}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
+                    '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">\n' +
+                    '<link rel="canonical" href="http://testurl.com/page/3/" />\n' +
+                    '<link rel="prev" href="http://testurl.com/page/2/" />\n' +
+                    '<link rel="next" href="http://testurl.com/page/4/" />');
+                done();
+            }).catch(done);
+        });
+
+        it('returns next & prev URL correctly for second page', function (done) {
+            configUpdate({url: 'http://testurl.com'});
+            helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/2/', pagination: {next: '3', prev: '1'}}).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
+                    '<link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/">\n' +
+                    '<link rel="canonical" href="http://testurl.com/page/2/" />\n' +
+                    '<link rel="prev" href="http://testurl.com/" />\n' +
+                    '<link rel="next" href="http://testurl.com/page/3/" />');
+                done();
+            }).catch(done);
+        });
     });
 
     describe('ghost_foot Helper', function () {
