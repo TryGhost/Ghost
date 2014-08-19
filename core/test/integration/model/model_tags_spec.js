@@ -6,10 +6,11 @@ var testUtils   = require('../../utils'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    Models      = require('../../../server/models'),
-    TagModel    = Models.Tag,
-    PostModel   = Models.Post,
-    context     = testUtils.context.admin;
+    ModelsTag   = require('../../../server/models/tag'),
+    ModelsPost  = require('../../../server/models/post'),
+    context     = testUtils.context.admin,
+    TagModel,
+    PostModel;
 
 describe('Tag Model', function () {
     // Keep the DB clean
@@ -17,7 +18,13 @@ describe('Tag Model', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup());
 
-    should.exist(TagModel);
+    before(function () {
+        TagModel    = ModelsTag.Tag;
+        PostModel   = ModelsPost.Post;
+
+        should.exist(TagModel);
+        should.exist(PostModel);
+    });
 
     it('uses Date objects for dateTime fields', function (done) {
         TagModel.add(testUtils.DataGenerator.forModel.tags[0], context).then(function (tag) {

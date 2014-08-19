@@ -651,9 +651,12 @@ var path           = require('path'),
         // in a "new" state.
         grunt.registerTask('cleanDatabase', function () {
             var done = this.async(),
+                models    = require('./core/server/models'),
                 migration = require('./core/server/data/migration');
 
             migration.reset().then(function () {
+                return models.init();
+            }).then(function () {
                 return migration.init();
             }).then(function () {
                 done();

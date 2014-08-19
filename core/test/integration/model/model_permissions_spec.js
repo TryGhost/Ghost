@@ -4,7 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
-    PermissionModel = require('../../../server/models').Permission,
+    PermissionModel = require('../../../server/models/permission').Permission,
     context         = testUtils.context.admin;
 
 describe('Permission Model', function () {
@@ -13,7 +13,9 @@ describe('Permission Model', function () {
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('permission'));
 
-    should.exist(PermissionModel);
+    before(function () {
+        should.exist(PermissionModel);
+    });
 
     it('can findAll', function (done) {
         PermissionModel.findAll().then(function (foundPermissions) {

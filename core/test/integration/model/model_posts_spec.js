@@ -6,7 +6,7 @@ var testUtils       = require('../../utils'),
     _               = require('lodash'),
 
     // Stuff we are testing
-    PostModel       = require('../../../server/models').Post,
+    PostModel       = require('../../../server/models/post').Post,
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner;
 
@@ -19,7 +19,9 @@ describe('Post Model', function () {
         afterEach(testUtils.teardown);
         beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
-        should.exist(PostModel);
+        before(function () {
+            should.exist(PostModel);
+        });
 
         function extractFirstPost(posts) {
             return _.filter(posts, { id: 1 })[0];
@@ -507,7 +509,9 @@ describe('Post Model', function () {
         afterEach(testUtils.teardown);
         beforeEach(testUtils.setup('posts:mu'));
 
-        should.exist(PostModel);
+        before(function () {
+            should.exist(PostModel);
+        });
 
         it('can destroy multiple posts by author', function (done) {
 

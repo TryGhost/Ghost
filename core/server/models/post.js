@@ -6,9 +6,6 @@ var _              = require('lodash'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
-    Tag            = require('./tag').Tag,
-    Tags           = require('./tag').Tags,
-    User           = require('./user').User,
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
 
@@ -129,7 +126,7 @@ Post = ghostBookshelf.Model.extend({
                 return when.all(tagOps);
             }
 
-            return Tags.forge().query('whereIn', 'name', _.pluck(self.myTags, 'name')).fetch(options).then(function (existingTags) {
+            return ghostBookshelf.collection('Tags').forge().query('whereIn', 'name', _.pluck(self.myTags, 'name')).fetch(options).then(function (existingTags) {
                 var doNotExist = [],
                     createAndAttachOperation;
 
@@ -143,7 +140,7 @@ Post = ghostBookshelf.Model.extend({
 
                 // Create tags that don't exist and attach to post
                 _.each(doNotExist, function (tag) {
-                    createAndAttachOperation = Tag.add({name: tag.name}, options).then(function (createdTag) {
+                    createAndAttachOperation = ghostBookshelf.model('Tag').add({name: tag.name}, options).then(function (createdTag) {
                         createdTag = createdTag.toJSON();
                         // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
                         // (https://github.com/tgriesser/bookshelf/issues/294)
@@ -281,8 +278,8 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         var postCollection = Posts.forge(),
-            tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
-            authorInstance = options.author !== undefined ? User.forge({slug: options.author}) : false;
+            tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
+            authorInstance = options.author !== undefined ? ghostBookshelf.model('User').forge({slug: options.author}) : false;
 
         if (options.limit) {
             options.limit = parseInt(options.limit, 10) || 15;
