@@ -949,7 +949,7 @@ registerHelpers = function (adminHbs, assetHash) {
 
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
-    registerThemeHelper('url', coreHelpers.url);
+    registerAsyncThemeHelper('url', coreHelpers.url);
     registerThemeHelper('uuid', coreHelpers.uuid);
     registerThemeHelper('slug', coreHelpers.slug);
 
