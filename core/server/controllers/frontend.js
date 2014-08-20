@@ -513,6 +513,7 @@ frontendControllers = {
                 });
 
                 when.all(feedItems).then(function () {
+                    res.setHeader('Access-Control-Allow-Origin', '*');
                     res.set('Content-Type', 'text/xml; charset=UTF-8');
                     res.send(feed.xml());
                 });
