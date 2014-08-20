@@ -38,6 +38,12 @@ var SettingsGeneralController = Ember.ObjectController.extend({
                 self.notifications.showErrors(errors);
             });
         },
+
+        checkPostsPerPage: function () {
+            if (this.get('postsPerPage') < 1 || this.get('postsPerPage') > 1000 || isNaN(this.get('postsPerPage'))) {
+                this.set('postsPerPage', 5);
+            }
+        }
     }
 });
 
