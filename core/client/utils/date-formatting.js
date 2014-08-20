@@ -7,7 +7,7 @@ var parseDateFormats = ['DD MMM YY @ HH:mm', 'DD MMM YY HH:mm',
                         'DD-MM-YYYY @ HH:mm', 'DD-MM-YYYY HH:mm',
                         'YYYY-MM-DD @ HH:mm', 'YYYY-MM-DD HH:mm',
                         'DD MMM @ HH:mm', 'DD MMM HH:mm'],
-    displayDateFormat = 'DD MMM YY @ HH:mm';
+    displayDateFormat = 'YYYY-MM-DD @ HH:mm';
 
 /**
  * Add missing timestamps

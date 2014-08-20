@@ -15,10 +15,10 @@
     },
     "blog": {
         "title": {
-            "defaultValue": "Ghost中文版"
+            "defaultValue": "Ghost 中文版"
         },
         "description": {
-            "defaultValue": "一个简单的博客平台."
+            "defaultValue": "一个纯粹的博客平台。"
         },
         "email": {
             "defaultValue": "ghost@example.com",
@@ -34,7 +34,7 @@
             "defaultValue": ""
         },
         "defaultLang": {
-            "defaultValue": "zh-CN",
+            "defaultValue": "zh_CN",
             "validations": {
                 "isNull": false
             }

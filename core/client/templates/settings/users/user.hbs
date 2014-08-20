@@ -1,6 +1,6 @@
 <header class="settings-content-header user-settings-header">
 
-    <h2 class="hidden">个人资料</h2>
+    <h2 class="hidden">个人信息</h2>
 
     <div class="settings-header-inner">
         {{#link-to 'settings' class='button-back button'}}返回{{/link-to}}
@@ -49,9 +49,9 @@
             </figure>
 
             <div class="form-group">
-                <label for="user-name">全面</label>
-                {{input value=user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off"}}
-                <p>用你的真名吧，大家就能认识你了</p>
+                <label for="user-name">姓名</label>
+                {{input value=user.name id="user-name" class="user-name" placeholder="姓名" autocorrect="off"}}
+                <p>用你的真名吧，方便大家认识你</p>
             </div>
 
         </fieldset>
@@ -59,7 +59,7 @@
         <fieldset class="user-details-bottom">
 
             <div class="form-group">
-                <label for="user-slug">标记</label>
+                <label for="user-slug">昵称</label>
                 {{!-- {{input value=user.slug id="user-slug" placeholder="Slug" autocorrect="off"}} --}}
                 {{gh-blur-input class="user-name" id="user-slug" value=user.slug name="user" action="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
                 <p>{{gh-blog-url}}/author/{{user.slug}}</p>
@@ -67,8 +67,8 @@
 
             <div class="form-group">
                 <label for="user-email">邮箱</label>
-                {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
-                <p>用户接收通知</p>
+                {{input type="email" value=user.email id="user-email" placeholder="邮箱地址" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                <p>用于接收通知</p>
             </div>
             {{#if view.rolesDropdownIsVisible}}
             <div class="form-group">

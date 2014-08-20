@@ -1,15 +1,15 @@
 <section class="login-box js-login-box fade-in">
     <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
         <div class="email-wrap">
-            {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autofocus="autofocus" 
+            {{gh-trim-focus-input class="email" type="email" placeholder="邮箱地址" name="identification" autofocus="autofocus" 
             autocapitalize="off" autocorrect="off" value=identification}}
         </div>
         <div class="password-wrap">
-            {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+            {{input class="password" type="password" placeholder="密码" name="password" value=password}}
         </div>
         <button class="button-save" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>登录</button>
         <section class="meta">
-            {{#link-to 'forgotten' class="forgotten-password"}}忘记密码?{{/link-to}}
+            {{#link-to 'forgotten' class="forgotten-password"}}忘记密码？{{/link-to}}
         </section>
     </form>
 </section>

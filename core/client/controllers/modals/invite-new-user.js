@@ -40,9 +40,9 @@ var InviteNewUserController = Ember.Controller.extend({
                 var invitedUser = result.findBy('email', email);
                 if (invitedUser) {
                     if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
-                        self.notifications.showWarn('A user with that email address was already invited.');
+                        self.notifications.showWarn('此用户或邮箱地址已经被邀请了。');
                     } else {
-                        self.notifications.showWarn('A user with that email address already exists.');
+                        self.notifications.showWarn('此用户或邮箱地址已经存在。');
                     }
                     
                 } else {
@@ -53,12 +53,12 @@ var InviteNewUserController = Ember.Controller.extend({
                     });
 
                     newUser.save().then(function () {
-                        var notificationText = 'Invitation sent! (' + email + ')';
+                        var notificationText = '已向(' + email + ')发出了邀请！';
 
                         // If sending the invitation email fails, the API will still return a status of 201
                         // but the user's status in the response object will be 'invited-pending'.
                         if (newUser.get('status') === 'invited-pending') {
-                            self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                            self.notifications.showWarn('邀请邮件未发送。请重新发送。');
                         } else {
                             self.notifications.showSuccess(notificationText);
                         }

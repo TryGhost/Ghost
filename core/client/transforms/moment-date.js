@@ -1,4 +1,5 @@
 /* global moment */
+moment.lang('zh-cn');
 var MomentDate = DS.Transform.extend({
     deserialize: function (serialized) {
         if (serialized) {

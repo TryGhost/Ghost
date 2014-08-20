@@ -6,7 +6,7 @@ var PostValidator = Ember.Object.create({
 
         if (validator.empty(title)) {
             validationErrors.push({
-                message: 'You must specify a title for the post.'
+                message: '请为文章输入一个标题。'
             });
         }
 

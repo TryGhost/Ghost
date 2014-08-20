@@ -14,11 +14,11 @@ var EditorSaveButtonView = Ember.View.extend({
     }.property('controller.willPublish'),
 
     'publish-text': function () {
-        return this.get('controller.isPublished') ? 'Update Post' : 'Publish Now';
+        return this.get('controller.isPublished') ? '更新文章' : '立即发布';
     }.property('controller.isPublished'),
 
     'draft-text': function () {
-        return this.get('controller.isPublished') ? 'Unpublish' : 'Save Draft';
+        return this.get('controller.isPublished') ? '撤销发布' : '保存草稿';
     }.property('controller.isPublished')
 });
 

@@ -26,7 +26,7 @@ var TransferOwnerController = Ember.Controller.extend({
                     });
                 }
 
-                self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
+                self.notifications.showSuccess('博客所有权已经成功转移给 ' + user.get('name'));
             }).catch(function (error) {
                 self.notifications.showAPIError(error);
             });
@@ -39,11 +39,11 @@ var TransferOwnerController = Ember.Controller.extend({
 
     confirm: {
         accept: {
-            text: 'YEP - I\'M SURE',
+            text: '是的 - 我确定',
             buttonClass: 'button-delete'
         },
         reject: {
-            text: 'CANCEL',
+            text: '取消',
             buttonClass: 'button'
         }
     }

@@ -25,9 +25,9 @@
                     <span class="name">{{session.user.name}}</span>
                 {{/gh-popover-button}}
                 {{#gh-popover tagName="ul" classNames="overlay" name="user-menu" closeOnClick="true"}}
-                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}你的资料{{/link-to}}</li>
+                        <li class="usermenu-profile">{{#link-to "settings.users.user" session.user.slug}}个人信息{{/link-to}}</li>
                         <li class="divider"></li>
-                        <li class="usermenu-help"><a href="http://support.ghost.org/">帮助 / 支持</a></li>
+                        <li class="usermenu-help"><a href="http://support.ghost.org/">帮助/支持</a></li>
                         <li class="divider"></li>
                         <li class="usermenu-signout">{{#link-to "signout"}}退出{{/link-to}}</li>
                 {{/gh-popover}}

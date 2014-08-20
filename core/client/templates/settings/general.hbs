@@ -1,5 +1,5 @@
 <header class="settings-content-header">
-    <h2 class="title">基本的</h2>
+    <h2 class="title">基本设置</h2>
 
     <div class="settings-header-inner">
 	{{#link-to 'settings' class='button-back button'}}返回{{/link-to}}
@@ -24,7 +24,7 @@
                 <label for="blog-description">博客描述</label>
                 {{textarea id="blog-description" name="general[description]" value=description}}
                 <p>
-									描述下你的博客
+					描述一下你的博客
                     {{gh-count-characters description}}
                 </p>
 
@@ -47,11 +47,11 @@
                 {{else}}
                     <button type="button" class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>上传图片</button>
                 {{/if}}
-                <p>在博客中一个封面</p>
+                <p>为博客设置一个封面大图</p>
             </div>
         <fieldset>
             <div class="form-group">
-                <label for="email-address">邮件地址</label>
+                <label for="email-address">邮箱地址</label>
                 {{input id="email-address" name="general[email-address]" type="email" value=email autocapitalize="off" autocorrect="off"}}
                 <p>邮件用来接收重要的通知</p>
             </div>
@@ -63,10 +63,10 @@
             </div>
 
             <div class="form-group for-checkbox">
-                <label for="permalinks">日期永久链接</label>
+                <label for="permalinks">带日期的永久链接</label>
                 {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
                 <label class="checkbox" for="permalinks"></label>
-                <p>将日期包含进url</p>
+                <p>将日期包含进 URL</p>
             </div>
 
             <div class="form-group for-select">

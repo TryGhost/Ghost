@@ -29,7 +29,7 @@ adminControllers = {
                 dismissible: false,
                 status: 'persistent',
                 message: '<a href="https://ghost.org/download">Ghost ' + updateVersion +
-                '</a> is available! Hot Damn. Please <a href="http://support.ghost.org/how-to-upgrade/">upgrade</a> now'
+                '</a> 已经可以使用! 太好了. 请点击 <a href="http://support.ghost.org/how-to-upgrade/">更新</a> '
             };
 
             return api.notifications.browse({context: {internal: true}}).then(function (results) {

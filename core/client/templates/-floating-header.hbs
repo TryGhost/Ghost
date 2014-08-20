@@ -1,18 +1,18 @@
 <header class="floatingheader">
     <button type="button" class="button-back" href="#">返回</button>
-    <button type="button" {{bind-attr class="featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
+    <button type="button" {{bind-attr class="featured:featured:unfeatured"}} title="标记为重要文章" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
     </button>
     <small>
-        <span class="status">{{#if isPublished}}发布{{else}}编辑{{/if}}</span>
-        <span class="normal">by</span>
+        <span class="normal">由</span>
         <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
+        <span class="status">{{#if isPublished}}发布{{else}}撰写{{/if}}</span>
     </small>
     <section class="post-controls">
-        {{#link-to "editor.edit" this class="post-edit" title="Edit Post"}}
+        {{#link-to "editor.edit" this class="post-edit" title="编辑文章"}}
             <span class="hidden">编辑文章</span>
         {{/link-to}}
-        {{#gh-popover-button popoverName="post-settings-menu" classNames="post-settings" title="Post Settings"}}
+        {{#gh-popover-button popoverName="post-settings-menu" classNames="post-settings" title="文章设置"}}
             <span class="hidden">文章设置</span>
         {{/gh-popover-button}}
         {{#gh-popover name="post-settings-menu" classNames="post-settings-menu menu-drop-right"}}

@@ -247,7 +247,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 return self.get('model').save(self.get('saveOptions'));
             }).then(function () {
-                self.showSuccess('Permalink successfully changed to <strong>' +
+                self.showSuccess('文章永久地址已经被成功修改为 <strong>' +
                     self.get('slug') + '</strong>.');
             }).catch(function (errors) {
                 self.showErrors(errors);
@@ -276,11 +276,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             // Validate new Published date
             if (!newPublishedAt.isValid()) {
-                errMessage = 'Published Date must be a valid date with format: ' +
+                errMessage = '发布日期必须是如下格式的有效日期：' +
                     'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
             }
             if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                errMessage = 'Published Date cannot currently be in the future.';
+                errMessage = '发布日期不能是未来时间。';
             }
 
             //If errors, notify and exit.
