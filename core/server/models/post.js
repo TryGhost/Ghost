@@ -17,7 +17,7 @@ var _              = require('lodash'),
 function getPostImg(html){
     var $       = cheerio.load(html),
         bgImg   = $("img[alt='bg']");
-    return bgImg.length > 0 ? $(bgImg[0]).attr("src"):'/assets/images/def-bg.png';
+    return bgImg.length > 0 ? $(bgImg[0]).attr("src"):null;
 }
 Post = ghostBookshelf.Model.extend({
 

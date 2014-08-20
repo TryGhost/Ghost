@@ -7,8 +7,6 @@ var _              = require('lodash'),
     validator      = require('validator'),
     validation     = require('../data/validation'),
     Role           = require('./role').Role,
-
-
     PostType;
 
 

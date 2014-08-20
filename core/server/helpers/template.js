@@ -44,7 +44,6 @@ templates.execute = function (name, context) {
 templates.getThemeViewForPost = function (themePaths, post) {
     var customPageView = 'page-' + post.slug,
         view = 'post';
-
     if (post.page) {
         if (themePaths.hasOwnProperty(customPageView + '.hbs')) {
             view = customPageView;
@@ -54,7 +53,6 @@ templates.getThemeViewForPost = function (themePaths, post) {
     }else if(post.post_type > -1){
         return 'post-' + typeLinks[post.post_type];
     }
-
     return view;
 };
 

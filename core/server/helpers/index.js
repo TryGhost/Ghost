@@ -308,6 +308,12 @@ coreHelpers.content = function (options) {
 coreHelpers.title = function () {
     return  new hbs.handlebars.SafeString(hbs.handlebars.Utils.escapeExpression(this.title || ''));
 };
+coreHelpers.uuid = function () {
+    return  new hbs.handlebars.SafeString(this.post.uuid);
+};
+coreHelpers.slug = function () {
+    return  new hbs.handlebars.SafeString(this.post.slug);
+};
 
 // ### Excerpt Helper
 //
@@ -943,7 +949,9 @@ registerHelpers = function (adminHbs, assetHash) {
 
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
-    registerAsyncThemeHelper('url', coreHelpers.url);
+    registerThemeHelper('url', coreHelpers.url);
+    registerThemeHelper('uuid', coreHelpers.uuid);
+    registerThemeHelper('slug', coreHelpers.slug);
 
 
     // Register admin helpers
