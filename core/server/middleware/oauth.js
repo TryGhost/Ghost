@@ -1,6 +1,7 @@
 var oauth2orize = require('oauth2orize'),
     models      = require('../models'),
     utils       = require('../utils'),
+    errors      = require('../errors'),
 
     oauth;
 
@@ -25,7 +26,7 @@ oauth = {
             .fetch()
             .then(function (client) {
                 if (!client) {
-                    return done(null, false);
+                    return done(new errors.NoPermissionError('Invalid client.'), false);
                 }
                 // Validate the user
                 return models.User.check({email: username, password: password}).then(function (user) {
@@ -41,8 +42,8 @@ oauth = {
                     }).then(function () {
                         resetSpamCounter(username);
                         return done(null, accessToken, refreshToken, {expires_in: utils.ONE_HOUR_S});
-                    }).catch(function () {
-                        return done(null, false);
+                    }).catch(function (error) {
+                        return done(error, false);
                     });
                 }).catch(function (error) {
                     return done(error);
@@ -59,7 +60,7 @@ oauth = {
             .fetch()
             .then(function (model) {
                 if (!model) {
-                    return done(null, false);
+                    return done(new errors.NoPermissionError('Invalid refresh token.'), false);
                 } else {
                     var token = model.toJSON(),
                         accessToken = utils.uid(256),
@@ -76,11 +77,11 @@ oauth = {
                             return models.Refreshtoken.edit({expires: refreshExpires}, {id: token.id});
                         }).then(function () {
                             return done(null, accessToken, {expires_in: utils.ONE_HOUR_S});
-                        }).catch(function () {
-                            return done(null, false);
+                        }).catch(function (error) {
+                            return done(error, false);
                         });
                     } else {
-                        done(null, false);
+                        done(new errors.UnauthorizedError('Refresh token expired.'), false);
                     }
                 }
             });
