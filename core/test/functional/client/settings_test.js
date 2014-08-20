@@ -108,7 +108,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
 });
 
 //// ## General settings validations tests
-CasperTest.begin('General settings validation is correct', 7, function suite(test) {
+CasperTest.begin('General settings validation is correct', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
@@ -136,36 +136,22 @@ CasperTest.begin('General settings validation is correct', 7, function suite(tes
 
     casper.thenClick('.js-bb-notification .close');
 
-    // Ensure postsPerPage number field form validation
+    // Check postsPerPage autocorrect   
     casper.fillAndSave('form#settings-general', {
         'general[postsPerPage]': 'notaninteger'
     });
 
-    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'be a number');
-    }, casper.failOnTimeout(test, 'postsPerPage error did not appear'), 2000);
+    casper.then(function checkSlugInputValue() {
+        test.assertField('general[postsPerPage]', '5');
+    });
 
-    casper.thenClick('.js-bb-notification .close');
-
-    // Ensure postsPerPage max of 1000
     casper.fillAndSave('form#settings-general', {
         'general[postsPerPage]': '1001'
     });
 
-    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'maximum number of posts per page is 1000');
-    }, casper.failOnTimeout(test, 'postsPerPage max error did not appear', 2000));
-
-    casper.thenClick('.js-bb-notification .close');
-
-    // Ensure postsPerPage min of 0
-    casper.fillAndSave('form#settings-general', {
-        'general[postsPerPage]': '-1'
+    casper.then(function checkSlugInputValue() {
+        test.assertField('general[postsPerPage]', '5');
     });
-
-    casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'minimum number of posts per page is 1');
-    }, casper.failOnTimeout(test, 'postsPerPage min error did not appear', 2000));
 });
 
 CasperTest.begin('Users screen is correct', 9, function suite(test) {
