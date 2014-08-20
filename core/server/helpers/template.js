@@ -5,6 +5,14 @@ var templates     = {},
     _             = require('lodash'),
     typeLinks = [];
 
+//初始化所有的 文章类型 和对应的url
+api.postType.browse().then(function(result){
+    if(result.postTypes){
+        _.forEach(result.postTypes,function(item){
+            typeLinks[item.id] = item.slug;
+        });
+    }
+});
 // ## Template utils
 
 // Execute a template helper
@@ -33,27 +41,18 @@ templates.execute = function (name, context) {
 // If given a static post object it will return 'page'.
 // If given a static post object and a custom page template
 // exits it will return that page.
-api.postType.browse().then(function(result){
-    if(result.postTypes){
-        _.forEach(result.postTypes,function(item){
-            typeLinks[item.id] = item.slug;
-        });
-    }
-});
 templates.getThemeViewForPost = function (themePaths, post) {
     var customPageView = 'page-' + post.slug,
         view = 'post';
-
     if (post.page) {
         if (themePaths.hasOwnProperty(customPageView + '.hbs')) {
             view = customPageView;
         } else if (themePaths.hasOwnProperty('page.hbs')) {
             view = 'page';
         }
-    }else if(post.post_type){
+    }else if(post.post_type > -1){
         return 'post-' + typeLinks[post.post_type];
     }
-
     return view;
 };
 

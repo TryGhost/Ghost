@@ -28,7 +28,7 @@ notifications = {
         return canThis(options.context).browse.notification().then(function () {
             return when({ 'notifications': notificationsStore });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to browse notifications.'));
+            return when.reject(new errors.NoPermissionError('你没有权限浏览通知.'));
         });
     },
 
@@ -72,7 +72,7 @@ notifications = {
                 return when({ notifications: addedNotifications});
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to add notifications.'));
+            return when.reject(new errors.NoPermissionError('你没有权限添加通知.'));
         });
     },
 
@@ -91,12 +91,12 @@ notifications = {
 
             if (notification && !notification.dismissible) {
                 return when.reject(
-                    new errors.NoPermissionError('You do not have permission to dismiss this notification.')
+                    new errors.NoPermissionError('你没有权限取消通知.')
                 );
             }
 
             if (!notification) {
-                return when.reject(new errors.NotFoundError('Notification does not exist.'));
+                return when.reject(new errors.NotFoundError('通知不存在.'));
             }
 
             notificationsStore = _.reject(notificationsStore, function (element) {
@@ -104,7 +104,7 @@ notifications = {
             });
             return when({notifications: [notification]});
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to destroy notifications.'));
+            return when.reject(new errors.NoPermissionError('你没有权限删掉通知.'));
         });
     },
 
@@ -121,7 +121,7 @@ notifications = {
             notificationCounter = 0;
             return when(notificationsStore);
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to destroy notifications.'));
+            return when.reject(new errors.NoPermissionError('你没有权限删掉通知.'));
         });
     }
 };

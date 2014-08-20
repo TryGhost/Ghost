@@ -72,7 +72,7 @@ populate = function () {
         Post = models.Post,
         Tag = models.Tag,
         Role = models.Role,
-        Client = models.Client;
+        Client = models.Client,
         PostType = models.PostType;
 
     logInfo('Populating fixtures');

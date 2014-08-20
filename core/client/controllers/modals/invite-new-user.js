@@ -13,7 +13,7 @@ var InviteNewUserController = Ember.Controller.extend({
     
     confirm: {
         accept: {
-            text: 'send invitation now'
+            text: '马上发送邀请'
         },
         reject: {
             buttonClass: 'hidden'

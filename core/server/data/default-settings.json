@@ -34,7 +34,7 @@
             "defaultValue": ""
         },
         "defaultLang": {
-            "defaultValue": "zh_CN",
+            "defaultValue": "zh-CN",
             "validations": {
                 "isNull": false
             }

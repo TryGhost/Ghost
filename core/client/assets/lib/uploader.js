@@ -120,16 +120,16 @@ UploadUi = function ($dropzone, settings) {
 
         buildExtras: function () {
             if (!$dropzone.find('span.media')[0]) {
-                $dropzone.prepend('<span class="media"><span class="hidden">Image Upload</span></span>');
+                $dropzone.prepend('<span class="media"><span class="hidden">图片上传</span></span>');
             }
             if (!$dropzone.find('div.description')[0]) {
-                $dropzone.append('<div class="description">Add image</div>');
+                $dropzone.append('<div class="description">添加图片</div>');
             }
             if (!$dropzone.find('div.js-fail')[0]) {
-                $dropzone.append('<div class="js-fail failed" style="display: none">Something went wrong :(</div>');
+                $dropzone.append('<div class="js-fail failed" style="display: none">图片上传失败 :(</div>');
             }
             if (!$dropzone.find('button.js-fail')[0]) {
-                $dropzone.append('<button class="js-fail button-add" style="display: none">Try Again</button>');
+                $dropzone.append('<button class="js-fail button-add" style="display: none">再试一次</button>');
             }
             if (!$dropzone.find('a.image-url')[0]) {
                 $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');

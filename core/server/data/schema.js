@@ -185,10 +185,10 @@ var db = {
         },
         post_type: {
             id: {type: 'increments', nullable: false, primary: true},
-            uuid: {type: 'string', nullable: false, unique: true},
+            uuid: {type: 'string', nullable: true},
             name: {type: 'string', nullable: false, unique: true},
             slug: {type: 'string', nullable: false, unique: true},
-            desc: {type: 'string', nullable: false, unique: true}
+            desc: {type: 'string', nullable: true}
         }
     };
 
