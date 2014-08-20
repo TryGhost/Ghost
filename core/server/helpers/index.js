@@ -489,7 +489,9 @@ coreHelpers.ghost_head = function (options) {
         blog = config.theme(),
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
-        trimmedVersion = this.version;
+        trimmedVersion = this.version,
+        trimmedUrlpattern = /.+(?=\/page\/\d*\/)/,
+        trimmedUrl, next, prev;
 
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
@@ -500,6 +502,20 @@ coreHelpers.ghost_head = function (options) {
 
     return coreHelpers.url.call(self, {hash: {absolute: true}}).then(function (url) {
         head.push('<link rel="canonical" href="' + url + '" />');
+
+        if (self.pagination) {
+            trimmedUrl = self.relativeUrl.match(trimmedUrlpattern);
+            if (self.pagination.prev) {
+                prev = (self.pagination.prev > 1 ? prev = '/page/' + self.pagination.prev + '/' : prev = '/');
+                prev = (trimmedUrl) ? '/' + trimmedUrl + prev : prev;
+                head.push('<link rel="prev" href="' + config.urlFor({relativeUrl: prev}, true) + '" />');
+            }
+            if (self.pagination.next) {
+                next = '/page/' + self.pagination.next + '/';
+                next = (trimmedUrl) ? '/' + trimmedUrl + next : next;
+                head.push('<link rel="next" href="' + config.urlFor({relativeUrl: next}, true) + '" />');
+            }
+        }
 
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
