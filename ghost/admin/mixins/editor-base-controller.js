@@ -277,6 +277,13 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 }
             }
             editor.replaceSelection(result_src);
+        },
+
+        // Make sure editor starts with markdown shown
+        isPreview: false,
+
+        togglePreview: function (preview) {
+            this.set('isPreview', preview);
         }
     }
 });
