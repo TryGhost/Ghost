@@ -1987,6 +1987,10 @@ table,
     margin-top: 14px;
     padding: 10px 12px;
     border-radius: 4px;
+    max-width: 300px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
     -webkit-transition: background 0.5s;
     -moz-transition: background 0.5s;
     transition: background 0.5s; }
@@ -2100,6 +2104,7 @@ table,
     .user-menu .name {
       float: left;
       margin: 0;
+      max-width: 300px;
       padding: 0 0 5px 0;
       text-overflow: ellipsis;
       white-space: nowrap;
