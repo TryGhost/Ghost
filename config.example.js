@@ -41,6 +41,12 @@ config = {
         },
         paths: {
             contentPath: path.join(__dirname, '/content/')
+        },
+        cdn: {
+            isProduction: false,
+            staticAssetsUrl: 'cdn.example.com/assets/',
+            dynamicAssetsUrl: 'cdn.example.com/assets/images/',
+            syncImagesPath: '/data/static/images/'
         }
     },
 
