@@ -111,6 +111,10 @@
         margin-top: 14px;
         padding: 10px 12px;
         border-radius: 4px;
+        max-width: 300px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
         @include transition(background 0.5s);
 
         small {
@@ -238,6 +242,7 @@
         .name {
             float: left;
             margin: 0;
+            max-width: 300px;
             padding: 0 0 5px 0;
             text-overflow: ellipsis;
             white-space: nowrap;
