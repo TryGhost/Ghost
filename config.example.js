@@ -44,8 +44,8 @@ config = {
         },
         cdn: {
             isProduction: false,
-            staticAssetsUrl: 'cdn.example.com/assets/',
-            dynamicAssetsUrl: 'cdn.example.com/assets/images/',
+            staticAssetsUrl: 'http://cdn.example.com/assets/',
+            dynamicAssetsUrl: 'http://cdn.example.com/assets/images/',
             syncImagesPath: '/data/static/images/'
         }
     },

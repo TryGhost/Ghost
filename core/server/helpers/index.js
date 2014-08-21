@@ -174,6 +174,8 @@ coreHelpers.asset = function (context, options) {
     if (!context.match(/^favicon\.ico$/) && !context.match(/^shared/) && !context.match(/^asset/)) {
         if (isAdmin) {
             output += 'ghost/';
+        } else if (config.cdn.isProduction) {
+            output = config.cdn.staticAssetsUrl;
         } else {
             output += 'assets/';
         }
